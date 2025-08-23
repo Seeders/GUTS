@@ -14,7 +14,7 @@ class InputManager {
         this.setupKeyboardEvents();
         this.setupMouseTracking();
     }
-    
+        
     setupCanvasEvents() {
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) return;
@@ -24,13 +24,8 @@ class InputManager {
         });
         
         canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault(); // Prevent right-click menu
+            event.preventDefault();
             this.handleRightClick(event);
-        });
-        
-        canvas.addEventListener('mousemove', (event) => {
-            this.updateMousePosition(event);
-            this.handleCanvasHover(event);
         });
     }
     
@@ -148,19 +143,19 @@ class InputManager {
             }
         });
     }
-    
-    setupMouseTracking() {
-        document.addEventListener('mousemove', (event) => {
-            this.mouseState.x = event.clientX;
-            this.mouseState.y = event.clientY;
-        });
         
+    setupMouseTracking() {
         document.addEventListener('mousedown', (event) => {
             this.mouseState.pressed = true;
         });
         
         document.addEventListener('mouseup', (event) => {
             this.mouseState.pressed = false;
+        });
+        
+        document.addEventListener('mousemove', (event) => {
+            this.mouseState.x = event.clientX;
+            this.mouseState.y = event.clientY;
         });
     }
     
@@ -170,7 +165,6 @@ class InputManager {
         this.shortcuts.set('KeyH', () => this.showHelpModal());
         this.shortcuts.set('KeyP', () => this.game.phaseSystem.pauseGame());
         this.shortcuts.set('Space', () => this.handleSpaceKey());
-        this.shortcuts.set('KeyR+Control', () => this.game.phaseSystem.restartGame());
         this.shortcuts.set('F1', () => this.showHelpModal());
         this.shortcuts.set('KeyS+Control', () => this.handleSaveGame());
         this.shortcuts.set('Digit1', () => this.selectUnitShortcut(0));
@@ -213,6 +207,7 @@ class InputManager {
         } else if (pauseMenu && pauseMenu.style.display === 'flex') {
             this.game.phaseSystem.resumeGame();
         }
+        this.cancelSelectedUnit();
     }
     
     handleSpaceKey() {
@@ -247,6 +242,7 @@ class InputManager {
     
     handleKeyRelease(event) {
         // Handle specific key release events
+        console.log(event.code);
         switch (event.code) {
             case 'Tab':
                 this.cycleThroughUnits();
@@ -256,54 +252,33 @@ class InputManager {
     
     shouldPreventDefault(event) {
         // Prevent certain browser shortcuts
-        if (event.ctrlKey && event.code === 'KeyR') return true;
         if (event.ctrlKey && event.code === 'KeyS') return true;
-        if (event.code === 'F5') return true;
         if (event.code === 'F1') return true;
         return false;
     }
     
     handleRightClick(event) {
         // Handle right-click on canvas (e.g., cancel selection)
+
+    }
+        
+    updateMousePosition(event) {
+        this.mouseState.x = event.clientX;
+        this.mouseState.y = event.clientY;
+    }
+   
+    
+    cancelSelectedUnit() {
         const state = this.game.state;
         if (state.selectedUnitType) {
-            state.selectedUnitType = null;
             document.querySelectorAll('.unit-card').forEach(card => {
                 card.classList.remove('selected');
             });
+            state.selectedUnitType = null;
+            this.game.placementSystem.handleUnitSelectionChange(null);
             this.game.battleLogSystem.add('Selection cancelled');
         }
     }
-    
-    updateMousePosition(event) {
-        const canvas = document.getElementById('gameCanvas');
-        if (!canvas) return;
-        
-        const rect = canvas.getBoundingClientRect();
-        this.mouseState.canvasX = event.clientX - rect.left;
-        this.mouseState.canvasY = event.clientY - rect.top;
-    }
-    
-    handleCanvasHover(event) {
-        // Show placement preview or hover effects
-        const state = this.game.state;
-        if (state.phase === 'placement' && state.selectedUnitType) {
-            this.showPlacementPreview(event);
-        }
-    }
-    
-    showPlacementPreview(event) {
-        // Visual preview of unit placement (could integrate with effects system)
-        const worldPos = this.game.placementSystem.getWorldPositionFromMouse(event);
-        if (worldPos && this.game.placementSystem.isValidPlayerPlacement(worldPos)) {
-            // Show valid placement indicator
-            document.body.style.cursor = 'crosshair';
-        } else {
-            // Show invalid placement indicator
-            document.body.style.cursor = 'not-allowed';
-        }
-    }
-    
     cycleThroughUnits() {
         const unitCards = document.querySelectorAll('.unit-card:not(.disabled)');
         const currentSelected = document.querySelector('.unit-card.selected');

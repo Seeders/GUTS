@@ -12,8 +12,12 @@ class PlacementPreview {
         this.isValid = false;
         this.team = null;
         
-        // Three.js objects
-        this.previewMesh = null;
+        // Three.js objects - reuse instead of recreating
+        this.previewGroup = new THREE.Group();
+        this.previewGroup.name = 'PlacementPreview';
+        this.previewGroup.visible = false;
+        this.scene.add(this.previewGroup);
+        
         
         // Visual configuration
         this.config = {
@@ -24,16 +28,50 @@ class PlacementPreview {
             elevationOffset: 20,
             unitElevationOffset: 20,
             indicatorElevationOffset: 15,
-            cellSizeMultiplier: 0.9
+            cellSizeMultiplier: 0.9,
+            maxCells: 25, // Limit complexity
+            updateThrottle: 16 // ~60fps throttling
         };
         
+        // Geometry pools for reuse
+        this.geometryPool = this.createGeometryPool();
         // Materials (created once for performance)
         this.materials = this.createMaterials();
+        
+        // Object pools for reuse
+        this.cellMeshPool = [];
+        this.borderMeshPool = [];
+        this.unitMeshPool = [];
+        this.activeMeshes = [];
+        
+        // Animation state
+        this.animationId = null;
+        this.lastUpdateTime = 0;
+        
+        // Initialize object pools
+        this.initializeObjectPools();
     }
     
     /**
-     * Create reusable materials for preview elements
-     * @returns {Object} Material definitions
+     * Create geometry pool for reuse
+     */
+    createGeometryPool() {
+        const cellSize = this.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
+        
+        return {
+            cellPlane: new THREE.PlaneGeometry(cellSize, cellSize),
+            unitCircle: new THREE.CircleGeometry(
+                this.config.unitIndicatorRadius, 
+                this.config.unitIndicatorSegments
+            ),
+            unitPillar: new THREE.CylinderGeometry(1, 1, 2, 6),
+            indicatorCone: new THREE.ConeGeometry(5, 10, 4),
+            indicatorRing: new THREE.RingGeometry(6, 8, 8)
+        };
+    }
+    
+    /**
+     * Create reusable materials
      */
     createMaterials() {
         return {
@@ -83,15 +121,49 @@ class PlacementPreview {
     }
     
     /**
-     * Update preview based on current mouse position and unit selection
-     * @param {Object} gridPos - Grid position {x, z}
-     * @param {Object} unitType - Selected unit type
-     * @param {string} team - Team identifier ('player' or 'enemy')
+     * Initialize object pools for mesh reuse
+     */
+    initializeObjectPools() {
+        const maxObjects = this.config.maxCells;
+        
+        // Pre-create cell meshes
+        for (let i = 0; i < maxObjects; i++) {
+            const cellMesh = new THREE.Mesh(this.geometryPool.cellPlane, this.materials.validCell);
+            cellMesh.rotation.x = -Math.PI / 2;
+            cellMesh.visible = false;
+            this.cellMeshPool.push(cellMesh);
+            this.previewGroup.add(cellMesh);
+            
+            const borderGeometry = new THREE.EdgesGeometry(this.geometryPool.cellPlane);
+            const borderMesh = new THREE.LineSegments(borderGeometry, this.materials.validBorder);
+            borderMesh.rotation.x = -Math.PI / 2;
+            borderMesh.visible = false;
+            this.borderMeshPool.push(borderMesh);
+            this.previewGroup.add(borderMesh);
+            
+            const unitMesh = new THREE.Mesh(this.geometryPool.unitCircle, this.materials.validUnit);
+            unitMesh.rotation.x = -Math.PI / 2;
+            unitMesh.visible = false;
+            this.unitMeshPool.push(unitMesh);
+            this.previewGroup.add(unitMesh);
+        }
+    }
+    
+    /**
+     * Update preview with throttling to prevent excessive updates
      */
     update(gridPos, unitType, team) {
+        const now = performance.now();
+        
+        // Throttle updates
+        if (now - this.lastUpdateTime < this.config.updateThrottle) {
+            return;
+        }
+        this.lastUpdateTime = now;
+        
         // Clear preview if invalid input
         if (!gridPos || !unitType || !this.gridSystem.isValidPosition(gridPos)) {
-            this.clear();
+            this.hide();
             return;
         }
         
@@ -111,7 +183,7 @@ class PlacementPreview {
             this.isActive = true;
             this.gridPosition = { ...gridPos };
             this.unitType = unitType;
-            this.cells = cells;
+            this.cells = cells.slice(0, this.config.maxCells); // Limit cell count
             this.isValid = isValid;
             this.team = team;
             
@@ -120,70 +192,54 @@ class PlacementPreview {
     }
     
     /**
-     * Render the placement preview
+     * Show preview using object pools
      */
     show() {
-        this.clear(false); // Clear visual only, keep data
-        
         if (!this.isActive) return;
         
-        const previewGroup = new THREE.Group();
-        previewGroup.name = 'PlacementPreview';
+        // Hide all meshes first
+        this.hideAllMeshes();
         
-        // Add cell previews
-        this.addCellPreviews(previewGroup);
+        const cellMaterial = this.isValid ? this.materials.validCell : this.materials.invalidCell;
+        const borderMaterial = this.isValid ? this.materials.validBorder : this.materials.invalidBorder;
+        
+        // Update cell previews using pooled objects
+        this.cells.forEach((cell, index) => {
+            if (index >= this.cellMeshPool.length) return; // Safety check
+            
+            const worldPos = this.gridSystem.gridToWorld(cell.x, cell.z);
+            
+            // Reuse cell mesh
+            const cellMesh = this.cellMeshPool[index];
+            cellMesh.material = cellMaterial;
+            cellMesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
+            cellMesh.visible = true;
+            this.activeMeshes.push(cellMesh);
+            
+            // Reuse border mesh
+            const borderMesh = this.borderMeshPool[index];
+            borderMesh.material = borderMaterial;
+            borderMesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
+            borderMesh.visible = true;
+            this.activeMeshes.push(borderMesh);
+        });
         
         // Add formation preview for multi-unit squads
         const squadData = this.squadManager.getSquadData(this.unitType);
         if (this.squadManager.getSquadSize(squadData) > 1) {
-            this.addFormationPreview(previewGroup, squadData);
+            this.addFormationPreview(squadData);
         }
         
-        // Add info indicator
-        this.addInfoIndicator(previewGroup, squadData);
+        this.previewGroup.visible = true;
         
-        this.previewMesh = previewGroup;
-        this.scene.add(this.previewMesh);
+        // Start subtle animation
+        this.startAnimation();
     }
     
     /**
-     * Add cell preview meshes to the preview group
-     * @param {THREE.Group} previewGroup - Group to add meshes to
+     * Add formation preview using pooled unit meshes
      */
-    addCellPreviews(previewGroup) {
-        const cellMaterial = this.isValid ? this.materials.validCell : this.materials.invalidCell;
-        const borderMaterial = this.isValid ? this.materials.validBorder : this.materials.invalidBorder;
-        
-        this.cells.forEach((cell) => {
-            const worldPos = this.gridSystem.gridToWorld(cell.x, cell.z);
-            
-            // Create cell plane - geometry is already centered
-            const cellSize = this.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
-            const geometry = new THREE.PlaneGeometry(cellSize, cellSize);
-            const mesh = new THREE.Mesh(geometry, cellMaterial);
-            
-            // Position directly at world center - no offset needed since geometry is centered
-            mesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
-            mesh.rotation.x = -Math.PI / 2;
-            mesh.userData = { type: 'cell', cellPos: cell };
-            previewGroup.add(mesh);
-            
-            // Create cell border with same positioning
-            const borderGeometry = new THREE.EdgesGeometry(geometry);
-            const border = new THREE.LineSegments(borderGeometry, borderMaterial);
-            border.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
-            border.rotation.x = -Math.PI / 2;
-            border.userData = { type: 'border', cellPos: cell };
-            previewGroup.add(border);
-        });
-    }
-    
-    /**
-     * Add formation preview showing individual unit positions
-     * @param {THREE.Group} previewGroup - Group to add meshes to
-     * @param {Object} squadData - Squad configuration
-     */
-    addFormationPreview(previewGroup, squadData) {
+    addFormationPreview(squadData) {
         if (!this.gridPosition) return;
         
         const unitPositions = this.squadManager.calculateUnitPositions(
@@ -195,111 +251,76 @@ class PlacementPreview {
         const unitMaterial = this.isValid ? this.materials.validUnit : this.materials.invalidUnit;
         
         unitPositions.forEach((pos, index) => {
-            // Create unit position indicator
-            const geometry = new THREE.CircleGeometry(
-                this.config.unitIndicatorRadius, 
-                this.config.unitIndicatorSegments
-            );
-            const mesh = new THREE.Mesh(geometry, unitMaterial);
-            mesh.position.set(pos.x, this.config.unitElevationOffset, pos.z);
-            mesh.rotation.x = -Math.PI / 2;
-            mesh.userData = { 
-                type: 'unit', 
-                unitIndex: index,
-                worldPos: pos 
-            };
-            previewGroup.add(mesh);
+            if (index >= this.unitMeshPool.length) return; // Safety check
             
-            // Add small elevation indicator
-            const pillarGeometry = new THREE.CylinderGeometry(1, 1, 2, 6);
-            const pillarMesh = new THREE.Mesh(pillarGeometry, unitMaterial);
-            pillarMesh.position.set(pos.x, this.config.unitElevationOffset + 1, pos.z);
-            pillarMesh.userData = { 
-                type: 'unitPillar', 
-                unitIndex: index 
-            };
-            previewGroup.add(pillarMesh);
+            const unitMesh = this.unitMeshPool[index];
+            unitMesh.material = unitMaterial;
+            unitMesh.position.set(pos.x, this.config.unitElevationOffset, pos.z);
+            unitMesh.visible = true;
+            this.activeMeshes.push(unitMesh);
         });
     }
     
     /**
-     * Add information indicator showing squad details
-     * @param {THREE.Group} previewGroup - Group to add meshes to
-     * @param {Object} squadData - Squad configuration
+     * Hide all pooled meshes
      */
-    addInfoIndicator(previewGroup, squadData) {
-        const centerPos = this.gridSystem.gridToWorld(this.gridPosition.x, this.gridPosition.z);
-        const squadSize = this.squadManager.getSquadSize(squadData);
+    hideAllMeshes() {
+        this.activeMeshes.length = 0; // Clear active mesh tracking
         
-        // Create main indicator cone
-        const indicatorGeometry = new THREE.ConeGeometry(5, 10, 4);
-        const indicatorMaterial = this.isValid ? this.materials.validIndicator : this.materials.invalidIndicator;
-        const indicator = new THREE.Mesh(indicatorGeometry, indicatorMaterial);
-        indicator.position.set(centerPos.x, this.config.indicatorElevationOffset, centerPos.z);
-        indicator.userData = { 
-            type: 'indicator', 
-            squadSize: squadSize,
-            isValid: this.isValid 
-        };
-        previewGroup.add(indicator);
-        
-        // Add floating ring around indicator
-        const ringGeometry = new THREE.RingGeometry(6, 8, 8);
-        const ringMaterial = new THREE.MeshBasicMaterial({
-            color: this.isValid ? 0x00ff00 : 0xff0000,
-            transparent: true,
-            opacity: 0.3,
-            side: THREE.DoubleSide
+        [...this.cellMeshPool, ...this.borderMeshPool, ...this.unitMeshPool].forEach(mesh => {
+            mesh.visible = false;
         });
-        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-        ring.position.set(centerPos.x, this.config.indicatorElevationOffset + 5, centerPos.z);
-        ring.rotation.x = -Math.PI / 2;
-        ring.userData = { type: 'indicatorRing' };
-        previewGroup.add(ring);
-        
-        // Add pulsing animation to the ring
-        this.animateIndicator(ring);
     }
     
     /**
-     * Add subtle animation to the preview indicator
-     * @param {THREE.Mesh} indicator - Indicator mesh to animate
+     * Start lightweight animation
      */
-    animateIndicator(indicator) {
-        if (!indicator) return;
+    startAnimation() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
         
-        const startTime = Date.now();
+        const startTime = performance.now();
         const animate = () => {
-            if (!this.previewMesh || !this.scene.getObjectById(indicator.id)) {
-                return; // Stop animation if preview is cleared
+            if (!this.previewGroup.visible) {
+                this.animationId = null;
+                return;
             }
             
-            const elapsed = (Date.now() - startTime) / 1000;
-            const scale = 1 + Math.sin(elapsed * 3) * 0.1;
-            indicator.scale.setScalar(scale);
+            const elapsed = (performance.now() - startTime) / 1000;
             
-            requestAnimationFrame(animate);
+            // Subtle pulsing effect on active meshes only
+            const scale = 1 + Math.sin(elapsed * 2) * 0.05;
+            this.activeMeshes.forEach(mesh => {
+                if (mesh.visible) {
+                    mesh.scale.setScalar(scale);
+                }
+            });
+            
+            this.animationId = requestAnimationFrame(animate);
         };
-        animate();
+        
+        this.animationId = requestAnimationFrame(animate);
     }
     
     /**
-     * Clear the placement preview
-     * @param {boolean} clearData - Whether to clear internal state data
+     * Hide preview without clearing data
+     */
+    hide() {
+        this.previewGroup.visible = false;
+        this.hideAllMeshes();
+        
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+    
+    /**
+     * Clear the placement preview completely
      */
     clear(clearData = true) {
-        if (this.previewMesh) {
-            // Dispose of geometries and materials to prevent memory leaks
-            this.previewMesh.traverse((child) => {
-                if (child.geometry) {
-                    child.geometry.dispose();
-                }
-                // Don't dispose materials as they're reused
-            });
-            
-            this.scene.remove(this.previewMesh);
-            this.previewMesh = null;
-        }
+        this.hide();
         
         if (clearData) {
             this.isActive = false;
@@ -313,7 +334,6 @@ class PlacementPreview {
     
     /**
      * Get current preview state information
-     * @returns {Object} Preview state data
      */
     getPreviewInfo() {
         if (!this.isActive) {
@@ -340,7 +360,6 @@ class PlacementPreview {
     
     /**
      * Update preview configuration
-     * @param {Object} newConfig - Configuration updates
      */
     updateConfig(newConfig) {
         Object.assign(this.config, newConfig);
@@ -355,18 +374,10 @@ class PlacementPreview {
             this.materials.validBorder.opacity = newConfig.borderOpacity;
             this.materials.invalidBorder.opacity = newConfig.borderOpacity;
         }
-        
-        // Refresh preview if active
-        if (this.isActive) {
-            this.show();
-        }
     }
     
     /**
-     * Check if a specific world position is within the current preview
-     * @param {number} worldX - World X coordinate
-     * @param {number} worldZ - World Z coordinate
-     * @returns {boolean} True if position is within preview
+     * Check if preview contains world position
      */
     containsWorldPosition(worldX, worldZ) {
         if (!this.isActive) return false;
@@ -376,10 +387,7 @@ class PlacementPreview {
     }
     
     /**
-     * Get the cell at a specific world position within the preview
-     * @param {number} worldX - World X coordinate
-     * @param {number} worldZ - World Z coordinate
-     * @returns {Object|null} Cell data or null if not found
+     * Get cell at world position
      */
     getCellAtWorldPosition(worldX, worldZ) {
         if (!this.containsWorldPosition(worldX, worldZ)) return null;
@@ -394,11 +402,33 @@ class PlacementPreview {
     dispose() {
         this.clear();
         
-        // Dispose of materials
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        
+        // Remove from scene
+        if (this.previewGroup.parent) {
+            this.previewGroup.parent.remove(this.previewGroup);
+        }
+        
+        // Dispose geometries
+        Object.values(this.geometryPool).forEach(geometry => {
+            if (geometry.dispose) {
+                geometry.dispose();
+            }
+        });
+        
+        // Dispose materials
         Object.values(this.materials).forEach(material => {
             if (material.dispose) {
                 material.dispose();
             }
         });
+        
+        // Clear pools
+        this.cellMeshPool = [];
+        this.borderMeshPool = [];
+        this.unitMeshPool = [];
+        this.activeMeshes = [];
     }
 }

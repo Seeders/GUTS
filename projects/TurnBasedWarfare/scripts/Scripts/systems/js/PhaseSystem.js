@@ -13,7 +13,8 @@ class PhaseSystem {
             notificationDisplayTime: 5000,
             baseGoldPerRound: 50,
             startingGold: 100,
-            hintDisplayDelay: 3000
+            hintDisplayDelay: 3000,
+            maxSquadsPerRound: 2  // New limit
         };
     }
     
@@ -25,6 +26,10 @@ class PhaseSystem {
         state.enemyPlacementComplete = false;
         state.roundEnding = false;
         
+        // Reset squad counters for the new round
+        state.playerSquadsPlacedThisRound = 0;
+        state.enemySquadsPlacedThisRound = 0;
+        
         this.distributeRoundGold();
         
         if (state.round > 1) {
@@ -33,6 +38,7 @@ class PhaseSystem {
         
         this.showPlacementHints();
         this.updateReadyButtonState();
+        this.updateSquadCountDisplay();
         
         this.phaseTimer = setInterval(() => {
             state.phaseTimeLeft--;
@@ -63,8 +69,8 @@ class PhaseSystem {
         
         if (this.game.battleLogSystem) {
             const message = state.round === 1 
-                ? `Round ${state.round}: You start with ${roundGold} gold!`
-                : `Round ${state.round}: +${roundGold} gold earned! (Total: ${state.playerGold})`;
+                ? `Round ${state.round}: You start with ${roundGold} gold! (${this.config.maxSquadsPerRound} squads max)`
+                : `Round ${state.round}: +${roundGold} gold earned! (Total: ${state.playerGold}) (${this.config.maxSquadsPerRound} squads max)`;
             this.game.battleLogSystem.add(message, 'log-victory');
         }
         
@@ -79,6 +85,75 @@ class PhaseSystem {
         const goldDisplay = document.getElementById('playerGold');
         if (goldDisplay) {
             goldDisplay.textContent = this.game.state.playerGold;
+        }
+    }
+    
+    updateSquadCountDisplay() {
+        const state = this.game.state;
+        const squadCountDisplay = document.getElementById('squadCount');
+        if (squadCountDisplay) {
+            const remaining = this.config.maxSquadsPerRound - state.playerSquadsPlacedThisRound;
+            squadCountDisplay.textContent = `${remaining}/${this.config.maxSquadsPerRound} squads left`;
+            
+            // Change color based on remaining squads
+            if (remaining === 0) {
+                squadCountDisplay.style.color = '#ff4444';
+            } else if (remaining === 1) {
+                squadCountDisplay.style.color = '#ffaa44';
+            } else {
+                squadCountDisplay.style.color = '#44ff44';
+            }
+        }
+    }
+    
+    canPlayerPlaceSquad() {
+        const state = this.game.state;
+        return state.phase === 'placement' && 
+               state.playerSquadsPlacedThisRound < this.config.maxSquadsPerRound;
+    }
+    
+    canEnemyPlaceSquad() {
+        const state = this.game.state;
+        return state.enemySquadsPlacedThisRound < this.config.maxSquadsPerRound;
+    }
+    
+    onPlayerSquadPlaced(unitType) {
+        const state = this.game.state;
+        state.playerSquadsPlacedThisRound++;
+        this.updateSquadCountDisplay();
+        
+        // Log squad info using SquadManager
+        if (this.game.squadManager && unitType) {
+            const squadInfo = this.game.squadManager.getSquadInfo(unitType);
+            this.game.battleLogSystem?.add(
+                `Deployed ${squadInfo.unitName} (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`,
+                'log-victory'
+            );
+        }
+        
+        if (state.playerSquadsPlacedThisRound >= this.config.maxSquadsPerRound) {
+            this.game.battleLogSystem?.add('Maximum squads placed this round!', 'log-damage');
+            
+            // Clear selected unit type when limit reached
+            state.selectedUnitType = null;
+            
+            // Update UI to reflect no unit selected
+            const unitButtons = document.querySelectorAll('.unit-button');
+            unitButtons.forEach(btn => btn.classList.remove('selected'));
+        }
+    }
+    
+    onEnemySquadPlaced(unitType) {
+        const state = this.game.state;
+        state.enemySquadsPlacedThisRound++;
+        
+        // Log enemy squad deployment using SquadManager
+        if (this.game.squadManager && unitType) {
+            const squadInfo = this.game.squadManager.getSquadInfo(unitType);
+            this.game.battleLogSystem?.add(
+                `Enemy deployed ${squadInfo.unitName} (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`,
+                'log-damage'
+            );
         }
     }
     
@@ -419,6 +494,8 @@ class PhaseSystem {
         state.enemyPlacementComplete = false;
         state.isPaused = false;
         state.selectedUnitType = null;
+        state.playerSquadsPlacedThisRound = 0;
+        state.enemySquadsPlacedThisRound = 0;
         
         this.clearBattlefield();
         
@@ -528,6 +605,7 @@ class PhaseSystem {
         if (state.phase === 'placement') {
             document.getElementById('phaseTimer').textContent = `${state.phaseTimeLeft}s`;
             this.updateReadyButtonState();
+            this.updateSquadCountDisplay();
         } else {
             document.getElementById('phaseTimer').textContent = '';
         }
@@ -625,6 +703,7 @@ class PhaseSystem {
         });
         
         this.updateReadyButtonState();
+        this.updateSquadCountDisplay();
     }
     
     shouldEndCampaign() {

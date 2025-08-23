@@ -14,5 +14,5 @@
   "playerGold": 100,
   "playerReady": false,
   "phaseTimeLeft": 30,
-  "selectedUnitType": null
+  "selectedUnitType": "null"
 }

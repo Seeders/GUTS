@@ -101,7 +101,7 @@ class ShopSystem {
         if (state.phase !== 'placement' || state.playerGold < unitType.value) return;
         
         state.selectedUnitType = unitType;
-        
+        this.game.placementSystem.handleUnitSelectionChange(unitType);
         // Update UI selection
         document.querySelectorAll('.unit-card').forEach(card => {
             card.classList.remove('selected');

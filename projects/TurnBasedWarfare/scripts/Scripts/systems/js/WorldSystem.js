@@ -1018,7 +1018,7 @@ class WorldSystem {
 
         // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation
         const waterMesh = new THREE.Mesh(geometry, material);        
-        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;
+        waterMesh.position.y = (terrainType + 1) * this.heightMapSettings.heightStep;
         
         // No additional position offset needed since vertices are already centered
         waterMesh.position.x = 0;

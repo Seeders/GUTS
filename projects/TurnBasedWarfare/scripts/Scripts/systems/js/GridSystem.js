@@ -1,7 +1,12 @@
 class GridSystem {
     constructor(game) {
         this.game = game;
-        this.game.gridSystem = this;        
+        this.game.gridSystem = this;
+        
+        this.state = new Map();
+        this.validationCache = new Map();
+        this.lastCacheClean = 0;
+        this.CACHE_CLEAN_INTERVAL = 10000;
     }
     
     init(terrainSize = 768, cellSize = 48) {
@@ -18,9 +23,9 @@ class GridSystem {
             startZ: -terrainSize / 2
         };
         
-        this.state = new Map();
         this.gridVisualization = null;
         
+        // Pre-calculate bounds to avoid repeated calculations
         this.playerBounds = {
             minX: 0,
             maxX: Math.floor(this.dimensions.width / 2) - 1,
@@ -34,6 +39,14 @@ class GridSystem {
             minZ: 0,
             maxZ: this.dimensions.height - 1
         };
+        
+        // Pre-calculate world bounds for faster collision detection
+        this.worldBounds = {
+            minX: this.dimensions.startX,
+            maxX: this.dimensions.startX + (this.dimensions.width * cellSize),
+            minZ: this.dimensions.startZ,
+            maxZ: this.dimensions.startZ + (this.dimensions.height * cellSize)
+        };
     }
     
     createVisualization(scene) {
@@ -44,52 +57,55 @@ class GridSystem {
         const group = new THREE.Group();
         const { width, height, cellSize, startX, startZ } = this.dimensions;
         
+        // Use BufferGeometry for better performance
+        const linePositions = [];
+        
+        // Vertical lines
+        for (let x = 0; x <= width; x++) {
+            const worldX = startX + (x * cellSize);
+            linePositions.push(
+                worldX, 1, startZ,
+                worldX, 1, startZ + (height * cellSize)
+            );
+        }
+        
+        // Horizontal lines
+        for (let z = 0; z <= height; z++) {
+            const worldZ = startZ + (z * cellSize);
+            linePositions.push(
+                startX, 1, worldZ,
+                startX + (width * cellSize), 1, worldZ
+            );
+        }
+        
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+        
         const lineMaterial = new THREE.LineBasicMaterial({ 
             color: 0x444444, 
             transparent: true, 
             opacity: 0.3 
         });
         
-        // Vertical lines
-        for (let x = 0; x <= width; x++) {
-            const geometry = new THREE.BufferGeometry();
-            const worldX = startX + (x * cellSize);
-            const points = [
-                new THREE.Vector3(worldX, 1, startZ),
-                new THREE.Vector3(worldX, 1, startZ + (height * cellSize))
-            ];
-            geometry.setFromPoints(points);
-            const line = new THREE.Line(geometry, lineMaterial);
-            group.add(line);
-        }
-        
-        // Horizontal lines
-        for (let z = 0; z <= height; z++) {
-            const geometry = new THREE.BufferGeometry();
-            const worldZ = startZ + (z * cellSize);
-            const points = [
-                new THREE.Vector3(startX, 1, worldZ),
-                new THREE.Vector3(startX + (width * cellSize), 1, worldZ)
-            ];
-            geometry.setFromPoints(points);
-            const line = new THREE.Line(geometry, lineMaterial);
-            group.add(line);
-        }
+        const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+        group.add(lines);
         
         // Center divider line
+        const dividerPositions = [
+            startX + (width * cellSize / 2), 2, startZ,
+            startX + (width * cellSize / 2), 2, startZ + (height * cellSize)
+        ];
+        
+        const dividerGeometry = new THREE.BufferGeometry();
+        dividerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dividerPositions, 3));
+        
         const dividerMaterial = new THREE.LineBasicMaterial({ 
             color: 0xff0000, 
             transparent: true, 
             opacity: 0.5 
         });
-        const dividerGeometry = new THREE.BufferGeometry();
-        const centerX = startX + (width * cellSize / 2);
-        const dividerPoints = [
-            new THREE.Vector3(centerX, 2, startZ),
-            new THREE.Vector3(centerX, 2, startZ + (height * cellSize))
-        ];
-        dividerGeometry.setFromPoints(dividerPoints);
-        const dividerLine = new THREE.Line(dividerGeometry, dividerMaterial);
+        
+        const dividerLine = new THREE.LineSegments(dividerGeometry, dividerMaterial);
         group.add(dividerLine);
         
         this.gridVisualization = group;
@@ -98,60 +114,130 @@ class GridSystem {
     
     worldToGrid(worldX, worldZ) {
         const { cellSize, startX, startZ } = this.dimensions;
-        const x = Math.floor((worldX - startX) / cellSize);
-        const z = Math.floor((worldZ - startZ) / cellSize);
-        return { x, z };
+        return {
+            x: Math.floor((worldX - startX) / cellSize),
+            z: Math.floor((worldZ - startZ) / cellSize)
+        };
     }
     
     gridToWorld(gridX, gridZ) {
         const { cellSize, startX, startZ } = this.dimensions;
-        const x = startX + (gridX * cellSize) + (cellSize / 2);
-        const z = startZ + (gridZ * cellSize) + (cellSize / 2);
-        return { x, z };
+        return {
+            x: startX + (gridX * cellSize) + (cellSize / 2),
+            z: startZ + (gridZ * cellSize) + (cellSize / 2)
+        };
     }
     
+    // OPTIMIZED: Early bounds checking
     isValidPosition(gridPos) {
         return gridPos.x >= 0 && gridPos.x < this.dimensions.width &&
                gridPos.z >= 0 && gridPos.z < this.dimensions.height;
     }
-    
+
     isValidPlacement(cells, team) {
+        if (!cells || cells.length === 0) return false;
+        
+        const cacheKey = `${team}_${cells.map(c => `${c.x},${c.z}`).sort().join('|')}`;
+        
+        const now = Date.now();
+        const cached = this.validationCache.get(cacheKey);
+        if (cached && (now - cached.timestamp) < 1000) {
+            return cached.result;
+        }
+        
         const bounds = team === 'player' ? this.playerBounds : this.enemyBounds;
         
-        return cells.every(cell => {
-            // Check bounds
+        for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                 cell.z < bounds.minZ || cell.z > bounds.maxZ) {
+                this.validationCache.set(cacheKey, { result: false, timestamp: now });
                 return false;
             }
-            
-            // Check if cell is occupied
+        }
+        
+        for (const cell of cells) {
             const key = `${cell.x},${cell.z}`;
             const cellState = this.state.get(key);
-            return !cellState || !cellState.occupied;
-        });
+            if (cellState && cellState.occupied) {
+                this.validationCache.set(cacheKey, { result: false, timestamp: now });
+                return false;
+            }
+        }
+        
+        this.validationCache.set(cacheKey, { result: true, timestamp: now });
+        
+        if (now - this.lastCacheClean > this.CACHE_CLEAN_INTERVAL) {
+            this.cleanValidationCache();
+        }
+        
+        return true;
+    }
+            
+    cleanValidationCache() {
+        const now = Date.now();
+        const maxAge = 5000;
+        
+        for (const [key, value] of this.validationCache.entries()) {
+            if (now - value.timestamp > maxAge) {
+                this.validationCache.delete(key);
+            }
+        }
+        
+        this.lastCacheClean = now;
     }
     
     occupyCells(cells, placementId) {
-        cells.forEach(cell => {
-            const key = `${cell.x},${cell.z}`;
-            this.state.set(key, {
+        const updates = cells.map(cell => ({
+            key: `${cell.x},${cell.z}`,
+            value: {
                 occupied: true,
                 placementId: placementId
-            });
+            }
+        }));
+        
+        updates.forEach(({ key, value }) => {
+            this.state.set(key, value);
         });
+        
+        this.invalidateCache(cells);
     }
-    
+
     freeCells(placementId) {
+        const keysToDelete = [];
+        
         for (const [key, value] of this.state.entries()) {
             if (value.placementId === placementId) {
-                this.state.delete(key);
+                keysToDelete.push(key);
             }
         }
+        
+        keysToDelete.forEach(key => {
+            this.state.delete(key);
+        });
+        
+        // Clear all cache since we don't know which entries are affected
+        this.validationCache.clear();
     }
-    
+        
+    invalidateCache(cells) {
+        const affectedKeys = new Set();
+        
+        for (const cell of cells) {
+            for (const [cacheKey] of this.validationCache.entries()) {
+                if (cacheKey.includes(`${cell.x},${cell.z}`)) {
+                    affectedKeys.add(cacheKey);
+                }
+            }
+        }
+        
+        affectedKeys.forEach(key => {
+            this.validationCache.delete(key);
+        });
+    }
+        
     clear() {
         this.state.clear();
+        this.validationCache.clear();
     }
     
     toggleVisibility(scene) {
@@ -188,7 +274,25 @@ class GridSystem {
             enemyBounds: this.enemyBounds,
             occupiedCells: this.getOccupiedCells(),
             totalCells: this.dimensions.width * this.dimensions.height,
-            occupiedCount: this.state.size
+            occupiedCount: this.state.size,
+            cacheSize: this.validationCache.size
         };
+    }
+    
+    // OPTIMIZED: Batch cell queries for better performance
+    areCellsOccupied(cells) {
+        for (const cell of cells) {
+            const key = `${cell.x},${cell.z}`;
+            if (this.state.has(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // OPTIMIZED: Fast world bounds check
+    isInWorldBounds(worldX, worldZ) {
+        return worldX >= this.worldBounds.minX && worldX <= this.worldBounds.maxX &&
+               worldZ >= this.worldBounds.minZ && worldZ <= this.worldBounds.maxZ;
     }
 }

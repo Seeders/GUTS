@@ -12,23 +12,61 @@ class PlacementSystem {
         this.undoStack = [];
         this.maxUndoSteps = 10;
         
+        // Performance optimizations
+        this.lastMouseMoveTime = 0;
+        this.lastValidationTime = 0;
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.groundMeshCache = null;
+        
         this.config = {
             maxUnitsPerRound: 10,
             maxCombinationsToCheck: 1000,
             unitPlacementDelay: 200,
             enablePreview: true,
             enableUndo: true,
-            enableGridSnapping: true
+            enableGridSnapping: true,
+            mouseMoveThrottle: 16, // ~60fps
+            validationThrottle: 32, // ~30fps for validation
+            raycastThrottle: 16 // Throttle expensive raycasting
         };
         
         this.initializeSubsystems();
         this.initializeControls();
         
-        if (this.gridSystem.showGrid) {
-            this.gridSystem.createVisualization(this.game.scene);
+        if (this.config.enablePreview) {
+            this.placementPreview = new GUTS.PlacementPreview(
+                this.game.scene, 
+                this.gridSystem, 
+                this.squadManager
+            );
         }
     }
     
+    //game loop update - OPTIMIZED
+    update(deltaTime) {
+        // Only update if in placement phase - avoid unnecessary work
+        if (this.game.state.phase !== 'placement') {
+            return;
+        }
+        
+        // Throttled updates only
+        const now = performance.now();
+        if (now - this.lastValidationTime > this.config.validationThrottle) {
+            this.updateCursorState();
+            this.lastValidationTime = now;
+        }
+    }
+    
+    updateCursorState() {
+        // Lightweight cursor update without expensive raycasting
+        if (this.game.state.selectedUnitType && this.cachedValidation) {
+            document.body.style.cursor = this.cachedValidation.isValid ? 'crosshair' : 'not-allowed';
+        } else {
+            document.body.style.cursor = 'default';
+        }
+    }
+  
     initializeSubsystems() {
         const terrainSize = this.game.worldSystem?.terrainSize || 768;
         
@@ -45,8 +83,10 @@ class PlacementSystem {
                 this.squadManager
             );
         }
+        
+        // Cache ground mesh on initialization
+        this.groundMeshCache = this.findGroundMesh();
     }
-    
     initializeControls() {
         if (this.config.enableUndo) {
             document.addEventListener('keydown', (event) => {
@@ -58,29 +98,189 @@ class PlacementSystem {
         }
         
         if (this.config.enablePreview && this.placementPreview) {
-            this.canvas.addEventListener('mousemove', (event) => {
-                if (this.game.state.phase === 'placement' && this.game.state.selectedUnitType) {
-                    this.updatePlacementPreview(event);
+            let lastUpdateTime = 0;
+            let animationFrameId = null;
+            let pendingMouseEvent = null;
+            
+            const throttledMouseMove = (event) => {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
                 }
-            });
+                
+                pendingMouseEvent = event;
+                
+                animationFrameId = requestAnimationFrame(() => {
+                    const now = performance.now();
+                    
+                    if (now - lastUpdateTime < 8) {
+                        return;
+                    }
+                    
+                    lastUpdateTime = now;
+                    
+                    if (this.game.state.phase === 'placement' && 
+                        this.game.state.selectedUnitType && 
+                        pendingMouseEvent) {
+                        
+                        this.updatePlacementPreview(pendingMouseEvent);
+                    }
+                    
+                    animationFrameId = null;
+                    pendingMouseEvent = null;
+                });
+            };
+            
+            this.canvas.addEventListener('mousemove', throttledMouseMove);
             
             this.canvas.addEventListener('mouseleave', () => {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
                 this.placementPreview.clear();
+                this.cachedValidation = null;
+                this.cachedGridPos = null;
+                document.body.style.cursor = 'default';
             });
         }
     }
-    
+
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
         
-        const worldPosition = this.getWorldPositionFromMouse(event);
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        
+  
+        
+        this.lastMouseX = mouseX;
+        this.lastMouseY = mouseY;
+        
+        // Only raycast every 50ms or on significant movement
+        const now = performance.now();
+        const timeSinceLastRaycast = now - (this.lastRaycastTime || 0);
+        const shouldRaycast = timeSinceLastRaycast > 150;
+        
+        let worldPosition;
+        if (!shouldRaycast) {
+            return;
+        } else {
+            // Full raycast
+            worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+            if (worldPosition) {
+                this.cachedWorldPos = worldPosition;
+                this.lastRaycastTime = now;
+                this.lastRaycastMouseX = mouseX;
+                this.lastRaycastMouseY = mouseY;
+                
+                // Calculate approximate world scale for interpolation
+                if (this.previousWorldPos && this.previousMouseX !== undefined) {
+                    const worldDelta = Math.abs(worldPosition.x - this.previousWorldPos.x) + Math.abs(worldPosition.z - this.previousWorldPos.z);
+                    const mouseDeltaPrev = Math.abs(mouseX - this.previousMouseX) + Math.abs(mouseY - this.previousMouseY);
+                    if (mouseDeltaPrev > 0) {
+                        this.approximateWorldScale = worldDelta / mouseDeltaPrev;
+                    }
+                }
+                
+                this.previousWorldPos = { ...worldPosition };
+                this.previousMouseX = mouseX;
+                this.previousMouseY = mouseY;
+            }
+        }
+        
         if (!worldPosition) {
             this.placementPreview.clear();
+            document.body.style.cursor = 'not-allowed';
             return;
         }
         
         const gridPos = this.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
+        
+        let isValid;
+        if (this.cachedGridPos && 
+            this.cachedGridPos.x === gridPos.x && 
+            this.cachedGridPos.z === gridPos.z) {
+            isValid = this.cachedValidation?.isValid || false;
+        } else {
+            isValid = this.isValidPlayerPlacement(worldPosition);
+            this.cachedGridPos = gridPos;
+            this.cachedValidation = { isValid, timestamp: performance.now() };
+        }
+        
+        document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
         this.placementPreview.update(gridPos, this.game.state.selectedUnitType, 'player');
+    }
+            
+    getWorldPositionFromMouse(event, mouseX, mouseY) {
+        if (!this.game.scene || !this.game.camera) return null;
+        
+        if (!this.groundMeshCache) {
+            this.groundMeshCache = this.getGroundMesh();
+        }
+        
+        const ground = this.groundMeshCache;
+        if (!ground) return null;
+        
+        if (!this.mouse) {
+            this.mouse = new THREE.Vector2();
+        }
+        
+        if (mouseX !== undefined && mouseY !== undefined) {
+            this.mouse.set(mouseX, mouseY);
+        } else {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+        
+        if (!this.raycaster) {
+            this.raycaster = new THREE.Raycaster();
+        }
+        this.raycaster.setFromCamera(this.mouse, this.game.camera);
+        
+        const intersects = this.raycaster.intersectObject(ground, false);
+        return intersects.length > 0 ? intersects[0].point : null;
+    }
+
+    handleUnitSelectionChange(newUnitType) {
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.cachedWorldPos = null;
+        this.lastMouseX = null;
+        this.lastMouseY = null;
+        this.lastRaycastTime = null;
+        this.lastRaycastMouseX = null;
+        this.lastRaycastMouseY = null;
+        this.approximateWorldScale = null;
+        this.previousWorldPos = null;
+        this.previousMouseX = null;
+        this.previousMouseY = null;
+        
+        if (this.squadValidationCache) {
+            this.squadValidationCache.clear();
+        }
+        
+        if (this.placementPreview) {
+            this.placementPreview.clear();
+        }
+        
+        document.body.style.cursor = 'default';
+    }
+
+    findGroundMesh() {
+        if (this.game.worldSystem?.ground) {
+            return this.game.worldSystem.ground;
+        }
+        
+        // Cache the first suitable mesh found
+        for (let child of this.game.scene.children) {
+            if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
+                return child;
+            }
+        }
+        return null;
     }
     
     handleCanvasClick(event) {
@@ -90,33 +290,74 @@ class PlacementSystem {
             return;
         }
         
+        // Check squad limit first
+        if (!this.game.phaseSystem.canPlayerPlaceSquad()) {
+            this.game.battleLogSystem?.add(`Maximum ${this.game.phaseSystem.config.maxSquadsPerRound} squads per round reached!`, 'log-damage');
+            return;
+        }
+        
         if (state.playerGold < state.selectedUnitType.value) {
             this.game.battleLogSystem?.add('Not enough gold!', 'log-damage');
             return;
         }
         
-        if (this.placementPreview) {
-            if (!this.placementPreview.isActive || !this.placementPreview.isValid) {
-                this.game.battleLogSystem?.add('Invalid placement location!', 'log-damage');
-                return;
-            }
-            
-            this.placeSquad(this.placementPreview.gridPosition, state.selectedUnitType, 'player');
+        // Use cached validation if available and recent
+        let isValidPlacement = false;
+        let gridPos = null;
+        
+        if (this.cachedValidation && 
+            performance.now() - this.cachedValidation.timestamp < 100) {
+            // Use cached validation for recent clicks
+            isValidPlacement = this.cachedValidation.isValid;
+            gridPos = this.cachedValidation.gridPos;
         } else {
+            // Fallback to full validation
             const worldPosition = this.getWorldPositionFromMouse(event);
             if (worldPosition) {
-                const gridPos = this.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
-                this.placeSquad(gridPos, state.selectedUnitType, 'player');
+                gridPos = this.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
+                isValidPlacement = this.isValidPlayerPlacement(worldPosition);
             }
         }
+        
+        if (!isValidPlacement || !gridPos) {
+            this.game.battleLogSystem?.add('Invalid placement location!', 'log-damage');
+            return;
+        }
+        
+        // Validate squad configuration before placement
+        if (this.squadManager) {
+            const squadData = this.squadManager.getSquadData(state.selectedUnitType);
+            const validation = this.squadManager.validateSquadConfig(squadData);
+            
+            if (!validation.valid) {
+                this.game.battleLogSystem?.add(`Invalid squad configuration: ${validation.errors.join(', ')}`, 'log-damage');
+                return;
+            }
+        }
+        
+        this.placeSquad(gridPos, state.selectedUnitType, 'player');
     }
     
+    // OPTIMIZED: Early returns and reduced calculations
     placeSquad(gridPos, unitType, team) {
+        // Double-check squad limits before placing
+        if (team === 'player' && !this.game.phaseSystem.canPlayerPlaceSquad()) {
+            this.game.battleLogSystem?.add(`Maximum ${this.game.phaseSystem.config.maxSquadsPerRound} squads per round reached!`, 'log-damage');
+            return null;
+        }
+        
+        if (team === 'enemy' && !this.game.phaseSystem.canEnemyPlaceSquad()) {
+            return null;
+        }
+        
         const squadData = this.squadManager.getSquadData(unitType);
         const cells = this.squadManager.getSquadCells(gridPos, squadData);
         
+        // Early validation check
         if (!this.gridSystem.isValidPlacement(cells, team)) {
-            this.game.battleLogSystem?.add('Cannot place squad at this location!', 'log-damage');
+            if (team === 'player') {
+                this.game.battleLogSystem?.add('Cannot place squad at this location!', 'log-damage');
+            }
             return null;
         }
         
@@ -126,22 +367,30 @@ class PlacementSystem {
         const undoInfo = this.createUndoInfo(placementId, unitType, gridPos, cells, team);
         
         try {
-            unitPositions.forEach(pos => {
-                const terrainHeight = this.unitCreator.getTerrainHeight(pos.x, pos.z);
-                const unitY = terrainHeight !== null ? terrainHeight : 0;
-                
-                const entityId = this.unitCreator.create(pos.x, unitY, pos.z, unitType, team);
-                squadUnits.push({
-                    entityId: entityId,
-                    position: { x: pos.x, y: unitY, z: pos.z }
-                });
-                undoInfo.unitIds.push(entityId);
-            });
+            // Batch unit creation for better performance
+            const createdUnits = this.createSquadUnits(unitPositions, unitType, team, undoInfo);
+            squadUnits.push(...createdUnits);
             
             this.updateGameStateForPlacement(placementId, gridPos, cells, unitType, squadUnits, team, undoInfo);
             this.gridSystem.occupyCells(cells, placementId);
-            this.createPlacementEffects(unitPositions, team);
+            
+            // Batch effects creation
+            if (this.game.effectsSystem && createdUnits.length <= 8) { // Limit effects for performance
+                this.createPlacementEffects(unitPositions.slice(0, 8), team);
+            }
+            
             this.logPlacement(unitType, squadUnits.length, team);
+            
+            // Notify phase system that a squad was placed
+            if (team === 'player') {
+                this.game.phaseSystem.onPlayerSquadPlaced(unitType);
+            } else {
+                this.game.phaseSystem.onEnemySquadPlaced(unitType);
+            }
+            
+            // Clear caches after placement
+            this.cachedValidation = null;
+            this.cachedGridPos = null;
             
             if (this.placementPreview) {
                 this.placementPreview.clear();
@@ -154,6 +403,29 @@ class PlacementSystem {
             this.cleanupFailedPlacement(undoInfo);
             return null;
         }
+    }
+    
+    // OPTIMIZED: Batch unit creation
+    createSquadUnits(unitPositions, unitType, team, undoInfo) {
+        const createdUnits = [];
+        
+        // Limit unit creation for very large formations
+        const maxUnits = Math.min(unitPositions.length, 16);
+        const positions = unitPositions.slice(0, maxUnits);
+        
+        positions.forEach(pos => {
+            const terrainHeight = this.unitCreator.getTerrainHeight(pos.x, pos.z);
+            const unitY = terrainHeight !== null ? terrainHeight : 0;
+            
+            const entityId = this.unitCreator.create(pos.x, unitY, pos.z, unitType, team);
+            createdUnits.push({
+                entityId: entityId,
+                position: { x: pos.x, y: unitY, z: pos.z }
+            });
+            undoInfo.unitIds.push(entityId);
+        });
+        
+        return createdUnits;
     }
     
     createUndoInfo(placementId, unitType, gridPos, cells, team) {
@@ -191,12 +463,15 @@ class PlacementSystem {
         }
     }
     
+    // OPTIMIZED: Limit particle effects for performance
     createPlacementEffects(unitPositions, team) {
         if (!this.game.effectsSystem) return;
         
         const effectType = team === 'player' ? 'magic' : 'defeat';
+        const maxEffects = Math.min(unitPositions.length, 6); // Limit effects
         
-        unitPositions.forEach(pos => {
+        for (let i = 0; i < maxEffects; i++) {
+            const pos = unitPositions[i];
             const terrainHeight = this.unitCreator.getTerrainHeight(pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : 0;
             
@@ -205,21 +480,23 @@ class PlacementSystem {
                 unitY + 25,
                 pos.z,
                 effectType,
-                { count: 6, speedMultiplier: 0.8 }
+                { count: 4, speedMultiplier: 0.8 } // Reduced particle count
             );
-        });
+        }
     }
     
     logPlacement(unitType, unitCount, team) {
-        if (!this.game.battleLogSystem) return;
+        if (!this.game.battleLogSystem || !this.squadManager) return;
         
-        const squadText = unitCount > 1 ? `squad (${unitCount} units)` : 'unit';
+        const squadInfo = this.squadManager.getSquadInfo(unitType);
         const logClass = team === 'player' ? 'log-victory' : 'log-damage';
         
-        this.game.battleLogSystem.add(
-            `Deployed ${unitType.title || unitType.id} ${squadText}`,
-            logClass
-        );
+        // More detailed logging with SquadManager info
+        const message = squadInfo.squadSize > 1 
+            ? `Deployed ${squadInfo.unitName} squad (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`
+            : `Deployed ${squadInfo.unitName} unit`;
+            
+        this.game.battleLogSystem.add(message, logClass);
     }
     
     cleanupFailedPlacement(undoInfo) {
@@ -260,6 +537,11 @@ class PlacementSystem {
             
             state.playerGold += undoInfo.cost;
             
+            // Decrement squad counter when undoing
+            if (state.playerSquadsPlacedThisRound > 0) {
+                state.playerSquadsPlacedThisRound--;
+            }
+            
             const placementIndex = this.playerPlacements.findIndex(p => p.placementId === undoInfo.placementId);
             if (placementIndex !== -1) {
                 this.playerPlacements.splice(placementIndex, 1);
@@ -268,6 +550,10 @@ class PlacementSystem {
             this.gridSystem.freeCells(undoInfo.placementId);
             this.createUndoEffects(undoInfo);
             this.logUndo(undoInfo);
+            
+            // Clear caches after undo
+            this.cachedValidation = null;
+            this.cachedGridPos = null;
             
         } catch (error) {
             console.error('Undo failed:', error);
@@ -278,30 +564,34 @@ class PlacementSystem {
     createUndoEffects(undoInfo) {
         if (!this.game.effectsSystem) return;
         
-        undoInfo.cells.forEach(cell => {
+        // Limit undo effects
+        const maxEffects = Math.min(undoInfo.cells.length, 4);
+        
+        for (let i = 0; i < maxEffects; i++) {
+            const cell = undoInfo.cells[i];
             const worldPos = this.gridSystem.gridToWorld(cell.x, cell.z);
             this.game.effectsSystem.createParticleEffect(
                 worldPos.x,
                 2,
                 worldPos.z,
                 'magic',
-                { count: 4, speedMultiplier: 0.7 }
+                { count: 3, speedMultiplier: 0.7 } // Reduced particles
             );
-        });
+        }
     }
     
     logUndo(undoInfo) {
-        if (!this.game.battleLogSystem) return;
+        if (!this.game.battleLogSystem || !this.squadManager) return;
         
-        const squadSize = undoInfo.unitIds.length;
-        const squadText = squadSize > 1 ? `squad (${squadSize} units)` : 'unit';
+        const squadInfo = this.squadManager.getSquadInfo(undoInfo.unitType);
+        const message = squadInfo.squadSize > 1 
+            ? `Undid placement of ${squadInfo.unitName} squad (+${undoInfo.cost}g)`
+            : `Undid placement of ${squadInfo.unitName} unit (+${undoInfo.cost}g)`;
         
-        this.game.battleLogSystem.add(
-            `Undid placement of ${undoInfo.unitType.title} ${squadText} (+${undoInfo.cost}g)`,
-            'log-victory'
-        );
+        this.game.battleLogSystem.add(message, 'log-victory');
     }
     
+    // OPTIMIZED: Simplified enemy placement with performance limits
     placeEnemyUnits(strategy = null, onComplete) {
         this.respawnEnemyUnits();
         
@@ -316,8 +606,9 @@ class PlacementSystem {
         
         if (this.game.battleLogSystem) {
             const strategyName = this.enemyStrategy.strategies[selectedStrategy]?.name || selectedStrategy;
+            const maxSquads = this.game.phaseSystem.config.maxSquadsPerRound;
             this.game.battleLogSystem.add(
-                `Enemy adopts ${strategyName} strategy!`,
+                `Enemy adopts ${strategyName} strategy! (Max ${maxSquads} squads)`,
                 'log-damage'
             );
         }
@@ -369,7 +660,7 @@ class PlacementSystem {
     }
     
     findOptimalUnitCombination(budget, availableUnits, strategyConfig) {
-        const maxUnits = Math.floor((this.config.maxUnitsPerRound || 10) * (strategyConfig.maxUnitsMultiplier || 1.0));
+        const maxSquads = this.game.phaseSystem.config.maxSquadsPerRound;
         const UnitTypes = this.game.getCollections().units;
         const unitKeys = Object.keys(UnitTypes);
         
@@ -396,13 +687,16 @@ class PlacementSystem {
         const sortedUnits = [...units].sort((a, b) => b.strategyScore - a.strategyScore);
         const selectedUnits = [];
         let remainingBudget = budget;
-        let unitsPlaced = 0;
+        let squadsPlaced = 0;
         
+        // Limit enemy to maxSquads per round
         for (const unit of sortedUnits) {
-            while (remainingBudget >= unit.value && unitsPlaced < maxUnits) {
+            if (squadsPlaced >= maxSquads) break;
+            
+            if (remainingBudget >= unit.value) {
                 selectedUnits.push(unit);
                 remainingBudget -= unit.value;
-                unitsPlaced++;
+                squadsPlaced++;
             }
         }
         
@@ -417,12 +711,14 @@ class PlacementSystem {
         let placedCount = 0;
         let totalSquadCost = 0;
         let totalUnitsPlaced = 0;
+        let squadsSuccessfullyPlaced = 0;
+        const maxSquads = this.game.phaseSystem.config.maxSquadsPerRound;
         
         const placeNextSquad = () => {
-            if (placedCount >= unitsToPlace.length) {
-                const efficiency = (totalSquadCost / budget * 100).toFixed(1);
+            if (placedCount >= unitsToPlace.length || squadsSuccessfullyPlaced >= maxSquads) {
+                const efficiency = budget > 0 ? (totalSquadCost / budget * 100).toFixed(1) : '0.0';
                 this.game.battleLogSystem?.add(
-                    `Enemy deployed ${placedCount} squads (${totalUnitsPlaced} total units)! Budget: ${totalSquadCost}/${budget}g (${efficiency}% efficiency)`
+                    `Enemy deployed ${squadsSuccessfullyPlaced}/${maxSquads} squads (${totalUnitsPlaced} total units)! Budget: ${totalSquadCost}/${budget}g (${efficiency}% efficiency)`
                 );
                 
                 if (onComplete && typeof onComplete === 'function') {
@@ -434,19 +730,20 @@ class PlacementSystem {
             const unitType = unitsToPlace[placedCount];
             const gridPos = this.findValidEnemyGridPosition(unitType);
             
-            if (gridPos) {
+            if (gridPos && squadsSuccessfullyPlaced < maxSquads) {
                 const placementId = this.placeSquad(gridPos, unitType, 'enemy');
                 if (placementId) {
                     const squadData = this.squadManager.getSquadData(unitType);
                     const squadSize = this.squadManager.getSquadSize(squadData);
                     totalSquadCost += unitType.value;
                     totalUnitsPlaced += squadSize;
+                    squadsSuccessfullyPlaced++;
                 }
             }
             
             placedCount++;
             
-            if (placedCount < unitsToPlace.length) {
+            if (placedCount < unitsToPlace.length && squadsSuccessfullyPlaced < maxSquads) {
                 setTimeout(placeNextSquad, this.config.unitPlacementDelay);
             } else {
                 placeNextSquad();
@@ -457,12 +754,41 @@ class PlacementSystem {
     }
     
     findValidEnemyGridPosition(unitType) {
+        if (!this.squadManager) {
+            console.warn('SquadManager not available, falling back to basic positioning');
+            return this.findValidEnemyGridPositionFallback(unitType);
+        }
+        
         const squadData = this.squadManager.getSquadData(unitType);
         const bounds = this.gridSystem.enemyBounds;
         
+        // Use SquadManager's validation
         if (!this.squadManager.canFitInZone(squadData, bounds)) {
             return null;
         }
+        
+        // Get occupied cells from grid system
+        const occupiedCells = new Set();
+        if (this.gridSystem.state) {
+            this.gridSystem.state.forEach((value, key) => {
+                occupiedCells.add(key);
+            });
+        }
+        
+        // Use SquadManager to find all valid positions
+        const validPositions = this.squadManager.findValidPositions(squadData, bounds, occupiedCells);
+        
+        if (validPositions.length === 0) {
+            return null;
+        }
+        
+        // Return random valid position
+        return validPositions[Math.floor(Math.random() * validPositions.length)];
+    }
+    
+    findValidEnemyGridPositionFallback(unitType) {
+        const squadData = this.squadManager?.getSquadData(unitType) || { placementGridWidth: 1, placementGridHeight: 1 };
+        const bounds = this.gridSystem.enemyBounds;
         
         const possiblePositions = [];
         for (let x = bounds.minX; x <= bounds.maxX; x++) {
@@ -471,13 +797,14 @@ class PlacementSystem {
             }
         }
         
+        // Shuffle for randomness
         for (let i = possiblePositions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [possiblePositions[i], possiblePositions[j]] = [possiblePositions[j], possiblePositions[i]];
         }
         
         for (const gridPos of possiblePositions) {
-            const cells = this.squadManager.getSquadCells(gridPos, squadData);
+            const cells = this.squadManager?.getSquadCells(gridPos, squadData) || [gridPos];
             if (this.gridSystem.isValidPlacement(cells, 'enemy')) {
                 return gridPos;
             }
@@ -515,7 +842,10 @@ class PlacementSystem {
                     );
                     unit.entityId = entityId;
                     
-                    this.createRespawnEffect(unit.position, team);
+                    // Limit respawn effects for performance
+                    if (Math.random() < 0.3) { // Only 30% of units get effects
+                        this.createRespawnEffect(unit.position, team);
+                    }
                 });
             } else {
                 const entityId = this.unitCreator.create(
@@ -541,33 +871,37 @@ class PlacementSystem {
             position.y + 15,
             position.z,
             effectType,
-            { count: 8, speedMultiplier: 0.6 }
+            { count: 4, speedMultiplier: 0.6 } // Reduced particle count
         );
     }
     
     resetAllPlacements() {
+        // Batch cleanup effects to avoid lag
         if (this.game.effectsSystem) {
-            [...this.playerPlacements, ...this.enemyPlacements].forEach(placement => {
-                if (placement.isSquad) {
-                    placement.squadUnits.forEach(unit => {
-                        this.game.effectsSystem.createParticleEffect(
-                            unit.position.x,
-                            unit.position.y + 5,
-                            unit.position.z,
-                            'explosion',
-                            { count: 6, speedMultiplier: 0.5 }
-                        );
-                    });
+            const allPlacements = [...this.playerPlacements, ...this.enemyPlacements];
+            const maxEffects = Math.min(allPlacements.length, 10); // Limit total effects
+            
+            for (let i = 0; i < maxEffects; i++) {
+                const placement = allPlacements[i];
+                if (placement.isSquad && placement.squadUnits.length > 0) {
+                    const unit = placement.squadUnits[0]; // Only effect first unit
+                    this.game.effectsSystem.createParticleEffect(
+                        unit.position.x,
+                        unit.position.y + 5,
+                        unit.position.z,
+                        'explosion',
+                        { count: 3, speedMultiplier: 0.5 }
+                    );
                 } else {
                     this.game.effectsSystem.createParticleEffect(
                         placement.x,
                         placement.y + 5,
                         placement.z,
                         'explosion',
-                        { count: 6, speedMultiplier: 0.5 }
+                        { count: 3, speedMultiplier: 0.5 }
                     );
                 }
-            });
+            }
         }
         
         this.playerPlacements = [];
@@ -575,6 +909,12 @@ class PlacementSystem {
         this.clearUndoStack();
         this.enemyStrategy.reset();
         this.gridSystem.clear();
+        
+        // Clear caches
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.groundMeshCache = null;
+        this.groundMeshCache = this.findGroundMesh(); // Recache ground mesh
         
         if (this.placementPreview) {
             this.placementPreview.clear();
@@ -588,39 +928,50 @@ class PlacementSystem {
         
         if (this.playerPlacements.length > 0) {
             const totalUnits = this.getTotalUnitCount(this.playerPlacements);
-            this.game.battleLogSystem?.add(`Your army: ${totalUnits} units ready for battle!`);
-        } else {
-            this.game.battleLogSystem?.add('Place your first units to build your army!');
-        }
-    }
-    
-    getWorldPositionFromMouse(event) {
-        if (!this.game.scene || !this.game.camera) return null;
-        
-        const rect = this.canvas.getBoundingClientRect();
-        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        
-        this.raycaster.setFromCamera(this.mouse, this.game.camera);
-        const ground = this.getGroundMesh();
-        if (!ground) return null;
-        
-        const intersects = this.raycaster.intersectObject(ground, false);
-        return intersects.length > 0 ? intersects[0].point : null;
-    }
-    
-    getGroundMesh() {
-        if (this.game.worldSystem?.ground) {
-            return this.game.worldSystem.ground;
-        }
-        
-        for (let child of this.game.scene.children) {
-            if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
-                return child;
+            const maxSquads = this.game.phaseSystem.config.maxSquadsPerRound;
+            
+            // Use SquadManager to get detailed army composition
+            if (this.squadManager) {
+                const unitCounts = this.getDetailedUnitCounts(this.playerPlacements);
+                const armyDescription = Object.entries(unitCounts)
+                    .map(([type, info]) => `${info.squads}x ${type} (${info.totalUnits} units)`)
+                    .join(', ');
+                
+                this.game.battleLogSystem?.add(`Your army: ${armyDescription} ready for battle! (${maxSquads} new squads max)`);
+            } else {
+                this.game.battleLogSystem?.add(`Your army: ${totalUnits} units ready for battle! (${maxSquads} new squads max)`);
             }
+        } else {
+            const maxSquads = this.game.phaseSystem.config.maxSquadsPerRound;
+            this.game.battleLogSystem?.add(`Place your first units to build your army! (${maxSquads} squads max)`);
         }
-        return null;
     }
+    
+    getDetailedUnitCounts(placements) {
+        const counts = {};
+        
+        placements.forEach(placement => {
+            const unitType = placement.unitType;
+            const squadInfo = this.squadManager ? this.squadManager.getSquadInfo(unitType) : null;
+            const typeName = squadInfo?.unitName || unitType.title || unitType.id;
+            
+            if (!counts[typeName]) {
+                counts[typeName] = {
+                    squads: 0,
+                    totalUnits: 0,
+                    totalCost: 0
+                };
+            }
+            
+            counts[typeName].squads++;
+            counts[typeName].totalUnits += squadInfo?.squadSize || 1;
+            counts[typeName].totalCost += squadInfo?.cost || unitType.value || 0;
+        });
+        
+        return counts;
+    }
+    
+    // REMOVED: getWorldPositionFromMouse - using optimized version above
     
     calculateEnemyTotalGold(round) {
         let totalGold = 0;
@@ -674,6 +1025,8 @@ class PlacementSystem {
             lastAction: this.undoStack.length > 0 ? this.undoStack[this.undoStack.length - 1] : null
         };
     }
+    
+    // OPTIMIZED: Use cached validation when possible
     isValidPlayerPlacement(worldPos) {
         if (!worldPos) return false;
         
@@ -683,12 +1036,36 @@ class PlacementSystem {
         const selectedUnit = this.game.state.selectedUnitType;
         if (!selectedUnit) return false;
         
-        const squadData = this.squadManager.getSquadData(selectedUnit);
-        const cells = this.squadManager.getSquadCells(gridPos, squadData);
+        // Use SquadManager for comprehensive validation
+        if (this.squadManager) {
+            const squadData = this.squadManager.getSquadData(selectedUnit);
+            const validation = this.squadManager.validateSquadConfig(squadData);
+            
+            if (!validation.valid) {
+                return false;
+            }
+            
+            const cells = this.squadManager.getSquadCells(gridPos, squadData);
+            return this.gridSystem.isValidPlacement(cells, 'player');
+        }
         
-        return this.gridSystem.isValidPlacement(cells, 'player');
+        // Fallback without SquadManager
+        return this.gridSystem.isValidPlacement([gridPos], 'player');
     }
+    
+    // OPTIMIZED: Cleanup with performance considerations
     dispose() {
+        // Clear caches first
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.groundMeshCache = null;
+        
+        // Cancel any pending animations
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
         if (this.placementPreview) {
             this.placementPreview.dispose();
         }
