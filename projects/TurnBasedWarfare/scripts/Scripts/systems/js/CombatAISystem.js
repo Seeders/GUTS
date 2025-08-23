@@ -19,6 +19,17 @@ class CombatAISystem {
         this.STATE_CHANGE_COOLDOWN = 0.1;
 
         this.DAMAGE_TIMING_RATIO = 0.5;
+        
+        // REMOVED: All range limitations for enemy detection
+        // Units can now see and target enemies anywhere on the map
+        
+        // Debug logging
+        this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
+        
+        // Cache all enemies for better performance
+        this.allEnemiesCache = new Map(); // teamId -> [enemy entities]
+        this.cacheUpdateFrame = 0;
+        this.CACHE_UPDATE_INTERVAL = 10; // Update cache every N frames
     }
 
     update(deltaTime) {
@@ -30,6 +41,16 @@ class CombatAISystem {
             this.componentTypes.TEAM,
             this.componentTypes.AI_STATE
         );
+
+        // Update enemy cache periodically for better performance
+        if (this.game.frameCounter % this.CACHE_UPDATE_INTERVAL === 0) {
+            this.updateEnemyCache(combatUnits);
+        }
+
+        if (this.DEBUG_ENEMY_DETECTION && this.game.frameCounter % 60 === 0) {
+            console.log(`Combat update: ${combatUnits.length} combat units found`);
+            this.logEnemyCacheStatus();
+        }
 
         combatUnits.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
@@ -53,32 +74,45 @@ class CombatAISystem {
             const aiBehavior = aiState.aiBehavior;
             const now = Date.now() / 1000;
 
-            const enemies = combatUnits.filter(otherId => {
-                const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
-                const otherHealth = this.game.getComponent(otherId, this.componentTypes.HEALTH);
-                const otherDeathState = this.game.getComponent(otherId, this.componentTypes.DEATH_STATE);
-                if (otherId === entityId || !otherTeam || otherTeam.team === team.team) return false;
-                if (!otherHealth || otherHealth.current <= 0) return false;
-                if (otherDeathState && otherDeathState.isDying) return false;
-                return true;
-            });
+            // CHANGED: Get ALL enemies on the map - no range restrictions!
+            const enemies = this.getAllEnemies(entityId, team);
 
+            if (this.DEBUG_ENEMY_DETECTION && this.game.frameCounter % 60 === 0) {
+                console.log(`Unit ${entityId} (team ${team.team}) found ${enemies.length} enemies:`, {
+                    position: {x: Math.round(pos.x), z: Math.round(pos.z)},
+                    currentTarget: aiBehavior.currentTarget,
+                    state: aiState.state,
+                    enemyIds: enemies
+                });
+            }
+
+            // Validate current target
             if (aiBehavior.currentTarget) {
                 const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
                 const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
                     aiBehavior.currentTarget = null;
                     aiBehavior.targetPosition = null;
+                    if (this.DEBUG_ENEMY_DETECTION) {
+                        console.log(`Unit ${entityId} lost target (dead/dying)`);
+                    }
                 }
             }
 
+            // If no enemies exist anywhere on map, go idle
             if (enemies.length === 0) {
-                this.changeAIState(aiState, 'idle', now);
-                aiBehavior.currentTarget = null;
-                aiBehavior.targetPosition = null;
+                if (aiState.state !== 'idle') {
+                    this.changeAIState(aiState, 'idle', now);
+                    aiBehavior.currentTarget = null;
+                    aiBehavior.targetPosition = null;
+                    if (this.DEBUG_ENEMY_DETECTION) {
+                        console.log(`Unit ${entityId} going idle - no enemies found`);
+                    }
+                }
                 return;
             }
 
+            // Update target position if we have a current target
             if (aiBehavior.currentTarget) {
                 const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
                 if (targetPos) {
@@ -96,6 +130,92 @@ class CombatAISystem {
             }
 
             this.handleCombat(entityId, pos, combat, aiState, collision, now);
+        });
+    }
+
+    // NEW: Cache all enemies by team for better performance
+    updateEnemyCache(combatUnits) {
+        this.allEnemiesCache.clear();
+        
+        // Group units by team
+        const unitsByTeam = new Map();
+        
+        combatUnits.forEach(entityId => {
+            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+            const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
+            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            
+            // Only include living units with position
+            if (!team || !health || !pos) return;
+            if (health.current <= 0) return;
+            if (deathState && deathState.isDying) return;
+            
+            if (!unitsByTeam.has(team.team)) {
+                unitsByTeam.set(team.team, []);
+            }
+            unitsByTeam.get(team.team).push(entityId);
+        });
+        
+        // For each team, store all enemies (units from other teams)
+        unitsByTeam.forEach((units, teamId) => {
+            const enemies = [];
+            unitsByTeam.forEach((otherUnits, otherTeamId) => {
+                if (teamId !== otherTeamId) {
+                    enemies.push(...otherUnits);
+                }
+            });
+            this.allEnemiesCache.set(teamId, enemies);
+        });
+        
+        this.cacheUpdateFrame = this.game.frameCounter;
+    }
+
+    // NEW: Get all enemies for a unit's team - NO RANGE RESTRICTIONS
+    getAllEnemies(entityId, team) {
+        // Use cache if available
+        if (this.allEnemiesCache.has(team.team)) {
+            return this.allEnemiesCache.get(team.team).filter(enemyId => {
+                // Double-check enemy is still valid
+                const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+                const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                
+                return enemyHealth && 
+                       enemyHealth.current > 0 && 
+                       (!enemyDeathState || !enemyDeathState.isDying) &&
+                       enemyPos;
+            });
+        }
+        
+        // Fallback: scan all units (shouldn't happen with cache)
+        const allUnits = this.game.getEntitiesWith(
+            this.componentTypes.POSITION,
+            this.componentTypes.TEAM,
+            this.componentTypes.HEALTH
+        );
+        
+        return allUnits.filter(otherId => {
+            if (otherId === entityId) return false;
+            
+            const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
+            const otherHealth = this.game.getComponent(otherId, this.componentTypes.HEALTH);
+            const otherDeathState = this.game.getComponent(otherId, this.componentTypes.DEATH_STATE);
+            const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
+            
+            if (!otherTeam || otherTeam.team === team.team) return false;
+            if (!otherHealth || otherHealth.current <= 0) return false;
+            if (otherDeathState && otherDeathState.isDying) return false;
+            if (!otherPos) return false;
+            
+            return true;
+        });
+    }
+
+    logEnemyCacheStatus() {
+        console.log('Enemy cache status:');
+        this.allEnemiesCache.forEach((enemies, teamId) => {
+            console.log(`  Team ${teamId}: ${enemies.length} enemies`);
         });
     }
 
@@ -117,11 +237,17 @@ class CombatAISystem {
 
     makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now) {
         const aiBehavior = aiState.aiBehavior;
-        let targetEnemy = this.findBestTarget(pos, enemies, aiBehavior, now);
+        
+        // CHANGED: Always try to find the best target from ALL enemies
+        let targetEnemy = this.findBestTarget(entityId, pos, enemies, aiBehavior, now);
         
         if (!targetEnemy) {
             aiBehavior.currentTarget = null;
             aiBehavior.targetPosition = null;
+            this.changeAIState(aiState, 'idle', now);
+            if (this.DEBUG_ENEMY_DETECTION) {
+                console.log(`Unit ${entityId} no valid target found from ${enemies.length} enemies`);
+            }
             return;
         }
         
@@ -135,6 +261,17 @@ class CombatAISystem {
         
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
+        
+        // Set the target
+        if (aiBehavior.currentTarget !== targetEnemy) {
+            if (this.DEBUG_ENEMY_DETECTION) {
+                const distance = Math.sqrt(
+                    Math.pow(enemyPos.x - pos.x, 2) + 
+                    Math.pow(enemyPos.z - pos.z, 2)
+                );
+                console.log(`Unit ${entityId} targeting ${targetEnemy} at distance ${Math.round(distance)}`);
+            }
+        }
         
         aiBehavior.currentTarget = targetEnemy;
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
@@ -157,41 +294,59 @@ class CombatAISystem {
                 this.changeAIState(aiState, 'attacking', now);
             }
         } else {
+            // Always chase if not in attack range
             this.changeAIState(aiState, 'chasing', now);
         }
     }
 
-    findBestTarget(pos, enemies, aiBehavior, now) {
+    // CHANGED: Enhanced target selection with global awareness
+    findBestTarget(entityId, pos, enemies, aiBehavior, now) {
         let bestTarget = null;
-        let bestScore = -1;
+        let bestScore = -Infinity;
         
-        // If unit is currently attacking, stick with current target unless it's dead/invalid
-        if (aiBehavior.currentTarget) {
+        // If unit is currently attacking, stick with current target unless switching would be much better
+        if (aiBehavior.currentTarget && enemies.includes(aiBehavior.currentTarget)) {
             const currentTargetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
             const currentTargetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+            const currentTargetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
             
-            // Only switch if current target is dead/dying or not in enemy list anymore
-            const isCurrentTargetValid = enemies.includes(aiBehavior.currentTarget) && 
-                                       currentTargetHealth && 
+            const isCurrentTargetValid = currentTargetHealth && 
                                        currentTargetHealth.current > 0 && 
-                                       (!currentTargetDeathState || !currentTargetDeathState.isDying);
+                                       (!currentTargetDeathState || !currentTargetDeathState.isDying) &&
+                                       currentTargetPos;
             
             if (isCurrentTargetValid) {
-                return aiBehavior.currentTarget; // Keep attacking current target
+                // Calculate current target score
+                const currentDistance = Math.sqrt(
+                    Math.pow(currentTargetPos.x - pos.x, 2) + 
+                    Math.pow(currentTargetPos.z - pos.z, 2)
+                );
+                const currentHealthRatio = currentTargetHealth.current / (currentTargetHealth.max || currentTargetHealth.current);
+                const currentScore = this.calculateTargetScore(currentDistance, currentHealthRatio, true);
+                
+                // Only switch if we find a significantly better target
+                bestScore = currentScore * 1.2; // 20% bonus for current target (sticky targeting)
+                bestTarget = aiBehavior.currentTarget;
             }
         }
         
-        // Find new target only if we don't have a valid current target
+        // Evaluate all enemies to find the best target
         enemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
             const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
+            
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
             if (enemyDeathState && enemyDeathState.isDying) return;
-            const dx = enemyPos.x - pos.x;
-            const dz = enemyPos.z - pos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-            let score = 1000 - distance;
+            
+            const distance = Math.sqrt(
+                Math.pow(enemyPos.x - pos.x, 2) + 
+                Math.pow(enemyPos.z - pos.z, 2)
+            );
+            const healthRatio = enemyHealth.current / (enemyHealth.max || enemyHealth.current);
+            const isCurrentTarget = (enemyId === aiBehavior.currentTarget);
+            
+            const score = this.calculateTargetScore(distance, healthRatio, isCurrentTarget);
             
             if (score > bestScore) {
                 bestScore = score;
@@ -199,8 +354,31 @@ class CombatAISystem {
             }
         });
         
-        if (bestTarget !== aiBehavior.currentTarget) aiBehavior.targetLockTime = now;
+        if (bestTarget !== aiBehavior.currentTarget) {
+            aiBehavior.targetLockTime = now;
+        }
+        
         return bestTarget;
+    }
+
+    // NEW: Sophisticated target scoring system
+    calculateTargetScore(distance, healthRatio, isCurrentTarget) {
+        let score = 0;
+        
+        // Distance factor - closer is better, but not overwhelmingly so
+        // Use logarithmic scaling so very far enemies are still viable
+        const maxDistance = 20000; // Assume max battlefield size
+        const distanceFactor = Math.max(0, (maxDistance - distance) / maxDistance);
+        score += distanceFactor * 100;    
+
+        
+        // Current target bonus for stability
+        if (isCurrentTarget) {
+            score += 50000;
+        }
+        
+        
+        return score;
     }
 
     handleCombat(entityId, pos, combat, aiState, collision, now) {
@@ -262,6 +440,8 @@ class CombatAISystem {
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
     }
 
+    // ... [All remaining methods stay the same as in the previous version] ...
+    
     initiateAttack(attackerId, targetId, combat, now) {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);

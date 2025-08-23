@@ -2,12 +2,12 @@
   "title": "Acolyte (1) [IS]",
   "size": 25,
   "value": 35,
-  "hp": 100,
+  "hp": 80,
   "speed": 45,
-  "damage": 12,
-  "attackSpeed": 0.8,
-  "element": "physical",
-  "armor": 4,
+  "damage": 9,
+  "attackSpeed": 0.9,
+  "element": "divine",
+  "armor": 3,
   "render": {
     "animations": {
       "idle": [
@@ -161,8 +161,8 @@
     "2_is_crusader",
     "2_is_oathBreaker"
   ],
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 3,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 3
 }

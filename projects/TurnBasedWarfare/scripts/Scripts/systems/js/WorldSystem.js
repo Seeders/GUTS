@@ -146,7 +146,7 @@ class WorldSystem {
         this.tileMap = this.level.tileMap;
 
         // Calculate world dimensions
-        this.terrainSize = 768;
+        this.terrainSize = this.tileMap.size * collections.configs.game.gridSize;
         this.extensionSize = this.world.extensionSize || 0;
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);

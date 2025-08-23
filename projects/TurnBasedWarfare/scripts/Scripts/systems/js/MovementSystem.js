@@ -12,7 +12,7 @@ class MovementSystem {
         this.AI_SPEED_MULTIPLIER = 0.1;
         this.DEFAULT_AI_SPEED = 50;
         this.POSITION_UPDATE_MULTIPLIER = 1;
-        this.DEFAULT_TERRAIN_SIZE = 768;
+        this.DEFAULT_TERRAIN_SIZE = 768 * 2;
         
         // Physics configuration
         this.GRAVITY = 200;

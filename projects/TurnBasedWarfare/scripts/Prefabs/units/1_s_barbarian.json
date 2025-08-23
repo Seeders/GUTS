@@ -2,12 +2,12 @@
   "title": "Barbarian (1) [S]",
   "size": 25,
   "value": 35,
-  "hp": 100,
+  "hp": 60,
   "speed": 40,
-  "damage": 10,
+  "damage": 8,
   "attackSpeed": 1,
   "element": "physical",
-  "armor": 6,
+  "armor": 5,
   "render": {
     "animations": {
       "idle": [
@@ -161,8 +161,8 @@
     "2_s_gladiator",
     "2_s_captain"
   ],
-  "squadWidth": 1,
-  "squadHeight": 2,
-  "placementGridWidth": 1,
-  "placementGridHeight": 2
+  "squadWidth": 2,
+  "squadHeight": 4,
+  "placementGridWidth": 2,
+  "placementGridHeight": 4
 }

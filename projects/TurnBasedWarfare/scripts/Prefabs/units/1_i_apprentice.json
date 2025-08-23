@@ -2,13 +2,13 @@
   "title": "Apprentice (1) [I]",
   "size": 25,
   "value": 35,
-  "hp": 100,
-  "speed": 50,
-  "damage": 10,
-  "attackSpeed": 1,
+  "hp": 130,
+  "speed": 55,
+  "damage": 15,
+  "attackSpeed": 1.1,
   "range": 150,
   "element": "fire",
-  "armor": 0,
+  "armor": 1,
   "render": {
     "animations": {
       "idle": [
@@ -166,8 +166,8 @@
     "2_i_enchanter",
     "2_i_necromancer"
   ],
-  "squadWidth": 2,
-  "squadHeight": 2,
-  "placementGridWidth": 2,
-  "placementGridHeight": 2
+  "squadWidth": 1,
+  "squadHeight": 3,
+  "placementGridWidth": 1,
+  "placementGridHeight": 3
 }

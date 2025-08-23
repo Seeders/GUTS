@@ -2,17 +2,17 @@
   "title": "Rogue (1) [DI]",
   "size": 25,
   "value": 35,
-  "hp": 100,
+  "hp": 450,
   "speed": 60,
-  "damage": 9,
-  "attackSpeed": 1.1,
+  "damage": 40,
+  "attackSpeed": 1.2,
   "range": 100,
   "projectile": "arrow",
-  "element": "physical",
+  "element": "poison",
   "armor": 0,
-  "fireResistance": 0.05,
-  "coldResistance": 0.05,
-  "lightningResistance": 0.05,
+  "fireResistance": 0.25,
+  "coldResistance": 0.25,
+  "lightningResistance": 0.25,
   "render": {
     "animations": {
       "idle": [
@@ -169,8 +169,8 @@
     "2_di_shadowAssassin",
     "2_di_trickster"
   ],
-  "squadWidth": 2,
-  "squadHeight": 4,
-  "placementGridWidth": 2,
-  "placementGridHeight": 4
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }

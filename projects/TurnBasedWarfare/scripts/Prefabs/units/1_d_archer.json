@@ -2,17 +2,17 @@
   "title": "Archer (1) [D]",
   "size": 25,
   "value": 35,
-  "hp": 100,
-  "speed": 50,
-  "damage": 8,
-  "attackSpeed": 1.2,
-  "range": 200,
+  "hp": 140,
+  "speed": 55,
+  "damage": 16,
+  "attackSpeed": 1.1,
+  "range": 190,
   "projectile": "arrow",
   "element": "physical",
-  "fireResistance": 0.1,
-  "coldResistance": 0.1,
-  "lightningResistance": 0.1,
-  "armor": 0,
+  "fireResistance": 0.5,
+  "coldResistance": 0.5,
+  "lightningResistance": 0.5,
+  "armor": 1,
   "render": {
     "animations": {
       "idle": [
@@ -182,8 +182,8 @@
     "2_d_elvenArcher",
     "2_d_ranger"
   ],
-  "squadWidth": 2,
+  "squadWidth": 1,
   "squadHeight": 3,
-  "placementGridWidth": 2,
+  "placementGridWidth": 1,
   "placementGridHeight": 3
 }
