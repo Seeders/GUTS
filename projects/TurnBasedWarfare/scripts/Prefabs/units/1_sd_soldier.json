@@ -4,10 +4,10 @@
   "value": 35,
   "hp": 75,
   "speed": 45,
-  "damage": 10,
+  "damage": 12,
   "attackSpeed": 0.8,
   "element": "physical",
-  "armor": 2,
+  "armor": 4,
   "fireResistance": 0.25,
   "coldResistance": 0.25,
   "lightningResistance": 0.25,
@@ -187,5 +187,8 @@
   "squadWidth": 2,
   "squadHeight": 3,
   "placementGridWidth": 2,
-  "placementGridHeight": 3
+  "placementGridHeight": 3,
+  "abilities": [
+    "BattleCryAbility"
+  ]
 }

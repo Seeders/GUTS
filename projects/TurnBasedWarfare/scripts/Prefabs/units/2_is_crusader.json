@@ -1,5 +1,5 @@
 {
-  "title": "Crusader (2) [IS]",
+  "title": "Templar (2) [IS]",
   "size": 25,
   "value": 110,
   "hp": 200,
@@ -162,5 +162,8 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "abilities": [
+    "CurseAbility"
+  ]
 }

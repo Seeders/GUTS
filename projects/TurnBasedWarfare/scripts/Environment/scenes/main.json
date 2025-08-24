@@ -117,6 +117,9 @@
           "type": "SquadExperienceSystem"
         },
         {
+          "type": "LifetimeSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],
@@ -163,15 +166,7 @@
       "classes": [
         {
           "collection": "abilities",
-          "type": "BaseAbility"
-        },
-        {
-          "collection": "abilities",
-          "type": "RaiseDeadAbility"
-        },
-        {
-          "collection": "abilities",
-          "type": "ChainLightningAbility"
+          "baseClass": "BaseAbility"
         }
       ]
     }

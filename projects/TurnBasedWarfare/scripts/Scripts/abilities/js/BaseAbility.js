@@ -48,7 +48,7 @@ class BaseAbility {
             const mergedOptions = {
                 ...effectDef.options,
                 ...customOptions,
-                heightOffset: customOptions.heightOffset || 10
+                heightOffset: customOptions.heightOffset || 50
             };
             
             this.game.effectsSystem.createParticleEffect(

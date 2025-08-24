@@ -348,7 +348,6 @@ class PlacementSystem {
         if (team === 'enemy' && !this.game.phaseSystem.canEnemyPlaceSquad()) {
             return null;
         }
-        debugger;
         const squadData = this.squadManager.getSquadData(unitType);
         const cells = this.squadManager.getSquadCells(gridPos, squadData);
         

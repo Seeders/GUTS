@@ -6,7 +6,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
             description: 'Convert corpses into skeleton warriors',
             cooldown: 1.0,
             range: 150,
-            manaCost: 40,
+            manaCost: 0,
             targetType: 'auto',
             animation: 'cast',
             priority: 1,
@@ -16,7 +16,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
         });
         
         this.maxCorpsesToRaise = 4;
-        this.raisedUnitType = 'skeleton';
+        this.raisedUnitType = '0_skeleton';
     }
     
     canExecute(casterEntity) {

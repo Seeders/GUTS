@@ -9,22 +9,23 @@ class SquadExperienceSystem {
         
         // Experience configuration
         this.config = {
-            experiencePerLevel: 10,     // Base experience needed per level
+            experiencePerLevel: 15,     // Base experience needed per level
             maxLevel: 10,                // Maximum squad level
             levelUpCostRatio: 0.5,       // Cost to level up = squad value * ratio
             experienceMultiplier: 1.0,   // Global experience gain multiplier
-            minExperiencePerHit: 0.1     // Minimum experience per damage instance
+            baselineXPPerSecond: 1,   // tune: ~1–3% of a cheap unit’s value per 10s
+            baselineXPCombatOnly: true  // only tick during combat phase
         };
         
         // Level bonuses (applied to all units in squad)
         this.levelBonuses = {
-            1: { hp: 1.1, damage: 1.1, name: "Veteran" },
-            2: { hp: 1.2, damage: 1.2, name: "Elite" },
-            3: { hp: 1.3, damage: 1.3, name: "Champion" },
-            4: { hp: 1.4, damage: 1.4, name: "Master" },
-            5: { hp: 1.5, damage: 1.5, name: "Legendary" },
-            6: { hp: 1.6, damage: 1.6, name: "Mythic" },
-            7: { hp: 1.7, damage: 1.7, name: "Ascended" },
+            1: { hp: 1.0, damage: 1.0, name: "Rookie" },            
+            2: { hp: 1.15, damage: 1.15, name: "Veteran" },
+            3: { hp: 1.3, damage: 1.3, name: "Ascended" },
+            4: { hp: 1.4, damage: 1.4, name: "Elite" },
+            5: { hp: 1.5, damage: 1.5, name: "Champion" },
+            6: { hp: 1.6, damage: 1.6, name: "Legendary" },
+            7: { hp: 1.7, damage: 1.7, name: "Mythic" },
             8: { hp: 1.8, damage: 1.8, name: "Divine" },
             9: { hp: 1.9, damage: 1.9, name: "Transcendent" },
             10: { hp: 2.0, damage: 2.0, name: "Godlike" }
@@ -33,6 +34,7 @@ class SquadExperienceSystem {
         // UI update throttling
         this.lastUIUpdate = 0;
         this.UI_UPDATE_INTERVAL = 500; // Update UI every 500ms
+        
     }
     
     /**
@@ -43,11 +45,26 @@ class SquadExperienceSystem {
      * @param {string} team - Team identifier
      */
     initializeSquad(placementId, unitType, unitIds, team) {
+        // Check if we already have experience data for this placement ID
+        const existingData = this.squadExperience.get(placementId);
+        if (existingData) {
+       
+            // Update unit IDs and size for respawned squad
+            existingData.unitIds = [...unitIds];
+            existingData.squadSize = unitIds.length;
+            
+            // Apply level bonuses to new units
+            this.applyLevelBonuses(placementId);
+            
+            return existingData;
+        }
+        
+        // Create new squad data
         const squadValue = this.calculateSquadValue(unitType);
         
         const experienceData = {
             placementId: placementId,
-            level: 0,
+            level: 1,
             experience: 0,
             experienceToNextLevel: this.calculateExperienceNeeded(0),
             squadValue: squadValue,
@@ -69,53 +86,9 @@ class SquadExperienceSystem {
         
         // Apply initial bonuses if any
         this.applyLevelBonuses(placementId);
-        return experienceData;
+        
+         return experienceData;
     }
-    
-    /**
-     * Award experience to a squad when one of their units deals damage
-     * @param {number} attackerEntityId - Entity that dealt damage
-     * @param {number} targetEntityId - Entity that received damage
-     * @param {number} damageDealt - Amount of damage dealt
-     */
-    awardExperienceForDamage(attackerEntityId, targetEntityId, damageDealt) {
-        // Find the attacker's squad
-        const attackerSquadData = this.findSquadByUnitId(attackerEntityId);
-        if (!attackerSquadData) {
-            return; // Unit not part of a tracked squad
-        }
-        
-        // Find the target's squad to get their total health and value
-        const targetSquadData = this.findSquadByUnitId(targetEntityId);
-        if (!targetSquadData) {
-            return; // Target not part of a tracked squad
-        }
-        
-        // Don't award experience for friendly fire
-        if (attackerSquadData.team === targetSquadData.team) {
-            return;
-        }
-        
-        // Calculate experience based on damage percentage of target squad
-        const targetSquadTotalHealth = this.calculateSquadTotalHealth(targetSquadData.placementId);
-        const damagePercentage = Math.min(1.0, damageDealt / targetSquadTotalHealth);
-        const experiencePerUnit = (targetSquadData.squadValue * damagePercentage) / attackerSquadData.squadSize;
-        const totalExperience = Math.max(this.config.minExperiencePerHit, experiencePerUnit * this.config.experienceMultiplier);
-        
-        // Award experience to the attacking squad
-        this.addExperience(attackerSquadData.placementId, totalExperience);
-        
-        // Log experience gain
-        if (this.game.battleLogSystem && totalExperience > 1) {
-            const levelBonusName = this.getLevelBonusName(attackerSquadData.level);
-            const squadName = this.getSquadDisplayName(attackerSquadData.placementId);
-            this.game.battleLogSystem.add(
-                `${levelBonusName} ${squadName} gains ${totalExperience.toFixed(1)} XP!`,
-                'log-victory'
-            );
-        }
-    }
-    
     /**
      * Add experience to a squad
      * @param {string} placementId - Squad placement ID
@@ -184,7 +157,7 @@ class SquadExperienceSystem {
         }
         
         // Check if this is a specialization level (level 3+) and if specialization is available
-        const isSpecializationLevel = (squadData.level + 1) >= 3;
+        const isSpecializationLevel = squadData.level >= 3;
         const currentUnitType = this.getCurrentUnitType(placementId);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         
@@ -240,6 +213,7 @@ class SquadExperienceSystem {
                 }
             });
         }
+        
         return true;
     }
     
@@ -437,7 +411,7 @@ class SquadExperienceSystem {
      */
     applyLevelBonuses(placementId) {
         const squadData = this.squadExperience.get(placementId);
-        if (!squadData || squadData.level <= 0) return;
+        if (!squadData || squadData.level <= 1) return;
         
         const bonuses = this.levelBonuses[squadData.level];
         if (!bonuses) return;
@@ -496,7 +470,7 @@ class SquadExperienceSystem {
      * @returns {number} Squad value (just the unit's base cost)
      */
     calculateSquadValue(unitType) {
-        return unitType.value;
+        return unitType.value || 0;
     }
     
     /**
@@ -613,10 +587,14 @@ class SquadExperienceSystem {
     
     /**
      * Clean up squad data when units are destroyed
+     * MODIFIED: Only remove on explicit request, not automatic cleanup
      * @param {string} placementId - Squad placement ID
      */
     removeSquad(placementId) {
-        const removed = this.squadExperience.delete(placementId);
+        const squadData = this.squadExperience.get(placementId);
+        if (squadData) {
+           this.squadExperience.delete(placementId);
+        }
     }
     
     /**
@@ -628,14 +606,37 @@ class SquadExperienceSystem {
         if (Math.random() < 0.01) { // 1% chance per frame
             this.cleanupInvalidSquads();
         }
+        this.tickBaselineXP(deltaTime);
     }
-    
+    tickBaselineXP(deltaTime) {
+        // Optional: restrict to combat only
+        if (this.config.baselineXPCombatOnly && this.game?.state?.phase !== 'battle') return;
+
+        for (const [placementId, squadData] of this.squadExperience.entries()) {
+            // Respect caps: no gain if at max or waiting for manual level-up
+            if (squadData.level >= this.config.maxLevel || squadData.canLevelUp) continue;
+
+            if (this.squadHasAliveUnits(squadData)) {
+            const xp = this.config.baselineXPPerSecond * deltaTime * this.config.experienceMultiplier;
+            if (xp > 0) this.addExperience(placementId, xp);
+            }
+        }
+    }
+    squadHasAliveUnits(squadData) {
+        if (!squadData || !squadData.unitIds?.length) return false;
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        for (const id of squadData.unitIds) {
+            const h = this.game.getComponent(id, componentTypes.HEALTH);
+            if (h && h.current > 0) return true;
+        }
+        return false;
+    }
     /**
      * Clean up experience data for squads with dead/missing units
+     * MODIFIED: Never remove experience data, just update unit lists
      */
     cleanupInvalidSquads() {
         const componentTypes = this.game.componentManager.getComponentTypes();
-        const toRemove = [];
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
             // Check if any units in the squad still exist and are alive
@@ -644,18 +645,17 @@ class SquadExperienceSystem {
                 return health && health.current > 0;
             });
             
-            if (validUnits.length === 0) {
-                toRemove.push(placementId);
-            } else if (validUnits.length < squadData.unitIds.length) {
-                // Update the unit list to remove dead units
+            if (validUnits.length < squadData.unitIds.length) {
+                // Update the unit list to remove dead units, but KEEP experience data
+             
                 squadData.unitIds = validUnits;
                 squadData.squadSize = validUnits.length;
+                
+                // DO NOT remove the squad data - experience is permanent!
             }
         }
         
-        toRemove.forEach(placementId => {
-            this.removeSquad(placementId);
-        });
+        // No longer remove squads entirely - experience persists even if all units die
     }
     
     /**
@@ -698,7 +698,7 @@ class SquadExperienceSystem {
             squadData.experienceToNextLevel = saved.experienceToNextLevel;
             squadData.canLevelUp = saved.canLevelUp;
             
-            
+          
             // Apply level bonuses if squad has levels
             if (squadData.level > 0) {
                 this.applyLevelBonuses(placementId);

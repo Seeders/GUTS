@@ -27,7 +27,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 25,
+                    count: 5,
                     color: 0x00aaff,
                     colorRange: { start: 0x00aaff, end: 0x88aaff },
                     scaleMultiplier: 1.2,
@@ -37,7 +37,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             lightning: {
                 type: 'magic',
                 options: {
-                    count: 15,
+                    count: 5,
                     color: 0x00ccff,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 3.0
@@ -55,7 +55,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             impact: {
                 type: 'damage',
                 options: {
-                    count: 12,
+                    count: 4,
                     color: 0x00aaff,
                     scaleMultiplier: 1.0
                 }

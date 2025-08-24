@@ -67,11 +67,6 @@ class DamageSystem {
         // Apply immediate damage
         targetHealth.current -= damageResult.finalDamage;
 
-        // Award experience for damage dealt (before death check)
-        if (this.game.squadExperienceSystem && damageResult.finalDamage > 0) {
-            this.game.squadExperienceSystem.awardExperienceForDamage(sourceId, targetId, damageResult.finalDamage);
-        }
-
         // Visual feedback
         this.applyVisualFeedback(targetId, damageResult, element);
 

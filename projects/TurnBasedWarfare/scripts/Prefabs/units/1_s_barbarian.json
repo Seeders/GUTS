@@ -4,10 +4,10 @@
   "value": 35,
   "hp": 60,
   "speed": 40,
-  "damage": 8,
+  "damage": 10,
   "attackSpeed": 1,
   "element": "physical",
-  "armor": 5,
+  "armor": 8,
   "render": {
     "animations": {
       "idle": [
@@ -164,5 +164,8 @@
   "squadWidth": 2,
   "squadHeight": 4,
   "placementGridWidth": 2,
-  "placementGridHeight": 4
+  "placementGridHeight": 4,
+  "abilities": [
+    "BattleCryAbility"
+  ]
 }

@@ -21,7 +21,6 @@ class AbilitySystem {
             if (AbilityClass) {
                 const abilityInstance = new AbilityClass(this.game, this.game.getCollections().abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
-                console.log(`equiped '${abilityId}' to ${entityId}`);
             } else {
                 console.warn(`Ability '${abilityId}' not found`);
             }

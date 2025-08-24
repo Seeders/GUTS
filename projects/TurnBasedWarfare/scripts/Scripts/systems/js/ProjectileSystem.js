@@ -60,12 +60,12 @@ class ProjectileSystem {
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
             damage: sourceCombat.damage,
             speed: projectileData.speed,
-            range: sourceCombat.range * 1.5, // Allow projectiles to travel a bit beyond weapon range
+            range: sourceCombat.range * 1.5,
             target: targetId,
             source: sourceId,
             startTime: now,
             startX: sourcePos.x,
-            startY: spawnHeight, // Use spawn height, not source height
+            startY: spawnHeight,
             startZ: sourcePos.z,
             isBallistic: projectileData.ballistic || false,
             targetX: targetPos.x,
@@ -74,7 +74,7 @@ class ProjectileSystem {
             launchAngle: trajectory.launchAngle,
             timeToTarget: trajectory.timeToTarget,
             weaponRange: trajectory.weaponRange || sourceCombat.range,
-            element: projectileElement  // Add element to projectile
+            element: projectileElement
         });
 
         const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
@@ -93,20 +93,45 @@ class ProjectileSystem {
         this.game.addComponent(projectileId, this.componentTypes.RENDERABLE, 
             components.Renderable("projectiles", projectileData.id));
         
-        // Lifetime component (longer for ballistic projectiles since they may take longer to reach target)
-        this.game.addComponent(projectileId, this.componentTypes.LIFETIME, components.Lifetime(this.PROJECTILE_LIFETIME, now));
+        // =============================================
+        // UPDATED: Use LifetimeSystem instead of direct component
+        // =============================================
+        if (this.game.lifetimeSystem) {
+            this.game.lifetimeSystem.addLifetime(projectileId, this.PROJECTILE_LIFETIME, {
+                fadeOutDuration: 1.0, // Fade out in last second
+                destructionEffect: {
+                    type: 'magic',
+                    count: 5,
+                    color: this.getElementalEffectColor(projectileElement),
+                    scaleMultiplier: 0.8
+                },
+                onDestroy: (entityId) => {
+                    // Custom cleanup for projectiles
+                    this.cleanupProjectileData(entityId);
+                }
+            });
+        } else {
+            // Fallback to old method if LifetimeSystem not available
+            this.game.addComponent(projectileId, this.componentTypes.LIFETIME, 
+                components.Lifetime(this.PROJECTILE_LIFETIME, now));
+        }
         
-        // Homing component if specified (reduced effectiveness for ballistic projectiles)
+        // Homing component if specified
         if (projectileData.homing && projectileData.homingStrength > 0) {
             const homingStrength = projectileData.ballistic ? 
-                projectileData.homingStrength * 0.3 : projectileData.homingStrength; // Reduced homing for ballistic
+                projectileData.homingStrength * 0.3 : projectileData.homingStrength;
             this.game.addComponent(projectileId, this.componentTypes.HOMING_TARGET, 
                 components.HomingTarget(targetId, homingStrength, { x: targetPos.x, y: targetPos.y, z: targetPos.z }));
         }
         
         return projectileId;
     }
-
+    
+    cleanupProjectileData(projectileId) {
+        // Clean up trail data
+        this.projectileTrails.delete(projectileId);
+        
+     }
     // =============================================
     // ELEMENT DETERMINATION
     // =============================================
@@ -288,15 +313,8 @@ class ProjectileSystem {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);
             const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
-            const lifetime = this.game.getComponent(projectileId, this.componentTypes.LIFETIME);
             const homing = this.game.getComponent(projectileId, this.componentTypes.HOMING_TARGET);
-            
-            // Check lifetime expiration
-            if (lifetime && (now - lifetime.startTime) > lifetime.duration) {
-                this.destroyProjectile(projectileId);
-                return;
-            }
-            
+                        
             // Update homing behavior
             if (homing && homing.targetId && projectile.isBallistic) {
                 this.updateBallisticHoming(projectileId, pos, vel, projectile, homing, deltaTime, now);
@@ -663,13 +681,16 @@ class ProjectileSystem {
             trail.shift();
         }
     }
-    
-    destroyProjectile(projectileId) {
-        // Clean up trail data
-        this.projectileTrails.delete(projectileId);
         
-        // Destroy the entity
-        this.game.destroyEntity(projectileId);
+    destroyProjectile(projectileId) {
+        // Use LifetimeSystem for destruction if available
+        if (this.game.lifetimeSystem) {
+            this.game.lifetimeSystem.destroyEntityImmediately(projectileId, true);
+        } else {
+            // Fallback cleanup
+            this.cleanupProjectileData(projectileId);
+            this.game.destroyEntity(projectileId);
+        }
     }
     
     getUnitRadius(unitType) {

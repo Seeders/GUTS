@@ -62,7 +62,6 @@ class PhaseSystem {
         
         if (state.round === 1) {
             state.playerGold = this.config.startingGold;
-            console.log('set player gold 3', state.playerGold);
             return;
         } 
         const roundGold = this.calculateRoundGold(state.round);
@@ -479,7 +478,7 @@ class PhaseSystem {
             this.checkForRoundEnd();
         }
     }
-        
+
     clearMatchData() {
         if (this.phaseTimer) {
             clearInterval(this.phaseTimer);
@@ -489,7 +488,6 @@ class PhaseSystem {
         const state = this.game.state;
         state.round = 1;
         state.playerGold = this.getStartingGold();
-        console.log('set player gold 4', state.playerGold);
         state.phase = 'placement';
         state.phaseTimeLeft = this.config.placementPhaseTime;
         state.playerReady = false;
@@ -553,7 +551,7 @@ class PhaseSystem {
             location.reload();
         }
     }
-        
+
     clearBattlefield() {
         // IMPORTANT: Save player squad experience BEFORE clearing
         if (this.game.squadExperienceSystem) {
@@ -599,12 +597,16 @@ class PhaseSystem {
         if (this.game.projectileSystem?.clearAllProjectiles) {
             this.game.projectileSystem.clearAllProjectiles();
         }
-    
-    // Clear current round experience data (saved data is preserved)
-    if (this.game.squadExperienceSystem) {
-        this.game.squadExperienceSystem.squadExperience.clear();
+        
+        // MODIFIED: Do NOT clear experience data - it should persist
+        // The squadExperience Map should keep all earned experience permanently
+        if (this.game.squadExperienceSystem) {
+      
+            // Only clean up unit references (remove dead unit IDs) but keep experience
+            this.game.squadExperienceSystem.cleanupInvalidSquads();
+        }
     }
-}
+
     
     update(deltaTime) {
         const now = Date.now() / 1000;

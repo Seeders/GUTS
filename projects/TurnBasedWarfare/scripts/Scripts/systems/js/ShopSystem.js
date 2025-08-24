@@ -142,7 +142,7 @@ class ShopSystem {
         const currentLevelText = squad.level > 0 ? ` ${currentLevelName} Lv.${squad.level}` : '';
         
         // Check if this squad can specialize at the next level
-        const isSpecializationLevel = (squad.level + 1) >= 3;
+        const isSpecializationLevel = (squad.level) >= 3;
         const currentUnitType = this.game.squadExperienceSystem.getCurrentUnitType(squad.placementId);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         const canSpecialize = isSpecializationLevel && hasSpecializations;

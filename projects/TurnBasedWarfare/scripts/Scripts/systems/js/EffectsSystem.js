@@ -827,6 +827,23 @@ class EffectsSystem {
         // Particle system handles its own updates
     }
     
+    destroyLineEffect(effectData) {
+        if (!effectData) return;
+        try {
+            // stop tracking so any animator stops touching it
+            const idx = this.activeLineEffects?.indexOf?.(effectData) ?? -1;
+            if (idx >= 0) this.activeLineEffects.splice(idx, 1);
+
+            if (this.game?.scene && effectData.line) {
+            this.game.scene.remove(effectData.line);
+            }
+            effectData.geometry?.dispose?.();
+            effectData.material?.dispose?.();
+        } catch (e) {
+            console.warn('destroyLineEffect error:', e);
+        }
+    }
+
     destroy() {
         this.clearAllEffects();
         

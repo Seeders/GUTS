@@ -4,10 +4,10 @@
   "value": 35,
   "hp": 80,
   "speed": 45,
-  "damage": 9,
+  "damage": 10,
   "attackSpeed": 0.9,
   "element": "divine",
-  "armor": 3,
+  "armor": 6,
   "render": {
     "animations": {
       "idle": [
@@ -164,5 +164,8 @@
   "squadWidth": 2,
   "squadHeight": 3,
   "placementGridWidth": 2,
-  "placementGridHeight": 3
+  "placementGridHeight": 3,
+  "abilities": [
+    "HealAbility"
+  ]
 }

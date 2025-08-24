@@ -4,13 +4,13 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'meteor_strike',
             name: 'Meteor Strike',
             description: 'Devastating strike on the densest enemy formation',
-            cooldown: 45.0,
+            cooldown: 10.0,
             range: 300,
             manaCost: 100,
             targetType: 'auto',
             animation: 'cast',
             priority: 10,
-            castTime: 4.0,
+            castTime: 1.0,
             autoTrigger: 'enemy_cluster_large',
             ...params
         });

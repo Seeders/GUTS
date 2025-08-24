@@ -161,9 +161,9 @@ class ECSGame {
         }
     }
     
-    addClass(classConfig, classRef) {
-        this.classes[classConfig.type] = { 'config': classConfig, classRef: classRef };
-        APP.appClasses[classConfig.type] = classRef;
+    addClass(classId, classRef, params) {
+        this.classes[classId] = { classRef: classRef, defaultParams: params };
+        APP.appClasses[classId] = classRef;
     }
         
 }

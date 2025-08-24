@@ -12,7 +12,7 @@
   "coldResistance": 0,
   "lightningResistance": 0.2,
   "abilities": [
-    "ChainLightningAbility"
+    "MindControlAbility"
   ],
   "render": {
     "animations": {

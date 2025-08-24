@@ -1,76 +1,126 @@
-
 class HealAbility extends engine.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'heal',
             name: 'Heal',
-            description: 'Restore health to target ally',
-            cooldown: 6.0,
-            range: 80,
-            manaCost: 20,
+            description: 'Restores health to the most injured ally',
+            cooldown: 4.0,
+            range: 200,
+            manaCost: 40,
             targetType: 'ally',
             animation: 'cast',
-            priority: 7,
+            priority: 8,
             castTime: 1.0,
+            autoTrigger: 'injured_ally',
             ...params
         });
         
-        this.healPercent = 0.5; // Heal 50% of max health
+        this.healAmount = 80;
+        this.element = 'divine';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 2,
+                    color: 0x88ff88,
+                    colorRange: { start: 0x88ff88, end: 0xffffaa },
+                    scaleMultiplier: 1.0,
+                    speedMultiplier: 1.0
+                }
+            },
+            heal: {
+                type: 'heal',
+                options: {
+                    count: 5,
+                    color: 0x88ffaa,
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
     }
     
     canExecute(casterEntity) {
-        const injuredAllies = this.getValidTargets(casterEntity, this.game, 'ally').filter(allyId => {
-            const health = this.game.getComponent(allyId, this.game.componentManager.getComponentTypes().HEALTH);
-            return health && health.current < health.max;
+        const allies = this.getAlliesInRange(casterEntity);
+        return allies.some(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            return health && health.current < health.max; // Ally needs healing
         });
-        
-        return injuredAllies.length > 0;
     }
     
-    execute(casterEntity, targetData = null) {
-        // Find the most injured ally
-        const injuredAllies = this.getValidTargets(casterEntity, this.game, 'ally')
-            .map(allyId => {
-                const health = this.game.getComponent(allyId, this.game.componentManager.getComponentTypes().HEALTH);
-                const pos = this.game.getComponent(allyId, this.game.componentManager.getComponentTypes().POSITION);
-                
-                if (!health || !pos || health.current >= health.max) return null;
-                
-                return {
-                    entityId: allyId,
-                    health,
-                    pos,
-                    healthPercent: health.current / health.max
-                };
-            })
-            .filter(ally => ally !== null)
-            .sort((a, b) => a.healthPercent - b.healthPercent);
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
         
-        if (injuredAllies.length === 0) return;
+        const allies = this.getAlliesInRange(casterEntity);
+        const target = this.findMostInjuredAlly(allies);
         
-        const target = injuredAllies[0];
-        const healAmount = Math.floor(target.health.max * this.healPercent);
+        if (!target) return;
+        
+        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        if (!targetPos) return;
+        
+        // Cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        
+        // Heal target
+        setTimeout(() => {
+            this.performHeal(casterEntity, target, targetPos);
+        }, this.castTime * 1000);
+        
+        this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
+    }
+    
+    performHeal(casterEntity, targetId, targetPos) {
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        if (!targetHealth) return;
+        // Heal effect
+        this.createVisualEffect(targetPos, 'heal');
         
         // Apply healing
-        target.health.current = Math.min(target.health.max, target.health.current + healAmount);
+        const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
+        targetHealth.current += actualHeal;
         
-             // Log healing
-        this.logHealing(this.game, casterEntity, target.entityId, healAmount);
-    }
-   
-    
-    logHealing(casterId, targetId, healAmount) {
-        if (!this.game.battleLogSystem) return;
-        
-        const casterType = this.game.getComponent(casterId, this.game.componentManager.getComponentTypes().UNIT_TYPE);
-        const targetType = this.game.getComponent(targetId, this.game.componentManager.getComponentTypes().UNIT_TYPE);
-        const casterTeam = this.game.getComponent(casterId, this.game.componentManager.getComponentTypes().TEAM);
-        
-        if (casterType && targetType && casterTeam) {
-            this.game.battleLogSystem.add(
-                `${casterTeam.team} ${casterType.type} heals ${targetType.type} for ${healAmount} HP!`,
-                'log-heal'
+        // Show heal number
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.showDamageNumber(
+                targetPos.x, targetPos.y + 50, targetPos.z,
+                actualHeal, 'heal'
             );
         }
+        
+        // Log healing
+        if (this.game.battleLogSystem && actualHeal > 0) {
+            const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+            const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
+            
+            if (targetUnitType && targetTeam) {
+                this.game.battleLogSystem.add(
+                    `${targetTeam.team} ${targetUnitType.type} healed for ${actualHeal} health!`,
+                    'log-heal'
+                );
+            }
+        }
+    }
+    
+    findMostInjuredAlly(allies) {
+        let mostInjured = null;
+        let lowestHealthRatio = 1.0;
+        
+        allies.forEach(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            if (health && health.max > 0) {
+                const healthRatio = health.current / health.max;
+                if (healthRatio < lowestHealthRatio) {
+                    lowestHealthRatio = healthRatio;
+                    mostInjured = allyId;
+                }
+            }
+        });
+        
+        return mostInjured;
     }
 }

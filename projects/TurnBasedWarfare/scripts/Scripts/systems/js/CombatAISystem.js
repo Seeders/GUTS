@@ -47,11 +47,6 @@ class CombatAISystem {
             this.updateEnemyCache(combatUnits);
         }
 
-        if (this.DEBUG_ENEMY_DETECTION && this.game.frameCounter % 60 === 0) {
-            console.log(`Combat update: ${combatUnits.length} combat units found`);
-            this.logEnemyCacheStatus();
-        }
-
         combatUnits.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
@@ -77,15 +72,6 @@ class CombatAISystem {
             // CHANGED: Get ALL enemies on the map - no range restrictions!
             const enemies = this.getAllEnemies(entityId, team);
 
-            if (this.DEBUG_ENEMY_DETECTION && this.game.frameCounter % 60 === 0) {
-                console.log(`Unit ${entityId} (team ${team.team}) found ${enemies.length} enemies:`, {
-                    position: {x: Math.round(pos.x), z: Math.round(pos.z)},
-                    currentTarget: aiBehavior.currentTarget,
-                    state: aiState.state,
-                    enemyIds: enemies
-                });
-            }
-
             // Validate current target
             if (aiBehavior.currentTarget) {
                 const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
@@ -93,9 +79,6 @@ class CombatAISystem {
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
                     aiBehavior.currentTarget = null;
                     aiBehavior.targetPosition = null;
-                    if (this.DEBUG_ENEMY_DETECTION) {
-                        console.log(`Unit ${entityId} lost target (dead/dying)`);
-                    }
                 }
             }
 
@@ -105,9 +88,6 @@ class CombatAISystem {
                     this.changeAIState(aiState, 'idle', now);
                     aiBehavior.currentTarget = null;
                     aiBehavior.targetPosition = null;
-                    if (this.DEBUG_ENEMY_DETECTION) {
-                        console.log(`Unit ${entityId} going idle - no enemies found`);
-                    }
                 }
                 return;
             }
@@ -269,8 +249,7 @@ class CombatAISystem {
                     Math.pow(enemyPos.x - pos.x, 2) + 
                     Math.pow(enemyPos.z - pos.z, 2)
                 );
-                console.log(`Unit ${entityId} targeting ${targetEnemy} at distance ${Math.round(distance)}`);
-            }
+             }
         }
         
         aiBehavior.currentTarget = targetEnemy;
@@ -632,6 +611,9 @@ class CombatAISystem {
         
         if (this.game.animationSystem && this.game.animationSystem.playDeathAnimation) {
             this.game.animationSystem.playDeathAnimation(entityId);
+        }
+        if(this.game.abilitySystem){
+            this.game.abilitySystem.removeEntityAbilities(entityId);
         }
     }
     

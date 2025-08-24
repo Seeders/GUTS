@@ -237,20 +237,27 @@ class TeamHealthSystem {
         if (this.roundProcessed) return null;
         this.roundProcessed = true;
         
-        
-        // Calculate damage based on surviving units' value
-        const totalDamage = this.calculateSurvivingUnitsValue(survivingUnits);
+        // Calculate damage based on surviving squads' base values
+        const damageResult = this.calculateSquadBasedDamage(survivingUnits);
         const losingTeam = winningTeam === 'player' ? 'enemy' : 'player';
         
         // Apply damage to losing team
-        this.dealDamageToTeam(losingTeam, totalDamage);
+        this.dealDamageToTeam(losingTeam, damageResult.totalDamage);
         
-        // Log the round result
+        // Log the round result with squad details
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(
-                `Round ${this.game.state.round} won by ${winningTeam}! ${totalDamage} damage dealt!`, 
+                `Round ${this.game.state.round} won by ${winningTeam}! ${damageResult.survivingSquads} surviving squads deal ${damageResult.totalDamage} damage!`, 
                 'log-victory'
             );
+            
+            // Log individual squad contributions
+            damageResult.squadDetails.forEach(squad => {
+                this.game.battleLogSystem.add(
+                    `${squad.name}: ${squad.survivingUnits}/${squad.totalUnits} units alive → ${squad.damage} damage`,
+                    'log-victory'
+                );
+            });
         }
         
         // Return result object
@@ -258,7 +265,8 @@ class TeamHealthSystem {
             result: winningTeam === 'player' ? 'victory' : 'defeat',
             winningTeam: winningTeam,
             losingTeam: losingTeam,
-            damage: totalDamage,
+            damage: damageResult.totalDamage,
+            survivingSquads: damageResult.survivingSquads,
             gameOver: this.teamHealth[losingTeam] <= 0,
             remainingHealth: {
                 player: this.teamHealth.player,
@@ -271,7 +279,6 @@ class TeamHealthSystem {
     applyRoundDraw() {
         if (this.roundProcessed) return null;
         this.roundProcessed = true;
-        
         
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(
@@ -294,22 +301,171 @@ class TeamHealthSystem {
         };
     }
     
-    calculateSurvivingUnitsValue(units) {
-        let totalValue = 0;
+    /**
+     * Calculate damage based on squads, not individual units
+     * If ANY units from a squad survive, the entire squad's base value counts as damage
+     * @param {Array} survivingUnits - Array of surviving unit entity IDs
+     * @returns {Object} Damage calculation results
+     */
+    calculateSquadBasedDamage(survivingUnits) {
+        const squadMap = new Map(); // squadId -> {unitType, survivors, totalUnits}
+        let totalDamage = 0;
+        let survivingSquadCount = 0;
+        const squadDetails = [];
         
-        units.forEach(unitId => {
-            const unitType = this.game.getComponent(unitId, this.componentTypes.UNIT_TYPE);
-            if (unitType && unitType.value) {
-                totalValue += unitType.value;
+        // Group surviving units by their squad placement ID
+        survivingUnits.forEach(unitId => {
+            // Find which squad this unit belongs to
+            const squadInfo = this.findSquadForUnit(unitId);
+            if (squadInfo) {
+                const { placementId, unitType } = squadInfo;
+                
+                if (!squadMap.has(placementId)) {
+                    squadMap.set(placementId, {
+                        unitType: unitType,
+                        survivors: 0,
+                        totalUnits: this.getOriginalSquadSize(placementId),
+                        placementId: placementId
+                    });
+                }
+                
+                squadMap.get(placementId).survivors++;
             }
         });
         
-        return totalValue;
+        // Calculate damage for each squad that has survivors
+        squadMap.forEach((squadData, placementId) => {
+            if (squadData.survivors > 0) {
+                // Entire squad's base value counts as damage
+                const squadBaseDamage = squadData.unitType.value || 50;
+                totalDamage += squadBaseDamage;
+                survivingSquadCount++;
+                
+                squadDetails.push({
+                    name: squadData.unitType.title || squadData.unitType.id || 'Unknown Squad',
+                    damage: squadBaseDamage,
+                    survivingUnits: squadData.survivors,
+                    totalUnits: squadData.totalUnits,
+                    placementId: placementId
+                });
+                
+            }
+        });
+        
+        return {
+            totalDamage: totalDamage,
+            survivingSquads: survivingSquadCount,
+            squadDetails: squadDetails
+        };
+    }
+    
+    /**
+     * Find which squad a unit belongs to
+     * @param {number} unitId - Unit entity ID
+     * @returns {Object|null} Squad info or null
+     */
+    findSquadForUnit(unitId) {
+        // Check with experience system first (most reliable)
+        if (this.game.squadExperienceSystem) {
+            const squadData = this.game.squadExperienceSystem.findSquadByUnitId(unitId);
+            if (squadData) {
+                const unitType = this.getCurrentUnitTypeForSquad(squadData.placementId);
+                return {
+                    placementId: squadData.placementId,
+                    unitType: unitType || { value: squadData.squadValue, title: 'Unknown', id: 'unknown' }
+                };
+            }
+        }
+        
+        // Fallback: search placement system
+        if (this.game.placementSystem) {
+            const allPlacements = [
+                ...this.game.placementSystem.playerPlacements,
+                ...this.game.placementSystem.enemyPlacements
+            ];
+            
+            for (const placement of allPlacements) {
+                if (placement.squadUnits) {
+                    const unitMatch = placement.squadUnits.find(unit => unit.entityId === unitId);
+                    if (unitMatch) {
+                        return {
+                            placementId: placement.placementId,
+                            unitType: placement.unitType
+                        };
+                    }
+                } else if (placement.entityId === unitId) {
+                    return {
+                        placementId: placement.placementId,
+                        unitType: placement.unitType
+                    };
+                }
+            }
+        }
+        
+        // Last resort: use unit type component directly
+        const unitTypeComponent = this.game.getComponent(unitId, this.componentTypes.UNIT_TYPE);
+        if (unitTypeComponent) {
+            return {
+                placementId: `unknown_${unitId}`,
+                unitType: {
+                    value: unitTypeComponent.value || 50,
+                    title: unitTypeComponent.type || 'Unknown Unit',
+                    id: unitTypeComponent.id || 'unknown'
+                }
+            };
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get the current unit type for a squad (handles specializations)
+     * @param {string} placementId - Squad placement ID
+     * @returns {Object|null} Current unit type
+     */
+    getCurrentUnitTypeForSquad(placementId) {
+        if (this.game.squadExperienceSystem && this.game.squadExperienceSystem.getCurrentUnitType) {
+            return this.game.squadExperienceSystem.getCurrentUnitType(placementId);
+        }
+        
+        // Fallback to placement system
+        if (this.game.placementSystem) {
+            const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
+                             this.game.placementSystem.enemyPlacements.find(p => p.placementId === placementId);
+            return placement ? placement.unitType : null;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get the original size of a squad when it was placed
+     * @param {string} placementId - Squad placement ID
+     * @returns {number} Original squad size
+     */
+    getOriginalSquadSize(placementId) {
+        // Check experience system first
+        if (this.game.squadExperienceSystem) {
+            const squadData = this.game.squadExperienceSystem.squadExperience.get(placementId);
+            if (squadData) {
+                return squadData.totalUnitsInSquad || squadData.squadSize;
+            }
+        }
+        
+        // Fallback to placement system
+        if (this.game.placementSystem) {
+            const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
+                             this.game.placementSystem.enemyPlacements.find(p => p.placementId === placementId);
+            if (placement) {
+                return placement.squadUnits ? placement.squadUnits.length : 1;
+            }
+        }
+        
+        return 1; // Default fallback
     }
     
     dealDamageToTeam(team, damage) {
         this.teamHealth[team] = Math.max(0, this.teamHealth[team] - damage);
-        
         
         this.updateHealthDisplay();
         this.showDamageEffect(team, damage);
