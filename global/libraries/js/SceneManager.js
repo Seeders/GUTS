@@ -45,11 +45,24 @@ class SceneManager {
         const sceneEntities = this.currentSceneData.sceneData;
           sceneEntities.forEach(async (sceneEntity) => {   
 
-            sceneEntity.classes.forEach((classDef) => {
-                let params = {...classDef.parameters, canvas: this.game.canvas };
-                const ClassDef = this.game.moduleManager.getCompiledScript(classDef.type, classDef.collection);
-                this.game.addClass(classDef, ClassDef);
+            sceneEntity.classes.forEach((sceneClassDef) => {
+                const collectionName = sceneClassDef.collection;
+                const baseClassId = sceneClassDef.baseClass;
+                const classCollection = this.game.getCollections()[collectionName];
                 
+                if(baseClassId){
+                    const collectionClassDef = classCollection[baseClassId];
+                    let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
+                    const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
+                    this.game.addClass(baseClassId, BaseClassDef, params);
+                }
+                for(const collectionClassId in classCollection) {    
+                    if(baseClassId && collectionClassId == baseClassId) continue;                
+                    const collectionClassDef = classCollection[collectionClassId];
+                    let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
+                    const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
+                    this.game.addClass(collectionClassId, ClassDef, params);
+                }
             });         
             
             sceneEntity.managers.forEach((managerDef) => {
