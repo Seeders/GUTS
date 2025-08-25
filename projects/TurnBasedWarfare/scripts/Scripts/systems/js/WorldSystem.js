@@ -113,7 +113,6 @@ class WorldSystem {
         this.terrainCanvas.width = 700;
         this.terrainCanvas.height = 500;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
-        
     }
 
     loadWorldData() {
@@ -150,8 +149,6 @@ class WorldSystem {
         this.extensionSize = this.world.extensionSize || 0;
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);
-        
-       
     }
 
     setupWorld() {
@@ -334,7 +331,6 @@ class WorldSystem {
             return;
         }
 
-
         this.groundCanvas = document.createElement('canvas');
         this.groundCanvas.width = this.extendedSize;
         this.groundCanvas.height = this.extendedSize;
@@ -373,7 +369,7 @@ class WorldSystem {
             map: this.groundTexture,
             side: THREE.DoubleSide,
             metalness: 0.0,
-            roughness: 0.8
+            roughness: 1
         });
 
         this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -386,8 +382,6 @@ class WorldSystem {
         this.scene.add(this.ground);
 
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
-
-   
     }
 
     createExtensionPlanes() {
@@ -505,7 +499,6 @@ class WorldSystem {
             return;
         }
 
-
         // Draw terrain data onto ground canvas
         this.groundCtx.drawImage(
             this.game.terrainTileMapper.canvas, 
@@ -529,7 +522,6 @@ class WorldSystem {
 
         // Render environment objects
         this.renderEnvironmentObjects();
-
     }
 
     renderEnvironmentObjects() {
@@ -566,7 +558,6 @@ class WorldSystem {
                     const relativeMatrix = new THREE.Matrix4();
                     relativeMatrix.copy(parentWorldMatrix);
                     relativeMatrix.multiply(localMatrix);
-
                     meshData.push({
                         mesh: node,
                         relativeMatrix: relativeMatrix
@@ -583,8 +574,9 @@ class WorldSystem {
                     objects.length
                 );
                 instancedMesh.userData.relativeMatrix = relativeMatrix;
-                instancedMesh.castShadow = true;
+                instancedMesh.castShadow = true;   
                 instancedMesh.receiveShadow = true;
+        
                 return instancedMesh;
             });
 
@@ -605,7 +597,7 @@ class WorldSystem {
 
                 dummy.position.set(worldX, height, worldZ);
                 dummy.rotation.y = Math.random() * Math.PI * 2;
-                const scale = 0.8 + Math.random() * 0.4;
+                const scale = (0.8 + Math.random() * 0.4) * ( type == 'tree' || type == 'rock' ? 1 : 50);
                 dummy.scale.set(scale, scale, scale);
                 dummy.updateMatrix();
         
@@ -678,72 +670,84 @@ class WorldSystem {
     }
 
     updateHeightMap() {
-        if (!this.heightMapSettings.enabled || !this.game.terrainTileMapper.canvas) return;
+        if (!this.heightMapSettings.enabled || !this.game.terrainTileMapper.heightMapCanvas) {
+            console.warn('Height map not available from TileMapper');
+            return;
+        }
 
         try {
-            const terrainCanvas = this.game.terrainTileMapper.canvas;
-            const terrainCtx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
-            terrainCanvas.width = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
-            terrainCanvas.height = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
-
-            terrainCtx.imageSmoothingEnabled = false;
-            const terrainData = this.game.terrainTileMapper.terrainData;//terrainCtx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
-            const terrainTypeColors = this.createTerrainTypeColorMap();
+            const heightMapCanvas = this.game.terrainTileMapper.heightMapCanvas;
+            const heightMapCtx = heightMapCanvas.getContext('2d', { willReadFrequently: true });
+            
+            // Get the height map image data directly from TileMapper
+            const heightMapImageData = heightMapCtx.getImageData(0, 0, heightMapCanvas.width, heightMapCanvas.height);
+            const heightData = heightMapImageData.data;
 
             this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
 
-            const extensionTerrainType = this.tileMap.extensionTerrainType;
+            // Set extension area to extension terrain height
+            const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
             const extensionHeight = extensionTerrainType * this.heightStep;
 
+            // Initialize all points with extension height
             for (let z = 0; z < this.extendedSize; z++) {
                 for (let x = 0; x < this.extendedSize; x++) {
                     this.heightMapData[z * this.extendedSize + x] = extensionHeight;
                 }
             }
 
+            // Process the actual terrain area using height map data
+            const scaleX = heightMapCanvas.width / this.terrainSize;
+            const scaleZ = heightMapCanvas.height / this.terrainSize;
+
             for (let z = 0; z < this.terrainSize; z++) {
                 for (let x = 0; x < this.terrainSize; x++) {
-                    const pixelIndex = (z * terrainCanvas.width + x) * 4;
-                    const r = terrainData[pixelIndex];
-                    const g = terrainData[pixelIndex + 1];
-                    const b = terrainData[pixelIndex + 2];
-            
-                    const typeIndex = this.findClosestTerrainType(r,g,b,terrainTypeColors) ?? extensionHeight;
-                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
+                    // Sample from height map
+                    const heightMapX = Math.floor(x * scaleX);
+                    const heightMapZ = Math.floor(z * scaleZ);
+                    
+                    const pixelIndex = (heightMapZ * heightMapCanvas.width + heightMapX) * 4;
+                    const heightValue = heightData[pixelIndex]; // Red channel (grayscale)
+                    
+                    // Convert grayscale value back to height index
+                    const heightIndex = Math.floor(heightValue / 32); // Inverse of scaling in TileMapper
+                    let height = heightIndex * this.heightStep;
 
-                    // Check neighboring pixels for lower terrain types
-                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;
+                    // Check neighboring pixels for cliff smoothing if needed
+                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor || 1;
                     const neighbors = [
-                        { x: x-neighborCheckDist, z: z },   // left
-                        { x: x+neighborCheckDist, z: z },   // right
-                        { x: x, z: z-neighborCheckDist },   // top
-                        { x: x, z: z+neighborCheckDist + 1 },   // bottom
-                        { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left
-                        { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right
-                        { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left
-                        { x: x+neighborCheckDist, z: z+neighborCheckDist }  // bottom-right
+                        { x: x - neighborCheckDist, z: z },   // left
+                        { x: x + neighborCheckDist, z: z },   // right
+                        { x: x, z: z - neighborCheckDist },   // top
+                        { x: x, z: z + neighborCheckDist },   // bottom
+                        { x: x - neighborCheckDist, z: z - neighborCheckDist }, // top-left
+                        { x: x + neighborCheckDist, z: z - neighborCheckDist }, // top-right
+                        { x: x - neighborCheckDist, z: z + neighborCheckDist }, // bottom-left
+                        { x: x + neighborCheckDist, z: z + neighborCheckDist }  // bottom-right
                     ];
-                    let lowestNeighborType = Infinity;
+
+                    let lowestNeighborHeight = height;
                     for (const neighbor of neighbors) {
                         if (neighbor.x >= 0 && neighbor.x < this.terrainSize && 
                             neighbor.z >= 0 && neighbor.z < this.terrainSize) {
                             
-                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;
-                            const nr = terrainData[neighborIndex];
-                            const ng = terrainData[neighborIndex + 1];
-                            const nb = terrainData[neighborIndex + 2];
-                            const neighborKey = `${nr},${ng},${nb}`;
+                            const neighborHMapX = Math.floor(neighbor.x * scaleX);
+                            const neighborHMapZ = Math.floor(neighbor.z * scaleZ);
+                            const neighborIndex = (neighborHMapZ * heightMapCanvas.width + neighborHMapX) * 4;
+                            const neighborHeightValue = heightData[neighborIndex];
+                            const neighborHeightIndex = Math.floor(neighborHeightValue / 32);
+                            const neighborHeight = neighborHeightIndex * this.heightStep;
                             
-                            const neighborTypeIndex = terrainTypeColors[neighborKey];
-                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex && neighborTypeIndex < lowestNeighborType) {
-                                // If neighbor is lower terrain, use its height
-                                lowestNeighborType = neighborTypeIndex;
+                            if (neighborHeight < lowestNeighborHeight) {
+                                lowestNeighborHeight = neighborHeight;
                             }
                         }
                     }
-                    if (lowestNeighborType < typeIndex) {
-                        height = lowestNeighborType * this.heightStep;
-                    }
+                    
+                    // Use the lowest neighbor height for cliff smoothing
+                    height = lowestNeighborHeight;
+
+                    // Set height in extended coordinate system
                     const extX = x + this.extensionSize;
                     const extZ = z + this.extensionSize;
                     this.heightMapData[extZ * this.extendedSize + extX] = height;
@@ -753,10 +757,9 @@ class WorldSystem {
             this.applyHeightMapToGeometry();
 
         } catch (e) {
-            console.warn('Failed to update height map:', e);
+            console.warn('Failed to update height map from TileMapper:', e);
         }
     }
-
     findClosestTerrainType(r, g, b, terrainTypeColors) {
         let minDistance = Infinity;
         let bestTypeIndex = null;

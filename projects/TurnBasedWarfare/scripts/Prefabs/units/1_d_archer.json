@@ -179,8 +179,8 @@
   "buyable": true,
   "specUnits": [
     "2_d_beastMaster",
-    "2_d_elvenArcher",
-    "2_d_ranger"
+    "2_d_ranger",
+    "2_d_trapper"
   ],
   "squadWidth": 1,
   "squadHeight": 3,

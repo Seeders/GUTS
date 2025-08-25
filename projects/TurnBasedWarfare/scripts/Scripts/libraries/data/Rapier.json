@@ -1,7 +1,7 @@
 {
+  "title": "Socket.IO",
   "fileName": "Rapier",
-  "href": "https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.18.0/+esm",
-  "requireName": "RAPIER",
-  "importName": "RAPIER",
+  "href": "https://cdn.socket.io/4.7.2/socket.io.min.js",
+  "importName": "socketio",
   "isModule": true
 }

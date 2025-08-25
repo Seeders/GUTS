@@ -24,6 +24,112 @@
         </div>
     </div>
 
+    <div id="multiplayerLobby" class="screen">
+        <div class="multiplayer-lobby-container">
+            <div class="lobby-header">
+                <h1 class="lobby-title">🎮 MULTIPLAYER LOBBY</h1>
+                <div class="room-info">
+                    <div class="room-id-display">
+                        <span class="room-label">Room ID:</span>
+                        <span id="lobbyRoomId" class="room-id">------</span>
+                        <button id="copyRoomIdBtn" class="btn-small">📋 Copy</button>
+                    </div>
+                    <div class="connection-status">
+                        <span id="connectionStatus" class="status-indicator">🔴 Connecting...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-content">
+                <div class="players-section">
+                    <h2>👥 Players (<span id="playerCount">1</span>/2)</h2>
+                    <div class="players-grid">
+                        <div class="player-card player-1">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-info">
+                                <div class="player-name" id="player1Name">You</div>
+                                <div class="player-stats">
+                                    <div class="stat">
+                                        <span class="stat-label">Ready:</span>
+                                        <span id="player1Ready" class="ready-status">❌ Not Ready</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Connection:</span>
+                                        <span id="player1Connection" class="connection-good">🟢 Connected</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="player-controls">
+                                <button id="player1ReadyBtn" class="btn ready-btn">✅ READY UP</button>
+                            </div>
+                        </div>
+
+                        <div class="player-card player-2">
+                            <div class="player-avatar">❓</div>
+                            <div class="player-info">
+                                <div class="player-name" id="player2Name">Waiting for opponent...</div>
+                                <div class="player-stats">
+                                    <div class="stat">
+                                        <span class="stat-label">Ready:</span>
+                                        <span id="player2Ready" class="ready-status">⏳ Waiting</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Connection:</span>
+                                        <span id="player2Connection" class="connection-waiting">⚪ Waiting</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="player-controls">
+                                <div class="waiting-indicator">⏳ Waiting for player...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lobby-status">
+                    <div class="status-message" id="lobbyStatusMessage">
+                        Waiting for another player to join...
+                    </div>
+                    <div class="game-progress" id="gameProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Starting game...</div>
+                    </div>
+                </div>
+
+                <div class="game-info">
+                    <h3>🎯 Game Setup</h3>
+                    <div class="game-settings">
+                        <div class="setting">
+                            <span class="setting-label">Mode:</span>
+                            <span class="setting-value" id="gameMode">1v1 Multiplayer</span>
+                        </div>
+                        <div class="setting">
+                            <span class="setting-label">Max Rounds:</span>
+                            <span class="setting-value" id="maxRounds">5</span>
+                        </div>
+                        <div class="setting">
+                            <span class="setting-label">Starting Gold:</span>
+                            <span class="setting-value" id="startingGold">100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <button id="leaveLobbyBtn" class="btn btn-secondary">🚪 LEAVE LOBBY</button>
+                    <button id="startGameBtn" class="btn btn-primary" disabled>🚀 START GAME</button>
+                </div>
+                <div class="lobby-tips">
+                    <p>💡 <strong>Tip:</strong> Both players must be ready before the game can start!</p>
+                    <p>🔗 Share the Room ID with your friend to invite them to this lobby.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
     <div id="loadingScreen" class="screen">
         <div class="loading-content">
@@ -71,6 +177,85 @@
         </div>
     </div>
 
+    <!-- Multiplayer Game Screen (Enhanced) -->
+    <div id="multiplayerGameScreen" class="screen">
+        <div id="multiplayerGameContainer">
+            <div id="multiplayerCanvasContainer">
+                <canvas id="multiplayerGameCanvas"></canvas>
+                
+                <!-- Opponent Info Overlay -->
+                <div class="opponent-overlay">
+                    <div class="opponent-info-card">
+                        <h4>🎯 Opponent</h4>
+                        <div class="opponent-details">
+                            <div class="opponent-name">
+                                <span class="label">Name:</span>
+                                <span id="opponentNameGame">-</span>
+                            </div>
+                            <div class="opponent-health">
+                                <span class="label">Health:</span>
+                                <span id="opponentHealthGame">100</span>/100
+                            </div>
+                            <div class="opponent-gold">
+                                <span class="label">Gold:</span>
+                                <span id="opponentGoldGame">-</span>
+                            </div>
+                            <div class="opponent-status">
+                                <span class="label">Status:</span>
+                                <span id="opponentStatusGame" class="status-deploying">🏗️ Deploying</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="multiplayerUIContainer">
+                <div class="multiplayer-player-panel">
+                    <h3 class="panel-title">🛡️ YOUR ARMY</h3>
+                    
+                    <div class="multiplayer-resources">
+                        <div class="resource-item">
+                            <span class="resource-label">Gold:</span>
+                            <span id="multiplayerPlayerGold" class="resource-value">100</span>g
+                        </div>
+                        <div class="resource-item">
+                            <span class="resource-label">Health:</span>
+                            <span id="multiplayerPlayerHealth" class="resource-value">100</span>/100
+                        </div>
+                    </div>
+                    
+                    <div class="multiplayer-unit-shop" id="multiplayerUnitShop">
+                        <!-- Unit cards populated by game -->
+                    </div>
+                    
+                    <button id="multiplayerReadyButton" class="btn">Deploy Army!</button>
+                    
+                    <div class="multiplayer-army-list" id="multiplayerPlayerArmy">
+                        <!-- Player army units -->
+                    </div>
+                </div>
+                
+                <div class="multiplayer-game-controls">
+                    <button id="multiplayerPauseBtn" class="btn btn-danger">⏸️ PAUSE</button>
+                    <button id="multiplayerExitBtn" class="btn btn-secondary">🚪 EXIT</button>
+                </div>
+            </div>
+            
+            <div class="multiplayer-phase-info">
+                <div class="phase-header">
+                    <div class="round-info">Round <span id="multiplayerRoundNumber">1</span></div>
+                    <div class="versus-info">
+                        <span class="player-indicator">You</span>
+                        <span class="vs">VS</span>
+                        <span class="opponent-indicator" id="opponentIndicator">Opponent</span>
+                    </div>
+                </div>
+                <div class="phase-title" id="multiplayerPhaseTitle">PLACEMENT PHASE</div>
+                <div class="phase-status" id="multiplayerPhaseStatus">Deploy your units and get ready!</div>
+                <div class="phase-timer" id="multiplayerPhaseTimer">∞</div>
+            </div>
+        </div>
+    </div>
     <!-- Victory Screen -->
     <div id="victoryScreen" class="screen">
         <div class="result-content">

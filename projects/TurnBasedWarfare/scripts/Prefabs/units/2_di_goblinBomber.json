@@ -2,13 +2,13 @@
   "title": "Goblin Bomber (2) [DI]",
   "size": 25,
   "value": 120,
-  "hp": 40,
+  "hp": 450,
   "speed": 60,
-  "damage": 70,
-  "attackSpeed": 0,
+  "damage": 40,
+  "attackSpeed": 1.2,
   "element": "fire",
   "armor": 1,
-  "fireResistance": 0.2,
+  "fireResistance": 0.75,
   "render": {
     "animations": {
       "idle": [
@@ -124,5 +124,10 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "abilities": [
+    "MeteorStrikeAbility"
+  ],
+  "range": 100,
+  "projectile": "fireball"
 }

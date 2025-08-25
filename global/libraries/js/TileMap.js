@@ -1,6 +1,3 @@
-
-  
-  
 class TileMap {
 
   constructor(app, config, { CanvasUtility }) {
@@ -19,6 +16,11 @@ class TileMap {
 		this.tileMap = [];
 		this.layerTextures = [];
 		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
+		
+		// Initialize height map canvas
+		this.heightMapCanvas = null;
+		this.heightMapCtx = null;
+		
 		this.TileAnalysis = class {
 			constructor() {
 			  this.heightIndex = 0;
@@ -89,13 +91,68 @@ class TileMap {
 		};
 	}
 
+	initializeHeightMapCanvas() {
+		// Create height map canvas with same dimensions as main canvas
+		this.heightMapCanvas = document.createElement('canvas');
+		this.heightMapCanvas.width = this.canvas.width;
+		this.heightMapCanvas.height = this.canvas.height;
+		this.heightMapCtx = this.heightMapCanvas.getContext('2d');
+		
+		// Set properties for better performance when reading pixel data
+		this.heightMapCanvas.setAttribute('willReadFrequently', true);
+		this.heightMapCtx = this.heightMapCanvas.getContext('2d', { willReadFrequently: true });
+		
+		// Initialize with black (height 0)
+		this.heightMapCtx.fillStyle = 'black';
+		this.heightMapCtx.fillRect(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
+	}
+
+	updateHeightMapForTile(x, y, heightIndex) {
+		if (!this.heightMapCtx) return;
+		
+		// Convert height index to grayscale value (0-255)
+		// Assuming we have up to 256 different height levels
+		const heightValue = Math.min(255, Math.max(0, heightIndex * 32)); // Scale as needed
+		const heightColor = `rgb(${heightValue}, ${heightValue}, ${heightValue})`;
+		
+		this.heightMapCtx.fillStyle = heightColor;
+		this.heightMapCtx.fillRect(x, y, this.tileSize, this.tileSize);
+	}
+
+	getHeightAtPixel(x, y) {
+		if (!this.heightMapCtx) return 0;
+		
+		// Clamp coordinates to canvas bounds
+		x = Math.max(0, Math.min(this.heightMapCanvas.width - 1, Math.floor(x)));
+		y = Math.max(0, Math.min(this.heightMapCanvas.height - 1, Math.floor(y)));
+		
+		const imageData = this.heightMapCtx.getImageData(x, y, 1, 1);
+		const heightValue = imageData.data[0]; // Red channel (same as green and blue in grayscale)
+		
+		// Convert back to height index
+		return Math.floor(heightValue / 32); // Inverse of the scaling used in updateHeightMapForTile
+	}
+
+	getHeightMapImageData() {
+		if (!this.heightMapCtx) return null;
+		return this.heightMapCtx.getImageData(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
+	}
+
     draw(map){
 		this.tileMap = map;
 		this.numColumns = this.tileMap.length;
+		
+		// Initialize height map canvas if not already done
+		if (!this.heightMapCanvas) {
+			this.initializeHeightMapCanvas();
+		}
+		
+		// Clear height map canvas
+		this.heightMapCtx.fillStyle = 'black';
+		this.heightMapCtx.fillRect(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
+		
 		// Load all textures
-
 		if(this.layerTextures.length == 0) {
-	
 			this.layerSpriteSheets.forEach((layerSprites, index) => {      
 				const moleculeData = this.buildBaseMolecules(layerSprites.sprites);
 				this.layerTextures[index] = moleculeData;
@@ -107,7 +164,6 @@ class TileMap {
         if(this.isometric){
           //  this.drawIsometric();
         }
-
     }
 
     drawIsometric() {
@@ -760,7 +816,7 @@ class TileMap {
 					
 				} 
 				if (_tileAnalysis.heightIndex < layerIndex) {
-					// Use base image data for higher layers
+					// Use transparent data for tiles below current layer
 					let numPixels = this.tileSize * this.tileSize;
 					const transparentData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)
 					
@@ -777,7 +833,7 @@ class TileMap {
 					imageData = new ImageData(new Uint8ClampedArray(4), 1, 1);
 					if( _tileAnalysis.heightIndex >= 0 ) {
 						let molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);						
-						imageData = this.layerTextures[_tileAnalysis.heightIndex][molecule];//this.getTransformedTexture(this.layerTextures[_tileAnalysis.heightIndex], _tileAnalysis, molecule);			
+						imageData = this.layerTextures[_tileAnalysis.heightIndex][molecule];
 						imageData = this.colorImageData(imageData, _tileAnalysis);
 						//imageData = this.addVariationImage(imageData, _tileAnalysis);
 						imageData = this.addCornerGraphics(imageData, _tileAnalysis);
@@ -788,6 +844,9 @@ class TileMap {
 						imageData = new ImageData(blackData, this.tileSize, this.tileSize);
 					}
 				}
+
+				// Update height map for this tile
+				this.updateHeightMapForTile(x, y, tileAnalysis.heightIndex);
 	
 				offscreenCtx.putImageData(imageData, x, y);
 			});
@@ -795,11 +854,10 @@ class TileMap {
 	
 		// Drawing each layer canvas onto the main canvas
 		Object.keys(layerCanvases).forEach(layerIndex => {
-			//if( layerIndex == 0 || layerIndex == 1 || layerIndex == 2) {
 			ctx.drawImage(layerCanvases[layerIndex], 0, 0);
-		//}
 		});
-		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
-          
+		
+		// Store terrain data for height mapping
+		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;          
 	}
-  }
+}

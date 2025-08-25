@@ -8,7 +8,9 @@
   "extensionSize": 768,
   "worldObjects": [
     "tree",
-    "rock"
+    "rock",
+    "ash",
+    "fir"
   ],
   "backgroundColor": "#b3e5fc"
 }

@@ -4,9 +4,9 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'meteor_strike',
             name: 'Meteor Strike',
             description: 'Devastating strike on the densest enemy formation',
-            cooldown: 10.0,
+            cooldown: 5.0,
             range: 300,
-            manaCost: 100,
+            manaCost: 0,
             targetType: 'auto',
             animation: 'cast',
             priority: 10,
@@ -19,13 +19,12 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         this.splashRadius = 120;
         this.delay = 3.0;
         this.element = 'fire';
-        this.minTargets = 4;
+        this.minTargets = 0;
     }
     
     canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        const clusterPos = this.findBestClusterPosition(enemies, this.minTargets);
-        return clusterPos !== null;
+        const enemies = this.getEnemiesInRange(casterEntity);        
+        return enemies.length > 0;
     }
     
     execute(casterEntity) {
@@ -52,10 +51,10 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         const componentTypes = this.game.componentManager.getComponentTypes();
         
         this.game.addComponent(warningId, componentTypes.POSITION, 
-            components.Position(position.x, position.y + 5, position.z));
+            components.Position(position.x, position.y + 85, position.z));
         
         this.game.addComponent(warningId, componentTypes.RENDERABLE, 
-            components.Renderable("effects", "meteor_warning"));
+            components.Renderable("visuals", "meteor_warning"));
         
         this.game.addComponent(warningId, componentTypes.LIFETIME, 
             components.Lifetime(this.delay, Date.now() / 1000));

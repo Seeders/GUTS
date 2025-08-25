@@ -1,0 +1,141 @@
+{
+  "title": "Multiplayer",
+  "type": "ECS",
+  "sceneData": [
+    {
+      "id": 1,
+      "objectType": "gamePrefabs",
+      "spawnType": "multiplayer",
+      "parent": null,
+      "children": [],
+      "managers": [
+        {
+          "type": "ComponentManager"
+        },
+        {
+          "type": "EventManager"
+        },
+        {
+          "type": "GameManager"
+        },
+        {
+          "type": "GameModeManager"
+        },
+        {
+          "type": "KeyboardManager"
+        },
+        {
+          "type": "LoadingManager"
+        },
+        {
+          "type": "ResultsManager"
+        },
+        {
+          "type": "SaveManager"
+        },
+        {
+          "type": "ScreenManager"
+        },
+        {
+          "type": "UnitCreationManager"
+        },        
+        {
+          "type": "SquadManager"
+        },       
+        {
+          "type": "AutoBattleMultiplayerManager",
+          "parameters": {
+            "enabled": true,
+            "debug": true
+          }
+        },
+        {
+          "type": "InputManager"
+        }
+      ],
+      "systems": [
+        {
+          "type": "WorldSystem"
+        },
+        {
+          "type": "RenderSystem"
+        },
+        {
+          "type": "MovementSystem"
+        },
+        {
+          "type": "CombatAISystem"
+        },
+        {
+          "type": "ProjectileSystem"
+        },
+        {
+          "type": "AnimationSystem"
+        },
+        {
+          "type": "ArmyDisplaySystem"
+        },
+        {
+          "type": "EffectsSystem"
+        },
+        {
+          "type": "GridSystem"
+        },
+        {
+          "type": "MultiplayerPlacementSystem"
+        },
+        {
+          "type": "StatisticsTrackingSystem"
+        },
+        {
+          "type": "BattleLogSystem"
+        },
+        {
+          "type": "ShopSystem"
+        },
+        {
+          "type": "MultiplayerPhaseSystem"
+        },
+        {
+          "type": "TeamHealthSystem"
+        },
+        {
+          "type": "HealthBarSystem"
+        },
+        {
+          "type": "UnitRadiusSystem"
+        },
+        {
+          "type": "EquipmentSystem"
+        },
+        {
+          "type": "DeathSystem"
+        },
+        {
+          "type": "DamageSystem"
+        },
+        {
+          "type": "AbilitySystem"
+        },
+        {
+          "type": "ParticleSystem"
+        },
+        {
+          "type": "SquadExperienceSystem"
+        },
+        {
+          "type": "LifetimeSystem"
+        },
+        {
+          "type": "MultiplayerUISystem"
+        }
+      ],
+      "classes": [
+        {
+          "collection": "abilities",
+          "baseClass": "BaseAbility"
+        }
+      ]
+    }
+  ]
+}

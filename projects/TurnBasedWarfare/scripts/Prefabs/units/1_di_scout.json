@@ -165,9 +165,9 @@
   },
   "buyable": true,
   "specUnits": [
-    "2_di_goblinBomber",
     "2_di_shadowAssassin",
-    "2_di_trickster"
+    "2_di_trickster",
+    "2_di_goblinBomber"
   ],
   "squadWidth": 1,
   "squadHeight": 1,

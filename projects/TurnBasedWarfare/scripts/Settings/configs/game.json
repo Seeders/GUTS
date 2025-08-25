@@ -40,5 +40,6 @@
   "canvasHeight": 1600,
   "is3D": true,
   "palette": "main",
-  "appLoaderLibrary": "GameLoader"
+  "appLoaderLibrary": "GameLoader",
+  "initialScene": "main"
 }

@@ -41,6 +41,9 @@
         },        
         {
           "type": "SquadManager"
+        },       
+        {
+          "type": "AutoBattleMultiplayerManager"
         },
         {
           "type": "InputManager"
@@ -121,46 +124,6 @@
         },
         {
           "type": "UISystem"
-        }
-      ],
-      "components": [
-        {
-          "type": "transform",
-          "parameters": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "type": "MapRenderer",
-          "parameters": {
-            "level": "level1"
-          }
-        },
-        {
-          "type": "MapManager",
-          "parameters": {
-            "level": "level1"
-          }
-        },
-        {
-          "type": "ThreeJsWorld",
-          "parameters": {
-            "level": "level1"
-          }
         }
       ],
       "classes": [
