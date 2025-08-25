@@ -9,7 +9,6 @@
   "worldObjects": [
     "tree",
     "rock",
-    "ash",
     "fir"
   ],
   "backgroundColor": "#b3e5fc"
