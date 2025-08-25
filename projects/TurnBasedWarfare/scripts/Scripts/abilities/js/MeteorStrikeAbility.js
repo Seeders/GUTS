@@ -7,11 +7,10 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             cooldown: 5.0,
             range: 300,
             manaCost: 0,
-            targetType: 'auto',
+            targetType: 'enemies',
             animation: 'cast',
             priority: 10,
             castTime: 1.0,
-            autoTrigger: 'enemy_cluster_large',
             ...params
         });
         

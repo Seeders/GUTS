@@ -88,6 +88,7 @@ class TileMap {
 			PenninsulaR: 17,
 			PenninsulaB: 18,
 			Island: 19,
+			FullVariation: 20, // Added for random full tile variation
 		};
 	}
 
@@ -260,6 +261,7 @@ class TileMap {
 		
 		// Get sprite textures
 		const fullSprite = sprites[this.TileAtom.Full];
+		const fullVariationSprite = sprites[this.TileAtom.FullVariation]; // Sprite 4
 
 		const oneCornerSprite = sprites[this.TileAtom.OneCorner];
 		const twoCornerSprite = sprites[this.TileAtom.TwoCorner];
@@ -271,6 +273,11 @@ class TileMap {
 
 		// Create CanvasRenderingContext2D objects for each texture
 		const fullCtx = fullTexture.getContext("2d");
+		const fullVariationTexture = document.createElement("canvas");
+		fullVariationTexture.width = spriteResolution;
+		fullVariationTexture.height = spriteResolution;
+		fullVariationTexture.setAttribute('willReadFrequently', true);
+		const fullVariationCtx = fullVariationTexture.getContext("2d");
 
 		const oneCornerCtx = oneCornerTexture.getContext("2d", { willReadFrequently: true });
 		const twoCornerCtx = twoCornerTexture.getContext("2d", { willReadFrequently: true });
@@ -282,6 +289,7 @@ class TileMap {
 		
 		// Copy pixels from sprites to texture canvases
 		fullCtx.drawImage(fullSprite,0,0);
+		fullVariationCtx.drawImage(fullVariationSprite,0,0);
 
 		oneCornerCtx.drawImage(oneCornerSprite,0,0);
 		twoCornerCtx.drawImage(twoCornerSprite,0,0);
@@ -293,6 +301,7 @@ class TileMap {
 
 		// Get pixel data from the canvases
 		const fullImageData = fullCtx.getImageData(0, 0, spriteResolution, spriteResolution);
+		const fullVariationImageData = fullVariationCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const oneCornerTopRightImageData = oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const oneCornerTopLeftImageData = this.flipTextureHorizontal(oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));	
 
@@ -358,6 +367,9 @@ class TileMap {
 
 			//ISLAND
 			this.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, threeCornerBottomLeftImageData, threeCornerBottomRightImageData),
+
+			//FULL VARIATION (sprite 4)
+			this.createMolecule(moleculeCtx, fullVariationImageData, fullVariationImageData, fullVariationImageData, fullVariationImageData),
 		];
 
 		return imageDataList;
@@ -562,7 +574,8 @@ class TileMap {
 		var molecule = this.TileCliffMolecules.Full;								
 		switch(tileAnalysis.neighborLowerCount){
 			case 0: 
-				molecule = this.TileCliffMolecules.Full;
+				// Randomly choose between Full (sprite 0) and FullVariation (sprite 4)
+				molecule = Math.random() < 0.5 ? this.TileCliffMolecules.Full : this.TileCliffMolecules.FullVariation;
 				break;
 			case 1:
 				if(tileAnalysis.topLess) {
@@ -848,7 +861,7 @@ class TileMap {
 				// Update height map for this tile
 				this.updateHeightMapForTile(x, y, tileAnalysis.heightIndex);
 	
-				offscreenCtx.putImageData(imageData, x, y);
+				offscreenCtx.putImageData(imageData, x + 2, y + 2);
 			});
 		}
 	

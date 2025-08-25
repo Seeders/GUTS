@@ -746,7 +746,6 @@ class WorldSystem {
                     
                     // Use the lowest neighbor height for cliff smoothing
                     height = lowestNeighborHeight;
-
                     // Set height in extended coordinate system
                     const extX = x + this.extensionSize;
                     const extZ = z + this.extensionSize;
