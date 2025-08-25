@@ -2,32 +2,7 @@
   "title": "Fir",
   "render": {
     "animations": {
-      "idle": [
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 1
-              },
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 2
-              },
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 3
-              }
-            ]
-          }
-        }
-      ]
+      "idle": []
     },
     "model": {
       "shapes": {
@@ -35,7 +10,7 @@
           {
             "type": "gltf",
             "size": 2,
-            "color": "#ff0000",
+            "color": "#ffffff",
             "x": 0,
             "y": 0,
             "z": 0,

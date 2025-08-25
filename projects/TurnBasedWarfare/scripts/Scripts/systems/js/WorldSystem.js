@@ -576,7 +576,14 @@ class WorldSystem {
                 instancedMesh.userData.relativeMatrix = relativeMatrix;
                 instancedMesh.castShadow = true;   
                 instancedMesh.receiveShadow = true;
-        
+                if(instancedMesh.material.map){
+                    instancedMesh.material.map.wrapS = THREE.MirroredRepeatWrapping;
+                    instancedMesh.material.side = THREE.DoubleSide; // Set side to double for better visibility                                
+                    instancedMesh.material.alphaTest = 0.1;
+                }
+                instancedMesh.material.transparent = true;
+                instancedMesh.material.needsUpdate = true; // Force material update
+           
                 return instancedMesh;
             });
 
