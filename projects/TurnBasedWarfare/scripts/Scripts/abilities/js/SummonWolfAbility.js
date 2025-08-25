@@ -4,43 +4,31 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'summon_wolf',
             name: 'Summon Wolf',
             description: 'Call forth a loyal wolf companion (max 1 per Beast Master)',
-            cooldown: 25.0,
+            cooldown: 0.0,
             range: 0,
             manaCost: 50,
             targetType: 'self',
             animation: 'cast',
             priority: 5,
-            castTime: 2.0,
+            castTime: 1.0,
             ...params
         });
+        this.hasSummon = false;
+        this.summonId = '0_skeleton';
     }
     
     canExecute(casterEntity) {
         // Check if this Beast Master already has a summoned wolf
-        const existingSummons = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().SUMMONED,
-            this.game.componentManager.getComponentTypes().POSITION
-        );
-        
-        const hasExistingWolf = existingSummons.some(summonId => {
-            const summoned = this.game.getComponent(summonId, this.game.componentManager.getComponentTypes().SUMMONED);
-            return summoned && summoned.summoner === casterEntity && summoned.summonType === 'wolf';
-        });
-        
-        return !hasExistingWolf;
+        return !this.hasSummon;
     }
     
     execute(casterEntity) {
         const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        if (!pos || !team) return;
-        
-        const collections = this.game.getCollections();
-        if (!collections?.units?.wolf) return;
-        
+        if (!pos || !team) return;        
         // Create wolf companion
-        const wolfId = this.createSummonedCreature(pos, collections.units.wolf, team.team, casterEntity);
-        
+        const wolfId = this.createSummonedCreature(pos, this.summonId, team.team, casterEntity);
+        this.hasSummon = true;
         this.logAbilityUsage(casterEntity, "Beast Master summons a faithful wolf!");
     }
     
@@ -55,7 +43,7 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.addComponent(creatureId, componentTypes.VELOCITY, 
             components.Velocity(0, 0, 0, (unitDef.speed || 40) * 20));
         this.game.addComponent(creatureId, componentTypes.RENDERABLE, 
-            components.Renderable("units", "wolf"));
+            components.Renderable("units", this.summonId));
         this.game.addComponent(creatureId, componentTypes.HEALTH, 
             components.Health(unitDef.hp || 60));
         this.game.addComponent(creatureId, componentTypes.COMBAT, 
@@ -64,12 +52,12 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             components.Collision(unitDef.size || 20));
         this.game.addComponent(creatureId, componentTypes.TEAM, components.Team(team));
         this.game.addComponent(creatureId, componentTypes.UNIT_TYPE, 
-            components.UnitType('wolf', 'Summoned Wolf', 0));
+            components.UnitType(this.summonId, 'Summoned Wolf', 0));
         this.game.addComponent(creatureId, componentTypes.AI_STATE, components.AIState('idle'));
         this.game.addComponent(creatureId, componentTypes.ANIMATION, components.Animation());
         this.game.addComponent(creatureId, componentTypes.FACING, components.Facing(0));
         this.game.addComponent(creatureId, componentTypes.SUMMONED, 
-            components.Summoned(summoner, 'wolf', null, 0));
+            components.Summoned(summoner, this.summonId, null, 0));
         
         return creatureId;
     }

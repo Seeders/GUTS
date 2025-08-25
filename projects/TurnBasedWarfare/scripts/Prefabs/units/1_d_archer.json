@@ -6,7 +6,7 @@
   "speed": 55,
   "damage": 16,
   "attackSpeed": 1.1,
-  "range": 190,
+  "range": 200,
   "projectile": "arrow",
   "element": "physical",
   "fireResistance": 0.5,
@@ -185,5 +185,6 @@
   "squadWidth": 1,
   "squadHeight": 3,
   "placementGridWidth": 1,
-  "placementGridHeight": 3
+  "placementGridHeight": 3,
+  "abilities": []
 }

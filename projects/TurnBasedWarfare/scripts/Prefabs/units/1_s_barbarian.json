@@ -159,13 +159,13 @@
   "specUnits": [
     "2_s_berserker",
     "2_s_gladiator",
-    "2_s_captain"
+    "2_s_warlord"
   ],
   "squadWidth": 2,
   "squadHeight": 4,
   "placementGridWidth": 2,
   "placementGridHeight": 4,
   "abilities": [
-    "BattleCryAbility"
+    "RageAbility"
   ]
 }

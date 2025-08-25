@@ -4,7 +4,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'raging_strike',
             name: 'Raging Strike',
             description: 'Unleash primal fury with increased damage and attack speed',
-            cooldown: 8.0,
+            cooldown: 5.0,
             range: 0, // Self-buff
             manaCost: 20,
             targetType: 'self',

@@ -157,7 +157,7 @@ class SquadExperienceSystem {
         }
         
         // Check if this is a specialization level (level 3+) and if specialization is available
-        const isSpecializationLevel = squadData.level >= 3;
+        const isSpecializationLevel = squadData.level >= 2;
         const currentUnitType = this.getCurrentUnitType(placementId);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         
@@ -616,20 +616,23 @@ class SquadExperienceSystem {
             // Respect caps: no gain if at max or waiting for manual level-up
             if (squadData.level >= this.config.maxLevel || squadData.canLevelUp) continue;
 
-            if (this.squadHasAliveUnits(squadData)) {
-            const xp = this.config.baselineXPPerSecond * deltaTime * this.config.experienceMultiplier;
-            if (xp > 0) this.addExperience(placementId, xp);
+            const unitsAliveInSquad = this.unitsAliveInSquad(squadData);
+            if (unitsAliveInSquad > 0) {
+                const squadLivingRatio = unitsAliveInSquad / squadData.totalUnitsInSquad;                
+                const xp = squadLivingRatio * this.config.baselineXPPerSecond * deltaTime * this.config.experienceMultiplier;
+                if (xp > 0) this.addExperience(placementId, xp);
             }
         }
     }
-    squadHasAliveUnits(squadData) {
-        if (!squadData || !squadData.unitIds?.length) return false;
+    unitsAliveInSquad(squadData) {
+        if (!squadData || !squadData.unitIds?.length) return 0;
         const componentTypes = this.game.componentManager.getComponentTypes();
+        let count = 0;
         for (const id of squadData.unitIds) {
             const h = this.game.getComponent(id, componentTypes.HEALTH);
-            if (h && h.current > 0) return true;
+            if (h && h.current > 0) count++;
         }
-        return false;
+        return count;
     }
     /**
      * Clean up experience data for squads with dead/missing units

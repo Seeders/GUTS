@@ -2,11 +2,11 @@
   "title": "Shadow Assassin (2) [DI]",
   "size": 25,
   "value": 320,
-  "hp": 160,
+  "hp": 500,
   "speed": 80,
   "damage": 28,
   "attackSpeed": 2,
-  "element": "poison",
+  "element": "physical",
   "armor": 4,
   "fireResistance": 0.1,
   "coldResistance": 0.2,
@@ -196,5 +196,8 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "abilities": [
+    "ShadowStrikeAbility"
+  ]
 }

@@ -24,7 +24,7 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 3,
+                    count: 1,
                     color: 0xE0FFFF,
                     colorRange: { start: 0xE0FFFF, end: 0x87CEEB },
                     scaleMultiplier: 1.5,
@@ -34,7 +34,7 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
             shield: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 1,
                     color: 0xAFEEEE,
                     scaleMultiplier: 2.5,
                     speedMultiplier: 1.5

@@ -14,7 +14,7 @@ class EffectsSystem {
         // Line effects tracking
         this.activeLineEffects = [];
         
-        this.effectOffset = { x: 0, y: 15, z: 0 };
+        this.effectOffset = { x: 0, y: 75, z: 0 };
     }
     
     initialize() {
@@ -329,67 +329,67 @@ class EffectsSystem {
     getEffectConfig(effectType) {
         const configs = {
             victory: {
-                count: 25,
+                count: 5,
                 shape: 'star',
                 color: 0x00ff00,
                 colorRange: { start: 0x00ff00, end: 0xffff00 },
                 lifetime: 1.5,
                 velocity: { speed: 8, spread: 0.5, pattern: 'burst' },
-                scale: 0.8,
+                scale: 2,
                 scaleVariation: 0.3,
                 physics: { gravity: -0.5, drag: 0.99 },
                 rotation: { enabled: true, speed: 5 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             defeat: {
-                count: 20,
+                count: 2,
                 shape: 'circle',
                 color: 0xff4444,
                 colorRange: { start: 0xff4444, end: 0xff0000 },
-                lifetime: 1.0,
+                lifetime: 10,
                 velocity: { speed: 6, spread: 0.8, pattern: 'burst' },
-                scale: 0.6,
+                scale: 2,
                 scaleVariation: 0.4,
                 physics: { gravity: 0.8, drag: 0.98 },
                 rotation: { enabled: false, speed: 0 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             explosion: {
-                count: 30,
+                count: 3,
                 shape: 'circle',
                 color: 0xffaa00,
                 colorRange: { start: 0xffaa00, end: 0xff0000 },
                 lifetime: 1.2,
                 velocity: { speed: 10, spread: 0.6, pattern: 'sphere' },
-                scale: 1.0,
+                scale: 2,
                 scaleVariation: 0.5,
                 physics: { gravity: 1.0, drag: 0.96 },
                 rotation: { enabled: true, speed: 8 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             heal: {
-                count: 15,
+                count: 5,
                 shape: 'cross',
                 color: 0x00ff88,
                 colorRange: { start: 0x00ff88, end: 0x88ffaa },
                 lifetime: 1.0,
                 velocity: { speed: 3, spread: 0.2, pattern: 'cone' },
-                scale: 0.5,
+                scale: 2,
                 scaleVariation: 0.3,
                 physics: { gravity: -0.8, drag: 0.99 },
                 rotation: { enabled: true, speed: 3 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             magic: {
-                count: 20,
+                count: 1,
                 shape: 'star',
                 color: 0x8800ff,
                 colorRange: { start: 0x8800ff, end: 0xff88ff },
                 lifetime: 2.0,
                 velocity: { speed: 5, spread: 0.4, pattern: 'sphere' },
-                scale: 0.6,
+                scale: 2,
                 scaleVariation: 0.4,
-                physics: { gravity: -0.3, drag: 0.98 },
+                physics: { gravity: 0.3, drag: 0.98 },
                 rotation: { enabled: true, speed: 6 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
@@ -397,22 +397,22 @@ class EffectsSystem {
                 count: 8,
                 shape: 'circle',
                 color: 0xff0000,
-                lifetime: 0.6,
+                lifetime: 6,
                 velocity: { speed: 2, spread: 0.5, pattern: 'burst' },
-                scale: 0.3,
+                scale: 1,
                 scaleVariation: 0.2,
                 physics: { gravity: 0.5, drag: 0.98 },
                 rotation: { enabled: false, speed: 0 },
                 visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             levelup: {
-                count: 40,
+                count: 4,
                 shape: 'star',
                 color: 0xffd700,
                 colorRange: { start: 0xffd700, end: 0xffa500 },
                 lifetime: 2.5,
                 velocity: { speed: 8, spread: 0.6, pattern: 'cone' },
-                scale: 1.2,
+                scale: 5,
                 scaleVariation: 0.5,
                 physics: { gravity: -0.4, drag: 0.98 },
                 rotation: { enabled: true, speed: 4 },
@@ -706,7 +706,7 @@ class EffectsSystem {
         
         const config = this.getEffectConfig(type);
         const startTime = Date.now();
-        const interval = 200;
+        const interval = 1000;
         
         const createAura = () => {
             if (Date.now() - startTime > duration) return;
@@ -714,9 +714,9 @@ class EffectsSystem {
             const auraConfig = {
                 ...config,
                 position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-                count: 8,
+                count: 4,
                 velocity: { ...config.velocity, speed: config.velocity.speed * 0.3 },
-                scale: config.scale * 0.8
+                scale: config.scale
             };
             
             this.game.particleSystem.createParticles(auraConfig);
@@ -826,7 +826,7 @@ class EffectsSystem {
         // Line effects are self-managing through requestAnimationFrame
         // Particle system handles its own updates
     }
-    
+
     destroyLineEffect(effectData) {
         if (!effectData) return;
         try {

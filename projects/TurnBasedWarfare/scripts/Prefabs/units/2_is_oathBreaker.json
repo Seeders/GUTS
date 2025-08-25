@@ -164,6 +164,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "DrainLifeAbility"
+    "CorruptingAuraAbility"
   ]
 }

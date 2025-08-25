@@ -4,9 +4,9 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'charge',
             name: 'Charge',
             description: 'Rush forward dealing damage and stunning enemies',
-            cooldown: 10.0,
+            cooldown: 5.0,
             range: 150,
-            manaCost: 30,
+            manaCost: 0,
             targetType: 'enemy',
             animation: 'attack',
             priority: 8,
@@ -34,8 +34,8 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             const dz = targetPos.z - pos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
             
-            velocity.vx = (dx / distance) * 100; // Charge speed
-            velocity.vz = (dz / distance) * 100;
+            velocity.vx = (dx / distance) * 300; // Charge speed
+            velocity.vz = (dz / distance) * 300;
         }
         
         // Deal damage and stun after charge

@@ -481,7 +481,7 @@ class PlacementSystem {
             
             this.game.effectsSystem.createParticleEffect(
                 pos.x,
-                unitY + 25,
+                unitY,
                 pos.z,
                 effectType,
                 { count: 4, speedMultiplier: 0.8 } // Reduced particle count
@@ -582,7 +582,7 @@ class PlacementSystem {
             const worldPos = this.gridSystem.gridToWorld(cell.x, cell.z);
             this.game.effectsSystem.createParticleEffect(
                 worldPos.x,
-                2,
+                0,
                 worldPos.z,
                 'magic',
                 { count: 3, speedMultiplier: 0.7 } // Reduced particles
@@ -893,7 +893,7 @@ class PlacementSystem {
         const effectType = team === 'player' ? 'magic' : 'heal';
         this.game.effectsSystem.createParticleEffect(
             position.x,
-            position.y + 15,
+            position.y,
             position.z,
             effectType,
             { count: 4, speedMultiplier: 0.6 } // Reduced particle count
@@ -917,7 +917,7 @@ class PlacementSystem {
                     const unit = placement.squadUnits[0]; // Only effect first unit
                     this.game.effectsSystem.createParticleEffect(
                         unit.position.x,
-                        unit.position.y + 5,
+                        unit.position.y,
                         unit.position.z,
                         'explosion',
                         { count: 3, speedMultiplier: 0.5 }
@@ -925,7 +925,7 @@ class PlacementSystem {
                 } else {
                     this.game.effectsSystem.createParticleEffect(
                         placement.x,
-                        placement.y + 5,
+                        placement.y,
                         placement.z,
                         'explosion',
                         { count: 3, speedMultiplier: 0.5 }

@@ -42,7 +42,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/shooting_arrow/shooting_arrow.glb",
                 "id": 0
               }
             ]
@@ -145,5 +145,7 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "range": 200,
+  "projectile": "bolt"
 }

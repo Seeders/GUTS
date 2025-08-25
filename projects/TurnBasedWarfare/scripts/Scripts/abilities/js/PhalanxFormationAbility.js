@@ -4,17 +4,21 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'phalanx_formation',
             name: 'Phalanx Formation',
             description: 'Link with nearby Hoplites - more Hoplites = stronger formation bonus',
-            cooldown: 18.0,
+            cooldown: 2.0,
             range: 80,
-            manaCost: 35,
+            manaCost: 0,
             targetType: 'allies',
             animation: 'cast',
             priority: 7,
             castTime: 1.2,
             ...params
         });
+
+        this.hasCast = false;
     }
-    
+    canExecute(casterEntity) {
+        return !this.hasCast;
+    }
     execute(casterEntity) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
@@ -40,6 +44,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
                     formationSize: phalanxSize
                 }, Date.now() / 1000 + 25, false, 1, 0));
         });
+        this.hasCast = true;
         
         this.logAbilityUsage(casterEntity, `Hoplite forms phalanx with ${nearbyHoplites.length} allies! (${phalanxSize} total)`);
     }

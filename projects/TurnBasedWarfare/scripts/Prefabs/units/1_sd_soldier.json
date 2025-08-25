@@ -180,15 +180,15 @@
   },
   "buyable": true,
   "specUnits": [
-    "2_sd_gladiator",
     "2_sd_knight",
-    "2_sd_hoplite"
+    "2_sd_hoplite",
+    "2_sd_crossbowman"
   ],
   "squadWidth": 2,
   "squadHeight": 3,
   "placementGridWidth": 2,
   "placementGridHeight": 3,
   "abilities": [
-    "BattleCryAbility"
+    "WindShieldAbility"
   ]
 }

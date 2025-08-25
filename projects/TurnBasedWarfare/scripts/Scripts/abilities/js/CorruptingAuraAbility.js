@@ -4,34 +4,23 @@ class CorruptingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'corrupting_aura',
             name: 'Corrupting Aura',
             description: 'Emanate dark energy that drains enemies and empowers undead (does not stack)',
-            cooldown: 18.0,
+            cooldown: 0,
             range: 100,
-            manaCost: 40,
+            manaCost: 0,
             targetType: 'area',
             animation: 'cast',
             priority: 6,
-            castTime: 1.0,
+            castTime: 0,
             ...params
         });
         this.drainPerSecond = 8;
-        this.duration = 12;
+        this.duration = 1200;
+        this.hasActiveAura = false;
     }
     
     canExecute(casterEntity) {
-        // Check if this Oathbreaker already has an active aura
-        const existingAuras = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().TEMPORARY_EFFECT,
-            this.game.componentManager.getComponentTypes().POSITION
-        );
         
-        const hasActiveAura = existingAuras.some(auraId => {
-            const tempEffect = this.game.getComponent(auraId, this.game.componentManager.getComponentTypes().TEMPORARY_EFFECT);
-            return tempEffect && 
-                   tempEffect.effectType === 'corrupting_aura' && 
-                   tempEffect.data.caster === casterEntity;
-        });
-        
-        return !hasActiveAura;
+        return !this.hasActiveAura;
     }
     
     execute(casterEntity) {
@@ -60,7 +49,7 @@ class CorruptingAuraAbility extends engine.app.appClasses['BaseAbility'] {
         
         const auraInterval = setInterval(() => {
             tickCount++;
-            
+            this.hasActiveAura = true;
             if (tickCount >= maxTicks || !this.game.hasComponent(auraId, this.game.componentManager.getComponentTypes().TEMPORARY_EFFECT)) {
                 clearInterval(auraInterval);
                 if (this.game.hasComponent(auraId, this.game.componentManager.getComponentTypes().TEMPORARY_EFFECT)) {

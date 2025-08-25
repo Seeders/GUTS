@@ -170,7 +170,5 @@
   "squadHeight": 3,
   "placementGridWidth": 1,
   "placementGridHeight": 3,
-  "abilities": [
-    "MindControlAbility"
-  ]
+  "abilities": []
 }

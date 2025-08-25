@@ -1,18 +1,18 @@
 {
   "title": "Beast Master (2) [D]",
   "size": 25,
-  "value": 175,
-  "hp": 150,
-  "speed": 50,
-  "damage": 18,
-  "attackSpeed": 1.6,
-  "range": 180,
-  "projectile": "elvenArrow",
+  "value": 35,
+  "hp": 140,
+  "speed": 55,
+  "damage": 16,
+  "attackSpeed": 1.1,
+  "range": 200,
+  "projectile": "arrow",
   "element": "physical",
-  "armor": 3,
-  "fireResistance": 0.1,
-  "coldResistance": 0.15,
-  "lightningResistance": 0.2,
+  "fireResistance": 0.5,
+  "coldResistance": 0.5,
+  "lightningResistance": 0.5,
+  "armor": 1,
   "render": {
     "animations": {
       "idle": [
@@ -20,7 +20,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -99,6 +99,23 @@
             ]
           }
         }
+      ],
+      "cast": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/2h_spell_summon/2h_spell_summon.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -167,5 +184,8 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "abilities": [
+    "SummonWolfAbility"
+  ]
 }
