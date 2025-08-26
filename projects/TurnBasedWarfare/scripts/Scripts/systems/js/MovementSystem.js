@@ -71,7 +71,6 @@ class MovementSystem {
         
         // First pass: calculate desired velocities and separation forces
         const unitData = new Map();
-        
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);

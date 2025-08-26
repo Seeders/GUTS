@@ -24,7 +24,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             const existingBuff = this.game.getComponent(allyId, this.game.componentManager.getComponentTypes().BUFF);
             if (existingBuff && existingBuff.buffType === 'enchant_weapon') {
                 // Refresh duration instead of stacking
-                existingBuff.endTime = Date.now() / 1000 + 30;
+                existingBuff.endTime = (this.game.state?.simTime || 0) + 30;
                 return;
             }
             
@@ -36,7 +36,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
                     weaponElement: randomElement,
                     elementalDamage: 15,
                     glowing: true
-                }, Date.now() / 1000 + 30, false, 1, 0));
+                }, (this.game.state?.simTime || 0) + 30, false, 1, 0));
             enchantedCount++;
         });
         

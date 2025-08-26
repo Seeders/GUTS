@@ -5,6 +5,8 @@ class PhaseSystem {
         this.phaseTimer = null;
         this.lastBattleEndCheck = 0;
         this.BATTLE_END_CHECK_INTERVAL = 1.0;
+        this.FIXED_DT = 1 / 60;
+        this._simAccum = 0;
         this.config = {
             placementPhaseTime: 90,
             enemyPlacementDelay: 2000,
@@ -161,7 +163,10 @@ class PhaseSystem {
     startBattlePhase() {
         const state = this.game.state;
         state.phase = 'battle';
-        
+        state.simTime = 0;
+        state.simTick = 0;
+        this._simAccum = 0;
+
         if (this.game.teamHealthSystem) {
             this.game.teamHealthSystem.onBattleStart();
         }
@@ -607,29 +612,32 @@ class PhaseSystem {
         }
     }
 
-    
-    update(deltaTime) {
-        const now = Date.now() / 1000;
-
-        if (now - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
-            this.checkForRoundEnd();
-            this.lastBattleEndCheck = now;
-        }
-
-        const state = this.game.state;
-        document.getElementById('roundNumber').textContent = state.round;
-        document.getElementById('phaseTitle').textContent = 
-            state.phase === 'placement' ? 'PLACEMENT PHASE' :
-            state.phase === 'battle' ? 'BATTLE PHASE' : 'ROUND ENDED';
         
-        if (state.phase === 'placement') {
-            document.getElementById('phaseTimer').textContent = `${state.phaseTimeLeft}s`;
-            this.updateReadyButtonState();
-            this.updateSquadCountDisplay();
-        } else {
-            document.getElementById('phaseTimer').textContent = '';
+    update(deltaTime) {
+        const nowWall = (this.game.state?.simTime || 0);
+
+        // Deterministic sim clock in battle
+        if (this.game.state?.phase === 'battle') {
+            this._simAccum += deltaTime;
+            while (this._simAccum >= this.FIXED_DT) {
+                this.game.state.simTime += this.FIXED_DT;
+                this.game.state.simTick = (this.game.state.simTick || 0) + 1;
+                this._simAccum -= this.FIXED_DT;
+            }
         }
+
+        // (keep your existing round-end checks/UI here; they can use nowWall safely)
+        if (nowWall - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
+            this.checkForRoundEnd?.();
+            this.lastBattleEndCheck = nowWall;
+        }
+
+        this.updatePhaseUI?.();
+        this.updateReadyButtonState?.();
+        this.updateSquadCountDisplay?.();
+        this.updateGoldDisplay?.();
     }
+
     
     updateReadyButtonState() {
         const state = this.game.state;

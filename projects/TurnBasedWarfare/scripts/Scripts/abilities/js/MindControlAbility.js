@@ -269,7 +269,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
     // Refresh if already controlled
     if (this.game.hasComponent(targetId, this.componentTypes.MIND_CONTROLLED)) {
       const comp = this.game.getComponent(targetId, this.componentTypes.MIND_CONTROLLED);
-      comp.endTime = Math.max(comp.endTime, Date.now() / 1000 + this.controlDuration);
+      comp.endTime = Math.max(comp.endTime, (this.game.state?.simTime || 0) + this.controlDuration);
       return;
     }
 
@@ -289,7 +289,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
     this.game.addComponent(targetId, this.componentTypes.MIND_CONTROLLED, {
       originalTeam,
       controller: casterEntity,
-      endTime: Date.now() / 1000 + this.controlDuration
+      endTime: (this.game.state?.simTime || 0) + this.controlDuration
     });
 
     // Schedule removal (prefer your LifetimeSystem if you have one)

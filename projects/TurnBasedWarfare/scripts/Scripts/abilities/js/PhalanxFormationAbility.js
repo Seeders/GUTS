@@ -42,7 +42,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
                     armorMultiplier: bonusMultiplier,
                     counterAttackChance: 0.2 + (phalanxSize * 0.05), // Scales with formation size
                     formationSize: phalanxSize
-                }, Date.now() / 1000 + 25, false, 1, 0));
+                }, (this.game.state?.simTime || 0) + 25, false, 1, 0));
         });
         this.hasCast = true;
         

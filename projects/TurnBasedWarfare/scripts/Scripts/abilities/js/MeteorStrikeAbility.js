@@ -56,7 +56,7 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             components.Renderable("visuals", "meteor_warning"));
         
         this.game.addComponent(warningId, componentTypes.LIFETIME, 
-            components.Lifetime(this.delay, Date.now() / 1000));
+            components.Lifetime(this.delay, (this.game.state?.simTime || 0)));
         
         this.game.addComponent(warningId, componentTypes.ANIMATION, 
             components.Animation(4, 0, 1));

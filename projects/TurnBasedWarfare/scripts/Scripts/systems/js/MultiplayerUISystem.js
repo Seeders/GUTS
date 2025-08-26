@@ -36,12 +36,13 @@ class MultiplayerUISystem {
 
         if (startGameBtn) {
             startGameBtn.addEventListener('click', () => {
-                this.startMultiplayerGame();
+                this.startGameAsHost();
             });
         }
 
         if (player1ReadyBtn) {
             player1ReadyBtn.addEventListener('click', () => {
+                console.log('ready clicked');
                 this.togglePlayerReady();
             });
         }
@@ -78,7 +79,7 @@ class MultiplayerUISystem {
         }
 
         // Canvas click events for placement
-        const canvas = document.getElementById('multiplayerGameCanvas');
+        const canvas = document.getElementById('gameCanvas');
         if (canvas) {
             canvas.addEventListener('click', (event) => {
                 if (this.game.placementSystem) {
@@ -155,13 +156,20 @@ class MultiplayerUISystem {
             const player1Ready = document.getElementById('player1Ready');
             const player1ReadyBtn = document.getElementById('player1ReadyBtn');
 
-            if (player1Name) player1Name.textContent = `${player1.name} (You)`;
+            if (player1Name) {
+                // Show host status
+                const hostText = player1.isHost ? ' (Host)' : ' (You)';
+                player1Name.textContent = `${player1.name}${hostText}`;
+            }
+            
             if (player1Ready) {
-                player1Ready.textContent = player1.ready ? '✅ Ready' : '❌ Not Ready';
+                player1Ready.textContent = player1.ready ? '✅ Ready' : '⌛ Not Ready';
                 player1Ready.style.color = player1.ready ? '#00ff00' : '#ff4444';
             }
+            
             if (player1ReadyBtn) {
-                player1ReadyBtn.textContent = player1.ready ? '❌ NOT READY' : '✅ READY UP';
+                player1ReadyBtn.disabled = false;
+                player1ReadyBtn.textContent = player1.ready ? '⌛ NOT READY' : '✅ READY UP';
                 player1ReadyBtn.style.background = player1.ready ? '#440000' : '#003300';
             }
         }
@@ -171,26 +179,31 @@ class MultiplayerUISystem {
         const player2Card = document.querySelector('.player-card.player-2');
         
         if (player2) {
-            // Player 2 exists
             if (player2Card) player2Card.classList.add('active');
 
             const player2Name = document.getElementById('player2Name');
             const player2Ready = document.getElementById('player2Ready');
             const player2Connection = document.getElementById('player2Connection');
 
-            if (player2Name) player2Name.textContent = player2.name;
+            if (player2Name) {
+                // Show host status for opponent too
+                const hostText = player2.isHost ? ' (Host)' : '';
+                player2Name.textContent = `${player2.name}${hostText}`;
+            }
+            
             if (player2Ready) {
-                player2Ready.textContent = player2.ready ? '✅ Ready' : '❌ Not Ready';
+                player2Ready.textContent = player2.ready ? '✅ Ready' : '⌛ Not Ready';
                 player2Ready.style.color = player2.ready ? '#00ff00' : '#ff4444';
             }
+            
             if (player2Connection) {
                 player2Connection.textContent = '🟢 Connected';
                 player2Connection.style.color = '#00ff00';
             }
         } else {
-            // No Player 2 yet
             if (player2Card) player2Card.classList.remove('active');
-
+            
+            // Reset to waiting state...
             const player2Name = document.getElementById('player2Name');
             const player2Ready = document.getElementById('player2Ready');
             const player2Connection = document.getElementById('player2Connection');
@@ -220,6 +233,8 @@ class MultiplayerUISystem {
     updateLobbyStatus(roomData) {
         const statusMessage = document.getElementById('lobbyStatusMessage');
         const startGameBtn = document.getElementById('startGameBtn');
+        const myPlayerId = this.game.multiplayerManager?.playerId;
+        const amHost = roomData.players?.find(p => p.id === myPlayerId)?.isHost || false;
 
         if (!roomData.players || roomData.players.length < 2) {
             if (statusMessage) {
@@ -229,18 +244,31 @@ class MultiplayerUISystem {
             if (startGameBtn) {
                 startGameBtn.disabled = true;
                 startGameBtn.textContent = '⏳ WAITING FOR PLAYERS';
+                startGameBtn.style.display = amHost ? 'block' : 'none';
             }
         } else {
             const allReady = roomData.players.every(p => p.ready);
             
             if (allReady) {
                 if (statusMessage) {
-                    statusMessage.textContent = 'All players ready! Game can start!';
-                    statusMessage.style.color = '#00ff00';
+                    if (amHost) {
+                        statusMessage.textContent = 'All players ready! You can start the game!';
+                        statusMessage.style.color = '#00ff00';
+                    } else {
+                        statusMessage.textContent = 'All players ready! Waiting for host to start...';
+                        statusMessage.style.color = '#00ff00';
+                    }
                 }
                 if (startGameBtn) {
-                    startGameBtn.disabled = false;
-                    startGameBtn.textContent = '🚀 START GAME';
+                    if (amHost) {
+                        startGameBtn.disabled = false;
+                        startGameBtn.textContent = '🚀 START GAME';
+                        startGameBtn.style.display = 'block';
+                    } else {
+                        startGameBtn.disabled = true;
+                        startGameBtn.textContent = '⏳ HOST WILL START';
+                        startGameBtn.style.display = 'block';
+                    }
                 }
             } else {
                 if (statusMessage) {
@@ -249,7 +277,12 @@ class MultiplayerUISystem {
                 }
                 if (startGameBtn) {
                     startGameBtn.disabled = true;
-                    startGameBtn.textContent = '⏳ WAITING FOR READY';
+                    if (amHost) {
+                        startGameBtn.textContent = '⏳ WAITING FOR READY';
+                    } else {
+                        startGameBtn.textContent = '⏳ WAITING FOR READY';
+                    }
+                    startGameBtn.style.display = amHost ? 'block' : 'none';
                 }
             }
         }
@@ -280,10 +313,18 @@ class MultiplayerUISystem {
     // =============================================
 
     togglePlayerReady() {
-        if (this.game.multiplayerManager) {
-            // In lobby, this could send a ready state to server
-            // For now, we'll let the MultiplayerManager handle it
-            console.log('Player ready toggle - handled by MultiplayerManager');
+        if (this.game.multiplayerManager && this.game.multiplayerManager.socket) {
+            // Send ready state toggle to server
+            this.game.multiplayerManager.socket.emit('toggle_ready');
+            
+            // Show immediate feedback
+            const btn = document.getElementById('player1ReadyBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Updating...';
+            }
+        } else {
+            this.showNotification('Not connected to server!', 'error');
         }
     }
 
@@ -320,7 +361,22 @@ class MultiplayerUISystem {
             });
         }
     }
-
+    startGameAsHost() {
+        if (this.game.multiplayerManager && this.game.multiplayerManager.socket) {
+            this.game.multiplayerManager.socket.emit('start_game');
+            
+            // Show loading state
+            const btn = document.getElementById('startGameBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '🚀 STARTING...';
+            }
+            
+            this.showNotification('Starting game...', 'info');
+        } else {
+            this.showNotification('Not connected to server!', 'error');
+        }
+    }
     startMultiplayerGame() {
         // Hide lobby and show game screen
         this.currentScreen = 'game';
@@ -483,13 +539,15 @@ class MultiplayerUISystem {
     // =============================================
 
     showGameScreen() {
-        this.currentScreen = 'game';
-        this.stopLobbyUpdates();
-
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById('multiplayerGameScreen').classList.add('active');
+        document.getElementById('gameScreen').classList.add('active');
+        
+        // Enable multiplayer-specific UI
+        document.getElementById('opponentOverlay').style.display = 'block';
+        document.getElementById('singlePlayerResources').style.display = 'none';
+        document.getElementById('multiplayerResources').style.display = 'block';
+        document.getElementById('singlePlayerPhaseInfo').style.display = 'none';
+        document.getElementById('multiplayerPhaseInfo').style.display = 'block';
+        document.getElementById('squadCountContainer').style.display = 'block';
     }
 
     showLobbyScreen() {

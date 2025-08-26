@@ -527,4 +527,44 @@ class TeamHealthSystem {
             }
         };
     }
+
+    getPlayerHealth() {
+        return this.teamHealth.player || 0;
+    }
+
+    // Method for multiplayer compatibility - returns current enemy health  
+    getEnemyHealth() {
+        return this.teamHealth.enemy || 0;
+    }
+
+    // Method to set player health (for multiplayer server updates)
+    setPlayerHealth(health) {
+        this.teamHealth.player = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
+        this.updateHealthDisplay();
+    }
+
+    // Method to set enemy health (for multiplayer server updates)
+    setEnemyHealth(health) {
+        this.teamHealth.enemy = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
+        this.updateHealthDisplay();
+    }
+
+    // Multiplayer-specific method to sync both team healths from server
+    syncHealthFromServer(playerHealth, enemyHealth) {
+        this.teamHealth.player = Math.max(0, Math.min(playerHealth, this.MAX_TEAM_HEALTH));
+        this.teamHealth.enemy = Math.max(0, Math.min(enemyHealth, this.MAX_TEAM_HEALTH));
+        this.updateHealthDisplay();
+    }
+
+    // Check if either team is eliminated (for multiplayer game end conditions)
+    isGameOver() {
+        return this.teamHealth.player <= 0 || this.teamHealth.enemy <= 0;
+    }
+
+    // Get the winning team (for multiplayer results)
+    getWinningTeam() {
+        if (this.teamHealth.player <= 0) return 'enemy';
+        if (this.teamHealth.enemy <= 0) return 'player';
+        return null; // No winner yet
+    }
 }

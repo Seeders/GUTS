@@ -40,7 +40,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                 const existingBuff = this.game.getComponent(enemyId, this.game.componentManager.getComponentTypes().BUFF);
                 if (existingBuff && existingBuff.buffType === 'disrupted') {
                     // Just refresh duration
-                    existingBuff.endTime = Date.now() / 1000 + 12;
+                    existingBuff.endTime = (this.game.state?.simTime || 0) + 12;
                     return;
                 }
                 
@@ -50,7 +50,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                         abilitiesDisabled: true,
                         accuracyReduction: 0.4,
                         movementSlowed: 0.6
-                    }, Date.now() / 1000 + 12, false, 1, 0));
+                    }, (this.game.state?.simTime || 0) + 12, false, 1, 0));
                 disruptedCount++;
             }
         });

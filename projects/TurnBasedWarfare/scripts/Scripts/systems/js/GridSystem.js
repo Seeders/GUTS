@@ -7,6 +7,11 @@ class GridSystem {
         this.validationCache = new Map();
         this.lastCacheClean = 0;
         this.CACHE_CLEAN_INTERVAL = 10000;
+
+        // NEW: track which half each team owns
+        this.teamSides = { player: 'left', enemy: 'right' };
+        this.leftBounds = null;
+        this.rightBounds = null;
     }
     
     init(terrainSize = 768, cellSize = 48) {
@@ -24,21 +29,25 @@ class GridSystem {
         };
         
         this.gridVisualization = null;
-        
-        // Pre-calculate bounds to avoid repeated calculations
-        this.playerBounds = {
+
+        // Compute half-splits once
+        const half = Math.floor(this.dimensions.width / 2);
+        this.leftBounds = {
             minX: 0,
-            maxX: Math.floor(this.dimensions.width / 2) - 1,
+            maxX: half - 1,
             minZ: 0,
             maxZ: this.dimensions.height - 1
         };
-        
-        this.enemyBounds = {
-            minX: Math.floor(this.dimensions.width / 2),
+        this.rightBounds = {
+            minX: half,
             maxX: this.dimensions.width - 1,
             minZ: 0,
             maxZ: this.dimensions.height - 1
         };
+
+        // Default: player=left, enemy=right (can be swapped later)
+        this.playerBounds = this.leftBounds;
+        this.enemyBounds  = this.rightBounds;
         
         // Pre-calculate world bounds for faster collision detection
         this.worldBounds = {
@@ -47,6 +56,29 @@ class GridSystem {
             minZ: this.dimensions.startZ,
             maxZ: this.dimensions.startZ + (this.dimensions.height * cellSize)
         };
+    }
+
+    // NEW: set which half each team owns (call this when you learn sides from the server)
+    setTeamSides(sides) {
+        if (sides?.player === 'left' || sides?.player === 'right') {
+            this.teamSides.player = sides.player;
+        }
+        if (sides?.enemy === 'left' || sides?.enemy === 'right') {
+            this.teamSides.enemy = sides.enemy;
+        }
+
+        // Point player/enemy bounds at the correct half
+        this.playerBounds = (this.teamSides.player === 'left') ? this.leftBounds : this.rightBounds;
+        this.enemyBounds  = (this.teamSides.enemy  === 'left') ? this.leftBounds : this.rightBounds;
+
+        // Any cached validations based on previous bounds are now stale
+        this.validationCache.clear();
+
+        // Optional: log for debugging
+        console.log('[GridSystem] Sides set:', this.teamSides, {
+            playerBounds: this.playerBounds,
+            enemyBounds: this.enemyBounds
+        });
     }
     
     createVisualization(scene) {
@@ -145,7 +177,8 @@ class GridSystem {
             return cached.result;
         }
         
-        const bounds = team === 'player' ? this.playerBounds : this.enemyBounds;
+        // IMPORTANT: use dynamic bounds based on current side assignment
+        const bounds = (team === 'player') ? this.playerBounds : this.enemyBounds;
         
         for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
@@ -252,6 +285,7 @@ class GridSystem {
     }
     
     getBounds(team) {
+        // Keep API compatibility; these references are updated by setTeamSides()
         return team === 'player' ? this.playerBounds : this.enemyBounds;
     }
     
@@ -270,8 +304,11 @@ class GridSystem {
     getGridInfo() {
         return {
             dimensions: this.dimensions,
+            leftBounds: this.leftBounds,
+            rightBounds: this.rightBounds,
             playerBounds: this.playerBounds,
             enemyBounds: this.enemyBounds,
+            teamSides: { ...this.teamSides },
             occupiedCells: this.getOccupiedCells(),
             totalCells: this.dimensions.width * this.dimensions.height,
             occupiedCount: this.state.size,

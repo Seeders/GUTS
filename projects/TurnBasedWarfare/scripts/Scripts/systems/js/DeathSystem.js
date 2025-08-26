@@ -10,7 +10,8 @@ class DeathSystem {
         const dyingEntities = this.game.getEntitiesWith(this.componentTypes.DEATH_STATE);
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
-            const now = Date.now() / 1000;
+            const now = this.game.state?.simTime || 0;
+
             
             if (deathState.isDying) {
                 const timeSinceDeath = now - deathState.deathStartTime;
@@ -48,7 +49,7 @@ class DeathSystem {
         // Add corpse component
         this.game.addComponent(entityId, this.componentTypes.CORPSE, Components.Corpse(
             { ...unitType }, 
-            Date.now() / 1000, 
+            (this.game.state?.simTime || 0), 
             team.team
         ));
         

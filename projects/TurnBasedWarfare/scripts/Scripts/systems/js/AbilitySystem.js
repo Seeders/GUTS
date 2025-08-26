@@ -39,7 +39,8 @@ class AbilitySystem {
     }
     
     processAbilityQueue(deltaTime) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         for (const [entityId, queuedAbility] of this.abilityQueue.entries()) {
             if (now >= queuedAbility.executeTime) {
@@ -56,7 +57,8 @@ class AbilitySystem {
     }
     
     updateAIAbilityUsage(deltaTime) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
             this.considerAbilityUsage(entityId, abilities, now);
@@ -95,7 +97,8 @@ class AbilitySystem {
         const ability = abilities.find(a => a.id === abilityId);
         if (!ability) return false;
         
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         if (!this.isAbilityOffCooldown(entityId, abilityId, now)) {
             return false;
@@ -171,7 +174,8 @@ class AbilitySystem {
     
     getAbilityCooldowns(entityId) {
         const abilities = this.getEntityAbilities(entityId);
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         return abilities.map(ability => ({
             id: ability.id,

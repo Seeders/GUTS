@@ -22,28 +22,31 @@ class GameRoom {
         this.roomId = roomId;
         this.maxPlayers = maxPlayers;
         this.players = new Map();
-        this.gameState = 'waiting'; // waiting, placement, battle, upgrading, ended
+        this.hostPlayerId = null; // Track who is the host
         this.currentRound = 1;
         this.maxRounds = 5;
         this.placementTimer = null;
-        this.placementTimeLimit = 90; // seconds
+        this.placementTimeLimit = 90;
         this.battleResults = null;
         this.createdAt = Date.now();
         this.lastActivity = Date.now();
         
-        // Track placement submissions
         this.placementSubmissions = new Map();
-        this.upgradeSubmissions = new Map();
-        
-        console.log(`Created room ${roomId} with ${maxPlayers} max players`);
+        this.battleReadyConfirmations = new Map();
+        this.battleResults = new Map();
+        this.currentPhase = 'waiting'; // 'placement', 'battle_prep', 'battle', 'battle_results'
     }
-    
+
     addPlayer(socketId, playerData) {
         if (this.players.size >= this.maxPlayers) {
             return { success: false, error: 'Room is full' };
         }
-        
+
         const playerId = `player_${this.players.size + 1}`;
+
+        // Side assignment: first in gets 'left', second gets 'right'
+        const assignedSide = this.players.size === 0 ? 'left' : 'right';
+
         const player = {
             id: playerId,
             socketId: socketId,
@@ -54,61 +57,95 @@ class GameRoom {
             armyPlacements: [],
             upgrades: [],
             wins: 0,
+            isHost: false,          // host tracking
+            side: assignedSide,     // <-- NEW: fixed board side
             joinedAt: Date.now()
         };
-        
+
+        // First player becomes host
+        if (this.players.size === 0) {
+            player.isHost = true;
+            this.hostPlayerId = playerId;
+            console.log(`Player ${player.name} is now the host of room ${this.roomId}`);
+        }
+
         this.players.set(playerId, player);
         this.lastActivity = Date.now();
-        
-        console.log(`Player ${player.name} (${playerId}) joined room ${this.roomId}`);
-        
-        // Start game if room is full
-        if (this.players.size === this.maxPlayers) {
-            this.startGame();
-        }
-        
+
+        console.log(`Player ${player.name} (${playerId}) joined room ${this.roomId} on side=${player.side}`);
+
         return { success: true, playerId, player };
     }
     
     removePlayer(socketId) {
         for (const [playerId, player] of this.players) {
             if (player.socketId === socketId) {
+                const wasHost = player.isHost;
                 this.players.delete(playerId);
                 console.log(`Player ${player.name} left room ${this.roomId}`);
                 
+                // If host left, assign new host
+                if (wasHost && this.players.size > 0) {
+                    const newHost = Array.from(this.players.values())[0];
+                    newHost.isHost = true;
+                    this.hostPlayerId = newHost.id;
+                    console.log(`${newHost.name} is now the host of room ${this.roomId}`);
+                }
+                
                 // End game if player leaves during active game
-                if (this.gameState !== 'waiting' && this.gameState !== 'ended') {
+                if (this.currentPhase !== 'waiting' && this.currentPhase !== 'ended') {
                     this.endGame('player_disconnect');
                 }
                 
-                return playerId;
+                return { playerId, wasHost, newHost: this.hostPlayerId };
             }
         }
         return null;
     }
-    
-    startGame() {
-        if (this.players.size < this.maxPlayers) return;
+    startGameByHost(hostPlayerId) {
+        if (this.hostPlayerId !== hostPlayerId) {
+            return { success: false, error: 'Only the host can start the game' };
+        }
         
-        this.gameState = 'placement';
+        if (this.players.size < this.maxPlayers) {
+            return { success: false, error: 'Not enough players to start' };
+        }
+        
+        // Check if all players are ready
+        const allReady = Array.from(this.players.values()).every(p => p.ready);
+        if (!allReady) {
+            return { success: false, error: 'All players must be ready before starting' };
+        }
+        
+        if (this.currentPhase !== 'waiting') {
+            return { success: false, error: 'Game already started' };
+        }
+        
+        this.startGame();
+        return { success: true };
+    }
+
+    startGame() {
+        console.log(`Host started game in room ${this.roomId} with ${this.players.size} players`);
+        
+        this.currentPhase = 'placement';
         this.currentRound = 1;
         
         // Reset all players for new game
         for (const player of this.players.values()) {
-            player.ready = false;
             player.gold = 100;
             player.health = 100;
             player.armyPlacements = [];
             player.upgrades = [];
             player.wins = 0;
+            // Keep ready state and host status unchanged
         }
         
-        console.log(`Starting game in room ${this.roomId}`);
         this.startPlacementPhase();
     }
     
     startPlacementPhase() {
-        this.gameState = 'placement';
+        this.currentPhase = 'placement';
         this.placementSubmissions.clear();
         
         // Clear placement timer if exists
@@ -141,39 +178,79 @@ class GameRoom {
     }
     
     submitPlacements(playerId, placements) {
-        if (this.gameState !== 'placement') {
+        if (this.currentPhase !== 'placement') {
             return { success: false, error: 'Not in placement phase' };
         }
-        
+
         const player = this.players.get(playerId);
         if (!player) {
             return { success: false, error: 'Player not found' };
         }
-        
-        // Validate placements (basic validation)
-        if (!this.validatePlacements(placements, player.gold)) {
-            return { success: false, error: 'Invalid placements' };
-        }
-        
+
         // Store placements
         this.placementSubmissions.set(playerId, {
             placements,
             submittedAt: Date.now()
         });
-        
+
         player.armyPlacements = placements;
         player.ready = true;
-        
-        console.log(`Player ${player.name} submitted placements for round ${this.currentRound}`);
-        
+
+        console.log(`Player ${player.name} submitted ${placements.length} placements`);
+
         // Check if all players have submitted
         if (this.placementSubmissions.size === this.players.size) {
-            this.endPlacementPhase();
+            this.startBattlePrep();
         }
-        
+
         return { success: true };
     }
-    
+    startBattlePrep() {
+        this.currentPhase = 'battle_prep';
+        this.battleReadyConfirmations.clear();
+        
+        console.log(`All players submitted placements in room ${this.roomId}, sending opponent data`);
+
+        // Send all placements to all players
+        for (const [playerId, player] of this.players) {
+            const opponentPlacements = [];
+            
+            // Collect placements from other players
+            for (const [otherPlayerId, otherPlayer] of this.players) {
+                if (otherPlayerId !== playerId) {
+                    opponentPlacements.push(...otherPlayer.armyPlacements);
+                }
+            }
+
+            const socket = io.sockets.sockets.get(player.socketId);
+            if (socket) {
+                socket.emit('battle_prep', {
+                    opponentPlacements: opponentPlacements,
+                    allPlayerData: Array.from(this.players.values()).map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        placements: p.armyPlacements
+                    }))
+                });
+            }
+        }
+    }
+    confirmBattleReady(playerId) {
+        if (this.currentPhase !== 'battle_prep') {
+            return { success: false, error: 'Not in battle prep phase' };
+        }
+
+        this.battleReadyConfirmations.set(playerId, Date.now());
+        
+        console.log(`Player ${playerId} confirmed battle ready (${this.battleReadyConfirmations.size}/${this.players.size})`);
+
+        // Check if all players are ready for battle
+        if (this.battleReadyConfirmations.size === this.players.size) {
+            this.startBattle();
+        }
+
+        return { success: true };
+    }
     validatePlacements(placements, playerGold) {
         // Basic validation - check if placement cost doesn't exceed gold
         let totalCost = 0;
@@ -193,91 +270,114 @@ class GameRoom {
             clearTimeout(this.placementTimer);
             this.placementTimer = null;
         }
+        this.startBattlePrep();       
         
-        this.gameState = 'battle';
-        console.log(`Battle phase started in room ${this.roomId}`);
-        
-        // Simulate battle (in real game, this would be handled by game engine)
-        setTimeout(() => {
-            this.resolveBattle();
-        }, 3000); // 3 second battle simulation
     }
-    
-    resolveBattle() {
-        // Simple battle resolution - in real game this would be much more complex
-        const playerIds = Array.from(this.players.keys());
-        const results = this.simulateBattle(playerIds);
+    startBattle() {
+        this.currentPhase = 'battle';
+        this.battleResults.clear();
         
-        this.battleResults = results;
-        
-        // Apply battle results
-        for (const [playerId, result] of Object.entries(results.playerResults)) {
-            const player = this.players.get(playerId);
-            if (player) {
-                player.health = Math.max(0, result.healthRemaining);
-                if (result.winner) {
-                    player.wins++;
-                }
+        console.log(`Starting battle in room ${this.roomId}`);
+
+        // Tell all clients to start their local battles
+        for (const [playerId, player] of this.players) {
+            const socket = io.sockets.sockets.get(player.socketId);
+            if (socket) {
+                socket.emit('start_battle', {
+                    battleSeed: Date.now(), // For deterministic randomness
+                    battleConfig: {
+                        maxDuration: 30000, // 30 second max battle
+                        roundNumber: this.currentRound
+                    }
+                });
             }
         }
-        
-        console.log(`Battle resolved in room ${this.roomId}:`, results);
-        
-        // Check for game end conditions
-        if (this.shouldEndGame()) {
-            this.endGame('victory');
-        } else {
-            this.startUpgradePhase();
-        }
     }
-    
-    simulateBattle(playerIds) {
-        // Simple battle simulation - randomly determine winner with some logic
-        const results = {
-            winner: null,
-            battleDuration: Math.random() * 30 + 10, // 10-40 seconds
-            playerResults: {}
-        };
-        
-        // For now, simple random with army size influence
-        const playerStrengths = {};
-        
-        for (const playerId of playerIds) {
-            const player = this.players.get(playerId);
-            const armySize = player.armyPlacements?.length || 0;
-            const armyValue = player.armyPlacements?.reduce((sum, p) => sum + (p.unitType?.value || 0), 0) || 0;
-            
-            playerStrengths[playerId] = {
-                size: armySize,
-                value: armyValue,
-                strength: armySize + (armyValue / 50) + Math.random() * 10
-            };
+    submitBattleResult(playerId, battleResult) {
+        if (this.currentPhase !== 'battle') {
+            return { success: false, error: 'Not in battle phase' };
         }
+
+        this.battleResults.set(playerId, {
+            result: battleResult,
+            submittedAt: Date.now()
+        });
+
+        console.log(`Player ${playerId} submitted battle result: ${battleResult.winner}`);
+
+        // Check if all players submitted results
+        if (this.battleResults.size === this.players.size) {
+            this.processBattleResults();
+        }
+
+        return { success: true };
+    }
+    processBattleResults() {
+        const results = Array.from(this.battleResults.values());
         
-        // Determine winner based on strength
-        const sortedPlayers = playerIds.sort((a, b) => 
-            playerStrengths[b].strength - playerStrengths[a].strength
+        // Verify all clients got the same result
+        const firstResult = results[0].result;
+        const allMatch = results.every(r => 
+            r.result.winner === firstResult.winner &&
+            r.result.survivorCount === firstResult.survivorCount
         );
-        
-        const winner = sortedPlayers[0];
-        const loser = sortedPlayers[1];
-        
-        results.winner = winner;
-        results.playerResults[winner] = {
-            winner: true,
-            healthRemaining: Math.max(60, 100 - Math.random() * 40),
-            damageDealt: playerStrengths[winner].strength
-        };
-        
-        results.playerResults[loser] = {
-            winner: false,
-            healthRemaining: Math.max(0, this.players.get(loser).health - Math.random() * 50 - 20),
-            damageDealt: playerStrengths[loser].strength
-        };
-        
-        return results;
+
+        if (!allMatch) {
+            console.error('Battle results mismatch! Results:', results);
+            // Handle desync - for now, use first result
+        }
+
+        const finalResult = firstResult;
+        this.currentPhase = 'round_end';
+
+        // Send final results to all players
+        for (const [playerId, player] of this.players) {
+            const socket = io.sockets.sockets.get(player.socketId);
+            if (socket) {
+                socket.emit('battle_complete', {
+                    battleResult: finalResult,
+                    verified: allMatch,
+                    roundNumber: this.currentRound
+                });
+            }
+        }
+
+        // Prepare for next round or end game
+        setTimeout(() => {
+            if (this.shouldEndGame(finalResult)) {
+                this.endGame(finalResult.winner);
+            } else {
+                this.prepareNextRound();
+            }
+        }, 3000);
     }
-    
+    prepareNextRound() {
+        this.currentRound++;
+        this.currentPhase = 'placement';
+        this.placementSubmissions.clear();
+        this.battleReadyConfirmations.clear();
+        this.battleResults.clear();
+
+        // Reset player ready states
+        for (const player of this.players.values()) {
+            player.ready = false;
+            player.armyPlacements = [];
+        }
+
+        console.log(`Starting round ${this.currentRound} in room ${this.roomId}`);
+
+        // Notify all players of new round
+        for (const [playerId, player] of this.players) {
+            const socket = io.sockets.sockets.get(player.socketId);
+            if (socket) {
+                socket.emit('new_round', {
+                    roundNumber: this.currentRound,
+                    gameState: this.getGameState()
+                });
+            }
+        }
+    }
+
     shouldEndGame() {
         // Check if any player is eliminated or max rounds reached
         const alivePlayers = Array.from(this.players.values()).filter(p => p.health > 0);
@@ -285,7 +385,7 @@ class GameRoom {
     }
     
     startUpgradePhase() {
-        this.gameState = 'upgrading';
+        this.currentPhase = 'upgrading';
         this.upgradeSubmissions.clear();
         
         console.log(`Upgrade phase started in room ${this.roomId}`);
@@ -297,7 +397,7 @@ class GameRoom {
     }
     
     submitUpgrades(playerId, upgrades) {
-        if (this.gameState !== 'upgrading') {
+        if (this.currentPhase !== 'upgrading') {
             return { success: false, error: 'Not in upgrade phase' };
         }
         
@@ -334,7 +434,7 @@ class GameRoom {
     }
     
     endGame(reason) {
-        this.gameState = 'ended';
+        this.currentPhase = 'ended';
         
         if (this.placementTimer) {
             clearTimeout(this.placementTimer);
@@ -377,18 +477,22 @@ class GameRoom {
     }
     
     getGameState() {
+        console.log(this.currentPhase);
         return {
             roomId: this.roomId,
-            gameState: this.gameState,
+            currentPhase: this.currentPhase,
             currentRound: this.currentRound,
             maxRounds: this.maxRounds,
+            hostPlayerId: this.hostPlayerId, // Include host info
             players: Array.from(this.players.values()).map(p => ({
                 id: p.id,
                 name: p.name,
                 ready: p.ready,
                 gold: p.gold,
                 health: p.health,
-                wins: p.wins
+                wins: p.wins,
+                isHost: p.isHost, // Include host status
+                side: p.side // <-- include side in state sent to clients
             })),
             placementTimeRemaining: this.placementTimer ? this.placementTimeLimit : 0,
             battleResults: this.battleResults
@@ -407,7 +511,7 @@ function generateRoomId() {
 
 function findAvailableRoom() {
     for (const room of gameRooms.values()) {
-        if (room.players.size < room.maxPlayers && room.gameState === 'waiting') {
+        if (room.players.size < room.maxPlayers && room.currentPhase === 'waiting') {
             return room;
         }
     }
@@ -528,7 +632,136 @@ io.on('connection', (socket) => {
             socket.emit('error', result.error);
         }
     });
-    
+    socket.on('toggle_ready', () => {
+        const roomId = playerRooms.get(socket.id);
+        const room = gameRooms.get(roomId);
+        
+        if (!room) {
+            socket.emit('error', 'Room not found');
+            return;
+        }
+        
+        let player = null;
+        for (const p of room.players.values()) {
+            if (p.socketId === socket.id) {
+                player = p;
+                break;
+            }
+        }
+        
+        if (!player) {
+            socket.emit('error', 'Player not found in room');
+            return;
+        }
+        
+        // Toggle ready state
+        player.ready = !player.ready;
+        room.lastActivity = Date.now();
+        
+        console.log(`Player ${player.name} is now ${player.ready ? 'ready' : 'not ready'} in room ${roomId}`);
+        
+        socket.emit('ready_toggled', { 
+            ready: player.ready,
+            playerId: player.id 
+        });
+        
+        // Update entire room with new game state (no auto-start)
+        io.to(roomId).emit('game_state_updated', room.getGameState());
+    });
+    socket.on('start_game', () => {
+        const roomId = playerRooms.get(socket.id);
+        const room = gameRooms.get(roomId);
+        
+        if (!room) {
+            socket.emit('error', 'Room not found');
+            return;
+        }
+        
+        // Find player
+        let player = null;
+        for (const p of room.players.values()) {
+            if (p.socketId === socket.id) {
+                player = p;
+                break;
+            }
+        }
+        
+        if (!player) {
+            socket.emit('error', 'Player not found in room');
+            return;
+        }
+        
+        // Attempt to start game
+        const result = room.startGameByHost(player.id);
+        
+        if (result.success) {
+            console.log(`Game started by host ${player.name} in room ${roomId}`);
+            io.to(roomId).emit('game_started', room.getGameState());
+        } else {
+            socket.emit('error', result.error);
+        }
+    });
+    socket.on('confirm_battle_ready', () => {
+        const roomId = playerRooms.get(socket.id);
+        const room = gameRooms.get(roomId);
+        
+        if (!room) {
+            socket.emit('error', 'Room not found');
+            return;
+        }
+
+        let playerId = null;
+        for (const [pid, player] of room.players) {
+            if (player.socketId === socket.id) {
+                playerId = pid;
+                break;
+            }
+        }
+
+        if (!playerId) {
+            socket.emit('error', 'Player not found in room');
+            return;
+        }
+
+        const result = room.confirmBattleReady(playerId);
+        
+        if (result.success) {
+            socket.emit('battle_ready_confirmed');
+        } else {
+            socket.emit('error', result.error);
+        }
+    });
+
+    socket.on('submit_battle_result', (data) => {
+        const roomId = playerRooms.get(socket.id);
+        const room = gameRooms.get(roomId);
+        
+        if (!room) {
+            socket.emit('error', 'Room not found');
+            return;
+        }
+
+        let playerId = null;
+        for (const [pid, player] of room.players) {
+            if (player.socketId === socket.id) {
+                playerId = pid;
+                break;
+            }
+        }
+
+        if (!playerId) {
+            socket.emit('error', 'Player not found in room');
+            return;
+        }
+
+        const result = room.submitBattleResult(playerId, data.battleResult);
+        
+        if (result.success) {
+            socket.emit('battle_result_submitted');
+        } else {
+            socket.emit('error', result.error);
+        }
+    });
     socket.on('submit_placements', (data) => {
         const roomId = playerRooms.get(socket.id);
         const room = gameRooms.get(roomId);
@@ -641,7 +874,7 @@ io.on('connection', (socket) => {
 app.get('/api/rooms', (req, res) => {
     const publicRooms = [];
     for (const [roomId, room] of gameRooms) {
-        if (room.gameState === 'waiting' && room.players.size < room.maxPlayers) {
+        if (room.currentPhase === 'waiting' && room.players.size < room.maxPlayers) {
             publicRooms.push({
                 roomId,
                 playerCount: room.players.size,
@@ -657,7 +890,7 @@ app.get('/api/stats', (req, res) => {
     res.json({
         activeRooms: gameRooms.size,
         totalPlayers: Array.from(gameRooms.values()).reduce((sum, room) => sum + room.players.size, 0),
-        gamesInProgress: Array.from(gameRooms.values()).filter(room => room.gameState !== 'waiting').length
+        gamesInProgress: Array.from(gameRooms.values()).filter(room => room.currentPhase !== 'waiting').length
     });
 });
 

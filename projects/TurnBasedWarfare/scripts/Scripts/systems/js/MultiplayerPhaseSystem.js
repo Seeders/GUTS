@@ -7,7 +7,11 @@ class MultiplayerPhaseSystem {
         this.phaseTimer = null;
         this.lastBattleEndCheck = 0;
         this.BATTLE_END_CHECK_INTERVAL = 1.0;
-        
+        this.FIXED_DT = 1 / 60;        // 60Hz simulation
+        this._simAccum = 0;
+        this.MAX_ACCUM = 0.25;         // never try to catch up more than 250ms
+        this.MAX_STEPS_PER_FRAME = 8;  // cap work per frame
+
         this.config = {
             placementPhaseTime: 90, // Not used in multiplayer, but kept for compatibility
             enemyPlacementDelay: 0, // No AI enemy in multiplayer
@@ -43,6 +47,7 @@ class MultiplayerPhaseSystem {
         this.updateGoldDisplay();
         
         if (state.round > 1) {
+            this.clearBattlefield();
             this.game.placementSystem.startNewPlacementPhase();
         }
         
@@ -79,17 +84,20 @@ class MultiplayerPhaseSystem {
     startBattlePhase() {
         const state = this.game.state;
         state.phase = 'battle';
-        
+        state.simTime = 0;     // deterministic sim clock
+        state.simTick = 0;
+        this._simAccum = 0;
+
         if (this.game.teamHealthSystem) {
             this.game.teamHealthSystem.onBattleStart();
         }
-        
+
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(`Round ${state.round} multiplayer battle begins!`);
         }
-        
+
         this.updatePhaseUI();
-        
+
         const readyButton = document.getElementById('multiplayerReadyButton');
         if (readyButton) {
             readyButton.disabled = true;
@@ -97,10 +105,57 @@ class MultiplayerPhaseSystem {
         }
     }
 
+
     checkForRoundEnd() {
-        // In multiplayer mode, server determines battle results
-        // This method is called by server events via MultiplayerManager
-        return;
+        if (this.game.state.phase !== 'battle' || this.game.state.roundEnding) {
+            return;
+        }
+        
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const allLivingEntities = this.game.getEntitiesWith(
+            ComponentTypes.TEAM, 
+            ComponentTypes.HEALTH,
+            ComponentTypes.UNIT_TYPE
+        );
+        
+        const aliveEntities = allLivingEntities.filter(id => {
+            const health = this.game.getComponent(id, ComponentTypes.HEALTH);
+            return health && health.current > 0;
+        });
+        
+        const playerUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'player';
+        });
+        
+        const enemyUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'enemy';
+        });
+        
+        let roundResult = null;
+        let victoriousUnits = [];
+        
+        if (playerUnits.length === 0 && enemyUnits.length > 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDamage('enemy', enemyUnits);
+            victoriousUnits = enemyUnits;
+        } else if (enemyUnits.length === 0 && playerUnits.length > 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDamage('player', playerUnits);
+            victoriousUnits = playerUnits;
+        } else if (playerUnits.length === 0 && enemyUnits.length === 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDraw();
+            victoriousUnits = [];
+        }
+        console.log("roundResult", roundResult);
+        if (roundResult) {
+            this.game.state.roundEnding = true;
+            
+            if (victoriousUnits.length > 0) {
+                this.startVictoryCelebration(victoriousUnits);
+            }
+            
+            this.handleRoundResult(roundResult);
+        }
     }
 
     // Gold distribution is handled by server
@@ -283,7 +338,19 @@ class MultiplayerPhaseSystem {
             }
         }
     }
-    
+    startVictoryCelebration(victoriousUnits) {
+        if (!this.game.animationSystem) return;
+        
+        // Determine which team won
+        const firstUnit = victoriousUnits[0];
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
+        const teamType = team?.team || 'player';
+        
+        victoriousUnits.forEach(entityId => {
+            this.game.animationSystem.startCelebration(entityId, teamType);
+        });
+    }
     // Handle round results from server
     handleRoundResult(roundResult) {
         const state = this.game.state;
@@ -324,19 +391,6 @@ class MultiplayerPhaseSystem {
         }
         
         this.updatePhaseUI();
-    }
-    
-    setupNextRound(stats) {
-        const state = this.game.state;
-        state.round++;
-        state.roundEnding = false;
-        
-        // Clear battlefield for next round
-        this.clearBattlefield();
-        
-        setTimeout(() => {
-            this.startPlacementPhase();
-        }, this.config.roundTransitionDelay);
     }
     
     clearBattlefield() {
@@ -389,6 +443,15 @@ class MultiplayerPhaseSystem {
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
+        if (this.game.gridSystem?.clear) {
+          this.game.gridSystem.clear();
+        }
+    
+        // Drop any opponent cache so we don't double-spawn next round
+        if (this.game.placementSystem) {
+          this.game.placementSystem.enemyPlacements = [];
+          this.game.placementSystem.opponentPlacements = [];
+        }
     }
     
     showPlacementHints() {
@@ -408,23 +471,32 @@ class MultiplayerPhaseSystem {
             }
         }, this.config.hintDisplayDelay);
     }
-    
+            
+        
     update(deltaTime) {
-        const now = Date.now() / 1000;
+        const nowWall = (this.game.state?.simTime || 0);
 
-        // Check for battle end less frequently since server manages it
-        if (now - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
-            // In multiplayer, we don't check locally - server handles this
-            this.lastBattleEndCheck = now;
+        // Deterministic sim clock in battle
+        if (this.game.state?.phase === 'battle') {
+            this._simAccum += deltaTime;
+            while (this._simAccum >= this.FIXED_DT) {
+                this.game.state.simTime += this.FIXED_DT;
+                this.game.state.simTick = (this.game.state.simTick || 0) + 1;
+                this._simAccum -= this.FIXED_DT;
+            }
         }
 
-        // Update UI elements
-        this.updatePhaseUI();
-        this.updateReadyButtonState();
-        this.updateSquadCountDisplay();
-        this.updateGoldDisplay();
+        // (keep your existing round-end checks/UI here; they can use nowWall safely)
+        if (nowWall - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
+            this.checkForRoundEnd?.();
+            this.lastBattleEndCheck = nowWall;
+        }
+
+        this.updatePhaseUI?.();
+        this.updateReadyButtonState?.();
+        this.updateSquadCountDisplay?.();
+        this.updateGoldDisplay?.();
     }
-    
     // Reset for new game
     reset() {
         if (this.phaseTimer) {
@@ -436,6 +508,7 @@ class MultiplayerPhaseSystem {
         state.round = 1;
         state.playerGold = this.config.startingGold;
         state.phase = 'placement';
+        console.log('set state to placement 1');
         state.phaseTimeLeft = null;
         state.playerReady = false;
         state.roundEnding = false;

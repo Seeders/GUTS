@@ -162,7 +162,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.addComponent(imageId, this.componentTypes.EQUIPMENT, 
             components.Equipment());
         this.game.addComponent(imageId, this.componentTypes.LIFETIME, 
-            components.Lifetime(this.imageDuration, Date.now() / 1000));
+            components.Lifetime(this.imageDuration, (this.game.state?.simTime || 0)));
        
         this.game.lifetimeSystem.addLifetime(imageId, this.imageDuration, {
             onDestroy: (entityId) => {

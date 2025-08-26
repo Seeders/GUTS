@@ -22,7 +22,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             const existingBuff = this.game.getComponent(allyId, this.game.componentManager.getComponentTypes().BUFF);
             if (existingBuff && existingBuff.buffType === 'rallied') {
                 // Refresh duration instead of stacking
-                existingBuff.endTime = Date.now() / 1000 + 20;
+                existingBuff.endTime = (this.game.state?.simTime || 0) + 20;
                 return;
             }
             
@@ -32,7 +32,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
                     damageMultiplier: 1.3, 
                     moralBoost: true, 
                     fearImmunity: true 
-                }, Date.now() / 1000 + 20, false, 1, 0));
+                }, (this.game.state?.simTime || 0) + 20, false, 1, 0));
         });
         
         this.logAbilityUsage(casterEntity, `Warlord rallies ${allies.length} allies to battle!`, true);

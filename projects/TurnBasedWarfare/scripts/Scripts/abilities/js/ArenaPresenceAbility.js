@@ -27,7 +27,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             const existingBuff = this.game.getComponent(enemyId, this.game.componentManager.getComponentTypes().BUFF);
             if (existingBuff && existingBuff.buffType === 'intimidated') {
                 // Refresh duration instead of stacking
-                existingBuff.endTime = Date.now() / 1000 + 15;
+                existingBuff.endTime = (this.game.state?.simTime || 0) + 15;
                 return;
             }
             
@@ -36,7 +36,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
                 Components.Buff('intimidated', { 
                     damageReduction: 0.25, 
                     accuracyReduction: 0.2 
-                }, Date.now() / 1000 + 15, false, 1, 0));
+                }, (this.game.state?.simTime || 0) + 15, false, 1, 0));
             intimidatedCount++;
         });
         

@@ -107,7 +107,6 @@ class AutoBattleMultiplayerManager {
             const originalSelectMode = this.game.gameModeManager.selectMode.bind(this.game.gameModeManager);
             this.game.gameModeManager.selectMode = (modeId) => {
                 originalSelectMode(modeId);
-                debugger;
                 const mode = this.game.gameModeManager.modes[modeId];
                 if (mode && mode.isMultiplayer) {
                     this.handleMultiplayerModeSelection(mode);
@@ -293,17 +292,21 @@ class AutoBattleMultiplayerManager {
                 playerData: { name: playerName },
                 maxPlayers: maxPlayers
             });
-            
+                        
             this.socket.once('room_created', (data) => {
                 this.roomId = data.roomId;
                 this.playerId = data.playerId;
                 this.isInLobby = true;
-                
+
                 console.log(`Created room ${this.roomId} as ${this.playerId}`);
-                
-                // Show lobby
+
+                // Apply sides & state right away
+                if (data.gameState) {
+                    this.updateGameStateFromServer(data.gameState);
+                }
+
+                // Show lobby after state is applied
                 this.showLobby(data.gameState);
-                
                 resolve(data);
             });
             
@@ -323,17 +326,21 @@ class AutoBattleMultiplayerManager {
                 roomId: roomId,
                 playerData: { name: playerName }
             });
-            
+                        
             this.socket.once('room_joined', (data) => {
                 this.roomId = data.roomId;
                 this.playerId = data.playerId;
                 this.isInLobby = true;
-                
+
                 console.log(`Joined room ${this.roomId} as ${this.playerId}`);
-                
-                // Show lobby
+
+                // Apply sides & state right away
+                if (data.gameState) {
+                    this.updateGameStateFromServer(data.gameState);
+                }
+
+                // Show lobby after state is applied
                 this.showLobby(data.gameState);
-                
                 resolve(data);
             });
             
@@ -390,7 +397,7 @@ class AutoBattleMultiplayerManager {
             this.game.uiSystem.showLobby({
                 roomId: this.roomId,
                 players: gameState.players || [],
-                gameState: gameState.gameState
+                currentPhase: gameState.currentPhase
             });
         }
     }
@@ -400,16 +407,7 @@ class AutoBattleMultiplayerManager {
         
         console.log('Transitioning from lobby to game...');
         
-        if (this.game.uiSystem && this.game.uiSystem.showGameScreen) {
-            this.game.uiSystem.showGameScreen();
-        }
-        
-        // Start the game
-        setTimeout(() => {
-            if (this.game.uiSystem && this.game.uiSystem.start) {
-                this.game.uiSystem.start();
-            }
-        }, 500);
+        this.game.gameManager.startSelectedMode();
     }
 
     // =============================================
@@ -418,7 +416,34 @@ class AutoBattleMultiplayerManager {
 
     setupEventHandlers() {
         if (!this.socket) return;
+
+        this.socket.on('ready_toggled', (data) => {
+            this.showNotification(
+                data.ready ? 'You are now ready!' : 'Ready status removed', 
+                data.ready ? 'success' : 'info'
+            );
+        });
         
+        // FIX: Add game start handler
+        this.socket.on('game_started', (gameState) => {
+            console.log('Game started by host! Transitioning to game...');
+            this.transitionToGame();
+        });
+        this.socket.on('player_left', (data) => {
+            const opponent = this.opponents.get(data.playerId);
+            const playerName = opponent ? opponent.name : 'Player';
+            
+            if (data.newHost === this.playerId) {
+                this.showNotification(`You are now the host! ${playerName} left the game`, 'info');
+            } else {
+                this.showNotification(`${playerName} left the game`, 'warning');
+            }
+            
+            if (!this.isInLobby) {
+                this.showNotification('Game ended due to player disconnect', 'error');
+                setTimeout(() => this.exitToMainMenu(), 3000);
+            }
+        });
         this.socket.on('game_state_updated', (gameState) => {
             this.updateGameStateFromServer(gameState);
         });
@@ -433,6 +458,26 @@ class AutoBattleMultiplayerManager {
         
         this.socket.on('battle_resolved', (data) => {
             this.handleBattleResolved(data);
+        });
+
+        this.socket.on('battle_prep', (data) => {
+            console.log('Received opponent placements for battle prep', data);
+            this.handleBattlePrep(data);
+        });
+
+        this.socket.on('start_battle', (data) => {
+            console.log('Server says start battle!', data);
+            this.handleStartBattle(data);
+        });
+
+        this.socket.on('battle_complete', (data) => {
+            console.log('Battle completed, results verified:', data);
+            this.handleBattleComplete(data);
+        });
+
+        this.socket.on('new_round', (data) => {
+            console.log('New round starting:', data);
+            this.handleNewRound(data);
         });
         
         this.socket.on('game_ended', (data) => {
@@ -450,38 +495,56 @@ class AutoBattleMultiplayerManager {
 
     updateGameStateFromServer(serverGameState) {
         this.lastGameState = serverGameState;
-        
+
         // Update local game state
         if (this.game.state) {
             this.game.state.round = serverGameState.currentRound;
             this.game.state.phase = this.convertServerPhaseToLocal(serverGameState.gameState);
-            
-            // Update player data
+
+            // My player data (contains side now)
             const myPlayerData = serverGameState.players.find(p => p.id === this.playerId);
             if (myPlayerData) {
                 this.game.state.playerGold = myPlayerData.gold;
+                this.game.state.mySide = myPlayerData.side || 'left';
             }
-            
-            // Update opponents
+
+            // Opponents map (keep their sides too)
             this.opponents.clear();
             serverGameState.players.forEach(player => {
                 if (player.id !== this.playerId) {
                     this.opponents.set(player.id, player);
                 }
             });
-        }
-        
-        // Update UI based on current state
-        if (this.isInLobby) {
-            if (this.game.uiSystem && this.game.uiSystem.updateLobbyInfo) {
-                this.game.uiSystem.updateLobbyInfo({
-                    roomId: this.roomId,
-                    players: serverGameState.players || [],
-                    gameState: serverGameState.gameState
-                });
+
+            // Derive opponent side (first opponent if 1v1)
+            let opponentSide = 'right';
+            const firstOpponent = Array.from(this.opponents.values())[0];
+            if (firstOpponent && firstOpponent.side) {
+                opponentSide = firstOpponent.side;
+            } else if (this.game.state.mySide === 'right') {
+                opponentSide = 'left';
             }
+
+            const sides = {
+                player: this.game.state.mySide || 'left',
+                enemy: opponentSide
+            };
+
+            // Placement system needs the sides for UI and spawn logic
+            if (this.game.placementSystem?.setTeamSides) {
+                this.game.placementSystem.setTeamSides(sides);
+            }
+
+            // IMPORTANT: Grid must also know the sides for validation
+            if (this.game.gridSystem?.setTeamSides) {
+                this.game.gridSystem.setTeamSides(sides);
+            }
+        }
+
+        // Update UI / phases
+        if (this.isInLobby) {
+            this.showLobby(serverGameState);
         } else {
-            // In-game updates are handled by individual systems
             this.handlePhaseUpdate(serverGameState);
         }
     }
@@ -498,15 +561,17 @@ class AutoBattleMultiplayerManager {
     }
 
     handlePhaseUpdate(gameState) {
-        switch (gameState.gameState) {
+        
+        this.game.state.phase = gameState.currentPhase;
+        switch (gameState.currentPhase) {
             case 'placement':
                 this.syncPlacementPhase(gameState);
                 break;
             case 'battle':
-                this.syncBattlePhase(gameState);
+                //this.syncBattlePhase(gameState);
                 break;
             case 'upgrading':
-                this.syncUpgradePhase(gameState);
+              //  this.syncUpgradePhase(gameState);
                 break;
             case 'ended':
                 this.syncGameEnd(gameState);
@@ -586,6 +651,7 @@ class AutoBattleMultiplayerManager {
 
     syncPlacementPhase(gameState) {
         // Start placement phase if needed
+        console.log(this.game.state, gameState);
         if (this.game.phaseSystem && this.game.state.phase !== 'placement') {
             this.game.phaseSystem.startPlacementPhase();
         }
@@ -835,7 +901,166 @@ class AutoBattleMultiplayerManager {
     getOpponents() {
         return Array.from(this.opponents.values());
     }
+    handleBattlePrep(data) {
+        console.log('Applying opponent placements and preparing for battle');
+        
+        // Apply opponent placements to game world
+        if (this.game.placementSystem && data.opponentPlacements) {
+            this.game.placementSystem.applyOpponentPlacements(data.opponentPlacements);
+        }
 
+        // Auto-confirm we're ready for battle
+        setTimeout(() => {
+            this.socket.emit('confirm_battle_ready');
+            this.showNotification('Army loaded! Ready for battle!', 'success');
+        }, 1000);
+    }
+
+    handleStartBattle(data) {
+        // Make RNG deterministic across clients for this battle
+        this.beginDeterministicRNG(String(data.battleSeed));
+
+        // Reset simulation clock (MultiplayerPhaseSystem will advance it)
+        if (this.game.state) {
+            this.game.state.simTime = 0;
+            this.game.state.simTick = 0;
+        }
+        
+        this.battleStartTime = Date.now(); // Make sure this is set
+        this.checkForBattleCompletion();   // Add this line
+
+        if (this.game.phaseSystem?.startBattlePhase) {
+            this.game.phaseSystem.startBattlePhase();
+        }
+    }
+
+    checkForBattleCompletion() {
+        const checkInterval = setInterval(() => {
+            if (this.game.state.phase === 'ended' || this.game.state.roundEnding) {
+                clearInterval(checkInterval);
+                this.submitBattleResult();
+            }
+
+            // Timeout after 35 seconds
+            if (Date.now() - this.battleStartTime > 35000) {
+                clearInterval(checkInterval);
+                this.submitBattleResult();
+            }
+        }, 1000);
+    }
+
+    submitBattleResult() {
+        // Collect battle result from local simulation
+        const battleResult = this.collectBattleResult();
+        
+        console.log('Submitting battle result:', battleResult);
+        
+        this.socket.emit('submit_battle_result', {
+            battleResult: battleResult
+        });
+    }
+
+    collectBattleResult() {
+        // Determine winner based on remaining units
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const allLivingEntities = this.game.getEntitiesWith(
+            ComponentTypes.TEAM, 
+            ComponentTypes.HEALTH
+        );
+
+        const aliveEntities = allLivingEntities.filter(id => {
+            const health = this.game.getComponent(id, ComponentTypes.HEALTH);
+            return health && health.current > 0;
+        });
+
+        const playerUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'player';
+        });
+
+        const enemyUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'enemy';
+        });
+
+        let winner = null;
+        if (playerUnits.length > 0 && enemyUnits.length === 0) {
+            winner = this.playerId;
+        } else if (enemyUnits.length > 0 && playerUnits.length === 0) {
+            winner = Array.from(this.opponents.keys())[0]; // First opponent
+        }
+        // If both have units or both have none, winner stays null (draw)
+
+        return {
+            winner: winner,
+            playerSurvivors: playerUnits.length,
+            enemySurvivors: enemyUnits.length,
+            survivorCount: aliveEntities.length,
+            battleDuration: Date.now() - this.battleStartTime
+        };
+    }
+
+    handleBattleComplete(data) {
+        // Restore RNG so UI/random cosmetics don't consume deterministic stream
+        this.endDeterministicRNG();
+
+        this.showNotification(
+            data.verified ? 'Battle verified!' : 'Battle completed (sync warning)',
+            data.verified ? 'success' : 'warning'
+        );
+
+        if (this.game?.state) {
+            this.game.state.phase = 'ended';
+            this.game.state.roundEnding = true;
+        }
+
+        const delay = this.game?.phaseSystem?.config?.battleCleanupDelay ?? 1500;
+        setTimeout(() => {
+            if (this.game?.phaseSystem?.clearBattlefield) {
+                this.game.phaseSystem.clearBattlefield();
+            }
+        }, delay);
+    }
+
+    handleNewRound(data) {
+        // Reset for new round
+        this.game.state.round = data.roundNumber;
+        
+        if (this.game.phaseSystem && this.game.phaseSystem.startPlacementPhase) {
+            this.game.phaseSystem.startPlacementPhase();
+        }
+    }
+
+    beginDeterministicRNG(seedStr) {
+        // Simple FNV-1a hash for a numeric seed
+        const hashSeed = (s) => {
+            let h = 2166136261 >>> 0;
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return h >>> 0;
+        };
+        const mulberry32 = (a) => {
+            return function() {
+                a |= 0; a = (a + 0x6D2B79F5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        };
+
+        this._origRandom = this._origRandom || Math.random;
+        const prng = mulberry32(hashSeed(String(seedStr)));
+        Math.random = prng;
+    }
+
+    endDeterministicRNG() {
+        if (this._origRandom) {
+            Math.random = this._origRandom;
+            this._origRandom = null;
+        }
+    }
     // =============================================
     // CLEANUP
     // =============================================

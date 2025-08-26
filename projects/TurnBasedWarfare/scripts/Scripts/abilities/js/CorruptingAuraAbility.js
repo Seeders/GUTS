@@ -87,7 +87,7 @@ class CorruptingAuraAbility extends engine.app.appClasses['BaseAbility'] {
                             Components.Buff('dark_empowerment', { 
                                 damageMultiplier: 1.3,
                                 attackSpeedMultiplier: 1.2
-                            }, Date.now() / 1000 + 3, false, 1, 0));
+                            }, (this.game.state?.simTime || 0) + 3, false, 1, 0));
                     }
                 }
             });

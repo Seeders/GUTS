@@ -88,7 +88,21 @@ class UnitCreationManager {
             
             // Update statistics
             this.updateCreationStats(unitType, team);
+
+            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const teamComp = this.game.getComponent(entity, ComponentTypes.TEAM);
+            const combatComp = this.game.getComponent(entity, ComponentTypes.COMBAT);
+            const aiComp = this.game.getComponent(entity, ComponentTypes.AI_STATE);
+            const posComp = this.game.getComponent(entity, ComponentTypes.POSITION);
             
+            console.log(`Created unit ${entity}:`, {
+                requestedTeam: team,
+                actualTeam: teamComp?.team,
+                hasPosition: !!posComp,
+                hasCombat: !!combatComp,
+                hasAI: !!aiComp,
+                position: posComp ? `(${posComp.x}, ${posComp.z})` : 'none'
+            });
             return entity;
         } catch (error) {
             console.error('Failed to create unit:', error);

@@ -298,7 +298,8 @@ class DamageSystem {
         }
 
         // Create new poison effect
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         const poisonEffect = {
             sourceId,
             remainingTicks: ticks,
@@ -327,7 +328,8 @@ class DamageSystem {
      * Process ongoing poison damage
      */
     processStatusEffects(deltaTime) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         for (const [entityId, statusEffects] of this.activeStatusEffects.entries()) {
             const targetHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
@@ -401,7 +403,8 @@ class DamageSystem {
      * Schedule damage to be applied later (for melee attacks, timed effects, etc.)
      */
     scheduleDamage(sourceId, targetId, damage, element, delay, options = {}) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         const triggerTime = now + delay;
         const eventId = `${sourceId}_${targetId}_${now}_${Math.random()}`;
         
@@ -422,7 +425,8 @@ class DamageSystem {
      * Process pending damage events
      */
     processPendingDamage(deltaTime) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         const eventsToRemove = [];
         
         for (const [eventId, event] of this.pendingDamageEvents.entries()) {

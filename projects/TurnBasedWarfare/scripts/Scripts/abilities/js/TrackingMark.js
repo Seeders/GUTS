@@ -32,11 +32,11 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
             if (existingMark.stacks < this.maxMarks) {
                 existingMark.stacks++;
                 existingMark.damageTakenMultiplier = 1 + (this.markDamageIncrease * existingMark.stacks);
-                existingMark.endTime = Date.now() / 1000 + 15; // Refresh duration
+                existingMark.endTime = (this.game.state?.simTime || 0) + 15; // Refresh duration
                 this.logAbilityUsage(casterEntity, `Target marked ${existingMark.stacks} times!`);
             } else {
                 // Just refresh duration if at max stacks
-                existingMark.endTime = Date.now() / 1000 + 15;
+                existingMark.endTime = (this.game.state?.simTime || 0) + 15;
                 this.logAbilityUsage(casterEntity, "Mark refreshed (max stacks reached)!");
             }
         } else {
@@ -46,7 +46,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
                     damageTakenMultiplier: 1 + this.markDamageIncrease,
                     revealed: true,
                     markedBy: casterEntity
-                }, Date.now() / 1000 + 15, true, 1, 0));
+                }, (this.game.state?.simTime || 0) + 15, true, 1, 0));
             
             this.logAbilityUsage(casterEntity, "Ranger marks their prey for the hunt!");
         }

@@ -51,6 +51,18 @@ class MultiplayerPlacementSystem {
         console.log('MultiplayerPlacementSystem initialized');
     }
 
+    update(deltaTime) {
+        if (this.game.state.phase !== 'placement') {
+            return;
+        }
+        
+        const now = performance.now();
+        if (now - this.lastValidationTime > this.config.validationThrottle) {
+            this.updateCursorState();
+            this.lastValidationTime = now;
+        }
+    }
+
     // No AI enemy placement in multiplayer - opponent placements come from server
     placeEnemyUnits(strategy = null, onComplete) {
         // In multiplayer, enemy units come from opponent's placements via server
@@ -87,40 +99,44 @@ class MultiplayerPlacementSystem {
         }
     }
 
+    // Add to MultiplayerPlacementSystem.createEnemyFromOpponentPlacement()
     createEnemyFromOpponentPlacement(opponentPlacement) {
-        // Mirror opponent's placement to enemy side
-        const mirroredGridPos = this.mirrorPlacement(opponentPlacement.gridPosition);
-        
+        console.log('=== ENEMY FROM OPPONENT (no mirror) ===');
+        console.log('Opponent placement:', opponentPlacement);
+
         const enemyPlacement = {
             placementId: `opponent_${opponentPlacement.placementId}`,
-            gridPosition: mirroredGridPos,
+            gridPosition: { ...opponentPlacement.gridPosition }, // as-is
             unitType: opponentPlacement.unitType,
-            cells: opponentPlacement.cells.map(cell => this.mirrorPlacement(cell)),
+            cells: (opponentPlacement.cells || []).map(c => ({ x: c.x, z: c.z })), // as-is
             squadUnits: [],
             isSquad: true,
             roundPlaced: this.game.state.round,
             timestamp: Date.now()
         };
 
-        // Create actual units using GUTS systems
         if (this.game.squadManager && this.game.unitCreationManager) {
             const squadData = this.game.squadManager.getSquadData(opponentPlacement.unitType);
+
+            // Use incoming grid position directly; DON'T mirror
             const unitPositions = this.game.squadManager.calculateUnitPositions(
-                mirroredGridPos, 
-                squadData, 
+                enemyPlacement.gridPosition,
+                squadData,
                 this.game.gridSystem
             );
 
-            unitPositions.forEach(pos => {
+            console.log(`Creating ${unitPositions.length} enemy units at positions:`, unitPositions);
+
+            unitPositions.forEach((pos, index) => {
                 const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
-                
+
                 const entityId = this.game.unitCreationManager.create(
-                    pos.x, 
-                    unitY, 
-                    pos.z, 
-                    opponentPlacement.unitType, 
-                    'enemy'
+                    pos.x,
+                    unitY,
+                    pos.z,
+                    opponentPlacement.unitType,
+                    'enemy' // critical
                 );
 
                 enemyPlacement.squadUnits.push({
@@ -130,13 +146,15 @@ class MultiplayerPlacementSystem {
             });
         }
 
-        this.enemyPlacements.push(enemyPlacement);
-        
-        // Occupy grid cells
-        if (this.game.gridSystem && this.game.gridSystem.occupyCells) {
+        // Occupy the provided cells exactly as given
+        if (this.game.gridSystem?.occupyCells && enemyPlacement.cells?.length) {
             this.game.gridSystem.occupyCells(enemyPlacement.cells, enemyPlacement.placementId);
         }
+
+        // Track for undo/debug if you keep enemyPlacements array
+        this.enemyPlacements.push(enemyPlacement);
     }
+
 
     mirrorPlacement(gridPos) {
         // Mirror position from player side to enemy side
@@ -156,7 +174,30 @@ class MultiplayerPlacementSystem {
             z: gridPos.z
         };
     }
-
+    handleUnitSelectionChange(newUnitType) {
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.cachedWorldPos = null;
+        this.lastMouseX = null;
+        this.lastMouseY = null;
+        this.lastRaycastTime = null;
+        this.lastRaycastMouseX = null;
+        this.lastRaycastMouseY = null;
+        this.approximateWorldScale = null;
+        this.previousWorldPos = null;
+        this.previousMouseX = null;
+        this.previousMouseY = null;
+        
+        if (this.squadValidationCache) {
+            this.squadValidationCache.clear();
+        }
+        
+        if (this.placementPreview) {
+            this.placementPreview.clear();
+        }
+        
+        document.body.style.cursor = 'default';
+    }
     // Handle canvas clicks for unit placement
     handleCanvasClick(event) {
         const state = this.game.state;
@@ -826,27 +867,33 @@ class MultiplayerPlacementSystem {
 
     isValidPlayerPlacement(worldPos) {
         if (!worldPos) return false;
-        
+
         const gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
         if (!this.game.gridSystem.isValidPosition(gridPos)) return false;
-        
+
         const selectedUnit = this.game.state.selectedUnitType;
         if (!selectedUnit) return false;
-        
+
+        // Build cells for the squad
+        let cells = [gridPos];
         if (this.game.squadManager) {
             const squadData = this.game.squadManager.getSquadData(selectedUnit);
             const validation = this.game.squadManager.validateSquadConfig(squadData);
-            
-            if (!validation.valid) {
+            if (!validation.valid) return false;
+            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        }
+
+        // If sides are configured, ensure every cell is on my side
+        if (this.teamSides && this.teamSides.player) {
+            if (!this.cellsWithinSide(cells, this.teamSides.player)) {
                 return false;
             }
-            
-            const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            return this.game.gridSystem.isValidPlacement(cells, 'player');
         }
-        
-        return this.game.gridSystem.isValidPlacement([gridPos], 'player');
+
+        // Defer to grid rules (collisions, blocked cells, etc.)
+        return this.game.gridSystem.isValidPlacement(cells, 'player');
     }
+
 
     getTotalUnitCount(placements) {
         return placements.reduce((sum, placement) => {
@@ -876,19 +923,33 @@ class MultiplayerPlacementSystem {
             lastAction: this.undoStack.length > 0 ? this.undoStack[this.undoStack.length - 1] : null
         };
     }
+    setTeamSides(sides) {
+        // sides = { player: 'left'|'right', enemy: 'left'|'right' }
+        this.teamSides = {
+            player: sides?.player || 'left',
+            enemy: sides?.enemy || 'right'
+        };
+        console.log('Team sides set:', this.teamSides);
+    }
 
-    update(deltaTime) {
-        if (this.game.state.phase !== 'placement') {
-            return;
-        }
-        
-        const now = performance.now();
-        if (now - this.lastValidationTime > this.config.validationThrottle) {
-            this.updateCursorState();
-            this.lastValidationTime = now;
+    // Compute inclusive X bounds for a side based on grid bounds
+    getSideBounds(side) {
+        const b = this.game.gridSystem?.bounds;
+        if (!b) return null;
+        const centerX = Math.floor((b.minX + b.maxX) / 2);
+        if (side === 'left') {
+            return { minX: b.minX, maxX: centerX };
+        } else {
+            return { minX: centerX + 1, maxX: b.maxX };
         }
     }
 
+    // Check that all cells are inside the given side's X bounds
+    cellsWithinSide(cells, side) {
+        const bounds = this.getSideBounds(side);
+        if (!bounds) return true; // if unknown, don't block
+        return cells.every(c => c.x >= bounds.minX && c.x <= bounds.maxX);
+    }
     updateCursorState() {
         if (this.game.state.selectedUnitType && this.cachedValidation) {
             document.body.style.cursor = this.cachedValidation.isValid ? 'crosshair' : 'not-allowed';

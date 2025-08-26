@@ -30,31 +30,42 @@ class CombatAISystem {
         this.allEnemiesCache = new Map(); // teamId -> [enemy entities]
         this.cacheUpdateFrame = 0;
         this.CACHE_UPDATE_INTERVAL = 10; // Update cache every N frames
+        this.LAST_PROCESSED_TICK = -1;
+this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is 60Hz
     }
-
+        
     update(deltaTime) {
         if (this.game.state.phase !== 'battle') return;
 
-        const combatUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.COMBAT,
-            this.componentTypes.TEAM,
-            this.componentTypes.AI_STATE
-        );
+        const tick = this.game.state.simTick || 0;
+        if (tick === this.LAST_PROCESSED_TICK) return; // already processed this tick
+        this.LAST_PROCESSED_TICK = tick;
 
-        // Update enemy cache periodically for better performance
-        if (this.game.frameCounter % this.CACHE_UPDATE_INTERVAL === 0) {
+        const CT = this.componentTypes;
+        const getPos = (id) => this.game.getComponent(id, CT.POSITION);
+
+        // Stable order of updates across machines (cheap, by id; ties already deterministic)
+        const combatUnits = this.game.getEntitiesWith(
+            CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
+        ).sort((a, b) => String(a).localeCompare(String(b)));
+
+        const now = this.game.state?.simTime || 0;
+
+        // Refresh enemy caches at a reduced rate
+        if ((tick % this.CACHE_UPDATE_INTERVAL_TICKS) === 0) {
             this.updateEnemyCache(combatUnits);
         }
 
-        combatUnits.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-            const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-            if(!pos || !vel) return;
+        // Process one deterministic step
+        for (let i = 0; i < combatUnits.length; i++) {
+            const entityId = combatUnits[i];
+            const pos = this.game.getComponent(entityId, CT.POSITION);
+            const combat = this.game.getComponent(entityId, CT.COMBAT);
+            const team = this.game.getComponent(entityId, CT.TEAM);
+            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            const vel = this.game.getComponent(entityId, CT.VELOCITY);
+            const collision = this.game.getComponent(entityId, CT.COLLISION);
+            if (!pos || !vel || !combat || !team || !aiState) continue;
 
             if (!aiState.aiBehavior) {
                 aiState.aiBehavior = {
@@ -67,10 +78,10 @@ class CombatAISystem {
                 };
             }
             const aiBehavior = aiState.aiBehavior;
-            const now = Date.now() / 1000;
 
-            // CHANGED: Get ALL enemies on the map - no range restrictions!
-            const enemies = this.getAllEnemies(entityId, team);
+            // Get a stable, filtered list of enemies
+            const enemies = this.getAllEnemies(entityId, team) || [];
+            enemies.sort((a, b) => String(a).localeCompare(String(b)));
 
             // Validate current target
             if (aiBehavior.currentTarget) {
@@ -100,17 +111,18 @@ class CombatAISystem {
                 }
             }
 
-            const shouldMakeDecision = (aiBehavior.lastDecisionTime === 0) ||
-                (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
-
-            // Only make movement decisions if not in waiting state
+            // NEW (deterministic, future-safe)
+            if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0; // simTime domain
+            const shouldMakeDecision = (now >= aiBehavior.nextMoveTime);
+            console.log(`Entity ${entityId}: now=${now}, nextMoveTime=${aiBehavior.nextMoveTime}, shouldDecide=${shouldMakeDecision}`);
             if (shouldMakeDecision && aiState.state !== 'waiting') {
+                aiBehavior.nextMoveTime = now + this.MOVEMENT_DECISION_INTERVAL;
                 this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now);
                 aiBehavior.lastDecisionTime = now;
             }
 
             this.handleCombat(entityId, pos, combat, aiState, collision, now);
-        });
+        }
     }
 
     // NEW: Cache all enemies by team for better performance
@@ -150,7 +162,17 @@ class CombatAISystem {
         
         this.cacheUpdateFrame = this.game.frameCounter;
     }
-
+    getAllEnemiesStable(entityId, team) {
+        const CT = this.componentTypes;
+        const enemies = this.getAllEnemies(entityId, team) || [];
+        const getPos = (id) => this.game.getComponent(id, CT.POSITION);
+        return enemies.slice().sort((a, b) => {
+            const pa = getPos(a), pb = getPos(b);
+            if (pa.z !== pb.z) return pa.z - pb.z;
+            if (pa.x !== pb.x) return pa.x - pb.x;
+            return String(a).localeCompare(String(b));
+        });
+    }
     // NEW: Get all enemies for a unit's team - NO RANGE RESTRICTIONS
     getAllEnemies(entityId, team) {
         // Use cache if available
@@ -598,7 +620,7 @@ class CombatAISystem {
             this.game.damageSystem.clearAllStatusEffects(entityId);
         }
         
-        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, Components.DeathState(true, Date.now() / 1000, 2.0));
+        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, Components.DeathState(true, (this.game.state?.simTime || 0), 2.0));
         if (this.game.hasComponent(entityId, ComponentTypes.AI_STATE)) {
             this.game.removeComponent(entityId, ComponentTypes.AI_STATE);
         }

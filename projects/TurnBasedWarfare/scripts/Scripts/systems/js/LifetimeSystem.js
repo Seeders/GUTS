@@ -23,7 +23,8 @@ class LifetimeSystem {
     }
     
     update(deltaTime) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         // Only check periodically for performance
         if (now - this.lastCheck < this.CHECK_INTERVAL) return;
@@ -334,7 +335,8 @@ class LifetimeSystem {
      */
     addLifetime(entityId, duration, options = {}) {
         const components = this.game.componentManager.getComponents();
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         const lifetimeData = {
             duration: duration,
@@ -390,7 +392,8 @@ class LifetimeSystem {
     getRemainingLifetime(entityId) {
         const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
         if (lifetime) {
-            const now = Date.now() / 1000;
+            const now = this.game.state?.simTime || 0;
+
             const age = now - lifetime.startTime;
             return Math.max(0, lifetime.duration - age);
         }
@@ -468,7 +471,8 @@ class LifetimeSystem {
      * @returns {Array} Array of entity IDs
      */
     getExpiringEntities(threshold = 5.0) {
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         const expiringEntities = [];
         
         const lifetimeEntities = this.getAllLifetimeEntities();
@@ -497,7 +501,7 @@ class LifetimeSystem {
         
         const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
         if (unitType) {
-            const age = (Date.now() / 1000) - lifetime.startTime;
+            const age = ((this.game.state?.simTime || 0)) - lifetime.startTime;
             this.game.battleLogSystem.add(
                 `${unitType.title || unitType.type} expires after ${age.toFixed(1)} seconds`,
                 'log-lifetime'

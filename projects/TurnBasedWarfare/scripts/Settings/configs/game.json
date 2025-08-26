@@ -41,5 +41,5 @@
   "is3D": true,
   "palette": "main",
   "appLoaderLibrary": "GameLoader",
-  "initialScene": "main"
+  "initialScene": "multiplayer"
 }

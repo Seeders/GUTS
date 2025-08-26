@@ -153,11 +153,11 @@ class ECSGame {
         return result;
     }
     
-    addSystem(system) {
+    addSystem(system, params) {
         system.game = this;
         this.systems.push(system);
         if (system.init) {
-            system.init();
+            system.init(params);
         }
     }
     

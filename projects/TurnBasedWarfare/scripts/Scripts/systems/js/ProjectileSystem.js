@@ -35,7 +35,8 @@ class ProjectileSystem {
         // Create projectile entity
         const projectileId = this.game.createEntity();
         const components = this.game.componentManager.getComponents();
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);
@@ -307,7 +308,8 @@ class ProjectileSystem {
             this.componentTypes.PROJECTILE
         );
         
-        const now = Date.now() / 1000;
+        const now = this.game.state?.simTime || 0;
+
         
         projectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
@@ -586,7 +588,7 @@ class ProjectileSystem {
         // Short lifetime for direct hit effects
         const effectDuration = 0.3;
         this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(effectDuration, Date.now() / 1000));
+            components.Lifetime(effectDuration, (this.game.state?.simTime || 0)));
         
         // Animation for the effect
         const effectScale = 2;
@@ -610,7 +612,7 @@ class ProjectileSystem {
         
         // Explosion lifetime
         this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(1.5, Date.now() / 1000)); // Longer explosion duration
+            components.Lifetime(1.5, (this.game.state?.simTime || 0))); // Longer explosion duration
         
         // Explosion animation
         this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
@@ -674,7 +676,7 @@ class ProjectileSystem {
         const trail = this.projectileTrails.get(projectileId);
         
         // Add current position to trail (full 3D)
-        trail.push({ x: pos.x, y: pos.y, z: pos.z, time: Date.now() / 1000 });
+        trail.push({ x: pos.x, y: pos.y, z: pos.z, time: (this.game.state?.simTime || 0) });
         
         // Remove old trail points
         while (trail.length > projectileVisual.trailLength) {
