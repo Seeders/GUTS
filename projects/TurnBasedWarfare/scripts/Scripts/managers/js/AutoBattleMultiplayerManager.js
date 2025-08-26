@@ -1,6 +1,7 @@
 class AutoBattleMultiplayerManager {
     constructor(game, sceneManager) {
         this.game = game;
+
         this.sceneManager = sceneManager;
         this.game.multiplayerManager = this;
         
@@ -35,7 +36,6 @@ class AutoBattleMultiplayerManager {
             return;
         }
         this.isAvailable = true;
-        
         this.initializeUI();
         this.enhanceGameModeManager();
         console.log('MultiplayerManager ready for connections');
@@ -763,10 +763,6 @@ class AutoBattleMultiplayerManager {
         this.showNotification('Upgrades selected! Waiting for opponent...', 'info');
         return true;
     }
-
-    // =============================================
-    // UI HELPERS
-    // =============================================
 
     showNotification(message, type = 'info', duration = 4000) {
         // Create notification element

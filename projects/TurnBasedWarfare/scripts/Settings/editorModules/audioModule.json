@@ -9,6 +9,6 @@
   "saveHook": "saveAudio",
   "libraries": [
     "Component",
-    "audioEditor"
+    "AudioEditor"
   ]
 }

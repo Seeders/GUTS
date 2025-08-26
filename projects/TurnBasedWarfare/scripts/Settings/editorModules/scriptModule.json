@@ -5,7 +5,7 @@
   "inputElement": "textarea",
   "inputDataType": "string",
   "libraries": [
-    "scriptEditor"
+    "ScriptEditor"
   ],
   "propertyNames": "[\"script\", \"html\", \"css\"]",
   "loadHook": "editScript",

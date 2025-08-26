@@ -10,7 +10,7 @@
     "TerrainImageProcessor",
     "TileMap",
     "GE_GroupManager",
-    "terrainMapEditor"
+    "TerrainMapEditor"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

@@ -114,8 +114,9 @@ class ModuleManager {
     // Function to instantiate a library once its script is loaded
     const instantiateModuleFromLibrary = (library, moduleConfig) => {
         let libraryKey = library.replace(/-/g, "__");
-        let libraryClass = window.loadingLibraries[libraryKey];
+        let libraryClass = eval(libraryKey);
         try {
+            
             if (!libraryClass) {
                 throw new Error(`Library class ${libraryKey} not found in global scope`);
             }
@@ -142,16 +143,24 @@ class ModuleManager {
                     scriptTag.setAttribute("type", "module");
                 }
                 if (libraryDef.script) {
-                    const scriptContent = `window.loadingLibraries.${library.replace(/-/g, "__")} = ${libraryDef.script};`;
-                    const blob = new Blob([scriptContent], { type: 'application/javascript' });
-                    scriptUrl = URL.createObjectURL(blob);
-                    scriptTag.src = scriptUrl;
+                    if (libraryDef.filePath) {
+                        scriptTag.src = libraryDef.filePath;
+                        scriptTag.onload = () => {
+                            instantiateModuleFromLibrary(library, moduleConfig);
+                            resolve();
+                        };
+                    } else {
+                        const scriptContent = `window.loadingLibraries.${library.replace(/-/g, "__")} = ${libraryDef.script};`;
+                        const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                        scriptUrl = URL.createObjectURL(blob);
+                        scriptTag.src = scriptUrl;
 
-                    scriptTag.onload = () => {
-                        URL.revokeObjectURL(scriptUrl);
-                        instantiateModuleFromLibrary(library, moduleConfig);
-                        resolve();
-                    };
+                        scriptTag.onload = () => {
+                            URL.revokeObjectURL(scriptUrl);
+                            instantiateModuleFromLibrary(library, moduleConfig);
+                            resolve();
+                        };
+                    }
                 } else if (libraryDef.href) {
                     if (libraryDef.requireName && libraryDef.isModule) {
                         import(libraryDef.href).then((module) => {
@@ -402,3 +411,4 @@ class ModuleManager {
   }
 
 }
+
