@@ -312,6 +312,13 @@ class FileSystemSyncService {
                 if (!response.ok) throw new Error(`Failed to read ${fileExt} file: ${fileInfo.name}`);
                 const content = await response.text();
                 objectData[propertyConfig.propertyName] = content;
+                let filePath = fileInfo.name;
+                if(filePath.startsWith('..')) {
+                    filePath = filePath.substr(2, filePath.length - 2);
+                } else {
+                    filePath = '/projects/' + filePath;
+                }
+                objectData['filePath'] = filePath;
                 this.typeHasSpecialProperties[collectionIdFromPath] = true;
             }
         }
@@ -559,7 +566,7 @@ class FileSystemSyncService {
                 
                 Object.assign(currentCollections[collectionId][canonicalId], jsonData);
             }
-            
+            debugger;
             // Now process special property files (HTML, CSS, JS, etc.)
             for (const file of files) {
                 if (file.name.endsWith('.json')) continue; // Skip JSON, already processed
@@ -590,6 +597,7 @@ class FileSystemSyncService {
                     
                     // Update the special property
                     currentCollections[collectionId][canonicalId][propertyConfig.propertyName] = content;
+                    currentCollections[collectionId][canonicalId]['filePath'] = file.name;
                     
                     // Mark this type as having special properties
                     this.typeHasSpecialProperties[collectionId] = true;
