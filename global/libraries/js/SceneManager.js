@@ -78,10 +78,8 @@ class SceneManager {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
                 const SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
                 const systemInst = new SystemClass(this.game, this);
-                if(systemInst.init){
-                    systemInst.init(params);
-                }
-                this.game.addSystem(systemInst);
+   
+                this.game.addSystem(systemInst, params);
                 
             });                        
         });
