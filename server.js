@@ -1,20 +1,17 @@
 // merged-server.js
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const multer = require('multer');
 const path = require('path');
 const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
-const puppeteer = require('puppeteer');
 const cors = require('cors');
 
 // CLI Arguments
 const projectName = process.argv[2];
-const gameURL = process.argv[3] || `localhost`;
-const port = process.argv[4] || 443;
+const port = process.argv[3] || 443;
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
@@ -28,7 +25,6 @@ const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 const app = express();
 const server = http.createServer(app);
 
-const connections = new Map();
 
 // Configure CORS
 app.use(cors({
@@ -48,22 +44,11 @@ app.use(express.static(BASE_DIR, {
     }
 }));
 
-// Socket.IO setup
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
-
 // File watcher variables
 const watchers = new Map();
 const fileTimestamps = new Map();
 const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css'];
 
-// Game server variables
-let hostSocket = null;
 
 // ===== FILE MANAGEMENT ENDPOINTS =====
 
@@ -378,128 +363,9 @@ app.post('/api/cache', async (req, res) => {
     }
 });
 
-// ===== GAME NETWORKING WITH SOCKET.IO =====
-
-// Simulate host client using Puppeteer (optional)
-async function createHostClient() {
-  if (!projectName) {
-    console.log('No project name provided - skipping host client creation');
-    return;
-  }
-  
-  try {
-    let browser = null;
-    let protocol = 'https';
-    if(gameURL == "localhost") {
-        protocol = 'http';
-        browser = await puppeteer.launch({           
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
-        });        
-    } else {
-        browser = await puppeteer.launch({
-           // executablePath: '/usr/bin/google-chrome',
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
-        });
-    }
-
-    console.log('Puppeteer host client initialized...');
- 
-    const page = await browser.newPage();
-    page.on('console', msg => console.log('Page Console:', msg.text()));
-    page.on('pageerror', error => console.error('Page Error:', error));
-    
-    const url = `${protocol}://${gameURL}${port != 443 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
-    console.log('Loading', url, '...');
-    
-    const response = await page.goto(url, { waitUntil: 'networkidle2' });
-    console.log('Status:', response.status(), response.statusText());
-    console.log('Headers:', response.headers());    
-    const content = await page.content();
-    console.log(content);
-    
-    process.on('SIGINT', async () => {
-      await browser.close();
-      process.exit();
-    });
-  } catch (error) {
-    console.error('Error creating Puppeteer host client:', error);
-    setTimeout(createHostClient, 5000);
-  }
-}
-
-// Handle Socket.IO connections
-io.on('connection', (socket) => {
-  connections.set(socket.id, socket);
-  if (!hostSocket) {
-    console.log(`Host connected: ${socket.id}`);
-    hostSocket = socket;
-
-    hostSocket.emit('setHost', { isHost: true });
-
-    hostSocket.on('gameState', (data) => {
-      io.emit('gameState', data);
-    });
-
-    hostSocket.on('playerConnected', (data) => {
-      io.emit('playerConnected', data);
-    });
-
-    hostSocket.on('serverDataResponse', (data) => {
-      let socket = connections.get(data.clientId);
-      if(socket){
-        socket.emit('serverDataResponse', data);
-      }
-    });
-
-    hostSocket.on('playerDisconnected', (data) => {
-      console.log(`Removing Player: ${data.networkId}`);
-      io.emit('playerDisconnected', data);
-    });
-
-    hostSocket.on('disconnect', () => {
-      console.log(`Host disconnected: ${socket.id}`);
-      hostSocket = null;
-    });
-  } else {
-    console.log(`Player connected: ${socket.id}`);
-
-    hostSocket?.emit('playerConnected', {
-      networkId: socket.id,
-    });
-
-    socket.on('playerInput', (data) => {
-      hostSocket?.emit('playerInput', data);
-    });
-
-    socket.on('serverDataRequest', (data) => {
-      hostSocket?.emit('serverDataRequest', data);
-    });
-
-    socket.on('disconnect', () => {
-      connections.delete(socket.id);
-      console.log(`Player disconnected: ${socket.id}`);
-      hostSocket?.emit('playerDisconnected', { networkId: socket.id });
-    });
-  }
-});
-
 // Start the server
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Files will be served from: ${PROJS_DIR}`);
-    
-    if (projectName) {
-        console.log(`Game networking enabled for project: ${projectName}`);
-        // Optionally start the host client
-        setTimeout(() => {
-            createHostClient();
-        }, 1000);
-    } else {
-        console.log('Game networking available - provide project name as 3rd argument to enable host client');
-    }
-    
-    console.log('Usage: node server.js [projectName] [gameURL] [port]');
-    console.log(`Example: node server.js myProject localhost 5000`);
+
 });
