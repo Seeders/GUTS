@@ -1,6 +1,6 @@
-class BattleLogSystem {
-    constructor(app) {
-        this.game = app;  
+class BattleLogSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.battleLogSystem = this;
         this.entries = [];
         this.maxEntries = 100;

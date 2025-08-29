@@ -1,6 +1,6 @@
-class DeathSystem {
+class DeathSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.deathSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
     }

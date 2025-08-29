@@ -338,6 +338,7 @@ class MultiplayerPhaseSystem {
             }
         }
     }
+    
     startVictoryCelebration(victoriousUnits) {
         if (!this.game.animationSystem) return;
         

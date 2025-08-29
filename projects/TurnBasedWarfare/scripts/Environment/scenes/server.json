@@ -1,0 +1,35 @@
+{
+  "title": "Server Main Scene",
+  "type": "ECS",
+  "sceneData": [
+    {
+      "id": 1,
+      "objectType": "gamePrefabs",
+      "spawnType": "multiplayer",
+      "managers": [
+        { "type": "ComponentManager" },
+        { "type": "EventManager" },
+        { "type": "GameManager" },
+        { "type": "UnitCreationManager" },
+        { "type": "SquadManager" }
+      ],
+      "systems": [
+        { "type": "MovementSystem" },
+        { "type": "CombatAISystem" },
+        { "type": "ProjectileSystem" },
+
+        { "type": "TeamHealthSystem" },
+        { "type": "DeathSystem" },
+        { "type": "DamageSystem" },
+        { "type": "AbilitySystem" },
+        { "type": "SquadExperienceSystem" },
+        { "type": "LifetimeSystem" },
+        { "type": "GridSystem" },
+        { "type": "ServerBattleSystem" }
+      ],
+      "classes": [
+        { "collection": "abilities", "baseClass": "BaseAbility" }
+      ]
+    }
+  ]
+}

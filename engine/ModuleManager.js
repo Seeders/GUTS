@@ -145,6 +145,9 @@ class ModuleManager {
                 if (libraryDef.script) {
                     if (libraryDef.filePath) {
                         scriptTag.src = libraryDef.filePath;
+                        if(libraryDef.script.startsWith('export ')){
+                            scriptTag.type = 'module';
+                        }
                         scriptTag.onload = () => {
                             instantiateModuleFromLibrary(library, moduleConfig);
                             resolve();
@@ -154,7 +157,6 @@ class ModuleManager {
                         const blob = new Blob([scriptContent], { type: 'application/javascript' });
                         scriptUrl = URL.createObjectURL(blob);
                         scriptTag.src = scriptUrl;
-
                         scriptTag.onload = () => {
                             URL.revokeObjectURL(scriptUrl);
                             instantiateModuleFromLibrary(library, moduleConfig);

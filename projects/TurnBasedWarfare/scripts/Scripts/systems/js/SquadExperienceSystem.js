@@ -1,11 +1,11 @@
-class SquadExperienceSystem {
+class SquadExperienceSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.squadExperienceSystem = this;
         
         // Squad experience tracking
         this.squadExperience = new Map(); // placementId -> experience data
-        this.savedPlayerExperience = new Map(); // placementId -> saved experience data
+        this.savedSquadExperience = new Map(); // placementId -> saved experience data
         
         // Experience configuration
         this.config = {
@@ -80,9 +80,8 @@ class SquadExperienceSystem {
         this.squadExperience.set(placementId, experienceData);
         
         // Try to restore saved experience for player squads
-        if (team === 'player') {
-            this.restorePlayerExperience(placementId, experienceData);
-        }
+  
+        this.restoreSquadExperience(placementId, experienceData);
         
         // Apply initial bonuses if any
         this.applyLevelBonuses(placementId);
@@ -549,7 +548,7 @@ class SquadExperienceSystem {
         const readySquads = [];
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
-            if (squadData.team === 'player' && squadData.canLevelUp) {
+            if (squadData.canLevelUp) {
                 readySquads.push({
                     ...squadData,
                     displayName: this.getSquadDisplayName(placementId),
@@ -666,35 +665,35 @@ class SquadExperienceSystem {
      */
     reset() {
         this.squadExperience.clear();
-        this.savedPlayerExperience.clear();
+        this.savedSquadExperience.clear();
     }
 
     /**
      * Save player squad experience before round cleanup
      */
-    savePlayerExperience() {
-        this.savedPlayerExperience = new Map();
+    saveSquadExperience() {
+        this.savedSquadExperience = new Map();
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
-            if (squadData.team === 'player') {
-                // Save the experience data
-                this.savedPlayerExperience.set(placementId, {
-                    level: squadData.level,
-                    experience: squadData.experience,
-                    experienceToNextLevel: squadData.experienceToNextLevel,
-                    canLevelUp: squadData.canLevelUp,
-                    squadValue: squadData.squadValue,
-                    totalUnitsInSquad: squadData.totalUnitsInSquad
-                });
-            }
+
+            // Save the experience data
+            this.savedSquadExperience.set(placementId, {
+                level: squadData.level,
+                experience: squadData.experience,
+                experienceToNextLevel: squadData.experienceToNextLevel,
+                canLevelUp: squadData.canLevelUp,
+                squadValue: squadData.squadValue,
+                totalUnitsInSquad: squadData.totalUnitsInSquad
+            });
+            
         }
     }
 
     /**
      * Restore saved player experience to a respawned squad
      */
-    restorePlayerExperience(placementId, squadData) {
-        const saved = this.savedPlayerExperience.get(placementId);
+    restoreSquadExperience(placementId, squadData) {
+        const saved = this.savedSquadExperience.get(placementId);
         if (saved) {
             squadData.level = saved.level;
             squadData.experience = saved.experience;
@@ -720,8 +719,8 @@ class SquadExperienceSystem {
         const squads = Array.from(this.squadExperience.values());
         return {
             totalSquads: squads.length,
-            playerSquads: squads.filter(s => s.team === 'player').length,
-            enemySquads: squads.filter(s => s.team === 'enemy').length,
+            leftSquads: squads.filter(s => s.team === 'left').length,
+            rightSquads: squads.filter(s => s.team === 'right').length,
             squadsReadyToLevelUp: squads.filter(s => s.canLevelUp).length,
             averageLevel: squads.length > 0 ? squads.reduce((sum, s) => sum + s.level, 0) / squads.length : 0,
             maxLevel: Math.max(0, ...squads.map(s => s.level))

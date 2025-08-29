@@ -1,6 +1,6 @@
-class HealthBarSystem {
+class HealthBarSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.healthBarSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         

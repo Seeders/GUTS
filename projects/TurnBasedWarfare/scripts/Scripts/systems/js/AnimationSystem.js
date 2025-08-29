@@ -1,6 +1,6 @@
-class AnimationSystem {
+class AnimationSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.animationSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         

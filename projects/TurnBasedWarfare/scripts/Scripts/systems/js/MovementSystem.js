@@ -1,6 +1,6 @@
-class MovementSystem {
-    constructor(game){
-        this.game = game;
+class MovementSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.movementSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
@@ -60,7 +60,7 @@ class MovementSystem {
         this.movementHistory = new Map();
     }
     
-    update(deltaTime) {
+    update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
@@ -120,11 +120,10 @@ class MovementSystem {
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             
-            const isAffectedByGravity = this.shouldApplyGravity(entityId, projectile, unitType);
+            const isAffectedByGravity = vel.affectedByGravity;
             
             if (!projectile && unitData.has(entityId)) {
                 this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId), deltaTime); // NEW: Use smoothing
@@ -138,7 +137,7 @@ class MovementSystem {
             pos.x += vel.vx * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-            
+          
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
                 this.enforceBoundaries(pos, collision);

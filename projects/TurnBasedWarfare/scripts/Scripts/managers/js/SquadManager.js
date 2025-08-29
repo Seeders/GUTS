@@ -66,10 +66,10 @@ class SquadManager {
      * @param {Object} gridSystem - GridSystem instance for coordinate conversion
      * @returns {Array} Array of world positions {x, z}
      */
-    calculateUnitPositions(gridPos, squadData, gridSystem) {
+    calculateUnitPositions(gridPos, squadData) {
         const { squadWidth, squadHeight, placementGridWidth, placementGridHeight } = squadData;
         const positions = [];
-        const cellSize = gridSystem.dimensions.cellSize;
+        const cellSize = this.game.gridSystem.dimensions.cellSize;
 
         // Compute the top-left (min) cell of the formation footprint
         const startCellX = gridPos.x - Math.floor(placementGridWidth / 2);
@@ -79,7 +79,7 @@ class SquadManager {
         // Example: width=2 -> center at (start + 0.5); width=3 -> center at (start + 1)
         const centerCellX = startCellX + (placementGridWidth - 1) / 2;
         const centerCellZ = startCellZ + (placementGridHeight - 1) / 2;
-        const centerWorldPos = gridSystem.gridToWorld(centerCellX, centerCellZ);
+        const centerWorldPos = this.game.gridSystem.gridToWorld(centerCellX, centerCellZ);
 
         // If squad footprint matches placement footprint, snap each unit to its cell center.
         if (squadWidth === placementGridWidth && squadHeight === placementGridHeight) {
@@ -87,7 +87,7 @@ class SquadManager {
                 for (let col = 0; col < squadWidth; col++) {
                     const cellX = startCellX + col;
                     const cellZ = startCellZ + row;
-                    const wp = gridSystem.gridToWorld(cellX, cellZ);
+                    const wp = this.game.gridSystem.gridToWorld(cellX, cellZ);
                     positions.push({ x: wp.x, z: wp.z });
                 }
             }
@@ -110,6 +110,8 @@ class SquadManager {
 
         const startX = centerWorldPos.x - (formationWorldWidth / 2) + (stepX / 2);
         const startZ = centerWorldPos.z - (formationWorldHeight / 2) + (stepZ / 2);
+
+        console.log(stepX, formationWorldWidth, squadWidth, centerWorldPos, formationWorldWidth, stepX);
 
         for (let row = 0; row < squadHeight; row++) {
             for (let col = 0; col < squadWidth; col++) {

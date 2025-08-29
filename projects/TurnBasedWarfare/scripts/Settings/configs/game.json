@@ -31,11 +31,16 @@
     "GameUtils",
     "PlacementPreview",
     "EnemyStrategy",
-    "ECSGame"
+    "ECSGame",
+    "MultiplayerECSGame",
+    "ClientNetworkManager",
+    "socket.io.min.js",
+    "BaseSystem",
+    "SeededRandom"
   ],
   "fileName": "game",
   "interface": "main",
-  "appLibrary": "ECSGame",
+  "appLibrary": "MultiplayerECSGame",
   "canvasWidth": 1600,
   "canvasHeight": 1600,
   "is3D": true,

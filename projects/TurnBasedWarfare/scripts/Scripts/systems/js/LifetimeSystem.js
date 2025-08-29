@@ -1,6 +1,6 @@
-class LifetimeSystem {
+class LifetimeSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.lifetimeSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
@@ -22,10 +22,7 @@ class LifetimeSystem {
         };
     }
     
-    update(deltaTime) {
-        const now = this.game.state?.simTime || 0;
-
-        
+    update(deltaTime, now) {        
         // Only check periodically for performance
         if (now - this.lastCheck < this.CHECK_INTERVAL) return;
         this.lastCheck = now;
@@ -37,19 +34,13 @@ class LifetimeSystem {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (!lifetime) return;
             
-            const age = now - lifetime.startTime;
+            const age = (now - lifetime.startTime) / 1000;
             
             // Check if entity has expired
             if (age >= lifetime.duration) {
                 this.handleExpiredEntity(entityId, lifetime);
-            } else {
-                // Check if entity should start fading
-                this.handleFadeOut(entityId, lifetime, age, now);
-            }
+            } 
         });
-        
-        // Process fade-out animations
-        this.updateFadeOutAnimations(deltaTime, now);
     }
     
     // =============================================
@@ -232,56 +223,7 @@ class LifetimeSystem {
             }
         }
     }
-    
-    // =============================================
-    // FADE OUT SYSTEM
-    // =============================================
-    
-    handleFadeOut(entityId, lifetime, age, now) {
-        // Check if entity should start fading
-        if (lifetime.fadeOutDuration && lifetime.fadeOutDuration > 0) {
-            const fadeStartTime = lifetime.duration - lifetime.fadeOutDuration;
-            
-            if (age >= fadeStartTime && !this.fadeOutEntities.has(entityId)) {
-                // Start fade out
-                this.startFadeOut(entityId, lifetime, now);
-            }
-        }
-    }
-    
-    startFadeOut(entityId, lifetime, now) {
-        const fadeData = {
-            startTime: now,
-            duration: lifetime.fadeOutDuration,
-            originalOpacity: 1.0,
-            currentOpacity: 1.0
-        };
-        
-        this.fadeOutEntities.set(entityId, fadeData);
-        this.stats.entitiesFaded++;
-    }
-    
-    updateFadeOutAnimations(deltaTime, now) {
-        for (const [entityId, fadeData] of this.fadeOutEntities.entries()) {
-            const elapsed = now - fadeData.startTime;
-            const progress = Math.min(elapsed / fadeData.duration, 1.0);
-            
-            // Calculate current opacity (linear fade)
-            fadeData.currentOpacity = fadeData.originalOpacity * (1 - progress);
-            
-            // Apply fade effect to renderable component if it exists
-            const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
-            if (renderable && renderable.opacity !== undefined) {
-                renderable.opacity = fadeData.currentOpacity;
-            }
-            
-            // Apply fade effect to animation component if it exists
-            const animation = this.game.getComponent(entityId, this.componentTypes.ANIMATION);
-            if (animation && animation.opacity !== undefined) {
-                animation.opacity = fadeData.currentOpacity;
-            }
-        }
-    }
+
     
     // =============================================
     // DESTRUCTION EFFECTS
@@ -334,13 +276,12 @@ class LifetimeSystem {
      * @param {Object} options - Additional options
      */
     addLifetime(entityId, duration, options = {}) {
-        const components = this.game.componentManager.getComponents();
         const now = this.game.state?.simTime || 0;
 
         
         const lifetimeData = {
             duration: duration,
-            startTime: options.startTime || now,
+            startTime: now,
             fadeOutDuration: options.fadeOutDuration || 0,
             destructionEffect: options.destructionEffect || null,
             onDestroy: options.onDestroy || null
@@ -394,8 +335,8 @@ class LifetimeSystem {
         if (lifetime) {
             const now = this.game.state?.simTime || 0;
 
-            const age = now - lifetime.startTime;
-            return Math.max(0, lifetime.duration - age);
+            const age = (now - lifetime.startTime) / 1000;
+            return Math.max(0, (lifetime.duration) - age);
         }
         return -1;
     }
@@ -480,7 +421,7 @@ class LifetimeSystem {
         lifetimeEntities.forEach(entityId => {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (lifetime) {
-                const age = now - lifetime.startTime;
+                const age = (now - lifetime.startTime) / 1000;
                 const remaining = lifetime.duration - age;
                 
                 if (remaining <= threshold && remaining > 0) {

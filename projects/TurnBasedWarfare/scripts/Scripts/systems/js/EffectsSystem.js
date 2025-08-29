@@ -1,6 +1,6 @@
-class EffectsSystem {
+class EffectsSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;  
+        super(game); 
         this.game.effectsSystem = this;
         
         // Screen effect tracking

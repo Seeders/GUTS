@@ -1,100 +1,434 @@
-class MultiplayerUISystem {
-    constructor(game, sceneManager) {
-        this.game = game;
-        this.sceneManager = sceneManager;
+class MultiplayerUISystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.uiSystem = this;
         
+        // State tracking
         this.currentScreen = null;
-        this.lobbyUpdateInterval = null;
+        this.roomId = null;
+        this.isHost = false;
+        this.gameState = null;
+        
+        // Store unsubscribe functions
+        this.networkUnsubscribers = [];
     }
 
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
+        this.initializeUI();
+        this.enhanceGameModeManager();
+        console.log("connecting to server", params);
+        // Connect to server and get player ID
+        this.connectToServer();
+        
+        this.setupNetworkListeners();
         this.setupEventListeners();
         console.log('MultiplayerUISystem initialized');
     }
 
+    async connectToServer() {
+        try {
+            await this.game.clientNetworkManager.connect();
+            
+            // Call server to get player ID
+            this.game.clientNetworkManager.call(
+                'CONNECT',
+                null,
+                'CONNECTED',
+                (data, error) => {
+                    if (error) {
+                        console.error('Failed to get player ID:', error);
+                        this.showNotification('Failed to get player ID from server', 'error');
+                    } else if (data && data.playerId) {
+                        this.game.clientNetworkManager.playerId = data.playerId;
+                        console.log('UI System: Received player ID:', data.playerId);
+                    } else {
+                        console.error('Server response missing player ID:', data);
+                        this.showNotification('Server did not provide player ID', 'error');
+                    }
+                }
+            );
+            
+        } catch (error) {
+            console.error('Failed to connect to server:', error);
+            this.showNotification('Failed to connect to server', 'error');
+        }
+    }
+
+    initializeUI() {
+        // Add multiplayer UI elements to existing interface
+        const multiplayerHTML = `
+            <div id="multiplayerHUD" style="display: none; position: absolute; top: 10px; right: 330px; z-index: 1000;">
+                <div class="opponent-info">
+                    <h4>Opponent</h4>
+                    <div class="opponent-stats">
+                        <div>Name: <span id="opponentName">-</span></div>
+                        <div>Health: <span id="opponentHealth">100</span></div>
+                        <div>Gold: <span id="opponentGold">-</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="multiplayerNotifications" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 2000;">
+                <!-- Notifications appear here -->
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', multiplayerHTML);
+    }
+
+    enhanceGameModeManager() {
+        // Add multiplayer modes to existing GameModeManager
+        if (this.game.gameModeManager) {
+            const originalModes = this.game.gameModeManager.modes || {};
+            
+            const multiplayerModes = {
+                multiplayer_1v1: {
+                    id: 'multiplayer_1v1',
+                    title: '1v1 Multiplayer',
+                    icon: 'swords',
+                    description: 'Battle against another player in real-time strategic combat',
+                    difficulty: 'Player vs Player',
+                    difficultyClass: 'pvp',
+                    startingGold: 100,
+                    maxRounds: 5,
+                    goldMultiplier: 1.0,
+                    difficultyScaling: 'player',
+                    isMultiplayer: true,
+                    maxPlayers: 2
+                },
+                multiplayer_quick: {
+                    id: 'multiplayer_quick',
+                    title: 'Quick Match',
+                    icon: 'lightning',
+                    description: 'Find a random opponent and battle immediately',
+                    difficulty: 'Player vs Player',
+                    difficultyClass: 'pvp',
+                    startingGold: 100,
+                    maxRounds: 3,
+                    goldMultiplier: 1.0,
+                    difficultyScaling: 'player',
+                    isMultiplayer: true,
+                    maxPlayers: 2
+                }
+            };
+            
+            this.game.gameModeManager.modes = { ...originalModes, ...multiplayerModes };
+            
+            const originalSelectMode = this.game.gameModeManager.selectMode.bind(this.game.gameModeManager);
+            this.game.gameModeManager.selectMode = (modeId) => {
+                originalSelectMode(modeId);
+                const mode = this.game.gameModeManager.modes[modeId];
+                if (mode && mode.isMultiplayer) {
+                    this.handleMultiplayerModeSelection(mode);
+                }
+            };
+            
+            if (this.game.gameModeManager.setupUI) {
+                this.game.gameModeManager.setupUI();
+            }
+        }
+    }
+
+    handleMultiplayerModeSelection(mode) {
+        // Create setup dialog for multiplayer
+        const setupDialog = document.createElement('div');
+        setupDialog.className = 'multiplayer-setup-dialog';
+        setupDialog.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: center;
+            align-items: center; z-index: 10000;
+        `;
+        
+        setupDialog.innerHTML = `
+            <div class="setup-content" style="background: #1a1a1a; padding: 2rem; border: 2px solid #444; border-radius: 10px; text-align: center; color: white;">
+                <h2>${mode.title}</h2>
+                <p>${mode.description}</p>
+                
+                <div class="player-name-input" style="margin: 1rem 0;">
+                    <label for="playerName">Your Name:</label><br>
+                    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" value="Player" 
+                           style="padding: 0.5rem; margin: 0.5rem; border: 1px solid #666; background: #333; color: white;">
+                </div>
+                
+                <div class="multiplayer-options" style="margin: 1.5rem 0;">
+                    ${mode.id === 'multiplayer_quick' ? `
+                        <button id="quickMatchBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; margin: 0.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px;">Find Match</button>
+                    ` : `
+                        <button id="createRoomBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; margin: 0.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px;">Create Room</button><br>
+                        <div class="room-join-section" style="margin-top: 1rem;">
+                            <input type="text" id="roomIdInput" placeholder="Enter Room ID" maxlength="6" 
+                                   style="padding: 0.5rem; border: 1px solid #666; background: #333; color: white;">
+                            <button id="joinRoomBtn" class="btn btn-secondary" 
+                                    style="padding: 0.5rem 1rem; margin-left: 0.5rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">Join Room</button>
+                        </div>
+                    `}
+                </div>
+                
+                <button id="cancelMultiplayerBtn" class="btn btn-secondary" 
+                        style="padding: 0.5rem 1rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">Cancel</button>
+            </div>
+        `;
+
+        document.body.appendChild(setupDialog);
+        this.setupMultiplayerDialogEvents(setupDialog, mode);
+    }
+
+    setupMultiplayerDialogEvents(dialog, mode) {
+        const playerNameInput = dialog.querySelector('#playerName');
+        const quickMatchBtn = dialog.querySelector('#quickMatchBtn');
+        const createRoomBtn = dialog.querySelector('#createRoomBtn');
+        const joinRoomBtn = dialog.querySelector('#joinRoomBtn');
+        const roomIdInput = dialog.querySelector('#roomIdInput');
+        const cancelBtn = dialog.querySelector('#cancelMultiplayerBtn');
+
+        const getPlayerName = () => playerNameInput.value.trim() || 'Player';
+
+        if (quickMatchBtn) {
+            quickMatchBtn.addEventListener('click', () => {
+                this.startQuickMatch(getPlayerName());
+                dialog.remove();
+            });
+        }
+
+        if (createRoomBtn) {
+            createRoomBtn.addEventListener('click', () => {
+                this.createRoom(getPlayerName(), mode.maxPlayers);
+                dialog.remove();
+            });
+        }
+
+        if (joinRoomBtn) {
+            joinRoomBtn.addEventListener('click', () => {
+                const roomId = roomIdInput.value.trim().toUpperCase();
+                if (roomId) {
+                    this.joinRoom(roomId, getPlayerName());
+                    dialog.remove();
+                } else {
+                    this.showNotification('Please enter a Room ID', 'error');
+                }
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                dialog.remove();
+            });
+        }
+
+        playerNameInput.focus();
+        playerNameInput.select();
+    }
+
+    // =============================================
+    // NETWORK ACTIONS (USING .call())
+    // =============================================
+
+    createRoom(playerName, maxPlayers = 2) {
+        this.showNotification('Creating room...', 'info');
+        
+        this.game.clientNetworkManager.call(
+            'CREATE_ROOM',
+            { playerName, maxPlayers },
+            'ROOM_CREATED',
+            (data, error) => {
+                if (error) {
+                    this.showNotification(`Failed to create room: ${error.message}`, 'error');
+                } else {
+                    this.roomId = data.roomId;
+                    this.isHost = data.isHost;
+                    this.gameState = data.gameState;
+                    this.showNotification(`Room created! Code: ${this.roomId}`, 'success');
+                    this.showLobby(data.gameState);
+                }
+            }
+        );
+    }
+
+    joinRoom(roomId, playerName) {
+        this.showNotification('Joining room...', 'info');
+        
+        this.game.clientNetworkManager.call(
+            'JOIN_ROOM',
+            { roomId, playerName },
+            'ROOM_JOINED',
+            (data, error) => {
+                if (error) {
+                    this.showNotification(`Failed to join room: ${error.message}`, 'error');
+                } else {
+                    this.roomId = data.roomId;
+                    this.isHost = data.isHost;
+                    this.gameState = data.gameState;
+                    this.showNotification(`Joined room ${this.roomId}`, 'success');
+                    this.showLobby(data.gameState);
+                }
+            }
+        );
+    }
+
+    startQuickMatch(playerName) {
+        this.showNotification('Finding opponent...', 'info');
+        
+        this.game.clientNetworkManager.call(
+            'QUICK_MATCH',
+            { playerName },
+            'QUICK_MATCH_FOUND',
+            (data, error) => {
+                if (error) {
+                    this.showNotification(`Quick match failed: ${error.message}`, 'error');
+                } else {
+                    this.roomId = data.roomId;
+                    this.isHost = data.isHost;
+                    this.gameState = data.gameState;
+                    this.showNotification(`Match found! Entering room...`, 'success');
+                    this.showLobby(data.gameState);
+                }
+            }
+        );
+    }
+
+    toggleReady() {
+        // Disable button while updating
+        const btn = document.getElementById('player1ReadyBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+        }
+        
+        this.game.clientNetworkManager.call(
+            'TOGGLE_READY',
+            {},
+            'PLAYER_READY_UPDATE',
+            (data, error) => {
+                // Re-enable button after response
+                if (btn) {
+                    btn.disabled = false;
+                }
+                
+                if (error) {
+                    this.showNotification(`Failed to toggle ready: ${error.message}`, 'error');
+                    if (btn) {
+                        btn.textContent = 'Ready Up';
+                    }
+                } else {
+                    // Update will be handled by the listener
+                    console.log('Ready state updated:', data);
+                }
+            }
+        );
+    }
+
+    startGame() {
+        if (!this.isHost) return;
+        this.game.clientNetworkManager.call('START_GAME');
+    }
+
+    leaveRoom() {
+        this.game.clientNetworkManager.call('LEAVE_ROOM');
+        this.exitToMainMenu();
+    }
+
+    // =============================================
+    // NETWORK EVENT LISTENERS
+    // =============================================
+
+    setupNetworkListeners() {
+        const nm = this.game.clientNetworkManager;
+        if (!nm) {
+            console.error('ClientNetworkManager not available');
+            return;
+        }
+
+        // Listen to events that update the UI
+        this.networkUnsubscribers.push(
+            nm.listen('PLAYER_JOINED', (data) => {
+                console.log('PLAYER_JOINED event:', data);
+                this.gameState = data.gameState;
+                this.showNotification(`${data.playerName} joined the room`, 'info');
+                this.updateLobby(data.gameState);
+            }),
+
+            nm.listen('PLAYER_LEFT', (data) => {
+                this.gameState = data.gameState;
+                this.showNotification('Player left the room', 'warning');
+                this.updateLobby(data.gameState);
+            }),
+
+            nm.listen('PLAYER_READY_UPDATE', (data) => {
+                console.log('Received PLAYER_READY_UPDATE:', data);
+                console.log('Client thinks my ID is:', this.game.clientNetworkManager.playerId);
+                console.log('Event playerId:', data.playerId);
+                console.log('Game state players:', data.gameState?.players);
+                
+                this.gameState = data.gameState;
+                this.updateLobby(data.gameState);
+                
+                // Show notification for ready state changes
+                const myPlayerId = this.game.clientNetworkManager.playerId;
+                if (data.playerId === myPlayerId) {
+                    this.showNotification(
+                        data.ready ? 'You are ready!' : 'Ready status removed',
+                        data.ready ? 'success' : 'info'
+                    );
+                }
+                
+                if (data.allReady) {
+                    this.showNotification('All players ready! Game starting...', 'success');
+                }
+            }),
+
+            nm.listen('GAME_STARTED', (data) => {
+                console.log('Received GAME_STARTED event:', data);
+                this.transitionToGame();
+            }),
+
+            // Also listen for START_GAME response in case server sends different event
+            nm.listen('START_GAME', (data) => {
+                console.log('Received START_GAME event:', data);
+                this.transitionToGame();
+            }),
+
+            nm.listen('PHASE_UPDATE', (data) => {
+                this.handlePhaseUpdate(data);
+            }),
+
+            nm.listen('BATTLE_END', (data) => {
+                this.handleBattleEnd(data);
+            }),
+
+            nm.listen('GAME_END', (data) => {
+                this.handleGameEnd(data);
+            })
+        );
+    }
+
     setupEventListeners() {
-        // Delegate to input handler and add multiplayer-specific events
-        this.game.inputManager.setup();
-        this.setupMultiplayerEvents();
-    }
-
-    setupMultiplayerEvents() {
-        // Lobby controls
-        const leaveLobbyBtn = document.getElementById('leaveLobbyBtn');
-        const startGameBtn = document.getElementById('startGameBtn');
-        const player1ReadyBtn = document.getElementById('player1ReadyBtn');
-        const copyRoomIdBtn = document.getElementById('copyRoomIdBtn');
-
-        if (leaveLobbyBtn) {
-            leaveLobbyBtn.addEventListener('click', () => {
-                this.leaveLobby();
-            });
-        }
-
-        if (startGameBtn) {
-            startGameBtn.addEventListener('click', () => {
-                this.startGameAsHost();
-            });
-        }
-
-        if (player1ReadyBtn) {
-            player1ReadyBtn.addEventListener('click', () => {
-                console.log('ready clicked');
-                this.togglePlayerReady();
-            });
-        }
-
-        if (copyRoomIdBtn) {
-            copyRoomIdBtn.addEventListener('click', () => {
-                this.copyRoomId();
-            });
-        }
-
-        // Multiplayer game controls
-        const multiplayerReadyBtn = document.getElementById('multiplayerReadyButton');
-        const multiplayerPauseBtn = document.getElementById('multiplayerPauseBtn');
-        const multiplayerExitBtn = document.getElementById('multiplayerExitBtn');
-
-        if (multiplayerReadyBtn) {
-            multiplayerReadyBtn.addEventListener('click', () => {
-                if (this.game.phaseSystem) {
-                    this.game.phaseSystem.toggleReady();
-                }
-            });
-        }
-
-        if (multiplayerPauseBtn) {
-            multiplayerPauseBtn.addEventListener('click', () => {
-                this.showMultiplayerPauseMenu();
-            });
-        }
-
-        if (multiplayerExitBtn) {
-            multiplayerExitBtn.addEventListener('click', () => {
-                this.exitMultiplayerGame();
-            });
-        }
-
-        // Canvas click events for placement
-        const canvas = document.getElementById('gameCanvas');
-        if (canvas) {
-            canvas.addEventListener('click', (event) => {
-                if (this.game.placementSystem) {
-                    this.game.placementSystem.handleCanvasClick(event);
-                }
-            });
-        }
+        // Set up lobby event handlers (these elements created by showLobby)
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'player1ReadyBtn') {
+                this.toggleReady();
+            }
+            if (e.target.id === 'startGameBtn') {
+                this.startGame();
+            }
+            if (e.target.id === 'leaveLobbyBtn') {
+                this.leaveRoom();
+            }
+        });
     }
 
     // =============================================
-    // LOBBY MANAGEMENT
+    // UI MANAGEMENT
     // =============================================
 
-    showLobby(roomData) {
+    showLobby(gameState) {
         this.currentScreen = 'lobby';
+        
+        // Create lobby screen if it doesn't exist
+        if (!document.getElementById('multiplayerLobby')) {
+            this.createLobbyScreen();
+        }
         
         // Show lobby screen
         document.querySelectorAll('.screen').forEach(screen => {
@@ -102,596 +436,230 @@ class MultiplayerUISystem {
         });
         document.getElementById('multiplayerLobby').classList.add('active');
 
-        // Update lobby with room data
-        this.updateLobbyInfo(roomData);
-
-        // Start lobby update polling
-        this.startLobbyUpdates();
+        this.updateLobby(gameState);
     }
 
-    updateLobbyInfo(roomData) {
+    createLobbyScreen() {
+        const lobbyHTML = `
+            <div id="multiplayerLobby" class="screen" style="display: none;">
+                <div class="lobby-container" style="max-width: 800px; margin: 2rem auto; padding: 2rem; background: #1a1a1a; border-radius: 10px; color: white;">
+                    <h1>Multiplayer Lobby</h1>
+                    
+                    <div class="lobby-info">
+                        <div class="room-info">
+                            <h3>Room: <span id="lobbyRoomId">------</span></h3>
+                            <p>Players: <span id="playerCount">0</span>/2</p>
+                        </div>
+                        
+                        <div class="players-section" style="display: flex; gap: 2rem; margin: 2rem 0;">
+                            <div class="player-card player-1" style="flex: 1; padding: 1rem; border: 2px solid #666; border-radius: 5px;">
+                                <h4 id="player1Name">You</h4>
+                                <p id="player1Ready">Not Ready</p>
+                                <button id="player1ReadyBtn" class="btn" style="padding: 0.5rem 1rem; background: #003300; border: none; color: white; cursor: pointer;">Ready Up</button>
+                            </div>
+                            
+                            <div class="player-card player-2" style="flex: 1; padding: 1rem; border: 2px solid #666; border-radius: 5px;">
+                                <h4 id="player2Name">Waiting for opponent...</h4>
+                                <p id="player2Ready">Waiting</p>
+                            </div>
+                        </div>
+                        
+                        <div class="lobby-status">
+                            <p id="lobbyStatusMessage" style="font-weight: bold; margin: 1rem 0;">Waiting for players...</p>
+                        </div>
+                        
+                        <div class="lobby-controls" style="display: flex; gap: 1rem; justify-content: center;">
+                            <button id="startGameBtn" class="btn btn-primary" style="display: none; padding: 0.75rem 1.5rem; background: #0066cc; border: none; color: white; cursor: pointer;">Start Game</button>
+                            <button id="leaveLobbyBtn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; background: #666; border: none; color: white; cursor: pointer;">Leave Lobby</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', lobbyHTML);
+    }
+
+    updateLobby(gameState) {
+        if (!gameState) return;
+
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        
+        console.log('Updating lobby with gameState:', gameState);
+        console.log('My player ID:', myPlayerId);
+        console.log('Players in gameState:', gameState.players);
+        
         // Update room ID
-        const roomIdDisplay = document.getElementById('lobbyRoomId');
-        if (roomIdDisplay) {
-            roomIdDisplay.textContent = roomData.roomId || '------';
-        }
-
-        // Update connection status
-        const connectionStatus = document.getElementById('connectionStatus');
-        if (connectionStatus) {
-            if (this.game.multiplayerManager?.isConnected) {
-                connectionStatus.textContent = '🟢 Connected';
-                connectionStatus.style.color = '#00ff00';
-            } else {
-                connectionStatus.textContent = '🔴 Disconnected';
-                connectionStatus.style.color = '#ff4444';
-            }
-        }
-
+        document.getElementById('lobbyRoomId').textContent = this.roomId || '------';
+        
         // Update player count
-        const playerCount = document.getElementById('playerCount');
-        if (playerCount && roomData.players) {
-            playerCount.textContent = roomData.players.length;
-        }
+        document.getElementById('playerCount').textContent = gameState.players?.length || 0;
 
         // Update player cards
-        this.updatePlayerCards(roomData);
+        if (gameState.players) {
+            const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+            const opponent = gameState.players.find(p => p.id !== myPlayerId);
 
-        // Update game settings
-        this.updateGameSettings(roomData);
+            console.log('My player:', myPlayer);
+            console.log('Opponent player:', opponent);
 
-        // Update lobby status
-        this.updateLobbyStatus(roomData);
-    }
+            // Update my player card
+            if (myPlayer) {
+                const player1Name = document.getElementById('player1Name');
+                const player1Ready = document.getElementById('player1Ready');
+                const player1ReadyBtn = document.getElementById('player1ReadyBtn');
 
-    updatePlayerCards(roomData) {
-        if (!roomData.players) return;
-
-        const myPlayerId = this.game.multiplayerManager?.playerId;
-        
-        // Update Player 1 (always the local player)
-        const player1 = roomData.players.find(p => p.id === myPlayerId);
-        if (player1) {
-            const player1Name = document.getElementById('player1Name');
-            const player1Ready = document.getElementById('player1Ready');
-            const player1ReadyBtn = document.getElementById('player1ReadyBtn');
-
-            if (player1Name) {
-                // Show host status
-                const hostText = player1.isHost ? ' (Host)' : ' (You)';
-                player1Name.textContent = `${player1.name}${hostText}`;
-            }
-            
-            if (player1Ready) {
-                player1Ready.textContent = player1.ready ? '✅ Ready' : '⌛ Not Ready';
-                player1Ready.style.color = player1.ready ? '#00ff00' : '#ff4444';
-            }
-            
-            if (player1ReadyBtn) {
-                player1ReadyBtn.disabled = false;
-                player1ReadyBtn.textContent = player1.ready ? '⌛ NOT READY' : '✅ READY UP';
-                player1ReadyBtn.style.background = player1.ready ? '#440000' : '#003300';
-            }
-        }
-
-        // Update Player 2 (opponent)
-        const player2 = roomData.players.find(p => p.id !== myPlayerId);
-        const player2Card = document.querySelector('.player-card.player-2');
-        
-        if (player2) {
-            if (player2Card) player2Card.classList.add('active');
-
-            const player2Name = document.getElementById('player2Name');
-            const player2Ready = document.getElementById('player2Ready');
-            const player2Connection = document.getElementById('player2Connection');
-
-            if (player2Name) {
-                // Show host status for opponent too
-                const hostText = player2.isHost ? ' (Host)' : '';
-                player2Name.textContent = `${player2.name}${hostText}`;
-            }
-            
-            if (player2Ready) {
-                player2Ready.textContent = player2.ready ? '✅ Ready' : '⌛ Not Ready';
-                player2Ready.style.color = player2.ready ? '#00ff00' : '#ff4444';
-            }
-            
-            if (player2Connection) {
-                player2Connection.textContent = '🟢 Connected';
-                player2Connection.style.color = '#00ff00';
-            }
-        } else {
-            if (player2Card) player2Card.classList.remove('active');
-            
-            // Reset to waiting state...
-            const player2Name = document.getElementById('player2Name');
-            const player2Ready = document.getElementById('player2Ready');
-            const player2Connection = document.getElementById('player2Connection');
-
-            if (player2Name) player2Name.textContent = 'Waiting for opponent...';
-            if (player2Ready) {
-                player2Ready.textContent = '⏳ Waiting';
-                player2Ready.style.color = '#ffff00';
-            }
-            if (player2Connection) {
-                player2Connection.textContent = '⚪ Waiting';
-                player2Connection.style.color = '#888';
-            }
-        }
-    }
-
-    updateGameSettings(roomData) {
-        const gameMode = document.getElementById('gameMode');
-        const maxRounds = document.getElementById('maxRounds');
-        const startingGold = document.getElementById('startingGold');
-
-        if (gameMode) gameMode.textContent = '1v1 Multiplayer';
-        if (maxRounds) maxRounds.textContent = '5';
-        if (startingGold) startingGold.textContent = '100';
-    }
-
-    updateLobbyStatus(roomData) {
-        const statusMessage = document.getElementById('lobbyStatusMessage');
-        const startGameBtn = document.getElementById('startGameBtn');
-        const myPlayerId = this.game.multiplayerManager?.playerId;
-        const amHost = roomData.players?.find(p => p.id === myPlayerId)?.isHost || false;
-
-        if (!roomData.players || roomData.players.length < 2) {
-            if (statusMessage) {
-                statusMessage.textContent = 'Waiting for another player to join...';
-                statusMessage.style.color = '#ffff00';
-            }
-            if (startGameBtn) {
-                startGameBtn.disabled = true;
-                startGameBtn.textContent = '⏳ WAITING FOR PLAYERS';
-                startGameBtn.style.display = amHost ? 'block' : 'none';
-            }
-        } else {
-            const allReady = roomData.players.every(p => p.ready);
-            
-            if (allReady) {
-                if (statusMessage) {
-                    if (amHost) {
-                        statusMessage.textContent = 'All players ready! You can start the game!';
-                        statusMessage.style.color = '#00ff00';
-                    } else {
-                        statusMessage.textContent = 'All players ready! Waiting for host to start...';
-                        statusMessage.style.color = '#00ff00';
-                    }
+                if (player1Name) {
+                    player1Name.textContent = `${myPlayer.name} (You)${myPlayer.isHost ? ' (Host)' : ''}`;
                 }
-                if (startGameBtn) {
-                    if (amHost) {
-                        startGameBtn.disabled = false;
-                        startGameBtn.textContent = '🚀 START GAME';
-                        startGameBtn.style.display = 'block';
-                    } else {
-                        startGameBtn.disabled = true;
-                        startGameBtn.textContent = '⏳ HOST WILL START';
-                        startGameBtn.style.display = 'block';
-                    }
+                if (player1Ready) {
+                    player1Ready.textContent = myPlayer.ready ? 'Ready' : 'Not Ready';
+                    player1Ready.style.color = myPlayer.ready ? '#00ff00' : '#ff4444';
+                }
+                if (player1ReadyBtn) {
+                    player1ReadyBtn.disabled = false;
+                    player1ReadyBtn.textContent = myPlayer.ready ? 'Not Ready' : 'Ready Up';
+                    player1ReadyBtn.style.background = myPlayer.ready ? '#440000' : '#003300';
+                }
+            }
+
+            // Update opponent card
+            const player2Name = document.getElementById('player2Name');
+            const player2Ready = document.getElementById('player2Ready');
+            
+            if (opponent) {
+                console.log('Updating opponent UI with ready state:', opponent.ready);
+                
+                if (player2Name) {
+                    player2Name.textContent = `${opponent.name}${opponent.isHost ? ' (Host)' : ''}`;
+                }
+                if (player2Ready) {
+                    player2Ready.textContent = opponent.ready ? 'Ready' : 'Not Ready';
+                    player2Ready.style.color = opponent.ready ? '#00ff00' : '#ff4444';
                 }
             } else {
-                if (statusMessage) {
-                    statusMessage.textContent = 'Waiting for all players to be ready...';
-                    statusMessage.style.color = '#ffff00';
+                // No opponent yet
+                if (player2Name) {
+                    player2Name.textContent = 'Waiting for opponent...';
                 }
-                if (startGameBtn) {
-                    startGameBtn.disabled = true;
-                    if (amHost) {
-                        startGameBtn.textContent = '⏳ WAITING FOR READY';
-                    } else {
-                        startGameBtn.textContent = '⏳ WAITING FOR READY';
-                    }
-                    startGameBtn.style.display = amHost ? 'block' : 'none';
+                if (player2Ready) {
+                    player2Ready.textContent = 'Waiting';
+                    player2Ready.style.color = '#888';
                 }
             }
-        }
-    }
 
-    startLobbyUpdates() {
-        if (this.lobbyUpdateInterval) {
-            clearInterval(this.lobbyUpdateInterval);
-        }
-
-        this.lobbyUpdateInterval = setInterval(() => {
-            if (this.game.multiplayerManager && this.currentScreen === 'lobby') {
-                // Request updated game state from server
-                this.game.multiplayerManager.requestGameStateUpdate();
+            // Update start button (only show for host when all ready)
+            const allReady = gameState.players.every(p => p.ready);
+            const startBtn = document.getElementById('startGameBtn');
+            
+            console.log('All ready:', allReady, 'Is host:', this.isHost, 'Player count:', gameState.players.length);
+            
+            if (this.isHost && gameState.players.length === 2 && allReady) {
+                if (startBtn) {
+                    startBtn.style.display = 'block';
+                    startBtn.disabled = false;
+                    startBtn.textContent = 'Start Game';
+                }
+            } else {
+                if (startBtn) {
+                    startBtn.style.display = this.isHost ? 'block' : 'none';
+                    startBtn.disabled = true;
+                    startBtn.textContent = allReady ? 'Starting...' : 'Waiting for Ready';
+                }
             }
-        }, 2000); // Update every 2 seconds
-    }
-
-    stopLobbyUpdates() {
-        if (this.lobbyUpdateInterval) {
-            clearInterval(this.lobbyUpdateInterval);
-            this.lobbyUpdateInterval = null;
         }
     }
 
-    // =============================================
-    // LOBBY ACTIONS
-    // =============================================
-
-    togglePlayerReady() {
-        if (this.game.multiplayerManager && this.game.multiplayerManager.socket) {
-            // Send ready state toggle to server
-            this.game.multiplayerManager.socket.emit('toggle_ready');
-            
-            // Show immediate feedback
-            const btn = document.getElementById('player1ReadyBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Updating...';
-            }
-        } else {
-            this.showNotification('Not connected to server!', 'error');
-        }
-    }
-
-    copyRoomId() {
-        const roomIdDisplay = document.getElementById('lobbyRoomId');
-        if (roomIdDisplay) {
-            const roomId = roomIdDisplay.textContent;
-            
-            navigator.clipboard.writeText(roomId).then(() => {
-                const btn = document.getElementById('copyRoomIdBtn');
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
-                btn.style.background = '#003300';
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = '';
-                }, 2000);
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = roomId;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                const btn = document.getElementById('copyRoomIdBtn');
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                }, 2000);
-            });
-        }
-    }
-    startGameAsHost() {
-        if (this.game.multiplayerManager && this.game.multiplayerManager.socket) {
-            this.game.multiplayerManager.socket.emit('start_game');
-            
-            // Show loading state
-            const btn = document.getElementById('startGameBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = '🚀 STARTING...';
-            }
-            
-            this.showNotification('Starting game...', 'info');
-        } else {
-            this.showNotification('Not connected to server!', 'error');
-        }
-    }
-    startMultiplayerGame() {
-        // Hide lobby and show game screen
+    transitionToGame() {
+        console.log('Transitioning from lobby to game...');
         this.currentScreen = 'game';
-        this.stopLobbyUpdates();
-
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById('multiplayerGameScreen').classList.add('active');
-
-        // Start the actual game
-        this.start();
+        
+        // Hide lobby, show game
+        document.getElementById('multiplayerLobby')?.classList.remove('active');
+        document.getElementById('gameScreen')?.classList.add('active');
+        
+        // Start the game
+        this.game.gameManager.startSelectedMode();
     }
 
-    leaveLobby() {
-        if (confirm('Are you sure you want to leave the lobby?')) {
-            this.stopLobbyUpdates();
-            
-            if (this.game.multiplayerManager) {
-                this.game.multiplayerManager.leaveRoom();
-            }
+    handlePhaseUpdate(data) {
+        // Handle game phase changes during gameplay
+        console.log('Phase update:', data.phase);
+        this.game.state.phase = data.phase;
+    }
+
+    handleBattleEnd(data) {
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        if (data.result.winner === myPlayerId) {
+            this.showNotification('Victory! You won this round!', 'success');
+        } else {
+            this.showNotification('Defeat! Better luck next round!', 'warning');
+        }
+    }
+
+    handleGameEnd(data) {
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        if (data.result.winner === myPlayerId) {
+            this.showNotification('GAME WON! Congratulations!', 'success');
+        } else {
+            this.showNotification('Game lost. Better luck next time!', 'warning');
         }
     }
 
     // =============================================
-    // GAME UI MANAGEMENT
+    // UTILITY METHODS
     // =============================================
 
+    showNotification(message, type = 'info', duration = 4000) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        
+        const colors = {
+            info: '#00aaff',
+            success: '#00ff00',
+            warning: '#ffaa00',
+            error: '#ff4444'
+        };
+        
+        const color = colors[type] || colors.info;
+        notification.style.cssText = `
+            background: rgba(0, 0, 0, 0.9); border: 2px solid ${color};
+            color: ${color}; padding: 12px 16px; border-radius: 6px;
+            margin-bottom: 8px; font-weight: bold; pointer-events: auto; cursor: pointer;
+        `;
+        
+        notification.onclick = () => notification.remove();
+        
+        const container = document.getElementById('multiplayerNotifications') || document.body;
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, duration);
+    }
+    
     start() {
-        if (this.game.statisticsTrackingSystem) {
-            this.game.statisticsTrackingSystem.startSession();
-        }
-        if (this.game.shopSystem) {
-            this.game.shopSystem.createShop();
-        }
-        if (this.game.phaseSystem) {
-            this.game.phaseSystem.startPlacementPhase();
-        }
-        if (this.game.particleSystem) {
-            this.game.particleSystem.initialize();
-        }
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.initialize();
-        }
-        
-        // Add welcome messages
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add('🎮 Multiplayer battle begins!');
-            this.game.battleLogSystem.add('💡 Deploy your army and prepare for battle!');
-        }
-    }
-
-    update(deltaTime) {
-        // Update opponent info overlay
-        this.updateOpponentOverlay();
-        
-        // Update multiplayer-specific UI elements
-        this.updateMultiplayerGameUI();
-    }
-
-    updateOpponentOverlay() {
-        if (!this.game.multiplayerManager || this.currentScreen !== 'game') return;
-
-        const opponent = Array.from(this.game.multiplayerManager.opponents.values())[0];
-        if (!opponent) return;
-
-        // Update opponent name
-        const opponentNameGame = document.getElementById('opponentNameGame');
-        if (opponentNameGame) {
-            opponentNameGame.textContent = opponent.name;
-        }
-
-        // Update opponent health
-        const opponentHealthGame = document.getElementById('opponentHealthGame');
-        if (opponentHealthGame) {
-            opponentHealthGame.textContent = opponent.health || 100;
-        }
-
-        // Update opponent gold
-        const opponentGoldGame = document.getElementById('opponentGoldGame');
-        if (opponentGoldGame) {
-            opponentGoldGame.textContent = opponent.gold || '-';
-        }
-
-        // Update opponent status
-        const opponentStatusGame = document.getElementById('opponentStatusGame');
-        if (opponentStatusGame) {
-            if (this.game.state.phase === 'placement') {
-                if (opponent.ready) {
-                    opponentStatusGame.textContent = '✅ Ready';
-                    opponentStatusGame.className = 'status-ready';
-                } else {
-                    opponentStatusGame.textContent = '🏗️ Deploying';
-                    opponentStatusGame.className = 'status-deploying';
-                }
-            } else if (this.game.state.phase === 'battle') {
-                opponentStatusGame.textContent = '⚔️ Battling';
-                opponentStatusGame.className = 'status-battling';
-            }
-        }
-    }
-
-    updateMultiplayerGameUI() {
-        // Update player health
-        const playerHealthEl = document.getElementById('multiplayerPlayerHealth');
-        if (playerHealthEl && this.game.state) {
-            // Get health from team health system if available
-            const playerHealth = this.game.teamHealthSystem?.getPlayerHealth() || this.game.state.playerHealth || 100;
-            playerHealthEl.textContent = playerHealth;
-        }
-
-        // Gold display is handled by PhaseSystem
-        // Ready button state is handled by PhaseSystem
-        // Phase info is handled by PhaseSystem
-    }
-
-    // =============================================
-    // MULTIPLAYER GAME ACTIONS
-    // =============================================
-
-    showMultiplayerPauseMenu() {
-        const pauseMenu = document.createElement('div');
-        pauseMenu.className = 'pause-overlay';
-        pauseMenu.id = 'multiplayerPauseMenu';
-        pauseMenu.innerHTML = `
-            <div class="pause-content">
-                <h2>⏸️ GAME PAUSED</h2>
-                <p style="color: #ffff00; margin-bottom: 2rem;">⚠️ This is a multiplayer game. Leaving will forfeit the match.</p>
-                <button id="resumeMultiplayerBtn" class="btn">▶️ RESUME</button>
-                <button id="forfeitGameBtn" class="btn btn-danger">🏳️ FORFEIT & EXIT</button>
-            </div>
-        `;
-        
-        document.body.appendChild(pauseMenu);
-        
-        document.getElementById('resumeMultiplayerBtn').onclick = () => {
-            document.body.removeChild(pauseMenu);
-        };
-        
-        document.getElementById('forfeitGameBtn').onclick = () => {
-            if (confirm('Are you sure you want to forfeit this multiplayer game?')) {
-                this.exitMultiplayerGame();
-                document.body.removeChild(pauseMenu);
-            }
-        };
-    }
-
-    exitMultiplayerGame() {
-        if (confirm('Are you sure you want to exit? You will forfeit the multiplayer game.')) {
-            this.stopLobbyUpdates();
-            
-            if (this.game.multiplayerManager) {
-                this.game.multiplayerManager.leaveRoom();
-            }
-        }
-    }
-
-    // =============================================
-    // SCREEN TRANSITIONS
-    // =============================================
-
-    showGameScreen() {
-        document.getElementById('gameScreen').classList.add('active');
-        
-        // Enable multiplayer-specific UI
-        document.getElementById('opponentOverlay').style.display = 'block';
-        document.getElementById('singlePlayerResources').style.display = 'none';
-        document.getElementById('multiplayerResources').style.display = 'block';
-        document.getElementById('singlePlayerPhaseInfo').style.display = 'none';
-        document.getElementById('multiplayerPhaseInfo').style.display = 'block';
-        document.getElementById('squadCountContainer').style.display = 'block';
-    }
-
-    showLobbyScreen() {
-        this.currentScreen = 'lobby';
-
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById('multiplayerLobby').classList.add('active');
-
-        this.startLobbyUpdates();
-    }
-
-    // =============================================
-    // GAME END SCREENS
-    // =============================================
-
-    showVictoryScreen(stats) {
-        this.stopLobbyUpdates();
-        this.currentScreen = 'victory';
-
-        // Create victory overlay
-        const victoryOverlay = document.createElement('div');
-        victoryOverlay.className = 'multiplayer-victory-overlay';
-        victoryOverlay.innerHTML = `
-            <div class="victory-content">
-                <h1>🎉 VICTORY! 🎉</h1>
-                <h2>You defeated your opponent!</h2>
-                <div class="victory-stats">
-                    <div class="stat">
-                        <span class="stat-label">Rounds Won:</span>
-                        <span class="stat-value">${stats.roundsWon || 0}</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Final Health:</span>
-                        <span class="stat-value">${stats.finalHealth || 0}/100</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Opponent Defeated:</span>
-                        <span class="stat-value">✅ Complete</span>
-                    </div>
-                </div>
-                <div class="victory-controls">
-                    <button id="playAgainBtn" class="btn btn-primary">🔄 PLAY AGAIN</button>
-                    <button id="backToMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(victoryOverlay);
-
-        document.getElementById('playAgainBtn').onclick = () => {
-            document.body.removeChild(victoryOverlay);
-            // Could implement rematch functionality here
-            this.exitToMainMenu();
-        };
-
-        document.getElementById('backToMenuBtn').onclick = () => {
-            document.body.removeChild(victoryOverlay);
-            this.exitToMainMenu();
-        };
-    }
-
-    showDefeatScreen(stats) {
-        this.stopLobbyUpdates();
-        this.currentScreen = 'defeat';
-
-        // Create defeat overlay
-        const defeatOverlay = document.createElement('div');
-        defeatOverlay.className = 'multiplayer-defeat-overlay';
-        defeatOverlay.innerHTML = `
-            <div class="defeat-content">
-                <h1>💀 DEFEAT 💀</h1>
-                <h2>Your opponent was victorious!</h2>
-                <div class="defeat-stats">
-                    <div class="stat">
-                        <span class="stat-label">Rounds Survived:</span>
-                        <span class="stat-value">${stats.roundsSurvived || 0}</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Final Health:</span>
-                        <span class="stat-value">0/100</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Result:</span>
-                        <span class="stat-value">Army Eliminated</span>
-                    </div>
-                </div>
-                <div class="defeat-controls">
-                    <button id="tryAgainBtn" class="btn btn-primary">🔄 TRY AGAIN</button>
-                    <button id="backToMenuBtn2" class="btn btn-secondary">🏠 MAIN MENU</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(defeatOverlay);
-
-        document.getElementById('tryAgainBtn').onclick = () => {
-            document.body.removeChild(defeatOverlay);
-            // Could implement rematch functionality here
-            this.exitToMainMenu();
-        };
-
-        document.getElementById('backToMenuBtn2').onclick = () => {
-            document.body.removeChild(defeatOverlay);
-            this.exitToMainMenu();
-        };
+       // this.game.statisticsTrackingSystem.startSession();
+        this.game.shopSystem.createShop();
+        //this.game.phaseSystem.startPlacementPhase();
+        this.game.particleSystem.initialize(); 
+        this.game.effectsSystem.initialize();                  
+        // Welcome messages
+        this.game.battleLogSystem.addWelcomeMessages();
     }
 
     exitToMainMenu() {
-        this.stopLobbyUpdates();
         this.currentScreen = null;
+        this.roomId = null;
+        this.isHost = false;
+        this.gameState = null;
 
-        // Clean up any overlays
-        const overlays = document.querySelectorAll('.multiplayer-victory-overlay, .multiplayer-defeat-overlay, .multiplayer-stats-overlay');
-        overlays.forEach(overlay => overlay.remove());
-
-        // Return to main menu
-        if (this.game.screenManager) {
+        if (this.game.screenManager?.showMainMenu) {
             this.game.screenManager.showMainMenu();
-        }
-
-        // Disconnect from multiplayer
-        if (this.game.multiplayerManager) {
-            this.game.multiplayerManager.disconnect();
-        }
-    }
-
-    // =============================================
-    // HELPER METHODS
-    // =============================================
-
-    // Get reference to game state
-    getGameState() { 
-        return this.game.state; 
-    }
-
-    // Show notification in multiplayer context
-    showNotification(message, type = 'info', duration = 4000) {
-        if (this.game.multiplayerManager) {
-            this.game.multiplayerManager.showNotification(message, type, duration);
         } else {
-            // Fallback notification
-            console.log(`[${type.toUpperCase()}] ${message}`);
+            window.location.reload();
         }
     }
 
@@ -700,11 +668,12 @@ class MultiplayerUISystem {
     // =============================================
 
     dispose() {
-        this.stopLobbyUpdates();
-        
-        // Remove any created overlays
-        const overlays = document.querySelectorAll('.multiplayer-victory-overlay, .multiplayer-defeat-overlay, .multiplayer-stats-overlay, #multiplayerPauseMenu');
-        overlays.forEach(overlay => overlay.remove());
+        this.networkUnsubscribers.forEach(unsubscribe => {
+            if (typeof unsubscribe === 'function') {
+                unsubscribe();
+            }
+        });
+        this.networkUnsubscribers = [];
         
         console.log('MultiplayerUISystem disposed');
     }

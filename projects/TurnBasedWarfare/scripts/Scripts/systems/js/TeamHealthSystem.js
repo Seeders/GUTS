@@ -1,8 +1,8 @@
-class TeamHealthSystem {
+class TeamHealthSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.teamHealthSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        
         
         // Team health configuration
         this.MAX_TEAM_HEALTH = 5000;
@@ -14,7 +14,10 @@ class TeamHealthSystem {
         // Track if we've already processed this round's result
         this.roundProcessed = false;
         
-        this.initializeUI();
+        if(!this.game.isServer){
+            console.log('this.game', this.game);
+            this.initializeUI();
+        }
     }
     
     initializeUI() {
@@ -213,23 +216,21 @@ class TeamHealthSystem {
         const enemyText = document.getElementById('enemyHealthText');
         
         if (playerFill && playerText) {
-            const playerPercent = (this.teamHealth.player / this.MAX_TEAM_HEALTH) * 100;
+            const playerPercent = (this.teamHealth.left / this.MAX_TEAM_HEALTH) * 100;
             playerFill.style.width = `${playerPercent}%`;
-            playerText.textContent = `${this.teamHealth.player}/${this.MAX_TEAM_HEALTH}`;
+            playerText.textContent = `${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}`;
         }
         
         if (enemyFill && enemyText) {
-            const enemyPercent = (this.teamHealth.enemy / this.MAX_TEAM_HEALTH) * 100;
+            const enemyPercent = (this.teamHealth.right / this.MAX_TEAM_HEALTH) * 100;
             enemyFill.style.width = `${enemyPercent}%`;
-            enemyText.textContent = `${this.teamHealth.enemy}/${this.MAX_TEAM_HEALTH}`;
+            enemyText.textContent = `${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}`;
         }
     }
     
     onBattleStart() {
         this.roundProcessed = false;
-        
-        // Ensure health bars are visible
-        this.ensureUIExists();
+     
     }
     
     // Apply damage when PhaseSystem tells us a round ended
@@ -239,7 +240,7 @@ class TeamHealthSystem {
         
         // Calculate damage based on surviving squads' base values
         const damageResult = this.calculateSquadBasedDamage(survivingUnits);
-        const losingTeam = winningTeam === 'player' ? 'enemy' : 'player';
+        const losingTeam = winningTeam === 'left' ? 'right' : 'left';
         
         // Apply damage to losing team
         this.dealDamageToTeam(losingTeam, damageResult.totalDamage);
@@ -262,7 +263,7 @@ class TeamHealthSystem {
         
         // Return result object
         return {
-            result: winningTeam === 'player' ? 'victory' : 'defeat',
+            result: winningTeam === this.game.state.mySide ? 'victory' : 'defeat',
             winningTeam: winningTeam,
             losingTeam: losingTeam,
             damage: damageResult.totalDamage,
@@ -515,37 +516,37 @@ class TeamHealthSystem {
     // Get health status for UI
     getHealthStatus() {
         return {
-            player: {
-                current: this.teamHealth.player,
+            left: {
+                current: this.teamHealth.left,
                 max: this.MAX_TEAM_HEALTH,
-                percentage: this.getHealthPercentage('player')
+                percentage: this.getHealthPercentage('left')
             },
-            enemy: {
-                current: this.teamHealth.enemy,
+            right: {
+                current: this.teamHealth.right,
                 max: this.MAX_TEAM_HEALTH,
-                percentage: this.getHealthPercentage('enemy')
+                percentage: this.getHealthPercentage('right')
             }
         };
     }
 
-    getPlayerHealth() {
-        return this.teamHealth.player || 0;
+    getLeftHealth() {
+        return this.teamHealth.left || 0;
     }
 
     // Method for multiplayer compatibility - returns current enemy health  
-    getEnemyHealth() {
-        return this.teamHealth.enemy || 0;
+    getRightHealth() {
+        return this.teamHealth.right || 0;
     }
 
     // Method to set player health (for multiplayer server updates)
-    setPlayerHealth(health) {
-        this.teamHealth.player = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
+    setLeftHealth(health) {
+        this.teamHealth.left = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
         this.updateHealthDisplay();
     }
 
     // Method to set enemy health (for multiplayer server updates)
-    setEnemyHealth(health) {
-        this.teamHealth.enemy = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
+    setRightHealth(health) {
+        this.teamHealth.right = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
         this.updateHealthDisplay();
     }
 

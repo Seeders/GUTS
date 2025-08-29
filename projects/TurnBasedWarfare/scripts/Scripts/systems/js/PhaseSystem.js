@@ -1,6 +1,6 @@
-class PhaseSystem {
-    constructor(app) {
-        this.game = app;
+class PhaseSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.phaseSystem = this;
         this.phaseTimer = null;
         this.lastBattleEndCheck = 0;

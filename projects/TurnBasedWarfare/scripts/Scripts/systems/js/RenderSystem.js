@@ -1,6 +1,6 @@
-class RenderSystem {
+class RenderSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.renderSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         

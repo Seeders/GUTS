@@ -7,7 +7,7 @@ class ComponentManager {
     getComponents() {
         return {
             Position: (x = 0, y = 0, z = 0) => ({ x, y, z }),
-            Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100) => ({ vx, vy, vz, maxSpeed }),
+            Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100, affectedByGravity = true) => ({ vx, vy, vz, maxSpeed, affectedByGravity }),
             Facing: (angle) => ({ angle: angle || 0 }),
             Renderable: (objectType, spawnType) => ({ objectType, spawnType }),
             Collision: (radius = 1) => ({ radius }),

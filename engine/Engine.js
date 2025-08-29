@@ -1,17 +1,14 @@
-class Engine {
+class Engine extends BaseEngine {
     constructor(target) {
+        super();
         this.applicationTarget = document.getElementById(target);
-        this.plugins = {};
-        this.currentTime = Date.now();
-        this.lastTime = Date.now();
-        this.deltaTime = 0;
-        this.engineClasses = [];
-        this.appClasses = {};
-        this.libraries = {};
-        this.running = false;
+        this.isServer = false;
+        this.tickRate = 1 / 20; // 20 TPS
+        this.lastTick = 0;
+        this.simulationTime = 0;
+        this.accumulator = 0;
         const urlParams = new URLSearchParams(window.location.search);
-        this.isServer = urlParams.get('isServer');
-        console.log("isServer", this.isServer);
+        this.serverMode = urlParams.get('isServer');
         window.APP = this;
     }
 
@@ -27,109 +24,87 @@ class Engine {
         
         let projectConfig = this.collections.configs.game;
         if (projectConfig.libraries) {
-            // Use ModuleManager to load modules
             this.moduleManager.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
             window.GUTS = this.moduleManager.libraryClasses;
         }
-        //components, renderers, and functions
+
         this.setupScriptEnvironment();
-        this.preCompileScripts();  
- 
-        this.gameInstance = new GUTS[projectConfig.appLibrary](this);    
+        this.preCompileScripts();
 
-        this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);     
+        this.gameInstance = new GUTS[projectConfig.appLibrary](this);
+        this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
         await this.loader.load();
-            
-        // Use ModuleManager's script environment
-        this.start();
-    }
-    
-    getCollections() {
-        return this.collections;
-    }
-
-    hideLoadingScreen() {      
-        document.body.style = "";  
-        requestAnimationFrame(() => {            
-            this.applicationTarget.style = '';
-        });
-    }
-
-    setupScriptEnvironment() {
-        // Use ModuleManager's script environment setup
-        this.scriptContext = this.moduleManager.setupScriptEnvironment(this);
-    }
-
-    // Pre-compile all scripts to ensure availability
-    preCompileScripts() {
-        for (let componentType in this.collections.components) {
-            const componentDef = this.collections.components[componentType];
-            if (componentDef.script) {
-                this.moduleManager.compileScript(componentDef.script, componentType);
-            }
-        }
-        for (let componentType in this.collections.renderers) {
-            const componentDef = this.collections.renderers[componentType];
-            if (componentDef.script) {
-                this.moduleManager.compileScript(componentDef.script, componentType);
-            }
-        }
-        for (let systemType in this.collections.systems) {
-            const systemDef = this.collections.systems[systemType];
-            if (systemDef.script) {
-                this.moduleManager.compileScript(systemDef.script, systemType);
-            }
-        }
-        for( let funcType in this.collections.functions) {            
-            const funcDef = this.collections.functions[funcType];
-            this.moduleManager.compileFunction(funcDef.script, funcType);
-        }
-    }
-    
-    gameLoop() {    
-        if (!this.running) return;
-        if(this.gameInstance && this.gameInstance.update) {
-            this.gameInstance.update(); 
-        }      
-        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-    }
-
-    start() {
-        this.running = true;
-        this.lastTime = performance.now();
         
-        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-        requestAnimationFrame(() => {
-            this.hideLoadingScreen();
-        }); 
-    }
-    
-    stop() {
-        this.running = false;
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
+        this.start();
     }
 
     async loadCollections(projectName) {
         let currentProject = projectName;
         let project = {};
 
-
-        project = JSON.parse(localStorage.getItem(currentProject)); 
+        project = JSON.parse(localStorage.getItem(currentProject));
         
-        if(!project){
+        if (!project) {
             const response = await window.fetch(`config/${currentProject.toUpperCase().replace(/ /g, '_')}.json`);
-
-            if (!response.ok) {                    
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             } else {
-                const data = await response.json();  
+                const data = await response.json();
                 project = data;
             }
         }
         return project.objectTypes;
     }
 
+    hideLoadingScreen() {
+        document.body.style = "";
+        requestAnimationFrame(() => {
+            this.applicationTarget.style = '';
+        });
+    }
+
+    gameLoop() {
+        if (!this.running) return;
+        
+        const now = this.getCurrentTime();
+        const deltaTime = (now - this.lastTick) / 1000;
+        this.lastTick = now;
+        
+        this.accumulator += deltaTime;
+        while (this.accumulator >= this.tickRate) {
+            this.simulationTime += this.tickRate * 1000;
+            this.tick(this.tickRate, this.simulationTime);
+            this.accumulator -= this.tickRate;
+        }
+        
+        // Use setImmediate for next tick (Node.js specific)
+        requestAnimationFrame(() => this.gameLoop());
+    }
+
+    tick(deltaTime, now) {
+        // Update all active game rooms
+        if (this.gameInstance && this.gameInstance.update) {
+            this.gameInstance.update(deltaTime, now);        
+        }
+        
+    }
+    start() {
+        super.start();
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        requestAnimationFrame(() => {
+            this.hideLoadingScreen();
+        });
+    }
+
+    stop() {
+        super.stop();
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+
+    getCurrentTime() {
+        return performance.now();
+    }
 }

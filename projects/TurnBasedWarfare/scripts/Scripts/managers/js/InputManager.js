@@ -5,14 +5,15 @@ class InputManager {
         this.keyStates = {};
         this.mouseState = { x: 0, y: 0, pressed: false };
         this.shortcuts = new Map();
-        this.setupDefaultShortcuts();
+        
     }
     
-    setup() {
+    init() {
         this.setupCanvasEvents();
         this.setupButtonEvents();
         this.setupKeyboardEvents();
         this.setupMouseTracking();
+        this.setupDefaultShortcuts();
     }
         
     setupCanvasEvents() {
@@ -29,15 +30,7 @@ class InputManager {
         });
     }
     
-    setupButtonEvents() {
-        // Ready button
-        const readyButton = document.getElementById('readyButton');
-        if (readyButton) {
-            readyButton.addEventListener('click', () => {
-                this.game.phaseSystem.toggleReady();
-            });
-        }
-        
+    setupButtonEvents() {        
         const mainMenuPlayGameBtn = document.getElementById('mainMenu_PlayGameBtn');
         const mainMenuTutorialBtn = document.getElementById('mainMenu_TutorialBtn');
         const mainMenuSettingsBtn = document.getElementById('mainMenu_SettingsBtn');

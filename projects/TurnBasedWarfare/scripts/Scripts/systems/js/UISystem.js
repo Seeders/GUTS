@@ -1,6 +1,6 @@
-class UISystem {
-    constructor(app) {
-        this.game = app;
+class UISystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.uiSystem = this;        
         // Initialize subsystems
         GUTS.NotificationSystem.initialize();       

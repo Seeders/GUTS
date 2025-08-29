@@ -1,6 +1,6 @@
-class WorldSystem {
+class WorldSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.worldSystem = this;
         
         this.initialized = false;

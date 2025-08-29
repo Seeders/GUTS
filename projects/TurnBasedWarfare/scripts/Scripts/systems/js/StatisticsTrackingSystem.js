@@ -1,6 +1,6 @@
-class StatisticsTrackingSystem {
-    constructor(app) {
-        this.game = app; 
+class StatisticsTrackingSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.statisticsTrackingSystem = this;
         this.gameStartTime = null;
         this.battleStartTime = null;

@@ -1,6 +1,6 @@
-class ParticleSystem {
+class ParticleSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.particleSystem = this;
         
         // Particle pools for different shapes

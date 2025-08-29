@@ -32,10 +32,10 @@ class ECSGame {
         return this.app.getCollections();
     }
 
-    update() {
+    update(deltaTime, now) {
   
         if (!this.state.isPaused) {
-            this.currentTime = Date.now();
+            this.currentTime = now;
 
             // Only update if a reasonable amount of time has passed
             const timeSinceLastUpdate = this.currentTime - this.lastTime;
@@ -45,13 +45,13 @@ class ECSGame {
                 this.lastTime = this.currentTime; // Reset timer without updating
                 return;
             }
-
-            this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
-            this.lastTime = this.currentTime;
+            this.state.simTime = now;
+            this.deltaTime = deltaTime;        
 
             this.systems.forEach(system => {
                 if (system.update) {
-                    system.update(this.deltaTime);
+                    system.update(deltaTime, now);
+                    system.render(deltaTime, now);
                 }
             });
 
@@ -60,6 +60,7 @@ class ECSGame {
     }
 
     postUpdate() {
+        this.lastTime = this.currentTime;
     
         this.entitiesToAdd.forEach((entity) => this.addEntity(entity));        
         this.entitiesToAdd = [];
@@ -92,14 +93,13 @@ class ECSGame {
         console.log('spawn', arguments);
     }
 
-    createEntity() {
-        const id = this.nextEntityId++;
+    createEntity(presetID) {
+        const id = presetID || this.nextEntityId++;
         this.entities.set(id, new Set());
         return id;
     }
     
     destroyEntity(entityId) {
-
         if (this.entities.has(entityId)) {
             const componentTypes = this.entities.get(entityId);
             componentTypes.forEach(type => {

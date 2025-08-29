@@ -1,6 +1,6 @@
-class GridSystem {
+class GridSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.gridSystem = this;
         
         this.state = new Map();
@@ -14,7 +14,8 @@ class GridSystem {
         this.rightBounds = null;
     }
     
-    init(terrainSize = 768, cellSize = 48) {
+    init({terrainSize = 1536, cellSize = 48}) {
+        console.log('grid system initialized', terrainSize, cellSize);
         this.cellSize = cellSize;
         this.showGrid = true;
         this.snapToGrid = true;
@@ -27,6 +28,7 @@ class GridSystem {
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
+        console.log('dimensions', this.dimensions);
         
         this.gridVisualization = null;
 
@@ -71,14 +73,6 @@ class GridSystem {
         this.playerBounds = (this.teamSides.player === 'left') ? this.leftBounds : this.rightBounds;
         this.enemyBounds  = (this.teamSides.enemy  === 'left') ? this.leftBounds : this.rightBounds;
 
-        // Any cached validations based on previous bounds are now stale
-        this.validationCache.clear();
-
-        // Optional: log for debugging
-        console.log('[GridSystem] Sides set:', this.teamSides, {
-            playerBounds: this.playerBounds,
-            enemyBounds: this.enemyBounds
-        });
     }
     
     createVisualization(scene) {
@@ -168,22 +162,13 @@ class GridSystem {
 
     isValidPlacement(cells, team) {
         if (!cells || cells.length === 0) return false;
-        
-        const cacheKey = `${team}_${cells.map(c => `${c.x},${c.z}`).sort().join('|')}`;
-        
-        const now = Date.now();
-        const cached = this.validationCache.get(cacheKey);
-        if (cached && (now - cached.timestamp) < 1000) {
-            return cached.result;
-        }
-        
+                
         // IMPORTANT: use dynamic bounds based on current side assignment
-        const bounds = (team === 'player') ? this.playerBounds : this.enemyBounds;
+        const bounds = (team === 'right') ? this.rightBounds : this.leftBounds;
         
         for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                 cell.z < bounds.minZ || cell.z > bounds.maxZ) {
-                this.validationCache.set(cacheKey, { result: false, timestamp: now });
                 return false;
             }
         }
@@ -192,16 +177,10 @@ class GridSystem {
             const key = `${cell.x},${cell.z}`;
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
-                this.validationCache.set(cacheKey, { result: false, timestamp: now });
                 return false;
             }
         }
-        
-        this.validationCache.set(cacheKey, { result: true, timestamp: now });
-        
-        if (now - this.lastCacheClean > this.CACHE_CLEAN_INTERVAL) {
-            this.cleanValidationCache();
-        }
+
         
         return true;
     }
@@ -286,7 +265,7 @@ class GridSystem {
     
     getBounds(team) {
         // Keep API compatibility; these references are updated by setTeamSides()
-        return team === 'player' ? this.playerBounds : this.enemyBounds;
+        return team === 'right' ? this.rightBounds : this.leftBounds;
     }
     
     getCellState(gridX, gridZ) {
@@ -306,8 +285,6 @@ class GridSystem {
             dimensions: this.dimensions,
             leftBounds: this.leftBounds,
             rightBounds: this.rightBounds,
-            playerBounds: this.playerBounds,
-            enemyBounds: this.enemyBounds,
             teamSides: { ...this.teamSides },
             occupiedCells: this.getOccupiedCells(),
             totalCells: this.dimensions.width * this.dimensions.height,

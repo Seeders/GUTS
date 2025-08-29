@@ -1,6 +1,6 @@
-class CombatAISystem {
-    constructor(game){
-        this.game = game;
+class CombatAISystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.combatAISystems = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
@@ -20,41 +20,19 @@ class CombatAISystem {
 
         this.DAMAGE_TIMING_RATIO = 0.5;
         
-        // REMOVED: All range limitations for enemy detection
-        // Units can now see and target enemies anywhere on the map
-        
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
         
-        // Cache all enemies for better performance
-        this.allEnemiesCache = new Map(); // teamId -> [enemy entities]
-        this.cacheUpdateFrame = 0;
-        this.CACHE_UPDATE_INTERVAL = 10; // Update cache every N frames
-        this.LAST_PROCESSED_TICK = -1;
-this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is 60Hz
     }
         
-    update(deltaTime) {
+    update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
-
-        const tick = this.game.state.simTick || 0;
-        if (tick === this.LAST_PROCESSED_TICK) return; // already processed this tick
-        this.LAST_PROCESSED_TICK = tick;
-
         const CT = this.componentTypes;
-        const getPos = (id) => this.game.getComponent(id, CT.POSITION);
-
+ 
         // Stable order of updates across machines (cheap, by id; ties already deterministic)
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         ).sort((a, b) => String(a).localeCompare(String(b)));
-
-        const now = this.game.state?.simTime || 0;
-
-        // Refresh enemy caches at a reduced rate
-        if ((tick % this.CACHE_UPDATE_INTERVAL_TICKS) === 0) {
-            this.updateEnemyCache(combatUnits);
-        }
 
         // Process one deterministic step
         for (let i = 0; i < combatUnits.length; i++) {
@@ -81,6 +59,7 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
 
             // Get a stable, filtered list of enemies
             const enemies = this.getAllEnemies(entityId, team) || [];
+
             enemies.sort((a, b) => String(a).localeCompare(String(b)));
 
             // Validate current target
@@ -114,7 +93,7 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
             // NEW (deterministic, future-safe)
             if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0; // simTime domain
             const shouldMakeDecision = (now >= aiBehavior.nextMoveTime);
-            console.log(`Entity ${entityId}: now=${now}, nextMoveTime=${aiBehavior.nextMoveTime}, shouldDecide=${shouldMakeDecision}`);
+            
             if (shouldMakeDecision && aiState.state !== 'waiting') {
                 aiBehavior.nextMoveTime = now + this.MOVEMENT_DECISION_INTERVAL;
                 this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now);
@@ -125,43 +104,7 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         }
     }
 
-    // NEW: Cache all enemies by team for better performance
-    updateEnemyCache(combatUnits) {
-        this.allEnemiesCache.clear();
-        
-        // Group units by team
-        const unitsByTeam = new Map();
-        
-        combatUnits.forEach(entityId => {
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            
-            // Only include living units with position
-            if (!team || !health || !pos) return;
-            if (health.current <= 0) return;
-            if (deathState && deathState.isDying) return;
-            
-            if (!unitsByTeam.has(team.team)) {
-                unitsByTeam.set(team.team, []);
-            }
-            unitsByTeam.get(team.team).push(entityId);
-        });
-        
-        // For each team, store all enemies (units from other teams)
-        unitsByTeam.forEach((units, teamId) => {
-            const enemies = [];
-            unitsByTeam.forEach((otherUnits, otherTeamId) => {
-                if (teamId !== otherTeamId) {
-                    enemies.push(...otherUnits);
-                }
-            });
-            this.allEnemiesCache.set(teamId, enemies);
-        });
-        
-        this.cacheUpdateFrame = this.game.frameCounter;
-    }
+
     getAllEnemiesStable(entityId, team) {
         const CT = this.componentTypes;
         const enemies = this.getAllEnemies(entityId, team) || [];
@@ -173,24 +116,8 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
             return String(a).localeCompare(String(b));
         });
     }
-    // NEW: Get all enemies for a unit's team - NO RANGE RESTRICTIONS
+
     getAllEnemies(entityId, team) {
-        // Use cache if available
-        if (this.allEnemiesCache.has(team.team)) {
-            return this.allEnemiesCache.get(team.team).filter(enemyId => {
-                // Double-check enemy is still valid
-                const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-                const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                
-                return enemyHealth && 
-                       enemyHealth.current > 0 && 
-                       (!enemyDeathState || !enemyDeathState.isDying) &&
-                       enemyPos;
-            });
-        }
-        
-        // Fallback: scan all units (shouldn't happen with cache)
         const allUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
@@ -214,14 +141,9 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         });
     }
 
-    logEnemyCacheStatus() {
-        console.log('Enemy cache status:');
-        this.allEnemiesCache.forEach((enemies, teamId) => {
-            console.log(`  Team ${teamId}: ${enemies.length} enemies`);
-        });
-    }
 
     changeAIState(aiState, newState, now) {
+      
         const aiBehavior = aiState.aiBehavior;
         if (now - aiBehavior.lastStateChange < this.STATE_CHANGE_COOLDOWN) return false;
         if (aiState.state === 'attacking') {
@@ -247,9 +169,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
             aiBehavior.currentTarget = null;
             aiBehavior.targetPosition = null;
             this.changeAIState(aiState, 'idle', now);
-            if (this.DEBUG_ENEMY_DETECTION) {
-                console.log(`Unit ${entityId} no valid target found from ${enemies.length} enemies`);
-            }
             return;
         }
         
@@ -276,7 +195,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         
         aiBehavior.currentTarget = targetEnemy;
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
-        
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
             if (combat.damage <= 0 && this.game.abilitySystem) {
@@ -300,7 +218,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         }
     }
 
-    // CHANGED: Enhanced target selection with global awareness
     findBestTarget(entityId, pos, enemies, aiBehavior, now) {
         let bestTarget = null;
         let bestScore = -Infinity;
@@ -362,7 +279,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         return bestTarget;
     }
 
-    // NEW: Sophisticated target scoring system
     calculateTargetScore(distance, healthRatio, isCurrentTarget) {
         let score = 0;
         
@@ -404,7 +320,7 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         
         // Handle melee units with damage > 0
         if (combat.damage > 0) {
-            if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
+            if ((now - combat.lastAttack) / 1000 >= 1 / combat.attackSpeed) {
                 this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
                 combat.lastAttack = now;
                 aiBehavior.lastAttackStart = now;
@@ -440,8 +356,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
     }
-
-    // ... [All remaining methods stay the same as in the previous version] ...
     
     initiateAttack(attackerId, targetId, combat, now) {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
@@ -511,7 +425,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
     scheduleProjectileLaunch(attackerId, targetId, combat, now) {
         const attackInterval = 1 / combat.attackSpeed;
         const launchDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
-        
         setTimeout(() => {
             this.fireProjectileAttack(attackerId, targetId, combat.projectile);
         }, launchDelay * 1000);
@@ -588,6 +501,7 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
         const attackerCollision = this.game.getComponent(attackerId, this.componentTypes.COLLISION);
         const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
         if (!attackerPos || !targetPos) return false;
+
         const distances = this.calculateDistances(attackerPos, targetPos, attackerCollision, targetCollision);
         const effectiveRange = combat.range + this.ATTACK_RANGE_BUFFER + extraBuffer;
         return distances.attackerCenterToTargetEdge <= effectiveRange;
@@ -692,7 +606,6 @@ this.CACHE_UPDATE_INTERVAL_TICKS = 6; // update expensive caches @10Hz if sim is
 
     debugStatusEffects() {
         if (!this.game.damageSystem) {
-            console.log('DamageSystem not found');
             return;
         }
         

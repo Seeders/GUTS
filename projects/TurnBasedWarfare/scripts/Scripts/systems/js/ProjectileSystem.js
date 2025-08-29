@@ -1,6 +1,6 @@
-class ProjectileSystem {
+class ProjectileSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.projectileSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
@@ -55,7 +55,7 @@ class ProjectileSystem {
             components.Position(sourcePos.x, spawnHeight, sourcePos.z));
         
         this.game.addComponent(projectileId, this.componentTypes.VELOCITY, 
-            components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed));
+            components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed, projectileData.ballistic || false));
         
         // Enhanced projectile component with element
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
@@ -299,7 +299,7 @@ class ProjectileSystem {
     // PROJECTILE UPDATE AND COLLISION
     // =============================================
     
-    update(deltaTime) {
+    update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
         
         const projectiles = this.game.getEntitiesWith(
@@ -307,10 +307,7 @@ class ProjectileSystem {
             this.componentTypes.VELOCITY, 
             this.componentTypes.PROJECTILE
         );
-        
-        const now = this.game.state?.simTime || 0;
-
-        
+                
         projectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);
@@ -439,7 +436,13 @@ class ProjectileSystem {
         
         const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
         if (!sourceTeam) return;
-        
+        if(projectile.element == "fire"){
+            const dx = projectile.targetX - pos.x;
+            const dy = projectile.targetY - pos.y;
+            const dz = projectile.targetZ - pos.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            console.log(projectileId, distance, pos, projectile);
+        }
         allEntities.forEach(entityId => {
             if (entityId === projectile.source) return; // Don't hit the source
             
@@ -459,7 +462,7 @@ class ProjectileSystem {
             // Get entity radius for collision detection
             const entityUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const entityRadius = this.getUnitRadius(entityUnitType);
-            
+
             // Check collision for direct hit
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
                 // Direct hit detected!
@@ -491,6 +494,7 @@ class ProjectileSystem {
 
     handleProjectileHit(projectileId, targetId, projectile) {
         // Use centralized damage system for projectile hits
+        console.log('projectile hit ', projectileId, targetId, projectile);
         if (this.game.damageSystem) {
             const damage = projectile.damage;
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;

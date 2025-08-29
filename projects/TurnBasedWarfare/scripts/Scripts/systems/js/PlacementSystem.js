@@ -1,6 +1,6 @@
-class PlacementSystem {
-    constructor(app) {
-        this.game = app;
+class PlacementSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.placementSystem = this;
         
         this.raycaster = new THREE.Raycaster();

@@ -1,5 +1,6 @@
 class GameState {
     constructor(gameConfig = {}) {
+        this.collections = gameConfig;
         let state = gameConfig.configs?.state;
      
         // Clear all existing properties
@@ -18,4 +19,19 @@ class GameState {
         // If stats is present, create defaultStats as a copy
   
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.GameState = GameState;
+}
+
+// Make available as ES module export (new for server)  
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = GameState;
+}
+
+// Make available as ES6 export (also new for server)
+if (typeof exports !== 'undefined') {
+    exports.default = GameState;
+    exports.GameState = GameState;
 }

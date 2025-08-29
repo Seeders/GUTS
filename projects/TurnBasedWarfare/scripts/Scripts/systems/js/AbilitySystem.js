@@ -1,6 +1,6 @@
-class AbilitySystem {
+class AbilitySystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.abilitySystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
@@ -17,7 +17,7 @@ class AbilitySystem {
         const unitAbilities = [];
         
         abilityIds.forEach(abilityId => {
-            const AbilityClass = APP.appClasses[abilityId];
+            const AbilityClass = this.game.app.appClasses[abilityId];
             if (AbilityClass) {
                 const abilityInstance = new AbilityClass(this.game, this.game.getCollections().abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
@@ -186,7 +186,7 @@ class AbilitySystem {
     }
     
     createAbility(abilityId) {
-        const AbilityClass = APP.appClasses[abilityId];
+        const AbilityClass = this.game.app.appClasses[abilityId];
         return AbilityClass ? new AbilityClass() : null;
     }
     

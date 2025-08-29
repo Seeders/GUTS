@@ -1,8 +1,7 @@
 class AutoBattleMultiplayerManager {
-    constructor(game, sceneManager) {
+    constructor(game) {
         this.game = game;
 
-        this.sceneManager = sceneManager;
         this.game.multiplayerManager = this;
         
         this.socket = null;
@@ -36,6 +35,7 @@ class AutoBattleMultiplayerManager {
             return;
         }
         this.isAvailable = true;
+        this.playerId = this.game.clientNetworkManager.playerId;
         this.initializeUI();
         this.enhanceGameModeManager();
         console.log('MultiplayerManager ready for connections');
@@ -283,21 +283,15 @@ class AutoBattleMultiplayerManager {
     // =============================================
 
     async createRoom(playerName, maxPlayers = 2) {
-        if (!this.isConnected) {
-            await this.connect();
-        }
+ 
         
         return new Promise((resolve, reject) => {
-            this.socket.emit('create_room', {
-                playerData: { name: playerName },
-                maxPlayers: maxPlayers
-            });
-                        
-            this.socket.once('room_created', (data) => {
+            this.game.clientNetworkManager.createRoom(playerName, maxPlayers, (data) => {                
                 this.roomId = data.roomId;
-                this.playerId = data.playerId;
+                this.isHost = data.isHost;
+                this.phase = data.gameState?.phase;   
+                this.playerId = data.playerId;                             
                 this.isInLobby = true;
-
                 console.log(`Created room ${this.roomId} as ${this.playerId}`);
 
                 // Apply sides & state right away
@@ -309,29 +303,22 @@ class AutoBattleMultiplayerManager {
                 this.showLobby(data.gameState);
                 resolve(data);
             });
-            
-            this.socket.once('error', (error) => {
-                reject(new Error(error));
-            });
         });
     }
 
     async joinRoom(roomId, playerName) {
-        if (!this.isConnected) {
-            await this.connect();
-        }
-        
+
         return new Promise((resolve, reject) => {
-            this.socket.emit('join_room', {
-                roomId: roomId,
-                playerData: { name: playerName }
-            });
                         
-            this.socket.once('room_joined', (data) => {
+            this.game.clientNetworkManager.joinRoom(roomId, playerName, (data) => {
+                console.log(data);
                 this.roomId = data.roomId;
+                this.isHost = data.isHost;
                 this.playerId = data.playerId;
                 this.isInLobby = true;
-
+                this.phase = data.gameState?.phase;
+                
+console.log('joined room');
                 console.log(`Joined room ${this.roomId} as ${this.playerId}`);
 
                 // Apply sides & state right away
@@ -343,10 +330,7 @@ class AutoBattleMultiplayerManager {
                 this.showLobby(data.gameState);
                 resolve(data);
             });
-            
-            this.socket.once('error', (error) => {
-                reject(new Error(error));
-            });
+
         });
     }
 
@@ -397,7 +381,7 @@ class AutoBattleMultiplayerManager {
             this.game.uiSystem.showLobby({
                 roomId: this.roomId,
                 players: gameState.players || [],
-                currentPhase: gameState.currentPhase
+                currentPhase: gameState.phase
             });
         }
     }
@@ -495,11 +479,16 @@ class AutoBattleMultiplayerManager {
 
     updateGameStateFromServer(serverGameState) {
         this.lastGameState = serverGameState;
-
+// maxRounds: 5
+// phase: "waiting"
+// players: [{…}]
+// roomId: "room_1001"
+// round: 1
+// timeRemaining: 0
         // Update local game state
         if (this.game.state) {
-            this.game.state.round = serverGameState.currentRound;
-            this.game.state.phase = this.convertServerPhaseToLocal(serverGameState.gameState);
+            this.game.state.round = serverGameState.round;
+            this.game.state.phase = serverGameState.phase;
 
             // My player data (contains side now)
             const myPlayerData = serverGameState.players.find(p => p.id === this.playerId);
@@ -549,16 +538,6 @@ class AutoBattleMultiplayerManager {
         }
     }
 
-    convertServerPhaseToLocal(serverPhase) {
-        const phaseMap = {
-            'waiting': 'waiting',
-            'placement': 'placement',
-            'battle': 'battle',
-            'upgrading': 'upgrading',
-            'ended': 'ended'
-        };
-        return phaseMap[serverPhase] || 'waiting';
-    }
 
     handlePhaseUpdate(gameState) {
         

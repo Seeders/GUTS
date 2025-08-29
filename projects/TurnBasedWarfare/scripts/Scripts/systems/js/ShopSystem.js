@@ -1,6 +1,6 @@
-class ShopSystem {
-    constructor(app) {
-        this.game = app;
+class ShopSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
         this.game.shopSystem = this;
         
         // Experience UI state

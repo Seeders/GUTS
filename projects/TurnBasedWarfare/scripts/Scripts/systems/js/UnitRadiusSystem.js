@@ -1,6 +1,6 @@
-class UnitRadiusSystem {
+class UnitRadiusSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.unitRadiusSystem = this;        
         this.componentTypes = this.game.componentManager.getComponentTypes();
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }

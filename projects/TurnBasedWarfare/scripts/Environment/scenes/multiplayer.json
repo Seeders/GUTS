@@ -41,14 +41,7 @@
         },        
         {
           "type": "SquadManager"
-        },       
-        {
-          "type": "AutoBattleMultiplayerManager",
-          "parameters": {
-            "enabled": true,
-            "debug": true
-          }
-        },
+        },    
         {
           "type": "InputManager"
         }
@@ -92,9 +85,6 @@
         },
         {
           "type": "ShopSystem"
-        },
-        {
-          "type": "MultiplayerPhaseSystem"
         },
         {
           "type": "TeamHealthSystem"

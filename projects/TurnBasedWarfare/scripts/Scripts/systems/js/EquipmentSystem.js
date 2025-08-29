@@ -1,6 +1,6 @@
-class EquipmentSystem {
+class EquipmentSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.game.equipmentSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         

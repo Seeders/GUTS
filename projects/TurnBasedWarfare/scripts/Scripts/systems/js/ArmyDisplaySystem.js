@@ -1,6 +1,6 @@
-class ArmyDisplaySystem {
-    constructor(app) {
-        this.game = app;   
+class ArmyDisplaySystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);  
         this.game.armyDisplaySystem = this;
         this.updateInterval = null;
         this.lastUpdateData = null;
