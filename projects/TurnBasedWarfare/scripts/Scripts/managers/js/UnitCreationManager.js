@@ -248,7 +248,7 @@ class UnitCreationManager {
                 try {
                     const squadPlacement = this.createSquad(
                         placement.gridPosition,
-                        placement.unitType,
+                        this.game.getCollections().units[placement.unitType.id],
                         team,
                         playerId
                     );

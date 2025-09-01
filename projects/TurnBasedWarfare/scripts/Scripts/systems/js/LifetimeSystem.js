@@ -34,7 +34,7 @@ class LifetimeSystem extends engine.BaseSystem {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (!lifetime) return;
             
-            const age = (now - lifetime.startTime) / 1000;
+            const age = (now - lifetime.startTime);
             
             // Check if entity has expired
             if (age >= lifetime.duration) {
@@ -335,7 +335,7 @@ class LifetimeSystem extends engine.BaseSystem {
         if (lifetime) {
             const now = this.game.state?.simTime || 0;
 
-            const age = (now - lifetime.startTime) / 1000;
+            const age = (now - lifetime.startTime);
             return Math.max(0, (lifetime.duration) - age);
         }
         return -1;
@@ -421,7 +421,7 @@ class LifetimeSystem extends engine.BaseSystem {
         lifetimeEntities.forEach(entityId => {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (lifetime) {
-                const age = (now - lifetime.startTime) / 1000;
+                const age = (now - lifetime.startTime);
                 const remaining = lifetime.duration - age;
                 
                 if (remaining <= threshold && remaining > 0) {

@@ -639,9 +639,9 @@ class DamageSystem extends engine.BaseSystem {
     /**
      * Update method called each frame
      */
-    update(deltaTime) {
-        this.processStatusEffects(deltaTime);
-        this.processPendingDamage(deltaTime);
+    update(deltaTime, now) {
+        this.processStatusEffects(deltaTime, now);
+        this.processPendingDamage(deltaTime, now);
     }
 
     /**

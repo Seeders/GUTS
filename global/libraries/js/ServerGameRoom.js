@@ -191,7 +191,6 @@ export default class ServerGameRoom extends GameRoom {
         }, this.placementDuration);
     }
 
-    // Handle placement submissions with ready state
     submitPlayerPlacements(playerId, placements, ready = true) {
         if (this.gamePhase !== 'placement') {
             return { success: false, error: 'Not in placement phase' };
@@ -220,12 +219,10 @@ export default class ServerGameRoom extends GameRoom {
         return { success: true };
     }
 
-    // Check if all players are ready for battle
     areAllPlayersReady() {
         return Array.from(this.players.values()).every(p => p.placementReady);
     }
 
-    // Get opponent placements for a specific player
     getOpponentPlacements(playerId) {
         const opponents = Array.from(this.players.keys()).filter(id => id !== playerId);
         const allOpponentPlacements = [];
@@ -238,7 +235,6 @@ export default class ServerGameRoom extends GameRoom {
         return allOpponentPlacements;
     }
 
-    // Start battle when called by network manager
     startBattle() {
         try {
             console.log(`Starting battle for room ${this.id}`);
@@ -299,7 +295,7 @@ export default class ServerGameRoom extends GameRoom {
                // Validate side placement - no mirroring, direct side enforcement
             const squadData = this.game.squadManager.getSquadData(placement.unitType);
             const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-            if(!this.game.gridSystem.isValidPlacement(cells, player.team)){
+            if(!this.game.gridSystem.isValidPlacement(cells, player.side)){
                 console.log('Invalid Placement', player, placement);
             }
         }

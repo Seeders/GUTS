@@ -320,7 +320,7 @@ class CombatAISystem extends engine.BaseSystem {
         
         // Handle melee units with damage > 0
         if (combat.damage > 0) {
-            if ((now - combat.lastAttack) / 1000 >= 1 / combat.attackSpeed) {
+            if ((now - combat.lastAttack) >= 1 / combat.attackSpeed) {
                 this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
                 combat.lastAttack = now;
                 aiBehavior.lastAttackStart = now;

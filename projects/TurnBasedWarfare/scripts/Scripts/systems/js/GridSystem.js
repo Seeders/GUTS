@@ -169,6 +169,7 @@ class GridSystem extends engine.BaseSystem {
         for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                 cell.z < bounds.minZ || cell.z > bounds.maxZ) {
+                    console.log('placement out of bounds', team, cells, bounds);
                 return false;
             }
         }
@@ -177,6 +178,7 @@ class GridSystem extends engine.BaseSystem {
             const key = `${cell.x},${cell.z}`;
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
+                console.log('cellstate occupied');
                 return false;
             }
         }

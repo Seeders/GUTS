@@ -5,7 +5,7 @@ class ProjectileSystem extends engine.BaseSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration
-        this.HIT_DETECTION_RADIUS = 5;
+        this.HIT_DETECTION_RADIUS = 24;
         this.TRAIL_UPDATE_INTERVAL = 0.05;
         
         // Ballistic configuration
@@ -436,13 +436,6 @@ class ProjectileSystem extends engine.BaseSystem {
         
         const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
         if (!sourceTeam) return;
-        if(projectile.element == "fire"){
-            const dx = projectile.targetX - pos.x;
-            const dy = projectile.targetY - pos.y;
-            const dz = projectile.targetZ - pos.z;
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            console.log(projectileId, distance, pos, projectile);
-        }
         allEntities.forEach(entityId => {
             if (entityId === projectile.source) return; // Don't hit the source
             
