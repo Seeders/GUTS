@@ -91,8 +91,8 @@ export default class ServerEngine extends BaseEngine {
         
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
-            this.simulationTime += this.tickRate * 1000;            
-            this.tick(this.tickRate, this.simulationTime);
+            this.simulationTime += this.tickRate;            
+            this.tick();
             this.accumulator -= this.tickRate;
         }
         
@@ -100,13 +100,13 @@ export default class ServerEngine extends BaseEngine {
         setImmediate(() => this.gameLoop());
     }
 
-    tick(deltaTime, now) {
+    tick() {
         // Update all active game rooms
         for (const [roomId, room] of this.gameRooms) {
             if (room.isActive) {
-                room.game.state.simTime = now;
+                room.game.state.simTime = this.simulationTime;
                 room.game.state.simTick = (room.game.state.simTick || 0) + 1;
-                room.update(deltaTime, now);
+                room.update(this.tickRate, this.simulationTime);
             }
         }
         

@@ -72,8 +72,8 @@ class Engine extends BaseEngine {
         
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
-            this.simulationTime += this.tickRate * 1000;
-            this.tick(this.tickRate, this.simulationTime);
+            this.simulationTime += this.tickRate;
+            this.tick();
             this.accumulator -= this.tickRate;
         }
         
@@ -81,10 +81,10 @@ class Engine extends BaseEngine {
         requestAnimationFrame(() => this.gameLoop());
     }
 
-    tick(deltaTime, now) {
+    tick() {
         // Update all active game rooms
         if (this.gameInstance && this.gameInstance.update) {
-            this.gameInstance.update(deltaTime, now);        
+            this.gameInstance.update(this.tickRate, this.simulationTime);        
         }
         
     }
