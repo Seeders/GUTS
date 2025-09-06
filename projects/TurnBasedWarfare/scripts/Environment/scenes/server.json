@@ -11,6 +11,7 @@
         { "type": "EventManager" },
         { "type": "GameManager" },
         { "type": "UnitCreationManager" },
+        { "type": "ServerPlacementPhaseManager" },
         { "type": "SquadManager" }
       ],
       "systems": [
@@ -23,9 +24,9 @@
         { "type": "DamageSystem" },
         { "type": "AbilitySystem" },
         { "type": "SquadExperienceSystem" },
+        { "type": "ServerBattlePhaseSystem" },
         { "type": "LifetimeSystem" },
-        { "type": "GridSystem" },
-        { "type": "ServerBattleSystem" }
+        { "type": "GridSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }

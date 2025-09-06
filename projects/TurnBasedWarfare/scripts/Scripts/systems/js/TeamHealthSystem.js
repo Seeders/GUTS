@@ -7,8 +7,8 @@ class TeamHealthSystem extends engine.BaseSystem {
         // Team health configuration
         this.MAX_TEAM_HEALTH = 5000;
         this.teamHealth = {
-            player: this.MAX_TEAM_HEALTH,
-            enemy: this.MAX_TEAM_HEALTH
+            left: this.MAX_TEAM_HEALTH,
+            right: this.MAX_TEAM_HEALTH
         };
         
         // Track if we've already processed this round's result
@@ -59,22 +59,22 @@ class TeamHealthSystem extends engine.BaseSystem {
         }
         
         healthContainer.innerHTML = `
-            <div class="team-health-bar player-health">
+            <div class="team-health-bar left-health">
                 <div class="team-label">🛡️ YOUR ARMY</div>
                 <div class="health-bar-container">
                     <div class="health-bar">
-                        <div class="health-fill player-fill" id="playerHealthFill"></div>
+                        <div class="health-fill left-fill" id="leftHealthFill"></div>
                     </div>
-                    <div class="health-text" id="playerHealthText">${this.teamHealth.player}/${this.MAX_TEAM_HEALTH}</div>
+                    <div class="health-text" id="leftHealthText">${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}</div>
                 </div>
             </div>
-            <div class="team-health-bar enemy-health">
-                <div class="team-label">⚔️ ENEMY ARMY</div>
+            <div class="team-health-bar right-health">
+                <div class="team-label">⚔️ RIGHT ARMY</div>
                 <div class="health-bar-container">
                     <div class="health-bar">
-                        <div class="health-fill enemy-fill" id="enemyHealthFill"></div>
+                        <div class="health-fill right-fill" id="rightHealthFill"></div>
                     </div>
-                    <div class="health-text" id="enemyHealthText">${this.teamHealth.enemy}/${this.MAX_TEAM_HEALTH}</div>
+                    <div class="health-text" id="rightHealthText">${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}</div>
                 </div>
             </div>
         `;
@@ -115,11 +115,11 @@ class TeamHealthSystem extends engine.BaseSystem {
                 font-family: 'Courier New', monospace;
             }
 
-            .player-health {
+            .left-health {
                 border-color: #00ff00;
             }
 
-            .enemy-health {
+            .right-health {
                 border-color: #ff4444;
             }
 
@@ -130,11 +130,11 @@ class TeamHealthSystem extends engine.BaseSystem {
                 text-shadow: 0 0 5px currentColor;
             }
 
-            .player-health .team-label {
+            .left-health .team-label {
                 color: #00ff00;
             }
 
-            .enemy-health .team-label {
+            .right-health .team-label {
                 color: #ff4444;
             }
 
@@ -161,12 +161,12 @@ class TeamHealthSystem extends engine.BaseSystem {
                 position: relative;
             }
 
-            .player-fill {
+            .left-fill {
                 background: linear-gradient(90deg, #004400 0%, #00aa00 50%, #00ff00 100%);
                 box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
             }
 
-            .enemy-fill {
+            .right-fill {
                 background: linear-gradient(90deg, #440000 0%, #aa0000 50%, #ff4444 100%);
                 box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
             }
@@ -210,21 +210,21 @@ class TeamHealthSystem extends engine.BaseSystem {
     }
     
     updateHealthDisplay() {
-        const playerFill = document.getElementById('playerHealthFill');
-        const playerText = document.getElementById('playerHealthText');
-        const enemyFill = document.getElementById('enemyHealthFill');
-        const enemyText = document.getElementById('enemyHealthText');
+        const leftFill = document.getElementById('leftHealthFill');
+        const leftText = document.getElementById('leftHealthText');
+        const rightFill = document.getElementById('rightHealthFill');
+        const rightText = document.getElementById('rightHealthText');
         
-        if (playerFill && playerText) {
-            const playerPercent = (this.teamHealth.left / this.MAX_TEAM_HEALTH) * 100;
-            playerFill.style.width = `${playerPercent}%`;
-            playerText.textContent = `${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}`;
+        if (leftFill && leftText) {
+            const leftPercent = (this.teamHealth.left / this.MAX_TEAM_HEALTH) * 100;
+            leftFill.style.width = `${leftPercent}%`;
+            leftText.textContent = `${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}`;
         }
         
-        if (enemyFill && enemyText) {
-            const enemyPercent = (this.teamHealth.right / this.MAX_TEAM_HEALTH) * 100;
-            enemyFill.style.width = `${enemyPercent}%`;
-            enemyText.textContent = `${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}`;
+        if (rightFill && rightText) {
+            const rightPercent = (this.teamHealth.right / this.MAX_TEAM_HEALTH) * 100;
+            rightFill.style.width = `${rightPercent}%`;
+            rightText.textContent = `${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}`;
         }
     }
     
@@ -270,8 +270,8 @@ class TeamHealthSystem extends engine.BaseSystem {
             survivingSquads: damageResult.survivingSquads,
             gameOver: this.teamHealth[losingTeam] <= 0,
             remainingHealth: {
-                player: this.teamHealth.player,
-                enemy: this.teamHealth.enemy
+                left: this.teamHealth.left,
+                right: this.teamHealth.right
             }
         };
     }
@@ -296,8 +296,8 @@ class TeamHealthSystem extends engine.BaseSystem {
             damage: 0,
             gameOver: false,
             remainingHealth: {
-                player: this.teamHealth.player,
-                enemy: this.teamHealth.enemy
+                left: this.teamHealth.left,
+                right: this.teamHealth.right
             }
         };
     }
@@ -313,7 +313,7 @@ class TeamHealthSystem extends engine.BaseSystem {
         let totalDamage = 0;
         let survivingSquadCount = 0;
         const squadDetails = [];
-        
+        console.log("survivingUnits", survivingUnits);
         // Group surviving units by their squad placement ID
         survivingUnits.forEach(unitId => {
             // Find which squad this unit belongs to
@@ -382,7 +382,7 @@ class TeamHealthSystem extends engine.BaseSystem {
         if (this.game.placementSystem) {
             const allPlacements = [
                 ...this.game.placementSystem.playerPlacements,
-                ...this.game.placementSystem.enemyPlacements
+                ...this.game.placementSystem.opponentPlacements
             ];
             
             for (const placement of allPlacements) {
@@ -432,7 +432,7 @@ class TeamHealthSystem extends engine.BaseSystem {
         // Fallback to placement system
         if (this.game.placementSystem) {
             const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
-                             this.game.placementSystem.enemyPlacements.find(p => p.placementId === placementId);
+                             this.game.placementSystem.opponentPlacements.find(p => p.placementId === placementId);
             return placement ? placement.unitType : null;
         }
         
@@ -456,7 +456,7 @@ class TeamHealthSystem extends engine.BaseSystem {
         // Fallback to placement system
         if (this.game.placementSystem) {
             const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
-                             this.game.placementSystem.enemyPlacements.find(p => p.placementId === placementId);
+                             this.game.placementSystem.opponentPlacements.find(p => p.placementId === placementId);
             if (placement) {
                 return placement.squadUnits ? placement.squadUnits.length : 1;
             }
@@ -499,8 +499,8 @@ class TeamHealthSystem extends engine.BaseSystem {
     }
     
     resetTeamHealth() {
-        this.teamHealth.player = this.MAX_TEAM_HEALTH;
-        this.teamHealth.enemy = this.MAX_TEAM_HEALTH;
+        this.teamHealth.left = this.MAX_TEAM_HEALTH;
+        this.teamHealth.right = this.MAX_TEAM_HEALTH;
         this.roundProcessed = false;
         this.updateHealthDisplay();
     }
@@ -533,39 +533,39 @@ class TeamHealthSystem extends engine.BaseSystem {
         return this.teamHealth.left || 0;
     }
 
-    // Method for multiplayer compatibility - returns current enemy health  
+    // Method for multiplayer compatibility - returns current right health  
     getRightHealth() {
         return this.teamHealth.right || 0;
     }
 
-    // Method to set player health (for multiplayer server updates)
+    // Method to set left health (for multiplayer server updates)
     setLeftHealth(health) {
         this.teamHealth.left = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
         this.updateHealthDisplay();
     }
 
-    // Method to set enemy health (for multiplayer server updates)
+    // Method to set right health (for multiplayer server updates)
     setRightHealth(health) {
         this.teamHealth.right = Math.max(0, Math.min(health, this.MAX_TEAM_HEALTH));
         this.updateHealthDisplay();
     }
 
     // Multiplayer-specific method to sync both team healths from server
-    syncHealthFromServer(playerHealth, enemyHealth) {
-        this.teamHealth.player = Math.max(0, Math.min(playerHealth, this.MAX_TEAM_HEALTH));
-        this.teamHealth.enemy = Math.max(0, Math.min(enemyHealth, this.MAX_TEAM_HEALTH));
+    syncHealthFromServer(leftHealth, rightHealth) {
+        this.teamHealth.left = Math.max(0, Math.min(leftHealth, this.MAX_TEAM_HEALTH));
+        this.teamHealth.right = Math.max(0, Math.min(rightHealth, this.MAX_TEAM_HEALTH));
         this.updateHealthDisplay();
     }
 
     // Check if either team is eliminated (for multiplayer game end conditions)
     isGameOver() {
-        return this.teamHealth.player <= 0 || this.teamHealth.enemy <= 0;
+        return this.teamHealth.left <= 0 || this.teamHealth.right <= 0;
     }
 
     // Get the winning team (for multiplayer results)
     getWinningTeam() {
-        if (this.teamHealth.player <= 0) return 'enemy';
-        if (this.teamHealth.enemy <= 0) return 'player';
+        if (this.teamHealth.left <= 0) return 'right';
+        if (this.teamHealth.right <= 0) return 'left';
         return null; // No winner yet
     }
 }

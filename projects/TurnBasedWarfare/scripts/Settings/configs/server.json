@@ -17,6 +17,7 @@
     "ECSGame",
     "GameUtils",
     "ServerECSGame",    
+    "ServerEventManager",
     "ServerNetworkManager",
     "ServerSceneManager",
     "SeededRandom"

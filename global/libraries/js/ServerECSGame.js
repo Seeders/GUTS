@@ -35,7 +35,6 @@ class ServerECSGame {
                 return;
             }
 
-
             this.systems.forEach(system => {
                 if (system.update) {
                     system.update(deltaTime, now);
@@ -44,7 +43,7 @@ class ServerECSGame {
 
             this.postUpdate();
             this.lastTime = this.currentTime;
-        }
+        } 
     }
 
     postUpdate() {

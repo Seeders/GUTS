@@ -69,7 +69,7 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, unitType, team) {
         try {
-            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldY}_${worldZ}_${team}`);
+            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
             
             // Add core components
@@ -89,21 +89,6 @@ class UnitCreationManager {
             
             // Update statistics
             this.updateCreationStats(unitType, team);
-
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const teamComp = this.game.getComponent(entity, ComponentTypes.TEAM);
-            const combatComp = this.game.getComponent(entity, ComponentTypes.COMBAT);
-            const aiComp = this.game.getComponent(entity, ComponentTypes.AI_STATE);
-            const posComp = this.game.getComponent(entity, ComponentTypes.POSITION);
-            
-            console.log(`Created unit ${entity}:`, {
-                requestedTeam: team,
-                actualTeam: teamComp?.team,
-                hasPosition: !!posComp,
-                hasCombat: !!combatComp,
-                hasAI: !!aiComp,
-                position: posComp ? `(${posComp.x}, ${posComp.z})` : 'none'
-            });
             return entity;
         } catch (error) {
             console.error('Failed to create unit:', error);
@@ -151,9 +136,9 @@ class UnitCreationManager {
             const validation = this.game.squadManager.validateSquadConfig(squadData);
             
             if (!validation.valid) {
-                throw new Error(`Invalid squad configuration: ${validation.errors.join(', ')}`);
+                console.log("invalid squad config");
+                return false;
             }
-     console.log(`calculateUnitPositions with`, gridPosition, squadData);
 
             // Calculate unit positions within the squad
             const unitPositions = this.game.squadManager.calculateUnitPositions(
@@ -166,16 +151,15 @@ class UnitCreationManager {
 
             // Validate placement location
             if (!this.game.gridSystem.isValidPlacement(cells, team)) {
-                console.log(gridPosition, squadData, cells, team);
-                throw new Error('Invalid placement location for squad');
+                console.log("Grid System invalidated placement position");
+                return false;
             }
 
             // Generate unique placement ID
             const placementId = `squad_${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const squadUnits = [];
 
-            console.log(`Creating squad with`, unitPositions, ` for team ${team}`);
-
+            
             // Create individual units for the squad
             for (const pos of unitPositions) {
                 const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
@@ -211,8 +195,7 @@ class UnitCreationManager {
             }
 
             const squadInfo = this.game.squadManager.getSquadInfo(unitType);
-            console.log(`Successfully created ${squadInfo.unitName} squad with ${squadUnits.length} units for team ${team}`);
-
+         
             return {
                 placementId: placementId,
                 gridPosition: gridPosition,
@@ -242,13 +225,12 @@ class UnitCreationManager {
         const createdSquads = [];
         
         try {
-            console.log(`Creating ${placements.length} squads for team ${team}`, placements);
             
             for (const placement of placements) {
                 try {
                     const squadPlacement = this.createSquad(
                         placement.gridPosition,
-                        this.game.getCollections().units[placement.unitType.id],
+                        placement.unitType,
                         team,
                         playerId
                     );
@@ -259,8 +241,7 @@ class UnitCreationManager {
                 }
             }
             
-            console.log(`Successfully created ${createdSquads.length} out of ${placements.length} squads for team ${team}`);
-            
+           
         } catch (error) {
             console.error('Batch squad creation failed:', error);
             // Clean up any partially created squads
@@ -398,7 +379,6 @@ class UnitCreationManager {
     addCombatComponents(entity, unitType) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
-        
         // Health component
         const maxHP = unitType.hp || this.defaults.hp;
         this.game.addComponent(entity, ComponentTypes.HEALTH, 

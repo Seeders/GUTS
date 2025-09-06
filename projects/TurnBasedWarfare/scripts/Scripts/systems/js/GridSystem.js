@@ -15,7 +15,6 @@ class GridSystem extends engine.BaseSystem {
     }
     
     init({terrainSize = 1536, cellSize = 48}) {
-        console.log('grid system initialized', terrainSize, cellSize);
         this.cellSize = cellSize;
         this.showGrid = true;
         this.snapToGrid = true;
@@ -28,7 +27,6 @@ class GridSystem extends engine.BaseSystem {
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
-        console.log('dimensions', this.dimensions);
         
         this.gridVisualization = null;
 
@@ -169,7 +167,8 @@ class GridSystem extends engine.BaseSystem {
         for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                 cell.z < bounds.minZ || cell.z > bounds.maxZ) {
-                    console.log('placement out of bounds', team, cells, bounds);
+                    console.log("Outside bounds error. cells, team:", cells, team);
+                    console.log("Bounds", bounds);
                 return false;
             }
         }
@@ -178,7 +177,8 @@ class GridSystem extends engine.BaseSystem {
             const key = `${cell.x},${cell.z}`;
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
-                console.log('cellstate occupied');
+                console.log("cell occupied error", cells, team);
+                console.log("Cellstate", cellState);
                 return false;
             }
         }
@@ -200,7 +200,7 @@ class GridSystem extends engine.BaseSystem {
         this.lastCacheClean = now;
     }
     
-    occupyCells(cells, placementId) {
+    occupyCells(cells, placementId) {        
         const updates = cells.map(cell => ({
             key: `${cell.x},${cell.z}`,
             value: {

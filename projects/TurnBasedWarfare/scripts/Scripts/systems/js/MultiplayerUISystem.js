@@ -8,7 +8,17 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.roomId = null;
         this.isHost = false;
         this.gameState = null;
-        
+        this.config = {
+            maxSquadsPerRound: 2,
+            maxCombinationsToCheck: 1000,
+            unitPlacementDelay: 200,
+            enablePreview: true,
+            enableUndo: true,
+            enableGridSnapping: true,
+            mouseMoveThrottle: 16,
+            validationThrottle: 32,
+            raycastThrottle: 16
+        };
         // Store unsubscribe functions
         this.networkUnsubscribers = [];
     }
@@ -18,13 +28,11 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.params = params || {};
         this.initializeUI();
         this.enhanceGameModeManager();
-        console.log("connecting to server", params);
         // Connect to server and get player ID
         this.connectToServer();
         
         this.setupNetworkListeners();
         this.setupEventListeners();
-        console.log('MultiplayerUISystem initialized');
     }
 
     async connectToServer() {
@@ -42,7 +50,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
                         this.showNotification('Failed to get player ID from server', 'error');
                     } else if (data && data.playerId) {
                         this.game.clientNetworkManager.playerId = data.playerId;
-                        console.log('UI System: Received player ID:', data.playerId);
                     } else {
                         console.error('Server response missing player ID:', data);
                         this.showNotification('Server did not provide player ID', 'error');
@@ -158,7 +165,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
                     ` : `
                         <button id="createRoomBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; margin: 0.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px;">Create Room</button><br>
                         <div class="room-join-section" style="margin-top: 1rem;">
-                            <input type="text" id="roomIdInput" placeholder="Enter Room ID" maxlength="6" 
+                            <input type="text" id="roomIdInput" value="1000" placeholder="Enter Room ID" maxlength="6" 
                                    style="padding: 0.5rem; border: 1px solid #666; background: #333; color: white;">
                             <button id="joinRoomBtn" class="btn btn-secondary" 
                                     style="padding: 0.5rem 1rem; margin-left: 0.5rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">Join Room</button>
@@ -296,27 +303,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             btn.textContent = 'Updating...';
         }
         
-        this.game.clientNetworkManager.call(
-            'TOGGLE_READY',
-            {},
-            'PLAYER_READY_UPDATE',
-            (data, error) => {
-                // Re-enable button after response
-                if (btn) {
-                    btn.disabled = false;
-                }
-                
-                if (error) {
-                    this.showNotification(`Failed to toggle ready: ${error.message}`, 'error');
-                    if (btn) {
-                        btn.textContent = 'Ready Up';
-                    }
-                } else {
-                    // Update will be handled by the listener
-                    console.log('Ready state updated:', data);
-                }
-            }
-        );
+        this.game.clientNetworkManager.call('TOGGLE_READY');
     }
 
     startGame() {
@@ -343,7 +330,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         // Listen to events that update the UI
         this.networkUnsubscribers.push(
             nm.listen('PLAYER_JOINED', (data) => {
-                console.log('PLAYER_JOINED event:', data);
                 this.gameState = data.gameState;
                 this.showNotification(`${data.playerName} joined the room`, 'info');
                 this.updateLobby(data.gameState);
@@ -356,17 +342,15 @@ class MultiplayerUISystem extends engine.BaseSystem {
             }),
 
             nm.listen('PLAYER_READY_UPDATE', (data) => {
-                console.log('Received PLAYER_READY_UPDATE:', data);
-                console.log('Client thinks my ID is:', this.game.clientNetworkManager.playerId);
-                console.log('Event playerId:', data.playerId);
-                console.log('Game state players:', data.gameState?.players);
-                
                 this.gameState = data.gameState;
                 this.updateLobby(data.gameState);
                 
                 // Show notification for ready state changes
                 const myPlayerId = this.game.clientNetworkManager.playerId;
                 if (data.playerId === myPlayerId) {
+                    if(!data.ready){
+                        console.log("not ready", data);
+                    }
                     this.showNotification(
                         data.ready ? 'You are ready!' : 'Ready status removed',
                         data.ready ? 'success' : 'info'
@@ -379,22 +363,19 @@ class MultiplayerUISystem extends engine.BaseSystem {
             }),
 
             nm.listen('GAME_STARTED', (data) => {
-                console.log('Received GAME_STARTED event:', data);
-                this.transitionToGame();
+                this.transitionToGame(data);
             }),
 
-            // Also listen for START_GAME response in case server sends different event
-            nm.listen('START_GAME', (data) => {
-                console.log('Received START_GAME event:', data);
-                this.transitionToGame();
-            }),
-
-            nm.listen('PHASE_UPDATE', (data) => {
-                this.handlePhaseUpdate(data);
+            nm.listen('PLACEMENT_READY_UPDATE', (data) => {
+                this.handlePlacementReadyUpdate(data);
             }),
 
             nm.listen('BATTLE_END', (data) => {
                 this.handleBattleEnd(data);
+            }),
+
+            nm.listen('NEXT_ROUND', (data) => {
+                this.handleNextRound(data);
             }),
 
             nm.listen('GAME_END', (data) => {
@@ -485,10 +466,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
         const myPlayerId = this.game.clientNetworkManager.playerId;
         
-        console.log('Updating lobby with gameState:', gameState);
-        console.log('My player ID:', myPlayerId);
-        console.log('Players in gameState:', gameState.players);
-        
         // Update room ID
         document.getElementById('lobbyRoomId').textContent = this.roomId || '------';
         
@@ -500,9 +477,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             const myPlayer = gameState.players.find(p => p.id === myPlayerId);
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
 
-            console.log('My player:', myPlayer);
-            console.log('Opponent player:', opponent);
-
+          
             // Update my player card
             if (myPlayer) {
                 const player1Name = document.getElementById('player1Name');
@@ -528,8 +503,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             const player2Ready = document.getElementById('player2Ready');
             
             if (opponent) {
-                console.log('Updating opponent UI with ready state:', opponent.ready);
-                
+             
                 if (player2Name) {
                     player2Name.textContent = `${opponent.name}${opponent.isHost ? ' (Host)' : ''}`;
                 }
@@ -552,8 +526,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             const allReady = gameState.players.every(p => p.ready);
             const startBtn = document.getElementById('startGameBtn');
             
-            console.log('All ready:', allReady, 'Is host:', this.isHost, 'Player count:', gameState.players.length);
-            
+         
             if (this.isHost && gameState.players.length === 2 && allReady) {
                 if (startBtn) {
                     startBtn.style.display = 'block';
@@ -570,8 +543,10 @@ class MultiplayerUISystem extends engine.BaseSystem {
         }
     }
 
-    transitionToGame() {
-        console.log('Transitioning from lobby to game...');
+    transitionToGame(data) {
+        if (data.gameState) {
+            this.syncWithServerState(data.gameState);
+        }
         this.currentScreen = 'game';
         
         // Hide lobby, show game
@@ -580,29 +555,100 @@ class MultiplayerUISystem extends engine.BaseSystem {
         
         // Start the game
         this.game.gameManager.startSelectedMode();
+        
+        this.game.placementSystem.startNewPlacementPhase();
     }
 
-    handlePhaseUpdate(data) {
-        // Handle game phase changes during gameplay
-        console.log('Phase update:', data.phase);
-        this.game.state.phase = data.phase;
+    handlePlacementReadyUpdate(data) {
+        if (data.gameState) {
+            this.syncWithServerState(data.gameState);
+        }
+        this.game.placementSystem.handlePlacementReadyUpdate(data);
     }
 
     handleBattleEnd(data) {
+        if (data.gameState) {
+            this.syncWithServerState(data.gameState);
+        }
         const myPlayerId = this.game.clientNetworkManager.playerId;
+        let winningSide = this.game.state.mySide;
         if (data.result.winner === myPlayerId) {
             this.showNotification('Victory! You won this round!', 'success');
         } else {
+            winningSide = winningSide == "left" ? "right" : "left";
             this.showNotification('Defeat! Better luck next round!', 'warning');
+        }
+        console.log('battle result', data);
+
+        if(data.result?.survivingUnits){
+            let winningUnits = data.result.survivingUnits[data.result.winner];                
+            this.game.teamHealthSystem?.applyRoundDamage(winningSide, winningUnits);                        
+            if(winningUnits && winningUnits.length > 0 ){
+                this.startVictoryCelebration(winningUnits);
+            }
         }
     }
 
+
+    handleNextRound(data) {
+        if (data.gameState) {
+            this.syncWithServerState(data.gameState);
+        }
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        this.gameState = data.gameState;
+        data.gameState?.players?.forEach((player) => {
+            if(player.id == myPlayerId) {
+                this.game.state.playerGold = player.gold;
+            }
+        })
+        this.startPlacementPhase();
+    }
+
     handleGameEnd(data) {
+        if (data.gameState) {
+            this.syncWithServerState(data.gameState);
+        }
         const myPlayerId = this.game.clientNetworkManager.playerId;
         if (data.result.winner === myPlayerId) {
             this.showNotification('GAME WON! Congratulations!', 'success');
         } else {
             this.showNotification('Game lost. Better luck next time!', 'warning');
+        }
+    }
+    syncWithServerState(gameState) {
+        if (!gameState.players) return;
+        
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+        
+        if (myPlayer) {
+            // Sync squad count and side
+            if (this.game.state) {
+                this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
+                this.game.state.mySide = myPlayer.side;
+                this.game.state.playerGold = myPlayer.gold;
+                this.game.state.round = gameState.round;
+            }
+            
+            // Set team sides in grid system
+            const opponent = gameState.players.find(p => p.id !== myPlayerId);
+            if (opponent && this.game.gridSystem) {
+                this.game.gridSystem.setTeamSides({
+                    player: myPlayer.side,
+                    enemy: opponent.side
+                });
+            }
+            
+            // Also set sides in placement system
+            if (this.game.placementSystem && this.game.placementSystem.setTeamSides) {
+                
+                this.game.placementSystem.setTeamSides({
+                    player: myPlayer.side,
+                    enemy: opponent.side
+                });
+            }
+            
+            console.log(`Synced with server - Side: ${myPlayer.side}, Squads: ${myPlayer.squadsPlaced}, Gold: ${myPlayer.gold}`);
         }
     }
 
@@ -675,6 +721,247 @@ class MultiplayerUISystem extends engine.BaseSystem {
         });
         this.networkUnsubscribers = [];
         
-        console.log('MultiplayerUISystem disposed');
     }
+    startPlacementPhase() {
+        const state = this.game.state;
+        state.phase = 'placement';
+        state.phaseTimeLeft = null; // No timer in multiplayer
+        state.playerReady = false;
+        state.enemyPlacementComplete = false; // Actually opponent placement
+        state.roundEnding = false;
+        
+        // Reset squad counters for the new round
+        state.playerSquadsPlacedThisRound = 0;
+        state.enemySquadsPlacedThisRound = 0;
+        
+        this.clearBattlefield();
+        this.game.placementSystem.startNewPlacementPhase();
+    
+     
+        
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(`Round ${state.round} - Deploy your army! Waiting for opponent...`);
+        }
+    }
+    clearBattlefield() {
+        // Save player squad experience BEFORE clearing
+        if (this.game.squadExperienceSystem) {
+            this.game.squadExperienceSystem.saveSquadExperience();
+        }
+        
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const entitiesToDestroy = new Set();
+        
+        [
+            ComponentTypes.TEAM,
+            ComponentTypes.UNIT_TYPE,
+            ComponentTypes.PROJECTILE,
+            ComponentTypes.LIFETIME,
+            ComponentTypes.HEALTH
+        ].forEach(componentType => {
+            const entities = this.game.getEntitiesWith(componentType);
+            entities.forEach(id => entitiesToDestroy.add(id));
+        });
+        
+        entitiesToDestroy.forEach(entityId => {
+            try {
+                this.game.destroyEntity(entityId);
+            } catch (error) {
+                console.warn(`Error destroying entity ${entityId}:`, error);
+            }
+        });
+        
+        if (this.game.renderSystem) {
+            const modelEntities = Array.from(this.game.renderSystem.entityModels.keys());
+            modelEntities.forEach(entityId => {
+                this.game.renderSystem.removeEntityModel(entityId);
+            });
+        }
+        
+        if (this.game.animationSystem) {
+            const animationEntities = Array.from(this.game.animationSystem.entityAnimationStates.keys());
+            animationEntities.forEach(entityId => {
+                this.game.animationSystem.removeEntityAnimations(entityId);
+            });
+        }
+        
+        if (this.game.projectileSystem?.clearAllProjectiles) {
+            this.game.projectileSystem.clearAllProjectiles();
+        }
+        
+        // Clean up experience data but keep earned experience
+        if (this.game.squadExperienceSystem) {
+            this.game.squadExperienceSystem.cleanupInvalidSquads();
+        }
+        if (this.game.gridSystem?.clear) {
+          this.game.gridSystem.clear();
+        }
+    
+        // Drop any opponent cache so we don't double-spawn next round
+        if (this.game.placementSystem) {
+          this.game.placementSystem.enemyPlacements = [];
+          this.game.placementSystem.opponentPlacements = [];
+        }
+    }
+       
+    startVictoryCelebration(victoriousUnits) {
+        if (!this.game.animationSystem) return;
+        
+        // Determine which team won
+        const firstUnit = victoriousUnits[0];
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
+        const teamType = team?.team || 'player';
+        
+        victoriousUnits.forEach(entityId => {
+            this.game.animationSystem.startCelebration(entityId, teamType);
+        });
+    }
+
+    update() {
+        this.updatePhaseUI();
+        this.updateSquadCountDisplay();
+        this.updateGoldDisplay();
+    }
+
+    applyRoundDamage() {       
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const allLivingEntities = this.game.getEntitiesWith(
+            ComponentTypes.TEAM, 
+            ComponentTypes.HEALTH,
+            ComponentTypes.UNIT_TYPE
+        );
+        
+        const aliveEntities = allLivingEntities.filter(id => {
+            const health = this.game.getComponent(id, ComponentTypes.HEALTH);
+            return health && health.current > 0;
+        });
+        
+        const leftUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'left';
+        });
+        
+        const rightUnits = aliveEntities.filter(id => {
+            const team = this.game.getComponent(id, ComponentTypes.TEAM);
+            return team && team.team === 'right';
+        });
+        
+        let roundResult = null;
+        let victoriousUnits = [];
+        
+        if (leftUnits.length === 0 && rightUnits.length > 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDamage('right', rightUnits);
+            victoriousUnits = rightUnits;
+        } else if (rightUnits.length === 0 && leftUnits.length > 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDamage('left', leftUnits);
+            victoriousUnits = leftUnits;
+        } else if (leftUnits.length === 0 && rightUnits.length === 0) {
+            roundResult = this.game.teamHealthSystem?.applyRoundDraw();
+            victoriousUnits = [];
+        }
+        if (roundResult) {
+            this.game.state.roundEnding = true;
+            
+            if (victoriousUnits.length > 0) {
+                this.startVictoryCelebration(victoriousUnits);
+            }
+            
+            this.handleRoundResult(roundResult);
+        }
+    }
+
+    handleRoundResult(roundResult) {
+        const state = this.game.state;
+        state.phase = 'ended';      
+    }
+
+    updatePhaseUI() {
+        const state = this.game.state;
+        
+        // Update round number
+        const roundNumberEl = document.getElementById('multiplayerRoundNumber');
+        if (roundNumberEl) {
+            roundNumberEl.textContent = state.round || 1;
+        }
+        
+        // Update phase title
+        const phaseTitleEl = document.getElementById('multiplayerPhaseTitle');
+        if (phaseTitleEl) {
+            switch (state.phase) {
+                case 'placement':
+                    phaseTitleEl.textContent = 'PLACEMENT PHASE';
+                    break;
+                case 'battle':
+                    phaseTitleEl.textContent = 'BATTLE PHASE';
+                    break;
+                case 'ended':
+                    phaseTitleEl.textContent = 'ROUND ENDED';
+                    break;
+                default:
+                    phaseTitleEl.textContent = 'PREPARING...';
+            }
+        }
+        
+        // Update phase status
+        const phaseStatusEl = document.getElementById('multiplayerPhaseStatus');
+        if (phaseStatusEl) {
+            if (state.phase === 'placement') {
+                if (state.playerReady) {
+                    phaseStatusEl.textContent = 'Army deployed! Waiting for opponent...';
+                } else {
+                    phaseStatusEl.textContent = 'Deploy your units and get ready!';
+                }
+            } else if (state.phase === 'battle') {
+                phaseStatusEl.textContent = 'Battle in progress! Watch your units fight!';
+            }
+        }
+        
+        // Update phase timer (always infinity symbol for multiplayer)
+        const phaseTimerEl = document.getElementById('multiplayerPhaseTimer');
+        if (phaseTimerEl) {
+            if (state.phase === 'placement') {
+                phaseTimerEl.textContent = '∞';
+                phaseTimerEl.style.color = '#00ffff';
+            } else {
+                phaseTimerEl.textContent = '';
+            }
+        }
+        
+        // Update opponent indicator
+        if (this.game.multiplayerManager) {
+            const opponentIndicator = document.getElementById('opponentIndicator');
+            const opponent = Array.from(this.game.multiplayerManager.opponents.values())[0];
+            if (opponentIndicator && opponent) {
+                opponentIndicator.textContent = opponent.name;
+            }
+        }
+    }
+
+
+      
+    updateGoldDisplay() {
+        const goldDisplay = document.getElementById('multiplayerPlayerGold');
+        if (goldDisplay) {
+            goldDisplay.textContent = this.game.state.playerGold || 0;
+        }
+    }
+    
+    updateSquadCountDisplay() {
+        const state = this.game.state;
+        const squadCountDisplay = document.getElementById('squadCount');
+        if (squadCountDisplay) {
+            const remaining = this.config.maxSquadsPerRound - state.playerSquadsPlacedThisRound;
+            squadCountDisplay.textContent = `${remaining}/${this.config.maxSquadsPerRound} squads left`;
+            
+            if (remaining === 0) {
+                squadCountDisplay.style.color = '#ff4444';
+            } else if (remaining === 1) {
+                squadCountDisplay.style.color = '#ffaa44';
+            } else {
+                squadCountDisplay.style.color = '#44ff44';
+            }
+        }
+    }
+   
 }

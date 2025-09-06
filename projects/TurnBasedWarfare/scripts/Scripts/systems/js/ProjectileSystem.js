@@ -487,7 +487,7 @@ class ProjectileSystem extends engine.BaseSystem {
 
     handleProjectileHit(projectileId, targetId, projectile) {
         // Use centralized damage system for projectile hits
-        console.log('projectile hit ', projectileId, targetId, projectile);
+       // console.log('projectile hit ', projectileId, targetId, projectile);
         if (this.game.damageSystem) {
             const damage = projectile.damage;
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
@@ -523,8 +523,7 @@ class ProjectileSystem extends engine.BaseSystem {
     }
 
     triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-        console.log('Ballistic projectile exploding at ground impact:', pos);
-        
+       
         // Create explosion effect at ground impact point
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
         

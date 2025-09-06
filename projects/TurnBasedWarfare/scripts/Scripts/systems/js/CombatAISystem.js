@@ -33,7 +33,6 @@ class CombatAISystem extends engine.BaseSystem {
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         ).sort((a, b) => String(a).localeCompare(String(b)));
-
         // Process one deterministic step
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];

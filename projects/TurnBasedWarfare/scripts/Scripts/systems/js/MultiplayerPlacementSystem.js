@@ -9,8 +9,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.canvas = this.game.canvas;
         
         this.playerPlacements = [];
-        this.opponentPlacements = [];
-        this.enemyPlacements = []; // Converted opponent placements
+        this.opponentPlacements = [];        
         this.undoStack = [];
         this.maxUndoSteps = 10;
         
@@ -66,96 +65,143 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         // Cache ground mesh on initialization
         this.groundMeshCache = this.findGroundMesh();
     }
+
     setupNetworkListeners() {
         const nm = this.game.clientNetworkManager;
         if (!nm) return;
 
-        // Listen for phase updates to sync game state
-        nm.listen('PHASE_UPDATE', (data) => {
-            if (data.phase === 'placement') {
-                this.handlePlacementPhaseStarted(data);
-            }
-        });
 
-        // Listen for placement ready updates
-        nm.listen('PLACEMENT_READY_UPDATE', (data) => {
-            this.handlePlacementReadyUpdate(data);
-        });
 
-        // Listen for opponent placements when battle starts
-        nm.listen('OPPONENT_PLACEMENTS', (data) => {
-            this.applyOpponentPlacements(data.placements);
-        });
     }
 
-    handlePlacementPhaseStarted(data) {
-        console.log('Placement phase started, syncing with server state:', data);
-        
-        // Update local game state with server data
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
+    startNewPlacementPhase() { 
+        if (this.playerPlacements.length > 0) {
+            this.respawnSquads(this.playerPlacements, this.game.state.mySide);
+            const totalUnits = this.getTotalUnitCount(this.playerPlacements);
+            this.game.battleLogSystem?.add(`Respawned ${totalUnits} player units from previous rounds`);
         }
-        
-        // Reset placement state for new round
+        if(this.opponentPlacements.length > 0){
+            this.respawnEnemyUnits();
+        }
+                // Reset placement state for new round
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
         
         // Enable placement UI
         this.enablePlacementUI();
         
-        // Show placement phase message
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`Round ${data.round || 1} - Deploy your army!`);
-            this.game.battleLogSystem.add(`You can place up to ${this.config.maxSquadsPerRound} squads this round`);
+    }
+    
+    respawnEnemyUnits() {
+        this.respawnSquads(this.opponentPlacements, this.game.state.mySide == 'left' ? 'right' : 'left');
+        if (this.opponentPlacements.length > 0) {
+            const totalUnits = this.getTotalUnitCount(this.opponentPlacements);
+            this.game.battleLogSystem?.add(`Enemy respawned ${totalUnits} units from previous rounds`);
         }
     }
-
-    syncWithServerState(gameState) {
-        if (!gameState.players) return;
-        
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-        
-        if (myPlayer) {
-            // Sync squad count and side
-            if (this.game.state) {
-                this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
-                this.game.state.mySide = myPlayer.side;
-                this.game.state.playerGold = myPlayer.gold;
-                this.game.state.round = gameState.round;
-            }
+          
+    getTotalUnitCount(placements) {
+        return placements.reduce((sum, placement) => {
+            return sum + (placement.isSquad ? placement.squadUnits.length : 1);
+        }, 0);
+    }     
+    respawnSquads(placements, team) {
+        placements.forEach(placement => {
+            const newUnitIds = [];
             
-            // Set team sides in grid system
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-            if (opponent && this.game.gridSystem) {
-                this.game.gridSystem.setTeamSides({
-                    player: myPlayer.side,
-                    enemy: opponent.side
+            if (placement.squadUnits && placement.squadUnits.length > 0) {
+                placement.squadUnits.forEach(unit => {
+                    const entityId = this.unitCreator.create(
+                        unit.position.x,
+                        unit.position.y,
+                        unit.position.z,
+                        placement.unitType,
+                        team
+                    );
+                    unit.entityId = entityId;
+                    newUnitIds.push(entityId);
+                    
+                    // Limit respawn effects for performance
+                    if (Math.random() < 0.3) { // Only 30% of units get effects
+                        this.createRespawnEffect(unit.position, team);
+                    }
                 });
+            } else {
+                const entityId = this.unitCreator.create(
+                    placement.x,
+                    placement.y,
+                    placement.z,
+                    placement.unitType,
+                    team
+                );
+                placement.entityId = entityId;
+                newUnitIds.push(entityId);
+                
+                this.createRespawnEffect({ x: placement.x, y: placement.y, z: placement.z }, team);
             }
             
-            // Also set sides in placement system
-            if (this.game.placementSystem && this.game.placementSystem.setTeamSides) {
-                this.game.placementSystem.setTeamSides({
-                    player: myPlayer.side,
-                    enemy: opponent.side
-                });
+            // Re-initialize in experience system with restored level bonuses
+            if (this.game.squadExperienceSystem && placement.placementId) {
+                // Initialize squad with the unit type directly
+                this.game.squadExperienceSystem.initializeSquad(
+                    placement.placementId, 
+                    placement.unitType,  // Pass unit type directly
+                    newUnitIds, 
+                    team
+                );
             }
-            
-            console.log(`Synced with server - Side: ${myPlayer.side}, Squads: ${myPlayer.squadsPlaced}, Gold: ${myPlayer.gold}`);
-        }
+        });
     }
+    
+    createRespawnEffect(position, team) {
+        if (!this.game.effectsSystem) return;
+        
+        const effectType = team === 'player' ? 'magic' : 'heal';
+        this.game.effectsSystem.createParticleEffect(
+            position.x,
+            position.y,
+            position.z,
+            effectType,
+            { count: 4, speedMultiplier: 0.6 } // Reduced particle count
+        );
+    }
+        
+    getDetailedUnitCounts(placements) {
+        const counts = {};
+        
+        placements.forEach(placement => {
+            const unitType = placement.unitType;
+            const squadInfo = this.squadManager ? this.squadManager.getSquadInfo(unitType) : null;
+            const typeName = squadInfo?.unitName || unitType.title || unitType.id;
+            
+            if (!counts[typeName]) {
+                counts[typeName] = {
+                    squads: 0,
+                    totalUnits: 0,
+                    totalCost: 0
+                };
+            }
+            
+            counts[typeName].squads++;
+            counts[typeName].totalUnits += squadInfo?.squadSize || 1;
+            counts[typeName].totalCost += squadInfo?.cost || unitType.value || 0;
+        });
+        
+        return counts;
+    }
+  
 
     enablePlacementUI() {
         // Show placement ready button
-        const readyBtn = document.getElementById('placementReadyBtn');
-        if (!readyBtn) {
+        const placementUI = document.getElementById('placementUI');
+        if (!placementUI) {
             this.createPlacementUI();
         } else {
-            readyBtn.style.display = 'block';
-            readyBtn.disabled = false;
-            readyBtn.textContent = 'Ready for Battle';
-            readyBtn.style.background = '#003300';
+            const readyButton = document.getElementById('placementReadyBtn');
+            readyButton.style.display = 'block';
+            readyButton.disabled = false;
+            readyButton.textContent = 'Ready for Battle';
+            readyButton.style.background = '#003300';
         }
     }
 
@@ -178,7 +224,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         document.body.appendChild(placementUI);
         
         // Add event listeners
-        document.getElementById('readyButton')?.addEventListener('click', () => {
+        document.getElementById('placementReadyBtn')?.addEventListener('click', () => {
             this.togglePlacementReady();
         });
         
@@ -189,7 +235,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updatePlacementUI() {
         const squadsPlacedElement = document.getElementById('squadsPlacedCount');
-        const readyBtn = document.getElementById('readyButton');
+        const readyBtn = document.getElementById('placementReadyBtn');
         const undoBtn = document.getElementById('undoButton');
         
         if (squadsPlacedElement) {
@@ -225,7 +271,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.clientNetworkManager.call(
             'SUBMIT_PLACEMENTS',
             { placements, playerId: myPlayerId, ready: !this.isPlayerReady },
-            'PLACEMENT_READY_UPDATE',
+            'SUBMITTED_PLACEMENTS',
             (data, error) => {
                 if (readyBtn) {
                     readyBtn.disabled = false;
@@ -246,7 +292,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     handlePlacementReadyUpdate(data) {
         const myPlayerId = this.game.clientNetworkManager.playerId;
-        
+        console.log('handlePlacementReadyUpdate', data);
         if (data.playerId === myPlayerId) {
             this.isPlayerReady = data.ready;
             
@@ -257,11 +303,22 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
             
             this.updatePlacementUI();
-        }
+        } 
         
-        if (data.allReady) {
+        if (data.allReady) {  
+            let opponentPlacements = null;
+            console.log('all ready', data);
+            Object.keys(data.allPlacements).forEach((playerId) => {
+                if(playerId != myPlayerId){
+                    opponentPlacements = data.allPlacements[playerId];
+                }
+            });
+            console.log('applying opponent placements', opponentPlacements);
+            this.applyOpponentPlacements(opponentPlacements);
+            console.log('All players ready! Battle starting...', data);  
             this.game.battleLogSystem?.add('All players ready! Battle starting...', 'log-victory');
             this.hidePlacementUI();
+            this.game.state.phase = 'battle';
         } else {
             // Show opponent status
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
@@ -308,7 +365,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         console.log('MultiplayerPlacementSystem: Applying opponent placements', opponentData);
         
         // Clear existing enemy placements
-        this.enemyPlacements = [];
+        this.opponentPlacements = [];
         this.opponentPlacements = opponentData || [];
         
         // Create enemy units from opponent data
@@ -374,7 +431,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.gridSystem.occupyCells(enemyPlacement.cells, enemyPlacement.placementId);
         }
 
-        this.enemyPlacements.push(enemyPlacement);
+        this.opponentPlacements.push(enemyPlacement);
     }
 
     handleUnitSelectionChange(newUnitType) {
@@ -599,7 +656,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.state.squadsPlacedThisRound = (this.game.state.squadsPlacedThisRound || 0) + 1;
             this.playerPlacements.push(placement);
         } else {
-            this.enemyPlacements.push(placement);
+            this.opponentPlacements.push(placement);
         }
     }
 
@@ -837,7 +894,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         } else {
             worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-            console.log(worldPosition);
+            
             if (worldPosition) {
                 this.cachedWorldPos = worldPosition;
                 this.lastRaycastTime = now;
@@ -974,7 +1031,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             player: sides?.player || 'left',
             enemy: sides?.enemy || 'right'
         };
-        console.log('Team sides set:', this.teamSides);
     }
 
     updateCursorState() {
@@ -994,7 +1050,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         this.playerPlacements = [];
-        this.enemyPlacements = [];
+        this.opponentPlacements = [];
         this.opponentPlacements = [];
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
