@@ -1,7 +1,11 @@
 class GameRoom {
-    constructor(roomId, gameInstance, maxPlayers) {
+    constructor(engine, roomId, gameInstance, maxPlayers) {
         this.id = roomId;
+        this.engine = engine;
         this.game = gameInstance;
+        this.serverNetworkManager = this.engine.serverNetworkManager;
+        this.serverEventManager = this.engine.serverEventManager;
+        this.game.room = this;
         this.maxPlayers = maxPlayers;
         this.players = new Map();
         this.isActive = false;
@@ -45,6 +49,10 @@ class GameRoom {
         }
     }
 
+    getPlayer(playerId){
+        return this.players.get(playerId);
+    }
+
     spawnPlayerEntity(playerId) {
         // Create player entity in ECS
         const entityId = this.game.createEntity();
@@ -82,17 +90,8 @@ class GameRoom {
         this.isActive = true;
         
         // Initialize game scene
-        this.game.sceneManager.load(this.game.getCollections().configs.game.multiplayerScene);
-        
-        // Notify all players
-        this.broadcastToPlayers({
-            type: 'GAME_START',
-            players: Array.from(this.players.values()).map(p => ({
-                id: p.id,
-                name: p.name,
-                entityId: p.entityId
-            }))
-        });
+        this.game.sceneManager.load(this.game.getCollections().configs.server.initialScene);
+
     }
 
     processPlayerInput(playerId, inputData) {
@@ -224,11 +223,9 @@ class GameRoom {
         this.lastStateSnapshot = gameState;
     }
 
-    broadcastToPlayers(message) {
-        for (const playerId of this.players.keys()) {
-            // NetworkManager will handle actual sending
-            global.serverEngine.networkManager.sendToPlayer(playerId, message);
-        }
+    broadcastToPlayers(type, data) {
+            console.log('broadcasting to all players', message);
+        this.serverNetworkManager.broadcastToRoom(this.id, type, data);
     }
 }
 

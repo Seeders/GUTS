@@ -1,601 +1,345 @@
 import GameRoom from './GameRoom.js';
 
 export default class ServerGameRoom extends GameRoom {
-    constructor(roomId, gameInstance, maxPlayers = 2) {
-        super(roomId, gameInstance, maxPlayers);
+    constructor(engine, roomId, gameInstance, maxPlayers = 2, gameConfig = {}) {
+        super(engine, roomId, gameInstance, maxPlayers);
         
-        // Auto Battle specific state
-        this.gamePhase = 'waiting'; // 'lobby', 'placement', 'battle', 'ended'
-        this.currentRound = 1;
-        this.maxRounds = 5;
-        this.battleTimer = null;
-        this.placementTimer = null;
+        // Add multiplayer lobby functionality
+        this.game.state.phase = 'waiting'; // 'waiting', 'lobby', 'playing', 'ended'
+        this.gameConfig = gameConfig;
+        this.createdAt = Date.now();
+        this.nextRoomId = 1000;
+        this.currentRoomIds = [];
         
-        // Squad placement limits
-        this.maxSquadsPerRound = 2;
-        this.baseGoldPerRound = 25;
-        this.startingGold = 100;
+        // Subscribe to events from network manager
+        this.subscribeToEvents();
         
-        // Battle configuration
-        this.FIXED_DT = 1 / 60; // 60Hz simulation
-        this.battleDuration = 30000; // 30 seconds max
-        this.placementDuration = 90000; // 90 seconds max
-        
-        // Game state tracking
-        this.playerReadyStates = new Map(); // For lobby ready
-        this.placementReadyStates = new Map(); // For placement ready
-        this.playerPlacements = new Map();
-        this.battleResults = new Map();
-        this.teamHealths = new Map();
-        this.createdSquads = new Map(); // Track created squads for cleanup
-        
-        // Initialize team health
-        this.initializeTeamHealth();
-        
-        console.log(`Auto Battle room ${roomId} created for ${maxPlayers} players`);
+        console.log(`ServerGameRoom ${roomId} created for ${maxPlayers} players`);
     }
 
-    initializeTeamHealth() {
-        // Each player starts with full health
-        for (const [playerId, player] of this.players) {
-            this.teamHealths.set(playerId, 100);
+    subscribeToEvents() {
+        console.log('game room subscribing to events');
+        if (!this.serverEventManager) {
+            console.error('No event manager found on engine');
+            return;
+        }
+
+        // Subscribe to room management events
+        this.serverEventManager.subscribe('JOIN_ROOM', this.handleJoinRoom.bind(this));
+        this.serverEventManager.subscribe('QUICK_MATCH', this.handleQuickMatch.bind(this));
+        this.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
+        this.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
+        this.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
+    }
+
+    handleJoinRoom(eventData) {
+        const { playerId, data } = eventData;
+        
+        try {
+            const { roomId, playerName } = data;
+            
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Room code required' 
+                });
+                return;
+            }
+            
+            const room = this.engine.gameRooms.get(roomId);
+            if (!room) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Room not found' 
+                });
+                return;
+            }
+            
+            // Check if room allows joining
+            if (this.game.state.phase !== 'waiting' && this.game.state.phase !== 'lobby') {
+                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Game already in progress' 
+                });
+                return;
+            }
+
+            const result = room.addPlayer(playerId, {
+                name: playerName || `Player ${playerId.substr(-4)}`,
+                isHost: false
+            });
+
+            if (result.success) {
+                this.serverNetworkManager.joinRoom(playerId, roomId);
+                
+                this.serverNetworkManager.sendToPlayer(playerId, 'ROOM_JOINED', {
+                    roomId: roomId,
+                    playerId: playerId,
+                    isHost: false,
+                    gameState: room.getGameState()
+                });
+                
+                // Notify other players
+                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_JOINED', {
+                    playerId: playerId,
+                    playerName: playerName,
+                    gameState: room.getGameState()
+                });
+                
+                console.log(`Player ${playerName} joined room ${roomId}`);
+            } else {
+                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: result.error || result.reason || 'Failed to join room' 
+                });
+            }
+        } catch (error) {
+            console.error('Error joining room:', error);
+            this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                error: 'Server error while joining room' 
+            });
         }
     }
 
+    handleQuickMatch(eventData) {
+        const { playerId, data } = eventData;
+        
+        try {
+            const { playerName } = data;
+            
+            // Find available room
+            let availableRoom = null;
+            for (const [roomId, room] of this.engine.gameRooms) {
+                if ((this.game.state.phase === 'waiting' || this.game.state.phase === 'lobby') && 
+                    room.players.size < room.maxPlayers) {
+                    availableRoom = room;
+                    break;
+                }
+            }
+            
+            if (!availableRoom) {
+                // Create new room for quick match
+                const roomId = this.generateRoomId();
+                availableRoom = this.engine.createGameRoom(roomId, 2);
+            }
+            
+            if (!availableRoom) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
+                    error: 'Failed to create or find room' 
+                });
+                return;
+            }
 
+            const result = availableRoom.addPlayer(playerId, {
+                name: playerName || `Player ${playerId.substr(-4)}`,
+                isHost: availableRoom.players.size === 0
+            });
+
+            if (result.success) {
+                this.serverNetworkManager.joinRoom(playerId, availableRoom.id);
+                
+                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FOUND', {
+                    roomId: availableRoom.id,
+                    playerId: playerId,
+                    isHost: availableRoom.players.size === 1,
+                    gameState: availableRoom.getGameState()
+                });
+                
+                // Notify other players in room
+                this.serverNetworkManager.broadcastToRoom(availableRoom.id, 'PLAYER_JOINED', {
+                    playerId: playerId,
+                    playerName: playerName,
+                    gameState: availableRoom.getGameState()
+                });
+                
+                console.log(`Player ${playerName} quick-matched into room ${availableRoom.id}`);
+            } else {
+                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
+                    error: result.error || result.reason || 'Failed to find match' 
+                });
+            }
+        } catch (error) {
+            console.error('Error in quick match:', error);
+            this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
+                error: 'Server error during quick match' 
+            });
+        }
+    }
+
+    handleToggleReady(eventData) {
+        const { playerId } = eventData;
+        
+        try {
+    
+            const success = this.togglePlayerReady(playerId);
+            if (!success) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', { 
+                    error: 'Cannot toggle ready in current phase' 
+                });
+            }
+        } catch (error) {
+            console.error('Error toggling ready:', error);
+            this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', { 
+                error: 'Server error' 
+            });
+        }
+    }
+
+    handleLeaveRoom(eventData) {
+        const { playerId } = eventData;
+        
+        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            const room = this.engine.gameRooms.get(roomId);
+            if (room) {
+                // Notify other players
+                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
+                    playerId: playerId
+                });
+                
+                // Use GameRoom's removePlayer method
+                room.removePlayer(playerId);
+                this.serverNetworkManager.leaveRoom(playerId, roomId);
+                
+                // Clean up empty rooms
+                if (room.players.size === 0) {
+                    this.engine.gameRooms.delete(roomId);
+                    console.log(`Removed empty room ${roomId}`);
+                }
+            }
+        }
+    }
+
+    handlePlayerDisconnect(eventData) {
+        const { playerId } = eventData;
+        console.log(`Player ${playerId} disconnected`);
+        
+        // Handle as leave room
+        this.handleLeaveRoom({ playerId });
+    }
+
+    // Override parent's auto-start behavior to add lobby phase
     addPlayer(playerId, playerData) {
         const result = super.addPlayer(playerId, playerData);
         
         if (result.success) {
-            // Initialize Auto Battle specific player data
+            // Add multiplayer-specific player properties
             const player = this.players.get(playerId);
-            player.gold = this.startingGold;
-            player.health = 100;
-            player.squadsPlacedThisRound = 0;
             player.ready = false;
-            player.placementReady = false; // Separate ready state for placement phase
-            player.side = this.players.size === 1 ? 'left' : 'right'; // Assign sides
-            player.wins = 0;
+            player.side = playerData.isHost ? 'left' : 'right';
+            player.isHost = playerData.isHost || false;
             
-            this.playerReadyStates.set(playerId, false);
-            this.placementReadyStates.set(playerId, false);
-            this.playerPlacements.set(playerId, []);
-            this.teamHealths.set(playerId, 100);
-            this.createdSquads.set(playerId, []);
-            
-            // If room is full, start lobby phase
-            if (this.players.size === this.maxPlayers) {
-                this.startLobbyPhase();
+            // If room is full, enter lobby phase (don't auto-start like parent does)
+            if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
+                this.enterLobbyPhase();
             }
         }
         
         return result;
     }
 
-    startLobbyPhase() {
-        this.gamePhase = 'lobby';
-        this.broadcastToPlayers({
-            type: 'PHASE_UPDATE',
-            phase: 'lobby',
-            gameState: this.getGameState()
-        });
+    enterLobbyPhase() {
+        this.game.state.phase = 'lobby';
+        
+        // Broadcast lobby entered to all players in room
+        if (this.serverNetworkManager) {
+            this.serverNetworkManager.broadcastToRoom(this.id, 'LOBBY_ENTERED', {
+                gameState: this.getGameState()
+            });
+        }
         
         console.log(`Room ${this.id} entered lobby phase`);
     }
 
     togglePlayerReady(playerId) {
         const player = this.players.get(playerId);
-        if (!player || this.gamePhase !== 'lobby') return false;
+        if (!player || this.game.state.phase !== 'lobby') {
+            console.log("no player or not lobby phase", this.game.state.phase);
+            return false;
+        }
         
         player.ready = !player.ready;
-        this.playerReadyStates.set(playerId, player.ready);
+        
+        const allReady = Array.from(this.players.values()).every(p => p.ready);
+        
+        // Broadcast ready state update
+        if (this.serverNetworkManager) {
+            this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_READY_UPDATE', {
+                playerId: playerId,
+                ready: player.ready,
+                allReady: allReady,
+                gameState: this.getGameState()
+            });
+        }
+        
+        // Auto-start if all ready
+        if (allReady) {
+            setTimeout(() => this.startGame(), 1000);
+        }
+        
+        return true;
+    }
+
+    // Override parent's startGame to add multiplayer lobby logic
+    startGame() {
+        if (this.game.state.phase !== 'lobby') {
+            console.log(`Cannot start game, not in lobby phase. Current phase: ${this.game.state.phase}`);
+            return false;
+        }
         
         // Check if all players are ready
         const allReady = Array.from(this.players.values()).every(p => p.ready);
-        
-        // Broadcast to all players so everyone sees the state change
-        this.broadcastToPlayers({
-            type: 'PLAYER_READY_UPDATE',
-            playerId: playerId,
-            ready: player.ready,
-            allReady: allReady,
-            gameState: this.getGameState()
-        });
-        
-        console.log(`Player ${playerId} ready: ${player.ready}, all ready: ${allReady}`);
-        
-        if (allReady) {
-            console.log(`All players ready, starting game in room ${this.id}`);
-            setTimeout(() => this.startGame(), 1000); // 1 second delay
+        if (!allReady) {
+            return false;
         }
         
-        return true;
-    }
-
-    startGame() {
-        if (this.gamePhase !== 'lobby') {
-            console.log(`Cannot start game, not in lobby phase. Current phase: ${this.gamePhase}`);
-            return;
+        this.game.state.phase = 'placement';
+        
+        // Call parent's startGame (loads scene, spawns entities, etc.)
+        super.startGame();
+        
+        // Broadcast game started
+        if (this.serverNetworkManager) {
+            let gameState = this.getGameState();
+            this.serverNetworkManager.broadcastToRoom(this.id, 'GAME_STARTED', {
+                gameState: gameState
+            });            
         }
-        
-        this.isActive = true;
-        this.currentRound = 1;
-        
-        console.log(`Starting game in room ${this.id}`);
-        
-        // Send GAME_STARTED event first
-        this.broadcastToPlayers({
-            type: 'GAME_STARTED',
-            gameState: this.getGameState()
-        });
-        
-        // Load the multiplayer battle scene on server
-        this.game.sceneManager.load('server');
-        
-        // Start placement phase after a brief delay to allow clients to transition
-        setTimeout(() => {
-            this.startPlacementPhase();
-        }, 500);
         
         console.log(`Game started in room ${this.id}`);
-    }
-
-    startPlacementPhase() {
-        this.gamePhase = 'placement';
-        
-        // Reset player states for new round
-        for (const [playerId, player] of this.players) {
-            player.placementReady = false; // Reset placement ready state
-            player.squadsPlacedThisRound = 0;
-            
-            // Give round gold (except first round)
-            if (this.currentRound > 1) {
-                const roundGold = this.baseGoldPerRound + (this.currentRound * this.baseGoldPerRound);
-                player.gold += roundGold;
-            }
-        }
-        
-        // Clear placement data for new round
-        this.placementReadyStates.clear();
-        this.playerPlacements.clear();
-        this.createdSquads.clear();
-        
-        // Initialize placement ready states
-        for (const playerId of this.players.keys()) {
-            this.placementReadyStates.set(playerId, false);
-            this.playerPlacements.set(playerId, []);
-            this.createdSquads.set(playerId, []);
-        }
-        
-        // Start placement timer
-        this.startPlacementTimer();
-        
-        this.broadcastToPlayers({
-            type: 'PHASE_UPDATE',
-            phase: 'placement',
-            round: this.currentRound,
-            gameState: this.getGameState()
-        });
-        
-        console.log(`Round ${this.currentRound} placement phase started in room ${this.id}`);
-    }
-
-    startPlacementTimer() {
-        if (this.placementTimer) {
-            clearTimeout(this.placementTimer);
-        }
-        
-        this.placementTimer = setTimeout(() => {
-            console.log(`Placement time expired in room ${this.id}`);
-            this.endPlacementPhase();
-        }, this.placementDuration);
-    }
-
-    submitPlayerPlacements(playerId, placements, ready = true) {
-        if (this.gamePhase !== 'placement') {
-            return { success: false, error: 'Not in placement phase' };
-        }
-        
-        const player = this.players.get(playerId);
-        if (!player) {
-            return { success: false, error: 'Player not found' };
-        }
- 
-        // Validate placements if provided
-        if (placements.length > 0 && !this.validatePlacements(placements, player)) {
-            return { success: false, error: 'Invalid placements' };
-        }
-        
-        // Store placements
-        this.playerPlacements.set(playerId, placements);
-        player.squadsPlacedThisRound = placements.length;
-        
-        // Update ready state
-        player.placementReady = ready;
-        this.placementReadyStates.set(playerId, ready);
-        
-        console.log(`Player ${player} submitted ${placements.length} placements, ready: ${ready}`);
-        
-        return { success: true };
-    }
-
-    areAllPlayersReady() {
-        return Array.from(this.players.values()).every(p => p.placementReady);
-    }
-
-    getOpponentPlacements(playerId) {
-        const opponents = Array.from(this.players.keys()).filter(id => id !== playerId);
-        const allOpponentPlacements = [];
-        
-        for (const opponentId of opponents) {
-            const opponentPlacements = this.playerPlacements.get(opponentId) || [];
-            allOpponentPlacements.push(...opponentPlacements);
-        }
-        
-        return allOpponentPlacements;
-    }
-
-    startBattle() {
-        try {
-            console.log(`Starting battle for room ${this.id}`);
-            
-            // Validate that all players are ready
-            if (!this.areAllPlayersReady()) {
-                return { success: false, error: 'Not all players are ready' };
-            }
-            
-            // End placement phase if still active
-            if (this.gamePhase === 'placement') {
-                this.endPlacementPhase();
-            }
-            
-            // Spawn units from placements using proper squad creation
-            const spawnResult = this.spawnUnitsFromPlacements();
-            if (!spawnResult.success) {
-                return spawnResult;
-            }
-            
-            // Start battle phase
-            this.startBattlePhase();
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`Error starting battle for room ${this.id}:`, error);
-            return { success: false, error: `Battle start failed: ${error.message}` };
-        }
-    }
-
-    validatePlacements(placements, player) {
-        // Check squad count limit
-        if (placements.length > this.maxSquadsPerRound) {
-            console.log(`Player ${player.id} exceeded squad limit: ${placements.length} > ${this.maxSquadsPerRound}`);
-            return false;
-        }
-        
-        // Check gold cost
-        let totalCost = 0;
-        for (const placement of placements) {
-            totalCost += placement.unitType?.value || 0;
-        }
-        
-        if (totalCost > player.gold) {
-            console.log(`Player ${player.id} insufficient gold: ${totalCost} > ${player.gold}`);
-            return false;
-        }
-        
-        // Check placement positions (basic validation)
-        for (const placement of placements) {
-            if (!placement.gridPosition || !placement.unitType) {
-                console.log(`Player ${player.id} invalid placement data:`, placement);
-                return false;
-            }
-            
-            // Validate side placement - no mirroring, direct side enforcement
-               // Validate side placement - no mirroring, direct side enforcement
-            const squadData = this.game.squadManager.getSquadData(placement.unitType);
-            const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-            if(!this.game.gridSystem.isValidPlacement(cells, player.side)){
-                console.log('Invalid Placement', player, placement);
-            }
-        }
-        
         return true;
     }
 
-    endPlacementPhase() {
-        if (this.placementTimer) {
-            clearTimeout(this.placementTimer);
-            this.placementTimer = null;
-        }
-        
-        this.gamePhase = 'battle_prep';
-        console.log(`Placement phase ended in room ${this.id}, preparing battle`);
-    }
-
-    spawnUnitsFromPlacements() {
-        try {
-            // Clear existing battle entities
-            this.clearBattlefield();
-            
-            if (!this.game.battleSystem) {
-                throw new Error('Battle system not available');
-            }
-            
-            // Spawn squads for each player using the enhanced battle system
-            for (const [playerId, placements] of this.playerPlacements) {
-                const player = this.players.get(playerId);
-                if (!player) continue;
-                
-                console.log(`Spawning ${placements.length} squads for player ${playerId} (${player.side} side)`);
-                
-                // Use the battle system's squad creation from placements
-                const createdSquads = this.game.battleSystem.spawnSquadsFromPlacements(
-                    placements,
-                    player.side,
-                    playerId
-                );
-                
-                // Store created squads for tracking and cleanup
-                this.createdSquads.set(playerId, createdSquads);
-                
-                // Deduct gold cost
-                const totalCost = placements.reduce((sum, p) => sum + (p.unitType?.value || 0), 0);
-                player.gold -= totalCost;
-                
-                console.log(`Successfully spawned ${createdSquads.length} squads for player ${playerId}, cost: ${totalCost}g`);
-            }
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`Error spawning units from placements in room ${this.id}:`, error);
-            return { success: false, error: `Failed to spawn units: ${error.message}` };
-        }
-    }
-
-    startBattlePhase() {
-        this.gamePhase = 'battle';
-        this.battleResults.clear();
-        
-        // Initialize battle simulation
-        this.game.state.phase = 'battle';
-        this.game.state.simTime = 0;
-        this.game.state.simTick = 0;
-        this.game.state.isPaused = false;
-        
-        // Start battle timer
-        this.startBattleTimer();
-        
-        this.broadcastToPlayers({
-            type: 'PHASE_UPDATE',
-            phase: 'battle',
-            gameState: this.getGameState()
-        });
-        
-        console.log(`Battle phase started in room ${this.id}`);
-    }
-
-    startBattleTimer() {
-        if (this.battleTimer) {
-            clearTimeout(this.battleTimer);
-        }
-        
-        this.battleTimer = setTimeout(() => {
-            console.log(`Battle time expired in room ${this.id}`);
-            this.endBattle();
-        }, this.battleDuration);
-    }
-
-    handleBattleResult(battleResult) {
-        this.endBattle(battleResult.winner);
-    }
-
-    endBattle(winner = null) {
-        if (this.battleTimer) {
-            clearTimeout(this.battleTimer);
-            this.battleTimer = null;
-        }
-        
-        this.gamePhase = 'round_end';
-        
-        // Apply damage to losing team
-        if (winner && winner !== 'draw') {
-            const loser = Array.from(this.players.values()).find(p => p.id !== winner);
-            if (loser) {
-                const damage = this.calculateRoundDamage(winner);
-                this.teamHealths.set(loser.id, Math.max(0, this.teamHealths.get(loser.id) - damage));
-                loser.health = this.teamHealths.get(loser.id);
-            }
-            
-            // Increment winner's wins
-            const winningPlayer = this.players.get(winner);
-            if (winningPlayer) {
-                winningPlayer.wins++;
-            }
-        }
-        
-        const battleResult = {
-            winner: winner,
-            round: this.currentRound,
-            survivingUnits: this.getSurvivingUnits(),
-            playerHealths: Object.fromEntries(this.teamHealths)
-        };
-        
-        this.broadcastToPlayers({
-            type: 'BATTLE_END',
-            result: battleResult,
-            gameState: this.getGameState()
-        });
-        
-        console.log(`Battle ended in room ${this.id}, winner: ${winner}`);
-        
-        // Check for game end or continue to next round
-        setTimeout(() => {
-            if (this.shouldEndGame()) {
-                this.endGame();
-            } else {
-                this.prepareNextRound();
-            }
-        }, 3000);
-    }
-
-    calculateRoundDamage(winner) {
-        // Calculate damage based on surviving units
-        const survivingUnits = this.getSurvivingUnits();
-        const winnerUnits = survivingUnits[winner] || 0;
-        
-        // Base damage + bonus for surviving units
-        return 10 + Math.floor(winnerUnits * 2);
-    }
-
-    getSurvivingUnits() {
-        const survivors = {};
-        
-        for (const [playerId, player] of this.players) {
-            survivors[playerId] = 0;
-        }
-        
-        // Count surviving units from created squads
-        for (const [playerId, squads] of this.createdSquads) {
-            let survivingCount = 0;
-            
-            for (const squad of squads) {
-                if (squad.squadUnits && this.game.componentManager) {
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();
-                    
-                    for (const unit of squad.squadUnits) {
-                        const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
-                        const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
-                        
-                        if (health && health.current > 0 && (!deathState || !deathState.isDying)) {
-                            survivingCount++;
-                        }
-                    }
-                }
-            }
-            
-            survivors[playerId] = survivingCount;
-        }
-        
-        return survivors;
-    }
-
-    shouldEndGame() {
-        // Check if any player is eliminated
-        const alivePlayers = Array.from(this.teamHealths.values()).filter(health => health > 0);
-        return alivePlayers.length <= 1 || this.currentRound >= this.maxRounds;
-    }
-
-    prepareNextRound() {
-        this.currentRound++;
-        this.clearBattlefield();
-        this.startPlacementPhase();
-    }
-
-    endGame() {
-        this.gamePhase = 'ended';
-        
-        // Determine final winner
-        let finalWinner = null;
-        let maxHealth = -1;
-        
-        for (const [playerId, health] of this.teamHealths) {
-            if (health > maxHealth) {
-                maxHealth = health;
-                finalWinner = playerId;
-            }
-        }
-        
-        const gameResult = {
-            winner: finalWinner,
-            finalStats: this.getFinalStats(),
-            totalRounds: this.currentRound - 1
-        };
-        
-        this.broadcastToPlayers({
-            type: 'GAME_END',
-            result: gameResult,
-            gameState: this.getGameState()
-        });
-        
-        console.log(`Game ended in room ${this.id}, final winner: ${finalWinner}`);
-        
-        // Clean up room after delay
-        setTimeout(() => {
-            this.isActive = false;
-        }, 10000);
-    }
-
-    getFinalStats() {
-        const stats = {};
-        for (const [playerId, player] of this.players) {
-            stats[playerId] = {
-                name: player.name,
-                health: this.teamHealths.get(playerId),
-                wins: player.wins,
-                gold: player.gold
-            };
-        }
-        return stats;
-    }
-
-    clearBattlefield() {
-        try {
-            if (this.game.battleSystem) {
-                this.game.battleSystem.clearBattlefield();
-            }
-            
-            // Clean up squad references
-            for (const [playerId, squads] of this.createdSquads) {
-                for (const squad of squads) {
-                    // Squads are already cleaned up by battle system clearBattlefield
-                    // Just clear our references
-                    if (squad.squadUnits) {
-                        squad.squadUnits.length = 0;
-                    }
-                }
-            }
-            
-            this.createdSquads.clear();
-            
-        } catch (error) {
-            console.error(`Error clearing battlefield in room ${this.id}:`, error);
-        }
-    }
-
-    getPlayerBySide(side) {
-        return Array.from(this.players.values()).find(p => p.side === side);
-    }
-
+    // Enhanced game state for multiplayer
     getGameState() {
         return {
             roomId: this.id,
-            phase: this.gamePhase,
-            round: this.currentRound,
-            maxRounds: this.maxRounds,
+            phase: this.game.state.phase,
+            isActive: this.isActive,
+            maxPlayers: this.maxPlayers,
+            gameType: this.gameConfig?.type || 'default',
             players: Array.from(this.players.values()).map(p => ({
                 id: p.id,
                 name: p.name,
-                side: p.side,
-                ready: p.ready,
-                placementReady: p.placementReady,
-                gold: p.gold,
-                health: this.teamHealths.get(p.id),
-                wins: p.wins,
-                squadsPlaced: p.squadsPlacedThisRound
+                ready: p.ready || false,
+                isHost: p.isHost || false,
+                side: p.isHost ? 'left' : 'right',
+                gold: 100,
+                entityId: p.entityId,
+                lastInputSequence: p.lastInputSequence || 0,
+                latency: p.latency || 0
             })),
-            timeRemaining: this.getPhaseTimeRemaining()
+            // Let the game instance provide additional state if needed
+            gameData: this.game.getGameState ? this.game.getGameState() : null
         };
     }
 
-    getPhaseTimeRemaining() {
-        // Calculate remaining time for current phase
-        if (this.gamePhase === 'placement' && this.placementTimer) {
-            return Math.max(0, this.placementDuration);
-        } else if (this.gamePhase === 'battle' && this.battleTimer) {
-            return Math.max(0, this.battleDuration);
-        }
-        return 0;
+    generateRoomId() {
+        let id;
+        do {
+            id = this.nextRoomId++;
+            if (this.nextRoomId > 9999) {
+                this.nextRoomId = 1000;
+            }
+        } while (this.currentRoomIds.includes(id.toString()));
+        
+        this.currentRoomIds.push(id.toString());
+        return id.toString();
     }
 }

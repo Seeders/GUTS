@@ -1,6 +1,7 @@
 import BaseEngine from './BaseEngine.js';
 import ServerModuleManager from './ServerModuleManager.js';
 import ServerNetworkManager from '../global/libraries/js/ServerNetworkManager.js';
+import ServerEventManager from '../global/libraries/js/ServerEventManager.js';
 
 export default class ServerEngine extends BaseEngine {
     constructor() {
@@ -12,7 +13,8 @@ export default class ServerEngine extends BaseEngine {
         this.lastTick = 0;
         this.simulationTime = 0;
         this.accumulator = 0;
-        this.networkManager = null;
+        this.serverNetworkManager = null;
+        this.serverEventManager = null;
     }
 
     async init(projectName) {
@@ -26,7 +28,6 @@ export default class ServerEngine extends BaseEngine {
         this.moduleManager = new ServerModuleManager(this, this.collections);
         
         let projectConfig = this.collections.configs.server;
-        console.log("projectConfig: ", projectConfig)
         if (projectConfig.libraries) {
             this.moduleManager.libraryClasses = await this.moduleManager.loadServerModules({ "server": projectConfig });
             global.GUTS = this.moduleManager.libraryClasses;
@@ -36,8 +37,9 @@ export default class ServerEngine extends BaseEngine {
         this.preCompileScripts();
         
         // Initialize network manager
-        this.networkManager = new ServerNetworkManager(this);
-        await this.networkManager.init();
+        this.serverEventManager = new ServerEventManager(this);
+        this.serverNetworkManager = new ServerNetworkManager(this);
+        await this.serverNetworkManager.init();
         
         this.start();
     }
@@ -75,10 +77,14 @@ export default class ServerEngine extends BaseEngine {
             console.log("NAME", this.collections.configs.server.appLibrary);
             console.log("APP", global.GUTS[this.collections.configs.server.appLibrary]);
             const gameInstance = new global.GUTS[this.collections.configs.server.appLibrary](this);
-            const room = new global.GUTS.ServerGameRoom(roomId, gameInstance, maxPlayers);
+            const room = new global.GUTS.ServerGameRoom(this, roomId, gameInstance, maxPlayers);
             this.gameRooms.set(roomId, room);
             return room;
         }
+        return this.gameRooms.get(roomId);
+    }
+
+    getRoom(roomId){
         return this.gameRooms.get(roomId);
     }
 
@@ -111,7 +117,7 @@ export default class ServerEngine extends BaseEngine {
         }
         
         // Send updates to clients
-        this.networkManager.broadcastGameStates();
+        this.serverNetworkManager.broadcastGameStates();
     }
 
     start() {
