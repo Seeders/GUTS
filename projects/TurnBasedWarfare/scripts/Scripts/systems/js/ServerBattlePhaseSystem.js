@@ -202,8 +202,6 @@ class ServerBattlePhaseSystem {
         
         room.game.state.phase = 'round_end';
         
-        // Apply battle results
-        this.applyBattleResults(room, winner);
         
         const battleResult = {
             winner: winner,
@@ -212,7 +210,9 @@ class ServerBattlePhaseSystem {
             survivingUnits: this.getSurvivingUnits(),
             playerStats: this.getPlayerStats(room)
         };
-        
+        let winningUnits = battleResult.survivingUnits[winner]; 
+        let winningSide = battleResult.playerStats[winner].side;
+        room.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
         // Broadcast battle end to all players in room
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
@@ -228,27 +228,6 @@ class ServerBattlePhaseSystem {
                 this.prepareNextRound(room);
             }
         }, 3000);
-    }
-
-    applyBattleResults(room, winner) {
-        if (!winner || winner === 'draw') return;
-        
-        for (const [playerId, player] of room.players) {
-            if (playerId === winner) {
-                // Winner gains wins
-                player.wins = (player.wins || 0) + 1;
-            } else {
-                // Losers take damage
-                const damage = this.calculateRoundDamage(winner);
-                player.health = Math.max(0, (player.health || 100) - damage);
-            }
-        }
-    }
-
-    calculateRoundDamage(winner) {
-        const survivingUnits = this.getSurvivingUnits();
-        const winnerUnits = survivingUnits[winner] || 0;
-        return 10 + Math.floor(winnerUnits * 2);
     }
     calculateRoundGold(round) {
         return this.baseGoldPerRound + (round * this.baseGoldPerRound);
@@ -287,9 +266,8 @@ class ServerBattlePhaseSystem {
         for (const [playerId, player] of room.players) {
             stats[playerId] = {
                 name: player.name,
-                health: player.health || 100,
+                stats: player.stats,
                 wins: player.wins || 0,
-                gold: player.gold || 0,
                 side: player.side
             };
         }

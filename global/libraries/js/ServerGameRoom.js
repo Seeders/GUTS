@@ -225,6 +225,10 @@ export default class ServerGameRoom extends GameRoom {
             player.side = playerData.isHost ? 'left' : 'right';
             player.isHost = playerData.isHost || false;
             
+            player.stats = {
+                health: 5000,
+                gold: 100
+            };
             // If room is full, enter lobby phase (don't auto-start like parent does)
             if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
                 this.enterLobbyPhase();
@@ -320,7 +324,7 @@ export default class ServerGameRoom extends GameRoom {
                 ready: p.ready || false,
                 isHost: p.isHost || false,
                 side: p.isHost ? 'left' : 'right',
-                gold: 100,
+                stats: p.stats,
                 entityId: p.entityId,
                 lastInputSequence: p.lastInputSequence || 0,
                 latency: p.latency || 0

@@ -235,8 +235,7 @@ class TeamHealthSystem extends engine.BaseSystem {
     
     // Apply damage when PhaseSystem tells us a round ended
     applyRoundDamage(winningTeam, survivingUnits) {
-        if (this.roundProcessed) return null;
-        this.roundProcessed = true;
+        console.log('Apply Round Damage', winningTeam, survivingUnits);
         
         // Calculate damage based on surviving squads' base values
         const damageResult = this.calculateSquadBasedDamage(survivingUnits);
@@ -244,22 +243,6 @@ class TeamHealthSystem extends engine.BaseSystem {
         
         // Apply damage to losing team
         this.dealDamageToTeam(losingTeam, damageResult.totalDamage);
-        
-        // Log the round result with squad details
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Round ${this.game.state.round} won by ${winningTeam}! ${damageResult.survivingSquads} surviving squads deal ${damageResult.totalDamage} damage!`, 
-                'log-victory'
-            );
-            
-            // Log individual squad contributions
-            damageResult.squadDetails.forEach(squad => {
-                this.game.battleLogSystem.add(
-                    `${squad.name}: ${squad.survivingUnits}/${squad.totalUnits} units alive → ${squad.damage} damage`,
-                    'log-victory'
-                );
-            });
-        }
         
         // Return result object
         return {
@@ -466,10 +449,12 @@ class TeamHealthSystem extends engine.BaseSystem {
     }
     
     dealDamageToTeam(team, damage) {
+        console.log("deal damage to team", team, damage);
         this.teamHealth[team] = Math.max(0, this.teamHealth[team] - damage);
-        
-        this.updateHealthDisplay();
-        this.showDamageEffect(team, damage);
+        if(!this.game.isServer){
+            this.updateHealthDisplay();
+            this.showDamageEffect(team, damage);
+        }
     }
     
     showDamageEffect(team, damage) {

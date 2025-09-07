@@ -583,6 +583,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         if(data.result?.survivingUnits){
             let winningUnits = data.result.survivingUnits[data.result.winner];                
             this.game.teamHealthSystem?.applyRoundDamage(winningSide, winningUnits);                        
+
             if(winningUnits && winningUnits.length > 0 ){
                 this.startVictoryCelebration(winningUnits);
             }
@@ -598,7 +599,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.gameState = data.gameState;
         data.gameState?.players?.forEach((player) => {
             if(player.id == myPlayerId) {
-                this.game.state.playerGold = player.gold;
+                this.game.state.playerGold = player.stats.gold;
             }
         })
         this.startPlacementPhase();
@@ -617,7 +618,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
     syncWithServerState(gameState) {
         if (!gameState.players) return;
-        
+        console.log('sync with server', gameState);
         const myPlayerId = this.game.clientNetworkManager.playerId;
         const myPlayer = gameState.players.find(p => p.id === myPlayerId);
         
@@ -626,7 +627,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
             if (this.game.state) {
                 this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
                 this.game.state.mySide = myPlayer.side;
-                this.game.state.playerGold = myPlayer.gold;
+                this.game.state.playerGold = myPlayer.stats.gold;
+                this.game.state.playerHealth = myPlayer.stats.health;
                 this.game.state.round = gameState.round;
             }
             
@@ -648,7 +650,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 });
             }
             
-            console.log(`Synced with server - Side: ${myPlayer.side}, Squads: ${myPlayer.squadsPlaced}, Gold: ${myPlayer.gold}`);
+            console.log(`Synced with server`, gameState);
         }
     }
 
