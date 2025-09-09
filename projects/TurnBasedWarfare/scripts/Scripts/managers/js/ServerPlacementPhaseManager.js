@@ -33,7 +33,35 @@ class ServerPlacementPhaseManager {
                     
     }
 
-
+    getPlacementById(placementId) {
+        // Search in player placements first
+        const leftPlacements = this.leftPlacements.find(placement => placement.placementId === placementId);
+        if (leftPlacements) {
+            return leftPlacements;
+        }
+        
+        // Search in opponent placements
+        const rightPlacements = this.rightPlacements.find(placement => placement.placementId === placementId);
+        if (rightPlacements) {
+            return rightPlacements;
+        }
+        
+        // Return null if no matching placement is found
+        return null;
+    }
+    getPlayerIdByPlacementId(placementId) {
+        // Iterate through all players and their placements
+        for (const [playerId, placements] of this.playerPlacements) {
+            // Check if any placement in this player's placements matches the placementId
+            const foundPlacement = placements.find(placement => placement.placementId === placementId);
+            if (foundPlacement) {
+                return playerId;
+            }
+        }
+        
+        // Return null if no matching placement is found
+        return null;
+    }
     getPlacementsForSide(side){
         if(side == 'left'){
             return this.leftPlacements;

@@ -788,7 +788,22 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         this.game.battleLogSystem.add(message, 'log-victory');
     }
-
+    getPlacementById(placementId) {
+        // Search in player placements first
+        const playerPlacement = this.playerPlacements.find(placement => placement.placementId === placementId);
+        if (playerPlacement) {
+            return playerPlacement;
+        }
+        
+        // Search in opponent placements
+        const opponentPlacement = this.opponentPlacements.find(placement => placement.placementId === placementId);
+        if (opponentPlacement) {
+            return opponentPlacement;
+        }
+        
+        // Return null if no matching placement is found
+        return null;
+    }
     collectPlayerPlacements() {
         return this.playerPlacements;
     }

@@ -154,9 +154,10 @@ class SquadExperienceSystem extends engine.BaseSystem {
 
         // Check for specialization selection UI (unchanged)
         const isSpecializationLevel = squadData.level >= 2;
-        const currentUnitType = this.getCurrentUnitType(placementId);
+        const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
-        
+        console.log('isSpecializationLevel', isSpecializationLevel, squadData.level);
+        console.log('hasSpecializations', hasSpecializations, currentUnitType);
         if (!this.game.isServer && isSpecializationLevel && hasSpecializations && !specializationId) {
             this.showSpecializationSelection(placementId, squadData, levelUpCost);
             console.log('showing spec selection');
@@ -178,7 +179,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
                         this.game.state.playerGold += levelUpCost; // Refund
                         return false;
                     } 
-                    this.applySpecialization(placementId, specializationId);
+                    this.applySpecialization(placementId, specializationId, playerId);
                 } else {
                     // Handle regular level up
                     const success = await this.makeNetworkCall('LEVEL_SQUAD', 
@@ -249,7 +250,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * @param {string} specializationId - Specialization unit type ID
      * @returns {boolean} Success status
      */
-    applySpecialization(placementId, specializationId) {
+    applySpecialization(placementId, specializationId, playerId) {
         const squadData = this.squadExperience.get(placementId);
         if (!squadData) return false;
         
@@ -268,7 +269,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
             return false;
         }
         
-        const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId);
+        const placement = this.game.placementSystem.getPlacementById(placementId);
         if (!placement) {
             console.error(`Placement ${placementId} not found`);
             return false;
@@ -324,7 +325,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * @param {number} levelUpCost - Cost to level up
      */
     showSpecializationSelection(placementId, squadData, levelUpCost) {
-        const currentUnitType = this.getCurrentUnitType(placementId);
+        const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         if (!currentUnitType || !currentUnitType.specUnits) return;
         
         const collections = this.game.getCollections();
@@ -448,27 +449,31 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         const componentTypes = this.game.componentManager.getComponentTypes();
         squadData.unitIds.forEach(entityId => {
-            // Apply health bonus
-            const health = this.game.getComponent(entityId, componentTypes.HEALTH);
-            if (health && bonuses.hp > 1) {
-                const newMaxHealth = Math.floor(health.max * bonuses.hp);
-                const healthIncrease = newMaxHealth - health.max;
-                health.max = newMaxHealth;
-                health.current += healthIncrease; // Also increase current health
-            }
+            const unitType = this.game.getComponent(entityId, componentTypes.UNIT_TYPE);
+            if (unitType) {
+                const baseUnitData = this.game.getCollections().units[unitType.id];
             
-            // Apply damage bonus
-            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
-            if (combat && bonuses.damage > 1) {
-                combat.damage = Math.floor(combat.damage * bonuses.damage);
+                // Apply health bonus
+                const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+                if (health && bonuses.hp > 1) {
+                    const newMaxHealth = Math.floor(baseUnitData.hp * bonuses.hp);
+                    const healthIncrease = newMaxHealth - health.max;
+                    health.max = newMaxHealth;
+                    health.current += healthIncrease; // Also increase current health
+                }
+                
+                // Apply damage bonus
+                const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+                if (combat && bonuses.damage > 1) {
+                    combat.damage = Math.floor(baseUnitData.damage * bonuses.damage);
+                }
+                
+                // Visual indicator (flash effect)
+                const animation = this.game.getComponent(entityId, componentTypes.ANIMATION);
+                if (animation) {
+                    animation.flash = 0.8;
+                }
             }
-            
-            // Visual indicator (flash effect)
-            const animation = this.game.getComponent(entityId, componentTypes.ANIMATION);
-            if (animation) {
-                animation.flash = 0.8;
-            }
-
         });
     }
     
