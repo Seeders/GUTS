@@ -179,6 +179,7 @@ class ShopSystem extends engine.BaseSystem {
         }
         
         levelUpButton.addEventListener('click', () => {
+
             const success = this.game.squadExperienceSystem.levelUpSquad(squad.placementId);
             if (success || canSpecialize) { // Also refresh if specialization dialog was shown
                 // Refresh the shop to update the experience panel
@@ -186,6 +187,7 @@ class ShopSystem extends engine.BaseSystem {
                     this.createShop();
                 }, 100);
             }
+     
         });
         
         card.appendChild(levelUpButton);

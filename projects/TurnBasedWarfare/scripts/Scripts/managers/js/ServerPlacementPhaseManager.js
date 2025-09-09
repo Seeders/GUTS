@@ -2,9 +2,11 @@ class ServerPlacementPhaseManager {
     constructor(game) {
         this.game = game;
         this.engine = this.game.app;    
-        this.game.serverPlacementPhaseManager = this;
+        this.game.placementSystem = this;
         this.serverNetworkManager = this.engine.serverNetworkManager;  
         this.playerPlacements = new Map();
+        this.leftPlacements = new Map();
+        this.rightPlacements = new Map();
         this.placementReadyStates = new Map();
         this.numPlayers = 2;
      }
@@ -21,7 +23,73 @@ class ServerPlacementPhaseManager {
 
         // Subscribe to room management events
         this.engine.serverEventManager.subscribe('SUBMIT_PLACEMENTS', this.handleSubmitPlacements.bind(this));
+        this.engine.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
+        this.engine.serverEventManager.subscribe('APPLY_SPECIALIZATION', this.handleApplySpecialization.bind(this));
+        //   const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
+        //                 { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
 
+        //             const success = await this.makeNetworkCall('LEVEL_SQUAD', 
+        //                 { placementId }, 'SQUAD_LEVELED');
+                    
+    }
+
+
+    getPlacementsForSide(side){
+        if(side == 'left'){
+            return this.leftPlacements;
+        } else {
+            return this.rightPlacements;
+        }
+    }
+
+    async handleLevelSquad(eventData){
+        const { playerId, data } = eventData;
+        const { placementId } = data;
+        let playerGold = 0;
+        if(playerId){
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);         
+            if(roomId){
+                const room = this.engine.getRoom(roomId);
+                if(room){
+                    const player = room.players.get(playerId);                    
+                    playerGold = player.stats.gold;
+                    console.log('got player gold', playerGold);
+                }
+        
+                if (!this.game.squadExperienceSystem.canAffordLevelUp(placementId, playerGold)) {            
+                    console.log("not enough gold to level up");
+                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                        playerId: playerId,
+                        error: "gold_low_error",
+                        success: false
+                    });
+                    return false;
+                }
+                const success = await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId);
+                if(success){
+                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                        playerId: playerId,
+                        success: true
+                    });
+                }
+            }
+        } 
+    }
+
+    handleApplySpecialization(eventData){
+        const { playerId, data } = eventData;
+        const { placementId, specializationId } = data;
+        const success = this.game.squadExperienceSystem.applySpecialization(placementId, specializationId, playerId);
+        if(success){   
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);         
+            const room = this.engine.getRoom(roomId);
+            const gameState = room.getGameState();
+            this.serverNetworkManager.sendToPlayer(playerId, 'SPECIALIZATION_APPLIED', {
+                playerId: playerId,
+                success: true,
+                gameState: gameState
+            });
+        }
     }
 
     handleSubmitPlacements(eventData) {
@@ -49,24 +117,21 @@ class ServerPlacementPhaseManager {
                 // Broadcast ready state update to all players in room
                 this.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENTS', {
                     playerId: playerId,
-                    ready: true,
-                    gameState: room.getGameState(),
-                    placements: placements
+                    ready: true
                 });
                 
               
                 // Check if all players are ready and start battle if so
                 if (this.areAllPlayersReady() && this.game.state.phase === 'placement') {
-                
-                    let gameState = room.getGameState();
-                    let allPlacements = {};
-                    gameState.players.forEach((player) => {
-                        allPlacements[player.id] = this.playerPlacements.get(player.id)
-                    });
+
+                                // Spawn units from placements
+                    this.game.serverBattlePhaseSystem.spawnSquadsFromPlacements(room);
+                    const gameState = room.getGameState();
+                    console.log('all ready', gameState);
+                    console.log(gameState.players[0].placements[0].experience, gameState.players[0].placements[0].experience?.unitIds || 'no experience');
                     this.serverNetworkManager.broadcastToRoom(roomId, 'PLACEMENT_READY_UPDATE', {                       
                         gameState: gameState,
-                        allReady: true,
-                        allPlacements: allPlacements
+                        allReady: true
                     });
                     this.placementReadyStates.clear();
                     // Small delay to ensure clients receive the ready update
@@ -108,11 +173,17 @@ class ServerPlacementPhaseManager {
         if (placements.length > 0 && !this.validatePlacements(placements, player)) {
             return { success: false, error: 'Invalid placements' };
         }
-        
+        console.log('set placements', playerId, placements);
         // Store placements
         this.playerPlacements.set(playerId, placements);
-        player.squadsPlacedThisRound = placements.length;
+        player.stats.squadsPlacedThisRound = placements.length;
         
+        if(player.stats.side == 'left'){
+            this.leftPlacements = this.playerPlacements.get(playerId);
+        } else {
+            this.rightPlacements = this.playerPlacements.get(playerId);
+        }
+
         // Update ready state
         player.placementReady = ready;
         this.placementReadyStates.set(playerId, ready);
@@ -135,8 +206,8 @@ class ServerPlacementPhaseManager {
             totalCost += placement.unitType?.value || 0;
         }
         
-        if (totalCost > player.gold) {
-            console.log(`Player ${player.id} insufficient gold: ${totalCost} > ${player.gold}`);
+        if (totalCost > player.stats.gold) {
+            console.log(`Player ${player.id} insufficient gold: ${totalCost} > ${player.stats.gold}`);
             return false;
         }
         
@@ -151,7 +222,7 @@ class ServerPlacementPhaseManager {
                // Validate side placement - no mirroring, direct side enforcement
             const squadData = this.game.squadManager.getSquadData(placement.unitType);
             const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-            if(!this.game.gridSystem.isValidPlacement(cells, player.side)){
+            if(!this.game.gridSystem.isValidPlacement(cells, player.stats.side)){
                 console.log('Invalid Placement', placement);
                 return false;
             }

@@ -626,7 +626,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             // Sync squad count and side
             if (this.game.state) {
                 this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
-                this.game.state.mySide = myPlayer.side;
+                this.game.state.mySide = myPlayer.stats.side;
                 this.game.state.playerGold = myPlayer.stats.gold;
                 this.game.state.playerHealth = myPlayer.stats.health;
                 this.game.state.round = gameState.round;
@@ -636,8 +636,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
             if (opponent && this.game.gridSystem) {
                 this.game.gridSystem.setTeamSides({
-                    player: myPlayer.side,
-                    enemy: opponent.side
+                    player: myPlayer.stats.side,
+                    enemy: opponent.stats.side
                 });
             }
             
@@ -645,8 +645,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
             if (this.game.placementSystem && this.game.placementSystem.setTeamSides) {
                 
                 this.game.placementSystem.setTeamSides({
-                    player: myPlayer.side,
-                    enemy: opponent.side
+                    player: myPlayer.stats.side,
+                    enemy: opponent.stats.side
                 });
             }
             

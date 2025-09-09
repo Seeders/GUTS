@@ -222,12 +222,12 @@ export default class ServerGameRoom extends GameRoom {
             // Add multiplayer-specific player properties
             const player = this.players.get(playerId);
             player.ready = false;
-            player.side = playerData.isHost ? 'left' : 'right';
             player.isHost = playerData.isHost || false;
             
             player.stats = {
-                health: 5000,
-                gold: 100
+                health: 5000,                
+                gold: 100,
+                side: playerData.isHost ? 'left' : 'right'
             };
             // If room is full, enter lobby phase (don't auto-start like parent does)
             if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
@@ -312,23 +312,38 @@ export default class ServerGameRoom extends GameRoom {
 
     // Enhanced game state for multiplayer
     getGameState() {
+        let players = Array.from(this.players.values());
+        let playerData = [];
+        players.forEach((p) => {
+            let placements = null;
+            if(this.game.placementSystem){
+                placements = this.game.placementSystem.playerPlacements.get(p.id);
+            }
+
+            if(this.game.squadExperienceSystem && placements){                
+                placements.forEach((placement) => {
+                    placement.experience = this.game.squadExperienceSystem.getSquadInfo(placement.placementId)
+                });
+            }
+            playerData.push({
+                id: p.id,
+                name: p.name,
+                ready: p.ready || false,
+                isHost: p.isHost || false,
+                stats: p.stats,
+                placements: placements || [],
+                entityId: p.entityId,
+                lastInputSequence: p.lastInputSequence || 0,
+                latency: p.latency || 0
+            });
+        });
         return {
             roomId: this.id,
             phase: this.game.state.phase,
             isActive: this.isActive,
             maxPlayers: this.maxPlayers,
             gameType: this.gameConfig?.type || 'default',
-            players: Array.from(this.players.values()).map(p => ({
-                id: p.id,
-                name: p.name,
-                ready: p.ready || false,
-                isHost: p.isHost || false,
-                side: p.isHost ? 'left' : 'right',
-                stats: p.stats,
-                entityId: p.entityId,
-                lastInputSequence: p.lastInputSequence || 0,
-                latency: p.latency || 0
-            })),
+            players: playerData,
             // Let the game instance provide additional state if needed
             gameData: this.game.getGameState ? this.game.getGameState() : null
         };

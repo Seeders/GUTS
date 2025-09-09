@@ -129,7 +129,31 @@ class ServerECSGame {
         return this.components.has(componentType) && 
                this.components.get(componentType).has(entityId);
     }
-    
+    getEntityComponents(entityId) {
+        if (!this.entities.has(entityId)) {
+            return null; // or throw new Error(`Entity ${entityId} does not exist`);
+        }
+        
+        const componentTypes = this.entities.get(entityId);
+        const components = {};
+        
+        // Get the actual component data for each component type
+        for (const componentType of componentTypes) {
+            const componentData = this.getComponent(entityId, componentType);
+            if (componentData !== null) {
+                components[componentType] = componentData;
+            }
+        }
+        
+        return components;
+    }
+    getEntityComponentTypes(entityId) {
+        if (!this.entities.has(entityId)) {
+            return null;
+        }
+        
+        return Array.from(this.entities.get(entityId));
+    }
     getEntitiesWith(...componentTypes) {
         const result = [];
         for (const [entityId, entityComponents] of this.entities) {

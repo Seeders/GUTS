@@ -14,7 +14,7 @@ class ServerBattlePhaseSystem {
         this.createdSquads = new Map();
         this.currentRound = 1;
         this.maxRounds = 5;
-        this.baseGoldPerRound;
+        this.baseGoldPerRound = 50;
     }
 
     init(params) {
@@ -23,14 +23,7 @@ class ServerBattlePhaseSystem {
 
     startBattle(room) {
         try {
-            
-            
-            
-            // Spawn units from placements
-            const spawnResult = this.spawnUnitsFromPlacements(room);
-            if (!spawnResult.success) {
-                return spawnResult;
-            }
+
             room.game.state.isPaused = false;
             // Change room phase
             room.game.state.phase = 'battle';
@@ -45,7 +38,7 @@ class ServerBattlePhaseSystem {
         }
     }
 
-    spawnUnitsFromPlacements(room) {
+    spawnSquadsFromPlacements(room) {
         try {
             // Clear existing battle entities
             this.clearBattlefield();
@@ -55,7 +48,7 @@ class ServerBattlePhaseSystem {
             }
             
             // Get placements from placement phase manager
-            const placementManager = this.game.serverPlacementPhaseManager;
+            const placementManager = this.game.placementSystem;
             if (!placementManager) {
                 throw new Error('Placement phase manager not available');
             }
@@ -67,12 +60,11 @@ class ServerBattlePhaseSystem {
                 if (placements.length === 0) continue;
                 
                 // Create squads using unit creation manager
-                const createdSquads = this.spawnSquadsFromPlacements(
+                const createdSquads = this.game.unitCreationManager.createSquadsFromPlacements(
                     placements,
-                    player.side || 'left',
+                    player.stats.side,
                     playerId
                 );
-                
                 if(!createdSquads){
                     console.log("Failed to create squads");
                     success = false;
@@ -81,9 +73,9 @@ class ServerBattlePhaseSystem {
                     this.createdSquads.set(playerId, createdSquads);
                     
                     // Deduct gold cost if player has gold
-                    if (player.gold !== undefined) {
+                    if (player.stats.gold !== undefined) {
                         const totalCost = placements.reduce((sum, p) => sum + (p.unitType?.value || 0), 0);
-                        player.gold -= totalCost;
+                        player.stats.gold -= totalCost;
                     }
                 }
                 
@@ -96,26 +88,6 @@ class ServerBattlePhaseSystem {
             return { success: false, error: `Failed to spawn units: ${error.message}` };
         }
     }
-
-    spawnSquadsFromPlacements(placements, team, playerId) {
-        if (!this.game.unitCreationManager) {
-            console.error('UnitCreationManager not loaded');
-            return [];
-        }
-
-        try {
-            return this.game.unitCreationManager.createSquadsFromPlacements(
-                placements,
-                team,
-                playerId
-            );
-        } catch (error) {
-            console.error('Failed to spawn squads:', error);
-            return [];
-        }
-    }
-
-
 
     startBattleTimer(room) {
         if (this.battleTimer) {
@@ -203,7 +175,7 @@ class ServerBattlePhaseSystem {
         room.game.state.phase = 'round_end';
         
         
-        const battleResult = {
+        let battleResult = {
             winner: winner,
             reason: reason,
             round: this.currentRound,
@@ -211,8 +183,12 @@ class ServerBattlePhaseSystem {
             playerStats: this.getPlayerStats(room)
         };
         let winningUnits = battleResult.survivingUnits[winner]; 
-        let winningSide = battleResult.playerStats[winner].side;
-        room.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
+        let winningSide = battleResult.playerStats[winner]?.stats.side || null;
+        battleResult.winningUnits = winningUnits;
+        battleResult.winningSide = winningSide;
+        if(winningSide){
+            room.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
+        }
         // Broadcast battle end to all players in room
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
@@ -266,17 +242,15 @@ class ServerBattlePhaseSystem {
         for (const [playerId, player] of room.players) {
             stats[playerId] = {
                 name: player.name,
-                stats: player.stats,
-                wins: player.wins || 0,
-                side: player.side
+                stats: player.stats
             };
         }
         return stats;
     }
 
     shouldEndGame(room) {
-        const alivePlayers = Array.from(room.players.values()).filter(p => (p.health || 100) > 0);
-        return alivePlayers.length <= 1 || this.currentRound >= this.maxRounds;
+        const alivePlayers = Array.from(room.players.values()).filter(p => (p.stats.health) > 0);
+        return alivePlayers.length <= 1;
     }
 
     prepareNextRound(room) {
@@ -284,12 +258,12 @@ class ServerBattlePhaseSystem {
         this.clearBattlefield();
         
         // Transition back to placement phase
-        room.game.state.phase = 'placement';
+        this.game.state.phase = 'placement';
         
         // Reset placement ready states
         for (const [playerId, player] of room.players) {
             player.placementReady = false;
-            player.gold = player.gold + this.calculateRoundGold(this.currentRound);
+            player.stats.gold = player.stats.gold + this.calculateRoundGold(this.currentRound);
         }
         
         this.serverNetworkManager.broadcastToRoom(room.id, 'NEXT_ROUND', {
@@ -306,7 +280,7 @@ class ServerBattlePhaseSystem {
         let maxHealth = -1;
         
         for (const [playerId, player] of room.players) {
-            const health = player.health || 100;
+            const health = player.stats.health;
             if (health > maxHealth) {
                 maxHealth = health;
                 finalWinner = playerId;
@@ -331,6 +305,8 @@ class ServerBattlePhaseSystem {
     }
 
     clearBattlefield() {
+        this.game.gridSystem.clear();
+
         if (!this.game.componentManager) return;
         
         const ComponentTypes = this.game.componentManager.getComponentTypes();
@@ -364,7 +340,6 @@ class ServerBattlePhaseSystem {
         
         // Clear squad references
         this.createdSquads.clear();
-        this.game.gridSystem.clear();
     }
 
     // Cleanup method

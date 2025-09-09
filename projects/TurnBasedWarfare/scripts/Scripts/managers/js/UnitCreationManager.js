@@ -105,31 +105,6 @@ class UnitCreationManager {
      * @returns {Object} Squad placement data with entity IDs
      */
     createSquad(gridPosition, unitType, team, playerId = null) {
-        if (!this.game.squadManager || !this.game.gridSystem) {
-            console.error('SquadManager or GridSystem not available - falling back to single unit creation');
-            const worldPos = this.game.gridSystem ? 
-                this.game.gridSystem.gridToWorld(gridPosition.x, gridPosition.z) :
-                { x: gridPosition.x * 32, z: gridPosition.z * 32 }; // Fallback grid-to-world conversion
-            
-            const terrainHeight = this.getTerrainHeight(worldPos.x, worldPos.z);
-            const entityId = this.create(worldPos.x, terrainHeight, worldPos.z, unitType, team);
-            
-            return {
-                placementId: `single_${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                gridPosition: gridPosition,
-                unitType: unitType,
-                squadUnits: [{
-                    entityId: entityId,
-                    position: { x: worldPos.x, y: terrainHeight, z: worldPos.z }
-                }],
-                cells: [{ x: gridPosition.x, z: gridPosition.z }],
-                isSquad: false,
-                team: team,
-                playerId: playerId,
-                timestamp: Date.now()
-            };
-        }
-
         try {
             // Get squad configuration
             const squadData = this.game.squadManager.getSquadData(unitType);
@@ -156,7 +131,7 @@ class UnitCreationManager {
             }
 
             // Generate unique placement ID
-            const placementId = `squad_${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const placementId = `squad_${team}_${gridPosition.x}_${gridPosition.z}`;
             const squadUnits = [];
 
             
@@ -184,17 +159,17 @@ class UnitCreationManager {
 
             // Occupy grid cells
             this.game.gridSystem.occupyCells(cells, placementId);
-
             // Update squad creation statistics
             this.stats.squadsCreated++;
 
             // Initialize squad in experience system if available
             if (this.game.squadExperienceSystem) {
                 const unitIds = squadUnits.map(unit => unit.entityId);
+                console.log('initialize squad with unitIDs', unitIds, squadUnits);
                 this.game.squadExperienceSystem.initializeSquad(placementId, unitType, unitIds, team);
             }
 
-            const squadInfo = this.game.squadManager.getSquadInfo(unitType);
+            // const squadInfo = this.game.squadManager.getSquadInfo(unitType);
          
             return {
                 placementId: placementId,
@@ -595,37 +570,6 @@ class UnitCreationManager {
         return 0; // Default to ground level
     }
     
-    /**
-     * Create multiple units efficiently
-     * @param {Array} unitSpecs - Array of unit specifications
-     * @returns {Array} Array of created entity IDs
-     */
-    createBatch(unitSpecs) {
-        const createdEntities = [];
-        
-        try {
-            for (const spec of unitSpecs) {
-                const { x, y, z, unitType, team } = spec;
-                const entity = this.create(x, y, z, unitType, team);
-                createdEntities.push(entity);
-            }
-        } catch (error) {
-            console.error('Batch creation failed:', error);
-            // Clean up any partially created entities
-            createdEntities.forEach(entityId => {
-                try {
-                    if (this.game.destroyEntity) {
-                        this.game.destroyEntity(entityId);
-                    }
-                } catch (cleanupError) {
-                    console.warn(`Failed to cleanup entity ${entityId}:`, cleanupError);
-                }
-            });
-            throw error;
-        }
-        
-        return createdEntities;
-    }
     
     /**
      * Update creation statistics
