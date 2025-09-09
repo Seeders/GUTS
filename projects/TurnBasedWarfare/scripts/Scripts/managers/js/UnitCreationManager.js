@@ -110,6 +110,7 @@ class UnitCreationManager {
             const squadData = this.game.squadManager.getSquadData(unitType);
             const validation = this.game.squadManager.validateSquadConfig(squadData);
             
+            console.log('create Squad', squadData);
             if (!validation.valid) {
                 console.log("invalid squad config");
                 return false;

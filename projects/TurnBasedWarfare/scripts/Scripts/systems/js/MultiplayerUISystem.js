@@ -5,22 +5,10 @@ class MultiplayerUISystem extends engine.BaseSystem {
         
         // State tracking
         this.currentScreen = null;
-        this.roomId = null;
-        this.isHost = false;
         this.gameState = null;
         this.config = {
-            maxSquadsPerRound: 2,
-            maxCombinationsToCheck: 1000,
-            unitPlacementDelay: 200,
-            enablePreview: true,
-            enableUndo: true,
-            enableGridSnapping: true,
-            mouseMoveThrottle: 16,
-            validationThrottle: 32,
-            raycastThrottle: 16
+            maxSquadsPerRound: 2
         };
-        // Store unsubscribe functions
-        this.networkUnsubscribers = [];
     }
 
     // GUTS Manager Interface
@@ -28,39 +16,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.params = params || {};
         this.initializeUI();
         this.enhanceGameModeManager();
-        // Connect to server and get player ID
-        this.connectToServer();
-        
-        this.setupNetworkListeners();
         this.setupEventListeners();
-    }
-
-    async connectToServer() {
-        try {
-            await this.game.clientNetworkManager.connect();
-            
-            // Call server to get player ID
-            this.game.clientNetworkManager.call(
-                'CONNECT',
-                null,
-                'CONNECTED',
-                (data, error) => {
-                    if (error) {
-                        console.error('Failed to get player ID:', error);
-                        this.showNotification('Failed to get player ID from server', 'error');
-                    } else if (data && data.playerId) {
-                        this.game.clientNetworkManager.playerId = data.playerId;
-                    } else {
-                        console.error('Server response missing player ID:', data);
-                        this.showNotification('Server did not provide player ID', 'error');
-                    }
-                }
-            );
-            
-        } catch (error) {
-            console.error('Failed to connect to server:', error);
-            this.showNotification('Failed to connect to server', 'error');
-        }
     }
 
     initializeUI() {
@@ -194,14 +150,14 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
-                this.startQuickMatch(getPlayerName());
+                this.game.networkManager.startQuickMatch(getPlayerName());
                 dialog.remove();
             });
         }
 
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => {
-                this.createRoom(getPlayerName(), mode.maxPlayers);
+                this.game.networkManager.createRoom(getPlayerName(), mode.maxPlayers);
                 dialog.remove();
             });
         }
@@ -210,7 +166,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             joinRoomBtn.addEventListener('click', () => {
                 const roomId = roomIdInput.value.trim().toUpperCase();
                 if (roomId) {
-                    this.joinRoom(roomId, getPlayerName());
+                    this.game.networkManager.joinRoom(roomId, getPlayerName());
                     dialog.remove();
                 } else {
                     this.showNotification('Please enter a Room ID', 'error');
@@ -228,73 +184,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         playerNameInput.select();
     }
 
-    // =============================================
-    // NETWORK ACTIONS (USING .call())
-    // =============================================
-
-    createRoom(playerName, maxPlayers = 2) {
-        this.showNotification('Creating room...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'CREATE_ROOM',
-            { playerName, maxPlayers },
-            'ROOM_CREATED',
-            (data, error) => {
-                if (error) {
-                    this.showNotification(`Failed to create room: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.showNotification(`Room created! Code: ${this.roomId}`, 'success');
-                    this.showLobby(data.gameState);
-                }
-            }
-        );
-    }
-
-    joinRoom(roomId, playerName) {
-        this.showNotification('Joining room...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'JOIN_ROOM',
-            { roomId, playerName },
-            'ROOM_JOINED',
-            (data, error) => {
-                if (error) {
-                    this.showNotification(`Failed to join room: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.showNotification(`Joined room ${this.roomId}`, 'success');
-                    this.showLobby(data.gameState);
-                }
-            }
-        );
-    }
-
-    startQuickMatch(playerName) {
-        this.showNotification('Finding opponent...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'QUICK_MATCH',
-            { playerName },
-            'QUICK_MATCH_FOUND',
-            (data, error) => {
-                if (error) {
-                    this.showNotification(`Quick match failed: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.showNotification(`Match found! Entering room...`, 'success');
-                    this.showLobby(data.gameState);
-                }
-            }
-        );
-    }
-
     toggleReady() {
         // Disable button while updating
         const btn = document.getElementById('player1ReadyBtn');
@@ -303,86 +192,16 @@ class MultiplayerUISystem extends engine.BaseSystem {
             btn.textContent = 'Updating...';
         }
         
-        this.game.clientNetworkManager.call('TOGGLE_READY');
+        this.game.networkManager.toggleReady();
     }
-
     startGame() {
-        if (!this.isHost) return;
-        this.game.clientNetworkManager.call('START_GAME');
+        this.game.networkManager.startGame();
     }
-
     leaveRoom() {
-        this.game.clientNetworkManager.call('LEAVE_ROOM');
+        this.game.networkManager.leaveRoom();
         this.exitToMainMenu();
     }
 
-    // =============================================
-    // NETWORK EVENT LISTENERS
-    // =============================================
-
-    setupNetworkListeners() {
-        const nm = this.game.clientNetworkManager;
-        if (!nm) {
-            console.error('ClientNetworkManager not available');
-            return;
-        }
-
-        // Listen to events that update the UI
-        this.networkUnsubscribers.push(
-            nm.listen('PLAYER_JOINED', (data) => {
-                this.gameState = data.gameState;
-                this.showNotification(`${data.playerName} joined the room`, 'info');
-                this.updateLobby(data.gameState);
-            }),
-
-            nm.listen('PLAYER_LEFT', (data) => {
-                this.gameState = data.gameState;
-                this.showNotification('Player left the room', 'warning');
-                this.updateLobby(data.gameState);
-            }),
-
-            nm.listen('PLAYER_READY_UPDATE', (data) => {
-                this.gameState = data.gameState;
-                this.updateLobby(data.gameState);
-                
-                // Show notification for ready state changes
-                const myPlayerId = this.game.clientNetworkManager.playerId;
-                if (data.playerId === myPlayerId) {
-                    if(!data.ready){
-                        console.log("not ready", data);
-                    }
-                    this.showNotification(
-                        data.ready ? 'You are ready!' : 'Ready status removed',
-                        data.ready ? 'success' : 'info'
-                    );
-                }
-                
-                if (data.allReady) {
-                    this.showNotification('All players ready! Game starting...', 'success');
-                }
-            }),
-
-            nm.listen('GAME_STARTED', (data) => {
-                this.transitionToGame(data);
-            }),
-
-            nm.listen('PLACEMENT_READY_UPDATE', (data) => {
-                this.handlePlacementReadyUpdate(data);
-            }),
-
-            nm.listen('BATTLE_END', (data) => {
-                this.handleBattleEnd(data);
-            }),
-
-            nm.listen('NEXT_ROUND', (data) => {
-                this.handleNextRound(data);
-            }),
-
-            nm.listen('GAME_END', (data) => {
-                this.handleGameEnd(data);
-            })
-        );
-    }
 
     setupEventListeners() {
         // Set up lobby event handlers (these elements created by showLobby)
@@ -544,9 +363,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
 
     transitionToGame(data) {
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
-        }
+
         this.currentScreen = 'game';
         
         // Hide lobby, show game
@@ -558,105 +375,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         
         this.game.placementSystem.startNewPlacementPhase();
     }
-
-    handlePlacementReadyUpdate(data) {
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
-        }
-        this.game.placementSystem.handlePlacementReadyUpdate(data);
-    }
-
-    handleBattleEnd(data) {
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
-        }
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        let winningSide = this.game.state.mySide;
-        if (data.result.winner === myPlayerId) {
-            this.showNotification('Victory! You won this round!', 'success');
-        } else {
-            winningSide = winningSide == "left" ? "right" : "left";
-            this.showNotification('Defeat! Better luck next round!', 'warning');
-        }
-        console.log('battle result', data);
-
-        if(data.result?.survivingUnits){
-            let winningUnits = data.result.survivingUnits[data.result.winner];                
-            this.game.teamHealthSystem?.applyRoundDamage(winningSide, winningUnits);                        
-
-            if(winningUnits && winningUnits.length > 0 ){
-                this.startVictoryCelebration(winningUnits);
-            }
-        }
-    }
-
-
-    handleNextRound(data) {
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
-        }
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        this.gameState = data.gameState;
-        data.gameState?.players?.forEach((player) => {
-            if(player.id == myPlayerId) {
-                this.game.state.playerGold = player.stats.gold;
-            }
-        })
-        this.startPlacementPhase();
-    }
-
-    handleGameEnd(data) {
-        if (data.gameState) {
-            this.syncWithServerState(data.gameState);
-        }
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        if (data.result.winner === myPlayerId) {
-            this.showNotification('GAME WON! Congratulations!', 'success');
-        } else {
-            this.showNotification('Game lost. Better luck next time!', 'warning');
-        }
-    }
-    syncWithServerState(gameState) {
-        if (!gameState.players) return;
-        console.log('sync with server', gameState);
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-        
-        if (myPlayer) {
-            // Sync squad count and side
-            if (this.game.state) {
-                this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
-                this.game.state.mySide = myPlayer.stats.side;
-                this.game.state.playerGold = myPlayer.stats.gold;
-                this.game.state.playerHealth = myPlayer.stats.health;
-                this.game.state.round = gameState.round;
-            }
-            
-            // Set team sides in grid system
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-            if (opponent && this.game.gridSystem) {
-                this.game.gridSystem.setTeamSides({
-                    player: myPlayer.stats.side,
-                    enemy: opponent.stats.side
-                });
-            }
-            
-            // Also set sides in placement system
-            if (this.game.placementSystem && this.game.placementSystem.setTeamSides) {
-                
-                this.game.placementSystem.setTeamSides({
-                    player: myPlayer.stats.side,
-                    enemy: opponent.stats.side
-                });
-            }
-            
-            console.log(`Synced with server`, gameState);
-        }
-    }
-
-    // =============================================
-    // UTILITY METHODS
-    // =============================================
 
     showNotification(message, type = 'info', duration = 4000) {
         const notification = document.createElement('div');
@@ -691,7 +409,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
     start() {
        // this.game.statisticsTrackingSystem.startSession();
         this.game.shopSystem.createShop();
-        //this.game.phaseSystem.startPlacementPhase();
         this.game.particleSystem.initialize(); 
         this.game.effectsSystem.initialize();                  
         // Welcome messages
@@ -711,10 +428,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         }
     }
 
-    // =============================================
-    // CLEANUP
-    // =============================================
-
+ 
     dispose() {
         this.networkUnsubscribers.forEach(unsubscribe => {
             if (typeof unsubscribe === 'function') {
@@ -824,53 +538,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.updatePhaseUI();
         this.updateSquadCountDisplay();
         this.updateGoldDisplay();
-    }
-
-    applyRoundDamage() {       
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const allLivingEntities = this.game.getEntitiesWith(
-            ComponentTypes.TEAM, 
-            ComponentTypes.HEALTH,
-            ComponentTypes.UNIT_TYPE
-        );
-        
-        const aliveEntities = allLivingEntities.filter(id => {
-            const health = this.game.getComponent(id, ComponentTypes.HEALTH);
-            return health && health.current > 0;
-        });
-        
-        const leftUnits = aliveEntities.filter(id => {
-            const team = this.game.getComponent(id, ComponentTypes.TEAM);
-            return team && team.team === 'left';
-        });
-        
-        const rightUnits = aliveEntities.filter(id => {
-            const team = this.game.getComponent(id, ComponentTypes.TEAM);
-            return team && team.team === 'right';
-        });
-        
-        let roundResult = null;
-        let victoriousUnits = [];
-        
-        if (leftUnits.length === 0 && rightUnits.length > 0) {
-            roundResult = this.game.teamHealthSystem?.applyRoundDamage('right', rightUnits);
-            victoriousUnits = rightUnits;
-        } else if (rightUnits.length === 0 && leftUnits.length > 0) {
-            roundResult = this.game.teamHealthSystem?.applyRoundDamage('left', leftUnits);
-            victoriousUnits = leftUnits;
-        } else if (leftUnits.length === 0 && rightUnits.length === 0) {
-            roundResult = this.game.teamHealthSystem?.applyRoundDraw();
-            victoriousUnits = [];
-        }
-        if (roundResult) {
-            this.game.state.roundEnding = true;
-            
-            if (victoriousUnits.length > 0) {
-                this.startVictoryCelebration(victoriousUnits);
-            }
-            
-            this.handleRoundResult(roundResult);
-        }
     }
 
     handleRoundResult(roundResult) {

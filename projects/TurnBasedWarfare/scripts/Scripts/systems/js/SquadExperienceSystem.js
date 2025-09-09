@@ -283,6 +283,8 @@ class SquadExperienceSystem extends engine.BaseSystem {
         const componentTypes = this.game.componentManager.getComponentTypes();
         const newUnitIds = [];
         
+        console.log('applying specialization to ', squadData, squadData.unitIds);
+        console.log('placement', placement);
         // Store positions of old units
         const positions = [];
         squadData.unitIds.forEach(entityId => {
@@ -306,6 +308,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
                 placement.unitType, 
                 squadData.team
             );
+            console.log('created new unit', placement.unitType, entityId);
             newUnitIds.push(entityId);
         });
         
@@ -314,7 +317,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         // Update squad value based on new unit type
         squadData.squadValue = this.calculateSquadValue(placement.unitType);
-        
+
         return true;
     }
     

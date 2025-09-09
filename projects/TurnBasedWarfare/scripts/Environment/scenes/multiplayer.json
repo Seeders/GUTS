@@ -41,6 +41,9 @@
         },        
         {
           "type": "SquadManager"
+        },         
+        {
+          "type": "MultiplayerNetworkManager"
         },    
         {
           "type": "InputManager"

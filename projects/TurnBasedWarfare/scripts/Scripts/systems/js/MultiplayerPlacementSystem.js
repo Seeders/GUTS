@@ -26,14 +26,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         this.config = {
             maxSquadsPerRound: 2,
-            maxCombinationsToCheck: 1000,
-            unitPlacementDelay: 200,
             enablePreview: true,
             enableUndo: true,
-            enableGridSnapping: true,
-            mouseMoveThrottle: 16,
-            validationThrottle: 32,
-            raycastThrottle: 16
+            validationThrottle: 32
         };
     }
 
@@ -166,31 +161,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         );
     }
         
-    getDetailedUnitCounts(placements) {
-        const counts = {};
-        
-        placements.forEach(placement => {
-            const unitType = placement.unitType;
-            const squadInfo = this.squadManager ? this.squadManager.getSquadInfo(unitType) : null;
-            const typeName = squadInfo?.unitName || unitType.title || unitType.id;
-            
-            if (!counts[typeName]) {
-                counts[typeName] = {
-                    squads: 0,
-                    totalUnits: 0,
-                    totalCost: 0
-                };
-            }
-            
-            counts[typeName].squads++;
-            counts[typeName].totalUnits += squadInfo?.squadSize || 1;
-            counts[typeName].totalCost += squadInfo?.cost || unitType.value || 0;
-        });
-        
-        return counts;
-    }
-  
-
     enablePlacementUI() {
         // Show placement ready button
         const placementUI = document.getElementById('placementUI');
@@ -337,19 +307,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.lastValidationTime = now;
         }
     }
-
-    // No AI enemy placement in multiplayer - opponent placements come from server
-    placeEnemyUnits(strategy = null, onComplete) {
-        // In multiplayer, enemy units come from opponent's placements via server
-        if (onComplete && typeof onComplete === 'function') {
-            onComplete();
-        }
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add('Waiting for opponent deployment...');
-        }
-    }
-
     // Apply opponent placements received from multiplayer server
     applyOpponentPlacements(opponentData) {
         console.log('MultiplayerPlacementSystem: Applying opponent placements', opponentData);
@@ -566,8 +523,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.createPlacementEffects(unitPositions.slice(0, 8), team);
             }
             
-            this.logPlacement(unitType, squadUnits.length, team);
-            
+
             // Clear caches after placement
             this.cachedValidation = null;
             this.cachedGridPos = null;
@@ -668,19 +624,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    logPlacement(unitType, unitCount, team) {
-        if (!this.game.battleLogSystem || !this.game.squadManager) return;
-        
-        const squadInfo = this.game.squadManager.getSquadInfo(unitType);
-        const logClass = this.isMyTeam(team) ? 'log-victory' : 'log-damage';
-        
-        const message = squadInfo.squadSize > 1 
-            ? `Deployed ${squadInfo.unitName} squad (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`
-            : `Deployed ${squadInfo.unitName} unit`;
-            
-        this.game.battleLogSystem.add(message, logClass);
-    }
-
     cleanupFailedPlacement(undoInfo) {
         undoInfo.unitIds.forEach(entityId => {
             try {
@@ -745,7 +688,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             
             this.game.gridSystem.freeCells(undoInfo.placementId);
             this.createUndoEffects(undoInfo);
-            this.logUndo(undoInfo);
             
             // Clear caches after undo
             this.cachedValidation = null;
@@ -778,16 +720,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    logUndo(undoInfo) {
-        if (!this.game.battleLogSystem || !this.game.squadManager) return;
-        
-        const squadInfo = this.game.squadManager.getSquadInfo(undoInfo.unitType);
-        const message = squadInfo.squadSize > 1 
-            ? `Undid placement of ${squadInfo.unitName} squad (+${undoInfo.cost}g)`
-            : `Undid placement of ${squadInfo.unitName} unit (+${undoInfo.cost}g)`;
-        
-        this.game.battleLogSystem.add(message, 'log-victory');
-    }
+
     getPlacementById(placementId) {
         // Search in player placements first
         const playerPlacement = this.playerPlacements.find(placement => placement.placementId === placementId);
