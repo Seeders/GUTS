@@ -42,7 +42,8 @@ global.io = global._io; // also expose as global.io for convenience
 
 // Serve static files (your client game files)
 app.use(express.static(path.join(__dirname, './')));
-
+app.use('/engine', express.static(path.join(__dirname, '../../engine')));
+app.use('/global', express.static(path.join(__dirname, '../../global')));
 // API endpoints
 app.get('/api/server-status', (req, res) => {
     res.json({
