@@ -103,7 +103,10 @@ class Engine extends BaseEngine {
             this.animationFrameId = null;
         }
     }
-
+    resetCurrentTime() {
+        this.simulationTime = 0;
+        this.accumulator = 0;
+    }
     getCurrentTime() {
         return performance.now();
     }

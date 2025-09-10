@@ -21,6 +21,7 @@ class ECSGame {
         
         this.nextEntityId = 1;
         this.lastTime = 0;
+        this.desyncDebugger = new DesyncDebugger(this);
     }
         
 
@@ -54,7 +55,8 @@ class ECSGame {
                     system.render(deltaTime, now);
                 }
             });
-
+            this.desyncDebugger.checkSync();
+            
             this.postUpdate();
         }     
     }

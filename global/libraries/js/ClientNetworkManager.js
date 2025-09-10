@@ -6,7 +6,7 @@ class ClientNetworkManager {
         this.isConnected = false;
         
         // Configuration
-        this.serverUrl = options.serverUrl || 'http://18.220.126.12:3000';
+        this.serverUrl = options.serverUrl || this.game.getCollections().configs.multiplayer.serverUrl;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
         this.reconnectDelay = options.reconnectDelay || 1000;
