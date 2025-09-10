@@ -25,6 +25,11 @@ class ProjectileSystem extends engine.BaseSystem {
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
     }
     
+    // Deterministic rounding helper
+    roundForDeterminism(value, precision = 6) {
+        return Math.round(value * Math.pow(10, precision)) / Math.pow(10, precision);
+    }
+    
     fireProjectile(sourceId, targetId, projectileData = {}) {
         const sourcePos = this.game.getComponent(sourceId, this.componentTypes.POSITION);
         const sourceCombat = this.game.getComponent(sourceId, this.componentTypes.COMBAT);
@@ -95,9 +100,7 @@ class ProjectileSystem extends engine.BaseSystem {
         this.game.addComponent(projectileId, this.componentTypes.RENDERABLE, 
             components.Renderable("projectiles", projectileData.id));
         
-        // =============================================
-        // UPDATED: Use LifetimeSystem instead of direct component
-        // =============================================
+        // Use LifetimeSystem instead of direct component
         if (this.game.lifetimeSystem) {
             this.game.lifetimeSystem.addLifetime(projectileId, this.PROJECTILE_LIFETIME, {
                 fadeOutDuration: 1.0, // Fade out in last second
@@ -132,11 +135,7 @@ class ProjectileSystem extends engine.BaseSystem {
     cleanupProjectileData(projectileId) {
         // Clean up trail data
         this.projectileTrails.delete(projectileId);
-        
-     }
-    // =============================================
-    // ELEMENT DETERMINATION
-    // =============================================
+    }
 
     /**
      * Determine the element of a projectile based on various sources
@@ -159,12 +158,6 @@ class ProjectileSystem extends engine.BaseSystem {
         return this.game.damageSystem?.ELEMENT_TYPES?.PHYSICAL || 'physical';
     }
 
-  
-
-    // =============================================
-    // TRAJECTORY CALCULATION
-    // =============================================
-    
     calculateTrajectory(sourcePos, targetPos, projectileData) {
         const dx = targetPos.x - sourcePos.x;
         const dy = targetPos.y - sourcePos.y; // Height difference
@@ -186,11 +179,11 @@ class ProjectileSystem extends engine.BaseSystem {
             const initialVz = (dz / totalDistance) * projectileSpeed;
             
             return {
-                vx: initialVx,
-                vy: initialVy,
-                vz: initialVz,
-                launchAngle: Math.atan2(Math.sqrt(dx * dx + dz * dz), dy),
-                timeToTarget: totalDistance / projectileSpeed
+                vx: this.roundForDeterminism(initialVx),
+                vy: this.roundForDeterminism(initialVy),
+                vz: this.roundForDeterminism(initialVz),
+                launchAngle: this.roundForDeterminism(Math.atan2(Math.sqrt(dx * dx + dz * dz), dy)),
+                timeToTarget: this.roundForDeterminism(totalDistance / projectileSpeed)
             };
         }
     }
@@ -275,30 +268,26 @@ class ProjectileSystem extends engine.BaseSystem {
             const adjustedVy = vy + heightAdjustment;
             
             return {
-                vx: vx,
-                vy: adjustedVy,
-                vz: vz,
-                launchAngle: actualLaunchAngle,
-                timeToTarget: timeToTarget,
-                weaponRange: weaponRange,
-                calculatedRange: (initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g
+                vx: this.roundForDeterminism(vx),
+                vy: this.roundForDeterminism(adjustedVy),
+                vz: this.roundForDeterminism(vz),
+                launchAngle: this.roundForDeterminism(actualLaunchAngle),
+                timeToTarget: this.roundForDeterminism(timeToTarget),
+                weaponRange: this.roundForDeterminism(weaponRange),
+                calculatedRange: this.roundForDeterminism((initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g)
             };
         }
         
         return {
-            vx: vx,
-            vy: vy,
-            vz: vz,
-            launchAngle: actualLaunchAngle,
-            timeToTarget: timeToTarget,
-            weaponRange: weaponRange,
-            calculatedRange: (initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g
+            vx: this.roundForDeterminism(vx),
+            vy: this.roundForDeterminism(vy),
+            vz: this.roundForDeterminism(vz),
+            launchAngle: this.roundForDeterminism(actualLaunchAngle),
+            timeToTarget: this.roundForDeterminism(timeToTarget),
+            weaponRange: this.roundForDeterminism(weaponRange),
+            calculatedRange: this.roundForDeterminism((initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g)
         };
     }
-
-    // =============================================
-    // PROJECTILE UPDATE AND COLLISION
-    // =============================================
     
     update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
@@ -308,8 +297,11 @@ class ProjectileSystem extends engine.BaseSystem {
             this.componentTypes.VELOCITY, 
             this.componentTypes.PROJECTILE
         );
-                
-        projectiles.forEach(projectileId => {
+        
+        // Sort projectiles for deterministic processing
+        const sortedProjectiles = projectiles.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        sortedProjectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);
             const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
@@ -360,14 +352,14 @@ class ProjectileSystem extends engine.BaseSystem {
             
             // Apply homing adjustment with strength factor
             const homingStrength = homing.homingStrength * deltaTime * 2; // Reduced for ballistic
-            vel.vx = vel.vx * (1 - homingStrength) + requiredHorizontalVelX * homingStrength;
-            vel.vz = vel.vz * (1 - homingStrength) + requiredHorizontalVelZ * homingStrength;
+            vel.vx = this.roundForDeterminism(vel.vx * (1 - homingStrength) + requiredHorizontalVelX * homingStrength);
+            vel.vz = this.roundForDeterminism(vel.vz * (1 - homingStrength) + requiredHorizontalVelZ * homingStrength);
             
             // For vertical homing, we need to be more careful to maintain ballistic arc
             // Only adjust if we're in the descending phase
             if (vel.vy < 0) { // Falling down
                 const requiredVerticalVel = (dy + 0.5 * this.GRAVITY * remainingTime * remainingTime) / remainingTime;
-                vel.vy = vel.vy * (1 - homingStrength * 0.5) + requiredVerticalVel * (homingStrength * 0.5);
+                vel.vy = this.roundForDeterminism(vel.vy * (1 - homingStrength * 0.5) + requiredVerticalVel * (homingStrength * 0.5));
             }
         } else if (homing.lastKnownPosition) {
             // Target is gone, continue toward last known position
@@ -406,17 +398,17 @@ class ProjectileSystem extends engine.BaseSystem {
                 
                 // Blend current velocity with desired velocity based on homing strength
                 const homingStrength = homing.homingStrength * deltaTime * 5; // Adjust responsiveness
-                vel.vx = vel.vx * (1 - homingStrength) + desiredVx * homingStrength;
-                vel.vy = vel.vy * (1 - homingStrength) + desiredVy * homingStrength;
-                vel.vz = vel.vz * (1 - homingStrength) + desiredVz * homingStrength;
+                vel.vx = this.roundForDeterminism(vel.vx * (1 - homingStrength) + desiredVx * homingStrength);
+                vel.vy = this.roundForDeterminism(vel.vy * (1 - homingStrength) + desiredVy * homingStrength);
+                vel.vz = this.roundForDeterminism(vel.vz * (1 - homingStrength) + desiredVz * homingStrength);
                 
                 // Maintain speed
                 const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vy * vel.vy + vel.vz * vel.vz);
                 if (currentSpeed > 0) {
                     const speedRatio = projectile.speed / currentSpeed;
-                    vel.vx *= speedRatio;
-                    vel.vy *= speedRatio;
-                    vel.vz *= speedRatio;
+                    vel.vx = this.roundForDeterminism(vel.vx * speedRatio);
+                    vel.vy = this.roundForDeterminism(vel.vy * speedRatio);
+                    vel.vz = this.roundForDeterminism(vel.vz * speedRatio);
                 }
             }
         } else {
@@ -437,20 +429,26 @@ class ProjectileSystem extends engine.BaseSystem {
         
         const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
         if (!sourceTeam) return;
-        allEntities.forEach(entityId => {
-            if (entityId === projectile.source) return; // Don't hit the source
+        
+        // Sort entities for deterministic collision detection
+        const sortedEntities = allEntities.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        let hitDetected = false;
+
+        for (const entityId of sortedEntities) {
+            if (hitDetected) break; // Stop after first hit to ensure consistency
+            if (entityId === projectile.source) continue; // Don't hit the source
             
             const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
             
-            if (!entityPos || !entityTeam || !entityHealth) return;
-            if (entityTeam.team === sourceTeam.team) return; // Don't hit allies
+            if (!entityPos || !entityTeam || !entityHealth) continue;
+            if (entityTeam.team === sourceTeam.team) continue; // Don't hit allies
             
-            // Calculate 3D distance
-            const dx = entityPos.x - pos.x;
-            const dy = entityPos.y - pos.y;
-            const dz = entityPos.z - pos.z;
+            // Calculate 3D distance with consistent precision
+            const dx = Math.round((entityPos.x - pos.x) * 1000) / 1000;
+            const dy = Math.round((entityPos.y - pos.y) * 1000) / 1000;
+            const dz = Math.round((entityPos.z - pos.z) * 1000) / 1000;
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             
             // Get entity radius for collision detection
@@ -461,9 +459,10 @@ class ProjectileSystem extends engine.BaseSystem {
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
                 // Direct hit detected!
                 this.handleProjectileHit(projectileId, entityId, projectile);
-                return;
+                hitDetected = true;
+                break;
             }
-        });
+        }
     }
     
     handleProjectileGroundImpact(entityId, pos, projectile) {
@@ -482,13 +481,8 @@ class ProjectileSystem extends engine.BaseSystem {
         }
     }
 
-    // =============================================
-    // DAMAGE APPLICATION (using DamageSystem)
-    // =============================================
-
     handleProjectileHit(projectileId, targetId, projectile) {
         // Use centralized damage system for projectile hits
-       // console.log('projectile hit ', projectileId, targetId, projectile);
         if (this.game.damageSystem) {
             const damage = projectile.damage;
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
@@ -524,7 +518,6 @@ class ProjectileSystem extends engine.BaseSystem {
     }
 
     triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-       
         // Create explosion effect at ground impact point
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
         
@@ -557,10 +550,6 @@ class ProjectileSystem extends engine.BaseSystem {
         // Destroy the projectile
         this.destroyProjectile(entityId);
     }
-
-    // =============================================
-    // VISUAL EFFECTS
-    // =============================================
     
     createHitEffect(projectileId, targetId, isBallistic = false) {
         const projectilePos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
@@ -657,10 +646,6 @@ class ProjectileSystem extends engine.BaseSystem {
                 return 'explosion';
         }
     }
-
-    // =============================================
-    // UTILITY METHODS
-    // =============================================
     
     updateProjectileTrail(projectileId, pos) {
         const projectileVisual = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE_VISUAL);

@@ -36,7 +36,8 @@
     "ClientNetworkManager",
     "socket.io.min.js",
     "BaseSystem",
-    "SeededRandom"
+    "SeededRandom",
+    "DesyncDebugger"
   ],
   "fileName": "game",
   "interface": "main",

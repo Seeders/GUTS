@@ -50,28 +50,27 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             return health && health.current < health.max; // Ally needs healing
         });
     }
-    
-    execute(casterEntity) {
+        
+    execute(casterEntity, targetData = null) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
+        if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
         const target = this.findMostInjuredAlly(allies);
         
-        if (!target) return;
+        if (!target) return null;
         
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-        if (!targetPos) return;
-        
-        // Cast effect
+        // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Heal target
-        setTimeout(() => {
-            this.performHeal(casterEntity, target, targetPos);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
+        
+        // Return callback that will execute the actual heal
+        return () => {
+            const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+            if (targetPos) {
+                this.performHeal(casterEntity, target, targetPos);
+            }
+        };
     }
     
     performHeal(casterEntity, targetId, targetPos) {
@@ -105,16 +104,20 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             }
         }
     }
-    
+        
     findMostInjuredAlly(allies) {
+        // Sort allies deterministically first
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
         let mostInjured = null;
         let lowestHealthRatio = 1.0;
         
-        allies.forEach(allyId => {
+        sortedAllies.forEach(allyId => {
             const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
             if (health && health.max > 0) {
                 const healthRatio = health.current / health.max;
-                if (healthRatio < lowestHealthRatio) {
+                // Use <= for consistent tie-breaking (first in sorted order wins)
+                if (healthRatio <= lowestHealthRatio) {
                     lowestHealthRatio = healthRatio;
                     mostInjured = allyId;
                 }

@@ -542,7 +542,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
     handleRoundResult(roundResult) {
         const state = this.game.state;
-        state.phase = 'ended';      
+        state.phase = 'ended';  
+        
+        this.game.desyncDebugger.displaySync = false;    
     }
 
     updatePhaseUI() {

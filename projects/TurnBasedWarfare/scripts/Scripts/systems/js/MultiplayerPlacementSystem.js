@@ -279,6 +279,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.applyOpponentPlacements(opponentPlacements);
             this.hidePlacementUI();
             this.game.state.phase = 'battle';
+            this.game.app.resetCurrentTime();
+            this.game.desyncDebugger.displaySync = true;
         } else {
             // Show opponent status
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;

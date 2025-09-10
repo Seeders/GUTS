@@ -1,6 +1,6 @@
 {
   "title": "Multiplayer",
-  "serverUrl": "ws://localhost:3001",
+  "serverUrl": "http://localhost:3000",
   "maxReconnectAttempts": 5,
   "reconnectDelay": 3000,
   "enabled": true

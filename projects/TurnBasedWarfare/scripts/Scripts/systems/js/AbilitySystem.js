@@ -3,10 +3,11 @@ class AbilitySystem extends engine.BaseSystem {
         super(game);
         this.game.abilitySystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
-        
+        this.abilityActionCounter = 0;
         this.entityAbilities = new Map();
         this.abilityCooldowns = new Map();
         this.abilityQueue = new Map();
+        this.abilityActions = new Map();
     }    
     
     addAbilitiesToUnit(entityId, abilityIds) {
@@ -31,43 +32,62 @@ class AbilitySystem extends engine.BaseSystem {
         }
     }
 
-    update(deltaTime) {
+    update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
-        
-        this.processAbilityQueue(deltaTime);
-        this.updateAIAbilityUsage(deltaTime);
+        return;
+        this.processAbilityQueue();
+        this.processAbilityActions();
+        this.updateAIAbilityUsage();
     }
-    
-    processAbilityQueue(deltaTime) {
-        const now = this.game.state?.simTime || 0;
-
-        
+    processAbilityQueue() {        
         for (const [entityId, queuedAbility] of this.abilityQueue.entries()) {
-            if (now >= queuedAbility.executeTime) {
+            if (this.game.currentTime >= queuedAbility.executeTime) {
                 const abilities = this.entityAbilities.get(entityId);
                 if (abilities) {
                     const ability = abilities.find(a => a.id === queuedAbility.abilityId);
                     if (ability) {
-                        ability.execute(entityId, queuedAbility.targetData);
+                        // Execute ability and get potential callback
+                        const abilityAction = ability.execute(entityId, queuedAbility.targetData);
+                        
+                        // If ability returns a callback, schedule it deterministically
+                        if (typeof abilityAction === 'function') {
+                            // Add to a delayed effects queue
+                            this.scheduleAbilityAction(abilityAction, ability.castTime);
+                        }
                     }
                 }
                 this.abilityQueue.delete(entityId);
             }
         }
     }
+    scheduleAbilityAction(action, castTime) {        
+        const executeTime = this.game.currentTime + castTime;
+        const effectId = `${this.game.currentTime}_${this.abilityActionCounter++}`;
     
-    updateAIAbilityUsage(deltaTime) {
-        const now = this.game.state?.simTime || 0;
-
+        this.abilityActions.set(effectId, {
+            callback: action,
+            executeTime: executeTime
+        });
+    }
+    processAbilityActions() {
+        if (!this.abilityActions) return;
         
+        for (const [effectId, abilityAction] of this.abilityActions.entries()) {
+            if (this.game.currentTime >= abilityAction.executeTime) {
+                abilityAction.callback();
+                this.abilityActions.delete(effectId);
+            }
+        }
+    }
+    updateAIAbilityUsage() {                
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
-            this.considerAbilityUsage(entityId, abilities, now);
+            this.considerAbilityUsage(entityId, abilities);
         }
     }
     
-    considerAbilityUsage(entityId, abilities, now) {
+    considerAbilityUsage(entityId, abilities) {
         const availableAbilities = abilities
-            .filter(ability => this.isAbilityOffCooldown(entityId, ability.id, now))
+            .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
             .filter(ability => ability.canExecute(entityId))
             .sort((a, b) => b.priority - a.priority);
         
@@ -76,7 +96,7 @@ class AbilitySystem extends engine.BaseSystem {
         if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
             // Transition back to attacking state since we have abilities ready
             if (this.game.combatAISystems) {
-                this.game.combatAISystems.changeAIState(aiState, 'attacking', now);
+                this.game.combatAISystems.changeAIState(aiState, 'attacking', this.game.currentTime);
                 
                 // Re-enable movement decisions by resetting decision time
                 if (aiState.aiBehavior) {
@@ -97,10 +117,9 @@ class AbilitySystem extends engine.BaseSystem {
         const ability = abilities.find(a => a.id === abilityId);
         if (!ability) return false;
         
-        const now = this.game.state?.simTime || 0;
 
         
-        if (!this.isAbilityOffCooldown(entityId, abilityId, now)) {
+        if (!this.isAbilityOffCooldown(entityId, abilityId)) {
             return false;
         }
         
@@ -111,14 +130,14 @@ class AbilitySystem extends engine.BaseSystem {
         if (ability.animation && this.game.animationSystem) {
             this.startAbilityAnimation(entityId, ability);
         }
-        
+        console.log('use ability', this.game.currentTime, ability.castTime);
         this.abilityQueue.set(entityId, {
             abilityId: abilityId,
             targetData: targetData,
-            executeTime: now + ability.castTime
+            executeTime: this.game.currentTime + ability.castTime
         });
         
-        this.setCooldown(entityId, abilityId, now, ability.cooldown);
+        this.setCooldown(entityId, abilityId, ability.cooldown);
         ability.logAbilityUsage(entityId);
         
         return true;
@@ -151,21 +170,21 @@ class AbilitySystem extends engine.BaseSystem {
         }
     }
     
-    setCooldown(entityId, abilityId, currentTime, cooldownDuration) {
+    setCooldown(entityId, abilityId, cooldownDuration) {
         const key = `${entityId}_${abilityId}`;
-        this.abilityCooldowns.set(key, currentTime + cooldownDuration);
+        this.abilityCooldowns.set(key, this.game.currentTime + cooldownDuration);
     }
     
-    isAbilityOffCooldown(entityId, abilityId, currentTime) {
+    isAbilityOffCooldown(entityId, abilityId) {
         const key = `${entityId}_${abilityId}`;
         const cooldownEnd = this.abilityCooldowns.get(key);
-        return !cooldownEnd || currentTime >= cooldownEnd;
+        return !cooldownEnd || this.game.currentTime >= cooldownEnd;
     }
     
-    getRemainingCooldown(entityId, abilityId, currentTime) {
+    getRemainingCooldown(entityId, abilityId) {
         const key = `${entityId}_${abilityId}`;
         const cooldownEnd = this.abilityCooldowns.get(key);
-        return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - currentTime);
+        return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.currentTime);
     }
     
     getEntityAbilities(entityId) {
@@ -174,13 +193,11 @@ class AbilitySystem extends engine.BaseSystem {
     
     getAbilityCooldowns(entityId) {
         const abilities = this.getEntityAbilities(entityId);
-        const now = this.game.state?.simTime || 0;
 
-        
         return abilities.map(ability => ({
             id: ability.id,
             name: ability.name,
-            remainingCooldown: this.getRemainingCooldown(entityId, ability.id, now),
+            remainingCooldown: this.getRemainingCooldown(entityId, ability.id),
             totalCooldown: ability.cooldown
         }));
     }
@@ -193,11 +210,12 @@ class AbilitySystem extends engine.BaseSystem {
     getAvailableAbilityIds() {
         return Object.keys(this.game.getCollections().abilities);
     }
-    
+        
     removeEntityAbilities(entityId) {
         this.entityAbilities.delete(entityId);
         this.abilityQueue.delete(entityId);
         
+        // Clean up cooldowns
         const keysToRemove = [];
         for (const key of this.abilityCooldowns.keys()) {
             if (key.startsWith(`${entityId}_`)) {
@@ -205,11 +223,13 @@ class AbilitySystem extends engine.BaseSystem {
             }
         }
         keysToRemove.forEach(key => this.abilityCooldowns.delete(key));
+        
     }
-    
+        
     destroy() {
         this.entityAbilities.clear();
         this.abilityCooldowns.clear();
         this.abilityQueue.clear();
+        this.abilityActions.clear();
     }
 }

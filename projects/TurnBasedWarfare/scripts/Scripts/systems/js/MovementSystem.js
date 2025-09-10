@@ -41,7 +41,7 @@ class MovementSystem extends engine.BaseSystem {
         this.PATHFINDING_UPDATE_INTERVAL = 3;
         this.NEAR_UNIT_RADIUS = 150;
         
-        // NEW: Movement smoothing configuration
+        // Movement smoothing configuration
         this.VELOCITY_SMOOTHING = 0.12; // How quickly velocity changes
         this.DIRECTION_SMOOTHING = 0.08; // How quickly direction changes
         this.FORCE_DAMPING = 0.85; // Dampen forces over time
@@ -56,7 +56,7 @@ class MovementSystem extends engine.BaseSystem {
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
         
-        // NEW: Movement history for smoothing
+        // Movement history for smoothing
         this.movementHistory = new Map();
     }
     
@@ -71,7 +71,11 @@ class MovementSystem extends engine.BaseSystem {
         
         // First pass: calculate desired velocities and separation forces
         const unitData = new Map();
-        entities.forEach(entityId => {
+        
+        // Sort entities for deterministic processing
+        const sortedEntitiesForUnitData = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        sortedEntitiesForUnitData.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
@@ -99,25 +103,28 @@ class MovementSystem extends engine.BaseSystem {
                 });
                 
                 this.updateUnitState(entityId, pos, vel, deltaTime);
-                this.updateMovementHistory(entityId, vel); // NEW: Track movement history
+                this.updateMovementHistory(entityId, vel);
             }
         });
         
+        const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+
         // Calculate desired velocities for all units
-        unitData.forEach((data, entityId) => {
-            this.calculateDesiredVelocity(entityId, data);
+        sortedEntityIds.forEach((entityId) => {
+            this.calculateDesiredVelocity(entityId, unitData.get(entityId));
         });
         
         // Calculate separation forces (with spatial optimization)
-        unitData.forEach((data, entityId) => {
-            this.calculateSeparationForceOptimized(entityId, data);
+        sortedEntityIds.forEach((entityId) => {
+            this.calculateSeparationForceOptimized(entityId, unitData.get(entityId));
         });
         
         // Staggered pathfinding updates - only update subset each frame
         this.updatePathfindingStaggered(unitData);
         
-        // Apply movement to all entities
-        entities.forEach(entityId => {
+        // Apply movement to all entities (deterministic order)
+        const sortedEntities = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        sortedEntities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
@@ -126,7 +133,7 @@ class MovementSystem extends engine.BaseSystem {
             const isAffectedByGravity = vel.affectedByGravity;
             
             if (!projectile && unitData.has(entityId)) {
-                this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId), deltaTime); // NEW: Use smoothing
+                this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId), deltaTime);
             }
             
             if (isAffectedByGravity) {
@@ -145,7 +152,7 @@ class MovementSystem extends engine.BaseSystem {
         });
     }
     
-    // NEW: Track movement history for oscillation detection
+    // Track movement history for oscillation detection
     updateMovementHistory(entityId, vel) {
         if (!this.movementHistory.has(entityId)) {
             this.movementHistory.set(entityId, {
@@ -170,7 +177,7 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    // NEW: Detect if unit is oscillating
+    // Detect if unit is oscillating
     isUnitOscillating(entityId) {
         const history = this.movementHistory.get(entityId);
         if (!history || history.velocityHistory.length < this.OSCILLATION_DETECTION_FRAMES) {
@@ -199,17 +206,20 @@ class MovementSystem extends engine.BaseSystem {
         return directionChanges >= 2; // Multiple direction changes indicate oscillation
     }
     
-    // Build spatial grid for fast neighbor lookups
+    // Build spatial grid for fast neighbor lookups (deterministic)
     buildSpatialGrid(entities) {
         this.spatialGrid.clear();
         
-        entities.forEach(entityId => {
+        // Sort entities for deterministic processing
+        const sortedEntities = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        sortedEntities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             
             if (!projectile && pos) {
-                const gridX = Math.floor(pos.x / this.SPATIAL_GRID_SIZE);
-                const gridZ = Math.floor(pos.z / this.SPATIAL_GRID_SIZE);
+                const gridX = Math.floor(Math.round(pos.x * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
+                const gridZ = Math.floor(Math.round(pos.z * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
                 const gridKey = `${gridX},${gridZ}`;
                 
                 if (!this.spatialGrid.has(gridKey)) {
@@ -218,33 +228,48 @@ class MovementSystem extends engine.BaseSystem {
                 this.spatialGrid.get(gridKey).push(entityId);
             }
         });
+        
+        // Sort each grid cell for deterministic neighbor lookups
+        for (const [gridKey, entityList] of this.spatialGrid.entries()) {
+            entityList.sort((a, b) => String(a).localeCompare(String(b)));
+        }
     }
     
-    // Get nearby units using spatial grid
+    // Get nearby units using spatial grid (deterministic)
     getNearbyUnits(pos, radius) {
         const nearbyUnits = [];
-        const gridRadius = Math.ceil(radius / this.SPATIAL_GRID_SIZE);
-        const centerGridX = Math.floor(pos.x / this.SPATIAL_GRID_SIZE);
-        const centerGridZ = Math.floor(pos.z / this.SPATIAL_GRID_SIZE);
+        const gridRadius = Math.ceil(Math.round(radius * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
+        const centerGridX = Math.floor(Math.round(pos.x * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
+        const centerGridZ = Math.floor(Math.round(pos.z * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
         
+        // Process grid cells in deterministic order
+        const gridCells = [];
         for (let gridX = centerGridX - gridRadius; gridX <= centerGridX + gridRadius; gridX++) {
             for (let gridZ = centerGridZ - gridRadius; gridZ <= centerGridZ + gridRadius; gridZ++) {
-                const gridKey = `${gridX},${gridZ}`;
-                const cellUnits = this.spatialGrid.get(gridKey);
-                if (cellUnits) {
-                    nearbyUnits.push(...cellUnits);
-                }
+                gridCells.push(`${gridX},${gridZ}`);
             }
         }
         
-        return nearbyUnits;
+        // Sort grid keys for deterministic processing
+        gridCells.sort();
+        
+        for (const gridKey of gridCells) {
+            const cellUnits = this.spatialGrid.get(gridKey);
+            if (cellUnits) {
+                nearbyUnits.push(...cellUnits);
+            }
+        }
+        
+        return nearbyUnits.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
-    // Staggered pathfinding updates
+    // Staggered pathfinding updates (deterministic)
     updatePathfindingStaggered(unitData) {
-        // Build queue of units that need pathfinding on first frame
+        // Build queue of units that need pathfinding on first frame (deterministic)
         if (this.pathfindingQueue.length === 0) {
-            unitData.forEach((data, entityId) => {
+            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+            sortedEntityIds.forEach(entityId => {
+                const data = unitData.get(entityId);
                 if (data.aiState?.state === 'chasing') {
                     this.pathfindingQueue.push(entityId);
                 }
@@ -270,7 +295,7 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     updateUnitState(entityId, pos, vel, deltaTime) {
-        const currentTime = Date.now();
+        const currentTime = this.game.currentTime;
         
         if (!this.unitStates.has(entityId)) {
             this.unitStates.set(entityId, {
@@ -304,7 +329,7 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    // OPTIMIZED: Use spatial grid for separation with damping
+    // Use spatial grid for separation with damping
     calculateSeparationForceOptimized(entityId, data) {
         const { pos, unitRadius, isAnchored } = data;
 
@@ -356,7 +381,7 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         if (neighborCount > 0) {
-            // NEW: Apply damping to previous forces
+            // Apply damping to previous forces
             const history = this.movementHistory.get(entityId);
             if (history) {
                 const dampedSeparation = history.dampedForces.separation;
@@ -383,7 +408,7 @@ class MovementSystem extends engine.BaseSystem {
         data.separationForce.y = 0;
     }
     
-    // OPTIMIZED: Faster pathfinding with limited checks and damping
+    // Faster pathfinding with limited checks and damping
     calculatePathfindingAvoidanceOptimized(entityId, data, allUnitData) {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
         
@@ -427,7 +452,7 @@ class MovementSystem extends engine.BaseSystem {
                 pos, desiredDirection, obstacleInfo, unitState, unitRadius
             );
             
-            // NEW: Apply damping to avoidance forces
+            // Apply damping to avoidance forces
             const history = this.movementHistory.get(entityId);
             if (history) {
                 const dampedAvoidance = history.dampedForces.avoidance;
@@ -573,7 +598,7 @@ class MovementSystem extends engine.BaseSystem {
             return;
         }
         
-        // Simple fix: Don't move if waiting for cooldowns
+        // Don't move if waiting for cooldowns
         if (aiState && aiState.state === 'waiting') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
@@ -605,7 +630,7 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    // NEW: Enhanced movement application with multiple smoothing techniques
+    // Enhanced movement application with multiple smoothing techniques
     applyUnitMovementWithSmoothing(entityId, data, deltaTime) {
         const { vel, desiredVelocity, separationForce, avoidanceForce, isAnchored } = data;
 

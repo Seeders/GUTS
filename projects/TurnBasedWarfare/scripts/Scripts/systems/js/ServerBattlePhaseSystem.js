@@ -27,6 +27,8 @@ class ServerBattlePhaseSystem {
             room.game.state.isPaused = false;
             // Change room phase
             room.game.state.phase = 'battle';
+            
+            room.game.app.resetCurrentTime();
             // Start battle timer
             this.startBattleTimer(room);
             
