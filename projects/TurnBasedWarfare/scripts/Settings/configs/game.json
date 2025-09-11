@@ -47,5 +47,5 @@
   "is3D": true,
   "palette": "main",
   "appLoaderLibrary": "GameLoader",
-  "initialScene": "multiplayer"
+  "initialScene": "client"
 }

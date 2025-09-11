@@ -72,62 +72,98 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
-        // Cast effect at caster
-        this.createVisualEffect(casterPos, 'cast');
-        
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Start with closest enemy
-        const startTarget = this.findClosestEnemy(casterEntity, enemies);
-        if (!startTarget) return;
+        // Initial cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Lightning crackles between enemies!`);
         
-        // Create initial lightning arc from caster to first target
-        const targetPos = this.game.getComponent(startTarget, this.componentTypes.POSITION);
-        if (targetPos && this.game.effectsSystem) {
-            this.game.effectsSystem.createLightningBolt(
-                new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
-                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
-                {
-                    style: {
-                        color: 0x00ddff,
-                        linewidth: 4, // Slightly thicker for initial cast
-                        segments: 8,
-                        deviation: 15,
-                        jaggedIntensity: 1.3
-                    },
-                    animation: {
-                        duration: 700,
-                        flickerCount: 5,
-                        flickerSpeed: 75,
-                        colorFlicker: true,
-                        opacityFlicker: true
-                    }
-                }
-            );
-        }
+        // DESYNC SAFE: Find closest enemy deterministically
+        const firstTarget = this.findClosestEnemy(casterEntity, enemies);
+        if (!firstTarget) return;
         
-        // Start the chain lightning from the first target (with reduced jumps since we used one)
-        setTimeout(() => {
-            this.chainLightning(casterEntity, startTarget, enemies, this.maxJumps - 1, this.initialDamage);
-        }, 100); // Small delay to see the initial arc
-        
-        this.logAbilityUsage(casterEntity, 
-            `Chain lightning crackles through enemy ranks!`, true);
+        // DESYNC SAFE: Use scheduling system instead of setTimeout for chain lightning
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.startChainLightning(casterEntity, firstTarget, enemies);
+        }, this.castTime, casterEntity);
     }
     
-    findClosestEnemy(casterEntity, enemies) {
-        const ai = this.game.getComponent(casterEntity, this.componentTypes.AI_STATE);
-        if(ai && ai.target) {
-            return ai.target;
+    // DESYNC SAFE: Start the chain lightning sequence deterministically
+    startChainLightning(sourceId, firstTarget, availableTargets) {
+        const hitTargets = []; // Track which targets have been hit
+        
+        // Process the entire chain synchronously to avoid timing issues
+        this.processLightningChain(sourceId, firstTarget, availableTargets, hitTargets, this.maxJumps, this.initialDamage, 0);
+    }
+    
+    // DESYNC SAFE: Process the entire lightning chain deterministically
+    processLightningChain(sourceId, currentTarget, availableTargets, hitTargets, remainingJumps, damage, jumpIndex) {
+        if (remainingJumps <= 0 || !currentTarget || hitTargets.includes(currentTarget)) {
+            return;
         }
+        
+        const targetPos = this.game.getComponent(currentTarget, this.componentTypes.POSITION);
+        if (!targetPos) return;
+        
+        // Add target to hit list
+        hitTargets.push(currentTarget);
+        
+        // Schedule this jump's effects with a small delay for visual appeal
+        const jumpDelay = jumpIndex * 0.15; // 150ms between jumps
+        
+        this.game.schedulingSystem.scheduleAction(() => {
+            // Lightning strike effect
+            this.createVisualEffect(targetPos, 'lightning');
+            
+            // Apply damage
+            this.dealDamageWithEffects(sourceId, currentTarget, Math.floor(damage), this.element);
+            
+            // Screen flash for dramatic effect (only on first hit)
+            if (this.game.effectsSystem && jumpIndex === 0) {
+                this.game.effectsSystem.playScreenFlash('#00aaff', 200);
+            }
+            
+            // Create visual arc effect if there was a previous target
+            if (jumpIndex > 0) {
+                const previousTarget = hitTargets[jumpIndex - 1];
+                const previousPos = this.game.getComponent(previousTarget, this.componentTypes.POSITION);
+                if (previousPos) {
+                    this.createLightningArc(previousPos, targetPos);
+                }
+            }
+        }, jumpDelay, sourceId);
+        
+        // DESYNC SAFE: Find next target deterministically
+        const nextTarget = this.findNextChainTarget(currentTarget, availableTargets, hitTargets);
+        
+        if (nextTarget && remainingJumps > 1) {
+            // Recursively process the next jump
+            this.processLightningChain(
+                sourceId, 
+                nextTarget, 
+                availableTargets, 
+                hitTargets, 
+                remainingJumps - 1, 
+                damage * this.damageReduction, 
+                jumpIndex + 1
+            );
+        }
+    }
+    
+    // DESYNC SAFE: Find closest enemy deterministically
+    findClosestEnemy(casterEntity, enemies) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return null;
+        
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         let closest = null;
         let closestDistance = Infinity;
         
-        enemies.forEach(enemyId => {
+        sortedEnemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             if (!enemyPos) return;
             
@@ -136,6 +172,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
                 Math.pow(enemyPos.z - casterPos.z, 2)
             );
             
+            // Use < for consistent tie-breaking (first in sorted order wins)
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closest = enemyId;
@@ -145,11 +182,43 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         return closest;
     }
     
+    // DESYNC SAFE: Find next chain target deterministically
+    findNextChainTarget(fromTarget, availableTargets, hitTargets) {
+        const fromPos = this.game.getComponent(fromTarget, this.componentTypes.POSITION);
+        if (!fromPos) return null;
+        
+        // Sort targets deterministically first
+        const sortedTargets = availableTargets.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let closest = null;
+        let closestDistance = Infinity;
+        
+        sortedTargets.forEach(targetId => {
+            if (targetId === fromTarget || hitTargets.includes(targetId)) return;
+            
+            const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            if (!targetPos) return;
+            
+            const distance = Math.sqrt(
+                Math.pow(targetPos.x - fromPos.x, 2) + 
+                Math.pow(targetPos.z - fromPos.z, 2)
+            );
+            
+            // Use < for consistent tie-breaking
+            if (distance <= this.jumpRange && distance < closestDistance) {
+                closestDistance = distance;
+                closest = targetId;
+            }
+        });
+        
+        return closest;
+    }
+    
     createLightningArc(fromPos, toPos) {
         if (!this.game.scene) return;
         
-        // Create lightning bolt geometry with jagged path
-        const points = this.generateLightningPath(fromPos, toPos);
+        // Create lightning bolt geometry with deterministic path (no random)
+        const points = this.generateDeterministicLightningPath(fromPos, toPos);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         
         // Create lightning material
@@ -172,17 +241,18 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         this.createLightningPoints(fromPos, toPos);
     }
     
-    generateLightningPath(fromPos, toPos) {
+    // DESYNC SAFE: Generate deterministic lightning path (no random)
+    generateDeterministicLightningPath(fromPos, toPos) {
         const points = [];
         const segments = 3; // Number of lightning segments
         
         points.push(new THREE.Vector3(
-            fromPos.x + this.game.effectsSystem.effectOffset.x,
-            fromPos.y + this.game.effectsSystem.effectOffset.y + 10,
-            fromPos.z + this.game.effectsSystem.effectOffset.z
+            fromPos.x + (this.game.effectsSystem?.effectOffset?.x || 0),
+            fromPos.y + (this.game.effectsSystem?.effectOffset?.y || 0) + 10,
+            fromPos.z + (this.game.effectsSystem?.effectOffset?.z || 0)
         ));
         
-        // Create jagged lightning path
+        // Create jagged lightning path using deterministic values
         for (let i = 1; i < segments; i++) {
             const progress = i / segments;
             
@@ -191,73 +261,65 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             const baseY = fromPos.y + (toPos.y - fromPos.y) * progress + 10;
             const baseZ = fromPos.z + (toPos.z - fromPos.z) * progress;
             
-            // Add random jagged deviation
+            // Add deterministic jagged deviation based on segment index
             const deviation = 15; // Maximum deviation from straight line
-            const jaggedX = baseX + (Math.random() - 0.5) * deviation;
-            const jaggedY = baseY + (Math.random() - 0.5) * deviation * 0.5;
-            const jaggedZ = baseZ + (Math.random() - 0.5) * deviation;
+            const jaggedX = baseX + (((i * 37) % 100) / 100 - 0.5) * deviation; // Deterministic "random"
+            const jaggedY = baseY + (((i * 73) % 100) / 100 - 0.5) * deviation * 0.5;
+            const jaggedZ = baseZ + (((i * 91) % 100) / 100 - 0.5) * deviation;
             
             points.push(new THREE.Vector3(
-                jaggedX + this.game.effectsSystem.effectOffset.x,
-                jaggedY + this.game.effectsSystem.effectOffset.y,
-                jaggedZ + this.game.effectsSystem.effectOffset.z
+                jaggedX + (this.game.effectsSystem?.effectOffset?.x || 0),
+                jaggedY + (this.game.effectsSystem?.effectOffset?.y || 0),
+                jaggedZ + (this.game.effectsSystem?.effectOffset?.z || 0)
             ));
         }
         
         points.push(new THREE.Vector3(
-            toPos.x + this.game.effectsSystem.effectOffset.x,
-            toPos.y + this.game.effectsSystem.effectOffset.y + 10,
-            toPos.z + this.game.effectsSystem.effectOffset.z
+            toPos.x + (this.game.effectsSystem?.effectOffset?.x || 0),
+            toPos.y + (this.game.effectsSystem?.effectOffset?.y || 0) + 10,
+            toPos.z + (this.game.effectsSystem?.effectOffset?.z || 0)
         ));
         
         return points;
     }
     
     animateLightningArc(lightningLine, material) {
-        let flickerCount = 0;
-        const maxFlickers = 6;
-        const flickerInterval = 80; // ms
+        // Use game time for deterministic animation instead of real time
+        const startTime = this.game.currentTime;
+        const animationDuration = 0.48; // 480ms in game time
+        const flickerInterval = 0.08; // 80ms in game time
         
-        const flicker = () => {
-            if (flickerCount >= maxFlickers) {
+        // DESYNC SAFE: Use scheduling system for animation frames
+        const animateFrame = (frameIndex) => {
+            const currentTime = this.game.currentTime;
+            const elapsed = currentTime - startTime;
+            
+            if (elapsed >= animationDuration) {
                 // Fade out and remove
                 this.fadeLightningArc(lightningLine, material);
                 return;
             }
             
-            // Flicker effect
-            material.opacity = Math.random() * 0.8 + 0.2;
-            material.color.setHex(Math.random() > 0.5 ? 0x00ddff : 0x88aaff);
+            // Deterministic flicker effect based on frame index
+            material.opacity = 0.2 + 0.6 * ((frameIndex % 3) / 2); // Cycles between 0.2, 0.5, 0.8
+            material.color.setHex((frameIndex % 2) === 0 ? 0x00ddff : 0x88aaff);
             
-            flickerCount++;
-            setTimeout(flicker, flickerInterval);
+            // Schedule next frame
+            this.game.schedulingSystem.scheduleAction(() => {
+                animateFrame(frameIndex + 1);
+            }, flickerInterval, null);
         };
         
-        flicker();
+        animateFrame(0);
     }
     
     fadeLightningArc(lightningLine, material) {
-        const fadeStart = Date.now();
-        const fadeDuration = 300; // ms
-        const initialOpacity = material.opacity;
-        
-        const fade = () => {
-            const elapsed = Date.now() - fadeStart;
-            const progress = elapsed / fadeDuration;
-            
-            if (progress >= 1) {
-                // Remove the lightning line
-                this.game.scene.remove(lightningLine);
-                lightningLine.geometry.dispose();
-                lightningLine.material.dispose();
-                return;
-            }
-            
-            material.opacity = initialOpacity * (1 - progress);
-            requestAnimationFrame(fade);
-        };
-        
-        fade();
+        // Quick cleanup instead of complex fade animation for multiplayer safety
+        if (this.game.scene && lightningLine.parent) {
+            this.game.scene.remove(lightningLine);
+            lightningLine.geometry.dispose();
+            lightningLine.material.dispose();
+        }
     }
     
     createLightningPoints(fromPos, toPos) {
@@ -273,78 +335,20 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
                 }
             );
             
-            setTimeout(() => {
-                this.game.effectsSystem.createParticleEffect(
-                    toPos.x, toPos.y + 10, toPos.z, 'magic', {
-                        count: 5,
-                        color: 0x00ddff,
-                        scaleMultiplier: 0.8,
-                        speedMultiplier: 2.0,
-                        heightOffset: 0
-                    }
-                );
-            }, 100);
+            // DESYNC SAFE: Use scheduling system for delayed effect
+            this.game.schedulingSystem.scheduleAction(() => {
+                if (this.game.effectsSystem) {
+                    this.game.effectsSystem.createParticleEffect(
+                        toPos.x, toPos.y + 10, toPos.z, 'magic', {
+                            count: 5,
+                            color: 0x00ddff,
+                            scaleMultiplier: 0.8,
+                            speedMultiplier: 2.0,
+                            heightOffset: 0
+                        }
+                    );
+                }
+            }, 0.1, null);
         }
-    }
-    
-    chainLightning(sourceId, currentTarget, availableTargets, remainingJumps, damage) {
-        if (remainingJumps <= 0 || !currentTarget) return;
-        
-        const targetPos = this.game.getComponent(currentTarget, this.componentTypes.POSITION);
-        if (!targetPos) return;
-        
-        // Lightning strike effect
-        this.createVisualEffect(targetPos, 'lightning');
-        
-        // Apply damage with effects
-        this.dealDamageWithEffects(sourceId, currentTarget, Math.floor(damage), this.element);
-        
-        // Screen flash for dramatic effect
-        if (this.game.effectsSystem && remainingJumps === this.maxJumps) {
-            this.game.effectsSystem.playScreenFlash('#00aaff', 200);
-        }
-        
-        // Find next target
-        const nextTarget = this.findNextChainTarget(currentTarget, availableTargets);
-        if (nextTarget && remainingJumps > 1) {
-            // Create enhanced arc effect between targets
-            const nextPos = this.game.getComponent(nextTarget, this.componentTypes.POSITION);
-            if (nextPos && this.game.effectsSystem) {
-                // Create multiple lightning arc effects for visibility
-                this.createLightningArc(targetPos, nextPos);
-            }
-            
-            setTimeout(() => {
-                this.chainLightning(sourceId, nextTarget, availableTargets, 
-                    remainingJumps - 1, damage * this.damageReduction);
-            }, 150); // Quick succession for lightning effect
-        }
-    }
-    
-    findNextChainTarget(fromTarget, availableTargets) {
-        const fromPos = this.game.getComponent(fromTarget, this.componentTypes.POSITION);
-        if (!fromPos) return null;
-        
-        let closest = null;
-        let closestDistance = Infinity;
-        
-        availableTargets.forEach(targetId => {
-            if (targetId === fromTarget) return;
-            
-            const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-            if (!targetPos) return;
-            
-            const distance = Math.sqrt(
-                Math.pow(targetPos.x - fromPos.x, 2) + 
-                Math.pow(targetPos.z - fromPos.z, 2)
-            );
-            
-            if (distance <= this.jumpRange && distance < closestDistance) {
-                closestDistance = distance;
-                closest = targetId;
-            }
-        });
-        
-        return closest;
     }
 }

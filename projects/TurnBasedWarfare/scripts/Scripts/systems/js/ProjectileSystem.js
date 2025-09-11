@@ -296,12 +296,9 @@ class ProjectileSystem extends engine.BaseSystem {
             this.componentTypes.POSITION, 
             this.componentTypes.VELOCITY, 
             this.componentTypes.PROJECTILE
-        );
-        
-        // Sort projectiles for deterministic processing
-        const sortedProjectiles = projectiles.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        sortedProjectiles.forEach(projectileId => {
+        );        
+ 
+        projectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);
             const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
@@ -430,11 +427,9 @@ class ProjectileSystem extends engine.BaseSystem {
         const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
         if (!sourceTeam) return;
         
-        // Sort entities for deterministic collision detection
-        const sortedEntities = allEntities.slice().sort((a, b) => String(a).localeCompare(String(b)));
         let hitDetected = false;
 
-        for (const entityId of sortedEntities) {
+        for (const entityId of allEntities) {
             if (hitDetected) break; // Stop after first hit to ensure consistency
             if (entityId === projectile.source) continue; // Don't hit the source
             

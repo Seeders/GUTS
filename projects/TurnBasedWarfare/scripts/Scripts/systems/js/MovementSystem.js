@@ -64,6 +64,7 @@ class MovementSystem extends engine.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
+        // Entities are already sorted by game.getEntitiesWith()
         const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
         
         // Build spatial grid for fast neighbor lookups
@@ -72,10 +73,8 @@ class MovementSystem extends engine.BaseSystem {
         // First pass: calculate desired velocities and separation forces
         const unitData = new Map();
         
-        // Sort entities for deterministic processing
-        const sortedEntitiesForUnitData = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        sortedEntitiesForUnitData.forEach(entityId => {
+        // No need to sort again - entities are already sorted from getEntitiesWith()
+        entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
@@ -107,7 +106,8 @@ class MovementSystem extends engine.BaseSystem {
             }
         });
         
-        const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+        // unitData.keys() preserves insertion order, which is already sorted since entities were sorted
+        const sortedEntityIds = Array.from(unitData.keys());
 
         // Calculate desired velocities for all units
         sortedEntityIds.forEach((entityId) => {
@@ -122,9 +122,8 @@ class MovementSystem extends engine.BaseSystem {
         // Staggered pathfinding updates - only update subset each frame
         this.updatePathfindingStaggered(unitData);
         
-        // Apply movement to all entities (deterministic order)
-        const sortedEntities = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        sortedEntities.forEach(entityId => {
+        // Apply movement to all entities - entities already sorted
+        entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
@@ -144,7 +143,7 @@ class MovementSystem extends engine.BaseSystem {
             pos.x += vel.vx * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-          
+        
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
                 this.enforceBoundaries(pos, collision);
@@ -210,10 +209,7 @@ class MovementSystem extends engine.BaseSystem {
     buildSpatialGrid(entities) {
         this.spatialGrid.clear();
         
-        // Sort entities for deterministic processing
-        const sortedEntities = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        sortedEntities.forEach(entityId => {
+        entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             

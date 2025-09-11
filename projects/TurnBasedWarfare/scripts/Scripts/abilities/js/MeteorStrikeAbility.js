@@ -21,48 +21,97 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         this.minTargets = 0;
     }
     
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 8,
+                    color: 0xff4400,
+                    colorRange: { start: 0xff4400, end: 0xffaa00 },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.5
+                }
+            },
+            warning: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xff0000,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            meteor_explosion: {
+                type: 'explosion',
+                options: {
+                    count: 12,
+                    color: 0xff2200,
+                    colorRange: { start: 0xff2200, end: 0xffaa00 },
+                    scaleMultiplier: 4.0,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
+    }
+    
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);        
         return enemies.length > 0;
     }
     
     execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
         const enemies = this.getEnemiesInRange(casterEntity);
         const targetPos = this.findBestClusterPosition(enemies, this.minTargets);
         
-        if (!targetPos) return;
+        if (!targetPos) return null;
         
-        // Create warning indicator
-        this.createMeteorWarning(targetPos);
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `A massive meteor approaches from the heavens!`);
         
-        // Schedule meteor impact
-        setTimeout(() => {
+        // Schedule warning indicator after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createMeteorWarning(targetPos);
+        }, this.castTime, casterEntity);
+        
+        // Schedule meteor impact after cast time + delay
+        this.game.schedulingSystem.scheduleAction(() => {
             this.meteorImpact(casterEntity, targetPos);
-        }, this.delay * 1000);
-        
-        this.logAbilityUsage(casterEntity, 
-            `A massive meteor approaches from the heavens!`);
+        }, this.castTime + this.delay, casterEntity);
     }
     
     createMeteorWarning(position) {
-        const warningId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        // Create warning effect instead of entity for better desync safety
+        this.createVisualEffect(position, 'warning');
         
-        this.game.addComponent(warningId, componentTypes.POSITION, 
-            components.Position(position.x, position.y + 85, position.z));
+        // Schedule repeated warning effects during the delay period
+        const warningInterval = 0.5;
+        const warningCount = Math.floor(this.delay / warningInterval);
         
-        this.game.addComponent(warningId, componentTypes.RENDERABLE, 
-            components.Renderable("visuals", "meteor_warning"));
+        for (let i = 1; i < warningCount; i++) {
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.createVisualEffect(position, 'warning');
+            }, i * warningInterval, null);
+        }
         
-        this.game.addComponent(warningId, componentTypes.LIFETIME, 
-            components.Lifetime(this.delay, (this.game.state?.simTime || 0)));
-        
-        this.game.addComponent(warningId, componentTypes.ANIMATION, 
-            components.Animation(4, 0, 1));
+        this.logAbilityUsage(null, `The ground trembles as a meteor approaches!`);
     }
     
     meteorImpact(casterEntity, position) {
+        // Create massive explosion effect
+        this.createVisualEffect(position, 'meteor_explosion');
+        
+        // Screen effects for dramatic impact
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(800, 4);
+            this.game.effectsSystem.playScreenFlash('#ff4400', 500);
+        }
+        
+        // Apply splash damage
         if (this.game.damageSystem) {
             const results = this.game.damageSystem.applySplashDamage(
                 casterEntity,
@@ -79,8 +128,67 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
                     'log-explosion'
                 );
             }
+            
+            this.logAbilityUsage(casterEntity, 
+                `Meteor impact devastates ${results.length} enemies for massive damage!`);
+        }
+    }
+    
+    // FIXED: Deterministic cluster position finding
+    findBestClusterPosition(enemies, minTargets) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let bestPosition = null;
+        let maxTargetsHit = 0;
+        let bestScore = 0; // For tie-breaking: prefer positions with lower total distance
+        
+        // Check each enemy position as potential impact center
+        sortedEnemies.forEach(potentialCenter => {
+            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            if (!centerPos) return;
+            
+            let targetsInRange = 0;
+            let totalDistance = 0;
+            
+            // Count enemies within splash radius of this position
+            sortedEnemies.forEach(enemyId => {
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (!enemyPos) return;
+                
+                const distance = Math.sqrt(
+                    Math.pow(enemyPos.x - centerPos.x, 2) + 
+                    Math.pow(enemyPos.z - centerPos.z, 2)
+                );
+                
+                if (distance <= this.splashRadius) {
+                    targetsInRange++;
+                    totalDistance += distance;
+                }
+            });
+            
+            // Calculate score: prioritize more targets, then lower total distance for tie-breaking
+            const score = (targetsInRange * 1000) - totalDistance;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins when scores are equal)
+            if (targetsInRange > maxTargetsHit || 
+                (targetsInRange === maxTargetsHit && score >= bestScore)) {
+                maxTargetsHit = targetsInRange;
+                bestScore = score;
+                bestPosition = { x: centerPos.x, y: centerPos.y, z: centerPos.z };
+            }
+        });
+        
+        // If no good cluster found but we have enemies, target the first enemy deterministically
+        if (!bestPosition && sortedEnemies.length > 0) {
+            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], this.componentTypes.POSITION);
+            if (firstEnemyPos) {
+                bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
+            }
         }
         
-        this.createVisualEffect(position, 'meteor_explosion');
+        return bestPosition;
     }
 }

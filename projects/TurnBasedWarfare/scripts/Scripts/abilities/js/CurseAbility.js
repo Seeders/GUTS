@@ -54,29 +54,35 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Cast effect
+        // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Apply curses
-        setTimeout(() => {
-            this.applyCurses(casterEntity, enemies);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
+        
+        // DESYNC SAFE: Use scheduling system instead of setTimeout
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyCurses(casterEntity, enemies);
+        }, this.castTime, casterEntity);
     }
     
     applyCurses(casterEntity, enemies) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
-        enemies.forEach(enemyId => {
+        // DESYNC SAFE: Sort enemies for consistent processing order
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        const cursedEnemies = [];
+        
+        sortedEnemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
+            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
             
-            if (!enemyPos || !enemyCombat) return;
+            if (!enemyPos || !enemyCombat || !enemyHealth || enemyHealth.current <= 0) return;
             
             // Check if enemy is in curse radius
             const distance = Math.sqrt(
@@ -85,12 +91,17 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
             );
             
             if (distance <= this.curseRadius) {
-                // Apply curse effect
+                // Apply curse effect visually
                 this.createVisualEffect(enemyPos, 'curse');
                 
-                // Reduce enemy damage
-                const originalDamage = enemyCombat.damage;
-                enemyCombat.damage = Math.floor(enemyCombat.damage * this.damageReduction);
+                // DESYNC SAFE: Use buff system instead of directly modifying stats
+                const Components = this.game.componentManager.getComponents();
+                this.game.addComponent(enemyId, this.componentTypes.BUFF, 
+                    Components.Buff('curse', { 
+                        damageMultiplier: this.damageReduction,
+                        damageTakenMultiplier: this.vulnerabilityIncrease,
+                        isCursed: true
+                    }, this.game.currentTime + this.duration, false, 1, this.game.currentTime));
                 
                 // Create dark aura effect
                 if (this.game.effectsSystem) {
@@ -101,13 +112,57 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                     );
                 }
                 
-                // Remove curse after duration
-                setTimeout(() => {
-                    if (this.game.getComponent(enemyId, this.componentTypes.COMBAT)) {
-                        enemyCombat.damage = originalDamage;
-                    }
-                }, this.duration * 1000);
+                cursedEnemies.push({
+                    id: enemyId,
+                    originalDamage: enemyCombat.damage,
+                    position: enemyPos
+                });
+                
+                // DESYNC SAFE: Schedule curse removal using scheduling system
+                this.game.schedulingSystem.scheduleAction(() => {
+                    this.removeCurse(enemyId);
+                }, this.duration, enemyId);
             }
         });
+        
+        // Log how many enemies were cursed
+        if (this.game.battleLogSystem && cursedEnemies.length > 0) {
+            this.game.battleLogSystem.add(
+                `${cursedEnemies.length} enemies have been cursed!`,
+                'log-ability'
+            );
+        }
+    }
+    
+    // DESYNC SAFE: Remove curse effect
+    removeCurse(enemyId) {
+        // Check if enemy still exists and has the curse buff
+        if (this.game.hasComponent(enemyId, this.componentTypes.BUFF)) {
+            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            if (buff && buff.buffType === 'curse') {
+                this.game.removeComponent(enemyId, this.componentTypes.BUFF);
+                
+                // Visual effect when curse expires
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (enemyPos) {
+                    this.createVisualEffect(enemyPos, 'curse', { 
+                        count: 1, 
+                        scaleMultiplier: 0.8,
+                        color: 0x808080 
+                    });
+                }
+                
+                // Log curse expiration
+                if (this.game.battleLogSystem) {
+                    const unitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
+                    if (unitType) {
+                        this.game.battleLogSystem.add(
+                            `${unitType.type} breaks free from the curse!`,
+                            'log-ability'
+                        );
+                    }
+                }
+            }
+        }
     }
 }

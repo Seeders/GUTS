@@ -55,15 +55,14 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
-        // Cast effect
+        // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Create blizzard covering large area
-        setTimeout(() => {
-            this.createBlizzard(casterEntity);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `An arctic blizzard engulfs the battlefield!`, true);
+        
+        // DESYNC SAFE: Use scheduling system instead of setTimeout
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createBlizzard(casterEntity);
+        }, this.castTime, casterEntity);
     }
     
     createBlizzard(casterEntity) {
@@ -75,31 +74,60 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenFlash('#aaffff', 600);
         }
         
-        let ticksRemaining = Math.floor(this.duration / this.tickInterval);
+        // DESYNC SAFE: Schedule all blizzard ticks using the scheduling system
+        const totalTicks = Math.floor(this.duration / this.tickInterval);
         
-        const blizzardTick = () => {
-            if (ticksRemaining <= 0) return;
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
             
-            // Get all enemies on the battlefield
-            const allEnemies = this.getEnemiesInRange(casterEntity, 1000); // Very large range
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeBlizzardTick(casterEntity, tickIndex);
+            }, tickDelay, casterEntity);
+        }
+    }
+    
+    // DESYNC SAFE: Execute a single blizzard tick deterministically
+    executeBlizzardTick(casterEntity, tickIndex) {
+        // Check if caster is still alive
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        if (!casterHealth || casterHealth.current <= 0) return;
+        
+        // DESYNC SAFE: Get all enemies deterministically
+        const allEnemies = this.getEnemiesInRange(casterEntity, 1000); // Very large range to cover battlefield
+        
+        if (allEnemies.length === 0) return;
+        
+        // Sort enemies deterministically for consistent processing order
+        const sortedEnemies = allEnemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        sortedEnemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
             
-            allEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (enemyPos) {
-                    // Create localized blizzard effect at each enemy
-                    this.createVisualEffect(enemyPos, 'blizzard', { count: 3 });
-                    
-                    // Apply cold damage
-                    this.dealDamageWithEffects(casterEntity, enemyId, this.damage, this.element);
-                }
-            });
-            
-            ticksRemaining--;
-            if (ticksRemaining > 0) {
-                setTimeout(blizzardTick, this.tickInterval * 1000);
+            // Only affect living enemies
+            if (enemyPos && enemyHealth && enemyHealth.current > 0) {
+                // Create localized blizzard effect at each enemy
+                this.createVisualEffect(enemyPos, 'blizzard', { count: 3 });
+                
+                // Apply cold damage
+                this.dealDamageWithEffects(casterEntity, enemyId, this.damage, this.element, {
+                    isBlizzard: true,
+                    tickIndex: tickIndex
+                });
             }
-        };
+        });
         
-        blizzardTick();
+        // Additional visual flair for certain ticks
+        if (tickIndex === 0 || tickIndex % 3 === 0) {
+            // Create additional atmospheric effects on key ticks
+            const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            if (casterPos) {
+                this.createVisualEffect(casterPos, 'blizzard', { 
+                    count: 8, 
+                    scaleMultiplier: 2.5,
+                    heightOffset: 20 
+                });
+            }
+        }
     }
 }

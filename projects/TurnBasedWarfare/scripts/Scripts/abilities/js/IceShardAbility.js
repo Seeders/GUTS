@@ -54,23 +54,43 @@ class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Cast effect
+        // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Fire multiple shards with slight delays
-        for (let i = 0; i < this.shardCount; i++) {
-            setTimeout(() => {
-                const target = this.selectRandomTarget(enemies);
-                if (target) {
-                    this.fireIceShard(casterEntity, target);
-                }
-            }, i * 200);
-        }
-        
         this.logAbilityUsage(casterEntity, `Crystalline ice shards pierce the air!`);
+        
+        // DESYNC SAFE: Use scheduling system instead of setTimeout
+        // Schedule all shards with staggered timing
+        for (let i = 0; i < this.shardCount; i++) {
+            const shardDelay = this.castTime + (i * 0.2); // 0.2 second stagger between shards
+            
+            this.game.schedulingSystem.scheduleAction(() => {
+                // Re-get enemies at firing time (some may have died)
+                const currentEnemies = this.getEnemiesInRange(casterEntity);
+                if (currentEnemies.length > 0) {
+                    // DESYNC SAFE: Select target deterministically instead of randomly
+                    const target = this.selectDeterministicTarget(currentEnemies, i);
+                    if (target) {
+                        this.fireIceShard(casterEntity, target);
+                    }
+                }
+            }, shardDelay, casterEntity);
+        }
+    }
+    
+    // DESYNC SAFE: Deterministic target selection instead of random
+    selectDeterministicTarget(enemies, shardIndex) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        // Use shard index to cycle through targets deterministically
+        const targetIndex = shardIndex % sortedEnemies.length;
+        return sortedEnemies[targetIndex];
     }
     
     fireIceShard(casterEntity, targetId) {
@@ -88,14 +108,12 @@ class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
             slowDuration: this.slowDuration
         });
         
-        // Visual effect at target
-        setTimeout(() => {
-            this.createVisualEffect(targetPos, 'shard', { count: 3 });
-        }, 300);
-    }
-    
-    selectRandomTarget(enemies) {
-        if (enemies.length === 0) return null;
-        return enemies[Math.floor(Math.random() * enemies.length)];
+        // DESYNC SAFE: Use scheduling system for visual effect delay
+        this.game.schedulingSystem.scheduleAction(() => {
+            const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            if (currentTargetPos) {
+                this.createVisualEffect(currentTargetPos, 'shard', { count: 3 });
+            }
+        }, 0.3, casterEntity);
     }
 }

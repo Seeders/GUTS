@@ -72,17 +72,37 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
-        // Cast effect at caster
-        this.createVisualEffect(casterPos, 'cast');
-        
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Find closest enemy
+        // Immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        
+        // DESYNC SAFE: Find closest enemy deterministically
+        const closestEnemy = this.findClosestEnemy(casterEntity, enemies);
+        if (!closestEnemy) return;
+        
+        this.logAbilityUsage(casterEntity, `Fireball launched at enemy target!`, true);
+        
+        // DESYNC SAFE: Use scheduling system for projectile firing
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.fireProjectile(casterEntity, closestEnemy);
+        }, this.castTime, casterEntity);
+    }
+    
+    // DESYNC SAFE: Deterministic closest enemy finding
+    findClosestEnemy(casterEntity, enemies) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
         let closestEnemy = null;
         let closestDistance = Infinity;
         
-        enemies.forEach(enemyId => {
+        sortedEnemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             if (!enemyPos) return;
             
@@ -91,13 +111,23 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
                 Math.pow(enemyPos.z - casterPos.z, 2)
             );
             
+            // Use < for consistent tie-breaking (first in sorted order wins)
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closestEnemy = enemyId;
             }
         });
         
-        if (!closestEnemy) return;
+        return closestEnemy;
+    }
+    
+    fireProjectile(casterEntity, targetId) {
+        if (!this.game.projectileSystem) return;
+        
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        
+        if (!casterPos || !targetPos) return;
         
         // Create fireball projectile with enhanced effects
         const projectileData = {
@@ -110,12 +140,15 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             splashRadius: this.splashRadius,
             homing: true,
             homingStrength: 0.3,
-            onHit: (targetPos) => {
+            onHit: (impactPos) => {
                 // Explosion effect
-                this.createVisualEffect(targetPos, 'explosion');
+                this.createVisualEffect(impactPos, 'explosion');
                 if (this.game.effectsSystem) {
                     this.game.effectsSystem.playScreenShake(300, 2);
                 }
+                
+                // DESYNC SAFE: Handle splash damage deterministically
+                this.handleSplashDamage(casterEntity, impactPos);
             },
             onTravel: (currentPos) => {
                 // Trail effect during flight
@@ -123,9 +156,67 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             }
         };
         
-        this.game.projectileSystem.fireProjectile(casterEntity, closestEnemy, projectileData);
+        this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
+    }
+    
+    // DESYNC SAFE: Handle splash damage deterministically
+    handleSplashDamage(casterEntity, impactPos) {
+        // Get all entities in splash radius
+        const allEntities = this.game.getEntitiesWith(
+            this.componentTypes.POSITION,
+            this.componentTypes.HEALTH,
+            this.componentTypes.TEAM
+        );
         
-        this.logAbilityUsage(casterEntity, 
-            `Fireball launched at enemy target!`, true);
+        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        if (!casterTeam) return;
+        
+        const splashTargets = [];
+        
+        // Find all valid targets in splash radius
+        allEntities.forEach(entityId => {
+            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            
+            if (!entityPos || !entityTeam || entityTeam.team === casterTeam.team) return;
+            
+            const distance = Math.sqrt(
+                Math.pow(entityPos.x - impactPos.x, 2) + 
+                Math.pow(entityPos.z - impactPos.z, 2)
+            );
+            
+            if (distance <= this.splashRadius) {
+                splashTargets.push({
+                    id: entityId,
+                    distance: distance,
+                    position: entityPos
+                });
+            }
+        });
+        
+        // DESYNC SAFE: Sort splash targets deterministically
+        splashTargets.sort((a, b) => {
+            // Primary sort by distance
+            if (Math.abs(a.distance - b.distance) > 0.001) {
+                return a.distance - b.distance;
+            }
+            // Secondary sort by entity ID for deterministic tie-breaking
+            return String(a.id).localeCompare(String(b.id));
+        });
+        
+        // Apply splash damage to all targets
+        splashTargets.forEach(target => {
+            // Calculate damage falloff based on distance
+            const damageMultiplier = Math.max(0.3, 1.0 - (target.distance / this.splashRadius));
+            const splashDamage = Math.floor(this.damage * damageMultiplier);
+            
+            // Apply damage
+            this.dealDamageWithEffects(casterEntity, target.id, splashDamage, this.element, {
+                isSplash: true
+            });
+            
+            // Impact effect on each target
+            this.createVisualEffect(target.position, 'impact');
+        });
     }
 }

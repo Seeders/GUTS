@@ -34,7 +34,7 @@ class AbilitySystem extends engine.BaseSystem {
 
     update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
-        return;
+
         this.processAbilityQueue();
         this.processAbilityActions();
         this.updateAIAbilityUsage();

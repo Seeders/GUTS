@@ -66,20 +66,21 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Target enemy with highest current health
+        // DESYNC SAFE: Target selection
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
         
         const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
         if (!targetPos) return;
         
-        // Cast effect
+        // Immediate effects (visual, audio, logging)
         this.createVisualEffect(casterPos, 'cast');
         
-        // Create drain beam effect
+        // Create drain beam effect immediately
         if (this.game.effectsSystem) {
             this.game.effectsSystem.createEnergyBeam(
                 new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
@@ -91,18 +92,20 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             );
         }
         
-        // Apply drain effect
-        setTimeout(() => {
-            this.performDrain(casterEntity, target);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Dark energy siphons life force!`);
+        
+        // DESYNC SAFE: Use scheduling system for delayed effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            const currentTargetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+            if (currentTargetPos) {
+                this.performDrain(casterEntity, target, currentTargetPos);
+            }
+        }, this.castTime, casterEntity);
     }
     
-    performDrain(casterEntity, targetId) {
+    performDrain(casterEntity, targetId, targetPos) {
         const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
         
         if (!casterHealth || !casterPos || !targetPos) return;
         
@@ -134,13 +137,17 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
     
+    // DESYNC SAFE: Deterministic target selection
     findHighestHealthEnemy(enemies) {
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
         let strongest = null;
         let highestHealth = 0;
         
-        enemies.forEach(enemyId => {
+        sortedEnemies.forEach(enemyId => {
             const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            if (health && health.current > highestHealth) {
+            if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
                 highestHealth = health.current;
                 strongest = enemyId;
             }

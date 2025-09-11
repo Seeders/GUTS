@@ -17,6 +17,7 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         
         this.damage = 80;
         this.bonusDamageVsUndead = 2.0; // Double damage vs undead
+        this.pillarDelay = 0.5; // Time between pillar and damage
         this.element = 'divine';
     }
     
@@ -49,6 +50,15 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
                     scaleMultiplier: 4.0,
                     speedMultiplier: 2.0
                 }
+            },
+            divine_judgment: {
+                type: 'magic',
+                options: {
+                    count: 8,
+                    color: 0xFFFFE0,
+                    scaleMultiplier: 2.5,
+                    speedMultiplier: 1.5
+                }
             }
         };
     }
@@ -60,71 +70,154 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
     
     execute(casterEntity) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
+        if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return;
+        if (enemies.length === 0) return null;
         
-        // Target the strongest enemy (highest health)
-        const target = this.findHighestHealthEnemy(enemies);
-        if (!target) return;
+        // Target the strongest enemy (highest health) deterministically
+        const target = this.findHighestHealthEnemyDeterministic(enemies);
+        if (!target) return null;
         
         const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-        if (!targetPos) return;
+        if (!targetPos) return null;
         
-        // Cast effect
+        // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Divine judgment descends from the heavens!`);
         
-        // Divine smite
-        setTimeout(() => {
-            this.performSmite(casterEntity, target, targetPos);
-        }, this.castTime * 1000);
-        
-        this.logAbilityUsage(casterEntity, `Divine judgment descends from the heavens!`, true);
+        // Schedule the divine smite after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.performDivineSmite(casterEntity, target, targetPos);
+        }, this.castTime, casterEntity);
     }
     
-    performSmite(casterEntity, targetId, targetPos) {
+    performDivineSmite(casterEntity, targetId, originalTargetPos) {
+        // Get current target position (target may have moved)
+        const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
+        
         // Create pillar of light effect
         this.createVisualEffect(targetPos, 'pillar');
         
-        // Screen flash
+        // Create divine judgment aura effect
+        this.createVisualEffect(targetPos, 'divine_judgment');
+        
+        // Screen flash and shake
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#FFD700', 500);
             this.game.effectsSystem.playScreenShake(300, 3);
         }
         
+        this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);
+        
+        // Schedule the actual damage after pillar effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applySmiteDamage(casterEntity, targetId, targetPos);
+        }, this.pillarDelay, targetId);
+    }
+    
+    applySmiteDamage(casterEntity, targetId, targetPos) {
+        // Validate target still exists
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        if (!targetHealth || targetHealth.current <= 0) {
+            this.logAbilityUsage(casterEntity, `Divine judgment finds no target!`);
+            return;
+        }
+        
         // Calculate damage (bonus vs undead)
         const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
         let damage = this.damage;
+        let isUndeadTarget = false;
         
-        if (targetUnitType && targetUnitType.type.includes('undead')) {
+        if (targetUnitType && (
+            targetUnitType.type.includes('undead') || 
+            targetUnitType.type.includes('skeleton') ||
+            targetUnitType.type.includes('zombie') ||
+            targetUnitType.id.includes('undead')
+        )) {
             damage = Math.floor(damage * this.bonusDamageVsUndead);
+            isUndeadTarget = true;
         }
         
         // Apply divine damage
-        setTimeout(() => {
-            this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
-                isSmite: true,
-                isCritical: true
-            });
+        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
+            isSmite: true,
+            isCritical: true,
+            isAntiUndead: isUndeadTarget,
+            criticalMultiplier: 1.5
+        });
+        
+        // Create smite impact effect
+        this.createVisualEffect(targetPos, 'smite');
+        
+        // Enhanced logging based on target type
+        const damageMessage = isUndeadTarget 
+            ? `Divine smite DEVASTATES undead for ${damage} damage!`
+            : `Divine smite strikes for ${damage} damage!`;
             
-            // Smite effect on target
-            this.createVisualEffect(targetPos, 'smite');
-        }, 500);
+        this.logAbilityUsage(casterEntity, damageMessage);
+        
+        // Battle log integration
+        if (this.game.battleLogSystem) {
+            const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
+            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+            const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
+            
+            if (casterUnitType && casterTeam && targetTeam && targetUnitType) {
+                const effectivenessNote = isUndeadTarget ? ' (EXTRA EFFECTIVE vs undead)' : '';
+                this.game.battleLogSystem.add(
+                    `${casterTeam.team} ${casterUnitType.type} smites ${targetTeam.team} ${targetUnitType.type} for ${damage} divine damage${effectivenessNote}!`,
+                    'log-divine'
+                );
+            }
+        }
     }
     
-    findHighestHealthEnemy(enemies) {
+    // FIXED: Deterministic highest health enemy selection
+    findHighestHealthEnemyDeterministic(enemies) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
         let strongest = null;
         let highestHealth = 0;
         
-        enemies.forEach(enemyId => {
+        // Process enemies in deterministic order
+        sortedEnemies.forEach(enemyId => {
             const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            if (health && health.current > highestHealth) {
+            if (!health) return;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins when health is equal)
+            if (health.current >= highestHealth) {
                 highestHealth = health.current;
                 strongest = enemyId;
             }
         });
         
         return strongest;
+    }
+    
+    // Helper method to check if target is undead (for potential future use)
+    isUndeadTarget(targetId) {
+        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        if (!targetUnitType) return false;
+        
+        return targetUnitType.type.includes('undead') || 
+               targetUnitType.type.includes('skeleton') ||
+               targetUnitType.type.includes('zombie') ||
+               targetUnitType.id.includes('undead');
+    }
+    
+    // Helper method to get effective damage against target
+    getEffectiveDamage(targetId) {
+        let damage = this.damage;
+        
+        if (this.isUndeadTarget(targetId)) {
+            damage = Math.floor(damage * this.bonusDamageVsUndead);
+        }
+        
+        return damage;
     }
 }

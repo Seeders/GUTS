@@ -54,21 +54,22 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
-        // Cast effect
+        // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Create wind shields
-        setTimeout(() => {
-            this.createWindShields(casterEntity);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Protective winds swirl around allies!`);
+        
+        // DESYNC SAFE: Use scheduling system instead of setTimeout
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createWindShields(casterEntity);
+        }, this.castTime, casterEntity);
     }
     
     createWindShields(casterEntity) {
+        // DESYNC SAFE: Get and sort allies deterministically
         const allies = this.getAlliesInRange(casterEntity);
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
-        allies.forEach(allyId => {
+        sortedAllies.forEach(allyId => {
             const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
             if (!allyPos) return;
             
@@ -84,9 +85,33 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
                 );
             }
             
-            // Add shield component (if you have a shield system)
-            // This would need to be integrated with your projectile system
-            // to actually deflect incoming projectiles
+            // DESYNC SAFE: Add shield component using scheduling system for duration
+            const Components = this.game.componentManager.getComponents();
+            this.game.addComponent(allyId, this.componentTypes.BUFF, 
+                Components.Buff('wind_shield', { 
+                    deflectionChance: this.deflectionChance,
+                    projectileReflection: true
+                }, this.game.currentTime + this.shieldDuration, false, 1, this.game.currentTime));
+            
+            // DESYNC SAFE: Schedule shield removal
+            this.game.schedulingSystem.scheduleAction(() => {
+                if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
+                    const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                    if (buff && buff.buffType === 'wind_shield') {
+                        this.game.removeComponent(allyId, this.componentTypes.BUFF);
+                        
+                        // Visual effect when shield expires
+                        const currentPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+                        if (currentPos) {
+                            this.createVisualEffect(currentPos, 'shield', { 
+                                count: 3, 
+                                scaleMultiplier: 0.5,
+                                color: 0x87CEEB 
+                            });
+                        }
+                    }
+                }
+            }, this.shieldDuration, allyId);
         });
     }
 }

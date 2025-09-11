@@ -53,25 +53,25 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
         
+        // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Find target with highest health (lightning seeks strong foes)
+        // DESYNC SAFE: Find target with highest health deterministically
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
         
         const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
         if (!targetPos) return;
         
-        // Cast effect
+        // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Instant lightning strike
-        setTimeout(() => {
-            this.strikeLightning(casterEntity, target, targetPos);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Lightning crackles with divine fury!`, true);
+        
+        // DESYNC SAFE: Use scheduling system instead of setTimeout
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.strikeLightning(casterEntity, target, targetPos);
+        }, this.castTime, casterEntity);
     }
     
     strikeLightning(casterEntity, targetId, targetPos) {
@@ -98,8 +98,8 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenFlash('#ffffaa', 150);
         }
         
-        // Determine if critical hit
-        const isCritical = Math.random() < this.criticalChance;
+        // DESYNC SAFE: Determine critical hit deterministically instead of random
+        const isCritical = this.isDeterministicCritical(casterEntity, targetId);
         const damage = isCritical ? this.damage * 2 : this.damage;
         
         // Apply lightning damage
@@ -109,13 +109,26 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
         });
     }
     
+    // DESYNC SAFE: Deterministic critical hit calculation
+    isDeterministicCritical(casterId, targetId) {
+        // Create a deterministic "random" value based on entity IDs and game time
+        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.currentTime * 100);
+        const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
+        
+        return pseudoRandom < this.criticalChance;
+    }
+    
+    // DESYNC SAFE: Deterministic highest health enemy finding
     findHighestHealthEnemy(enemies) {
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
         let strongest = null;
         let highestHealth = 0;
         
-        enemies.forEach(enemyId => {
+        sortedEnemies.forEach(enemyId => {
             const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            if (health && health.current > highestHealth) {
+            if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
                 highestHealth = health.current;
                 strongest = enemyId;
             }

@@ -55,24 +55,28 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     canExecute(casterEntity) {
-  
         // Use when low on health or facing multiple enemies
-        return true;
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        if (casterHealth && casterHealth.current < casterHealth.max * 0.5) {
+            return true;
+        }
+        
+        const enemies = this.getEnemiesInRange(casterEntity, 150);
+        return enemies.length >= 2;
     }
     
     execute(casterEntity) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
+        if (!casterPos) return null;
         
-        // Cast effect
+        // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        
-        // Create mirror images
-        setTimeout(() => {
-            this.createMirrorImages(casterEntity, casterPos);
-        }, this.castTime * 1000);
-        
         this.logAbilityUsage(casterEntity, `Reality fractures as mirror images appear!`);
+        
+        // Schedule mirror image creation after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createMirrorImages(casterEntity, casterPos);
+        }, this.castTime, casterEntity);
     }
     
     createMirrorImages(casterEntity, casterPos) {
@@ -88,92 +92,159 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
         // Mirror effect at caster
         this.createVisualEffect(casterPos, 'mirror');
         
+        const createdImages = [];
+        
+        // Create images at deterministic positions
         for (let i = 0; i < this.imageCount; i++) {
-            // Position images around the caster
-            const angle = (i / this.imageCount) * Math.PI * 2;
-            const distance = 40;
-            const imagePos = {
-                x: casterPos.x + Math.cos(angle) * distance,
-                y: casterPos.y,
-                z: casterPos.z + Math.sin(angle) * distance
-            };
+            const imagePos = this.getDeterministicImagePosition(casterPos, i);
             
             const imageId = this.createMirrorImage(
                 casterEntity, imagePos, casterTeam, casterUnitType, 
                 casterCombat, casterHealth, casterCollision, casterVelocity
             );
             
-            if (imageId) {
+            if (imageId !== null) {
+                createdImages.push(imageId);
                 // Illusion creation effect
                 this.createVisualEffect(imagePos, 'illusion');
+                
+                // Schedule image removal deterministically
+                this.game.schedulingSystem.scheduleAction(() => {
+                    this.removeMirrorImage(imageId);
+                }, this.imageDuration, imageId);
             }
+        }
+        
+        if (this.game.battleLogSystem && createdImages.length > 0) {
+            this.game.battleLogSystem.add(
+                `${createdImages.length} mirror images shimmer into existence!`,
+                'log-illusion'
+            );
+        }
+        
+        this.logAbilityUsage(casterEntity, 
+            `${createdImages.length} mirror images created successfully!`);
+    }
+    
+    // FIXED: Deterministic positioning algorithm
+    getDeterministicImagePosition(casterPos, imageIndex) {
+        // Use predefined positions instead of trigonometry for determinism
+        const positions = [
+            { offsetX: -35, offsetZ: 25 },   // Left-back
+            { offsetX: 35, offsetZ: 25 }     // Right-back
+        ];
+        
+        const offset = positions[imageIndex % positions.length];
+        
+        return {
+            x: casterPos.x + offset.offsetX,
+            y: casterPos.y,
+            z: casterPos.z + offset.offsetZ
+        };
+    }
+    
+    createMirrorImage(originalId, imagePos, team, unitType, combat, health, collision, velocity) {
+        // Use deterministic entity creation if available, otherwise use standard method
+        const imageId = this.game.createEntity ? this.game.createEntity() : this.generateDeterministicId(originalId);
+        
+        if (imageId === null || imageId === undefined) return null;
+        
+        const components = this.game.componentManager.getComponents();
+        
+        try {
+            // Add components in deterministic order (alphabetical by component type)
+            this.game.addComponent(imageId, this.componentTypes.AI_STATE, 
+                components.AIState('idle'));
+                
+            this.game.addComponent(imageId, this.componentTypes.ANIMATION, 
+                components.Animation());
+                
+            this.game.addComponent(imageId, this.componentTypes.COLLISION, 
+                components.Collision(collision?.radius || 25));
+                
+            this.game.addComponent(imageId, this.componentTypes.COMBAT, 
+                components.Combat(
+                    Math.floor(combat.damage * this.imageDamageRatio),
+                    combat.range,
+                    combat.attackSpeed,
+                    combat.projectile,
+                    0,
+                    combat.element || 'physical',
+                    Math.floor((combat.armor || 0) * 0.5), // Half armor
+                    combat.fireResistance || 0,
+                    combat.coldResistance || 0,
+                    combat.lightningResistance || 0
+                ));
+                
+            this.game.addComponent(imageId, this.componentTypes.EQUIPMENT, 
+                components.Equipment());
+                
+            this.game.addComponent(imageId, this.componentTypes.FACING, 
+                components.Facing(0));
+                
+            this.game.addComponent(imageId, this.componentTypes.HEALTH, 
+                components.Health(Math.floor(health.max * this.imageHealthRatio)));
+                
+            this.game.addComponent(imageId, this.componentTypes.MIRROR_IMAGE, 
+                components.MirrorImage(originalId, true, this.game.state?.simTime || 0));
+                
+            this.game.addComponent(imageId, this.componentTypes.POSITION, 
+                components.Position(imagePos.x, imagePos.y, imagePos.z));
+                
+            this.game.addComponent(imageId, this.componentTypes.RENDERABLE, 
+                components.Renderable("units", unitType.id || unitType.type));
+                
+            this.game.addComponent(imageId, this.componentTypes.TEAM, 
+                components.Team(team.team));
+                
+            this.game.addComponent(imageId, this.componentTypes.UNIT_TYPE, 
+                components.UnitType(
+                    unitType.id || unitType.type,
+                    `Mirror Image`,
+                    0 // No value - they're illusions
+                ));
+                
+            this.game.addComponent(imageId, this.componentTypes.VELOCITY, 
+                components.Velocity(0, 0, 0, velocity?.maxSpeed || 40));
+            
+            return imageId;
+            
+        } catch (error) {
+            console.error(`Failed to create mirror image:`, error);
+            return null;
+        }
+    }
+    
+    // FIXED: Deterministic removal instead of lifetime system
+    removeMirrorImage(imageId) {
+        if (!this.game.hasEntity || !this.game.hasEntity(imageId)) return;
+        
+        const imagePos = this.game.getComponent(imageId, this.componentTypes.POSITION);
+        
+        // Create disappearance effect
+        if (imagePos) {
+            this.createVisualEffect(imagePos, 'illusion');
+        }
+        
+        // Remove the entity
+        if (this.game.removeEntity) {
+            this.game.removeEntity(imageId);
+        } else if (this.game.destroyEntity) {
+            this.game.destroyEntity(imageId);
         }
         
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(
-                `${this.imageCount} mirror images shimmer into existence!`,
+                `A mirror image fades away...`,
                 'log-illusion'
             );
         }
     }
     
-    createMirrorImage(originalId, imagePos, team, unitType, combat, health, collision, velocity) {
-        const imageId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        
-        // Create image with reduced stats
-        this.game.addComponent(imageId, this.componentTypes.POSITION, 
-            components.Position(imagePos.x, imagePos.y, imagePos.z));
-        this.game.addComponent(imageId, this.componentTypes.VELOCITY, 
-            components.Velocity(0, 0, 0, velocity?.maxSpeed || 40));
-        this.game.addComponent(imageId, this.componentTypes.RENDERABLE, 
-            components.Renderable("units", unitType.id || unitType.type));
-        this.game.addComponent(imageId, this.componentTypes.COLLISION, 
-            components.Collision(collision?.radius || 25));
-        this.game.addComponent(imageId, this.componentTypes.HEALTH, 
-            components.Health(Math.floor(health.max * this.imageHealthRatio)));
-        this.game.addComponent(imageId, this.componentTypes.COMBAT, 
-            components.Combat(
-                Math.floor(combat.damage * this.imageDamageRatio),
-                combat.range,
-                combat.attackSpeed,
-                combat.projectile,
-                0,
-                combat.element || 'physical',
-                Math.floor((combat.armor || 0) * 0.5), // Half armor
-                combat.fireResistance || 0,
-                combat.coldResistance || 0,
-                combat.lightningResistance || 0
-            ));
-        this.game.addComponent(imageId, this.componentTypes.TEAM, 
-            components.Team(team.team));
-        this.game.addComponent(imageId, this.componentTypes.UNIT_TYPE, 
-            components.UnitType(
-                unitType.id || unitType.type,
-                `Mirror Image`,
-                0 // No value - they're illusions
-            ));
-        this.game.addComponent(imageId, this.componentTypes.AI_STATE, 
-            components.AIState('idle'));
-        this.game.addComponent(imageId, this.componentTypes.ANIMATION, 
-            components.Animation());
-        this.game.addComponent(imageId, this.componentTypes.FACING, 
-            components.Facing(0));
-        this.game.addComponent(imageId, this.componentTypes.EQUIPMENT, 
-            components.Equipment());
-        this.game.addComponent(imageId, this.componentTypes.LIFETIME, 
-            components.Lifetime(this.imageDuration, (this.game.state?.simTime || 0)));
-       
-        this.game.lifetimeSystem.addLifetime(imageId, this.imageDuration, {
-            onDestroy: (entityId) => {
-            }
-        });
-        // Add special mirror image component to mark as illusion
-        this.game.addComponent(imageId, this.componentTypes.MIRROR_IMAGE, {
-            originalEntity: originalId,
-            isIllusion: true
-        });
-        
-        return imageId;
+    // Fallback method for deterministic ID generation (if needed)
+    generateDeterministicId(originalId) {
+        // This is a fallback - ideally the game should provide deterministic entity creation
+        const timestamp = this.game.state?.simTime || this.game.currentTime || 0;
+        return `mirror_${originalId}_${Math.floor(timestamp * 1000)}`;
     }
 }

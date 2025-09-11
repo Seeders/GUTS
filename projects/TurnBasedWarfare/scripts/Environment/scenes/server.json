@@ -26,7 +26,8 @@
         { "type": "SquadExperienceSystem" },
         { "type": "ServerBattlePhaseSystem" },
         { "type": "LifetimeSystem" },
-        { "type": "GridSystem" }
+        { "type": "GridSystem" },
+        { "type": "SchedulingSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }

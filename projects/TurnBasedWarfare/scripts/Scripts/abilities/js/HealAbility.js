@@ -64,13 +64,13 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
         
-        // Return callback that will execute the actual heal
-        return () => {
+    
+        this.game.schedulingSystem.scheduleAction(() => {
             const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
             if (targetPos) {
                 this.performHeal(casterEntity, target, targetPos);
             }
-        };
+        }, this.castTime, casterEntity);
     }
     
     performHeal(casterEntity, targetId, targetPos) {

@@ -22,17 +22,18 @@ class CombatAISystem extends engine.BaseSystem {
         
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
-        
+
     }
         
     update(deltaTime, now) {
         if (this.game.state.phase !== 'battle') return;
+
         const CT = this.componentTypes;
  
         // Stable order of updates across machines (cheap, by id; ties already deterministic)
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
-        ).sort((a, b) => String(a).localeCompare(String(b)));
+        );
         // Process one deterministic step
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
@@ -59,8 +60,7 @@ class CombatAISystem extends engine.BaseSystem {
             // Get a stable, filtered list of enemies
             const enemies = this.getAllEnemies(entityId, team) || [];
 
-            enemies.sort((a, b) => String(a).localeCompare(String(b)));
-
+    
             // Validate current target
             if (aiBehavior.currentTarget) {
                 const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
@@ -102,20 +102,6 @@ class CombatAISystem extends engine.BaseSystem {
             this.handleCombat(entityId, pos, combat, aiState, collision, now);
         }
     }
-
-
-    getAllEnemiesStable(entityId, team) {
-        const CT = this.componentTypes;
-        const enemies = this.getAllEnemies(entityId, team) || [];
-        const getPos = (id) => this.game.getComponent(id, CT.POSITION);
-        return enemies.slice().sort((a, b) => {
-            const pa = getPos(a), pb = getPos(b);
-            if (pa.z !== pb.z) return pa.z - pb.z;
-            if (pa.x !== pb.x) return pa.x - pb.x;
-            return String(a).localeCompare(String(b));
-        });
-    }
-
     getAllEnemies(entityId, team) {
         const allUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
@@ -424,9 +410,11 @@ class CombatAISystem extends engine.BaseSystem {
     scheduleProjectileLaunch(attackerId, targetId, combat, now) {
         const attackInterval = 1 / combat.attackSpeed;
         const launchDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
-        setTimeout(() => {
+        
+        // Clean generic scheduling
+        this.game.schedulingSystem.scheduleAction(() => {
             this.fireProjectileAttack(attackerId, targetId, combat.projectile);
-        }, launchDelay * 1000);
+        }, launchDelay, attackerId);
     }
 
     fireProjectileAttack(attackerId, targetId, projectileTypeId) {
@@ -524,6 +512,9 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     startDeathProcess(entityId) {
+        if (this.game.schedulingManager) {
+            this.game.schedulingManager.cancelEntityActions(entityId);
+        }
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
