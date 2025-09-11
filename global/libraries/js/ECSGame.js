@@ -46,13 +46,14 @@ class ECSGame {
                 this.lastTime = this.currentTime; // Reset timer without updating
                 return;
             }
-            this.state.simTime = now;
+            this.state.now = now;
+            this.state.deltaTime = deltaTime;
             this.deltaTime = deltaTime;        
 
             this.systems.forEach(system => {
                 if (system.update) {
-                    system.update(deltaTime, now);
-                    system.render(deltaTime, now);
+                    system.update();
+                    system.render();
                 }
             });
             this.desyncDebugger.checkSync();

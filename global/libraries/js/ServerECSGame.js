@@ -35,9 +35,11 @@ class ServerECSGame {
                 return;
             }
 
+            this.state.now = now;
+            this.state.deltaTime = deltaTime;
             this.systems.forEach(system => {
                 if (system.update) {
-                    system.update(deltaTime, now);
+                    system.update();
                 }
             });
 
