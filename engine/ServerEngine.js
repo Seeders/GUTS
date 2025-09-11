@@ -11,8 +11,6 @@ export default class ServerEngine extends BaseEngine {
         this.gameRooms = new Map();
         this.tickRate = 1 / 20; // 20 TPS
         this.lastTick = 0;
-        this.simulationTime = 0;
-        this.accumulator = 0;
         this.serverNetworkManager = null;
         this.serverEventManager = null;
     }

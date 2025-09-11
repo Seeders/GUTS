@@ -152,7 +152,7 @@ class ECSGame {
                 result.push(entityId);
             }
         }
-        return result;
+        return result.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
     addSystem(system, params) {
