@@ -28,7 +28,7 @@ class HealthBarSystem extends engine.BaseSystem {
         console.log('Three.js HealthBarSystem initialized');
     }
     
-    update(deltaTime) {
+    update() {
         // Wait for scene to be available
         if (!this.game.scene || !this.game.camera) {
             return;

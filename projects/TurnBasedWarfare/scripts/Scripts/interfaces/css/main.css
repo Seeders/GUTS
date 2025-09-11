@@ -891,11 +891,6 @@ body {
     transform: none;
 }
 
-.waiting-indicator {
-    color: #888;
-    font-style: italic;
-}
-
 .lobby-status {
     margin-bottom: 2rem;
 }

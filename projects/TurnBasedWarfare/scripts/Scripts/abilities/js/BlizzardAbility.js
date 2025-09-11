@@ -71,7 +71,7 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#aaffff', 600);
+            this.game.effectsSystem.playScreenFlash('#aaffff', 0.6);
         }
         
         // DESYNC SAFE: Schedule all blizzard ticks using the scheduling system

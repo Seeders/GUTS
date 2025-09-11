@@ -73,7 +73,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
             canLevelUp: false,
             totalUnitsInSquad: unitIds.length, // Just use actual unit count
             lastExperienceGain: 0,
-            creationTime: Date.now()
+            creationTime: this.game.state.now
         };
         
         this.squadExperience.set(placementId, experienceData);
@@ -101,7 +101,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         }
         
         squadData.experience += experience;
-        squadData.lastExperienceGain = Date.now();
+        squadData.lastExperienceGain = this.game.state.now;
         
         // Check if squad can level up
         if (squadData.experience >= squadData.experienceToNextLevel) {
@@ -113,10 +113,9 @@ class SquadExperienceSystem extends engine.BaseSystem {
         }
         
         // Update UI periodically
-        const now = Date.now();
-        if (now - this.lastUIUpdate > this.UI_UPDATE_INTERVAL) {
+        if (this.game.state.now - this.lastUIUpdate > this.UI_UPDATE_INTERVAL) {
             this.updateSquadUI();
-            this.lastUIUpdate = now;
+            this.lastUIUpdate = this.game.state.now;
         }
     }
     
@@ -164,8 +163,6 @@ class SquadExperienceSystem extends engine.BaseSystem {
             return false;
         }
         
-        // Deduct cost optimistically
-        this.game.state.playerGold -= levelUpCost;
         
         try {
             if (!this.game.isServer) {
@@ -174,9 +171,12 @@ class SquadExperienceSystem extends engine.BaseSystem {
                     const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
                         { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
                     
-                    if (!success) {
-                        console.log('no success making network call apply_spec');
-                        this.game.state.playerGold += levelUpCost; // Refund
+                    const success2 = await this.makeNetworkCall('LEVEL_SQUAD', 
+                        { placementId }, 'SQUAD_LEVELED');
+
+                    
+                    if (!success && success2) {
+                        console.log('no success making network call apply_spec or level_squad');
                         return false;
                     } 
                     this.applySpecialization(placementId, specializationId, playerId);
@@ -187,17 +187,17 @@ class SquadExperienceSystem extends engine.BaseSystem {
                     
                     if (!success) {
                         console.log('no success making network call level_squad');
-                        this.game.state.playerGold += levelUpCost; // Refund
                         return false;
                     }
                 }
             } 
-            
+                
+            // Deduct cost optimistically
+            this.game.state.playerGold -= levelUpCost;
             return this.finishLevelingSquad(squadData, placementId, levelUpCost, specializationId);
             
         } catch (error) {
             // Refund gold on any error
-            this.game.state.playerGold += levelUpCost;
             console.log('failed to level squad', error);
             return false;
         }
@@ -639,16 +639,15 @@ class SquadExperienceSystem extends engine.BaseSystem {
     
     /**
      * Update method called each frame
-     * @param {number} deltaTime - Time since last frame
      */
-    update(deltaTime) {
+    update() {
         // Periodic cleanup of invalid squads
         if (Math.random() < 0.01) { // 1% chance per frame
             this.cleanupInvalidSquads();
         }
-        this.tickBaselineXP(deltaTime);
+        this.tickBaselineXP();
     }
-    tickBaselineXP(deltaTime) {
+    tickBaselineXP() {
         // Optional: restrict to combat only
         if (this.config.baselineXPCombatOnly && this.game?.state?.phase !== 'battle') return;
 
@@ -659,7 +658,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
             const unitsAliveInSquad = this.unitsAliveInSquad(squadData);
             if (unitsAliveInSquad > 0) {
                 const squadLivingRatio = unitsAliveInSquad / squadData.totalUnitsInSquad;                
-                const xp = squadLivingRatio * this.config.baselineXPPerSecond * deltaTime * this.config.experienceMultiplier;
+                const xp = squadLivingRatio * this.config.baselineXPPerSecond * this.game.state.deltaTime * this.config.experienceMultiplier;
                 if (xp > 0) this.addExperience(placementId, xp);
             }
         }

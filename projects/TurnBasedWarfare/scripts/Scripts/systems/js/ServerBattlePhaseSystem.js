@@ -101,7 +101,7 @@ class ServerBattlePhaseSystem {
         }, this.battleDuration);
     }
     // Called by game update loop to check for battle end
-    update(deltaTime) {
+    update() {
         if (this.game.state?.phase !== 'battle') {
             return;
         }

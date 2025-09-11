@@ -95,8 +95,8 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
         // Screen effects for dramatic explosion
         if (this.game.effectsSystem) {
             this.game.effectsSystem.showExplosionEffect(targetPos.x, targetPos.y, targetPos.z);
-            this.game.effectsSystem.playScreenShake(400, 2);
-            this.game.effectsSystem.playScreenFlash('#8A2BE2', 300);
+            this.game.effectsSystem.playScreenShake(0.4, 2);
+            this.game.effectsSystem.playScreenFlash('#8A2BE2', 0.3);
         }
         
         // DESYNC SAFE: Apply disruption effects deterministically

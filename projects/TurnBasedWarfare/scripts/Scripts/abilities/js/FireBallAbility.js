@@ -144,7 +144,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
                 // Explosion effect
                 this.createVisualEffect(impactPos, 'explosion');
                 if (this.game.effectsSystem) {
-                    this.game.effectsSystem.playScreenShake(300, 2);
+                    this.game.effectsSystem.playScreenShake(0.3, 2);
                 }
                 
                 // DESYNC SAFE: Handle splash damage deterministically

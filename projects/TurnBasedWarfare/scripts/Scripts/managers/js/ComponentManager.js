@@ -195,7 +195,7 @@ class ComponentManager {
             MirrorImage: (originalEntity = null, isIllusion = true, createdTime = 0) => ({
                 originalEntity,
                 isIllusion,
-                createdTime: createdTime || (this.game.state?.simTime || 0)
+                createdTime: createdTime || (this.game.state.now || 0)
             }),
             
             Trap: (
@@ -221,33 +221,33 @@ class ComponentManager {
                 summoner,
                 summonType,
                 originalStats,
-                createdTime: createdTime || (this.game.state?.simTime || 0),
+                createdTime: createdTime || (this.game.state.now || 0),
                 isSummoned: true
             }),
             
             TemporaryEffect: (effectType = 'generic', data = {}, createdTime = 0) => ({
                 effectType,
                 data,
-                createdTime: createdTime || (this.game.state?.simTime || 0)
+                createdTime: createdTime || (this.game.state.now || 0)
             }),
             
             Thorns: (reflectionPercent = 0.5, endTime = 0, totalReflected = 0) => ({
                 reflectionPercent,
-                endTime: endTime || (this.game.state?.simTime || 0) + 20,
+                endTime: endTime || (this.game.state.now || 0) + 20,
                 totalReflected,
                 isActive: true
             }),
             
             Taunt: (taunter = null, endTime = 0, radius = 0, isTaunted = true) => ({
                 taunter,
-                endTime: endTime || (this.game.state?.simTime || 0) + 5,
+                endTime: endTime || (this.game.state.now || 0) + 5,
                 radius,
                 isTaunted
             }),
             
             ShieldWall: (damageReduction = 0.75, endTime = 0, tauntRadius = 200, originalArmor = 0) => ({
                 damageReduction,
-                endTime: endTime || (this.game.state?.simTime || 0) + 10,
+                endTime: endTime || (this.game.state.now || 0) + 10,
                 tauntRadius,
                 originalArmor,
                 isActive: true
@@ -267,10 +267,10 @@ class ComponentManager {
             ) => ({
                 buffType,
                 modifiers,
-                endTime: endTime || (this.game.state?.simTime || 0) + 30,
+                endTime: endTime || (this.game.state.now || 0) + 30,
                 stackable,
                 stacks,
-                appliedTime: appliedTime || (this.game.state?.simTime || 0),
+                appliedTime: appliedTime || (this.game.state.now || 0),
                 isActive: true,
                 
                 // Specific buff properties based on type
@@ -347,7 +347,7 @@ class ComponentManager {
             ) => ({
                 damage,
                 radius,
-                endTime: endTime || (this.game.state?.simTime || 0) + 2,
+                endTime: endTime || (this.game.state.now || 0) + 2,
                 hitInterval,
                 lastHitTime,
                 totalHits,
@@ -372,7 +372,7 @@ class ComponentManager {
                 formationMembers,
                 formationBonuses,
                 isActive,
-                createdTime: (this.game.state?.simTime || 0)
+                createdTime: (this.game.state.now || 0)
             }),
             
             SquadMember: (
@@ -385,7 +385,7 @@ class ComponentManager {
                 squadRole,
                 squadPosition,
                 squadBonuses,
-                joinedTime: (this.game.state?.simTime || 0)
+                joinedTime: (this.game.state.now || 0)
             }),
 
             // =============================================
@@ -416,7 +416,7 @@ class ComponentManager {
                 staminaRegen,
                 focus,
                 maxFocus,
-                lastRegenTick: (this.game.state?.simTime || 0)
+                lastRegenTick: (this.game.state.now || 0)
             }),
 
             // =============================================
@@ -433,7 +433,7 @@ class ComponentManager {
                 effectType,
                 effectData,
                 duration,
-                startTime: startTime || (this.game.state?.simTime || 0),
+                startTime: startTime || (this.game.state.now || 0),
                 attachedTo,
                 isActive: true
             }),
@@ -454,7 +454,7 @@ class ComponentManager {
                 persistent,
                 pulseInterval,
                 lastPulse,
-                createdTime: (this.game.state?.simTime || 0)
+                createdTime: (this.game.state.now || 0)
             }),
 
             // =============================================
@@ -560,7 +560,7 @@ class ComponentManager {
                 element,
                 affectsTeams,
                 lastTickTime,
-                createdTime: (this.game.state?.simTime || 0)
+                createdTime: (this.game.state.now || 0)
             }),
             
             Consecrated: (

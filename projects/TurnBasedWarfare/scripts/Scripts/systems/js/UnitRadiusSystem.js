@@ -13,7 +13,7 @@ class UnitRadiusSystem extends engine.BaseSystem {
         this.CIRCLE_LINE_WIDTH = 2;
     }
     
-    update(deltaTime) {
+    update() {
         if (!this.enabled || this.game.state.phase !== 'battle') {
             this.hideAllCircles();
             return;

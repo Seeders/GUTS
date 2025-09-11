@@ -98,8 +98,8 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for dramatic activation
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(250, 1.5);
-            this.game.effectsSystem.playScreenFlash('#8B0000', 300);
+            this.game.effectsSystem.playScreenShake(0.2, 1.5);
+            this.game.effectsSystem.playScreenFlash('#8B0000', 0.3);
         }
         
         // DESYNC SAFE: Schedule buff removal

@@ -22,16 +22,14 @@ class AnimationSystem extends engine.BaseSystem {
         ]);
     }
     
-    update(deltaTime) {
+    update() {
         if (!this.game.scene || !this.game.camera || !this.game.renderer) {
             return;
         }
-
-        this.game.deltaTime = deltaTime;
-        this.updateEntityAnimations(deltaTime);
+        this.updateEntityAnimations();
     }
     
-    updateEntityAnimations(deltaTime) {
+    updateEntityAnimations() {
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 
             this.componentTypes.UNIT_TYPE
@@ -41,16 +39,16 @@ class AnimationSystem extends engine.BaseSystem {
             const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
             
-            this.updateEntityAnimation(entityId, velocity, health, deltaTime);
+            this.updateEntityAnimation(entityId, velocity, health);
             
             const mixer = this.entityMixers.get(entityId);
             if (mixer) {
-                mixer.update(deltaTime);
+                mixer.update(this.game.state.deltaTime);
             }
             
             const proprietaryAnim = this.entityProprietaryAnimations?.get(entityId);
             if (proprietaryAnim) {
-                this.updateProprietaryAnimation(entityId, proprietaryAnim, deltaTime);
+                this.updateProprietaryAnimation(entityId, proprietaryAnim);
             }
         });
 
@@ -280,7 +278,7 @@ class AnimationSystem extends engine.BaseSystem {
         return action.time >= action.getClip().duration || !action.isRunning();
     }
     
-    updateEntityAnimation(entityId, velocity, health, deltaTime) {
+    updateEntityAnimation(entityId, velocity, health) {
         const animState = this.entityAnimationStates.get(entityId);
         
         if (!animState) return;
@@ -288,7 +286,7 @@ class AnimationSystem extends engine.BaseSystem {
         if (animState.isDying || animState.isCorpse) {
             const mixer = this.entityMixers.get(entityId);
             if (mixer) {
-                mixer.update(deltaTime);
+                mixer.update(this.game.state.deltaTime);
             }
             return;
         }
@@ -297,7 +295,7 @@ class AnimationSystem extends engine.BaseSystem {
             return;
         }
         
-        animState.animationTime += deltaTime;
+        animState.animationTime += this.game.state.deltaTime;
         
         if (animState.animationTriggered && animState.pendingAnimation) {
             const pendingAnim = animState.pendingAnimation;
@@ -556,11 +554,11 @@ class AnimationSystem extends engine.BaseSystem {
         }
     }
     
-    updateProprietaryAnimation(entityId, proprietaryAnim, deltaTime) {
+    updateProprietaryAnimation(entityId, proprietaryAnim) {
         const frames = proprietaryAnim.animationData[proprietaryAnim.animationState];
         if (!frames || frames.length === 0) return;
         
-        proprietaryAnim.frameTime += deltaTime;
+        proprietaryAnim.frameTime += this.game.state.deltaTime;
         
         if (proprietaryAnim.frameTime >= proprietaryAnim.frameDuration) {
             proprietaryAnim.frameTime -= proprietaryAnim.frameDuration;

@@ -47,7 +47,7 @@ class BaseAbility {
             this.game.battleLogSystem.add(message || defaultMessage, 'log-ability');
             
             if (showScreenEffect && this.game.effectsSystem) {
-                this.game.effectsSystem.playScreenShake(200, 1);
+                this.game.effectsSystem.playScreenShake(0.2, 1);
             }
         }
     }

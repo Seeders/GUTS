@@ -122,7 +122,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Screen flash for dramatic effect (only on first hit)
             if (this.game.effectsSystem && jumpIndex === 0) {
-                this.game.effectsSystem.playScreenFlash('#00aaff', 200);
+                this.game.effectsSystem.playScreenFlash('#00aaff', 0.2);
             }
             
             // Create visual arc effect if there was a previous target

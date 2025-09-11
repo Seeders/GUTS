@@ -11,19 +11,18 @@ class RenderSystem extends engine.BaseSystem {
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
     }
     
-    update(deltaTime) {
+    update() {
         // Only update if we have access to Three.js scene from WorldRenderSystem
         if (!this.game.scene || !this.game.camera || !this.game.renderer) {
             return;
         }
 
-        this.game.deltaTime = deltaTime;
         
         // Update 3D models
-        this.update3DModels(deltaTime);
+        this.update3DModels();
     }
             
-    update3DModels(deltaTime) {
+    update3DModels() {
         // Get entities that should have 3D models
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 
@@ -70,7 +69,7 @@ class RenderSystem extends engine.BaseSystem {
     updateFacingDirection(entityId, modelGroup, velocity, facing) {
         const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
         const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        
+        let priority = 0;
         let facingAngle = null;
         const isAttacking = aiState && (aiState.state === 'attacking' || aiState.state === 'waiting');
         // Priority 1: Face movement direction if moving (unless attacking)
@@ -79,6 +78,7 @@ class RenderSystem extends engine.BaseSystem {
             if (!aiState || !isAttacking) {
                 // Calculate facing angle from movement direction (X and Z)
                 facingAngle = Math.atan2(velocity.vz, velocity.vx);
+                priority = 1;
             }
         }
         
@@ -95,6 +95,7 @@ class RenderSystem extends engine.BaseSystem {
                 if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dz) > this.MIN_MOVEMENT_THRESHOLD) {
                     // Calculate facing angle using X and Z coordinates
                     facingAngle = Math.atan2(dz, dx);
+                    priority = 2;
                 }
             }
         }
@@ -102,6 +103,7 @@ class RenderSystem extends engine.BaseSystem {
         // Priority 3: Use initial facing direction if no movement and not attacking
         if (facingAngle === null && facing && facing.angle !== undefined) {
             facingAngle = facing.angle;
+            priority = 3;
         }
         
         // Apply rotation if we have a valid angle

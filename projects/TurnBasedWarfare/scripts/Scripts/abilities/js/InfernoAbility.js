@@ -87,7 +87,7 @@ class InfernoAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#ff3300', 400);
+            this.game.effectsSystem.playScreenFlash('#ff3300', 0.4);
         }
         
         this.logAbilityUsage(casterEntity, `The battlefield erupts in an unstoppable inferno!`);

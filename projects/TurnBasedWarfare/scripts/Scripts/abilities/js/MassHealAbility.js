@@ -138,7 +138,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for dramatic impact
         if (this.game.effectsSystem && healedCount > 0) {
-            this.game.effectsSystem.playScreenFlash('#88ff88', 300);
+            this.game.effectsSystem.playScreenFlash('#88ff88', 0.3);
         }
         
         // Log final results

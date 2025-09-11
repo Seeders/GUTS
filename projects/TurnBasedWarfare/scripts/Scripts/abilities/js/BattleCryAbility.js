@@ -116,8 +116,8 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for dramatic rally
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(300, 2);
-            this.game.effectsSystem.playScreenFlash('#FFD700', 400);
+            this.game.effectsSystem.playScreenShake(0.3, 2);
+            this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
         }
         
         // Additional visual effect at caster position

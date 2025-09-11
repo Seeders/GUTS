@@ -64,14 +64,14 @@ class UnitCreationManager {
      * @param {number} worldY - World Y coordinate
      * @param {number} worldZ - World Z coordinate
      * @param {Object} unitType - Unit type definition
-     * @param {string} team - Team identifier ('player' or 'enemy')
+     * @param {string} team - Team identifier ('left' or 'right')
      * @returns {number} Entity ID
      */
     create(worldX, worldY, worldZ, unitType, team) {
         try {
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
-            
+            console.log('creating ', unitType, team, teamConfig);
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
             

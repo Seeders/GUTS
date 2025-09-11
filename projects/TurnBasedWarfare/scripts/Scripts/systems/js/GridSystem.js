@@ -184,19 +184,6 @@ class GridSystem extends engine.BaseSystem {
         
         return true;
     }
-            
-    cleanValidationCache() {
-        const now = Date.now();
-        const maxAge = 5000;
-        
-        for (const [key, value] of this.validationCache.entries()) {
-            if (now - value.timestamp > maxAge) {
-                this.validationCache.delete(key);
-            }
-        }
-        
-        this.lastCacheClean = now;
-    }
     
     occupyCells(cells, placementId) {        
         const updates = cells.map(cell => ({

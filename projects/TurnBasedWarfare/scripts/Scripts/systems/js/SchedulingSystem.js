@@ -11,8 +11,8 @@ class SchedulingSystem extends engine.BaseSystem {
         this.entityActions = new Map(); // entityId -> Set of actionIds
     }
     
-    update(deltaTime, now) {
-        this.processScheduledActions(now);
+    update() {
+        this.processScheduledActions();
     }
     
     /**
@@ -23,7 +23,7 @@ class SchedulingSystem extends engine.BaseSystem {
      * @returns {string} actionId - Unique identifier for this action
      */
     scheduleAction(callback, delaySeconds, entityId = null) {
-        const executeTime = this.game.currentTime + delaySeconds;
+        const executeTime = this.game.state.now + delaySeconds;
         const actionId = `action_${this.actionIdCounter++}_${executeTime.toFixed(6)}`;
         
         this.scheduledActions.set(actionId, {
@@ -45,14 +45,13 @@ class SchedulingSystem extends engine.BaseSystem {
     
     /**
      * Process all scheduled actions that are ready to execute
-     * @param {number} currentTime - Current game time
      */
-    processScheduledActions(currentTime) {
+    processScheduledActions() {
         const actionsToExecute = [];
         
         // Find all actions ready to execute
         for (const [actionId, action] of this.scheduledActions.entries()) {
-            if (currentTime >= action.executeTime) {
+            if (this.game.state.now >= action.executeTime) {
                 actionsToExecute.push({ id: actionId, action: action });
             }
         }

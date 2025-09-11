@@ -314,7 +314,7 @@ class ShopSystem extends engine.BaseSystem {
         this.game.battleLogSystem.add(message);
     }
     
-    update(deltaTime) {
+    update() {
         const state = this.game.state;
         const UnitTypes = this.game.getCollections().units;
         const inPlacementPhase = state.phase === 'placement';
@@ -324,8 +324,8 @@ class ShopSystem extends engine.BaseSystem {
         
         // Update experience panel if needed
         if (inPlacementPhase && this.game.squadExperienceSystem) {
-            const now = Date.now();
-            if (now - this.lastExperienceUpdate > 2000) { // Update every 2 seconds
+           
+            if (this.game.state.now - this.lastExperienceUpdate > 2) { // Update every 2 seconds
                 const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
                 const hasReadySquads = squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
@@ -335,7 +335,7 @@ class ShopSystem extends engine.BaseSystem {
                     this.createShop();
                 }
                 
-                this.lastExperienceUpdate = now;
+                this.lastExperienceUpdate = this.game.state.now;
             }
         }
         
@@ -421,10 +421,9 @@ class ShopSystem extends engine.BaseSystem {
     updateSquadExperience() {
         if (this.game.state.phase === 'placement') {
             // Throttled shop refresh
-            const now = Date.now();
-            if (now - this.lastExperienceUpdate > 1000) {
+            if (this.game.state.now - this.lastExperienceUpdate > 1) {
                 this.createShop();
-                this.lastExperienceUpdate = now;
+                this.lastExperienceUpdate = this.game.state.now;
             }
         }
     }

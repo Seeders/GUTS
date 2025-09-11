@@ -107,8 +107,8 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effects for dramatic impact
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(800, 4);
-            this.game.effectsSystem.playScreenFlash('#ff4400', 500);
+            this.game.effectsSystem.playScreenShake(0.8, 4);
+            this.game.effectsSystem.playScreenFlash('#ff4400', 0.5);
         }
         
         // Apply splash damage

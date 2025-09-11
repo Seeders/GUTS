@@ -71,7 +71,7 @@ class EffectsSystem extends engine.BaseSystem {
             material: material,
             geometry: geometry,
             type: type,
-            startTime: Date.now(),
+            startTime: this.game.state.now,
             duration: mergedAnimation.duration || 1000,
             animation: mergedAnimation
         };
@@ -226,7 +226,7 @@ class EffectsSystem extends engine.BaseSystem {
         let flickerCount = 0;
         
         const animate = () => {
-            const elapsed = Date.now() - startTime;
+            const elapsed = this.game.state.now - startTime;
             const progress = elapsed / animation.duration;
             
             // Check if effect should end
@@ -453,19 +453,19 @@ class EffectsSystem extends engine.BaseSystem {
     // All other existing methods remain the same...
     showVictoryEffect(x, y, z, options = {}) {
         this.createParticleEffect(x, y, z, 'victory', options);
-        this.playScreenShake(300, 2);
-        this.showNotification('Victory!', 'victory', 2000);
+        this.playScreenShake(0.3, 2);
+        this.showNotification('Victory!', 'victory', 2);
     }
     
     showDefeatEffect(x, y, z, options = {}) {
         this.createParticleEffect(x, y, z, 'defeat', options);
-        this.playScreenFlash('#ff4444', 500);
-        this.showNotification('Defeat!', 'defeat', 2000);
+        this.playScreenFlash('#ff4444', 0.5);
+        this.showNotification('Defeat!', 'defeat', 2);
     }
     
     showExplosionEffect(x, y, z, options = {}) {
         this.createParticleEffect(x, y, z, 'explosion', options);
-        this.playScreenShake(200, 3);
+        this.playScreenShake(0.2, 3);
     }
     
     showHealEffect(x, y, z, options = {}) {
@@ -482,12 +482,12 @@ class EffectsSystem extends engine.BaseSystem {
     
     showLevelUpEffect(x, y, z, options = {}) {
         this.createParticleEffect(x, y, z, 'levelup', options);
-        this.playScreenShake(400, 1);
-        this.showNotification('Level Up!', 'levelup', 3000);
+        this.playScreenShake(0.4, 1);
+        this.showNotification('Level Up!', 'levelup', 3);
     }
     
     // Screen effects and other methods remain unchanged...
-    playScreenShake(duration = 300, intensity = 2) {
+    playScreenShake(duration = 0.3, intensity = 2) {
         if (this.shakeActive) return;
         
         const gameContainer = document.getElementById('gameContainer');
@@ -495,10 +495,10 @@ class EffectsSystem extends engine.BaseSystem {
         
         this.shakeActive = true;
         const originalTransform = gameContainer.style.transform;
-        let startTime = Date.now();
+        let startTime = this.game.state.now;
         
         const shake = () => {
-            const elapsed = Date.now() - startTime;
+            const elapsed = this.game.state.now - startTime;
             const progress = elapsed / duration;
             
             if (progress < 1) {
@@ -516,7 +516,7 @@ class EffectsSystem extends engine.BaseSystem {
         shake();
     }
     
-    playScreenFlash(color = '#ffffff', duration = 300) {
+    playScreenFlash(color = '#ffffff', duration = 0.3) {
         if (this.flashActive) return;
         
         this.flashActive = true;
@@ -542,10 +542,10 @@ class EffectsSystem extends engine.BaseSystem {
                 document.body.removeChild(flash);
             }
             this.flashActive = false;
-        }, duration);
+        }, duration * 1000);
     }
     
-    showNotification(message, type = 'info', duration = 3000) {
+    showNotification(message, type = 'info', duration = 3) {
         const notification = document.createElement('div');
         notification.className = `game-notification notification-${type}`;
         notification.textContent = message;
@@ -705,11 +705,11 @@ class EffectsSystem extends engine.BaseSystem {
         if (!this.game.particleSystem) return;
         
         const config = this.getEffectConfig(type);
-        const startTime = Date.now();
+        const startTime = this.game.state.now;
         const interval = 1000;
         
         const createAura = () => {
-            if (Date.now() - startTime > duration) return;
+            if (this.game.state.now - startTime > duration) return;
             
             const auraConfig = {
                 ...config,

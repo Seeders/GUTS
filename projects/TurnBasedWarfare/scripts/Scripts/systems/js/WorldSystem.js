@@ -638,10 +638,10 @@ class WorldSystem extends engine.BaseSystem {
         }
     }
 
-    update(deltaTime) {
+    update() {
         if (!this.initialized) return;
 
-        this.timer += deltaTime;
+        this.timer += this.game.state.deltaTime;
 
         if (this.controls) {
             this.controls.update();

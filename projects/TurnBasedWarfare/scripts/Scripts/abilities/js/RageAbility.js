@@ -98,7 +98,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Apply rage buff with proper timing
         const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state?.simTime || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.currentTime || 0;
         const endTime = currentTime + this.rageDuration;
         
         this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
@@ -118,8 +118,8 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effects for dramatic impact
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(300, 2);
-            this.game.effectsSystem.playScreenFlash('#ff4444', 400);
+            this.game.effectsSystem.playScreenShake(0.3, 2);
+            this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
         }
         
         // Enhanced logging

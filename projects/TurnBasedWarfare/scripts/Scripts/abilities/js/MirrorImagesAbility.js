@@ -186,7 +186,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
                 components.Health(Math.floor(health.max * this.imageHealthRatio)));
                 
             this.game.addComponent(imageId, this.componentTypes.MIRROR_IMAGE, 
-                components.MirrorImage(originalId, true, this.game.state?.simTime || 0));
+                components.MirrorImage(originalId, true, this.game.state.now || 0));
                 
             this.game.addComponent(imageId, this.componentTypes.POSITION, 
                 components.Position(imagePos.x, imagePos.y, imagePos.z));
@@ -244,7 +244,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
     // Fallback method for deterministic ID generation (if needed)
     generateDeterministicId(originalId) {
         // This is a fallback - ideally the game should provide deterministic entity creation
-        const timestamp = this.game.state?.simTime || this.game.currentTime || 0;
+        const timestamp = this.game.state.now || this.game.currentTime || 0;
         return `mirror_${originalId}_${Math.floor(timestamp * 1000)}`;
     }
 }

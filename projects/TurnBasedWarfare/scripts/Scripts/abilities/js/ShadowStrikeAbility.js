@@ -139,7 +139,7 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for dramatic teleport
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(200, 1.5);
+            this.game.effectsSystem.playScreenShake(0.2, 1.5);
         }
     }
     

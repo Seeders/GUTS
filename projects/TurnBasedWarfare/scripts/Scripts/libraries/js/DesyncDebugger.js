@@ -29,10 +29,10 @@ class DesyncDebugger {
 
         // Log periodically
         if (this.displaySync ) {
-            console.log(`Hash=${hash}, Entities=${entities.length}, Time=${this.game.currentTime.toFixed(3)}`);
+           // console.log(`Hash=${hash}, Entities=${entities.length}, Time=${this.game.currentTime.toFixed(3)}`);
             
             if (this.displaySync || this.detailedLogging) {
-                console.log("Detailed state:", stateData);
+              //  console.log("Detailed state:", stateData);
             }
             this.lastDisplayTime = this.game.currentTime;
         }
@@ -42,15 +42,12 @@ class DesyncDebugger {
     createStateSnapshot(entities) {
         const CT = this.game.componentManager.getComponentTypes();
         
-        // Sort entities for deterministic order
-        const sortedEntities = entities.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
         const snapshot = {
             gameTime: parseFloat(this.game.currentTime.toFixed(6)), // Round to avoid float precision issues
             entities: []
         };
 
-        sortedEntities.forEach(entityId => {
+        entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, CT.POSITION);
             const vel = this.game.getComponent(entityId, CT.VELOCITY);
             const combat = this.game.getComponent(entityId, CT.COMBAT);

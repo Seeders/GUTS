@@ -20,7 +20,7 @@ class EquipmentSystem extends engine.BaseSystem {
         };
     }
     
-    update(deltaTime) {
+    update() {
         const entities = this.game.getEntitiesWith(
             this.componentTypes.EQUIPMENT,
             this.componentTypes.POSITION

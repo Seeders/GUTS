@@ -18,7 +18,7 @@ class ArmyDisplaySystem extends engine.BaseSystem {
         }, 500);
     }
     
-    update(deltaTime) {
+    update() {
         const playerArmy = document.getElementById('playerArmy');
         const enemyArmy = document.getElementById('enemyArmy');
         

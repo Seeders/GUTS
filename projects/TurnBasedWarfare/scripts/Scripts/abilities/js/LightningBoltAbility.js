@@ -95,7 +95,7 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen flash
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#ffffaa', 150);
+            this.game.effectsSystem.playScreenFlash('#ffffaa', 0.15);
         }
         
         // DESYNC SAFE: Determine critical hit deterministically instead of random

@@ -116,7 +116,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for consecration creation
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#ffffaa', 500);
+            this.game.effectsSystem.playScreenFlash('#ffffaa', 0.5);
         }
     }
     

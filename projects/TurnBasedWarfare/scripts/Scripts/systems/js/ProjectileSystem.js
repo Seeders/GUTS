@@ -40,8 +40,6 @@ class ProjectileSystem extends engine.BaseSystem {
         // Create projectile entity
         const projectileId = this.game.createEntity();
         const components = this.game.componentManager.getComponents();
-        const now = this.game.state?.simTime || 0;
-
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);
@@ -70,7 +68,7 @@ class ProjectileSystem extends engine.BaseSystem {
             range: sourceCombat.range * 1.5,
             target: targetId,
             source: sourceId,
-            startTime: now,
+            startTime: this.game.state.now,
             startX: sourcePos.x,
             startY: spawnHeight,
             startZ: sourcePos.z,
@@ -118,7 +116,7 @@ class ProjectileSystem extends engine.BaseSystem {
         } else {
             // Fallback to old method if LifetimeSystem not available
             this.game.addComponent(projectileId, this.componentTypes.LIFETIME, 
-                components.Lifetime(this.PROJECTILE_LIFETIME, now));
+                components.Lifetime(this.PROJECTILE_LIFETIME, this.game.state.now));
         }
         
         // Homing component if specified
@@ -289,7 +287,7 @@ class ProjectileSystem extends engine.BaseSystem {
         };
     }
     
-    update(deltaTime, now) {
+    update() {
         if (this.game.state.phase !== 'battle') return;
         
         const projectiles = this.game.getEntitiesWith(
@@ -306,9 +304,9 @@ class ProjectileSystem extends engine.BaseSystem {
                         
             // Update homing behavior
             if (homing && homing.targetId && projectile.isBallistic) {
-                this.updateBallisticHoming(projectileId, pos, vel, projectile, homing, deltaTime, now);
+                this.updateBallisticHoming(projectileId, pos, vel, projectile, homing);
             } else if (homing && homing.targetId) {
-                this.updateHomingProjectile(projectileId, pos, vel, projectile, homing, deltaTime);
+                this.updateHomingProjectile(projectileId, pos, vel, projectile, homing);
             }
             
             // Handle different collision types based on projectile type
@@ -325,7 +323,7 @@ class ProjectileSystem extends engine.BaseSystem {
         });
     }
     
-    updateBallisticHoming(projectileId, pos, vel, projectile, homing, deltaTime, now) {
+    updateBallisticHoming(projectileId, pos, vel, projectile, homing) {
         // Get current target position
         const targetPos = this.game.getComponent(homing.targetId, this.componentTypes.POSITION);
         
@@ -335,7 +333,7 @@ class ProjectileSystem extends engine.BaseSystem {
             
             // For ballistic projectiles, we adjust the trajectory mid-flight
             // Calculate time elapsed since launch
-            const timeElapsed = now - projectile.startTime;
+            const timeElapsed = this.game.state.now - projectile.startTime;
             const remainingTime = Math.max(0.1, projectile.timeToTarget - timeElapsed);
             
             // Calculate where we need to be to hit the moving target
@@ -348,7 +346,7 @@ class ProjectileSystem extends engine.BaseSystem {
             const requiredHorizontalVelZ = dz / remainingTime;
             
             // Apply homing adjustment with strength factor
-            const homingStrength = homing.homingStrength * deltaTime * 2; // Reduced for ballistic
+            const homingStrength = homing.homingStrength * this.game.state.deltaTime * 2; // Reduced for ballistic
             vel.vx = this.roundForDeterminism(vel.vx * (1 - homingStrength) + requiredHorizontalVelX * homingStrength);
             vel.vz = this.roundForDeterminism(vel.vz * (1 - homingStrength) + requiredHorizontalVelZ * homingStrength);
             
@@ -373,7 +371,7 @@ class ProjectileSystem extends engine.BaseSystem {
         }
     }
     
-    updateHomingProjectile(projectileId, pos, vel, projectile, homing, deltaTime) {
+    updateHomingProjectile(projectileId, pos, vel, projectile, homing) {
         // Get current target position
         const targetPos = this.game.getComponent(homing.targetId, this.componentTypes.POSITION);
         
@@ -394,7 +392,7 @@ class ProjectileSystem extends engine.BaseSystem {
                 const desiredVz = (dz / distance) * projectile.speed;
                 
                 // Blend current velocity with desired velocity based on homing strength
-                const homingStrength = homing.homingStrength * deltaTime * 5; // Adjust responsiveness
+                const homingStrength = homing.homingStrength * this.game.state.deltaTime * 5; // Adjust responsiveness
                 vel.vx = this.roundForDeterminism(vel.vx * (1 - homingStrength) + desiredVx * homingStrength);
                 vel.vy = this.roundForDeterminism(vel.vy * (1 - homingStrength) + desiredVy * homingStrength);
                 vel.vz = this.roundForDeterminism(vel.vz * (1 - homingStrength) + desiredVz * homingStrength);
@@ -569,7 +567,7 @@ class ProjectileSystem extends engine.BaseSystem {
         // Short lifetime for direct hit effects
         const effectDuration = 0.3;
         this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(effectDuration, (this.game.state?.simTime || 0)));
+            components.Lifetime(effectDuration, (this.game.state.now || 0)));
         
         // Animation for the effect
         const effectScale = 2;
@@ -593,7 +591,7 @@ class ProjectileSystem extends engine.BaseSystem {
         
         // Explosion lifetime
         this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(1.5, (this.game.state?.simTime || 0))); // Longer explosion duration
+            components.Lifetime(1.5, (this.game.state.now || 0))); // Longer explosion duration
         
         // Explosion animation
         this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
@@ -653,7 +651,7 @@ class ProjectileSystem extends engine.BaseSystem {
         const trail = this.projectileTrails.get(projectileId);
         
         // Add current position to trail (full 3D)
-        trail.push({ x: pos.x, y: pos.y, z: pos.z, time: (this.game.state?.simTime || 0) });
+        trail.push({ x: pos.x, y: pos.y, z: pos.z, time: (this.game.state.now || 0) });
         
         // Remove old trail points
         while (trail.length > projectileVisual.trailLength) {

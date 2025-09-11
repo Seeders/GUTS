@@ -29,7 +29,7 @@ class BattleLogSystem extends engine.BaseSystem {
         return 'general';
     }
     
-    update(deltaTime) {
+    update() {
         const battleLog = document.getElementById('battleLog');
         if (!battleLog) return;
 

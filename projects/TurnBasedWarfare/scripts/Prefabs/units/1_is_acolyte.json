@@ -165,5 +165,7 @@
   "squadHeight": 3,
   "placementGridWidth": 2,
   "placementGridHeight": 3,
-  "abilities": []
+  "abilities": [
+    "HealAbility"
+  ]
 }

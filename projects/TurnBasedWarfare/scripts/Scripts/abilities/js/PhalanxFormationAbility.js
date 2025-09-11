@@ -117,7 +117,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Apply phalanx buff
             const Components = this.game.componentManager.getComponents();
-            const currentTime = this.game.state?.simTime || this.game.currentTime || 0;
+            const currentTime = this.game.state.now || this.game.currentTime || 0;
             const endTime = currentTime + this.formationDuration;
             
             this.game.addComponent(hopliteId, this.componentTypes.BUFF, 
@@ -156,7 +156,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effects for dramatic formation
         if (this.game.effectsSystem && formationSuccess > 0) {
-            this.game.effectsSystem.playScreenFlash('#4169E1', 400);
+            this.game.effectsSystem.playScreenFlash('#4169E1', 0.4);
         }
         
         // Enhanced logging

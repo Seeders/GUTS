@@ -93,7 +93,7 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Screen effect for dramatic summoning
             if (this.game.effectsSystem) {
-                this.game.effectsSystem.playScreenShake(150, 1);
+                this.game.effectsSystem.playScreenShake(0.15, 1);
             }
         }
     }

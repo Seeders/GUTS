@@ -212,7 +212,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
         // Screen effects for dramatic explosion
         if (this.game.effectsSystem) {
             this.game.effectsSystem.showExplosionEffect(trapPos.x, trapPos.y, trapPos.z);
-            this.game.effectsSystem.playScreenShake(350, 2);
+            this.game.effectsSystem.playScreenShake(0.3, 2);
         }
         
         // DESYNC SAFE: Apply explosion damage to all enemies in radius

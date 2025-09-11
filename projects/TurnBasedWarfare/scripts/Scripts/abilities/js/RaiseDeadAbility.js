@@ -132,7 +132,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
                 
             // Screen effect for dramatic impact
             if (this.game.effectsSystem) {
-                this.game.effectsSystem.playScreenFlash('#4B0082', 400);
+                this.game.effectsSystem.playScreenFlash('#4B0082', 0.4);
             }
         }
     }

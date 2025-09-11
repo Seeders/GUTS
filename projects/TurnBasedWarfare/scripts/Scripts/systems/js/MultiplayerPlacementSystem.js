@@ -297,16 +297,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    update(deltaTime) {
+    update() {
         if (this.game.state.phase !== 'placement') {
             return;
         }
         
-        const now = performance.now();
-        if (now - this.lastValidationTime > this.config.validationThrottle) {
+        
+        if (this.game.state.now - this.lastValidationTime > this.config.validationThrottle) {
             this.updateCursorState();
             this.updatePlacementUI();
-            this.lastValidationTime = now;
+            this.lastValidationTime = this.game.state.now;
         }
     }
     // Apply opponent placements received from multiplayer server
@@ -437,7 +437,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         let gridPos = null;
         
         if (this.cachedValidation && 
-            performance.now() - this.cachedValidation.timestamp < 100) {
+            this.game.state.now - this.cachedValidation.timestamp < 0.1) {
             // Use cached validation for recent clicks
             isValidPlacement = this.cachedValidation.isValid;
             gridPos = this.cachedValidation.gridPos;
@@ -575,7 +575,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             cells: [...cells],
             unitIds: [],
             team: team,
-            timestamp: Date.now()
+            timestamp: this.game.state.now
         };
     }
 
@@ -588,7 +588,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             squadUnits: squadUnits,
             roundPlaced: this.game.state.round,
             isSquad: squadUnits.length > 1,
-            timestamp: Date.now()
+            timestamp: this.game.state.now
         };
         
         if (this.isMyTeam(team)) {
@@ -766,13 +766,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 pendingMouseEvent = event;
                 
                 animationFrameId = requestAnimationFrame(() => {
-                    const now = performance.now();
                     
-                    if (now - lastUpdateTime < 8) {
+                    if (this.game.state.now - lastUpdateTime < .08) {
                         return;
                     }
                     
-                    lastUpdateTime = now;
+                    lastUpdateTime = this.game.state.now;
                     
                     if (this.game.state.phase === 'placement' && 
                         this.game.state.selectedUnitType && 
@@ -813,9 +812,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.lastMouseX = mouseX;
         this.lastMouseY = mouseY;
         
-        const now = performance.now();
-        const timeSinceLastRaycast = now - (this.lastRaycastTime || 0);
-        const shouldRaycast = timeSinceLastRaycast > 150;
+        const timeSinceLastRaycast = this.game.state.now - (this.lastRaycastTime || 0);
+        const shouldRaycast = timeSinceLastRaycast > 0.15;
         
         let worldPosition;
         if (!shouldRaycast) {
@@ -825,7 +823,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             
             if (worldPosition) {
                 this.cachedWorldPos = worldPosition;
-                this.lastRaycastTime = now;
+                this.lastRaycastTime = this.game.state.now;
                 this.lastRaycastMouseX = mouseX;
                 this.lastRaycastMouseY = mouseY;
             }
@@ -847,7 +845,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         } else {
             isValid = this.isValidPlayerPlacement(worldPosition);
             this.cachedGridPos = gridPos;
-            this.cachedValidation = { isValid, timestamp: performance.now(), gridPos };
+            this.cachedValidation = { isValid, timestamp: this.game.state.now, gridPos };
         }
         
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';

@@ -105,7 +105,7 @@ class StatisticsTrackingSystem extends engine.BaseSystem {
         }
     }
     
-    update(deltaTime) {
+    update() {
         // Update enhanced stats display
         const efficiency = this.calculateEfficiency();
         const armyValue = this.calculateArmyValue();

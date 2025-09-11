@@ -5,16 +5,14 @@ class DeathSystem extends engine.BaseSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
     }
     
-    update(deltaTime) {
+    update() {
         // Get all entities with death state
         const dyingEntities = this.game.getEntitiesWith(this.componentTypes.DEATH_STATE);
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
-            const now = this.game.state?.simTime || 0;
-
             
             if (deathState.isDying) {
-                const timeSinceDeath = now - deathState.deathStartTime;
+                const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
                 // Remove health (corpses can't be damaged)
                 if (this.game.hasComponent(entityId, this.componentTypes.HEALTH)) {
                     this.game.removeComponent(entityId, this.componentTypes.HEALTH);
@@ -49,7 +47,7 @@ class DeathSystem extends engine.BaseSystem {
         // Add corpse component
         this.game.addComponent(entityId, this.componentTypes.CORPSE, Components.Corpse(
             { ...unitType }, 
-            (this.game.state?.simTime || 0), 
+            (this.game.state.now || 0), 
             team.team
         ));
         

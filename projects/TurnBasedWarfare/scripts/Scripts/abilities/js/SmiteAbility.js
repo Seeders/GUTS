@@ -105,8 +105,8 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen flash and shake
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#FFD700', 500);
-            this.game.effectsSystem.playScreenShake(300, 3);
+            this.game.effectsSystem.playScreenFlash('#FFD700', 0.5);
+            this.game.effectsSystem.playScreenShake(0.3, 3);
         }
         
         this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);

@@ -22,10 +22,10 @@ class LifetimeSystem extends engine.BaseSystem {
         };
     }
     
-    update(deltaTime, now) {        
+    update() {        
         // Only check periodically for performance
-        if (now - this.lastCheck < this.CHECK_INTERVAL) return;
-        this.lastCheck = now;
+        if (this.game.state.now - this.lastCheck < this.CHECK_INTERVAL) return;
+        this.lastCheck = this.game.state.now;
         
         // Get all entities with lifetime components
         const lifetimeEntities = this.game.getEntitiesWith(this.componentTypes.LIFETIME);
@@ -34,7 +34,7 @@ class LifetimeSystem extends engine.BaseSystem {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (!lifetime) return;
             
-            const age = (now - lifetime.startTime);
+            const age = (this.game.state.now - lifetime.startTime);
             
             // Check if entity has expired
             if (age >= lifetime.duration) {
@@ -252,7 +252,7 @@ class LifetimeSystem extends engine.BaseSystem {
         // Screen effects if specified
         if (effectConfig.screenShake) {
             this.game.effectsSystem.playScreenShake(
-                effectConfig.screenShake.duration || 200,
+                effectConfig.screenShake.duration || 0.2,
                 effectConfig.screenShake.intensity || 1
             );
         }
@@ -260,7 +260,7 @@ class LifetimeSystem extends engine.BaseSystem {
         if (effectConfig.screenFlash) {
             this.game.effectsSystem.playScreenFlash(
                 effectConfig.screenFlash.color || '#FFFFFF',
-                effectConfig.screenFlash.duration || 200
+                effectConfig.screenFlash.duration || 0.2
             );
         }
     }
@@ -276,12 +276,10 @@ class LifetimeSystem extends engine.BaseSystem {
      * @param {Object} options - Additional options
      */
     addLifetime(entityId, duration, options = {}) {
-        const now = this.game.state?.simTime || 0;
-
         
         const lifetimeData = {
             duration: duration,
-            startTime: now,
+            startTime: this.game.state.now,
             fadeOutDuration: options.fadeOutDuration || 0,
             destructionEffect: options.destructionEffect || null,
             onDestroy: options.onDestroy || null
@@ -333,9 +331,7 @@ class LifetimeSystem extends engine.BaseSystem {
     getRemainingLifetime(entityId) {
         const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
         if (lifetime) {
-            const now = this.game.state?.simTime || 0;
-
-            const age = (now - lifetime.startTime);
+            const age = (this.game.state.now - lifetime.startTime);
             return Math.max(0, (lifetime.duration) - age);
         }
         return -1;
@@ -412,8 +408,6 @@ class LifetimeSystem extends engine.BaseSystem {
      * @returns {Array} Array of entity IDs
      */
     getExpiringEntities(threshold = 5.0) {
-        const now = this.game.state?.simTime || 0;
-
         const expiringEntities = [];
         
         const lifetimeEntities = this.getAllLifetimeEntities();
@@ -421,7 +415,7 @@ class LifetimeSystem extends engine.BaseSystem {
         lifetimeEntities.forEach(entityId => {
             const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
             if (lifetime) {
-                const age = (now - lifetime.startTime);
+                const age = (this.game.state.now - lifetime.startTime);
                 const remaining = lifetime.duration - age;
                 
                 if (remaining <= threshold && remaining > 0) {
@@ -442,7 +436,7 @@ class LifetimeSystem extends engine.BaseSystem {
         
         const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
         if (unitType) {
-            const age = ((this.game.state?.simTime || 0)) - lifetime.startTime;
+            const age = ((this.game.state.now || 0)) - lifetime.startTime;
             this.game.battleLogSystem.add(
                 `${unitType.title || unitType.type} expires after ${age.toFixed(1)} seconds`,
                 'log-lifetime'

@@ -60,7 +60,7 @@ class MovementSystem extends engine.BaseSystem {
         this.movementHistory = new Map();
     }
     
-    update(deltaTime, now) {
+    update() {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
@@ -101,7 +101,7 @@ class MovementSystem extends engine.BaseSystem {
                     avoidanceForce: { x: 0, y: 0, z: 0 }
                 });
                 
-                this.updateUnitState(entityId, pos, vel, deltaTime);
+                this.updateUnitState(entityId, pos, vel);
                 this.updateMovementHistory(entityId, vel);
             }
         });
@@ -132,17 +132,17 @@ class MovementSystem extends engine.BaseSystem {
             const isAffectedByGravity = vel.affectedByGravity;
             
             if (!projectile && unitData.has(entityId)) {
-                this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId), deltaTime);
+                this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
             }
             
             if (isAffectedByGravity) {
-                vel.vy -= this.GRAVITY * deltaTime;
+                vel.vy -= this.GRAVITY * this.game.state.deltaTime;
             }
             
             // Update position
-            pos.x += vel.vx * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-            pos.y += vel.vy * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-            pos.z += vel.vz * deltaTime * this.POSITION_UPDATE_MULTIPLIER;
+            pos.x += vel.vx * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
+            pos.y += vel.vy * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
+            pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
         
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
@@ -290,7 +290,7 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    updateUnitState(entityId, pos, vel, deltaTime) {
+    updateUnitState(entityId, pos, vel) {
         const currentTime = this.game.currentTime;
         
         if (!this.unitStates.has(entityId)) {
@@ -312,7 +312,7 @@ class MovementSystem extends engine.BaseSystem {
         );
         
         if (speed < this.STUCK_THRESHOLD && distanceMoved < 1) {
-            state.stuckTime += deltaTime * 1000;
+            state.stuckTime += this.game.state.deltaTime * 1000;
         } else {
             state.stuckTime = 0;
             state.lastPosition.x = pos.x;
@@ -627,7 +627,7 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     // Enhanced movement application with multiple smoothing techniques
-    applyUnitMovementWithSmoothing(entityId, data, deltaTime) {
+    applyUnitMovementWithSmoothing(entityId, data) {
         const { vel, desiredVelocity, separationForce, avoidanceForce, isAnchored } = data;
 
         if (isAnchored) {
@@ -661,7 +661,19 @@ class MovementSystem extends engine.BaseSystem {
         // Apply direction smoothing for more gradual turns
         if (history && history.smoothedDirection) {
             const targetDirection = Math.atan2(targetVz, targetVx);
-            const currentDirection = Math.atan2(vel.vz, vel.vx);
+            
+            // Get current direction from FACING component if velocity is negligible
+            let currentDirection;
+            const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
+            
+            if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
+                // Use facing component for direction when not moving
+                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                currentDirection = facing ? facing.angle : 0;
+            } else {
+                // Use velocity direction when moving
+                currentDirection = Math.atan2(vel.vz, vel.vx);
+            }
             
             let directionDiff = targetDirection - currentDirection;
             if (directionDiff > Math.PI) directionDiff -= 2 * Math.PI;
@@ -675,6 +687,12 @@ class MovementSystem extends engine.BaseSystem {
                 if (speed > 0.1) {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
+                    
+                    // Update the facing component to match the new direction
+                    const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                    if (facing) {
+                        facing.angle = smoothedDirection;
+                    }
                 } else {
                     vel.vx = newVx;
                     vel.vz = newVz;

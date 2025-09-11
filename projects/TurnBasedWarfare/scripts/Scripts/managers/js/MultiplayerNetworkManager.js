@@ -113,7 +113,7 @@ class MultiplayerNetworkManager {
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
                     this.game.uiSystem.showNotification(`Room created! Code: ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState);
+                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
                 }
             }
         );
@@ -134,7 +134,7 @@ class MultiplayerNetworkManager {
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
                     this.game.uiSystem.showNotification(`Joined room ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState);
+                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
                 }
             }
         );
@@ -155,7 +155,7 @@ class MultiplayerNetworkManager {
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
                     this.game.uiSystem.showNotification(`Match found! Entering room...`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState);
+                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
                 }
             }
         );

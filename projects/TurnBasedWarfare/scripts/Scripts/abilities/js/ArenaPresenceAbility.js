@@ -125,8 +125,8 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effects for dramatic presence
         if (this.game.effectsSystem && (intimidatedCount > 0 || refreshedCount > 0)) {
-            this.game.effectsSystem.playScreenShake(400, 2);
-            this.game.effectsSystem.playScreenFlash('#8B0000', 600);
+            this.game.effectsSystem.playScreenShake(0.4, 2);
+            this.game.effectsSystem.playScreenFlash('#8B0000', 0.6);
         }
         
         // Enhanced logging
@@ -169,7 +169,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Check if already intimidated - don't stack multiple intimidations
         const existingBuff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-        const currentTime = this.game.state?.simTime || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.currentTime || 0;
         const endTime = currentTime + this.intimidationDuration;
         
         if (existingBuff && existingBuff.buffType === 'intimidated') {
@@ -257,7 +257,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             return { isIntimidated: false };
         }
         
-        const currentTime = this.game.state?.simTime || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.currentTime || 0;
         const timeRemaining = Math.max(0, buff.endTime - currentTime);
         
         return {

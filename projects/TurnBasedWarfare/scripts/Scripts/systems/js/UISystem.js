@@ -22,7 +22,7 @@ class UISystem extends engine.BaseSystem {
         this.game.battleLogSystem.addWelcomeMessages();
     }
     
-    update(deltaTime) {
+    update() {
         const readyButton = document.getElementById('readyButton');
         if (this.game.state.phase === 'placement') {
             readyButton.disabled = false;

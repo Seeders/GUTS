@@ -165,7 +165,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effects for dramatic impact
         if (this.game.effectsSystem && sortedHitEnemies.length > 1) {
-            this.game.effectsSystem.playScreenShake(400, 2);
+            this.game.effectsSystem.playScreenShake(0.4, 2);
         }
         
         this.logAbilityUsage(casterEntity, 

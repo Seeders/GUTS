@@ -614,7 +614,7 @@ class PhaseSystem extends engine.BaseSystem {
 
         
     update(deltaTime) {
-        const nowWall = (this.game.state?.simTime || 0);
+        const nowWall = (this.game.state.now || 0);
 
         // Deterministic sim clock in battle
         if (this.game.state?.phase === 'battle') {

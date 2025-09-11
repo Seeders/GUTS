@@ -136,7 +136,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for successful enchantment
         if (this.game.effectsSystem && enchantedCount > 0) {
-            this.game.effectsSystem.playScreenFlash('#FFD700', 400);
+            this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
         }
         
         // Log results

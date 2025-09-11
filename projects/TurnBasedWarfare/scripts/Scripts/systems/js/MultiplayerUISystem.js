@@ -222,9 +222,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
     // UI MANAGEMENT
     // =============================================
 
-    showLobby(gameState) {
+    showLobby(gameState, roomId) {
         this.currentScreen = 'lobby';
-        
+        this.roomId = roomId;
         // Create lobby screen if it doesn't exist
         if (!document.getElementById('multiplayerLobby')) {
             this.createLobbyScreen();

@@ -143,7 +143,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Screen effect for dramatic charge
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(200, 1);
+            this.game.effectsSystem.playScreenShake(0.2, 1);
         }
         
         // DESYNC SAFE: Schedule charge completion
@@ -203,7 +203,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Screen effect for impact
             if (this.game.effectsSystem) {
-                this.game.effectsSystem.playScreenShake(400, 2);
+                this.game.effectsSystem.playScreenShake(0.4, 2);
             }
             
             // Log successful charge
