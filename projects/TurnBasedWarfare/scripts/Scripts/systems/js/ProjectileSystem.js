@@ -295,7 +295,6 @@ class ProjectileSystem extends engine.BaseSystem {
             this.componentTypes.VELOCITY, 
             this.componentTypes.PROJECTILE
         );        
- 
         projectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);

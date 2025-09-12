@@ -23,7 +23,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.cachedValidation = null;
         this.cachedGridPos = null;
         this.groundMeshCache = null;
-        
+        this.lastUpdateTime = 0;
         this.config = {
             maxSquadsPerRound: 2,
             enablePreview: true,
@@ -299,6 +299,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     update() {
         if (this.game.state.phase !== 'placement') {
+            this.lastRaycastTime = 0;
+            this.lastValidationTime = 0;
+            this.lastUpdateTime = 0;
             return;
         }
         
@@ -754,7 +757,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         if (this.config.enablePreview && this.placementPreview) {
-            let lastUpdateTime = 0;
+            
             let animationFrameId = null;
             let pendingMouseEvent = null;
             
@@ -762,17 +765,18 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 if (animationFrameId) {
                     cancelAnimationFrame(animationFrameId);
                 }
-                
+                console.log("tmm", 1);
                 pendingMouseEvent = event;
                 
                 animationFrameId = requestAnimationFrame(() => {
                     
-                    if (this.game.state.now - lastUpdateTime < .08) {
+                    if (this.game.state.now - this.lastUpdateTime < .08) {
+                        
+                        console.log("tmm", 2, this.lastUpdateTime);
                         return;
                     }
                     
-                    lastUpdateTime = this.game.state.now;
-                    
+                    this.lastUpdateTime = this.game.state.now;
                     if (this.game.state.phase === 'placement' && 
                         this.game.state.selectedUnitType && 
                         !this.isPlayerReady &&
@@ -804,7 +808,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
-        
+        console.log('upp', 1);
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -817,11 +821,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         let worldPosition;
         if (!shouldRaycast) {
+            console.log('upp', 2);
             return;
         } else {
+            console.log('upp', 3);
             worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
             
             if (worldPosition) {
+                console.log('upp', 4);
                 this.cachedWorldPos = worldPosition;
                 this.lastRaycastTime = this.game.state.now;
                 this.lastRaycastMouseX = mouseX;
@@ -830,6 +837,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         if (!worldPosition) {
+            console.log('upp', 5);
             this.placementPreview.clear();
             document.body.style.cursor = 'not-allowed';
             return;
@@ -841,14 +849,18 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.cachedGridPos && 
             this.cachedGridPos.x === gridPos.x && 
             this.cachedGridPos.z === gridPos.z) {
+            
             isValid = this.cachedValidation?.isValid || false;
+            console.log('upp', 6, isValid);
         } else {
             isValid = this.isValidPlayerPlacement(worldPosition);
             this.cachedGridPos = gridPos;
             this.cachedValidation = { isValid, timestamp: this.game.state.now, gridPos };
+            console.log('upp', 7, isValid);
         }
         
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
+        console.log('upp', 8);
         this.placementPreview.update(gridPos, this.game.state.selectedUnitType, this.game.state.mySide);
     }
 

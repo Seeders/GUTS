@@ -98,7 +98,7 @@ class SchedulingSystem extends engine.BaseSystem {
      * @param {string} entityId - Entity whose actions should be cancelled
      * @returns {number} - Number of actions cancelled
      */
-    cancelEntityActions(entityId) {
+    entityDestroyed(entityId) {
         const entityActionIds = this.entityActions.get(entityId);
         if (!entityActionIds) return 0;
         

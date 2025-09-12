@@ -63,15 +63,12 @@ class DamageSystem extends engine.BaseSystem {
 
         // Calculate final damage after resistances/armor
         const damageResult = this.calculateFinalDamage(baseDamage, element, defenses, options);
-        
+     console.log("apply damage");
         // Apply immediate damage
         targetHealth.current -= damageResult.finalDamage;
 
         // Visual feedback
         this.applyVisualFeedback(targetId, damageResult, element);
-
-        // Logging
-        this.logDamage(sourceId, targetId, damageResult, element, options);
 
         // Check for death
         if (targetHealth.current <= 0) {
@@ -108,7 +105,7 @@ class DamageSystem extends engine.BaseSystem {
             this.componentTypes.HEALTH,
             this.componentTypes.TEAM
         );
-
+console.log("apply splash");
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
             
@@ -296,25 +293,20 @@ class DamageSystem extends engine.BaseSystem {
                 return { damage: 0, prevented: true, reason: 'stack_limit' };
             }
         }
-
-        // Create new poison effect
-        const now = this.game.state.now || 0;
-
+console.log("apply poison dot");
         const poisonEffect = {
             sourceId,
             remainingTicks: ticks,
             damagePerTick: perTickDamage,
             tickInterval: duration / ticks,
-            nextTickTime: now + (duration / ticks),
-            startTime: now,
+            nextTickTime: this.game.state.now + (duration / ticks),
+            startTime: this.game.state.now,
             totalDamage: perTickDamage * ticks
         };
 
         statusEffects.poison.push(poisonEffect);
 
-        // Log poison application
-        this.logPoisonApplication(sourceId, targetId, poisonEffect);
-
+      
         return {
             damage: poisonEffect.totalDamage,
             isPoison: true,
@@ -327,7 +319,7 @@ class DamageSystem extends engine.BaseSystem {
     /**
      * Process ongoing poison damage
      */
-    processStatusEffects(deltaTime, now) {     
+    processStatusEffects() {     
 
         
         for (const [entityId, statusEffects] of this.activeStatusEffects.entries()) {
@@ -339,18 +331,15 @@ class DamageSystem extends engine.BaseSystem {
                 this.activeStatusEffects.delete(entityId);
                 continue;
             }
-
+console.log('processing activeStatusEffects');
             // Process poison effects
             statusEffects.poison = statusEffects.poison.filter(poisonEffect => {
-                if (now >= poisonEffect.nextTickTime) {
+                if (this.game.state.now >= poisonEffect.nextTickTime) {
                     // Apply poison damage
                     targetHealth.current -= poisonEffect.damagePerTick;
                     
                     // Visual feedback for poison
                     this.applyVisualFeedback(entityId, { finalDamage: poisonEffect.damagePerTick }, this.ELEMENT_TYPES.POISON);
-
-                    // Log poison damage
-                    this.logPoisonTick(entityId, poisonEffect);
 
                     // Check for death from poison
                     if (targetHealth.current <= 0) {
@@ -360,7 +349,7 @@ class DamageSystem extends engine.BaseSystem {
 
                     // Update for next tick
                     poisonEffect.remainingTicks--;
-                    poisonEffect.nextTickTime = now + poisonEffect.tickInterval;
+                    poisonEffect.nextTickTime = this.game.state.now + poisonEffect.tickInterval;
 
                     // Keep poison if ticks remain
                     return poisonEffect.remainingTicks > 0;
@@ -389,8 +378,6 @@ class DamageSystem extends engine.BaseSystem {
             this.activeStatusEffects.delete(targetId);
         }
 
-        // Log cure
-        this.logPoisonCure(targetId, removedStacks.length);
         return true;
     }
 
@@ -402,10 +389,8 @@ class DamageSystem extends engine.BaseSystem {
      * Schedule damage to be applied later (for melee attacks, timed effects, etc.)
      */
     scheduleDamage(sourceId, targetId, damage, element, delay, options = {}) {
-        const now = this.game.state.now || 0;
-
-        const triggerTime = now + delay;
-        const eventId = `${sourceId}_${targetId}_${now}_${Math.random()}`;
+        const triggerTime = this.game.state.now + delay;
+        const eventId = `${sourceId}_${targetId}_${this.game.state.now}_${Math.random()}`;
         
         this.pendingDamageEvents.set(eventId, {
             sourceId,
@@ -423,18 +408,20 @@ class DamageSystem extends engine.BaseSystem {
     /**
      * Process pending damage events
      */
-    processPendingDamage(deltaTime, now) {        
+    processPendingDamage() {        
 
         const eventsToRemove = [];
         
         for (const [eventId, event] of this.pendingDamageEvents.entries()) {
-            if (now >= event.triggerTime) {
+            console.log('processing damage');
+            if (this.game.state.now >= event.triggerTime) {
                 // Check if target is still valid
                 const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
                 const targetDeathState = this.game.getComponent(event.targetId, this.componentTypes.DEATH_STATE);
                 
                 if (targetHealth && targetHealth.current > 0 && (!targetDeathState || !targetDeathState.isDying)) {
                     // Apply the delayed damage
+                    
                     this.applyDamage(event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,
                         isDelayed: true
@@ -448,13 +435,7 @@ class DamageSystem extends engine.BaseSystem {
         eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
     }
 
-    // =============================================
-    // UTILITY METHODS
-    // =============================================
 
-    /**
-     * Calculate 3D distance between two positions
-     */
     calculateDistance3D(pos1, pos2) {
         const dx = pos2.x - pos1.x;
         const dy = pos2.y - pos1.y;
@@ -462,24 +443,16 @@ class DamageSystem extends engine.BaseSystem {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    /**
-     * Cap resistance values to prevent going over the maximum
-     */
     capResistance(resistance) {
         return Math.min(this.RESISTANCE_CAP, Math.max(-1.0, resistance));
     }
 
-    /**
-     * Get temporary resistances from status effects
-     */
     getTemporaryResistances(entityId) {
         // This could be extended to support buff/debuff systems
         return null;
     }
 
-    /**
-     * Check if an entity has specific resistance above a threshold
-     */
+
     hasResistance(entityId, element, threshold = 0.5) {
         const defenses = this.getEntityDefenses(entityId);
         
@@ -499,21 +472,12 @@ class DamageSystem extends engine.BaseSystem {
         }
     }
 
-    /**
-     * Get poison stack count for an entity
-     */
     getPoisonStacks(entityId) {
         const statusEffects = this.activeStatusEffects.get(entityId);
         return statusEffects ? statusEffects.poison.length : 0;
     }
 
-    // =============================================
-    // VISUAL AND AUDIO FEEDBACK
-    // =============================================
 
-    /**
-     * Apply visual feedback for damage
-     */
     applyVisualFeedback(targetId, damageResult, element) {
         const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
         if (targetAnimation) {
@@ -541,89 +505,8 @@ class DamageSystem extends engine.BaseSystem {
         }
     }
 
-    // =============================================
-    // LOGGING METHODS
-    // =============================================
 
-    logDamage(sourceId, targetId, damageResult, element, options = {}) {
-        if (!this.game.battleLogSystem) return;
-        
-        const sourceUnitType = this.game.getComponent(sourceId, this.componentTypes.UNIT_TYPE);
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        
-        if (!sourceUnitType || !targetUnitType || !sourceTeam || !targetTeam) return;
-        
-        const elementText = element !== this.ELEMENT_TYPES.PHYSICAL ? ` (${element})` : '';
-        const splashText = options.isSplash ? ' [splash]' : '';
-        const critText = options.isCritical ? ' [CRITICAL]' : '';
-        
-        this.game.battleLogSystem.add(
-            `${sourceTeam.team} ${sourceUnitType.type} deals ${damageResult.finalDamage}${elementText}${critText}${splashText} damage to ${targetTeam.team} ${targetUnitType.type}`, 
-            'log-damage'
-        );
-    }
-
-    logPoisonApplication(sourceId, targetId, poisonEffect) {
-        if (!this.game.battleLogSystem) return;
-        
-        const sourceUnitType = this.game.getComponent(sourceId, this.componentTypes.UNIT_TYPE);
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        
-        if (targetUnitType && targetTeam) {
-            this.game.battleLogSystem.add(
-                `${targetTeam.team} ${targetUnitType.type} is poisoned for ${poisonEffect.damagePerTick}/tick!`, 
-                'log-poison'
-            );
-        }
-    }
-
-    logPoisonTick(entityId, poisonEffect) {
-        if (!this.game.battleLogSystem) return;
-        
-        const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        const targetTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        
-        if (targetUnitType && targetTeam) {
-            this.game.battleLogSystem.add(
-                `${targetTeam.team} ${targetUnitType.type} takes ${poisonEffect.damagePerTick} poison damage (${poisonEffect.remainingTicks} ticks left)`, 
-                'log-poison'
-            );
-        }
-    }
-
-    logPoisonResistance(entityId) {
-        // Poison resistance logging removed - poison cannot be resisted
-        // This method kept for compatibility but does nothing
-    }
-
-    logPoisonCure(entityId, stacksRemoved) {
-        if (!this.game.battleLogSystem) return;
-        
-        const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        const targetTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        
-        if (targetUnitType && targetTeam) {
-            this.game.battleLogSystem.add(
-                `${targetTeam.team} ${targetUnitType.type} is cured of ${stacksRemoved} poison stack(s)!`, 
-                'log-heal'
-            );
-        }
-    }
-
-    // =============================================
-    // SYSTEM MANAGEMENT
-    // =============================================
-
-    /**
-     * Handle entity death
-     */
     handleEntityDeath(entityId) {
-        // Clear any status effects when unit dies
-        this.activeStatusEffects.delete(entityId);
         
         // Notify other systems about death
         if (this.game.combatAISystems) {
@@ -634,40 +517,32 @@ class DamageSystem extends engine.BaseSystem {
         }
     }
 
-    /**
-     * Update method called each frame
-     */
-    update(deltaTime, now) {
-        this.processStatusEffects(deltaTime, now);
-        this.processPendingDamage(deltaTime, now);
+    entityDestroyed(entityId) {
+        // Clear pending damage events for this entity
+        const eventsToRemove = [];
+        for (const [eventId, event] of this.pendingDamageEvents.entries()) {
+            if (event.sourceId === entityId || event.targetId === entityId) {
+                eventsToRemove.push(eventId);
+            }
+        }
+        eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
+        
+        // Clear status effects
+        this.activeStatusEffects.delete(entityId);
     }
 
-    /**
-     * Clear all status effects for an entity
-     */
+    update() {
+        this.processStatusEffects();
+        this.processPendingDamage();
+    }
+
     clearAllStatusEffects(entityId) {
         this.activeStatusEffects.delete(entityId);
     }
 
-    /**
-     * Get all active status effects for an entity
-     */
     getStatusEffects(entityId) {
         return this.activeStatusEffects.get(entityId) || { poison: [] };
     }
 
-    /**
-     * Debug method to display all active status effects
-     */
-    debugStatusEffects() {
-        for (const [entityId, effects] of this.activeStatusEffects.entries()) {
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            console.log(`Entity ${entityId} (${team?.team} ${unitType?.type}):`);
-            console.log(`  Poison stacks: ${effects.poison.length}`);
-            effects.poison.forEach((poison, index) => {
-                console.log(`    Stack ${index}: ${poison.remainingTicks} ticks, ${poison.damagePerTick} dmg/tick`);
-            });
-        }
-    }
+
 }

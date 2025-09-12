@@ -349,16 +349,18 @@ class ParticleSystem extends engine.BaseSystem {
         particle.userData.velocity.copy(velocityDirection.multiplyScalar(finalSpeed));
     }
     
-    update(deltaTime) {
+    update() {
         if (!this.initialized) return;
         
         const particlesToRemove = [];
-        
+        console.log('activeParticles', this.activeParticles.length);
         this.activeParticles.forEach(particle => {
+            
             if (!particle.userData.active) return;
             
+
             // Update life
-            particle.userData.life -= deltaTime;
+            particle.userData.life -= this.game.state.deltaTime;
             
             if (particle.userData.life <= 0) {
                 particlesToRemove.push(particle);
@@ -370,20 +372,20 @@ class ParticleSystem extends engine.BaseSystem {
             
             // Update position
             particle.position.add(
-                particle.userData.velocity.clone().multiplyScalar(deltaTime)
+                particle.userData.velocity.clone().multiplyScalar(this.game.state.deltaTime)
             );
             
             // Apply gravity
-            particle.userData.velocity.y += particle.userData.gravity * deltaTime * 60;
+            particle.userData.velocity.y += particle.userData.gravity * this.game.state.deltaTime * 60;
             
             // Apply drag
             particle.userData.velocity.multiplyScalar(particle.userData.drag);
             
             // Update rotation
             if (particle.userData.angularVelocity.length() > 0) {
-                particle.rotation.x += particle.userData.angularVelocity.x * deltaTime;
-                particle.rotation.y += particle.userData.angularVelocity.y * deltaTime;
-                particle.rotation.z += particle.userData.angularVelocity.z * deltaTime;
+                particle.rotation.x += particle.userData.angularVelocity.x * this.game.state.deltaTime;
+                particle.rotation.y += particle.userData.angularVelocity.y * this.game.state.deltaTime;
+                particle.rotation.z += particle.userData.angularVelocity.z * this.game.state.deltaTime;
             }
             
             // Update visual properties based on life

@@ -8,7 +8,7 @@
   "attackSpeed": 1.2,
   "range": 100,
   "projectile": "arrow",
-  "element": "poison",
+  "element": "physical",
   "armor": 0,
   "fireResistance": 0.25,
   "coldResistance": 0.25,

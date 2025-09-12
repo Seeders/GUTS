@@ -306,6 +306,7 @@ class CombatAISystem extends engine.BaseSystem {
         // Handle melee units with damage > 0
         if (combat.damage > 0) {
             if ((this.game.state.now - combat.lastAttack) >= 1 / combat.attackSpeed) {
+    
                 this.initiateAttack(entityId, aiBehavior.currentTarget, combat);
                 combat.lastAttack = this.game.state.now;
                 aiBehavior.lastAttackStart = this.game.state.now;
@@ -391,7 +392,7 @@ class CombatAISystem extends engine.BaseSystem {
 
         const attackInterval = 1 / combat.attackSpeed;
         const damageDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
-        
+    
         const element = this.getDamageElement(attackerId, combat);
         
         this.game.damageSystem.scheduleDamage(
@@ -512,9 +513,7 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     startDeathProcess(entityId) {
-        if (this.game.schedulingManager) {
-            this.game.schedulingManager.cancelEntityActions(entityId);
-        }
+
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);

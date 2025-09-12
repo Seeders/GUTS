@@ -7,6 +7,7 @@ class BattleLogSystem extends engine.BaseSystem {
     }
     
     add(message, className = '') {
+        return;
         const timestamp = new Date().toLocaleTimeString();
         const entry = {
             message,
@@ -30,6 +31,7 @@ class BattleLogSystem extends engine.BaseSystem {
     }
     
     update() {
+        return;
         const battleLog = document.getElementById('battleLog');
         if (!battleLog) return;
 

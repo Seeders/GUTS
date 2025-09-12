@@ -518,7 +518,7 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         // Add grass
-        this.addGrassToTerrain();
+        //this.addGrassToTerrain();
 
         // Render environment objects
         this.renderEnvironmentObjects();
