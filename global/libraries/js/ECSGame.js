@@ -104,6 +104,13 @@ class ECSGame {
     
     destroyEntity(entityId) {
         if (this.entities.has(entityId)) {
+
+            this.systems.forEach(system => {
+                if (system.entityDestroyed) {
+                    system.entityDestroyed(entityId);                    
+                }
+            });
+
             const componentTypes = this.entities.get(entityId);
             componentTypes.forEach(type => {
                 this.removeComponent(entityId, type);
