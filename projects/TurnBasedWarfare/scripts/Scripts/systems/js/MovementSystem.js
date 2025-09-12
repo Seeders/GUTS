@@ -312,7 +312,7 @@ class MovementSystem extends engine.BaseSystem {
         );
         
         if (speed < this.STUCK_THRESHOLD && distanceMoved < 1) {
-            state.stuckTime += this.game.state.deltaTime * 1000;
+            state.stuckTime += this.game.state.deltaTime;
         } else {
             state.stuckTime = 0;
             state.lastPosition.x = pos.x;

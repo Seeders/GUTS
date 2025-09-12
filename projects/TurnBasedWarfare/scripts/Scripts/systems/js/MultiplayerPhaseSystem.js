@@ -474,12 +474,12 @@ class MultiplayerPhaseSystem {
     }
             
         
-    update(deltaTime) {
+    update() {
         const nowWall = (this.game.state.now || 0);
 
         // Deterministic sim clock in battle
         if (this.game.state?.phase === 'battle') {
-            this._simAccum += deltaTime;
+            this._simAccum += this.game.state.deltaTime;
             while (this._simAccum >= this.FIXED_DT) {
                 this.game.state.simTime += this.FIXED_DT;
                 this.game.state.simTick = (this.game.state.simTick || 0) + 1;

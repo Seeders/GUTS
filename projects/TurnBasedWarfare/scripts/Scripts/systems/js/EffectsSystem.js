@@ -1002,7 +1002,7 @@ class EffectsSystem extends engine.BaseSystem {
     }
     
     // Main update method called by game loop
-    update(deltaTime) {
+    update() {
         this.updateAllEffects();
         this.updateAuras(); 
         this.updateScreenEffects();

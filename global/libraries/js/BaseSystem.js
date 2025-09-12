@@ -4,11 +4,11 @@ class BaseSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
     }
 
-    update(deltaTime, now){
+    update(){
 
     }
 
-    render(deltaTime, now) {
+    render() {
 
     }
 
