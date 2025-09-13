@@ -20,11 +20,11 @@ class SceneManager {
         } 
         this.currentSceneData = this.game.getCollections().scenes[this.currentSceneName];
 
-        this.game.state.currentScene = this.game.spawn("scene", {sceneData: this.currentSceneData});
-
+        
         if(this.currentSceneData.type == "ECS") {
             return this.loadECS();
         }
+        this.game.state.currentScene = this.game.spawn("scene", {sceneData: this.currentSceneData});
 
         const sceneEntities = this.currentSceneData.sceneData;
         sceneEntities.forEach(async (sceneEntity) => {
