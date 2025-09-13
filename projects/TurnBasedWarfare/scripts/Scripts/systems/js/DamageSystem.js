@@ -63,7 +63,7 @@ class DamageSystem extends engine.BaseSystem {
 
         // Calculate final damage after resistances/armor
         const damageResult = this.calculateFinalDamage(baseDamage, element, defenses, options);
-     console.log("apply damage");
+
         // Apply immediate damage
         targetHealth.current -= damageResult.finalDamage;
 
@@ -413,7 +413,7 @@ console.log('processing activeStatusEffects');
         const eventsToRemove = [];
         
         for (const [eventId, event] of this.pendingDamageEvents.entries()) {
-            console.log('processing damage');
+
             if (this.game.state.now >= event.triggerTime) {
                 // Check if target is still valid
                 const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);

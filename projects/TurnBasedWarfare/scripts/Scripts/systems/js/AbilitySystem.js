@@ -41,7 +41,7 @@ class AbilitySystem extends engine.BaseSystem {
     }
     processAbilityQueue() {        
         for (const [entityId, queuedAbility] of this.abilityQueue.entries()) {
-            if (this.game.currentTime >= queuedAbility.executeTime) {
+            if (this.game.state.now >= queuedAbility.executeTime) {
                 const abilities = this.entityAbilities.get(entityId);
                 if (abilities) {
                     const ability = abilities.find(a => a.id === queuedAbility.abilityId);
@@ -61,8 +61,8 @@ class AbilitySystem extends engine.BaseSystem {
         }
     }
     scheduleAbilityAction(action, castTime) {        
-        const executeTime = this.game.currentTime + castTime;
-        const effectId = `${this.game.currentTime}_${this.abilityActionCounter++}`;
+        const executeTime = this.game.state.now + castTime;
+        const effectId = `${this.game.state.now}_${this.abilityActionCounter++}`;
     
         this.abilityActions.set(effectId, {
             callback: action,
@@ -73,7 +73,7 @@ class AbilitySystem extends engine.BaseSystem {
         if (!this.abilityActions) return;
         
         for (const [effectId, abilityAction] of this.abilityActions.entries()) {
-            if (this.game.currentTime >= abilityAction.executeTime) {
+            if (this.game.state.now >= abilityAction.executeTime) {
                 abilityAction.callback();
                 this.abilityActions.delete(effectId);
             }
@@ -96,7 +96,7 @@ class AbilitySystem extends engine.BaseSystem {
         if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
             // Transition back to attacking state since we have abilities ready
             if (this.game.combatAISystems) {
-                this.game.combatAISystems.changeAIState(aiState, 'attacking', this.game.currentTime);
+                this.game.combatAISystems.changeAIState(aiState, 'attacking');
                 
                 // Re-enable movement decisions by resetting decision time
                 if (aiState.aiBehavior) {
@@ -130,11 +130,11 @@ class AbilitySystem extends engine.BaseSystem {
         if (ability.animation && this.game.animationSystem) {
             this.startAbilityAnimation(entityId, ability);
         }
-        console.log('use ability', this.game.currentTime, ability.castTime);
+        console.log('use ability', this.game.state.now, ability.castTime);
         this.abilityQueue.set(entityId, {
             abilityId: abilityId,
             targetData: targetData,
-            executeTime: this.game.currentTime + ability.castTime
+            executeTime: this.game.state.now + ability.castTime
         });
         
         this.setCooldown(entityId, abilityId, ability.cooldown);
@@ -172,19 +172,19 @@ class AbilitySystem extends engine.BaseSystem {
     
     setCooldown(entityId, abilityId, cooldownDuration) {
         const key = `${entityId}_${abilityId}`;
-        this.abilityCooldowns.set(key, this.game.currentTime + cooldownDuration);
+        this.abilityCooldowns.set(key, this.game.state.now + cooldownDuration);
     }
     
     isAbilityOffCooldown(entityId, abilityId) {
         const key = `${entityId}_${abilityId}`;
         const cooldownEnd = this.abilityCooldowns.get(key);
-        return !cooldownEnd || this.game.currentTime >= cooldownEnd;
+        return !cooldownEnd || this.game.state.now >= cooldownEnd;
     }
     
     getRemainingCooldown(entityId, abilityId) {
         const key = `${entityId}_${abilityId}`;
         const cooldownEnd = this.abilityCooldowns.get(key);
-        return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.currentTime);
+        return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.state.now);
     }
     
     getEntityAbilities(entityId) {

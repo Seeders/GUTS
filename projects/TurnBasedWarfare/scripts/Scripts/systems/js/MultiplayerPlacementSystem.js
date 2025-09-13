@@ -81,7 +81,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 // Reset placement state for new round
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
-        
+           
+        if (this.game.shopSystem) {
+            this.game.shopSystem.reset();
+        }
         // Enable placement UI
         this.enablePlacementUI();
         
@@ -765,14 +768,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 if (animationFrameId) {
                     cancelAnimationFrame(animationFrameId);
                 }
-                console.log("tmm", 1);
                 pendingMouseEvent = event;
                 
                 animationFrameId = requestAnimationFrame(() => {
                     
                     if (this.game.state.now - this.lastUpdateTime < .08) {
                         
-                        console.log("tmm", 2, this.lastUpdateTime);
                         return;
                     }
                     
@@ -808,7 +809,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
-        console.log('upp', 1);
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -821,14 +821,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         let worldPosition;
         if (!shouldRaycast) {
-            console.log('upp', 2);
             return;
         } else {
-            console.log('upp', 3);
             worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
             
             if (worldPosition) {
-                console.log('upp', 4);
                 this.cachedWorldPos = worldPosition;
                 this.lastRaycastTime = this.game.state.now;
                 this.lastRaycastMouseX = mouseX;
@@ -837,7 +834,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         if (!worldPosition) {
-            console.log('upp', 5);
             this.placementPreview.clear();
             document.body.style.cursor = 'not-allowed';
             return;
@@ -851,16 +847,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.cachedGridPos.z === gridPos.z) {
             
             isValid = this.cachedValidation?.isValid || false;
-            console.log('upp', 6, isValid);
+
         } else {
             isValid = this.isValidPlayerPlacement(worldPosition);
             this.cachedGridPos = gridPos;
             this.cachedValidation = { isValid, timestamp: this.game.state.now, gridPos };
-            console.log('upp', 7, isValid);
+
         }
         
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
-        console.log('upp', 8);
+;
         this.placementPreview.update(gridPos, this.game.state.selectedUnitType, this.game.state.mySide);
     }
 

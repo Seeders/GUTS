@@ -8,6 +8,10 @@ class ShopSystem extends engine.BaseSystem {
         this.lastExperienceUpdate = 0;
     }
     
+    reset() {
+        this.lastExperienceUpdate = 0;
+    }
+
     createShop() {
         const shop = document.getElementById('unitShop');
         shop.innerHTML = '';
@@ -329,7 +333,7 @@ class ShopSystem extends engine.BaseSystem {
                 const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
                 const hasReadySquads = squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
-                
+                console.log(squadsReadyToLevelUp.length);
                 // Refresh shop if experience panel state changed
                 if (hasReadySquads !== hasExperiencePanel) {
                     this.createShop();

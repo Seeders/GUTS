@@ -78,8 +78,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Initial cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Lightning crackles between enemies!`);
-        
+   
         // DESYNC SAFE: Find closest enemy deterministically
         const firstTarget = this.findClosestEnemy(casterEntity, enemies);
         if (!firstTarget) return;

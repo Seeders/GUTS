@@ -933,7 +933,9 @@ class PlacementSystem extends engine.BaseSystem {
                 }
             }
         }
-        
+        if (this.game.shopSystem) {
+            this.game.shopSystem.reset();
+        }
         this.playerPlacements = [];
         this.enemyPlacements = [];
         this.clearUndoStack();

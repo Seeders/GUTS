@@ -29,7 +29,6 @@ class HealthBarSystem extends engine.BaseSystem {
     }
     
     update() {
-        return;
         // Wait for scene to be available
         if (!this.game.scene || !this.game.camera) {
             return;

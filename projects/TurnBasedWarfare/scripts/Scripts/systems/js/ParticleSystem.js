@@ -353,7 +353,6 @@ class ParticleSystem extends engine.BaseSystem {
         if (!this.initialized) return;
         
         const particlesToRemove = [];
-        console.log('activeParticles', this.activeParticles.length);
         this.activeParticles.forEach(particle => {
             
             if (!particle.userData.active) return;
