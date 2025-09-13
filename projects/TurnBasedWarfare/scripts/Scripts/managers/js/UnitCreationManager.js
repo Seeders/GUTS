@@ -71,7 +71,6 @@ class UnitCreationManager {
         try {
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
-            console.log('creating ', unitType, team, teamConfig);
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
             
@@ -110,7 +109,6 @@ class UnitCreationManager {
             const squadData = this.game.squadManager.getSquadData(unitType);
             const validation = this.game.squadManager.validateSquadConfig(squadData);
             
-            console.log('create Squad', squadData);
             if (!validation.valid) {
                 console.log("invalid squad config");
                 return false;
@@ -166,7 +164,6 @@ class UnitCreationManager {
             // Initialize squad in experience system if available
             if (this.game.squadExperienceSystem) {
                 const unitIds = squadUnits.map(unit => unit.entityId);
-                console.log('initialize squad with unitIDs', unitIds, squadUnits);
                 this.game.squadExperienceSystem.initializeSquad(placementId, unitType, unitIds, team);
             }
 
@@ -562,8 +559,8 @@ class UnitCreationManager {
      */
     getTerrainHeight(worldX, worldZ) {
         try {
-            if (this.game.worldSystem?.getTerrainHeightAtPosition) {
-                return this.game.worldSystem.getTerrainHeightAtPosition(worldX, worldZ);
+            if (this.game.terrainSystem?.getTerrainHeightAtPosition) {
+                return this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
             }
         } catch (error) {
             console.warn(`Error getting terrain height at (${worldX}, ${worldZ}):`, error);

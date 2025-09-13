@@ -90,8 +90,8 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (existingBuff && existingBuff.buffType === 'rallied') {
                 // DESYNC SAFE: Refresh duration instead of stacking
-                existingBuff.endTime = this.game.currentTime + this.duration;
-                existingBuff.appliedTime = this.game.currentTime; // Update applied time
+                existingBuff.endTime = this.game.state.now + this.duration;
+                existingBuff.appliedTime = this.game.state.now; // Update applied time
             } else {
                 // Apply new rally buff
                 const Components = this.game.componentManager.getComponents();
@@ -100,7 +100,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
                         damageMultiplier: this.damageMultiplier, 
                         moralBoost: true, 
                         fearImmunity: true 
-                    }, this.game.currentTime + this.duration, false, 1, this.game.currentTime));
+                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
             }
             
             // Visual rally effect on each ally

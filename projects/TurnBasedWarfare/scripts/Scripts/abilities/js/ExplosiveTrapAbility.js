@@ -124,7 +124,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
         
         // DESYNC SAFE: Add lifetime to prevent permanent traps
         this.game.addComponent(trapId, this.componentTypes.LIFETIME, 
-            Components.Lifetime(60.0, this.game.currentTime)); // 60 second lifetime
+            Components.Lifetime(60.0, this.game.state.now)); // 60 second lifetime
         
         // Visual trap placement effect
         this.createVisualEffect(trapPos, 'trap_place');

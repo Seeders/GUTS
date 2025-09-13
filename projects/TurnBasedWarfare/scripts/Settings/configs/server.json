@@ -14,12 +14,13 @@
     "GameRoom",
     "ServerGameRoom",
     "GameState",
-    "ECSGame",
+    "BaseECSGame",
     "GameUtils",
     "ServerECSGame",    
     "ServerEventManager",
     "ServerNetworkManager",
     "ServerSceneManager",
-    "SeededRandom"
+    "SeededRandom",
+    "DesyncDebugger"
   ]
 }

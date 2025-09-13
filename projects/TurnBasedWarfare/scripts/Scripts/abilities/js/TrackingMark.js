@@ -124,7 +124,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
     
     applyOrStackMark(casterEntity, targetId) {
         const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.markDuration;
         
         // Check for existing tracking mark

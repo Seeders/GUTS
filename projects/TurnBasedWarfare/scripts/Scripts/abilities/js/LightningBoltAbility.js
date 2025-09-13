@@ -112,7 +112,7 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
     // DESYNC SAFE: Deterministic critical hit calculation
     isDeterministicCritical(casterId, targetId) {
         // Create a deterministic "random" value based on entity IDs and game time
-        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.currentTime * 100);
+        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.state.now * 100);
         const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
         
         return pseudoRandom < this.criticalChance;

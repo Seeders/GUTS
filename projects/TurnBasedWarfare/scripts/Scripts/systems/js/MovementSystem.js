@@ -291,7 +291,7 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     updateUnitState(entityId, pos, vel) {
-        const currentTime = this.game.currentTime;
+        const currentTime = this.game.state.now;
         
         if (!this.unitStates.has(entityId)) {
             this.unitStates.set(entityId, {
@@ -766,8 +766,8 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     getTerrainHeightAtPosition(worldX, worldZ) {
-        if (this.game.worldSystem && this.game.worldSystem.getTerrainHeightAtPosition) {
-            return this.game.worldSystem.getTerrainHeightAtPosition(worldX, worldZ);
+        if (this.game.terrainSystem && this.game.terrainSystem.getTerrainHeightAtPosition) {
+            return this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
         }
         return this.GROUND_LEVEL;
     }

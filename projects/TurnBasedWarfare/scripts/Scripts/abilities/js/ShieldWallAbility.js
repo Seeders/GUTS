@@ -101,7 +101,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Apply shield wall component with proper timing
         const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.wallDuration;
         
         this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
@@ -174,7 +174,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Apply taunt component
             const Components = this.game.componentManager.getComponents();
-            const currentTime = this.game.state.now || this.game.currentTime || 0;
+            const currentTime = this.game.state.now || this.game.state.now || 0;
             const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
             
             this.game.addComponent(enemyId, this.componentTypes.TAUNT, 

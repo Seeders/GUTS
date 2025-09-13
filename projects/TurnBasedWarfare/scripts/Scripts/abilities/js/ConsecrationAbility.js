@@ -93,7 +93,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
                 tickInterval: this.tickInterval,
                 tickDamage: this.tickDamage,
                 tickHeal: this.tickHeal
-            }, this.game.currentTime));
+            }, this.game.state.now));
         
         this.game.addComponent(consecrationId, this.componentTypes.RENDERABLE, 
             Components.Renderable("effects", "consecration"));

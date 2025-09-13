@@ -542,9 +542,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
     handleRoundResult(roundResult) {
         const state = this.game.state;
-        state.phase = 'ended';  
-        
-        this.game.desyncDebugger.displaySync = false;    
+        state.phase = 'ended'; 
     }
 
     updatePhaseUI() {
@@ -608,9 +606,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             }
         }
     }
-
-
-      
+    
     updateGoldDisplay() {
         const goldDisplay = document.getElementById('multiplayerPlayerGold');
         if (goldDisplay) {

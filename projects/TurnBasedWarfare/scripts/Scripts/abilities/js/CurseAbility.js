@@ -101,7 +101,7 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                         damageMultiplier: this.damageReduction,
                         damageTakenMultiplier: this.vulnerabilityIncrease,
                         isCursed: true
-                    }, this.game.currentTime + this.duration, false, 1, this.game.currentTime));
+                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
                 
                 // Create dark aura effect
                 if (this.game.effectsSystem) {

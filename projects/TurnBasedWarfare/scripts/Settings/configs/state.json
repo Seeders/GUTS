@@ -1,7 +1,7 @@
 {
   "level": "level1",
   "mousePosition": "{ x: 0, y: 0, isoX: 0, isoY: 0, gridX: 0, gridY: 0 }",
-  "isPaused": true,
+  "isPaused": false,
   "isLevelingUp": false,
   "timeScale": 1,
   "gameOver": false,

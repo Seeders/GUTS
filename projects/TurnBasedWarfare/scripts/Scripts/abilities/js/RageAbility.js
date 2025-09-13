@@ -98,7 +98,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Apply rage buff with proper timing
         const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
         
         this.game.addComponent(casterEntity, this.componentTypes.BUFF, 

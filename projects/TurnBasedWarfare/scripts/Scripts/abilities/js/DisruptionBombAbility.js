@@ -129,8 +129,8 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                 
                 if (existingBuff && existingBuff.buffType === 'disrupted') {
                     // DESYNC SAFE: Just refresh duration instead of stacking
-                    existingBuff.endTime = this.game.currentTime + this.disruptionDuration;
-                    existingBuff.appliedTime = this.game.currentTime;
+                    existingBuff.endTime = this.game.state.now + this.disruptionDuration;
+                    existingBuff.appliedTime = this.game.state.now;
                 } else {
                     // Apply new disruption buff
                     const Components = this.game.componentManager.getComponents();
@@ -139,7 +139,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                             abilitiesDisabled: true,
                             accuracyReduction: this.accuracyReduction,
                             movementSlowed: this.movementSlowed
-                        }, this.game.currentTime + this.disruptionDuration, false, 1, this.game.currentTime));
+                        }, this.game.state.now + this.disruptionDuration, false, 1, this.game.state.now));
                     
                     // DESYNC SAFE: Schedule disruption removal
                     this.game.schedulingSystem.scheduleAction(() => {

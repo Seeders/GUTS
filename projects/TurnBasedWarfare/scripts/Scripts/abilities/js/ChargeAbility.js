@@ -132,7 +132,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
         const Components = this.game.componentManager.getComponents();
         this.game.addComponent(casterEntity, this.componentTypes.CHARGING, 
             Components.Charging(targetId, this.chargeSpeed, this.chargeDamage, 
-                this.game.currentTime, 0, distance));
+                this.game.state.now, 0, distance));
         
         // Set velocity for charge
         velocity.vx = (dx / distance) * this.chargeSpeed;
@@ -194,7 +194,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
                 Components.Buff('stunned', { 
                     movementDisabled: true, 
                     attackDisabled: true 
-                }, this.game.currentTime + this.stunDuration, false, 1, this.game.currentTime));
+                }, this.game.state.now + this.stunDuration, false, 1, this.game.state.now));
             
             // DESYNC SAFE: Schedule stun removal
             this.game.schedulingSystem.scheduleAction(() => {

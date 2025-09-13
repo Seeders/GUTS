@@ -109,8 +109,8 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (existingBuff && existingBuff.buffType === 'enchant_weapon') {
                 // DESYNC SAFE: Refresh duration and update element
-                existingBuff.endTime = this.game.currentTime + this.duration;
-                existingBuff.appliedTime = this.game.currentTime;
+                existingBuff.endTime = this.game.state.now + this.duration;
+                existingBuff.appliedTime = this.game.state.now;
                 existingBuff.modifiers.weaponElement = selectedElement;
             } else {
                 // Apply new weapon enchantment
@@ -120,7 +120,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
                         weaponElement: selectedElement,
                         elementalDamage: this.elementalDamage,
                         glowing: true
-                    }, this.game.currentTime + this.duration, false, 1, this.game.currentTime));
+                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
                 
                 // DESYNC SAFE: Schedule enchantment removal
                 this.game.schedulingSystem.scheduleAction(() => {
@@ -151,7 +151,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
     // DESYNC SAFE: Select element deterministically instead of randomly
     selectDeterministicElement(allyId, allyIndex) {
         // Create a deterministic "random" value based on ally ID, game time, and index
-        const seed = parseInt(allyId) + Math.floor(this.game.currentTime * 100) + allyIndex;
+        const seed = parseInt(allyId) + Math.floor(this.game.state.now * 100) + allyIndex;
         const pseudoRandom = (seed * 9301 + 49297) % 233280; // Simple PRNG
         const elementIndex = Math.floor((pseudoRandom / 233280) * this.availableElements.length);
         

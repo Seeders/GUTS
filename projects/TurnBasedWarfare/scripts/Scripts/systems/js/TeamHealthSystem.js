@@ -235,7 +235,6 @@ class TeamHealthSystem extends engine.BaseSystem {
     
     // Apply damage when PhaseSystem tells us a round ended
     applyRoundDamage(winningTeam, survivingUnits) {
-        console.log('Apply Round Damage', winningTeam, survivingUnits);
         
         // Calculate damage based on surviving squads' base values
         const damageResult = this.calculateSquadBasedDamage(survivingUnits);
@@ -296,7 +295,6 @@ class TeamHealthSystem extends engine.BaseSystem {
         let totalDamage = 0;
         let survivingSquadCount = 0;
         const squadDetails = [];
-        console.log("survivingUnits", survivingUnits);
         // Group surviving units by their squad placement ID
         survivingUnits.forEach(unitId => {
             // Find which squad this unit belongs to
@@ -449,7 +447,6 @@ class TeamHealthSystem extends engine.BaseSystem {
     }
     
     dealDamageToTeam(team, damage) {
-        console.log("deal damage to team", team, damage);
         this.teamHealth[team] = Math.max(0, this.teamHealth[team] - damage);
         if(!this.game.isServer){
             this.updateHealthDisplay();

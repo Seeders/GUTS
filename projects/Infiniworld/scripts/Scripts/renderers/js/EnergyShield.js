@@ -36,7 +36,7 @@ class EnergyShield extends engine.Component {
         };
         
         // Reset recharge timer when taking damage
-        this.lastDamageTime = this.game.currentTime;
+        this.lastDamageTime = this.game.state.now;
         
         if (this.energyShield > 0) {
             if (damage <= this.energyShield) {
@@ -64,7 +64,7 @@ class EnergyShield extends engine.Component {
         let statsComp = this.parent.getComponent('stats');
         this.maxEnergyShield = statsComp.stats.energyShield || 0;
         // Check if enough time has passed since last damage
-        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;
+        const timeSinceLastDamage = this.game.state.now - this.lastDamageTime;
         
         if (timeSinceLastDamage >= this.rechargeDelay && this.energyShield < this.maxEnergyShield) {
             // Calculate recharge amount based on time elapsed and rate
@@ -103,7 +103,7 @@ class EnergyShield extends engine.Component {
         }
         
         // Draw recharge indicator if currently recharging
-        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;
+        const timeSinceLastDamage = this.game.state.now - this.lastDamageTime;
         if (timeSinceLastDamage < this.rechargeDelay && this.energyShield < this.maxEnergyShield) {
             const rechargePercentage = timeSinceLastDamage / this.rechargeDelay;
             

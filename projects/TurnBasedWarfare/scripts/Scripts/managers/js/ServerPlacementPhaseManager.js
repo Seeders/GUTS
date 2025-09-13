@@ -155,8 +155,6 @@ class ServerPlacementPhaseManager {
                                 // Spawn units from placements
                     this.game.serverBattlePhaseSystem.spawnSquadsFromPlacements(room);
                     const gameState = room.getGameState();
-                    console.log('all ready', gameState);
-                    console.log(gameState.players[0].placements[0].experience, gameState.players[0].placements[0].experience?.unitIds || 'no experience');
                     this.serverNetworkManager.broadcastToRoom(roomId, 'PLACEMENT_READY_UPDATE', {                       
                         gameState: gameState,
                         allReady: true
@@ -201,7 +199,6 @@ class ServerPlacementPhaseManager {
         if (placements.length > 0 && !this.validatePlacements(placements, player)) {
             return { success: false, error: 'Invalid placements' };
         }
-        console.log('set placements', playerId, placements);
         // Store placements
         this.playerPlacements.set(playerId, placements);
         player.stats.squadsPlacedThisRound = placements.length;

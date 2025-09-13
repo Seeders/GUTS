@@ -169,7 +169,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Check if already intimidated - don't stack multiple intimidations
         const existingBuff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-        const currentTime = this.game.state.now || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.intimidationDuration;
         
         if (existingBuff && existingBuff.buffType === 'intimidated') {
@@ -257,7 +257,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             return { isIntimidated: false };
         }
         
-        const currentTime = this.game.state.now || this.game.currentTime || 0;
+        const currentTime = this.game.state.now || this.game.state.now || 0;
         const timeRemaining = Math.max(0, buff.endTime - currentTime);
         
         return {

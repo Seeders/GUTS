@@ -282,8 +282,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.applyOpponentPlacements(opponentPlacements);
             this.hidePlacementUI();
             this.game.state.phase = 'battle';
-            this.game.app.resetCurrentTime();
-            this.game.desyncDebugger.displaySync = true;
+            this.game.resetCurrentTime();
+            this.game.desyncDebugger.displaySync(true);
         } else {
             // Show opponent status
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
@@ -317,8 +317,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
     // Apply opponent placements received from multiplayer server
     applyOpponentPlacements(opponentData) {
-        console.log('MultiplayerPlacementSystem: Applying opponent placements', opponentData);
-        
+      
         // Clear existing enemy placements
         this.opponentPlacements = [];
         
@@ -345,8 +344,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     createEnemyFromOpponentPlacement(opponentPlacement) {
-        console.log('Creating enemy from opponent placement:', opponentPlacement);
-        
+      
         if(this.game.squadExperienceSystem){
             this.game.squadExperienceSystem.setSquadInfo(opponentPlacement.placementId, opponentPlacement.experience);
         }
@@ -358,8 +356,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.game.gridSystem
             );
 
-            console.log(`Creating ${unitPositions.length} enemy units at positions:`, unitPositions);
-
+        
             unitPositions.forEach((pos, index) => {
                 const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
@@ -1005,7 +1002,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
-        
+
         // Hide placement UI
         this.hidePlacementUI();
         

@@ -225,7 +225,6 @@ class MultiplayerNetworkManager {
             this.game.uiSystem.showNotification('Defeat! Better luck next round!', 'warning');
         }
         console.log('battle result', data);
-        this.game.desyncDebugger.displaySync = false;
 
         if(data.result?.survivingUnits){
             let winningUnits = data.result.survivingUnits[data.result.winner];                

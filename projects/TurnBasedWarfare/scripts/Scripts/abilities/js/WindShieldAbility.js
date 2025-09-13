@@ -91,7 +91,7 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
                 Components.Buff('wind_shield', { 
                     deflectionChance: this.deflectionChance,
                     projectileReflection: true
-                }, this.game.currentTime + this.shieldDuration, false, 1, this.game.currentTime));
+                }, this.game.state.now + this.shieldDuration, false, 1, this.game.state.now));
             
             // DESYNC SAFE: Schedule shield removal
             this.game.schedulingSystem.scheduleAction(() => {

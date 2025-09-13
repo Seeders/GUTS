@@ -160,7 +160,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             team: casterTeam.team,
             contributors: new Set([casterId]),
             progress: 0,
-            startTime: this.game.currentTime,
+            startTime: this.game.state.now,
             originalTeam: targetTeam.team
         };
 

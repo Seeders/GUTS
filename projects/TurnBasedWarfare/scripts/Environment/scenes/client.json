@@ -54,6 +54,9 @@
           "type": "WorldSystem"
         },
         {
+          "type": "TerrainSystem"
+        },
+        {
           "type": "RenderSystem"
         },
         {

@@ -117,7 +117,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Apply phalanx buff
             const Components = this.game.componentManager.getComponents();
-            const currentTime = this.game.state.now || this.game.currentTime || 0;
+            const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
             
             this.game.addComponent(hopliteId, this.componentTypes.BUFF, 

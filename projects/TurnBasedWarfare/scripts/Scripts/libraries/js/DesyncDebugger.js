@@ -1,49 +1,37 @@
 class DesyncDebugger {
     constructor(game) {
         this.game = game;
+        this.game.desyncDebugger = this;
         this.frameHashes = [];
         this.lastDisplayTime = 0;
         this.logInterval = 0; // Log every 1 sec
         this.detailedLogging = true;
-        this.displaySync = false;
     }
-
-    // Call this every frame from your main update loop
-    checkSync() {
-
-        // Get all combat entities
+    displaySync(detailed) {    
         const entities = this.game.getEntitiesWith(
             this.game.componentManager.getComponentTypes().POSITION,
             this.game.componentManager.getComponentTypes().COMBAT
         );
-
         // Create deterministic state snapshot
         const stateData = this.createStateSnapshot(entities);
-        const hash = this.hashState(stateData);
+        const hash = this.hash(stateData);
         
         this.frameHashes.push({
             hash: hash,
             entityCount: entities.length,
-            time: this.game.currentTime
-        });
-
-        // Log periodically
-        if (this.displaySync ) {
-           // console.log(`Hash=${hash}, Entities=${entities.length}, Time=${this.game.currentTime.toFixed(3)}`);
-            
-            if (this.displaySync || this.detailedLogging) {
-              //  console.log("Detailed state:", stateData);
-            }
-            this.lastDisplayTime = this.game.currentTime;
-        }
-        return hash;
+            time: this.game.state.now
+        });        
+        console.log(`Hash=${hash}, Entities=${entities.length}, Time=${this.game.state.now.toFixed(3)}`);        
+        if (detailed) {
+            console.log("Detailed state:", stateData);
+        }            
     }
 
     createStateSnapshot(entities) {
         const CT = this.game.componentManager.getComponentTypes();
         
         const snapshot = {
-            gameTime: parseFloat(this.game.currentTime.toFixed(6)), // Round to avoid float precision issues
+            gameTime: parseFloat(this.game.state.now.toFixed(6)), // Round to avoid float precision issues
             entities: []
         };
 
@@ -56,29 +44,29 @@ class DesyncDebugger {
 
             const entityData = {
                 id: String(entityId),
-                pos: pos ? {
+                pos: `${this.hash(pos ? {
                     x: parseFloat(pos.x.toFixed(3)),
                     y: parseFloat(pos.y.toFixed(3)),
                     z: parseFloat(pos.z.toFixed(3))
-                } : null,
-                vel: vel ? {
+                } : null)} ${pos.x}, ${pos.y}, ${pos.z}`,
+                vel: `${this.hash(vel ? {
                     vx: parseFloat(vel.vx.toFixed(3)),
                     vy: parseFloat(vel.vy.toFixed(3)),
                     vz: parseFloat(vel.vz.toFixed(3))
-                } : null,
-                health: health ? {
+                } : null)} ${vel.vx}, ${vel.vy}, ${vel.vz}`,
+                health: this.hash(health ? {
                     current: health.current,
                     max: health.max
-                } : null,
-                combat: combat ? {
+                } : null),
+                combat: this.hash(combat ? {
                     lastAttack: parseFloat(combat.lastAttack.toFixed(6)),
                     damage: combat.damage,
                     attackSpeed: combat.attackSpeed
-                } : null,
-                aiState: aiState ? {
+                } : null),
+                aiState: this.hash(aiState ? {
                     state: aiState.state,
                     currentTarget: aiState.aiBehavior ? String(aiState.aiBehavior.currentTarget || 'null') : 'null'
-                } : null
+                } : null)
             };
 
             snapshot.entities.push(entityData);
@@ -87,9 +75,9 @@ class DesyncDebugger {
         return snapshot;
     }
 
-    hashState(stateData) {
+    hash(data) {
         // Simple hash function for state comparison
-        const str = JSON.stringify(stateData);
+        const str = JSON.stringify(data);
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             const char = str.charCodeAt(i);
@@ -153,4 +141,21 @@ class DesyncDebugger {
         console.log("Desync Analysis:", patterns);
         return patterns;
     }
+}
+
+
+
+if (typeof window !== 'undefined') {
+    window.DesyncDebugger = DesyncDebugger;
+}
+
+// Make available as ES module export (new for server)  
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = DesyncDebugger;
+}
+
+// Make available as ES6 export (also new for server)
+if (typeof exports !== 'undefined') {
+    exports.default = DesyncDebugger;
+    exports.DesyncDebugger = DesyncDebugger;
 }

@@ -8,11 +8,12 @@ import { fileURLToPath } from 'url';
 // Import server-specific classes
 import ServerEngine from '../../engine/ServerEngine.js';
 import ServerModuleManager from '../../engine/ServerModuleManager.js';
-import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
+import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
 import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
 import GameState from '../../global/libraries/js/GameState.js';
 import GameRoom from '../../global/libraries/js/GameRoom.js';
 import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
+import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,11 +22,12 @@ const __dirname = path.dirname(__filename);
 global.GUTS = {
     ServerEngine,
     ServerModuleManager, 
-    ServerECSGame,
+    BaseECSGame,
     ServerSceneManager,
     GameState,
     GameRoom,
-    ServerNetworkManager
+    ServerNetworkManager,
+    DesyncDebugger
 };
 
 // Set up Express server for serving client files (optional)

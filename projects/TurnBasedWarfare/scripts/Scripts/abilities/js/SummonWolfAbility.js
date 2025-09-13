@@ -193,7 +193,7 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             
             // DESYNC SAFE: Use game time for summoned component
             this.game.addComponent(creatureId, componentTypes.SUMMONED, 
-                components.Summoned(summoner, unitDefId, null, this.game.currentTime || 0));
+                components.Summoned(summoner, unitDefId, null, this.game.state.now || 0));
             
             return creatureId;
         } catch (error) {

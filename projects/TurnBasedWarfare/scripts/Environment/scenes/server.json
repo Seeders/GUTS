@@ -15,10 +15,10 @@
         { "type": "SquadManager" }
       ],
       "systems": [
+        {"type": "TerrainSystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
         { "type": "ProjectileSystem" },
-
         { "type": "TeamHealthSystem" },
         { "type": "DeathSystem" },
         { "type": "DamageSystem" },

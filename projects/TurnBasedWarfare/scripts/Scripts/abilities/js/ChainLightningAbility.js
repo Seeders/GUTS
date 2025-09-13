@@ -284,13 +284,13 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
     
     animateLightningArc(lightningLine, material) {
         // Use game time for deterministic animation instead of real time
-        const startTime = this.game.currentTime;
+        const startTime = this.game.state.now;
         const animationDuration = 0.48; // 480ms in game time
         const flickerInterval = 0.08; // 80ms in game time
         
         // DESYNC SAFE: Use scheduling system for animation frames
         const animateFrame = (frameIndex) => {
-            const currentTime = this.game.currentTime;
+            const currentTime = this.game.state.now;
             const elapsed = currentTime - startTime;
             
             if (elapsed >= animationDuration) {

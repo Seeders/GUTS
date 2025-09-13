@@ -24,11 +24,12 @@ class ServerBattlePhaseSystem {
     startBattle(room) {
         try {
 
-            room.game.state.isPaused = false;
+            this.game.state.isPaused = false;
             // Change room phase
-            room.game.state.phase = 'battle';
+            this.game.state.phase = 'battle';
             
-            room.game.app.resetCurrentTime();
+            this.game.resetCurrentTime();
+            this.game.desyncDebugger.displaySync(true);
             // Start battle timer
             this.startBattleTimer(room);
             
@@ -174,7 +175,7 @@ class ServerBattlePhaseSystem {
             this.battleTimer = null;
         }
         
-        room.game.state.phase = 'round_end';
+        this.game.state.phase = 'round_end';
         
         
         let battleResult = {
@@ -189,7 +190,7 @@ class ServerBattlePhaseSystem {
         battleResult.winningUnits = winningUnits;
         battleResult.winningSide = winningSide;
         if(winningSide){
-            room.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
+            this.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
         }
         // Broadcast battle end to all players in room
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
@@ -261,7 +262,6 @@ class ServerBattlePhaseSystem {
         
         // Transition back to placement phase
         this.game.state.phase = 'placement';
-        
         // Reset placement ready states
         for (const [playerId, player] of room.players) {
             player.placementReady = false;
@@ -275,7 +275,7 @@ class ServerBattlePhaseSystem {
     }
 
     endGame(room) {
-        room.game.state.phase = 'ended';
+        this.game.state.phase = 'ended';
         
         // Determine final winner
         let finalWinner = null;

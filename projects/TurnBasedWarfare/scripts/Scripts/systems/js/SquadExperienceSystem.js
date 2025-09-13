@@ -106,7 +106,6 @@ class SquadExperienceSystem extends engine.BaseSystem {
         // Check if squad can level up
         if (squadData.experience >= squadData.experienceToNextLevel) {
             squadData.canLevelUp = true;
-            console.log("can now level up", squadData);
             // Stop gaining experience until manually leveled up
             squadData.experience = squadData.experienceToNextLevel;
                 
@@ -123,10 +122,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         const squadData = this.squadExperience.get(placementId);
         const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
-        console.log('placementId', placementId);
-        console.log('squadData', squadData);
-        console.log('level up cost', levelUpCost);
-        console.log('playerGold', playerGold);
+
          if (playerGold < levelUpCost) {    
             return false;
          }
@@ -155,8 +151,6 @@ class SquadExperienceSystem extends engine.BaseSystem {
         const isSpecializationLevel = squadData.level >= 2;
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
-        console.log('isSpecializationLevel', isSpecializationLevel, squadData.level);
-        console.log('hasSpecializations', hasSpecializations, currentUnitType);
         if (!this.game.isServer && isSpecializationLevel && hasSpecializations && !specializationId) {
             this.showSpecializationSelection(placementId, squadData, levelUpCost);
             console.log('showing spec selection');

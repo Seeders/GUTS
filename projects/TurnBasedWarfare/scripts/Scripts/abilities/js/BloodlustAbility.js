@@ -75,8 +75,8 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
         const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
         if (existingBuff && existingBuff.buffType === 'bloodlust') {
             // DESYNC SAFE: Refresh duration instead of stacking
-            existingBuff.endTime = this.game.currentTime + this.duration;
-            existingBuff.appliedTime = this.game.currentTime;
+            existingBuff.endTime = this.game.state.now + this.duration;
+            existingBuff.appliedTime = this.game.state.now;
             
             // Visual refresh effect
             this.createVisualEffect(casterPos, 'bloodlust');
@@ -91,7 +91,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
                 damagePerKill: this.damagePerKill, 
                 maxStacks: this.maxStacks,
                 currentStacks: 0 // Start with 0 kill stacks
-            }, this.game.currentTime + this.duration, true, 1, this.game.currentTime));
+            }, this.game.state.now + this.duration, true, 1, this.game.state.now));
         
         // Visual bloodlust effect
         this.createVisualEffect(casterPos, 'bloodlust');

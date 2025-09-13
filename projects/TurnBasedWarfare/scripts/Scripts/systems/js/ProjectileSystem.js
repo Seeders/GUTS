@@ -60,8 +60,7 @@ class ProjectileSystem extends engine.BaseSystem {
         this.game.addComponent(projectileId, this.componentTypes.VELOCITY, 
             components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed, projectileData.ballistic || false));
         
-        console.log(`fire ${projectileId} with dmg ${sourceCombat.damage}`);
-        // Enhanced projectile component with element
+         // Enhanced projectile component with element
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
             damage: sourceCombat.damage,
             speed: projectileData.speed,

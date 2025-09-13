@@ -152,7 +152,7 @@ class CorruptingAuraAbility extends engine.app.appClasses['BaseAbility'] {
                             Components.Buff('dark_empowerment', { 
                                 damageMultiplier: 1.3,
                                 attackSpeedMultiplier: 1.2
-                            }, this.game.currentTime + 3.0, false, 1, this.game.currentTime));
+                            }, this.game.state.now + 3.0, false, 1, this.game.state.now));
                         
                         // Visual empowerment effect
                         this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
