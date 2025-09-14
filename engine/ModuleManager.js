@@ -149,6 +149,7 @@ class ModuleManager {
                             scriptTag.type = 'module';
                         }
                         scriptTag.onload = () => {
+                            console.log('loaded', library);
                             instantiateModuleFromLibrary(library, moduleConfig);
                             resolve();
                         };
