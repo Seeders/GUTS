@@ -7,7 +7,7 @@
   "libraries": [
     "Component",
     "Entity",
-    "scriptEditor"
+    "ScriptEditor"
   ],
   "propertyNames": "[\"script\", \"html\", \"css\"]",
   "loadHook": "editScript",
