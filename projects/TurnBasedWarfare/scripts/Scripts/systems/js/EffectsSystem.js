@@ -73,7 +73,7 @@ class EffectsSystem extends engine.BaseSystem {
         const { material, animation } = effect;
         
         // Batch similar updates together
-        switch (effect.animationType) {
+        switch (effect?.animationType) {
             case 'flicker':
                 this.updateFlickerEffect(effect, elapsed, animation);
                 break;
@@ -87,7 +87,7 @@ class EffectsSystem extends engine.BaseSystem {
     }
     
     updateFlickerEffect(effect, elapsed, animation) {
-        if (animation.flickerCount > 0 && effect.flickerCount < animation.flickerCount) {
+        if (animation?.flickerCount > 0 && effect?.flickerCount < animation?.flickerCount) {
             if (elapsed % animation.flickerSpeed < animation.flickerSpeed / 2) {
                 if (animation.opacityFlicker) {
                     effect.material.opacity = Math.random() * 0.6 + 0.4;
@@ -102,14 +102,14 @@ class EffectsSystem extends engine.BaseSystem {
     }
     
     updatePulseEffect(effect, elapsed, animation) {
-        if (animation.pulseEffect) {
+        if (animation?.pulseEffect) {
             const pulseIntensity = Math.sin(elapsed * 0.01) * 0.3 + 0.7;
             effect.material.opacity = pulseIntensity;
         }
     }
     
     updateFadeEffect(effect, progress, animation) {
-        if (animation.fadeOut && progress > 0.7) {
+        if (animation?.fadeOut && progress > 0.7) {
             const fadeProgress = (progress - 0.7) / 0.3;
             effect.material.opacity = effect.originalOpacity * (1 - fadeProgress);
         }
