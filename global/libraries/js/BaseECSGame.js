@@ -163,7 +163,6 @@ class BaseECSGame {
     }
 }
 
-
 if (typeof window !== 'undefined') {
     window.BaseECSGame = BaseECSGame;
 }
