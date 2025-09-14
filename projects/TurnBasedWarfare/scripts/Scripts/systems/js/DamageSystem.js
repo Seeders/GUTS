@@ -543,6 +543,21 @@ console.log('processing activeStatusEffects');
     getStatusEffects(entityId) {
         return this.activeStatusEffects.get(entityId) || { poison: [] };
     }
-
+    entityDestroyed(entityId) {
+        // Clear status effects
+        if (this.statusEffects) {
+            this.statusEffects.delete(entityId);
+        }
+        
+        // Clear poison stacks
+        if (this.poisonStacks) {
+            this.poisonStacks.delete(entityId);
+        }
+        
+        // Clear any damage tracking
+        if (this.damageHistory) {
+            this.damageHistory.delete(entityId);
+        }
+    }
 
 }

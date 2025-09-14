@@ -1099,4 +1099,21 @@ class EffectsSystem extends engine.BaseSystem {
         
         console.log('EffectsSystem destroyed');
     }
+    entityDestroyed(entityId) {
+        // Clean up any auras associated with this entity
+        if (this.activeAuras) {
+            const aurasToRemove = [];
+            for (const [auraId, auraData] of this.activeAuras) {
+                if (auraData.sourceEntityId === entityId || auraData.targetEntityId === entityId) {
+                    aurasToRemove.push(auraId);
+                }
+            }
+            aurasToRemove.forEach(auraId => this.activeAuras.delete(auraId));
+        }
+        
+        // Clean up any particle effects tracking
+        if (this.entityEffects) {
+            this.entityEffects.delete(entityId);
+        }
+    }
 }

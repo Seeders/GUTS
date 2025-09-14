@@ -456,7 +456,17 @@ class ParticleSystem extends engine.BaseSystem {
             this.returnParticleToPool(particle);
         });
     }
-    
+    entityDestroyed(entityId) {
+        // Clean up any particles associated with this entity
+        this.activeParticles = this.activeParticles.filter(particle => 
+            particle.sourceEntityId !== entityId
+        );
+        
+        // Clean up any entity-specific particle pools
+        if (this.entityParticles) {
+            this.entityParticles.delete(entityId);
+        }
+    }
     destroy() {
         // Clear all active particles
         this.clearAllParticles();

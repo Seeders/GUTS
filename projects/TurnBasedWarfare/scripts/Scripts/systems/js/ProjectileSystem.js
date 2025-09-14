@@ -689,4 +689,15 @@ class ProjectileSystem extends engine.BaseSystem {
     getProjectileTrail(projectileId) {
         return this.projectileTrails.get(projectileId) || [];
     }
+    entityDestroyed(entityId) {
+        // Clean up projectile trails
+        if (this.projectileTrails) {
+            this.projectileTrails.delete(entityId);
+        }
+        
+        // Clean up any projectile tracking
+        if (this.activeProjectiles) {
+            this.activeProjectiles.delete(entityId);
+        }
+    }
 }

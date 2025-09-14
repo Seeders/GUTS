@@ -787,4 +787,20 @@ class MovementSystem extends engine.BaseSystem {
         }
         return this.DEFAULT_UNIT_RADIUS;
     }
+    entityDestroyed(entityId) {
+        // Clear from spatial grid
+        if (this.spatialGrid) {
+            this.spatialGrid.delete(entityId);
+        }
+        
+        // Clear unit states
+        if (this.unitStates) {
+            this.unitStates.delete(entityId);
+        }
+        
+        // Clear any movement tracking
+        if (this.movementTracking) {
+            this.movementTracking.delete(entityId);
+        }
+    }
 }

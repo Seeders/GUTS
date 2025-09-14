@@ -845,4 +845,12 @@ class AnimationSystem extends engine.BaseSystem {
         this.entityAnimationStates.clear();
         this.entityProprietaryAnimations?.clear();
     }
+    entityDestroyed(entityId) {
+        this.removeEntityAnimations(entityId);
+        
+        // Clean up any animation queues
+        if (this.animationQueue) {
+            this.animationQueue.delete(entityId);
+        }
+    }
 }

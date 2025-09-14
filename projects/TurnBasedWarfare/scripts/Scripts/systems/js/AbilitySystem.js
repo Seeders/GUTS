@@ -236,4 +236,7 @@ class AbilitySystem extends engine.BaseSystem {
         this.abilityQueue.clear();
         this.abilityActions.clear();
     }
+    entityDestroyed(entityId) {
+        this.removeEntityAbilities(entityId);
+    }
 }
