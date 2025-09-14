@@ -11,7 +11,6 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             animation: 'cast',
             priority: 8,
             castTime: 3.0,
-            autoTrigger: 'enemy_in_range',
             ...params
         });
 

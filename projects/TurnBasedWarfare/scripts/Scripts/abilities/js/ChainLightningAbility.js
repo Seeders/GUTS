@@ -7,11 +7,10 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             cooldown: 4.0,
             range: 250,
             manaCost: 40,
-            targetType: 'auto',
+            targetType: 'enemy',
             animation: 'cast',
             priority: 7,
             castTime: 1,
-            autoTrigger: 'multiple_enemies',
             ...params
         });
         

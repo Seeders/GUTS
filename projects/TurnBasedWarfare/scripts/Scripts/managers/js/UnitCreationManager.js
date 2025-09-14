@@ -360,16 +360,16 @@ class UnitCreationManager {
         // Combat component with all combat stats
         this.game.addComponent(entity, ComponentTypes.COMBAT, 
             Components.Combat(
-                unitType.damage || this.defaults.damage,
-                unitType.range || this.defaults.range,
-                unitType.attackSpeed || this.defaults.attackSpeed,
-                unitType.projectile || this.defaults.projectile,
+                unitType.damage,
+                unitType.range,
+                unitType.attackSpeed,
+                unitType.projectile,
                 0, // Initial attack cooldown
-                unitType.element || this.defaults.element,
-                unitType.armor || this.defaults.armor,
-                unitType.fireResistance || this.defaults.fireResistance,
-                unitType.coldResistance || this.defaults.coldResistance,
-                unitType.lightningResistance || this.defaults.lightningResistance
+                unitType.element,
+                unitType.armor,
+                unitType.fireResistance,
+                unitType.coldResistance,
+                unitType.lightningResistance
             ));
         
         // Collision component for physical interactions

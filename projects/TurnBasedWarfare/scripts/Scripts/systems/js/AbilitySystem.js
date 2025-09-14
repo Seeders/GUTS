@@ -86,6 +86,10 @@ class AbilitySystem extends engine.BaseSystem {
     }
     
     considerAbilityUsage(entityId, abilities) {
+        if (this.abilityQueue.has(entityId)) {
+            return; // Entity is already casting an ability, wait for it to finish
+        }
+        
         const availableAbilities = abilities
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
             .filter(ability => ability.canExecute(entityId))
@@ -130,7 +134,7 @@ class AbilitySystem extends engine.BaseSystem {
         if (ability.animation && this.game.animationSystem) {
             this.startAbilityAnimation(entityId, ability);
         }
-        console.log('use ability', this.game.state.now, ability.castTime);
+        console.log('use ability', abilityId, ability);
         this.abilityQueue.set(entityId, {
             abilityId: abilityId,
             targetData: targetData,

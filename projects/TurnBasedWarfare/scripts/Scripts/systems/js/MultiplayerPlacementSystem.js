@@ -527,8 +527,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             if (this.game.effectsSystem && createdUnits.length <= 8) {
                 this.createPlacementEffects(unitPositions.slice(0, 8), team);
             }
-            
-
             // Clear caches after placement
             this.cachedValidation = null;
             this.cachedGridPos = null;
@@ -603,6 +601,34 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.opponentPlacements.push(placement);
         }
     }
+
+    setPlacementExperience(placements) {
+        if (!placements || !this.game.squadExperienceSystem) {
+            return;
+        }
+        
+        placements.forEach(placement => {
+            if (placement.experience && placement.placementId) {
+                const experienceData = placement.experience;                
+                let squadData = this.game.squadExperienceSystem.getSquadInfo(placement.placementId);
+                
+                if (squadData) {
+                    squadData.level = experienceData.level;
+                    squadData.experience = experienceData.experience;
+                    squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
+                    squadData.canLevelUp = experienceData.canLevelUp;                    
+                }
+            }
+        });            
+        
+        // Update UI to reflect synced experience data
+        if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
+            this.game.shopSystem.updateGoldDisplay();
+            this.game.shopSystem.createShop(); // Refresh experience panels
+        }
+        
+    }
+    
 
     isMyTeam(team){
         return team == this.game.state.mySide;

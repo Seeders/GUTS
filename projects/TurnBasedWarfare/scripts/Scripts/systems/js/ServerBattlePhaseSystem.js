@@ -12,7 +12,6 @@ class ServerBattlePhaseSystem {
         // Battle state tracking
         this.battleResults = new Map();
         this.createdSquads = new Map();
-        this.currentRound = 1;
         this.maxRounds = 5;
         this.baseGoldPerRound = 50;
     }
@@ -74,12 +73,6 @@ class ServerBattlePhaseSystem {
                 } else {
                     // Store created squads for tracking
                     this.createdSquads.set(playerId, createdSquads);
-                    
-                    // Deduct gold cost if player has gold
-                    if (player.stats.gold !== undefined) {
-                        const totalCost = placements.reduce((sum, p) => sum + (p.unitType?.value || 0), 0);
-                        player.stats.gold -= totalCost;
-                    }
                 }
                 
             }
@@ -144,7 +137,7 @@ class ServerBattlePhaseSystem {
         
         if (aliveTeams.length <= 1) {
             const winner = aliveTeams.length === 1 ? 
-                this.getPlayerIdByTeam(aliveTeams[0]) : null;
+                this.getPlayerIdBySide(aliveTeams[0]) : null;
             
             // Find the room this battle belongs to
             const room = this.game.room;
@@ -154,16 +147,11 @@ class ServerBattlePhaseSystem {
         }
     }
 
-    getPlayerIdByTeam(team) {
-        if (!this.game.componentManager) return null;
-        
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const teamEntities = this.game.getEntitiesWith(ComponentTypes.TEAM);
-        
-        for (const entityId of teamEntities) {
-            const teamComp = this.game.getComponent(entityId, ComponentTypes.TEAM);
-            if (teamComp && teamComp.team === team) {
-                return teamComp.playerId;
+    getPlayerIdBySide(side) {
+        const room = this.game.room;
+        for (const [playerId, player] of room.players) {
+            if (player.stats && player.stats.side === side) {
+                return playerId; // Found the player on this team side
             }
         }
         return null;
@@ -177,27 +165,67 @@ class ServerBattlePhaseSystem {
         
         this.game.state.phase = 'round_end';
         
-        
         let battleResult = {
             winner: winner,
             reason: reason,
-            round: this.currentRound,
+            round: this.game.state.round,
             survivingUnits: this.getSurvivingUnits(),
             playerStats: this.getPlayerStats(room)
         };
+        
         let winningUnits = battleResult.survivingUnits[winner]; 
         let winningSide = battleResult.playerStats[winner]?.stats.side || null;
         battleResult.winningUnits = winningUnits;
         battleResult.winningSide = winningSide;
-        if(winningSide){
-            this.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
+        
+        // Apply round damage and get the health results
+        if(winningSide) {
+            let roundDamageResult = this.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
+
+            // CRITICAL: Use the health values from roundDamageResult.remainingHealth
+            if (roundDamageResult && roundDamageResult.remainingHealth) {
+                const newLeftHealth = roundDamageResult.remainingHealth.left;
+                const newRightHealth = roundDamageResult.remainingHealth.right;
+
+                
+                // Update room player stats with the new health values from damage result
+                for (const [playerId, player] of room.players) {
+                    if (player.stats && player.stats.side) {
+                        const oldHealth = player.stats.health;
+                        
+                        if (player.stats.side === 'left') {
+                            player.stats.health = newLeftHealth;
+                        } else if (player.stats.side === 'right') {
+                            player.stats.health = newRightHealth;
+                        }
+                        
+                    }
+                }
+                
+                // CRITICAL: Regenerate playerStats AFTER updating room player data
+                battleResult.playerStats = this.getPlayerStats(room);
+                
+                // Add the damage information to battle result for client display
+                battleResult.damageInfo = {
+                    winningTeam: roundDamageResult.winningTeam,
+                    losingTeam: roundDamageResult.losingTeam,
+                    damage: roundDamageResult.damage,
+                    survivingSquads: roundDamageResult.survivingSquads,
+                    gameOver: roundDamageResult.gameOver,
+                    healthAfterDamage: {
+                        left: newLeftHealth,
+                        right: newRightHealth
+                    }
+                };
+                
+            }
         }
-        // Broadcast battle end to all players in room
+        
+        // Broadcast with updated health values
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
-            gameState: room.getGameState()
+            gameState: room.getGameState() // This will also have updated player health
         });
-        
         
         // Check for game end or continue to next round
         setTimeout(() => {
@@ -257,7 +285,7 @@ class ServerBattlePhaseSystem {
     }
 
     prepareNextRound(room) {
-        this.currentRound++;
+        this.game.state.round += 1;
         this.clearBattlefield();
         
         // Transition back to placement phase
@@ -265,11 +293,11 @@ class ServerBattlePhaseSystem {
         // Reset placement ready states
         for (const [playerId, player] of room.players) {
             player.placementReady = false;
-            player.stats.gold = player.stats.gold + this.calculateRoundGold(this.currentRound);
+            player.stats.gold = player.stats.gold + this.calculateRoundGold(this.game.state.round);
         }
         
         this.serverNetworkManager.broadcastToRoom(room.id, 'NEXT_ROUND', {
-            round: this.currentRound,
+            round: this.game.state.round,
             gameState: room.getGameState()
         });
     }
@@ -292,7 +320,7 @@ class ServerBattlePhaseSystem {
         const gameResult = {
             winner: finalWinner,
             finalStats: this.getPlayerStats(room),
-            totalRounds: this.currentRound
+            totalRounds: this.game.state.round
         };
         
         this.serverNetworkManager.broadcastToRoom(room.id, 'GAME_END', {

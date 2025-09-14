@@ -344,6 +344,7 @@ export default class ServerGameRoom extends GameRoom {
             maxPlayers: this.maxPlayers,
             gameType: this.gameConfig?.type || 'default',
             players: playerData,
+            round: this.game.state.round,
             // Let the game instance provide additional state if needed
             gameData: this.game.getGameState ? this.game.getGameState() : null
         };

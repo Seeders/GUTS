@@ -82,23 +82,27 @@ class ServerPlacementPhaseManager {
                     const player = room.players.get(playerId);                    
                     playerGold = player.stats.gold;
                     console.log('got player gold', playerGold);
-                }
-        
-                if (!this.game.squadExperienceSystem.canAffordLevelUp(placementId, playerGold)) {            
-                    console.log("not enough gold to level up");
-                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
-                        playerId: playerId,
-                        error: "gold_low_error",
-                        success: false
-                    });
-                    return false;
-                }
-                const success = await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId);
-                if(success){
-                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
-                        playerId: playerId,
-                        success: true
-                    });
+            
+                    if (!this.game.squadExperienceSystem.canAffordLevelUp(placementId, playerGold)) {            
+                        console.log("not enough gold to level up");
+                        this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                            playerId: playerId,
+                            error: "gold_low_error",
+                            success: false
+                        });
+                        return false;
+                    }
+                    const success = await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId);
+                    if(success){
+                        const levelUpCost = this.game.squadExperienceSystem.getLevelUpCost(placementId);        
+                  
+                        player.stats.gold -= levelUpCost;
+                
+                        this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                            playerId: playerId,
+                            success: true
+                        });
+                    }
                 }
             }
         } 
@@ -199,6 +203,22 @@ class ServerPlacementPhaseManager {
         if (placements.length > 0 && !this.validatePlacements(placements, player)) {
             return { success: false, error: 'Invalid placements' };
         }
+
+        if (placements.length > 0) {
+            // Filter to only NEW placements from this round
+            const newPlacements = placements.filter(placement => 
+                placement.roundPlaced === this.game.state.round
+            );
+            // Calculate cost of only NEW units
+            const newUnitsCost = newPlacements.reduce((sum, p) => sum + (p.unitType?.value || 0), 0);
+            
+
+            // Deduct gold only for new units
+            if (newUnitsCost > 0) {
+                player.stats.gold -= newUnitsCost;
+            }            
+        }
+        
         // Store placements
         this.playerPlacements.set(playerId, placements);
         player.stats.squadsPlacedThisRound = placements.length;
@@ -225,14 +245,16 @@ class ServerPlacementPhaseManager {
             return false;
         }
         
-        // Check gold cost
-        let totalCost = 0;
-        for (const placement of placements) {
-            totalCost += placement.unitType?.value || 0;
-        }
+        // Filter to only NEW placements from this round
+        const newPlacements = placements.filter(placement => 
+            placement.roundPlaced === this.game.state.round
+        );
+        // Calculate cost of only NEW units
+        const newUnitsCost = newPlacements.reduce((sum, p) => sum + (p.unitType?.value || 0), 0);
         
-        if (totalCost > player.stats.gold) {
-            console.log(`Player ${player.id} insufficient gold: ${totalCost} > ${player.stats.gold}`);
+        
+        if (newUnitsCost > player.stats.gold) {
+            console.log(`Player ${player.id} insufficient gold: ${newUnitsCost} > ${player.stats.gold}`);
             return false;
         }
         

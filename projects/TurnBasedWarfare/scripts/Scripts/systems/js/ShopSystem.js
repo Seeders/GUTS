@@ -477,8 +477,4 @@ class ShopSystem extends engine.BaseSystem {
         }
     }
     
-    // Method to refresh the entire shop
-    refreshShop() {
-        this.createShop();
-    }
 }

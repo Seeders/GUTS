@@ -290,12 +290,16 @@ class MultiplayerNetworkManager {
             }
             
             // Also set sides in placement system
-            if (this.game.placementSystem && this.game.placementSystem.setTeamSides) {
+            if (this.game.placementSystem ) {
+                if(this.game.placementSystem.setTeamSides) {
                 
-                this.game.placementSystem.setTeamSides({
-                    player: myPlayer.stats.side,
-                    enemy: opponent.stats.side
-                });
+                    this.game.placementSystem.setTeamSides({
+                        player: myPlayer.stats.side,
+                        enemy: opponent.stats.side
+                    });
+                }
+
+                this.game.placementSystem.setPlacementExperience(myPlayer.placements);
             }
             
         }

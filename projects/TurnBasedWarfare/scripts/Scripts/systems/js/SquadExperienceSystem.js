@@ -117,11 +117,16 @@ class SquadExperienceSystem extends engine.BaseSystem {
             this.lastUIUpdate = this.game.state.now;
         }
     }
-    
-    canAffordLevelUp(placementId, playerGold){
+    getLevelUpCost(placementId){
         
         const squadData = this.squadExperience.get(placementId);
         const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
+
+        return levelUpCost;
+    }
+    canAffordLevelUp(placementId, playerGold){
+                
+        const levelUpCost = this.getLevelUpCost(placementId);
 
          if (playerGold < levelUpCost) {    
             return false;
@@ -187,7 +192,6 @@ class SquadExperienceSystem extends engine.BaseSystem {
             } 
                 
             // Deduct cost optimistically
-            this.game.state.playerGold -= levelUpCost;
             return this.finishLevelingSquad(squadData, placementId, levelUpCost, specializationId);
             
         } catch (error) {
@@ -201,10 +205,10 @@ class SquadExperienceSystem extends engine.BaseSystem {
     makeNetworkCall(action, data, expectedResponse) {
         return new Promise((resolve, reject) => {
             this.game.clientNetworkManager.call(action, data, expectedResponse, (responseData, error) => {
-                if (!responseData.success) {
-                    reject(error);
+                if(responseData && responseData.success) {
+                    resolve(responseData);
                 } else {
-                    resolve(true); // or use responseData if you need to validate server response
+                    reject(error);
                 }
             });
         });
@@ -219,7 +223,9 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         // Apply level bonuses to all units in squad
         this.applyLevelBonuses(placementId);
-        
+
+        this.game.state.playerGold -= levelUpCost;
+            
         // Visual effects
         if (this.game.effectsSystem) {
             squadData.unitIds.forEach(entityId => {
@@ -635,10 +641,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * Update method called each frame
      */
     update() {
-        // Periodic cleanup of invalid squads
-        if (Math.random() < 0.01) { // 1% chance per frame
-            this.cleanupInvalidSquads();
-        }
+
         this.tickBaselineXP();
     }
     tickBaselineXP() {
