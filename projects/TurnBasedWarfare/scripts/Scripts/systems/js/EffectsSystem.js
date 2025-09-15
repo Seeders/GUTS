@@ -576,7 +576,7 @@ class EffectsSystem extends engine.BaseSystem {
 
     playScreenFlash(color = '#ffffff', duration = 0.3) {
         if (this.flashActive) return;
-        
+        return;
         this.flashActive = true;
         const flash = document.createElement('div');
         flash.className = 'screen-flash';
