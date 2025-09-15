@@ -255,6 +255,7 @@ class ServerPlacementPhaseManager {
         
         if (newUnitsCost > player.stats.gold) {
             console.log(`Player ${player.id} insufficient gold: ${newUnitsCost} > ${player.stats.gold}`);
+            console.log(newPlacements);
             return false;
         }
         

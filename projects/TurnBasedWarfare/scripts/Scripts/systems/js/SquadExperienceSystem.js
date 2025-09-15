@@ -317,7 +317,10 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         // Update squad value based on new unit type
         squadData.squadValue = this.calculateSquadValue(placement.unitType);
-
+            // Refresh shop
+        if (this.game.shopSystem) {
+            this.game.shopSystem.createShop();
+        }
         return true;
     }
     
@@ -386,10 +389,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
                     document.body.removeChild(modal);
                     this.levelUpSquad(placementId, specId);
                     
-                    // Refresh shop
-                    if (this.game.shopSystem) {
-                        this.game.shopSystem.createShop();
-                    }
+        
                 });
                 
                 optionButton.addEventListener('mouseenter', () => {
