@@ -8,78 +8,64 @@ class GameModeManager {
 
     initializeGameModes() {
         return {
-            campaign: {
-                id: 'campaign',
-                title: 'Campaign',
-                icon: '🏆',
-                description: 'Progress through increasingly difficult battles and unlock new units',
-                difficulty: 'Progressive',
-                difficultyClass: 'easy',
-                startingGold: 100,
-                maxRounds: 10,
-                goldMultiplier: 1.0,
-                difficultyScaling: 'linear'
-            },
-            survival: {
-                id: 'survival',
-                title: 'Survival',
-                icon: '⚡',
-                description: 'See how many waves you can survive with limited resources',
-                difficulty: 'Medium',
-                difficultyClass: 'medium',
-                startingGold: 150,
-                maxRounds: Infinity,
-                goldMultiplier: 0.8,
-                difficultyScaling: 'exponential'
-            },
             arena: {
                 id: 'arena',
                 title: 'Arena',
                 icon: '⚔️',
-                description: 'Quick battles with balanced armies for testing strategies',
-                difficulty: 'Easy',
-                difficultyClass: 'easy',
-                startingGold: 200,
-                maxRounds: 1,
-                goldMultiplier: 1.2,
-                difficultyScaling: 'none'
-            },
-            challenge: {
-                id: 'challenge',
-                title: 'Challenge',
-                icon: '💀',
-                description: 'Face pre-built enemy compositions with specific constraints',
-                difficulty: 'Hard',
-                difficultyClass: 'hard',
+                interfaceId: 'createOrJoinRoom',
+                description: 'Battle against another player in real-time strategic combat',
+                difficulty: 'Player vs Player',
+                difficultyClass: 'pvp',
+                isMultiplayer: true,
+                maxPlayers: 2,
                 startingGold: 100,
-                maxRounds: 1,
-                goldMultiplier: 1.0,
-                difficultyScaling: 'preset'
-            },
-            endless: {
-                id: 'endless',
-                title: 'Endless',
-                icon: '♾️',
-                description: 'Battle continues until defeat with exponentially scaling enemies',
-                difficulty: 'Expert',
-                difficultyClass: 'expert',
-                startingGold: 100,
-                maxRounds: Infinity,
-                goldMultiplier: 1.0,
-                difficultyScaling: 'exponential'
-            },
-            tournament: {
-                id: 'tournament',
-                title: 'Tournament',
-                icon: '🏅',
-                description: 'Bracket-style competition against AI opponents',
-                difficulty: 'Medium',
-                difficultyClass: 'medium',
-                startingGold: 120,
-                maxRounds: 8,
-                goldMultiplier: 1.1,
-                difficultyScaling: 'tournament'
+                onStart: (mode) => {
+                    this.game.uiSystem.handleMultiplayerModeSelection(mode);
+                }
             }
+            // ,
+            // campaign: {
+            //     id: 'campaign',
+            //     title: 'Campaign',
+            //     icon: '🏆',
+            //     description: 'Progress through increasingly difficult battles and unlock new units',
+            //     startingGold: 100
+            // },
+            // survival: {
+            //     id: 'survival',
+            //     title: 'Survival',
+            //     icon: '⚡',
+            //     description: 'See how many waves you can survive with limited resources',
+            //     startingGold: 150
+            // },
+            // arena: {
+            //     id: 'arena',
+            //     title: 'Arena',
+            //     icon: '⚔️',
+            //     description: 'Quick battles with balanced armies for testing strategies',
+            //     startingGold: 200
+            // },
+            // challenge: {
+            //     id: 'challenge',
+            //     title: 'Challenge',
+            //     icon: '💀',
+            //     description: 'Face pre-built enemy compositions with specific constraints',
+            //     startingGold: 100
+            // },
+            // endless: {
+            //     id: 'endless',
+            //     title: 'Endless',
+            //     icon: '♾️',
+            //     description: 'Battle continues until defeat with exponentially scaling enemies',
+            //     startingGold: 100
+            // },
+            // tournament: {
+            //     id: 'tournament',
+            //     title: 'Tournament',
+            //     icon: '🏅',
+            //     description: 'Bracket-style competition against AI opponents',
+            //     startingGold: 120
+            // }
         };
     }
 
@@ -123,6 +109,8 @@ class GameModeManager {
         if (selectedCard) {
             selectedCard.classList.add('selected');
             this.game.eventManager.setGameMode(modeId);
+            const modeConfig = this.getModeConfig(modeId);
+            modeConfig.onStart(modeConfig);
         }
     }
 
@@ -132,23 +120,5 @@ class GameModeManager {
 
     getModeConfig(modeId) {
         return this.modes[modeId];
-    }
-
-    shouldEndCampaign(currentRound) {
-        const mode = this.getSelectedMode();
-        if (!mode) return false;
-
-        switch (mode.id) {
-            case 'campaign':
-                return currentRound >= mode.maxRounds;
-            case 'arena':
-            case 'challenge':
-                return true;
-            case 'survival':
-            case 'endless':
-            case 'tournament':
-            default:
-                return false;
-        }
     }
 }

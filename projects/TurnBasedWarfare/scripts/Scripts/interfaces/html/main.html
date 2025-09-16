@@ -1,253 +1,187 @@
 <!-- Main Menu Screen -->
 <div id="mainMenu" class="screen active">
-    <div class="game-title">AUTO BATTLE ARENA</div>
-    <div class="subtitle">Tactical Combat Meets AI Strategy</div>
+    <div class="game-title">LEGENDS OF THE ARENA</div>
+    <div class="subtitle">Where Heroes Rise and Legends Are Forged</div>
     <div class="main-menu-buttons">
-        <button id="mainMenu_PlayGameBtn" class="btn">🎮 PLAY GAME</button>
-        <button id="mainMenu_TutorialBtn" class="btn btn-secondary">📚 TUTORIAL</button>
-        <button id="mainMenu_SettingsBtn" class="btn btn-secondary">⚙️ SETTINGS</button>
-        <button id="mainMenu_CreditsBtn" class="btn btn-secondary">👥 CREDITS</button>
+        <button id="mainMenu_PlayGameBtn" class="btn">⚔️ ENTER BATTLE</button>
+        <button id="mainMenu_TutorialBtn" class="btn btn-secondary">📜 LEARN THE ARTS</button>
+        <button id="mainMenu_SettingsBtn" class="btn btn-secondary">⚙️ GUILD SETTINGS</button>
+        <button id="mainMenu_CreditsBtn" class="btn btn-secondary">👑 HALL OF FAME</button>
     </div>
 </div>
 
 <!-- Game Mode Selection Screen -->
 <div id="gameModeSelect" class="screen">
     <div class="mode-selection">
-        <h2>🎯 SELECT GAME MODE</h2>
+        <h2>🎯 CHOOSE YOUR DESTINY</h2>
         <div class="mode-grid" id="modeGrid">
             <!-- Game mode cards populated by GameModeManager -->
         </div>
         <div>
-            <button id="gameMode_StartBtn" class="btn">🚀 START BATTLE</button>
-            <button id="gameMode_BackBtn" class="btn btn-secondary">← BACK</button>
+            <button id="gameMode_BackBtn" class="btn btn-secondary">← RETURN</button>
         </div>
     </div>
 </div>
 
+<!-- Multiplayer Lobby -->
 <div id="multiplayerLobby" class="screen">
     <div class="multiplayer-lobby-container">
         <div class="lobby-header">
-            <h1 class="lobby-title">🎮 MULTIPLAYER LOBBY</h1>
+            <h1 class="lobby-title">⚔️ WAR COUNCIL</h1>
             <div class="room-info">
                 <div class="room-id-display">
-                    <span class="room-label">Room ID:</span>
+                    <span class="room-label">Battle Hall:</span>
                     <span id="lobbyRoomId" class="room-id">------</span>
                     <button id="copyRoomIdBtn" class="btn-small">📋 Copy</button>
                 </div>
                 <div class="connection-status">
-                    <span id="connectionStatus" class="status-indicator">🔴 Connecting...</span>
+                    <span id="connectionStatus" class="status-indicator">🔴 Summoning...</span>
                 </div>
             </div>
         </div>
 
         <div class="lobby-content">
             <div class="players-section">
-                <h2>👥 Players (<span id="playerCount">1</span>/2)</h2>
-                <div class="players-grid">
-                    <div class="player-card player-1">
-                        <div class="player-avatar">👤</div>
-                        <div class="player-info">
-                            <div class="player-name" id="player1Name">You</div>
-                            <div class="player-stats">
-                                <div class="stat">
-                                    <span class="stat-label">Ready:</span>
-                                    <span id="player1Ready" class="ready-status">⌛ Not Ready</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="player-controls">
-                            <button id="player1ReadyBtn" class="btn ready-btn">✅ READY UP</button>
-                        </div>
+                <h2>⚔️ Warriors (<span id="playerCount">1</span>/2)</h2>
+                <div id="playersContainer" class="players-grid">
+                    <div class="player-card" id="player1Card">
+                        <div class="player-name" id="player1Name">You</div>
+                        <div class="player-status waiting" id="player1Status">🟡 Preparing...</div>
+                        <div class="player-stats">Ready to battle</div>
                     </div>
-
-                    <div class="player-card player-2">
-                        <div class="player-avatar">❓</div>
-                        <div class="player-info">
-                            <div class="player-name" id="player2Name">Waiting for opponent...</div>
-                            <div class="player-stats">
-                                <div class="stat">
-                                    <span class="stat-label">Ready:</span>
-                                    <span id="player2Ready" class="ready-status">⏳ Waiting</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="player-card empty" id="player2Card">
+                        <div class="player-name" id="player2Name">Waiting for opponent</div>
+                        <div class="player-status empty" id="player2Status">⚪ Empty slot</div>
+                        <div class="player-stats">Seeking worthy challenger</div>
                     </div>
                 </div>
             </div>
 
+
+
             <div class="lobby-status">
-                <div class="status-message" id="lobbyStatusMessage">
-                    Waiting for another player to join...
-                </div>
-                <div class="game-progress" id="gameProgress" style="display: none;">
+                <div class="status-message" id="lobbyStatusMessage">Waiting for worthy opponents...</div>
+                <div class="game-progress">
                     <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-fill" id="gameProgressFill"></div>
                     </div>
-                    <div class="progress-text" id="progressText">Starting game...</div>
+                    <div class="progress-text" id="gameProgressText">Preparing battlefield...</div>
                 </div>
             </div>
 
             <div class="game-info">
-                <h3>🎯 Game Setup</h3>
+                <h3>🏰 Battle Configuration</h3>
                 <div class="game-settings">
                     <div class="setting">
-                        <span class="setting-label">Mode:</span>
-                        <span class="setting-value" id="gameMode">1v1 Multiplayer</span>
+                        <span class="setting-label">🎯 Game Mode</span>
+                        <span class="setting-value" id="lobbyGameMode">Arena Combat</span>
                     </div>
                     <div class="setting">
-                        <span class="setting-label">Max Rounds:</span>
-                        <span class="setting-value" id="maxRounds">5</span>
+                        <span class="setting-label">⏱️ Turn Timer</span>
+                        <span class="setting-value" id="lobbyTurnTimer">30 seconds</span>
                     </div>
                     <div class="setting">
-                        <span class="setting-label">Starting Gold:</span>
-                        <span class="setting-value" id="startingGold">100</span>
+                        <span class="setting-label">💰 Starting Gold</span>
+                        <span class="setting-value" id="lobbyStartGold">100 coins</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="lobby-footer">
-            <div class="lobby-controls">
-                <button id="leaveLobbyBtn" class="btn btn-secondary">🚪 LEAVE LOBBY</button>
-                <button id="startGameBtn" class="btn btn-primary" disabled>🚀 START GAME</button>
-            </div>
-            <div class="lobby-tips">
-                <p>💡 <strong>Tip:</strong> Both players must be ready before the game can start!</p>
-                <p>🔗 Share the Room ID with your friend to invite them to this lobby.</p>
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="leaveLobbyBtn" class="btn btn-secondary">🚪 Retreat</button>
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="player1ReadyBtn" class="ready-btn">🛡️ READY FOR BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>🗡️ Prepare your strategies while waiting for opponents</p>
+                    <p>🏰 Victory requires both tactical skill and wise resource management</p>
+                    <p>⚡ The realm's fate lies in your hands, Commander</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Loading Screen -->
-<div id="loadingScreen" class="screen">
-    <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Initializing Battle Systems...</div>
-        <div class="loading-tip">Tip: Each unit type has unique strengths and weaknesses. Experiment with different combinations!</div>
-    </div>
-</div>
-
-<!-- Single Game Screen - Used for Both Single Player and Multiplayer -->
+<!-- Game Screen -->
 <div id="gameScreen" class="screen">
     <div id="gameContainer">
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
-            
-            <!-- Opponent Info Overlay - Only shown in multiplayer mode -->
-            <div id="opponentOverlay" class="opponent-overlay" style="display: none;">
-                <div class="opponent-info-card">
-                    <h4>🎯 Opponent</h4>
-                    <div class="opponent-details">
-                        <div class="opponent-name">
-                            <span class="label">Name:</span>
-                            <span id="opponentNameGame">-</span>
-                        </div>
-                        <div class="opponent-health">
-                            <span class="label">Health:</span>
-                            <span id="opponentHealthGame">100</span>/100
-                        </div>
-                        <div class="opponent-gold">
-                            <span class="label">Gold:</span>
-                            <span id="opponentGoldGame">-</span>
-                        </div>
-                        <div class="opponent-status">
-                            <span class="label">Status:</span>
-                            <span id="opponentStatusGame" class="status-deploying">🗡️ Deploying</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <div id="uiContainer">
             <div class="player-panel">
-                <h3 class="panel-title">🛡️ YOUR ARMY</h3>
-                
-                <!-- Resources - shows different info based on mode -->
-                <div class="resources" id="gameResources">
-                    <!-- Single player mode shows just gold -->
-                    <div id="singlePlayerResources">
-                        Gold: <span id="playerGold">100</span>g
-                    </div>
-                    
-                    <!-- Multiplayer mode shows gold and health -->
-                    <div id="multiplayerResources" style="display: none;">
-                        <div class="resource-item">
-                            <span class="resource-label">Gold:</span>
-                            <span id="multiplayerPlayerGold" class="resource-value">100</span>g
+                <div class="panel-title">🏰 COMMAND CENTER</div>
+                <div class="team-health-bar player-health">
+                    <div class="team-label">🛡️ YOUR ARMY</div>
+                    <div class="health-bar-container">
+                        <div class="health-bar">
+                            <div class="health-fill player-fill" id="playerHealthFill"></div>
                         </div>
-                        <div class="resource-item">
-                            <span class="resource-label">Health:</span>
-                            <span id="multiplayerPlayerHealth" class="resource-value">100</span>/100
+                        <div class="health-text" id="playerHealthText">--</div>
+                    </div>
+                </div>
+                <div class="team-health-bar opponent-health">
+                    <div class="team-label">⚔️ OPPONENT ARMY</div>
+                    <div class="health-bar-container">
+                        <div class="health-bar">
+                            <div class="health-fill opponent-fill" id="opponentHealthFill"></div>
                         </div>
+                        <div class="health-text" id="opponentHealthText">--</div>
                     </div>
                 </div>
-                
-                <div class="unit-shop" id="unitShop">
-                    <!-- Unit cards populated by game -->
-                </div>
-                
-                <!-- Dynamic ready button - changes based on mode -->
-                <button id="placementReadyBtn" class="btn">Ready for Battle!</button>
-                
-                <!-- Squad count display - for multiplayer -->
-                <div id="squadCountContainer" style="display: none;">
-                    <div class="squad-info">
-                        <span id="squadCount">2/2 squads left</span>
+                <div class="resources">
+                    <div class="resource-item">
+                        <span class="resource-label">💰 Gold Coins</span>
+                        <span class="resource-value" id="playerGold">--</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">🏰 Your Side</span>
+                        <span class="resource-value" id="playerSide">--</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">🧙 Squads Placed</span>
+                        <span class="resource-value" id="playerSquadsPlaced">--</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">🏆 Battle Round</span>
+                        <span class="resource-value" id="currentRound">--</span>
                     </div>
                 </div>
+
+                <!-- Unit Shop (populated by ShopSystem.js) -->
+                <div class="panel-title">🛡️ MERCENARY HALL</div>
+                <div id="unitShop" class="unit-shop">
+                    <!-- Unit cards will be populated dynamically -->
+                </div> 
                 
-                <div class="army-list" id="playerArmy">
-                    <!-- Player army units -->
+                <!-- Game controls -->
+                <div class="game-controls" style="margin-top: 1.5rem; display: flex; gap: 0.8rem;">
+                    <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">🚪 RETREAT</button>
+                    <button id="undoBtn" class="btn btn-secondary">🤦‍♂️ Undo</button>
+                    <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
                 </div>
             </div>
-            
-            <!-- Game controls -->
-            <div class="game-controls">
-                <button id="game_PauseBtn" class="btn btn-danger">⏸️ PAUSE</button>
-                <button id="game_ExitBtn" class="btn btn-secondary">🚪 EXIT</button>
-            </div>
-        </div>
-        
-        <!-- Phase info - shows different content based on mode -->
-        <div class="phase-info">
-            <!-- Single player phase info -->
-            <div id="singlePlayerPhaseInfo">
-                <div class="round-info">Round <span id="roundNumber">1</span></div>
-                <div class="phase-title" id="phaseTitle">PLACEMENT PHASE</div>
-                <div class="phase-timer" id="phaseTimer">30s</div>
-            </div>
-            
-            <!-- Multiplayer phase info -->
-            <div id="multiplayerPhaseInfo" style="display: none;">
-                <div class="phase-header">
-                    <div class="round-info">Round <span id="multiplayerRoundNumber">1</span></div>
-                    <div class="versus-info">
-                        <span class="player-indicator">You</span>
-                        <span class="vs">VS</span>
-                        <span class="opponent-indicator" id="opponentIndicator">Opponent</span>
-                    </div>
-                </div>
-                <div class="phase-title" id="multiplayerPhaseTitle">PLACEMENT PHASE</div>
-                <div class="phase-status" id="multiplayerPhaseStatus">Deploy your units and get ready!</div>
-                <div class="phase-timer" id="multiplayerPhaseTimer">∞</div>
-            </div>
-        </div>
+        </div>  
     </div>
 </div>
 
 <!-- Victory Screen -->
 <div id="victoryScreen" class="screen">
     <div class="result-content">
-        <div class="result-title victory-title">🎉 VICTORY! 🎉</div>
+        <div class="result-title victory-title">🏆 GLORIOUS VICTORY! 🏆</div>
         <div class="stats-grid" id="victoryStats">
             <!-- Stats populated by ResultsManager -->
         </div>
         <div>
-            <button id="victory_NextRoundBtn" class="btn">⚔️ NEXT ROUND</button>
-            <button id="victory_RestartBtn" class="btn btn-secondary">🔄 RESTART</button>
-            <button id="victory_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+            <button id="victory_NextRoundBtn" class="btn">⚡ NEXT CONQUEST</button>
+            <button id="victory_RestartBtn" class="btn btn-secondary">🔄 RETRY BATTLE</button>
+            <button id="victory_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
         </div>
     </div>
 </div>
@@ -260,9 +194,9 @@
             <!-- Stats populated by ResultsManager -->
         </div>
         <div>
-            <button id="defeat_RetryBtn" class="btn">⚡ RETRY</button>
-            <button id="defeat_ChangeModeBtn" class="btn btn-secondary">🎯 CHANGE MODE</button>
-            <button id="defeat_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+            <button id="defeat_RetryBtn" class="btn">⚡ SEEK REVENGE</button>
+            <button id="defeat_ChangeModeBtn" class="btn btn-secondary">🎯 CHANGE PATH</button>
+            <button id="defeat_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
         </div>
     </div>
 </div>
@@ -270,9 +204,18 @@
 <!-- Pause Menu (Overlay) -->
 <div id="pauseMenu" class="pause-overlay">
     <div class="pause-content">
-        <h2>⏸️ GAME PAUSED</h2>
-        <button id="paused_ResumeBtn" class="btn">▶️ RESUME</button>
-        <button id="paused_RestartBtn" class="btn btn-secondary">🔄 RESTART</button>
-        <button id="paused_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+        <h2>⏳ WAR COUNCIL RECESS</h2>
+        <button id="paused_ResumeBtn" class="btn">▶️ RETURN TO BATTLE</button>
+        <button id="paused_RestartBtn" class="btn btn-secondary">🔄 RESTART CAMPAIGN</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🔮 SUMMONING WARRIORS...</div>
+        <div class="loading-tip">Tip: Position ranged units behind your frontline for maximum effectiveness</div>
     </div>
 </div>

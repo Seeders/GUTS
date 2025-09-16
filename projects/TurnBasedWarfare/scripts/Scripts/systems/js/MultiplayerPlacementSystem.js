@@ -28,17 +28,55 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             maxSquadsPerRound: 2,
             enablePreview: true,
             enableUndo: true,
-            validationThrottle: 32
+            validationThrottle: .32
         };
+        this.elements = {};
     }
 
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
         this.initializeSubsystems();
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
         this.initializeControls();
+        this.elements.readyButton.addEventListener('click', () => {
+            this.togglePlacementReady();
+        });
         
-        console.log('MultiplayerPlacementSystem initialized');
+        this.elements.undoButton.addEventListener('click', () => {
+            this.undoLastPlacement();
+
+            // Visual feedback
+            this.elements.undoButton.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.elements.undoButton.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Show feedback message
+            this.game.uiSystem.showNotification('↶ Last deployment undone', 'info', 2000);
+         
+        });
+        
+        this.elements.undoButton.addEventListener('mouseenter', () => {
+            if (!this.elements.undoButton.disabled) {
+                this.elements.undoButton.style.background = 'linear-gradient(135deg, #616161, #757575)';
+                this.elements.undoButton.style.transform = 'translateY(-2px)';
+                this.elements.undoButton.style.boxShadow = '0 4px 12px rgba(117, 117, 117, 0.3)';
+            }
+        });
+        
+        this.elements.undoButton.addEventListener('mouseleave', () => {
+            if (!this.elements.undoButton.disabled) {
+                this.elements.undoButton.style.background = 'linear-gradient(135deg, var(--stone-gray), #616161)';
+                this.elements.undoButton.style.transform = 'translateY(0)';
+                this.elements.undoButton.style.boxShadow = 'none';
+            }
+        });
+        
+    
     }
 
     initializeSubsystems() {
@@ -87,6 +125,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         // Enable placement UI
         this.enablePlacementUI();
+        
+        this.elements.readyButton.textContent = 'Ready for Battle';
         
     }
     
@@ -165,77 +205,30 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
         
     enablePlacementUI() {
-        // Show placement ready button
-        const placementUI = document.getElementById('placementUI');
-        if (!placementUI) {
-            this.createPlacementUI();
-        } else {
-            const readyButton = document.getElementById('placementReadyBtn');
-            readyButton.style.display = 'block';
-            readyButton.disabled = false;
-            readyButton.textContent = 'Ready for Battle';
-            readyButton.style.background = '#003300';
-        }
+        this.elements.readyButton.disabled = false;   
+        this.elements.undoButton.disabled = false;      
+    }
+        
+    disablePlacementUI() {
+        this.elements.readyButton.disabled = true; 
+        this.elements.undoButton.disabled = true;        
     }
 
-    createPlacementUI() {
-        // Create placement phase UI elements
-        const placementUI = document.createElement('div');
-        placementUI.id = 'placementUI';
-        placementUI.style.cssText = `
-            position: fixed; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0,0,0,0.8); padding: 1rem; border-radius: 5px; color: white;
-        `;
-        
-        placementUI.innerHTML = `
-            <div class="placement-info">
-                <h4>Placement Phase</h4>
-                <p>Squads Placed: <span id="squadsPlacedCount">0</span>/${this.config.maxSquadsPerRound}</p>
-            </div>
-        `;
-        
-        document.body.appendChild(placementUI);
-        
-        // Add event listeners
-        document.getElementById('placementReadyBtn')?.addEventListener('click', () => {
-            this.togglePlacementReady();
-        });
-        
-        document.getElementById('undoButton')?.addEventListener('click', () => {
-            this.undoLastPlacement();
-        });
-    }
 
     updatePlacementUI() {
-        const squadsPlacedElement = document.getElementById('squadsPlacedCount');
-        const readyBtn = document.getElementById('placementReadyBtn');
-        const undoBtn = document.getElementById('undoButton');
-        
-        if (squadsPlacedElement) {
-            squadsPlacedElement.textContent = this.game.state?.squadsPlacedThisRound || 0;
-        }
-        if (readyBtn) {
-            if (this.isPlayerReady) {
-                readyBtn.textContent = 'Not Ready';
-                readyBtn.style.background = '#440000';
-            } else {
-                readyBtn.textContent = 'Ready for Battle';
-                readyBtn.style.background = '#003300';
-            }
-        }
-        
-        if (undoBtn) {
-            undoBtn.disabled = this.undoStack.length === 0;
-            undoBtn.style.opacity = this.undoStack.length === 0 ? '0.5' : '1';
+        console.log('update ui');
+          
+        if (this.elements.undoButton) {
+            this.elements.undoButton.disabled = this.undoStack.length === 0;
+            this.elements.undoButton.style.opacity = this.undoStack.length === 0 ? '0.5' : '1';
         }
     }
 
     togglePlacementReady() {
         const myPlayerId = this.game.clientNetworkManager.playerId;
-        const readyBtn = document.getElementById('placementReadyBtn');
-        if (readyBtn) {
-            readyBtn.disabled = true;
-            readyBtn.textContent = 'Updating...';
+        if (this.elements.readyButton) {
+            this.elements.readyButton.disabled = true;
+            this.elements.readyButton.textContent = 'Updating...';
         }
         
         // Submit placements to server and toggle ready state
@@ -246,18 +239,19 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             { placements, playerId: myPlayerId, ready: !this.isPlayerReady },
             'SUBMITTED_PLACEMENTS',
             (data, error) => {
-                if (readyBtn) {
-                    readyBtn.disabled = false;
+                if (this.elements.readyButton) {
+                    this.elements.readyButton.disabled = false;
                 }
                 
                 if (error) {
                     this.game.battleLogSystem?.add(`Failed to update ready state: ${error.message}`, 'log-damage');
-                    if (readyBtn) {
-                        readyBtn.textContent = this.isPlayerReady ? 'Not Ready' : 'Ready for Battle';
+                    if (this.elements.readyButton) {
+                        this.elements.readyButton.textContent = 'Ready for Battle';
                     }
                 } else {
                     console.log('Placement ready state updated:', data);
                     this.hasSubmittedPlacements = true;
+                    this.elements.readyButton.textContent = 'Waiting...';
                 }
             }
         );
@@ -280,31 +274,30 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             });
             console.log('applying opponent placements', opponentPlacements);
             this.applyOpponentPlacements(opponentPlacements);
-            this.hidePlacementUI();
             this.game.state.phase = 'battle';
             this.game.resetCurrentTime();
             this.game.desyncDebugger.displaySync(true);
+            if (this.elements.readyButton) {
+                this.elements.readyButton.disabled = true;
+                this.elements.readyButton.textContent = 'Battling!';
+            }
         } else {
             // Show opponent status
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
             if (opponentReady) {
-                this.game.battleLogSystem?.add('Opponent is ready for battle!', 'log-info');
+                this.game.uiSystem?.showNotification('Opponent is ready for battle!', 'info');
             }
         }
     }
 
-    hidePlacementUI() {
-        const placementUI = document.getElementById('placementUI');
-        if (placementUI) {
-            placementUI.style.display = 'none';
-        }
-    }
+
 
     update() {
         if (this.game.state.phase !== 'placement') {
             this.lastRaycastTime = 0;
             this.lastValidationTime = 0;
-            this.lastUpdateTime = 0;
+            this.lastUpdateTime = 0;            
+            this.disablePlacementUI();
             return;
         }
         
@@ -773,6 +766,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     initializeControls() {
+        this.elements.readyButton = document.getElementById('placementReadyBtn');
+        this.elements.undoButton = document.getElementById('undoBtn');
+
         if (this.config.enableUndo) {
             document.addEventListener('keydown', (event) => {
                 if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
@@ -1028,9 +1024,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
-
-        // Hide placement UI
-        this.hidePlacementUI();
         
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add('All unit placements cleared');
@@ -1045,13 +1038,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.placementPreview) {
             this.placementPreview.dispose();
         }
-        
-        // Remove placement UI
-        const placementUI = document.getElementById('placementUI');
-        if (placementUI) {
-            placementUI.remove();
-        }
-        
+                
         this.resetAllPlacements();
         
         console.log('MultiplayerPlacementSystem disposed');

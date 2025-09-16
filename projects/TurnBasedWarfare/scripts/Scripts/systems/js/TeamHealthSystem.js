@@ -23,208 +23,28 @@ class TeamHealthSystem extends engine.BaseSystem {
     initializeUI() {
         // Delay creation to ensure DOM is ready
         setTimeout(() => {
-            this.createTeamHealthBars();
             this.updateHealthDisplay();
         }, 100);
     }
     
-    // Public method to force UI creation (can be called from external systems)
-    ensureUIExists() {
-        const existingContainer = document.getElementById('teamHealthBars');
-        if (!existingContainer) {
-            this.createTeamHealthBars();
-        }
-        this.updateHealthDisplay();
-    }
-    
-    createTeamHealthBars() {
-        // Find or create health bar container
-        let healthContainer = document.getElementById('teamHealthBars');
-        if (!healthContainer) {
-            healthContainer = document.createElement('div');
-            healthContainer.id = 'teamHealthBars';
-            healthContainer.className = 'team-health-container';
-            
-            // Insert at the top of the game container or body
-            const gameContainer = document.getElementById('gameContainer');
-            const gameScreen = document.getElementById('gameScreen');
-            const targetContainer = gameContainer || gameScreen || document.body;
-            
-            if (targetContainer) {
-                targetContainer.appendChild(healthContainer);
-            } else {
-                console.error('Could not find container for team health bars');
-                return;
-            }
-        }
-        
-        healthContainer.innerHTML = `
-            <div class="team-health-bar left-health">
-                <div class="team-label">🛡️ YOUR ARMY</div>
-                <div class="health-bar-container">
-                    <div class="health-bar">
-                        <div class="health-fill left-fill" id="leftHealthFill"></div>
-                    </div>
-                    <div class="health-text" id="leftHealthText">${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}</div>
-                </div>
-            </div>
-            <div class="team-health-bar right-health">
-                <div class="team-label">⚔️ RIGHT ARMY</div>
-                <div class="health-bar-container">
-                    <div class="health-bar">
-                        <div class="health-fill right-fill" id="rightHealthFill"></div>
-                    </div>
-                    <div class="health-text" id="rightHealthText">${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}</div>
-                </div>
-            </div>
-        `;
-        
-        // Add inline styles to ensure visibility
-        this.addInlineStyles();
-        
-    }
-    
-    addInlineStyles() {
-        // Create style element if it doesn't exist
-        let styleElement = document.getElementById('teamHealthStyles');
-        if (!styleElement) {
-            styleElement = document.createElement('style');
-            styleElement.id = 'teamHealthStyles';
-            document.head.appendChild(styleElement);
-        }
-        
-        styleElement.textContent = `
-            .team-health-container {
-                position: absolute;
-                top: 1rem;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                gap: 2rem;
-                z-index: 1000;
-                pointer-events: none;
-            }
-
-            .team-health-bar {
-                background: rgba(0, 0, 0, 0.9);
-                border: 2px solid #333;
-                border-radius: 10px;
-                padding: 0.8rem;
-                min-width: 200px;
-                text-align: center;
-                font-family: 'Courier New', monospace;
-            }
-
-            .left-health {
-                border-color: #00ff00;
-            }
-
-            .right-health {
-                border-color: #ff4444;
-            }
-
-            .team-label {
-                font-size: 0.9rem;
-                font-weight: bold;
-                margin-bottom: 0.5rem;
-                text-shadow: 0 0 5px currentColor;
-            }
-
-            .left-health .team-label {
-                color: #00ff00;
-            }
-
-            .right-health .team-label {
-                color: #ff4444;
-            }
-
-            .health-bar-container {
-                display: flex;
-                flex-direction: column;
-                gap: 0.3rem;
-            }
-
-            .health-bar {
-                width: 100%;
-                height: 20px;
-                background: #222;
-                border: 1px solid #444;
-                border-radius: 10px;
-                overflow: hidden;
-                position: relative;
-            }
-
-            .health-fill {
-                height: 100%;
-                transition: width 0.5s ease;
-                border-radius: 10px;
-                position: relative;
-            }
-
-            .left-fill {
-                background: linear-gradient(90deg, #004400 0%, #00aa00 50%, #00ff00 100%);
-                box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            }
-
-            .right-fill {
-                background: linear-gradient(90deg, #440000 0%, #aa0000 50%, #ff4444 100%);
-                box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
-            }
-
-            .health-text {
-                font-size: 0.8rem;
-                color: #fff;
-                font-weight: bold;
-                text-shadow: 1px 1px 2px #000;
-            }
-
-            .damage-popup {
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-shadow: 2px 2px 4px #000;
-                animation: damageFloat 2s ease-out forwards;
-                pointer-events: none;
-                z-index: 1001;
-                color: #ff6666;
-            }
-
-            @keyframes damageFloat {
-                0% {
-                    opacity: 1;
-                    transform: translateY(0);
-                    font-size: 1.5rem;
-                }
-                50% {
-                    opacity: 1;
-                    transform: translateY(-30px);
-                    font-size: 2rem;
-                }
-                100% {
-                    opacity: 0;
-                    transform: translateY(-60px);
-                    font-size: 1rem;
-                }
-            }
-        `;
-        
-    }
-    
     updateHealthDisplay() {
-        const leftFill = document.getElementById('leftHealthFill');
-        const leftText = document.getElementById('leftHealthText');
-        const rightFill = document.getElementById('rightHealthFill');
-        const rightText = document.getElementById('rightHealthText');
+        const playerFill = document.getElementById('playerHealthFill');
+        const playerText = document.getElementById('playerHealthText');
+        const opponentFill = document.getElementById('opponentHealthFill');
+        const opponentText = document.getElementById('opponentHealthText');
         
-        if (leftFill && leftText) {
-            const leftPercent = (this.teamHealth.left / this.MAX_TEAM_HEALTH) * 100;
-            leftFill.style.width = `${leftPercent}%`;
-            leftText.textContent = `${this.teamHealth.left}/${this.MAX_TEAM_HEALTH}`;
+        let myHealth = this.teamHealth[this.game.state.mySide] || this.MAX_TEAM_HEALTH;
+        let opponentHealth = this.teamHealth[this.game.state.mySide == 'left' ? 'right' : 'left'] || this.MAX_TEAM_HEALTH;
+        if (playerFill && playerText) {
+            const playerPercent = (myHealth / this.MAX_TEAM_HEALTH) * 100;
+            playerFill.style.width = `${playerPercent}%`;
+            playerText.textContent = `${myHealth}/${this.MAX_TEAM_HEALTH}`;
         }
         
-        if (rightFill && rightText) {
-            const rightPercent = (this.teamHealth.right / this.MAX_TEAM_HEALTH) * 100;
-            rightFill.style.width = `${rightPercent}%`;
-            rightText.textContent = `${this.teamHealth.right}/${this.MAX_TEAM_HEALTH}`;
+        if (opponentFill && opponentText) {
+            const opponentPercent = (opponentHealth / this.MAX_TEAM_HEALTH) * 100;
+            opponentFill.style.width = `${opponentPercent}%`;
+            opponentText.textContent = `${opponentHealth}/${this.MAX_TEAM_HEALTH}`;
         }
     }
     

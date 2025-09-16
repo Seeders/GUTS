@@ -36,7 +36,6 @@ class InputManager {
         const mainMenuSettingsBtn = document.getElementById('mainMenu_SettingsBtn');
         const mainMenuCreditsBtn = document.getElementById('mainMenu_CreditsBtn');
 
-        const gameModeStartBtn = document.getElementById('gameMode_StartBtn');
         const gameModeBackBtn = document.getElementById('gameMode_BackBtn');
 
         const gamePauseBtn = document.getElementById('game_PauseBtn');
@@ -70,9 +69,6 @@ class InputManager {
             alert('Auto Battle Arena\nDeveloped with Claude AI\n\nA tactical auto-battler game featuring strategic unit placement and AI opponents.');
         });
 
-        gameModeStartBtn?.addEventListener('click', () => {
-            this.game.gameManager.startSelectedMode();
-        });
         gameModeBackBtn?.addEventListener('click', () => {
             this.game.screenManager.showMainMenu();
         });
@@ -159,11 +155,6 @@ class InputManager {
         this.shortcuts.set('KeyP', () => this.game.phaseSystem.pauseGame());
         this.shortcuts.set('Space', () => this.handleSpaceKey());
         this.shortcuts.set('F1', () => this.showHelpModal());
-        this.shortcuts.set('KeyS+Control', () => this.handleSaveGame());
-        this.shortcuts.set('Digit1', () => this.selectUnitShortcut(0));
-        this.shortcuts.set('Digit2', () => this.selectUnitShortcut(1));
-        this.shortcuts.set('Digit3', () => this.selectUnitShortcut(2));
-        this.shortcuts.set('Digit4', () => this.selectUnitShortcut(3));
     }
     
     handleKeyDown(event) {

@@ -93,13 +93,15 @@ class ServerPlacementPhaseManager {
                         return false;
                     }
                     const success = await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId);
+                    console.log('success?: ', success);
                     if(success){
                         const levelUpCost = this.game.squadExperienceSystem.getLevelUpCost(placementId);        
-                  
+                        
                         player.stats.gold -= levelUpCost;
-                
+                        console.log('leveled, new gold amt:', player.stats.gold);
                         this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
                             playerId: playerId,
+                            currentGold: player.stats.gold,
                             success: true
                         });
                     }

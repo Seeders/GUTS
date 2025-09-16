@@ -15,7 +15,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
     init(params) {
         this.params = params || {};
         this.initializeUI();
-        this.enhanceGameModeManager();
         this.setupEventListeners();
     }
 
@@ -41,98 +40,13 @@ class MultiplayerUISystem extends engine.BaseSystem {
         document.body.insertAdjacentHTML('beforeend', multiplayerHTML);
     }
 
-    enhanceGameModeManager() {
-        // Add multiplayer modes to existing GameModeManager
-        if (this.game.gameModeManager) {
-            const originalModes = this.game.gameModeManager.modes || {};
-            
-            const multiplayerModes = {
-                multiplayer_1v1: {
-                    id: 'multiplayer_1v1',
-                    title: '1v1 Multiplayer',
-                    icon: 'swords',
-                    description: 'Battle against another player in real-time strategic combat',
-                    difficulty: 'Player vs Player',
-                    difficultyClass: 'pvp',
-                    startingGold: 100,
-                    maxRounds: 5,
-                    goldMultiplier: 1.0,
-                    difficultyScaling: 'player',
-                    isMultiplayer: true,
-                    maxPlayers: 2
-                },
-                multiplayer_quick: {
-                    id: 'multiplayer_quick',
-                    title: 'Quick Match',
-                    icon: 'lightning',
-                    description: 'Find a random opponent and battle immediately',
-                    difficulty: 'Player vs Player',
-                    difficultyClass: 'pvp',
-                    startingGold: 100,
-                    maxRounds: 3,
-                    goldMultiplier: 1.0,
-                    difficultyScaling: 'player',
-                    isMultiplayer: true,
-                    maxPlayers: 2
-                }
-            };
-            
-            this.game.gameModeManager.modes = { ...originalModes, ...multiplayerModes };
-            
-            const originalSelectMode = this.game.gameModeManager.selectMode.bind(this.game.gameModeManager);
-            this.game.gameModeManager.selectMode = (modeId) => {
-                originalSelectMode(modeId);
-                const mode = this.game.gameModeManager.modes[modeId];
-                if (mode && mode.isMultiplayer) {
-                    this.handleMultiplayerModeSelection(mode);
-                }
-            };
-            
-            if (this.game.gameModeManager.setupUI) {
-                this.game.gameModeManager.setupUI();
-            }
-        }
-    }
-
     handleMultiplayerModeSelection(mode) {
         // Create setup dialog for multiplayer
         const setupDialog = document.createElement('div');
-        setupDialog.className = 'multiplayer-setup-dialog';
-        setupDialog.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; justify-content: center;
-            align-items: center; z-index: 10000;
-        `;
-        
-        setupDialog.innerHTML = `
-            <div class="setup-content" style="background: #1a1a1a; padding: 2rem; border: 2px solid #444; border-radius: 10px; text-align: center; color: white;">
-                <h2>${mode.title}</h2>
-                <p>${mode.description}</p>
-                
-                <div class="player-name-input" style="margin: 1rem 0;">
-                    <label for="playerName">Your Name:</label><br>
-                    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" value="Player" 
-                           style="padding: 0.5rem; margin: 0.5rem; border: 1px solid #666; background: #333; color: white;">
-                </div>
-                
-                <div class="multiplayer-options" style="margin: 1.5rem 0;">
-                    ${mode.id === 'multiplayer_quick' ? `
-                        <button id="quickMatchBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; margin: 0.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px;">Find Match</button>
-                    ` : `
-                        <button id="createRoomBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; margin: 0.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px;">Create Room</button><br>
-                        <div class="room-join-section" style="margin-top: 1rem;">
-                            <input type="text" id="roomIdInput" value="1000" placeholder="Enter Room ID" maxlength="6" 
-                                   style="padding: 0.5rem; border: 1px solid #666; background: #333; color: white;">
-                            <button id="joinRoomBtn" class="btn btn-secondary" 
-                                    style="padding: 0.5rem 1rem; margin-left: 0.5rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">Join Room</button>
-                        </div>
-                    `}
-                </div>
-                
-                <button id="cancelMultiplayerBtn" class="btn btn-secondary" 
-                        style="padding: 0.5rem 1rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">Cancel</button>
-            </div>
-        `;
+        setupDialog.className = 'multiplayer-setup-dialog modal';
+
+        const interfaceConfig = this.game.getCollections().interfaces[mode.interfaceId]
+        setupDialog.innerHTML = interfaceConfig?.html || `Interface ${mode.interfaceId} not found`;
 
         document.body.appendChild(setupDialog);
         this.setupMultiplayerDialogEvents(setupDialog, mode);
@@ -192,7 +106,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
             btn.textContent = 'Updating...';
         }
         
-        this.game.networkManager.toggleReady();
+        this.game.networkManager.toggleReady(() => {
+            
+        });
     }
     startGame() {
         this.game.networkManager.startGame();
@@ -209,27 +125,16 @@ class MultiplayerUISystem extends engine.BaseSystem {
             if (e.target.id === 'player1ReadyBtn') {
                 this.toggleReady();
             }
-            if (e.target.id === 'startGameBtn') {
-                this.startGame();
-            }
             if (e.target.id === 'leaveLobbyBtn') {
                 this.leaveRoom();
             }
         });
     }
 
-    // =============================================
-    // UI MANAGEMENT
-    // =============================================
-
     showLobby(gameState, roomId) {
         this.currentScreen = 'lobby';
         this.roomId = roomId;
-        // Create lobby screen if it doesn't exist
-        if (!document.getElementById('multiplayerLobby')) {
-            this.createLobbyScreen();
-        }
-        
+          
         // Show lobby screen
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
@@ -239,124 +144,98 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.updateLobby(gameState);
     }
 
-    createLobbyScreen() {
-        const lobbyHTML = `
-            <div id="multiplayerLobby" class="screen" style="display: none;">
-                <div class="lobby-container" style="max-width: 800px; margin: 2rem auto; padding: 2rem; background: #1a1a1a; border-radius: 10px; color: white;">
-                    <h1>Multiplayer Lobby</h1>
-                    
-                    <div class="lobby-info">
-                        <div class="room-info">
-                            <h3>Room: <span id="lobbyRoomId">------</span></h3>
-                            <p>Players: <span id="playerCount">0</span>/2</p>
-                        </div>
-                        
-                        <div class="players-section" style="display: flex; gap: 2rem; margin: 2rem 0;">
-                            <div class="player-card player-1" style="flex: 1; padding: 1rem; border: 2px solid #666; border-radius: 5px;">
-                                <h4 id="player1Name">You</h4>
-                                <p id="player1Ready">Not Ready</p>
-                                <button id="player1ReadyBtn" class="btn" style="padding: 0.5rem 1rem; background: #003300; border: none; color: white; cursor: pointer;">Ready Up</button>
-                            </div>
-                            
-                            <div class="player-card player-2" style="flex: 1; padding: 1rem; border: 2px solid #666; border-radius: 5px;">
-                                <h4 id="player2Name">Waiting for opponent...</h4>
-                                <p id="player2Ready">Waiting</p>
-                            </div>
-                        </div>
-                        
-                        <div class="lobby-status">
-                            <p id="lobbyStatusMessage" style="font-weight: bold; margin: 1rem 0;">Waiting for players...</p>
-                        </div>
-                        
-                        <div class="lobby-controls" style="display: flex; gap: 1rem; justify-content: center;">
-                            <button id="startGameBtn" class="btn btn-primary" style="display: none; padding: 0.75rem 1.5rem; background: #0066cc; border: none; color: white; cursor: pointer;">Start Game</button>
-                            <button id="leaveLobbyBtn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; background: #666; border: none; color: white; cursor: pointer;">Leave Lobby</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', lobbyHTML);
-    }
-
     updateLobby(gameState) {
         if (!gameState) return;
 
         const myPlayerId = this.game.clientNetworkManager.playerId;
         
         // Update room ID
-        document.getElementById('lobbyRoomId').textContent = this.roomId || '------';
+        const lobbyRoomId = document.getElementById('lobbyRoomId');
+        if (lobbyRoomId) {
+            lobbyRoomId.textContent = this.roomId || '------';
+        }
         
         // Update player count
-        document.getElementById('playerCount').textContent = gameState.players?.length || 0;
+        const playerCount = document.getElementById('playerCount');
+        if (playerCount) {
+            playerCount.textContent = gameState.players?.length || 0;
+        }
 
         // Update player cards
         if (gameState.players) {
             const myPlayer = gameState.players.find(p => p.id === myPlayerId);
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
 
-          
-            // Update my player card
+            // Update my player card (Player 1)
             if (myPlayer) {
                 const player1Name = document.getElementById('player1Name');
-                const player1Ready = document.getElementById('player1Ready');
+                const player1Status = document.getElementById('player1Status');
                 const player1ReadyBtn = document.getElementById('player1ReadyBtn');
+                const player1Info = document.getElementById('player1Info');
 
                 if (player1Name) {
-                    player1Name.textContent = `${myPlayer.name} (You)${myPlayer.isHost ? ' (Host)' : ''}`;
+                    player1Name.textContent = `${myPlayer.name} (You)${myPlayer.isHost ? ' - Host' : ''}`;
                 }
-                if (player1Ready) {
-                    player1Ready.textContent = myPlayer.ready ? 'Ready' : 'Not Ready';
-                    player1Ready.style.color = myPlayer.ready ? '#00ff00' : '#ff4444';
+                if (player1Status) {
+                    player1Status.textContent = myPlayer.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
+                    player1Status.className = `player-status ${myPlayer.ready ? 'ready' : 'waiting'}`;
                 }
                 if (player1ReadyBtn) {
                     player1ReadyBtn.disabled = false;
-                    player1ReadyBtn.textContent = myPlayer.ready ? 'Not Ready' : 'Ready Up';
-                    player1ReadyBtn.style.background = myPlayer.ready ? '#440000' : '#003300';
+                    player1ReadyBtn.textContent = myPlayer.ready ? '⏳ CANCEL READY' : '🛡️ READY FOR BATTLE';
+                    player1ReadyBtn.className = myPlayer.ready ? 'ready-btn ready-state' : 'ready-btn';
+                }
+                if (player1Info) {
+                    player1Info.className = `player-card ${myPlayer.ready ? 'ready' : 'waiting'}`;
                 }
             }
 
-            // Update opponent card
-            const player2Name = document.getElementById('player2Name');
-            const player2Ready = document.getElementById('player2Ready');
-            
+            // Update opponent card (Player 2)
             if (opponent) {
-             
-                if (player2Name) {
-                    player2Name.textContent = `${opponent.name}${opponent.isHost ? ' (Host)' : ''}`;
+                const player2Name = document.getElementById('player2Name');
+                const player2Status = document.getElementById('player2Status');
+                const player2Info = document.getElementById('player2Info');
+
+                if (player2Info) {
+                    player2Info.style.display = 'block';
+                    player2Info.className = `player-card ${opponent.ready ? 'ready' : 'waiting'}`;
                 }
-                if (player2Ready) {
-                    player2Ready.textContent = opponent.ready ? 'Ready' : 'Not Ready';
-                    player2Ready.style.color = opponent.ready ? '#00ff00' : '#ff4444';
+                if (player2Name) {
+                    player2Name.textContent = `${opponent.name}${opponent.isHost ? ' - Host' : ''}`;
+                }
+                if (player2Status) {
+                    player2Status.textContent = opponent.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
+                    player2Status.className = `player-status ${opponent.ready ? 'ready' : 'waiting'}`;
                 }
             } else {
-                // No opponent yet
-                if (player2Name) {
-                    player2Name.textContent = 'Waiting for opponent...';
-                }
-                if (player2Ready) {
-                    player2Ready.textContent = 'Waiting';
-                    player2Ready.style.color = '#888';
+                // Hide opponent card if no second player
+                const player2Info = document.getElementById('player2Info');
+                if (player2Info) {
+                    player2Info.style.display = 'none';
                 }
             }
 
-            // Update start button (only show for host when all ready)
-            const allReady = gameState.players.every(p => p.ready);
+            // Update start game button (only for host)
             const startBtn = document.getElementById('startGameBtn');
-            
-         
-            if (this.isHost && gameState.players.length === 2 && allReady) {
-                if (startBtn) {
-                    startBtn.style.display = 'block';
-                    startBtn.disabled = false;
-                    startBtn.textContent = 'Start Game';
-                }
-            } else {
-                if (startBtn) {
-                    startBtn.style.display = this.isHost ? 'block' : 'none';
-                    startBtn.disabled = true;
-                    startBtn.textContent = allReady ? 'Starting...' : 'Waiting for Ready';
+            if (startBtn && myPlayer?.isHost) {
+                const allReady = gameState.players.every(p => p.ready);
+                const canStart = gameState.players.length === 2 && allReady;
+                
+                startBtn.style.display = gameState.players.length === 2 ? 'block' : 'none';
+                startBtn.disabled = !canStart;
+                startBtn.textContent = allReady ? '⚡ COMMENCE WAR' : 'Waiting for Ready';
+            }
+
+            // Update lobby status message
+            const statusMsg = document.getElementById('lobbyStatusMessage');
+            if (statusMsg) {
+                if (gameState.players.length === 1) {
+                    statusMsg.textContent = 'Waiting for worthy opponents...';
+                } else if (gameState.players.length === 2) {
+                    const allReady = gameState.players.every(p => p.ready);
+                    statusMsg.textContent = allReady ? 
+                        'All warriors ready! Prepare for battle!' : 
+                        'Opponent found! Awaiting ready status...';
                 }
             }
         }
@@ -447,7 +326,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         state.roundEnding = false;
         
         // Reset squad counters for the new round
-        state.playerSquadsPlacedThisRound = 0;
+        state.squadsPlacedThisRound = 0;
         state.enemySquadsPlacedThisRound = 0;
         
         this.clearBattlefield();
@@ -536,8 +415,10 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
     update() {
         this.updatePhaseUI();
-        this.updateSquadCountDisplay();
         this.updateGoldDisplay();
+        this.updateRoundDisplay();
+        this.updateSideDisplay();
+        this.updateSquadsPlacedDisplay();
     }
 
     handleRoundResult(roundResult) {
@@ -549,31 +430,10 @@ class MultiplayerUISystem extends engine.BaseSystem {
         const state = this.game.state;
         
         // Update round number
-        const roundNumberEl = document.getElementById('multiplayerRoundNumber');
-        if (roundNumberEl) {
-            roundNumberEl.textContent = state.round || 1;
-        }
-        
-        // Update phase title
-        const phaseTitleEl = document.getElementById('multiplayerPhaseTitle');
-        if (phaseTitleEl) {
-            switch (state.phase) {
-                case 'placement':
-                    phaseTitleEl.textContent = 'PLACEMENT PHASE';
-                    break;
-                case 'battle':
-                    phaseTitleEl.textContent = 'BATTLE PHASE';
-                    break;
-                case 'ended':
-                    phaseTitleEl.textContent = 'ROUND ENDED';
-                    break;
-                default:
-                    phaseTitleEl.textContent = 'PREPARING...';
-            }
-        }
-        
+ 
+         
         // Update phase status
-        const phaseStatusEl = document.getElementById('multiplayerPhaseStatus');
+        const phaseStatusEl = document.getElementById('phaseStatus');
         if (phaseStatusEl) {
             if (state.phase === 'placement') {
                 if (state.playerReady) {
@@ -585,49 +445,32 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 phaseStatusEl.textContent = 'Battle in progress! Watch your units fight!';
             }
         }
-        
-        // Update phase timer (always infinity symbol for multiplayer)
-        const phaseTimerEl = document.getElementById('multiplayerPhaseTimer');
-        if (phaseTimerEl) {
-            if (state.phase === 'placement') {
-                phaseTimerEl.textContent = '∞';
-                phaseTimerEl.style.color = '#00ffff';
-            } else {
-                phaseTimerEl.textContent = '';
-            }
-        }
-        
-        // Update opponent indicator
-        if (this.game.multiplayerManager) {
-            const opponentIndicator = document.getElementById('opponentIndicator');
-            const opponent = Array.from(this.game.multiplayerManager.opponents.values())[0];
-            if (opponentIndicator && opponent) {
-                opponentIndicator.textContent = opponent.name;
-            }
-        }
     }
     
     updateGoldDisplay() {
-        const goldDisplay = document.getElementById('multiplayerPlayerGold');
+        const goldDisplay = document.getElementById('playerGold');
         if (goldDisplay) {
             goldDisplay.textContent = this.game.state.playerGold || 0;
         }
     }
     
-    updateSquadCountDisplay() {
-        const state = this.game.state;
-        const squadCountDisplay = document.getElementById('squadCount');
-        if (squadCountDisplay) {
-            const remaining = this.config.maxSquadsPerRound - state.playerSquadsPlacedThisRound;
-            squadCountDisplay.textContent = `${remaining}/${this.config.maxSquadsPerRound} squads left`;
-            
-            if (remaining === 0) {
-                squadCountDisplay.style.color = '#ff4444';
-            } else if (remaining === 1) {
-                squadCountDisplay.style.color = '#ffaa44';
-            } else {
-                squadCountDisplay.style.color = '#44ff44';
-            }
+    updateRoundDisplay() {
+        const roundNumberEl = document.getElementById('currentRound');
+        if (roundNumberEl) {
+            roundNumberEl.textContent = this.game.state.round || 1;
+        }
+    }
+    updateSideDisplay() {
+        const sideDisplay = document.getElementById('playerSide');
+        if (sideDisplay) {
+            sideDisplay.textContent = this.game.state.mySide || 0;
+        }
+    }
+    
+    updateSquadsPlacedDisplay() {
+        const sideDisplay = document.getElementById('playerSquadsPlaced');
+        if (sideDisplay) {
+            sideDisplay.textContent = this.game.state.squadsPlacedThisRound || 0;
         }
     }
    

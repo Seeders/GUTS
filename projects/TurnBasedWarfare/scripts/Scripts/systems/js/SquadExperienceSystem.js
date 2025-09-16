@@ -163,6 +163,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         }
         
         
+        console.log('leveling squad for cost', levelUpCost);
         try {
             if (!this.game.isServer) {
                 // Handle specialization case
@@ -215,6 +216,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
     }
 
     finishLevelingSquad(squadData, placementId, levelUpCost, specializationId) {
+        console.log('finishLevelingSquad');
         // Level up
         squadData.level++;
         squadData.experience = 0;

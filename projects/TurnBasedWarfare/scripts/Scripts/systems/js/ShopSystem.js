@@ -6,11 +6,11 @@ class ShopSystem extends engine.BaseSystem {
         // Experience UI state
         this.showingExperiencePanel = false;
         this.lastExperienceUpdate = 0;
+        
+        // Initialize fantasy UI enhancements
+        this.uiEnhancements = new FantasyUIEnhancements(game);
     }
-    
-    reset() {
-        this.lastExperienceUpdate = 0;
-    }
+
 
     createShop() {
         const shop = document.getElementById('unitShop');
@@ -24,9 +24,7 @@ class ShopSystem extends engine.BaseSystem {
             }
         }
         
-        // Add undo button
-        const undoButton = this.createUndoButton();
-        shop.appendChild(undoButton);
+        // Add undo button with fantasy styling
         
         const UnitTypes = this.game.getCollections().units;
 
@@ -36,14 +34,15 @@ class ShopSystem extends engine.BaseSystem {
             .filter(unit => unit.value >= 0)
             .sort((a, b) => a.value - b.value);
 
+        // Create enhanced unit cards with animations
         sortedUnits.forEach(unit => {
-            const card = this.createUnitCard(unit.id, unit);
-            if(card){
+            const card = this.createFantasyUnitCard(unit.id, unit);
+            if (card) {
                 shop.appendChild(card);
             }
         });
     }
-    
+
     createExperiencePanel() {
         if (!this.game.squadExperienceSystem) return null;
         
@@ -51,124 +50,77 @@ class ShopSystem extends engine.BaseSystem {
         
         if (squadsReadyToLevelUp.length === 0) return null;
         
-        const panel = document.createElement('div');
-        panel.className = 'experience-panel';
-        panel.style.cssText = `
-            margin-bottom: 15px;
-            padding: 12px;
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(255, 255, 0, 0.1));
-            border-radius: 8px;
-            border: 2px solid #44ff44;
-            animation: experienceGlow 2s ease-in-out infinite alternate;
-        `;
-        
-        // Add CSS animation for glow effect
-        if (!document.getElementById('experience-glow-style')) {
-            const style = document.createElement('style');
-            style.id = 'experience-glow-style';
-            style.textContent = `
-                @keyframes experienceGlow {
-                    from { box-shadow: 0 0 5px rgba(68, 255, 68, 0.3); }
-                    to { box-shadow: 0 0 15px rgba(68, 255, 68, 0.8); }
-                }
-                .level-up-button {
-                    background: linear-gradient(135deg, #006600, #008800);
-                    color: white;
-                    border: 1px solid #00aa00;
-                    padding: 6px 12px;
-                    margin: 2px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                    transition: all 0.2s ease;
-                    display: block;
-                    width: 100%;
-                }
-                .level-up-button:hover {
-                    background: linear-gradient(135deg, #008800, #00aa00);
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 5px rgba(0, 255, 0, 0.3);
-                }
-                .level-up-button:disabled {
-                    background: #444;
-                    color: #888;
-                    cursor: not-allowed;
-                    transform: none;
-                    box-shadow: none;
-                }
-                .experience-bar {
-                    width: 100%;
-                    height: 8px;
-                    background: rgba(0, 0, 0, 0.3);
-                    border-radius: 4px;
-                    overflow: hidden;
-                    margin: 4px 0;
-                }
-                .experience-fill {
-                    height: 100%;
-                    background: linear-gradient(90deg, #ffff00, #44ff44);
-                    border-radius: 4px;
-                    transition: width 0.3s ease;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        const title = document.createElement('h4');
-        title.textContent = '⭐ SQUADS READY TO LEVEL UP! ⭐';
-        title.style.cssText = `
-            color: #44ff44;
-            margin: 0 0 10px 0;
-            text-align: center;
-            font-size: 14px;
-        `;
-        panel.appendChild(title);
-        
-        squadsReadyToLevelUp.forEach(squad => {
-            const squadDiv = this.createSquadLevelUpCard(squad);
-            panel.appendChild(squadDiv);
+        const container = document.createElement('div');
+        container.className = 'experience-container';
+        container.style.marginBottom = '15px';
+
+        squadsReadyToLevelUp.forEach((squad, index) => {
+            const panel = this.createExperienceCard(squad);
+            container.appendChild(panel);
         });
-        
-        return panel;
+
+        return container;
     }
-    
-    createSquadLevelUpCard(squad) {
-        const card = document.createElement('div');
-        card.style.cssText = `
-            margin-bottom: 8px;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            border: 1px solid #333;
-        `;
-        
-        const currentLevelName = squad.levelName || '';
-        const currentLevelText = squad.level > 0 ? ` ${currentLevelName} Lv.${squad.level}` : '';
-        
-        // Check if this squad can specialize at the next level
+
+    createExperienceCard(squad) {
+        const currentUnitType = this.getCurrentUnitType(squad.placementId, squad.team);
+        if (!currentUnitType) return null;
+
+        const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         const isSpecializationLevel = (squad.level) == 2;
-        const currentUnitType = this.game.squadExperienceSystem.getCurrentUnitType(squad.placementId);
-        const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         const canSpecialize = isSpecializationLevel && hasSpecializations;
-        
-        const nextLevelText = canSpecialize ? ' & Specialize!' : ` → ${squad.nextLevelName}`;
-        const buttonText = canSpecialize ? `Level Up & Choose Specialization (-${squad.levelUpCost}g)` : `Level Up to ${squad.nextLevelName} (-${squad.levelUpCost}g)`;
+        const card = document.createElement('div');
+        card.className = 'experience-panel';
+        card.style.cssText = `
+            margin-bottom: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(212, 175, 55, 0.15));
+            border-radius: 10px;
+            border: 2px solid var(--accent-amber);
+            animation: experienceGlow 2s ease-in-out infinite alternate;
+            position: relative;
+            overflow: hidden;
+        `;
+
+        // Add magical shimmer effect for specialization
+        if (canSpecialize) {
+            const shimmer = document.createElement('div');
+            shimmer.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+                animation: shimmer 3s ease-in-out infinite;
+                pointer-events: none;
+                z-index: 1;
+            `;
+            card.appendChild(shimmer);
+        }
+
+        const currentLevelText = ` (Lvl ${squad.level})`;
+        const nextLevelText = canSpecialize ? 
+            '⭐ Specialize!' : ` → ${squad.nextLevelName}`;
+        const buttonText = canSpecialize ? 
+            `🌟 Level Up & Choose Specialization (-${squad.levelUpCost}g)` : 
+            `⚡ Level Up to ${squad.nextLevelName} (-${squad.levelUpCost}g)`;
         
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="color: #ccc; font-size: 13px; font-weight: bold;">
-                    ${squad.displayName}${currentLevelText}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; position: relative; z-index: 2;">
+                <span style="color: var(--parchment); font-size: 13px; font-weight: bold; font-family: var(--font-title);">
+                    🛡️ ${squad.displayName}${currentLevelText}
                 </span>
-                <span style="color: ${canSpecialize ? '#ffaa00' : '#44ff44'}; font-size: 12px;">
+                <span style="color: ${canSpecialize ? '#ffaa00' : '#44ff44'}; font-size: 12px; font-weight: bold;">
                     ${nextLevelText}
                 </span>
             </div>
-            <div class="experience-bar">
+            <div class="experience-bar" style="position: relative; z-index: 2;">
                 <div class="experience-fill" style="width: 100%;"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-bottom: 6px;">
-                <span>${canSpecialize ? 'Ready to specialize!' : 'Ready to level up!'}</span>
-                <span>${squad.levelUpCost}g cost</span>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; position: relative; z-index: 2;">
+                <span>${canSpecialize ? '🌟 Ready to specialize!' : '⚡ Ready to level up!'}</span>
+                <span>💰 ${squad.levelUpCost}g cost</span>
             </div>
         `;
         
@@ -176,22 +128,32 @@ class ShopSystem extends engine.BaseSystem {
         levelUpButton.className = 'level-up-button';
         levelUpButton.textContent = buttonText;
         levelUpButton.disabled = this.game.state.playerGold < squad.levelUpCost;
+        levelUpButton.style.position = 'relative';
+        levelUpButton.style.zIndex = '2';
         
         if (canSpecialize) {
             levelUpButton.style.background = 'linear-gradient(135deg, #cc6600, #ff8800)';
             levelUpButton.style.borderColor = '#ffaa00';
+            levelUpButton.style.boxShadow = '0 0 15px rgba(255, 170, 0, 0.4)';
         }
         
         levelUpButton.addEventListener('click', () => {
-
+            // Create level up animation
+            this.animateLevelUp(card);
+            
             const success = this.game.squadExperienceSystem.levelUpSquad(squad.placementId);
-            if (success || canSpecialize) { // Also refresh if specialization dialog was shown
+            if (success || canSpecialize) {
+                // Show success notification
+                this.uiEnhancements.showNotification(
+                    `🌟 ${squad.displayName} has been enhanced!`, 
+                    'success'
+                );
+                
                 // Refresh the shop to update the experience panel
                 setTimeout(() => {
                     this.createShop();
                 }, 100);
             }
-     
         });
         
         card.appendChild(levelUpButton);
@@ -203,9 +165,12 @@ class ShopSystem extends engine.BaseSystem {
                 margin-top: 8px;
                 padding: 6px;
                 background: rgba(255, 170, 0, 0.1);
-                border-radius: 3px;
+                border-radius: 4px;
                 font-size: 10px;
                 color: #ffaa00;
+                position: relative;
+                z-index: 2;
+                border: 1px solid rgba(255, 170, 0, 0.3);
             `;
             
             const collections = this.game.getCollections();
@@ -216,124 +181,324 @@ class ShopSystem extends engine.BaseSystem {
                 })
                 .join(', ');
             
-            previewDiv.innerHTML = `⭐ Available: ${specNames}`;
+            previewDiv.innerHTML = `⭐ Available Specializations: ${specNames}`;
             card.appendChild(previewDiv);
         }
         
         return card;
     }
-    
-    createUndoButton() {
-        const undoContainer = document.createElement('div');
-        undoContainer.className = 'undo-container';
-        undoContainer.style.cssText = `
-            margin-bottom: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            border: 1px solid #444;
+
+    animateLevelUp(panel) {
+        // Create magical level up burst effect
+        const burst = document.createElement('div');
+        burst.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, 
+                rgba(255, 215, 0, 0.9) 0%, 
+                rgba(255, 140, 0, 0.6) 50%, 
+                transparent 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: levelUpBurst 1.2s ease-out;
+            pointer-events: none;
+            z-index: 10;
         `;
         
-        const undoButton = document.createElement('button');
-        undoButton.id = 'undoButton';
-        undoButton.className = 'undo-button';
-        undoButton.innerHTML = '↶ Undo (Ctrl+Z)';
-        undoButton.style.cssText = `
-            width: 100%;
-            padding: 8px 12px;
-            background: #444;
-            color: #fff;
-            border: 1px solid #666;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        `;
+        panel.appendChild(burst);
         
-        undoButton.addEventListener('click', () => {
-            if (this.game.placementSystem) {
-                this.game.placementSystem.undoLastPlacement();
-            }
-        });
+        // Create sparkle effects
+        for (let i = 0; i < 6; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.style.cssText = `
+                position: absolute;
+                top: ${20 + Math.random() * 60}%;
+                left: ${20 + Math.random() * 60}%;
+                width: 4px;
+                height: 4px;
+                background: var(--primary-gold);
+                transform: scale(0);
+                animation: sparkle 0.8s ease-out ${Math.random() * 0.4}s;
+                pointer-events: none;
+                z-index: 10;
+            `;
+            panel.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1200);
+        }
         
-        undoButton.addEventListener('mouseenter', () => {
-            if (!undoButton.disabled) {
-                undoButton.style.background = '#555';
-                undoButton.style.borderColor = '#777';
-            }
-        });
-        
-        undoButton.addEventListener('mouseleave', () => {
-            if (!undoButton.disabled) {
-                undoButton.style.background = '#444';
-                undoButton.style.borderColor = '#666';
-            }
-        });
-        
-        undoContainer.appendChild(undoButton);
-        return undoContainer;
+        setTimeout(() => burst.remove(), 1200);
     }
+
     
-    createUnitCard(unitId, unitType) {
-        if(unitType.value < 0 || !unitType.buyable) return null;
+
+    createFantasyUnitCard(unitId, unitType) {
+        if (unitType.value < 0 || !unitType.buyable) return null;
         
         const card = document.createElement('div');
         card.className = 'unit-card';
-        // Store the unit ID directly on the element for reliable lookup
         card.dataset.unitId = unitId;
-        
-        // Enhanced unit card with potential level information
-        const squadInfo = this.game.squadManager ? this.game.squadManager.getSquadInfo(unitType) : null;
+        card.style.cssText = `
+            background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
+            border: 2px solid var(--dark-bronze);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+            animation: cardSlideIn 0.3s ease-out;
+        `;
+
+        // Add rarity-based effects
+        const rarity = this.determineUnitRarity(unitType);
+        if (rarity !== 'common') {
+            this.addRarityEffects(card, rarity);
+        }
+
+        // Enhanced unit card with squad info
+        const squadInfo = this.game.squadManager ? 
+            this.game.squadManager.getSquadInfo(unitType) : null;
         const statsText = squadInfo ? 
-            `${squadInfo.squadSize} units, ${squadInfo.formationType} formation` :
-            `${unitType.hp} HP, ${unitType.damage} DMG`;
+            `👥 ${squadInfo.squadSize} units, ${squadInfo.formationType} formation` :
+            `⚔️ ${unitType.damage} DMG | 🛡️ ${unitType.hp} HP`;
         
         card.innerHTML = `
-            <div class="unit-name">${unitType.title}</div>
-            <div class="unit-cost">Cost: ${unitType.value}g</div>
-            <div class="unit-stats"><p>${statsText}</p></div>
+            <div class="unit-name" style="font-family: var(--font-title); color: var(--primary-gold); font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">
+                ${this.getUnitIcon(unitType)} ${unitType.title}
+            </div>
+            <div class="unit-cost" style="color: var(--accent-amber); font-size: 0.8rem; margin-bottom: 6px; font-weight: bold;">
+                💰 Cost: ${unitType.value}g
+            </div>
+            <div class="unit-stats" style="font-size: 0.75rem; line-height: 1.2;">
+                ${statsText}
+            </div>
         `;
-        
-        card.addEventListener('click', () => this.selectUnit({ id: unitId, ...unitType }));
+
+        // Add unit description tooltip
+        if (unitType.description) {
+            card.title = unitType.description;
+        }
+
+        // Enhanced click handler with animations
+        card.addEventListener('click', (e) => {
+            this.selectUnitWithAnimation(card, { id: unitId, ...unitType }, e);
+        });
+
+        // Add hover effects
+        this.addUnitCardHoverEffects(card);
+
         return card;
     }
-    
-    selectUnit(unitType) {
+
+    selectUnitWithAnimation(card, unitType, event) {
         const state = this.game.state;
-        if (state.phase !== 'placement' || state.playerGold < unitType.value) return;
+        if (state.phase !== 'placement' || state.playerGold < unitType.value) {
+            // Show insufficient gold animation
+            this.showInsufficientGoldEffect(card);
+            return;
+        }
         
         state.selectedUnitType = unitType;
         this.game.placementSystem.handleUnitSelectionChange(unitType);
-        // Update UI selection
-        document.querySelectorAll('.unit-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        event.target.closest('.unit-card').classList.add('selected');
         
-        const squadInfo = this.game.squadManager ? this.game.squadManager.getSquadInfo(unitType) : null;
+        // Update UI selection with animation
+        document.querySelectorAll('.unit-card').forEach(c => {
+            c.classList.remove('selected');
+            c.style.transform = 'scale(1)';
+        });
+        
+        card.classList.add('selected');
+        
+        // Create selection effect
+        this.createSelectionEffect(card, event);
+        
+        // Show selection feedback
+        const squadInfo = this.game.squadManager ? 
+            this.game.squadManager.getSquadInfo(unitType) : null;
         const message = squadInfo ? 
-            `Selected ${unitType.title} squad (${squadInfo.squadSize} units, ${unitType.value}g)` :
-            `Selected ${unitType.title} (${unitType.value}g)`;
+            `🛡️ Selected ${unitType.title} squad (${squadInfo.squadSize} units, ${unitType.value}g)` :
+            `⚔️ Selected ${unitType.title} (${unitType.value}g)`;
         
         this.game.battleLogSystem.add(message);
+        this.uiEnhancements.showNotification(`Selected: ${unitType.title}`, 'success', 2000);
     }
-    
+
+    createSelectionEffect(card, event) {
+        const ripple = document.createElement('div');
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            left: ${x - 10}px;
+            top: ${y - 10}px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 140, 0, 0.8), transparent);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: selectionRipple 0.6s ease-out;
+            pointer-events: none;
+            z-index: 10;
+        `;
+        
+        card.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+        
+        // Add golden glow effect
+        card.style.boxShadow = '0 0 20px rgba(255, 140, 0, 0.6), inset 0 0 20px rgba(255, 140, 0, 0.1)';
+    }
+
+    showInsufficientGoldEffect(card) {
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(183, 28, 28, 0.3);
+            border-radius: 8px;
+            animation: insufficientGoldFlash 0.6s ease-out;
+            pointer-events: none;
+            z-index: 5;
+        `;
+        
+        card.appendChild(flash);
+        setTimeout(() => flash.remove(), 600);
+        
+        // Show error message
+        this.uiEnhancements.showNotification('💰 Insufficient gold!', 'error', 2000);
+    }
+
+    addUnitCardHoverEffects(card) {
+        const shimmerEffect = document.createElement('div');
+        shimmerEffect.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+            transition: left 0.5s ease;
+            pointer-events: none;
+            z-index: 1;
+        `;
+        card.appendChild(shimmerEffect);
+
+        card.addEventListener('mouseenter', () => {
+            if (!card.classList.contains('disabled')) {
+                card.style.borderColor = 'var(--primary-gold)';
+                card.style.transform = 'translateY(-3px) scale(1.02)';
+                card.style.boxShadow = '0 8px 20px rgba(212, 175, 55, 0.3), 0 0 15px rgba(212, 175, 55, 0.2)';
+                shimmerEffect.style.left = '100%';
+            }
+        });
+
+        card.addEventListener('mouseleave', () => {
+            if (!card.classList.contains('selected') && !card.classList.contains('disabled')) {
+                card.style.borderColor = 'var(--dark-bronze)';
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.boxShadow = 'none';
+                shimmerEffect.style.left = '-100%';
+            }
+        });
+    }
+
+    determineUnitRarity(unitType) {
+        if (unitType.value > 150) return 'legendary';
+        if (unitType.value > 100) return 'epic';
+        if (unitType.value > 50) return 'rare';
+        return 'common';
+    }
+
+    addRarityEffects(card, rarity) {
+        const colors = {
+            rare: 'rgba(65, 105, 225, 0.3)',      // Blue
+            epic: 'rgba(138, 43, 226, 0.3)',      // Purple
+            legendary: 'rgba(255, 215, 0, 0.3)'   // Gold
+        };
+
+        const glowColor = colors[rarity] || colors.rare;
+        
+        card.style.borderColor = rarity === 'legendary' ? 'var(--primary-gold)' : 
+                                rarity === 'epic' ? 'var(--rich-purple)' : 
+                                'var(--mystic-blue)';
+        
+        card.style.background = `
+            linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
+            radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)
+        `;
+
+        // Add animated border for legendary units
+        if (rarity === 'legendary') {
+            const borderAnimation = document.createElement('div');
+            borderAnimation.style.cssText = `
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                border-radius: 10px;
+                background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
+                animation: legendaryBorder 3s ease-in-out infinite;
+                z-index: -1;
+                pointer-events: none;
+            `;
+            card.appendChild(borderAnimation);
+        }
+    }
+
+    getUnitIcon(unitType) {
+        // Return appropriate icon based on unit type
+        const iconMap = {
+            knight: '🛡️',
+            warrior: '⚔️',
+            archer: '🏹',
+            mage: '🔮',
+            healer: '✨',
+            dragon: '🐉',
+            giant: '👹',
+            assassin: '🗡️',
+            paladin: '⚡',
+            necromancer: '💀'
+        };
+
+        const unitName = unitType.title.toLowerCase();
+        for (const [key, icon] of Object.entries(iconMap)) {
+            if (unitName.includes(key)) {
+                return icon;
+            }
+        }
+        return '⚔️'; // Default icon
+    }
+
+    getCurrentUnitType(placementId, side) {
+        if (!this.game.placementSystem) return null;
+        const placements = this.game.placementSystem.getPlacementsForSide(side);
+        const placement = placements.find(p => p.placementId === placementId);
+        return placement ? placement.unitType : null;
+    }
+    // Enhanced update method with better performance
     update() {
         const state = this.game.state;
         const UnitTypes = this.game.getCollections().units;
         const inPlacementPhase = state.phase === 'placement';
         
-        // Update undo button
-        this.updateUndoButton(inPlacementPhase);
-        
-        // Update experience panel if needed
+        // Update experience panel if needed (throttled)
         if (inPlacementPhase && this.game.squadExperienceSystem) {
-           
-            if (this.game.state.now - this.lastExperienceUpdate > 2) { // Update every 2 seconds
+            if (this.game.state.now - this.lastExperienceUpdate > 2) {
                 const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
                 const hasReadySquads = squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
-                console.log(squadsReadyToLevelUp.length);
+                
                 // Refresh shop if experience panel state changed
                 if (hasReadySquads !== hasExperiencePanel) {
                     this.createShop();
@@ -343,138 +508,44 @@ class ShopSystem extends engine.BaseSystem {
             }
         }
         
-        // Use dataset.unitId to reliably match cards with unit types
+        // Update unit card states efficiently
         document.querySelectorAll('.unit-card').forEach(card => {
             const unitId = card.dataset.unitId;
             const unitType = UnitTypes[unitId];
             
-            if (!unitType) {
-                console.warn(`Unit type not found for ID: ${unitId}`);
-                return;
-            }
+            if (!unitType) return;
             
             const canAfford = state.playerGold >= unitType.value;
+            const wasDisabled = card.classList.contains('disabled');
+            const shouldBeDisabled = !canAfford || !inPlacementPhase;
             
-            // Update card state
-            card.classList.toggle('disabled', !canAfford || !inPlacementPhase);
-            
-            // Optional: Update card display with current affordability
-            const costElement = card.querySelector('.unit-cost');
-            if (costElement) {
-                costElement.textContent = `Cost: ${unitType.value}g`;
-                costElement.style.color = canAfford ? '' : '#ff4444';
+            if (wasDisabled !== shouldBeDisabled) {
+                card.classList.toggle('disabled', shouldBeDisabled);
+                
+                // Update visual state
+                if (shouldBeDisabled) {
+                    card.style.opacity = '0.4';
+                    card.style.cursor = 'not-allowed';
+                    card.style.filter = 'grayscale(0.7)';
+                } else {
+                    card.style.opacity = '1';
+                    card.style.cursor = 'pointer';
+                    card.style.filter = 'none';
+                }
+                
+                // Update cost display color
+                const costElement = card.querySelector('.unit-cost');
+                if (costElement) {
+                    costElement.style.color = canAfford ? 'var(--accent-amber)' : 'var(--blood-red)';
+                }
             }
         });
-        
-        // Update level-up buttons if they exist
-        document.querySelectorAll('.level-up-button').forEach(button => {
-            const costMatch = button.textContent.match(/\((-?\d+)g\)/);
-            if (costMatch) {
-                const cost = parseInt(costMatch[1].replace('-', ''));
-                button.disabled = state.playerGold < cost;
-            }
-        });
-        
-        // Update gold display
-        const goldElement = document.getElementById('playerGold');
-        if (goldElement) {
-            goldElement.textContent = state.playerGold;
-        }
-        
-        // Update enemy strength
-        const strengthLevels = ['Weak', 'Normal', 'Strong', 'Elite', 'Legendary'];
-        const strengthIndex = Math.min(Math.floor((state.round - 1) / 2), strengthLevels.length - 1);
-        const strengthElement = document.getElementById('enemyStrength');
-        if (strengthElement) {
-            strengthElement.textContent = strengthLevels[strengthIndex];
-        }
     }
-    
-    updateUndoButton(inPlacementPhase) {
-        const undoButton = document.getElementById('undoButton');
-        if (!undoButton || !this.game.placementSystem) return;
-        
-        const undoStatus = this.game.placementSystem.getUndoStatus();
-        const canUndo = undoStatus.canUndo && inPlacementPhase;
-        
-        undoButton.disabled = !canUndo;
-        
-        if (canUndo) {
-            undoButton.style.background = '#444';
-            undoButton.style.color = '#fff';
-            undoButton.style.cursor = 'pointer';
-            undoButton.style.opacity = '1';
-            
-            // Show what can be undone
-            if (undoStatus.lastAction) {
-                const lastAction = undoStatus.lastAction;
-                undoButton.innerHTML = `↶ Undo ${lastAction.unitType.title} (+${lastAction.cost}g)`;
-            } else {
-                undoButton.innerHTML = '↶ Undo (Ctrl+Z)';
-            }
-        } else {
-            undoButton.style.background = '#222';
-            undoButton.style.color = '#666';
-            undoButton.style.cursor = 'not-allowed';
-            undoButton.style.opacity = '0.5';
-            undoButton.innerHTML = undoStatus.undoCount === 0 ? '↶ Nothing to undo' : '↶ Undo (placement phase only)';
-        }
+
+    reset() {
+        this.lastExperienceUpdate = 0;
+        this.showingExperiencePanel = false;
     }
-    
-    // Method to be called by experience system for UI updates
-    updateSquadExperience() {
-        if (this.game.state.phase === 'placement') {
-            // Throttled shop refresh
-            if (this.game.state.now - this.lastExperienceUpdate > 1) {
-                this.createShop();
-                this.lastExperienceUpdate = this.game.state.now;
-            }
-        }
-    }
-    
-    // Helper method to get all purchasable units
-    getPurchasableUnits() {
-        const UnitTypes = this.game.getCollections().units;
-        return Object.keys(UnitTypes)
-            .filter(unitId => UnitTypes[unitId].value >= 0)
-            .map(unitId => ({ id: unitId, ...UnitTypes[unitId] }));
-    }
-    
-    // Helper method to check if a specific unit is affordable
-    isUnitAffordable(unitId) {
-        const UnitTypes = this.game.getCollections().units;
-        const unitType = UnitTypes[unitId];
-        return unitType && this.game.state.playerGold >= unitType.value;
-    }
-    
-    // Method to clear selection
-    clearSelection() {
-        this.game.state.selectedUnitType = null;
-        document.querySelectorAll('.unit-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-    }
-    
-    // Method to update a specific unit card
-    updateUnitCard(unitId) {
-        const card = document.querySelector(`[data-unit-id="${unitId}"]`);
-        if (!card) return;
-        
-        const UnitTypes = this.game.getCollections().units;
-        const unitType = UnitTypes[unitId];
-        if (!unitType) return;
-        
-        const state = this.game.state;
-        const canAfford = state.playerGold >= unitType.value;
-        const inPlacementPhase = state.phase === 'placement';
-        
-        card.classList.toggle('disabled', !canAfford || !inPlacementPhase);
-        
-        // Update cost display color
-        const costElement = card.querySelector('.unit-cost');
-        if (costElement) {
-            costElement.style.color = canAfford ? '' : '#ff4444';
-        }
-    }
-    
 }
+
+

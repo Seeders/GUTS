@@ -38,7 +38,8 @@
     "socket.io.min.js",
     "BaseSystem",
     "SeededRandom",
-    "DesyncDebugger"
+    "DesyncDebugger",
+    "FantasyUIEnhancements"
   ],
   "fileName": "game",
   "interface": "main",

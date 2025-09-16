@@ -134,7 +134,6 @@ class AbilitySystem extends engine.BaseSystem {
         if (ability.animation && this.game.animationSystem) {
             this.startAbilityAnimation(entityId, ability);
         }
-        console.log('use ability', abilityId, ability);
         this.abilityQueue.set(entityId, {
             abilityId: abilityId,
             targetData: targetData,
