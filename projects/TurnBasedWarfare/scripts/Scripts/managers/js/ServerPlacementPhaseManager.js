@@ -262,7 +262,7 @@ class ServerPlacementPhaseManager {
         }
         
         // Check placement positions (basic validation)
-        for (const placement of placements) {
+        for (const placement of newPlacements) {
             if (!placement.gridPosition || !placement.unitType) {
                 console.log(`Player ${player.id} invalid placement data:`, placement);
                 return false;

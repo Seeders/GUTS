@@ -5,7 +5,7 @@ class TeamHealthSystem extends engine.BaseSystem {
         
         
         // Team health configuration
-        this.MAX_TEAM_HEALTH = 5000;
+        this.MAX_TEAM_HEALTH = 2500;
         this.teamHealth = {
             left: this.MAX_TEAM_HEALTH,
             right: this.MAX_TEAM_HEALTH
