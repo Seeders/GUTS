@@ -98,9 +98,6 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 
-        2px 2px 4px rgba(0, 0, 0, 0.9),
-        0 0 10px rgba(0, 0, 0, 0.8);
     margin-bottom: 1rem;
     animation: titleGlow 3s ease-in-out infinite alternate;
     position: relative;
