@@ -444,9 +444,6 @@ class MultiplayerPhaseSystem {
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
-        if (this.game.gridSystem?.clear) {
-          this.game.gridSystem.clear();
-        }
     
         // Drop any opponent cache so we don't double-spawn next round
         if (this.game.placementSystem) {

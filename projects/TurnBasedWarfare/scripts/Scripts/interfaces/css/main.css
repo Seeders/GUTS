@@ -41,10 +41,7 @@
 
 body {
     font-family: var(--font-body);
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(45, 74, 43, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(77, 63, 42, 0.3) 0%, transparent 50%),
-        linear-gradient(135deg, #1a1f1a 0%, #2a1f1a 25%, #1f2a1f 50%, #2a1a1f 75%, #1a1a1f 100%);
+    background-color: var(--dark-green);
     color: var(--cream);
     overflow: hidden;
     height: 100vh;
@@ -298,15 +295,8 @@ body {
     top: 0;
     width: 380px;
     height: 100%;
-    background: 
-        linear-gradient(180deg, 
-            rgba(61, 47, 31, 0.95) 0%, 
-            rgba(74, 63, 42, 0.95) 30%, 
-            rgba(93, 64, 55, 0.95) 70%, 
-            rgba(77, 63, 42, 0.95) 100%);
-    border-left: 3px solid var(--primary-gold);
-    border-image: linear-gradient(180deg, var(--primary-gold), var(--accent-amber)) 1;
-    padding: 1.5rem;
+    border-left: 3px solid var(--light-forest);
+    padding: 1rem;
     overflow-y: auto;
     backdrop-filter: blur(10px);
 }
@@ -323,7 +313,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    border-radius: 0;
+    border-radius: .5em;
     position: relative;
     transition: all 0.3s ease;
 }
@@ -339,6 +329,7 @@ body {
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
+    border-radius: .5em;
 }
 
 .btn:hover::before {
@@ -452,7 +443,6 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
-    margin-bottom: 1.5rem;
 }
 
 .unit-card {

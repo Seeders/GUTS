@@ -335,7 +335,6 @@ class ServerBattlePhaseSystem {
     }
 
     clearBattlefield() {
-        this.game.gridSystem.clear();
 
         if (!this.game.componentManager) return;
         

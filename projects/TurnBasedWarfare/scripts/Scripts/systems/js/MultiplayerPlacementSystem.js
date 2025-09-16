@@ -321,7 +321,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.game.squadExperienceSystem.initializeSquad(
                     placement.placementId, 
                     placement.unitType, 
-                    placement.experience.unitIds, 
+                    placement.experience?.unitIds || [], 
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
             }
@@ -508,8 +508,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             squadUnits.push(...createdUnits);
             
             this.updateGameStateForPlacement(placementId, gridPos, cells, unitType, squadUnits, team, undoInfo);
-            this.game.gridSystem.occupyCells(cells, placementId);
             
+            this.game.gridSystem.occupyCells(cells, placementId);
             // Initialize squad in experience system
             if (this.game.squadExperienceSystem) {
                 const unitIds = createdUnits.map(unit => unit.entityId);
@@ -860,19 +860,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         const gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
         
-        let isValid;
-        if (this.cachedGridPos && 
-            this.cachedGridPos.x === gridPos.x && 
-            this.cachedGridPos.z === gridPos.z) {
-            
-            isValid = this.cachedValidation?.isValid || false;
-
-        } else {
-            isValid = this.isValidPlayerPlacement(worldPosition);
-            this.cachedGridPos = gridPos;
-            this.cachedValidation = { isValid, timestamp: this.game.state.now, gridPos };
-
-        }
+        let isValid = this.isValidPlayerPlacement(worldPosition);
         
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
 ;

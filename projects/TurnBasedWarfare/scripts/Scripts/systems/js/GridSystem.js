@@ -4,9 +4,6 @@ class GridSystem extends engine.BaseSystem {
         this.game.gridSystem = this;
         
         this.state = new Map();
-        this.validationCache = new Map();
-        this.lastCacheClean = 0;
-        this.CACHE_CLEAN_INTERVAL = 10000;
 
         // NEW: track which half each team owns
         this.teamSides = { player: 'left', enemy: 'right' };
@@ -198,7 +195,6 @@ class GridSystem extends engine.BaseSystem {
             this.state.set(key, value);
         });
         
-        this.invalidateCache(cells);
     }
 
     freeCells(placementId) {
@@ -214,29 +210,10 @@ class GridSystem extends engine.BaseSystem {
             this.state.delete(key);
         });
         
-        // Clear all cache since we don't know which entries are affected
-        this.validationCache.clear();
     }
-        
-    invalidateCache(cells) {
-        const affectedKeys = new Set();
-        
-        for (const cell of cells) {
-            for (const [cacheKey] of this.validationCache.entries()) {
-                if (cacheKey.includes(`${cell.x},${cell.z}`)) {
-                    affectedKeys.add(cacheKey);
-                }
-            }
-        }
-        
-        affectedKeys.forEach(key => {
-            this.validationCache.delete(key);
-        });
-    }
-        
+       
     clear() {
         this.state.clear();
-        this.validationCache.clear();
     }
     
     toggleVisibility(scene) {
@@ -275,8 +252,7 @@ class GridSystem extends engine.BaseSystem {
             teamSides: { ...this.teamSides },
             occupiedCells: this.getOccupiedCells(),
             totalCells: this.dimensions.width * this.dimensions.height,
-            occupiedCount: this.state.size,
-            cacheSize: this.validationCache.size
+            occupiedCount: this.state.size
         };
     }
     

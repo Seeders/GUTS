@@ -388,9 +388,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
-        if (this.game.gridSystem?.clear) {
-          this.game.gridSystem.clear();
-        }
     
         // Drop any opponent cache so we don't double-spawn next round
         if (this.game.placementSystem) {
@@ -470,7 +467,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
     updateSquadsPlacedDisplay() {
         const sideDisplay = document.getElementById('playerSquadsPlaced');
         if (sideDisplay) {
-            sideDisplay.textContent = this.game.state.squadsPlacedThisRound || 0;
+            sideDisplay.textContent = `${this.game.state.squadsPlacedThisRound || 0} / ${this.config.maxSquadsPerRound}`;
         }
     }
    

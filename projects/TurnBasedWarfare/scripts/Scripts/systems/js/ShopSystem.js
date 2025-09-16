@@ -18,10 +18,7 @@ class ShopSystem extends engine.BaseSystem {
         
         // Add experience panel at the top (only during placement phase)
         if (this.game.state.phase === 'placement') {
-            const experiencePanel = this.createExperiencePanel();
-            if (experiencePanel) {
-                shop.appendChild(experiencePanel);
-            }
+            this.createExperiencePanel();
         }
         
         // Add undo button with fantasy styling
@@ -36,7 +33,7 @@ class ShopSystem extends engine.BaseSystem {
 
         // Create enhanced unit cards with animations
         sortedUnits.forEach(unit => {
-            const card = this.createFantasyUnitCard(unit.id, unit);
+            const card = this.createUnitCard(unit.id, unit);
             if (card) {
                 shop.appendChild(card);
             }
@@ -46,13 +43,12 @@ class ShopSystem extends engine.BaseSystem {
     createExperiencePanel() {
         if (!this.game.squadExperienceSystem) return null;
         
+        const container = document.getElementById('unitPromotions');
+        container.innerHTML = '';
+
         const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
         
         if (squadsReadyToLevelUp.length === 0) return null;
-        
-        const container = document.createElement('div');
-        container.className = 'experience-container';
-        container.style.marginBottom = '15px';
 
         squadsReadyToLevelUp.forEach((squad, index) => {
             const panel = this.createExperienceCard(squad);
@@ -101,10 +97,10 @@ class ShopSystem extends engine.BaseSystem {
 
         const currentLevelText = ` (Lvl ${squad.level})`;
         const nextLevelText = canSpecialize ? 
-            '⭐ Specialize!' : ` → ${squad.nextLevelName}`;
+            '⭐ Ascend!' : ` → ${squad.nextLevelName}`;
         const buttonText = canSpecialize ? 
-            `🌟 Level Up & Choose Specialization (-${squad.levelUpCost}g)` : 
-            `⚡ Level Up to ${squad.nextLevelName} (-${squad.levelUpCost}g)`;
+            `🌟 Ascend` : 
+            `⚡ Level Up`;
         
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; position: relative; z-index: 2;">
@@ -119,7 +115,6 @@ class ShopSystem extends engine.BaseSystem {
                 <div class="experience-fill" style="width: 100%;"></div>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; position: relative; z-index: 2;">
-                <span>${canSpecialize ? '🌟 Ready to specialize!' : '⚡ Ready to level up!'}</span>
                 <span>💰 ${squad.levelUpCost}g cost</span>
             </div>
         `;
@@ -235,7 +230,7 @@ class ShopSystem extends engine.BaseSystem {
 
     
 
-    createFantasyUnitCard(unitId, unitType) {
+    createUnitCard(unitId, unitType) {
         if (unitType.value < 0 || !unitType.buyable) return null;
         
         const card = document.createElement('div');

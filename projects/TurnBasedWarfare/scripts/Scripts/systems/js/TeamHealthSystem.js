@@ -115,6 +115,13 @@ class TeamHealthSystem extends engine.BaseSystem {
         let totalDamage = 0;
         let survivingSquadCount = 0;
         const squadDetails = [];
+        if(!survivingUnits){ 
+            return {
+                totalDamage: 0,
+                survivingSquads: 0,
+                squadDetails: []
+            };
+        }
         // Group surviving units by their squad placement ID
         survivingUnits.forEach(unitId => {
             // Find which squad this unit belongs to

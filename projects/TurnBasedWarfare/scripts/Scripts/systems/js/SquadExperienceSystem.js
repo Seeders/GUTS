@@ -120,15 +120,19 @@ class SquadExperienceSystem extends engine.BaseSystem {
     getLevelUpCost(placementId){
         
         const squadData = this.squadExperience.get(placementId);
-        const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
+        if(squadData){
+            const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
 
-        return levelUpCost;
+            return levelUpCost;
+        } else {
+            return -1;
+        }
     }
     canAffordLevelUp(placementId, playerGold){
                 
         const levelUpCost = this.getLevelUpCost(placementId);
 
-         if (playerGold < levelUpCost) {    
+         if (levelUpCost < 0 || playerGold < levelUpCost) {    
             return false;
          }
          return true;
