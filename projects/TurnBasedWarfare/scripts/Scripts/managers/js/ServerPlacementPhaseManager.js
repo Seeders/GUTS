@@ -269,7 +269,6 @@ class ServerPlacementPhaseManager {
             }
             
             // Validate side placement - no mirroring, direct side enforcement
-               // Validate side placement - no mirroring, direct side enforcement
             const squadData = this.game.squadManager.getSquadData(placement.unitType);
             const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
             if(!this.game.gridSystem.isValidPlacement(cells, player.stats.side)){

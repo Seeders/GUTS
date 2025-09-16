@@ -123,12 +123,6 @@ class UnitCreationManager {
             // Calculate cells occupied by the squad
             const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
 
-            // Validate placement location
-            if (!this.game.gridSystem.isValidPlacement(cells, team)) {
-                console.log("Grid System invalidated placement position");
-                return false;
-            }
-
             // Generate unique placement ID
             const placementId = `squad_${team}_${gridPosition.x}_${gridPosition.z}`;
             const squadUnits = [];

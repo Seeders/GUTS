@@ -72,7 +72,6 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
         sortedAllies.forEach(allyId => {
             const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
             if (!allyPos) return;
-            console.log('create shield');
             // Shield effect
             this.createVisualEffect(allyPos, 'shield');
             
