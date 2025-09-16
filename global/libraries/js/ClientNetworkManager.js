@@ -32,7 +32,9 @@ class ClientNetworkManager {
             // Uncomment when socket.io is available
             // const { io } = await import('/socket.io/socket.io.js');
             this.socket = io(this.serverUrl, {
-                transports: ['websocket', 'polling']
+                transports: ['websocket', 'polling'],
+                autoConnect: true, // Disable auto-connection
+                reconnection: false // Disable auto-reconnection during development
             });
 
             this.setupSocketEventHandlers();
@@ -85,6 +87,14 @@ class ClientNetworkManager {
                 return originalOn(eventName, wrappedCallback);
             };
         }
+
+        window.addEventListener('beforeunload', () => {
+            this.disconnect();
+        });
+        
+        window.addEventListener('unload', () => {
+            this.disconnect();
+        });
     }
 
     handleDisconnection() {
@@ -112,7 +122,8 @@ class ClientNetworkManager {
 
     disconnect() {
         if (this.socket) {
-            this.socket.disconnect();
+            this.socket.removeAllListeners(); // Remove all listeners first
+            this.socket.disconnect(true); // Force disconnect
             this.socket = null;
         }
         this.isConnected = false;

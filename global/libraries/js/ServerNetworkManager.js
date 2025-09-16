@@ -39,6 +39,7 @@ export default class ServerNetworkManager {
         this.io.removeAllListeners('connection');
 
         this.io.on('connection', (socket) => {
+
             console.log('Player connected:', socket.id);
 
             this.playerSockets.set(socket.id, { socket });
