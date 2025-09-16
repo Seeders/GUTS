@@ -12,22 +12,26 @@
     /* Fantasy Color Palette */
     --primary-gold: #d4af37;
     --secondary-gold: #b8860b;
-    --accent-amber: #ff8c00;
-    --deep-burgundy: #722f37;
-    --rich-purple: #4a148c;
-    --forest-green: #1b5e20;
-    --stone-gray: #424242;
-    --dark-bronze: #8d6e63;
-    --mystic-blue: #1565c0;
-    --shadow-black: #0a0a0a;
-    --parchment: #f5f5dc;
-    --blood-red: #b71c1c;
+    --accent-amber: #daa520;
+    --deep-forest: #1b3d1b;
+    --medium-forest: #2d4a2b;
+    --light-forest: #3d5a3b;
+    --forest-brown: #4a3f2a;
+    --dark-brown: #3d2f1f;
+    --medium-brown: #5d4037;
+    --light-brown: #6d4c41;
+    --stone-gray: #8d7053;
+    --warm-gray: #a68b5b;
+    --cream: #f5e6b3;
+    --dark-green: #0f2f0f;
+    --blood-red: #8b0000;
     
     /* Gradients */
     --gold-gradient: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-    --royal-gradient: linear-gradient(135deg, var(--rich-purple), var(--deep-burgundy));
-    --mystical-gradient: linear-gradient(135deg, var(--mystic-blue), var(--rich-purple));
-    --shadow-gradient: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+    --forest-gradient: linear-gradient(135deg, var(--deep-forest), var(--medium-forest));
+    --earth-gradient: linear-gradient(135deg, var(--dark-brown), var(--medium-brown));
+    --natural-gradient: linear-gradient(135deg, var(--forest-brown), var(--medium-brown));
+    --command-gradient: linear-gradient(135deg, var(--dark-brown), var(--forest-brown));
     
     /* Typography */
     --font-decorative: 'Cinzel Decorative', serif;
@@ -38,10 +42,10 @@
 body {
     font-family: var(--font-body);
     background: 
-        radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.15) 0%, transparent 50%),
-        linear-gradient(135deg, #0a0a0a 0%, #1a0d1a 25%, #0d0a1a 50%, #1a0a0d 75%, #0a0a0a 100%);
-    color: var(--parchment);
+        radial-gradient(circle at 20% 80%, rgba(45, 74, 43, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(77, 63, 42, 0.3) 0%, transparent 50%),
+        linear-gradient(135deg, #1a1f1a 0%, #2a1f1a 25%, #1f2a1f 50%, #2a1a1f 75%, #1a1a1f 100%);
+    color: var(--cream);
     overflow: hidden;
     height: 100vh;
 }
@@ -78,8 +82,11 @@ body {
 /* Main Menu Screen */
 #mainMenu {
     background: 
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%),
-        var(--shadow-gradient);
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+        url('/projects/TurnBasedWarfare/resources/textures/background.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
     text-align: center;
 }
 
@@ -91,7 +98,9 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.9),
+        0 0 10px rgba(0, 0, 0, 0.8);
     margin-bottom: 1rem;
     animation: titleGlow 3s ease-in-out infinite alternate;
     position: relative;
@@ -109,7 +118,8 @@ body {
 .subtitle {
     font-family: var(--font-title);
     font-size: 1.2rem;
-    color: var(--stone-gray);
+    color: var(--cream);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     margin-bottom: 3rem;
     font-style: italic;
     animation: fadeIn 2s ease-in;
@@ -307,10 +317,10 @@ body {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 30% 70%, rgba(27, 94, 32, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 70% 30%, rgba(183, 28, 28, 0.1) 0%, transparent 50%),
-        #111111;
-    border-left: 2px solid var(--dark-bronze);
+        radial-gradient(circle at 30% 70%, rgba(27, 94, 32, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(139, 0, 0, 0.08) 0%, transparent 50%),
+        #2a3a2a;
+    border-left: 2px solid var(--medium-brown);
     cursor: crosshair;
 }
 
@@ -321,7 +331,11 @@ body {
     width: 380px;
     height: 100%;
     background: 
-        linear-gradient(180deg, rgba(26, 13, 26, 0.95) 0%, rgba(13, 10, 26, 0.95) 50%, rgba(26, 10, 13, 0.95) 100%);
+        linear-gradient(180deg, 
+            rgba(61, 47, 31, 0.95) 0%, 
+            rgba(74, 63, 42, 0.95) 30%, 
+            rgba(93, 64, 55, 0.95) 70%, 
+            rgba(77, 63, 42, 0.95) 100%);
     border-left: 3px solid var(--primary-gold);
     border-image: linear-gradient(180deg, var(--primary-gold), var(--accent-amber)) 1;
     padding: 1.5rem;
@@ -344,7 +358,6 @@ body {
     border-radius: 0;
     position: relative;
     transition: all 0.3s ease;
-    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
 }
 
 .btn::before {
@@ -355,7 +368,6 @@ body {
     right: -2px;
     bottom: -2px;
     background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
-    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -397,13 +409,18 @@ body {
 /* UI Components for Game */
 .player-panel {
     background: 
-        linear-gradient(145deg, rgba(114, 47, 55, 0.2), rgba(74, 20, 140, 0.2)),
+        linear-gradient(145deg, 
+            rgba(61, 47, 31, 0.9), 
+            rgba(74, 63, 42, 0.8)),
         radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
-    border: 2px solid var(--dark-bronze);
-    border-radius: 10px;
+    border: 2px solid var(--medium-brown);
+    border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     position: relative;
+    box-shadow: 
+        inset 0 2px 4px rgba(212, 175, 55, 0.1),
+        0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .player-panel::before {
