@@ -280,6 +280,44 @@ class ServerPlacementPhaseManager {
         return true;
     }
 
-
+    clearPlayerPlacements(playerId) {
+        try {
+            // Get player's placements
+            const placements = this.playerPlacements.get(playerId) || [];
+            
+            // Remove entities created by this player's placements
+            placements.forEach(placement => {
+                if (placement.unitIds) {
+                    placement.unitIds.forEach(entityId => {
+                        try {
+                            if (this.game.destroyEntity) {
+                                this.game.destroyEntity(entityId);
+                            }
+                        } catch (error) {
+                            console.warn(`Error destroying entity ${entityId}:`, error);
+                        }
+                    });
+                }
+                
+                // Free grid cells
+                if (placement.placementId) {
+                    this.game.gridSystem.freeCells(placement.placementId);
+                }
+            });
+            
+            // Clear from maps
+            this.playerPlacements.delete(playerId);
+            
+            // Clear from undo stack if it's this player
+            if (this.undoStack) {
+                this.undoStack = this.undoStack.filter(undo => undo.playerId !== playerId);
+            }
+            
+            console.log(`Cleared placements for player ${playerId}`);
+            
+        } catch (error) {
+            console.error(`Error clearing placements for player ${playerId}:`, error);
+        }
+    }
 
 }

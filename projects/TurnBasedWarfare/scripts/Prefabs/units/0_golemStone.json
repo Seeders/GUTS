@@ -2,14 +2,14 @@
   "title": "Stone Golem",
   "size": 25,
   "value": 480,
-  "hp": 720,
+  "hp": 5000,
   "speed": 15,
-  "damage": 40,
+  "damage": 150,
   "attackSpeed": 0.7,
   "element": "physical",
   "armor": 12,
-  "fireResistance": -0.2,
-  "coldResistance": 0.3,
+  "fireResistance": 0.1,
+  "coldResistance": 0.1,
   "lightningResistance": 0.1,
   "render": {
     "animations": {

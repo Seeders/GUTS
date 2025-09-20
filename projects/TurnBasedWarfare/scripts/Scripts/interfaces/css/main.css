@@ -25,6 +25,12 @@
     --cream: #f5e6b3;
     --dark-green: #0f2f0f;
     --blood-red: #8b0000;
+    --dark-bronze: #8B7355;
+    --mystic-blue: #4169E1;
+    --rich-purple: #8A2BE2;
+    --shadow-black: #000000;
+    --parchment: #F5E6B3;
+    --forest-green: #1b5e20;
     
     /* Gradients */
     --gold-gradient: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
@@ -66,22 +72,42 @@ body {
 
 /* Main Menu Screen */
 #mainMenu {
-    background: 
-        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-        url('/projects/TurnBasedWarfare/resources/textures/background.png');
+    text-align: center;
+}
+
+#mainMenu, #gameModeSelect, #multiplayerLobby {
+    background-color: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+    background-image: url('/projects/TurnBasedWarfare/resources/images/background.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    text-align: center;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+body.bg2 #mainMenu, body.bg2 #gameModeSelect, body.bg2 #multiplayerLobby {
+    background-image: url('/projects/TurnBasedWarfare/resources/images/background2.png');
+}
+
+body.bg3 #mainMenu, body.bg3 #gameModeSelect, body.bg3 #multiplayerLobby {
+    background-image: url('/projects/TurnBasedWarfare/resources/images/background3.png');
+}
+
+
+body.bg4 #mainMenu, body.bg4 #gameModeSelect, body.bg4 #multiplayerLobby {
+    background-image: url('/projects/TurnBasedWarfare/resources/images/background4.png');
+}
+
+body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
+    background-image: url('/projects/TurnBasedWarfare/resources/images/background5.png');
 }
 
 .game-title {
     font-family: var(--font-decorative);
     font-size: clamp(2.5rem, 8vw, 5rem);
     font-weight: 700;
-    background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary-gold);
+    text-shadow: 2px 2px 3px var(--dark-green);
     background-clip: text;
     margin-bottom: 1rem;
     animation: titleGlow 3s ease-in-out infinite alternate;
@@ -117,17 +143,6 @@ body {
 
 
 /* Game Mode Selection */
-#gameModeSelect, #multiplayerLobby {
-    background: 
-        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)),
-        url('/projects/TurnBasedWarfare/resources/textures/background.png');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    overflow-y: auto;
-    padding: 2rem;
-}
-
 .mode-selection {
     text-align: center;
     max-width: 1000px;
@@ -137,12 +152,9 @@ body {
 .mode-selection h2 {
     font-family: var(--font-decorative);
     font-size: 2.5rem;
-    background: var(--gold-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 2rem;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    color: var(--primary-gold);
+    margin-bottom: 2rem;    
+    text-shadow: 2px 2px 3px var(--dark-green);
 }
 
 .mode-grid {
@@ -153,7 +165,7 @@ body {
 }
 
 .mode-card {
-    background: linear-gradient(145deg, rgba(26, 13, 26, 0.9), rgba(13, 10, 26, 0.9));
+    background: linear-gradient(145deg, rgba(26, 13, 26, 0.8), rgba(13, 10, 26, 0.8));
     border: 2px solid var(--dark-bronze);
     border-radius: 12px;
     padding: 2rem;
@@ -190,7 +202,7 @@ body {
 
 .mode-card.selected {
     border-color: var(--accent-amber);
-    background: linear-gradient(145deg, rgba(74, 20, 140, 0.3), rgba(114, 47, 55, 0.3));
+    background: linear-gradient(145deg, rgba(26, 13, 26, 0.95), rgba(13, 10, 26, 0.95));
     box-shadow: 
         0 0 30px rgba(255, 140, 0, 0.4),
         inset 0 0 20px rgba(255, 140, 0, 0.1);
@@ -446,17 +458,17 @@ body {
 }
 
 .unit-card {
-    background: 
-        linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
+    background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
     border: 2px solid var(--dark-bronze);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 12px;
     cursor: pointer;
     text-align: center;
     transition: all 0.3s ease;
     font-size: 0.85rem;
     position: relative;
     overflow: hidden;
+    animation: cardSlideIn 0.3s ease-out;
 }
 
 .unit-card::before {
@@ -476,18 +488,28 @@ body {
 
 .unit-card:hover {
     border-color: var(--primary-gold);
-    transform: translateY(-3px);
-    box-shadow: 
-        0 8px 20px rgba(212, 175, 55, 0.2),
-        0 0 15px rgba(212, 175, 55, 0.1);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3), 0 0 15px rgba(212, 175, 55, 0.2);
+}
+.unit-card:hover .shimmer {
+    left: 100%;
+}
+.unit-card:hover .unit-icon {
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    border-color: var(--primary-gold);
+    transform: scale(1.05);
 }
 
 .unit-card.selected {
     border-color: var(--accent-amber);
-    box-shadow: 
-        0 0 20px rgba(255, 140, 0, 0.4),
-        inset 0 0 10px rgba(255, 140, 0, 0.1);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.4), inset 0 0 10px rgba(255, 140, 0, 0.1);
     background: linear-gradient(145deg, rgba(74, 20, 140, 0.3), rgba(114, 47, 55, 0.3));
+    transform: translateY(-3px) scale(1.02);
+}
+.unit-card.selected .unit-icon {
+    box-shadow: 0 0 12px rgba(255, 140, 0, 0.6);
+    border-color: var(--accent-amber);
+    transform: scale(1.1);
 }
 
 .unit-card.disabled {
@@ -501,25 +523,221 @@ body {
     border-color: var(--dark-bronze);
     box-shadow: none;
 }
+.unit-card.disabled:hover .shimmer {
+    left: -100%;
+}
+.unit-card.disabled .unit-icon {
+    filter: grayscale(1) brightness(0.6);
+    opacity: 0.5;
+}
+.unit-card.disabled:hover .unit-icon {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-color: var(--dark-bronze);
+    transform: scale(1);
+}
+/* Add these CSS styles to your main.css or in a <style> tag */
 
+/* Unit Icon Styles */
+.unit-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 6px;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    border: 1px solid var(--dark-bronze);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Hover effects for icons */
+.unit-card:hover .unit-icon {
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    border-color: var(--primary-gold);
+    transform: scale(1.05);
+}
+
+/* Selected card icon effects */
+.unit-card.selected .unit-icon {
+    box-shadow: 0 0 12px rgba(255, 140, 0, 0.6);
+    border-color: var(--accent-amber);
+    transform: scale(1.1);
+}
+
+/* Disabled card icon effects */
+.unit-card.disabled .unit-icon {
+    filter: grayscale(1) brightness(0.6);
+    opacity: 0.5;
+}
+
+/* Alternative styling for larger icons if you prefer */
+.unit-icon-large {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 8px;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--dark-bronze);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Icon error handling - fallback styling */
+.unit-icon:not([src]),
+.unit-icon[src=""] {
+    background: linear-gradient(45deg, var(--dark-bronze), var(--primary-gold));
+    display: inline-block;
+    position: relative;
+}
+
+.unit-icon:not([src])::before,
+.unit-icon[src=""]::before {
+    content: "⚔️";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+}
+
+/* Rarity-based icon effects */
+.unit-card.rarity-rare:hover {
+    border-color: #4169E1;
+    box-shadow: 0 8px 20px rgba(65, 105, 225, 0.4), 0 0 15px rgba(65, 105, 225, 0.2);
+}
+
+.unit-card.rarity-epic:hover {
+    border-color: #8A2BE2;
+    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4), 0 0 15px rgba(138, 43, 226, 0.2);
+}
+
+.unit-card.rarity-legendary:hover {
+    border-color: var(--primary-gold);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+/* Rarity background effects */
+.unit-card.rarity-rare {
+    background: 
+        linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
+        radial-gradient(circle at center, rgba(65, 105, 225, 0.3) 0%, transparent 70%);
+    border-color: #4169E1;
+}
+
+.unit-card.rarity-epic {
+    background: 
+        linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
+        radial-gradient(circle at center, rgba(138, 43, 226, 0.3) 0%, transparent 70%);
+    border-color: #8A2BE2;
+}
+
+.unit-card.rarity-legendary {
+    background: 
+        linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
+        radial-gradient(circle at center, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+    border-color: var(--primary-gold);
+}
+
+/* Legendary border animation */
+.unit-card.rarity-legendary .legendary-border {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 10px;
+    background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
+    animation: legendaryBorder 3s ease-in-out infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Unit cost color states */
+.unit-cost.cost-affordable {
+    color: var(--accent-amber);
+}
+
+.unit-cost.cost-unaffordable {
+    color: var(--blood-red);
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .unit-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 4px;
+    }
+}
+
+/* Loading placeholder for icons */
+.unit-icon[loading] {
+    background: linear-gradient(90deg, 
+        rgba(212, 175, 55, 0.1) 25%, 
+        rgba(212, 175, 55, 0.2) 50%, 
+        rgba(212, 175, 55, 0.1) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
 .unit-name {
     font-family: var(--font-title);
     color: var(--primary-gold);
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 6px;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.unit-name img {
+    width: 24px; 
+    height: 24px; 
+    object-fit: cover; 
+    vertical-align: middle; 
+    margin-right: 6px; 
+    border-radius: 3px;
 }
 
 .unit-cost {
-    color: var(--accent-amber);
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
+    color: var(--accent-amber); 
+    font-size: 0.8rem; 
+    margin-bottom: 6px; 
     font-weight: bold;
 }
 
 .unit-stats {
-    font-size: 0.75rem;
+    font-size: 0.75rem; 
     line-height: 1.2;
+}
+
+.spec-unit-preview {
+    margin-top: 8px;
+    padding: 6px;
+    background: rgba(255, 170, 0, 0.1);
+    border-radius: 4px;
+    font-size: 10px;
+    color: #ffaa00;
+    position: relative;
+    z-index: 2;
+    border: 1px solid rgba(255, 170, 0, 0.3);
 }
 
 .army-list {
@@ -1323,21 +1541,126 @@ body {
 
 /* Experience Panel Styles */
 .experience-panel {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: 
-        linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(212, 175, 55, 0.15)),
-        radial-gradient(circle at center, rgba(255, 140, 0, 0.1) 0%, transparent 70%);
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(212, 175, 55, 0.15));
     border-radius: 10px;
     border: 2px solid var(--accent-amber);
     animation: experienceGlow 2s ease-in-out infinite alternate;
+    position: relative;
+    overflow: hidden;
+    padding: 0.5em;
+    margin-bottom: 1em;
+}
+
+.experience-panel .experience-squad-info {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; margin-bottom: 6px; position: relative; z-index: 2;
+}
+
+.experience-panel .experience-squad-name {
+    color: var(--parchment); font-size: 13px; font-weight: bold; font-family: var(--font-title);
+}
+
+.experience-panel .experience-levelUpCost {
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 11px; 
+    margin-bottom: 6px; 
+    position: relative; 
+    z-index: 2;
+}
+
+.experience-panel .level-up-button {
+    position: relative;
+    z-index: 2;   
+}
+
+.experience-panel .level-up-button.level-up-button-spec {
+    background: 'linear-gradient(135deg, #cc6600, #ff8800)';
+    border-color: '#ffaa00';
+    box-shadow: '0 0 15px rgba(255, 170, 0, 0.4)';
+}
+
+.experience-nextLevelSpec {
+    color: '#ffaa00'; 
+    font-size: 12px; 
+    font-weight: bold;
+}
+
+.experience-nextLevel {    
+    color: '#44ff44';
+    font-size: 12px; 
+    font-weight: bold;
+}
+
+.unit-card .shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.insufficientGoldEffect  {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(183, 28, 28, 0.3);
+    border-radius: 8px;
+    animation: insufficientGoldFlash 0.6s ease-out;
+    pointer-events: none;
+    z-index: 5;
 }
 
 @keyframes experienceGlow {
     from { box-shadow: 0 0 10px rgba(255, 140, 0, 0.3); }
     to { box-shadow: 0 0 25px rgba(255, 140, 0, 0.6); }
 }
+.selection-ripple {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(255, 140, 0, 0.8), transparent);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: selectionRipple 0.6s ease-out;
+    pointer-events: none;
+    z-index: 10;
+}
 
+.level-up-burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, 
+        rgba(255, 215, 0, 0.9) 0%, 
+        rgba(255, 140, 0, 0.6) 50%, 
+        transparent 100%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: levelUpBurst 1.2s ease-out;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.level-up-sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--primary-gold);
+    transform: scale(0);
+    animation: sparkle 0.8s ease-out;
+    pointer-events: none;
+    z-index: 10;
+}
 .experience-bar {
     width: 100%;
     height: 8px;
@@ -1346,10 +1669,14 @@ body {
     overflow: hidden;
     margin: 0.5rem 0;
     border: 1px solid var(--dark-bronze);
+
+    position: relative; 
+    z-index: 2;
 }
 
 .experience-fill {
     height: 100%;
+    width: 100%;
     background: linear-gradient(90deg, var(--accent-amber), var(--primary-gold));
     transition: width 0.3s ease;
     box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);

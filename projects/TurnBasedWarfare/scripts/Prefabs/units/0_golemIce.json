@@ -9,8 +9,8 @@
   "element": "cold",
   "armor": 8,
   "coldResistance": 1,
-  "lightningResistance": -0.25,
-  "fireResistance": 0.1,
+  "lightningResistance": 0.1,
+  "fireResistance": -0.25,
   "render": {
     "animations": {
       "idle": [

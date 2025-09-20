@@ -67,31 +67,11 @@ class ShopSystem extends engine.BaseSystem {
         const canSpecialize = isSpecializationLevel && hasSpecializations;
         const card = document.createElement('div');
         card.className = 'experience-panel';
-        card.style.cssText = `
-            margin-bottom: 12px;
-            padding: 12px;
-            background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(212, 175, 55, 0.15));
-            border-radius: 10px;
-            border: 2px solid var(--accent-amber);
-            animation: experienceGlow 2s ease-in-out infinite alternate;
-            position: relative;
-            overflow: hidden;
-        `;
 
         // Add magical shimmer effect for specialization
         if (canSpecialize) {
             const shimmer = document.createElement('div');
-            shimmer.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
-                animation: shimmer 3s ease-in-out infinite;
-                pointer-events: none;
-                z-index: 1;
-            `;
+            shimmer.classList.add("shimmer");
             card.appendChild(shimmer);
         }
 
@@ -103,18 +83,18 @@ class ShopSystem extends engine.BaseSystem {
             `⚡ Level Up`;
         
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; position: relative; z-index: 2;">
-                <span style="color: var(--parchment); font-size: 13px; font-weight: bold; font-family: var(--font-title);">
+            <div class="experience-squad-info">
+                <span class="experience-squad-name">
                     🛡️ ${squad.displayName}${currentLevelText}
                 </span>
-                <span style="color: ${canSpecialize ? '#ffaa00' : '#44ff44'}; font-size: 12px; font-weight: bold;">
+                <span class="${canSpecialize ? 'experience-nextLevelSpec' : 'experience-nextLevel'}">
                     ${nextLevelText}
                 </span>
             </div>
-            <div class="experience-bar" style="position: relative; z-index: 2;">
-                <div class="experience-fill" style="width: 100%;"></div>
+            <div class="experience-bar">
+                <div class="experience-fill"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; position: relative; z-index: 2;">
+            <div class="experience-levelUpCost">
                 <span>💰 ${squad.levelUpCost}g cost</span>
             </div>
         `;
@@ -123,13 +103,9 @@ class ShopSystem extends engine.BaseSystem {
         levelUpButton.className = 'level-up-button';
         levelUpButton.textContent = buttonText;
         levelUpButton.disabled = this.game.state.playerGold < squad.levelUpCost;
-        levelUpButton.style.position = 'relative';
-        levelUpButton.style.zIndex = '2';
         
         if (canSpecialize) {
-            levelUpButton.style.background = 'linear-gradient(135deg, #cc6600, #ff8800)';
-            levelUpButton.style.borderColor = '#ffaa00';
-            levelUpButton.style.boxShadow = '0 0 15px rgba(255, 170, 0, 0.4)';
+            levelUpButton.classList.add('level-up-button-spec');
         }
         
         levelUpButton.addEventListener('click', () => {
@@ -156,17 +132,7 @@ class ShopSystem extends engine.BaseSystem {
         // Add specialization preview if available
         if (canSpecialize && currentUnitType.specUnits.length > 0) {
             const previewDiv = document.createElement('div');
-            previewDiv.style.cssText = `
-                margin-top: 8px;
-                padding: 6px;
-                background: rgba(255, 170, 0, 0.1);
-                border-radius: 4px;
-                font-size: 10px;
-                color: #ffaa00;
-                position: relative;
-                z-index: 2;
-                border: 1px solid rgba(255, 170, 0, 0.3);
-            `;
+            previewDiv.classList.add('spec-unit-preview')
             
             const collections = this.game.getCollections();
             const specNames = currentUnitType.specUnits
@@ -183,52 +149,31 @@ class ShopSystem extends engine.BaseSystem {
         return card;
     }
 
-    animateLevelUp(panel) {
-        // Create magical level up burst effect
-        const burst = document.createElement('div');
-        burst.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, 
-                rgba(255, 215, 0, 0.9) 0%, 
-                rgba(255, 140, 0, 0.6) 50%, 
-                transparent 100%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            animation: levelUpBurst 1.2s ease-out;
-            pointer-events: none;
-            z-index: 10;
-        `;
+    getUnitIcon(unitType) {
+        // Extract the base unit name from the unit ID
+        // This assumes your icon files follow the pattern: icon_<unitname>.png
+        const unitId = unitType.id || unitType.type || '';
         
-        panel.appendChild(burst);
+        // Map unit IDs to icon file names
+        const iconMap = {
+            // Primary units
+            '1_d_archer': 'archer',
+            '1_sd_soldier': 'soldier', 
+            '1_s_barbarian': 'barbarian',
+            '1_is_acolyte': 'acolyte',
+            '1_i_apprentice': 'apprentice',
+            '1_di_scout': 'rogue',
+            '0_golemStone': 'stoneGolem'            
+        };
         
-        // Create sparkle effects
-        for (let i = 0; i < 6; i++) {
-            const sparkle = document.createElement('div');
-            sparkle.style.cssText = `
-                position: absolute;
-                top: ${20 + Math.random() * 60}%;
-                left: ${20 + Math.random() * 60}%;
-                width: 4px;
-                height: 4px;
-                background: var(--primary-gold);
-                transform: scale(0);
-                animation: sparkle 0.8s ease-out ${Math.random() * 0.4}s;
-                pointer-events: none;
-                z-index: 10;
-            `;
-            panel.appendChild(sparkle);
-            
-            setTimeout(() => sparkle.remove(), 1200);
-        }
+        // Get the icon filename or fallback to a default
+        const iconName = iconMap[unitId] || 'default';
+        const iconPath = `/projects/TurnBasedWarfare/resources/images/icon_${iconName}.png`;
         
-        setTimeout(() => burst.remove(), 1200);
+        // Return an img element instead of emoji
+        return `<img src="${iconPath}" alt="${unitType.title}" class="unit-icon">`;
     }
 
-    
 
     createUnitCard(unitId, unitType) {
         if (unitType.value < 0 || !unitType.buyable) return null;
@@ -236,19 +181,6 @@ class ShopSystem extends engine.BaseSystem {
         const card = document.createElement('div');
         card.className = 'unit-card';
         card.dataset.unitId = unitId;
-        card.style.cssText = `
-            background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
-            border: 2px solid var(--dark-bronze);
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-            position: relative;
-            overflow: hidden;
-            animation: cardSlideIn 0.3s ease-out;
-        `;
 
         // Add rarity-based effects
         const rarity = this.determineUnitRarity(unitType);
@@ -260,33 +192,41 @@ class ShopSystem extends engine.BaseSystem {
         const squadInfo = this.game.squadManager ? 
             this.game.squadManager.getSquadInfo(unitType) : null;
         const statsText = squadInfo ? 
-            `👥 ${squadInfo.squadSize} units, ${squadInfo.formationType} formation` :
+            `💥 ${squadInfo.squadSize} units, ${squadInfo.formationType} formation` :
             `⚔️ ${unitType.damage} DMG | 🛡️ ${unitType.hp} HP`;
         
-        card.innerHTML = `
-            <div class="unit-name" style="font-family: var(--font-title); color: var(--primary-gold); font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">
-                ${this.getUnitIcon(unitType)} ${unitType.title}
-            </div>
-            <div class="unit-cost" style="color: var(--accent-amber); font-size: 0.8rem; margin-bottom: 6px; font-weight: bold;">
-                💰 Cost: ${unitType.value}g
-            </div>
-            <div class="unit-stats" style="font-size: 0.75rem; line-height: 1.2;">
-                ${statsText}
-            </div>
-        `;
+        // Create the card content with proper HTML structure
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'unit-name';
+        nameDiv.innerHTML = `${this.getUnitIcon(unitType)} ${unitType.title}`;
+        
+        const costDiv = document.createElement('div');
+        costDiv.className = 'unit-cost';
+        costDiv.textContent = `💰 Cost: ${unitType.value}g`;
+        
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'unit-stats';
+        statsDiv.textContent = statsText;
+        
+        // Add shimmer effect element for CSS hover animation
+        const shimmerEffect = document.createElement('div');
+        shimmerEffect.className = "shimmer";
+        card.appendChild(shimmerEffect);
+        
+        // Append all elements to the card
+        card.appendChild(nameDiv);
+        card.appendChild(costDiv);
+        card.appendChild(statsDiv);
 
         // Add unit description tooltip
         if (unitType.description) {
             card.title = unitType.description;
         }
 
-        // Enhanced click handler with animations
+        // Click handler only (no hover listeners)
         card.addEventListener('click', (e) => {
             this.selectUnitWithAnimation(card, { id: unitId, ...unitType }, e);
         });
-
-        // Add hover effects
-        this.addUnitCardHoverEffects(card);
 
         return card;
     }
@@ -326,23 +266,14 @@ class ShopSystem extends engine.BaseSystem {
 
     createSelectionEffect(card, event) {
         const ripple = document.createElement('div');
+        ripple.className = 'selection-ripple';
+        
         const rect = card.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         
-        ripple.style.cssText = `
-            position: absolute;
-            left: ${x - 10}px;
-            top: ${y - 10}px;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, rgba(255, 140, 0, 0.8), transparent);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: selectionRipple 0.6s ease-out;
-            pointer-events: none;
-            z-index: 10;
-        `;
+        ripple.style.left = `${x - 10}px`;
+        ripple.style.top = `${y - 10}px`;
         
         card.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
@@ -353,18 +284,7 @@ class ShopSystem extends engine.BaseSystem {
 
     showInsufficientGoldEffect(card) {
         const flash = document.createElement('div');
-        flash.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(183, 28, 28, 0.3);
-            border-radius: 8px;
-            animation: insufficientGoldFlash 0.6s ease-out;
-            pointer-events: none;
-            z-index: 5;
-        `;
+        flash.style.className = "insufficientGoldEffect";
         
         card.appendChild(flash);
         setTimeout(() => flash.remove(), 600);
@@ -373,39 +293,6 @@ class ShopSystem extends engine.BaseSystem {
         this.uiEnhancements.showNotification('💰 Insufficient gold!', 'error', 2000);
     }
 
-    addUnitCardHoverEffects(card) {
-        const shimmerEffect = document.createElement('div');
-        shimmerEffect.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            transition: left 0.5s ease;
-            pointer-events: none;
-            z-index: 1;
-        `;
-        card.appendChild(shimmerEffect);
-
-        card.addEventListener('mouseenter', () => {
-            if (!card.classList.contains('disabled')) {
-                card.style.borderColor = 'var(--primary-gold)';
-                card.style.transform = 'translateY(-3px) scale(1.02)';
-                card.style.boxShadow = '0 8px 20px rgba(212, 175, 55, 0.3), 0 0 15px rgba(212, 175, 55, 0.2)';
-                shimmerEffect.style.left = '100%';
-            }
-        });
-
-        card.addEventListener('mouseleave', () => {
-            if (!card.classList.contains('selected') && !card.classList.contains('disabled')) {
-                card.style.borderColor = 'var(--dark-bronze)';
-                card.style.transform = 'translateY(0) scale(1)';
-                card.style.boxShadow = 'none';
-                shimmerEffect.style.left = '-100%';
-            }
-        });
-    }
 
     determineUnitRarity(unitType) {
         if (unitType.value > 150) return 'legendary';
@@ -415,71 +302,42 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     addRarityEffects(card, rarity) {
-        const colors = {
-            rare: 'rgba(65, 105, 225, 0.3)',      // Blue
-            epic: 'rgba(138, 43, 226, 0.3)',      // Purple
-            legendary: 'rgba(255, 215, 0, 0.3)'   // Gold
-        };
+        // Add rarity class for CSS styling
+        card.classList.add(`rarity-${rarity}`);
 
-        const glowColor = colors[rarity] || colors.rare;
-        
-        card.style.borderColor = rarity === 'legendary' ? 'var(--primary-gold)' : 
-                                rarity === 'epic' ? 'var(--rich-purple)' : 
-                                'var(--mystic-blue)';
-        
-        card.style.background = `
-            linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
-            radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)
-        `;
-
-        // Add animated border for legendary units
+        // Add animated border element for legendary units
         if (rarity === 'legendary') {
             const borderAnimation = document.createElement('div');
-            borderAnimation.style.cssText = `
-                position: absolute;
-                top: -2px;
-                left: -2px;
-                right: -2px;
-                bottom: -2px;
-                border-radius: 10px;
-                background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
-                animation: legendaryBorder 3s ease-in-out infinite;
-                z-index: -1;
-                pointer-events: none;
-            `;
+            borderAnimation.className = 'legendary-border';
             card.appendChild(borderAnimation);
         }
     }
-
-    getUnitIcon(unitType) {
-        // Return appropriate icon based on unit type
-        const iconMap = {
-            knight: '🛡️',
-            warrior: '⚔️',
-            archer: '🏹',
-            mage: '🔮',
-            healer: '✨',
-            dragon: '🐉',
-            giant: '👹',
-            assassin: '🗡️',
-            paladin: '⚡',
-            necromancer: '💀'
-        };
-
-        const unitName = unitType.title.toLowerCase();
-        for (const [key, icon] of Object.entries(iconMap)) {
-            if (unitName.includes(key)) {
-                return icon;
-            }
-        }
-        return '⚔️'; // Default icon
-    }
-
     getCurrentUnitType(placementId, side) {
         if (!this.game.placementSystem) return null;
         const placements = this.game.placementSystem.getPlacementsForSide(side);
         const placement = placements.find(p => p.placementId === placementId);
         return placement ? placement.unitType : null;
+    }
+
+    animateLevelUp(panel) {
+        // Create magical level up burst effect
+        const burst = document.createElement('div');
+        burst.className = 'level-up-burst';
+        panel.appendChild(burst);
+        
+        // Create sparkle effects
+        for (let i = 0; i < 6; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'level-up-sparkle';
+            sparkle.style.top = `${20 + Math.random() * 60}%`;
+            sparkle.style.left = `${20 + Math.random() * 60}%`;
+            sparkle.style.animationDelay = `${Math.random() * 0.4}s`;
+            panel.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1200);
+        }
+        
+        setTimeout(() => burst.remove(), 1200);
     }
     // Enhanced update method with better performance
     update() {
@@ -503,7 +361,7 @@ class ShopSystem extends engine.BaseSystem {
             }
         }
         
-        // Update unit card states efficiently
+        // Update unit card states efficiently using CSS classes
         document.querySelectorAll('.unit-card').forEach(card => {
             const unitId = card.dataset.unitId;
             const unitType = UnitTypes[unitId];
@@ -517,21 +375,16 @@ class ShopSystem extends engine.BaseSystem {
             if (wasDisabled !== shouldBeDisabled) {
                 card.classList.toggle('disabled', shouldBeDisabled);
                 
-                // Update visual state
-                if (shouldBeDisabled) {
-                    card.style.opacity = '0.4';
-                    card.style.cursor = 'not-allowed';
-                    card.style.filter = 'grayscale(0.7)';
-                } else {
-                    card.style.opacity = '1';
-                    card.style.cursor = 'pointer';
-                    card.style.filter = 'none';
-                }
-                
-                // Update cost display color
+                // Update cost display color using CSS classes
                 const costElement = card.querySelector('.unit-cost');
                 if (costElement) {
-                    costElement.style.color = canAfford ? 'var(--accent-amber)' : 'var(--blood-red)';
+                    if (canAfford) {
+                        costElement.classList.add('cost-affordable');
+                        costElement.classList.remove('cost-unaffordable');
+                    } else {
+                        costElement.classList.add('cost-unaffordable');
+                        costElement.classList.remove('cost-affordable');
+                    }
                 }
             }
         });

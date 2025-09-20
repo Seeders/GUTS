@@ -181,37 +181,96 @@ export default class ServerGameRoom extends GameRoom {
         }
     }
 
-    handleLeaveRoom(eventData) {
-        const { playerId } = eventData;
-        
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (roomId) {
-            const room = this.engine.gameRooms.get(roomId);
-            if (room) {
-                // Notify other players
-                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
-                    playerId: playerId
-                });
-                
-                // Use GameRoom's removePlayer method
-                room.removePlayer(playerId);
-                this.serverNetworkManager.leaveRoom(playerId, roomId);
-                
-                // Clean up empty rooms
-                if (room.players.size === 0) {
-                    this.engine.gameRooms.delete(roomId);
-                    console.log(`Removed empty room ${roomId}`);
-                }
-            }
-        }
-    }
-
     handlePlayerDisconnect(eventData) {
         const { playerId } = eventData;
         console.log(`Player ${playerId} disconnected`);
         
-        // Handle as leave room
-        this.handleLeaveRoom({ playerId });
+        // Get the room the player was in
+        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            const room = this.engine.gameRooms.get(roomId);
+            if (room) {
+                // Get player data before removing
+                const player = room.players.get(playerId);
+                const playerName = player?.name || 'Unknown';
+                
+                // Notify other players
+                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
+                    playerId: playerId,
+                    playerName: playerName
+                });
+                
+                // Clean up player state completely
+                this.cleanupPlayerState(room, playerId);
+                
+                // Remove from room
+                room.removePlayer(playerId);
+                this.serverNetworkManager.leaveRoom(playerId, roomId);
+                
+                // Reset game if it was in progress
+                if (room.game && room.game.state.phase !== 'waiting' && room.game.state.phase !== 'lobby') {
+                    this.resetGameState(room);
+                }
+                
+                // Clean up empty rooms
+                if (room.players.size === 0) {
+                    this.cleanupRoom(room);
+                    this.engine.gameRooms.delete(roomId);
+                    console.log(`Removed empty room ${roomId}`);
+                } else {
+                    // If room still has players, reset their states for next game
+                    this.resetPlayersForNextGame(room);
+                }
+            }
+        }
+        
+        // Clean up network manager state
+        this.serverNetworkManager.playerSockets.delete(playerId);
+    }
+
+    handleLeaveRoom(eventData) {
+        const { playerId } = eventData;
+        
+        // Use the same cleanup logic as disconnect
+        this.handlePlayerDisconnect(eventData);
+    }
+    cleanupPlayerState(room, playerId) {
+        const player = room.players.get(playerId);
+        if (!player) return;
+        
+        // Clear any placement data
+        if (room.game && room.game.placementSystem) {
+            room.game.placementSystem.clearPlayerPlacements(playerId);
+        }
+        
+        // Clear any battle data
+        if (room.game && room.game.battlePhaseSystem) {
+            const battleSystem = room.game.battlePhaseSystem;
+            if (battleSystem.createdSquads) {
+                battleSystem.createdSquads.delete(playerId);
+            }
+            if (battleSystem.battleResults) {
+                battleSystem.battleResults.delete(playerId);
+            }
+        }
+        
+        // Clear any entities owned by this player
+        if (room.game && room.game.componentManager) {
+            const ComponentTypes = room.game.componentManager.getComponentTypes();
+            const playerEntities = room.game.getEntitiesWith(ComponentTypes.PLAYER_OWNED)
+                .filter(entityId => {
+                    const ownerComp = room.game.getComponent(entityId, ComponentTypes.PLAYER_OWNED);
+                    return ownerComp && ownerComp.playerId === playerId;
+                });
+            
+            playerEntities.forEach(entityId => {
+                try {
+                    room.game.destroyEntity(entityId);
+                } catch (error) {
+                    console.warn(`Error destroying player entity ${entityId}:`, error);
+                }
+            });
+        }
     }
 
     // Override parent's auto-start behavior to add lobby phase
@@ -222,11 +281,12 @@ export default class ServerGameRoom extends GameRoom {
             // Add multiplayer-specific player properties
             const player = this.players.get(playerId);
             player.ready = false;
+            player.placementReady = false;
             player.isHost = playerData.isHost || false;
             
             player.stats = {
-                health: 5000,                
-                gold: 100,
+                health: this.game.state.teamMaxHealth,                
+                gold: this.game.state.startingGold,
                 side: playerData.isHost ? 'left' : 'right'
             };
             // If room is full, enter lobby phase (don't auto-start like parent does)
@@ -361,5 +421,83 @@ export default class ServerGameRoom extends GameRoom {
         
         this.currentRoomIds.push(id.toString());
         return id.toString();
+    }
+        // NEW METHOD: Reset game state when players disconnect mid-game
+    resetGameState(room) {
+        console.log(`Resetting game state for room ${room.id} due to player disconnect`);
+        
+        try {
+            // Reset game phase
+            room.game.state.phase = 'lobby';
+            
+            // Clear battlefield
+            if (room.game.battlePhaseSystem) {
+                room.game.battlePhaseSystem.clearBattlefield();
+                room.game.battlePhaseSystem.cleanup();
+            }
+            
+            // Clear all placements
+            if (room.game.multiplayerPlacementSystem) {
+                room.game.multiplayerPlacementSystem.clearAllPlacements();
+            }
+            
+            // Reset round counter
+            if (room.game.battlePhaseSystem) {
+                room.game.battlePhaseSystem.currentRound = 1;
+            }
+            
+        } catch (error) {
+            console.error('Error resetting game state:', error);
+        }
+    }
+
+    // NEW METHOD: Reset all remaining players for next game
+    resetPlayersForNextGame(room) {
+        for (const [playerId, player] of room.players) {
+            // Reset player stats to initial values
+            player.stats = {
+                health: this.game.state.teamMaxHealth,
+                gold: this.game.state.startingGold,
+                side: player.stats.side // Keep their side assignment
+            };
+            
+            // Reset ready states
+            player.ready = false;
+            player.placementReady = false;
+            
+            console.log(`Reset player ${playerId} stats:`, player.stats);
+        }
+        
+        // Broadcast updated game state
+        this.serverNetworkManager.broadcastToRoom(room.id, 'GAME_STATE_UPDATE', {
+            gameState: room.getGameState()
+        });
+    }
+
+    // NEW METHOD: Complete room cleanup
+    cleanupRoom(room) {
+        try {
+            // Clear all game systems
+            if (room.game) {
+                if (room.game.battlePhaseSystem) {
+                    room.game.battlePhaseSystem.cleanup();
+                }
+                if (room.game.multiplayerPlacementSystem) {
+                    room.game.multiplayerPlacementSystem.cleanup();
+                }
+                if (room.game.gridSystem) {
+                    room.game.gridSystem.clear();
+                }
+            }
+            
+            // Remove room ID from tracking
+            const roomIndex = this.currentRoomIds.indexOf(room.id);
+            if (roomIndex > -1) {
+                this.currentRoomIds.splice(roomIndex, 1);
+            }
+            
+        } catch (error) {
+            console.error('Error during room cleanup:', error);
+        }
     }
 }

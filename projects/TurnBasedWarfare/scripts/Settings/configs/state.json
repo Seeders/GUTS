@@ -14,5 +14,7 @@
   "playerGold": 100,
   "playerReady": false,
   "phaseTimeLeft": 30,
-  "selectedUnitType": "null"
+  "selectedUnitType": "",
+  "teamMaxHealth": 2500,
+  "startingGold": 100
 }

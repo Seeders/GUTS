@@ -7,7 +7,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.currentScreen = null;
         this.gameState = null;
         this.config = {
-            maxSquadsPerRound: 2
+            maxSquadsPerRound: 2,
+            numBackgrounds: 5
         };
     }
 
@@ -19,6 +20,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
 
     initializeUI() {
+        let randomBG = Math.floor(Math.random() * (this.config.numBackgrounds + 1));
+        document.body.classList.add(`bg${randomBG}`);
         // Add multiplayer UI elements to existing interface
         const multiplayerHTML = `
             <div id="multiplayerHUD" style="display: none; position: absolute; top: 10px; right: 330px; z-index: 1000;">
