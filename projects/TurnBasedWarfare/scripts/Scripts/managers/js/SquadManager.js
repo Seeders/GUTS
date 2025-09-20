@@ -66,7 +66,8 @@ class SquadManager {
      * @param {Object} gridSystem - GridSystem instance for coordinate conversion
      * @returns {Array} Array of world positions {x, z}
      */
-    calculateUnitPositions(gridPos, squadData) {
+    calculateUnitPositions(gridPos, unitType) {
+        const squadData = this.getSquadData(unitType);
         const { squadWidth, squadHeight, placementGridWidth, placementGridHeight } = squadData;
         const positions = [];
         const cellSize = this.game.gridSystem.dimensions.cellSize;

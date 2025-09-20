@@ -2,7 +2,7 @@
   "title": "Stone Golem",
   "size": 25,
   "value": 480,
-  "hp": 5000,
+  "hp": 2500,
   "speed": 15,
   "damage": 150,
   "attackSpeed": 0.7,

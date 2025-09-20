@@ -224,40 +224,26 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    togglePlacementReady() {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
+    togglePlacementReady(callback) {
         if (this.elements.readyButton) {
             this.elements.readyButton.disabled = true;
             this.elements.readyButton.textContent = 'Updating...';
         }
-        
-        // Submit placements to server and toggle ready state
-        const placements = this.collectPlayerPlacements();
-        console.log(placements, this.isPlayerReady);
-        this.game.clientNetworkManager.call(
-            'SUBMIT_PLACEMENTS',
-            { placements, playerId: myPlayerId, ready: !this.isPlayerReady },
-            'SUBMITTED_PLACEMENTS',
-            (data, error) => {
+        this.game.networkManager.toggleReadyForBattle((success, response) => {
+            if(success){
+                this.hasSubmittedPlacements = true;
+                this.elements.readyButton.textContent = 'Waiting for Opponent...';
+            } else {
                 if (this.elements.readyButton) {
                     this.elements.readyButton.disabled = false;
-                }
-                
-                if (error) {
-                    this.game.battleLogSystem?.add(`Failed to update ready state: ${error.message}`, 'log-damage');
-                    if (this.elements.readyButton) {
-                        this.elements.readyButton.textContent = 'Ready for Battle';
-                    }
-                } else {
-                    console.log('Placement ready state updated:', data);
-                    this.hasSubmittedPlacements = true;
-                    this.elements.readyButton.textContent = 'Waiting...';
+                    this.elements.readyButton.textContent = 'Ready for Battle';
                 }
             }
-        );
+        });
+
     }
 
-    handlePlacementReadyUpdate(data) {
+    handleReadyForBattleUpdate(data) {
         const myPlayerId = this.game.clientNetworkManager.playerId;
         if (data.playerId === myPlayerId) {
             this.isPlayerReady = data.ready;
@@ -342,11 +328,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.squadExperienceSystem.setSquadInfo(opponentPlacement.placementId, opponentPlacement.experience);
         }
         if (this.game.squadManager && this.game.unitCreationManager) {
-            const squadData = this.game.squadManager.getSquadData(opponentPlacement.unitType);
             const unitPositions = this.game.squadManager.calculateUnitPositions(
                 opponentPlacement.gridPosition,
-                squadData,
-                this.game.gridSystem
+                opponentPlacement.unitType
             );
 
         
@@ -407,49 +391,27 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         // Don't allow placement if already ready
         if (this.isPlayerReady) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Cannot place units - already ready for battle!', 'log-damage');
-            }
             return;
         }
         
         // Check squad limit first
         if (!this.canPlayerPlaceSquad()) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(`Maximum ${this.config.maxSquadsPerRound} squads per round reached!`, 'log-damage');
-            }
             return;
         }
         
         if (state.playerGold < state.selectedUnitType.value) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Not enough gold!', 'log-damage');
-            }
             return;
         }
         
-        // Use cached validation if available and recent
         let isValidPlacement = false;
         let gridPos = null;
-        
-        if (this.cachedValidation && 
-            this.game.state.now - this.cachedValidation.timestamp < 0.1) {
-            // Use cached validation for recent clicks
-            isValidPlacement = this.cachedValidation.isValid;
-            gridPos = this.cachedValidation.gridPos;
-        } else {
-            // Fallback to full validation
-            const worldPosition = this.getWorldPositionFromMouse(event);
-            if (worldPosition) {
-                gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
-                isValidPlacement = this.isValidPlayerPlacement(worldPosition);
-            }
+        const worldPosition = this.getWorldPositionFromMouse(event);
+        if (worldPosition) {
+            gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
+            isValidPlacement = this.isValidPlayerPlacement(worldPosition);
         }
-        
+    
         if (!isValidPlacement || !gridPos) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Invalid placement location!', 'log-damage');
-            }
             return;
         }
         
@@ -459,82 +421,62 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const validation = this.game.squadManager.validateSquadConfig(squadData);
             
             if (!validation.valid) {
-                if (this.game.battleLogSystem) {
-                    this.game.battleLogSystem.add(`Invalid squad configuration: ${validation.errors.join(', ')}`, 'log-damage');
-                }
                 return;
             }
         }
-        
-        this.placeSquad(gridPos, state.selectedUnitType, this.game.state.mySide);
+        const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
+       
+        this.game.networkManager.submitPlacement(placement, (success, response) => {
+            if(success){
+                this.placeSquad(placement);
+            }
+        });        
     }
     
     canPlayerPlaceSquad() {
         const state = this.game.state;
         const squadsPlaced = state.squadsPlacedThisRound || 0;
-        return state.phase === 'placement' && squadsPlaced < this.config.maxSquadsPerRound;
+        return squadsPlaced < this.config.maxSquadsPerRound;
     }
 
-    placeSquad(gridPos, unitType, team) {
+    placeSquad(placement) {
         // Double-check squad limits before placing
-        if (this.isMyTeam(team) && !this.canPlayerPlaceSquad()) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(`Maximum ${this.config.maxSquadsPerRound} squads per round reached!`, 'log-damage');
-            }
-            return null;
-        }
-        
-        const squadData = this.game.squadManager.getSquadData(unitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-        
+        const team = this.game.state.mySide;
+
         // Early validation check
-        if (!this.game.gridSystem.isValidPlacement(cells, team)) {
-            if (this.isMyTeam(team)) {
-                if (this.game.battleLogSystem) {
-                    this.game.battleLogSystem.add('Cannot place squad at this location!', 'log-damage');
-                }
-            }
-            return null;
-        }
-        
-        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}`;
         const squadUnits = [];
-        const unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, squadData, this.game.gridSystem);
-        const undoInfo = this.createUndoInfo(placementId, unitType, gridPos, cells, team);
+        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
+        const undoInfo = this.createUndoInfo(placement);
         
-        try {
-            // Batch unit creation for better performance
-            const createdUnits = this.createSquadUnits(unitPositions, unitType, team, undoInfo);
-            squadUnits.push(...createdUnits);
-            
-            this.updateGameStateForPlacement(placementId, gridPos, cells, unitType, squadUnits, team, undoInfo);
-            
-            this.game.gridSystem.occupyCells(cells, placementId);
-            // Initialize squad in experience system
-            if (this.game.squadExperienceSystem) {
-                const unitIds = createdUnits.map(unit => unit.entityId);
-                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, unitIds, team);
-            }
-            
-            // Batch effects creation
-            if (this.game.effectsSystem && createdUnits.length <= 8) {
-                this.createPlacementEffects(unitPositions.slice(0, 8), team);
-            }
-            // Clear caches after placement
-            this.cachedValidation = null;
-            this.cachedGridPos = null;
-            
-            if (this.placementPreview) {
-                this.placementPreview.clear();
-            }
-            
-            return placementId;
-            
-        } catch (error) {
-            console.error('Squad placement failed:', error);
-            this.cleanupFailedPlacement(undoInfo);
-            return null;
+        // Batch unit creation for better performance
+        const createdUnits = this.createSquadUnits(unitPositions, placement.unitType, team, undoInfo);
+        squadUnits.push(...createdUnits);
+        placement.squadUnits = squadUnits;
+        placement.isSquad = squadUnits.length > 1;
+        this.updateGameStateForPlacement(placement, this.game.state.mySide);
+        
+        this.game.gridSystem.occupyCells(placement.cells, placement.placementId);
+        // Initialize squad in experience system
+        if (this.game.squadExperienceSystem) {
+            const unitIds = createdUnits.map(unit => unit.entityId);
+            this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, unitIds, team);
         }
+        
+        // Batch effects creation
+        if (this.game.effectsSystem && createdUnits.length <= 8) {
+            this.createPlacementEffects(unitPositions.slice(0, 8), team);
+        }
+        // Clear caches after placement
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        
+        if (this.placementPreview) {
+            this.placementPreview.clear();
+        }
+        
+        return placement;
+            
+
     }
 
     createSquadUnits(unitPositions, unitType, team, undoInfo) {
@@ -559,35 +501,41 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return createdUnits;
     }
 
-    createUndoInfo(placementId, unitType, gridPos, cells, team) {
+    createUndoInfo(placement) {
         return {
             type: 'squad_placement',
-            placementId: placementId,
-            unitType: { ...unitType },
-            cost: unitType.value || 0,
-            gridPosition: { ...gridPos },
-            cells: [...cells],
+            placementId: placement.placementId,
+            unitType: { ...placement.unitType },
+            cost: placement.unitType.value || 0,
+            gridPosition: { ...placement.gridPosition },
+            cells: [...placement.cells],
             unitIds: [],
-            team: team,
+            team: this.game.state.mySide,
             timestamp: this.game.state.now
         };
     }
 
-    updateGameStateForPlacement(placementId, gridPos, cells, unitType, squadUnits, team, undoInfo) {
-        const placement = {
+    createPlacementData(gridPos, unitType, team) {
+        const squadData = this.game.squadManager.getSquadData(unitType);
+        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        
+        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}`;
+        return {
             placementId: placementId,
             gridPosition: gridPos,
             cells: cells,
             unitType: { ...unitType },
-            squadUnits: squadUnits,
+            squadUnits: [],
             roundPlaced: this.game.state.round,
-            isSquad: squadUnits.length > 1,
             timestamp: this.game.state.now
         };
-        
+    }
+
+    updateGameStateForPlacement(placement, team, undoInfo) {                
         if (this.isMyTeam(team)) {
+        
             this.addToUndoStack(undoInfo);
-            this.game.state.playerGold -= (unitType.value || 0);
+            this.game.state.playerGold -= (placement.unitType.value || 0);
             this.game.state.squadsPlacedThisRound = (this.game.state.squadsPlacedThisRound || 0) + 1;
             this.playerPlacements.push(placement);
         } else {
@@ -647,19 +595,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             );
         }
     }
-
-    cleanupFailedPlacement(undoInfo) {
-        undoInfo.unitIds.forEach(entityId => {
-            try {
-                if (this.game.destroyEntity) {
-                    this.game.destroyEntity(entityId);
-                }
-            } catch (error) {
-                console.warn(`Failed to cleanup entity ${entityId}:`, error);
-            }
-        });
-    }
-
     // Undo functionality for multiplayer
     undoLastPlacement() {
         if (!this.config.enableUndo) return;

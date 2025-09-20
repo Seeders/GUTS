@@ -227,7 +227,7 @@ class PlacementPreview {
         // Add formation preview for multi-unit squads
         const squadData = this.squadManager.getSquadData(this.unitType);
         if (this.squadManager.getSquadSize(squadData) > 1) {
-            this.addFormationPreview(squadData);
+            this.addFormationPreview();
         }
         
         this.previewGroup.visible = true;
@@ -239,13 +239,12 @@ class PlacementPreview {
     /**
      * Add formation preview using pooled unit meshes
      */
-    addFormationPreview(squadData) {
+    addFormationPreview() {
         if (!this.gridPosition) return;
         
         const unitPositions = this.squadManager.calculateUnitPositions(
             this.gridPosition, 
-            squadData, 
-            this.gridSystem
+            this.unitType
         );
         
         const unitMaterial = this.isValid ? this.materials.validUnit : this.materials.invalidUnit;

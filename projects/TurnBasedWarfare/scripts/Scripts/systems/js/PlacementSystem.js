@@ -361,7 +361,7 @@ class PlacementSystem extends engine.BaseSystem {
         
         const placementId = `${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const squadUnits = [];
-        const unitPositions = this.squadManager.calculateUnitPositions(gridPos, squadData, this.gridSystem);
+        const unitPositions = this.squadManager.calculateUnitPositions(gridPos, unitType);
         const undoInfo = this.createUndoInfo(placementId, unitType, gridPos, cells, team);
         
         try {

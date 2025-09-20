@@ -76,9 +76,9 @@ class MultiplayerNetworkManager {
                 this.handleGameStarted(data);
             }),
 
-            nm.listen('PLACEMENT_READY_UPDATE', (data) => {
+            nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
                 this.syncWithServerState(data);   
-                this.handlePlacementReadyUpdate(data);
+                this.handleReadyForBattleUpdate(data);
             }),
 
             nm.listen('BATTLE_END', (data) => {
@@ -161,6 +161,40 @@ class MultiplayerNetworkManager {
         );
     }
 
+    submitPlacement(placement, callback){
+        this.game.clientNetworkManager.call(
+            'SUBMIT_PLACEMENT',
+            { placement },
+            'SUBMITTED_PLACEMENT',
+            (data, error) => {           
+                if (data.error) {
+                    console.log('Placement error:', data.error);
+                    callback(false, error);
+                } else {
+                    console.log('Placement response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
+    toggleReadyForBattle(callback) {
+        this.game.clientNetworkManager.call(
+            'READY_FOR_BATTLE',
+            {},
+            'READY_FOR_BATTLE_RESPONSE',
+            (data, error) => {                                
+                if (data.error) {
+                    console.log('Battle ready state error:', data.error);
+                    callback(false, data.error);
+                } else {
+                    console.log('Battle ready state updated:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     toggleReady() {
         this.game.clientNetworkManager.call('TOGGLE_READY');
     }
@@ -211,8 +245,8 @@ class MultiplayerNetworkManager {
         this.game.uiSystem.transitionToGame(data);
     }
 
-    handlePlacementReadyUpdate(data) {
-        this.game.placementSystem.handlePlacementReadyUpdate(data);
+    handleReadyForBattleUpdate(data) {
+        this.game.placementSystem.handleReadyForBattleUpdate(data);
     }
 
     handleBattleEnd(data) {

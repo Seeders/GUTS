@@ -117,7 +117,7 @@ class UnitCreationManager {
             // Calculate unit positions within the squad
             const unitPositions = this.game.squadManager.calculateUnitPositions(
                 gridPosition,
-                squadData
+                unitType
             );
 
             // Calculate cells occupied by the squad
