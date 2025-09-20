@@ -121,12 +121,15 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         const squadData = this.squadExperience.get(placementId);
         if(squadData){
-            const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
+            const levelUpCost = this.getLevelUpCostBySquadValue(squadData.squadValue)
 
             return levelUpCost;
         } else {
             return -1;
         }
+    }
+    getLevelUpCostBySquadValue(squadValue){
+        return Math.floor(squadValue * this.config.levelUpCostRatio);
     }
     canAffordLevelUp(placementId, playerGold){
                 
@@ -143,45 +146,39 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * @param {string} specializationId - Optional specialization unit ID (for level 3+)
      * @returns {boolean} Success status
      */
-    async levelUpSquad(placementId, specializationId = null, playerId = null) {
+    async levelUpSquad(placementId, specializationId = null, playerId = null, callback) {
         if (this.game.state.phase !== 'placement') {
             console.log("incorrect phase to level up");
-            return false;
+            callback(false);
         }
         
         const squadData = this.squadExperience.get(placementId);
         if (!squadData || !squadData.canLevelUp) {
             console.log("squad cant level up", placementId, squadData, this.squadExperience);
-            return false;
-        }
-        const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
-
+            callback(false);
+        };        
+                        
         // Check for specialization selection UI (unchanged)
         const isSpecializationLevel = squadData.level >= 2;
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         if (!this.game.isServer && isSpecializationLevel && hasSpecializations && !specializationId) {
-            this.showSpecializationSelection(placementId, squadData, levelUpCost);
+            this.showSpecializationSelection(placementId, squadData, callback);
             console.log('showing spec selection');
-            return false;
+            return;
         }
         
         
-        console.log('leveling squad for cost', levelUpCost);
         try {
             if (!this.game.isServer) {
                 // Handle specialization case
                 if (specializationId && isSpecializationLevel && hasSpecializations) {
-                    const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
-                        { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
-                    
-                    const success2 = await this.makeNetworkCall('LEVEL_SQUAD', 
-                        { placementId }, 'SQUAD_LEVELED');
-
-                    
-                    if (!success && success2) {
+                    const success = await this.makeNetworkCall('LEVEL_SQUAD', 
+                        { placementId, specializationId }, 'SQUAD_LEVELED');
+       
+                    if (!success) {
                         console.log('no success making network call apply_spec or level_squad');
-                        return false;
+                        callback(false);
                     } 
                     this.applySpecialization(placementId, specializationId, playerId);
                 } else {
@@ -191,18 +188,18 @@ class SquadExperienceSystem extends engine.BaseSystem {
                     
                     if (!success) {
                         console.log('no success making network call level_squad');
-                        return false;
+                        callback(false);
                     }
                 }
             } 
                 
             // Deduct cost optimistically
-            return this.finishLevelingSquad(squadData, placementId, levelUpCost, specializationId);
+            callback(this.finishLevelingSquad(squadData, placementId, specializationId));
             
         } catch (error) {
             // Refund gold on any error
             console.log('failed to level squad', error);
-            return false;
+            callback(false);
         }
     }
 
@@ -219,7 +216,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         });
     }
 
-    finishLevelingSquad(squadData, placementId, levelUpCost, specializationId) {
+    finishLevelingSquad(squadData, placementId, specializationId) {
         console.log('finishLevelingSquad');
         // Level up
         squadData.level++;
@@ -229,9 +226,11 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         // Apply level bonuses to all units in squad
         this.applyLevelBonuses(placementId);
-
+        
+        const levelUpCost = this.getLevelUpCost(placementId);  
         this.game.state.playerGold -= levelUpCost;
             
+        console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
         if (this.game.effectsSystem) {
             squadData.unitIds.forEach(entityId => {
@@ -334,9 +333,8 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * Show specialization selection UI
      * @param {string} placementId - Squad placement ID
      * @param {Object} squadData - Squad experience data
-     * @param {number} levelUpCost - Cost to level up
      */
-    showSpecializationSelection(placementId, squadData, levelUpCost) {
+    showSpecializationSelection(placementId, squadData, callback) {
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         if (!currentUnitType || !currentUnitType.specUnits) return;
         
@@ -386,6 +384,8 @@ class SquadExperienceSystem extends engine.BaseSystem {
                     cursor: pointer; transition: all 0.2s ease;
                 `;
                 
+                const squadValue = this.calculateSquadValue(specUnit);
+                const levelUpCost = this.getLevelUpCostBySquadValue(squadValue);
                 optionButton.innerHTML = `
                     <strong>${specUnit.title || specId}</strong><br>
                     <small style="opacity: 0.8;">${specUnit.hp || 100} HP, ${specUnit.damage || 10} DMG - Cost: ${levelUpCost}g</small>
@@ -393,9 +393,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
                 
                 optionButton.addEventListener('click', () => {
                     document.body.removeChild(modal);
-                    this.levelUpSquad(placementId, specId);
-                    
-        
+                    this.levelUpSquad(placementId, specId, null, callback);
                 });
                 
                 optionButton.addEventListener('mouseenter', () => {

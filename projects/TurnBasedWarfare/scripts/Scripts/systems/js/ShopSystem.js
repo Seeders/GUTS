@@ -112,19 +112,18 @@ class ShopSystem extends engine.BaseSystem {
             // Create level up animation
             this.animateLevelUp(card);
             
-            const success = this.game.squadExperienceSystem.levelUpSquad(squad.placementId);
-            if (success || canSpecialize) {
-                // Show success notification
-                this.uiEnhancements.showNotification(
-                    `🌟 ${squad.displayName} has been enhanced!`, 
-                    'success'
-                );
-                
-                // Refresh the shop to update the experience panel
-                setTimeout(() => {
-                    this.createShop();
-                }, 100);
-            }
+           this.game.squadExperienceSystem.levelUpSquad(squad.placementId, null, null, (success) => {
+                if (success || canSpecialize) {
+                    // Show success notification
+                    this.uiEnhancements.showNotification(
+                        `🌟 ${squad.displayName} has been enhanced!`, 
+                        'success'
+                    );                    
+                    
+                }
+                this.createShop();
+            });
+      
         });
         
         card.appendChild(levelUpButton);

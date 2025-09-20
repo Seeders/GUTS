@@ -25,7 +25,6 @@ class ServerPlacementPhaseManager {
         this.engine.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
         this.engine.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.engine.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
-        this.engine.serverEventManager.subscribe('APPLY_SPECIALIZATION', this.handleApplySpecialization.bind(this));
         //   const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
         //                 { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
 
@@ -73,7 +72,7 @@ class ServerPlacementPhaseManager {
 
     async handleLevelSquad(eventData){
         const { playerId, data } = eventData;
-        const { placementId } = data;
+        const { placementId, specializationId } = data;
         let playerGold = 0;
         if(playerId){
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);         
@@ -93,38 +92,26 @@ class ServerPlacementPhaseManager {
                         });
                         return false;
                     }
-                    const success = await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId);
-                    console.log('success?: ', success);
-                    if(success){
-                        const levelUpCost = this.game.squadExperienceSystem.getLevelUpCost(placementId);        
-                        
-                        player.stats.gold -= levelUpCost;
-                        console.log('leveled, new gold amt:', player.stats.gold);
-                        this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
-                            playerId: playerId,
-                            currentGold: player.stats.gold,
-                            success: true
-                        });
-                    }
+                    const success1 = specializationId ? this.game.squadExperienceSystem.applySpecialization(placementId, specializationId, playerId) : true;
+       
+                    await this.game.squadExperienceSystem.levelUpSquad(placementId, null, playerId, (success) => {
+                        console.log('success?: ', success1, success);
+                        if(success1 && success){
+                            const levelUpCost = this.game.squadExperienceSystem.getLevelUpCost(placementId);        
+                            
+                            player.stats.gold -= levelUpCost;
+                            console.log('leveled, new gold amt:', player.stats.gold);
+                            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                                playerId: playerId,
+                                currentGold: player.stats.gold,
+                                success: true
+                            });
+                        }
+                    });
+           
                 }
             }
         } 
-    }
-
-    handleApplySpecialization(eventData){
-        const { playerId, data } = eventData;
-        const { placementId, specializationId } = data;
-        const success = this.game.squadExperienceSystem.applySpecialization(placementId, specializationId, playerId);
-        if(success){   
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);         
-            const room = this.engine.getRoom(roomId);
-            const gameState = room.getGameState();
-            this.serverNetworkManager.sendToPlayer(playerId, 'SPECIALIZATION_APPLIED', {
-                playerId: playerId,
-                success: true,
-                gameState: gameState
-            });
-        }
     }
 
     handleSubmitPlacement(eventData) {
