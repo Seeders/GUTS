@@ -1,6 +1,7 @@
 {
   "title": "Soldier",
   "size": 25,
+  "height": 50,
   "value": 35,
   "hp": 75,
   "speed": 45,

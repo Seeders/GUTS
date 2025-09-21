@@ -52,17 +52,24 @@ class DamageSystem extends engine.BaseSystem {
         if (!targetHealth || (targetDeathState && targetDeathState.isDying)) {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
         }
-
+        
+        const defenderMods = this.getDefenderModifiers(targetId);
         // Get target's defenses
-        const defenses = this.getEntityDefenses(targetId);
+        const defenses = this.getEntityDefenses(targetId, defenderMods);
+        const attackerMods = this.getAttackerModifiers(sourceId);
+        let buffedDamage = baseDamage * attackerMods.damageMultiplier;
 
+        
+
+        if (options.isCritical) {
+            buffedDamage *= options.criticalMultiplier || 2.0;
+        }
         // Handle poison as special case (DoT)
         if (element === this.ELEMENT_TYPES.POISON) {
-            return this.applyPoisonDoT(sourceId, targetId, baseDamage, options);
+            return this.applyPoisonDoT(sourceId, targetId, buffedDamage, options);
         }
-
         // Calculate final damage after resistances/armor
-        const damageResult = this.calculateFinalDamage(baseDamage, element, defenses, options);
+        const damageResult = this.calculateFinalDamage(sourceId, targetId, buffedDamage, element, defenses, defenderMods, options);
 
         // Apply immediate damage
         targetHealth.current -= damageResult.finalDamage;
@@ -78,12 +85,55 @@ class DamageSystem extends engine.BaseSystem {
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,
+            buffedDamage: buffedDamage,
             mitigated: damageResult.mitigated,
             element: element,
             fatal: targetHealth.current <= 0
         };
     }
-
+    getAttackerModifiers(attackerId) {
+        const buff = this.game.getComponent(attackerId, this.componentTypes.BUFF);
+        if (!buff || !buff.isActive) return { 
+            damageMultiplier: 1.0,
+            attackSpeedMultiplier: 1.0 
+        };
+        
+        const currentTime = this.game.state.now || 0;
+        if (buff.endTime && currentTime > buff.endTime) return { 
+            damageMultiplier: 1.0,
+            attackSpeedMultiplier: 1.0 
+        };
+        
+        return {
+            damageMultiplier: buff.modifiers?.damageMultiplier || 1.0,
+            attackSpeedMultiplier: buff.modifiers?.attackSpeedMultiplier || 1.0
+        };
+    }
+    getDefenderModifiers(defenderId) {
+        const buff = this.game.getComponent(defenderId, this.componentTypes.BUFF);
+        if (!buff || !buff.isActive) return { 
+            armorMultiplier: 1.0, 
+            damageTakenMultiplier: 1.0, 
+            damageReduction: 0 
+        };
+        
+        const currentTime = this.game.state.now || 0;
+        if (buff.endTime && currentTime > buff.endTime) return { 
+            armorMultiplier: 1.0, 
+            damageTakenMultiplier: 1.0, 
+            damageReduction: 0 
+        };
+        
+        return {
+            armorMultiplier: buff.modifiers?.armorMultiplier || buff.armorMultiplier || 1.0,
+            damageTakenMultiplier: buff.modifiers?.damageTakenMultiplier || buff.damageTakenMultiplier || 1.0,
+            damageReduction: buff.modifiers?.damageReduction || buff.damageReduction || 0,
+            additionalLightningResistance: buff.modifiers?.additionalLightningResistance || buff.additionalLightningResistance || 0,
+            additionalFireResistance: buff.modifiers?.additionalFireResistance || buff.additionalFireResistance || 0,
+            additionalColdResistance: buff.modifiers?.additionalColdResistance || buff.additionalColdResistance || 0,
+            additionalElementalResistance: buff.modifiers?.additionalElementalResistance || buff.additionalElementalResistance || 0
+        };
+    }
     /**
      * Apply splash/area damage around a point
      * @param {number} sourceId - Source of the damage
@@ -105,7 +155,6 @@ class DamageSystem extends engine.BaseSystem {
             this.componentTypes.HEALTH,
             this.componentTypes.TEAM
         );
-console.log("apply splash");
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
             
@@ -161,14 +210,9 @@ console.log("apply splash");
     /**
      * Calculate final damage after all resistances and modifiers
      */
-    calculateFinalDamage(baseDamage, element, defenses, options = {}) {
+    calculateFinalDamage(sourceId, targetId, baseDamage, element, defenses, defenderMods, options = {}) {
         let finalDamage = baseDamage;
         let mitigated = 0;
-
-        // Apply critical hit multiplier first
-        if (options.isCritical) {
-            finalDamage *= options.criticalMultiplier || 2.0;
-        }
 
         // Apply element-specific damage reduction
         switch (element) {
@@ -209,7 +253,15 @@ console.log("apply splash");
                 finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - defaultArmor);
                 break;
         }
-
+        // Apply damage taken multiplier (from marks, etc.)
+        finalDamage *= defenderMods.damageTakenMultiplier;
+        
+        // Apply flat damage reduction (from intimidation, shield wall, etc.)
+        if (defenderMods.damageReduction > 0) {
+            const reductionAmount = Math.floor(finalDamage * defenderMods.damageReduction);
+            finalDamage -= reductionAmount;
+            mitigated += reductionAmount;
+        }
         return {
             finalDamage,
             mitigated,
@@ -220,7 +272,7 @@ console.log("apply splash");
     /**
      * Get entity's defensive stats from all sources
      */
-    getEntityDefenses(entityId) {
+    getEntityDefenses(entityId, defenderMods) {
         const defenses = {
             armor: 0,
             fireResistance: 0,
@@ -235,7 +287,6 @@ console.log("apply splash");
             defenses.fireResistance = combatComponent.fireResistance || 0;
             defenses.coldResistance = combatComponent.coldResistance || 0;
             defenses.lightningResistance = combatComponent.lightningResistance || 0;
-            defenses.poisonResistance = combatComponent.poisonResistance || 0;
         }
 
         // Add equipment bonuses if equipment system exists
@@ -251,13 +302,10 @@ console.log("apply splash");
         }
 
         // Add temporary resistance bonuses from status effects
-        const tempResistances = this.getTemporaryResistances(entityId);
-        if (tempResistances) {
-            defenses.armor += tempResistances.armor || 0;
-            defenses.fireResistance += tempResistances.fireResistance || 0;
-            defenses.coldResistance += tempResistances.coldResistance || 0;
-            defenses.lightningResistance += tempResistances.lightningResistance || 0;
-        }
+        defenses.armor *= defenderMods.armorMultiplier; // Apply armor multiplier from buffs
+        defenses.fireResistance = defenses.fireResistance + defenderMods.additionalFireResistance + defenderMods.additionalElementalResistance;
+        defenses.coldResistance = defenses.coldResistance + defenderMods.additionalColdResistance + defenderMods.additionalElementalResistance;
+        defenses.lightningResistance = defenses.lightningResistance + defenderMods.additionalLightningResistance + defenderMods.additionalElementalResistance;
 
         return defenses;
     }
@@ -445,31 +493,6 @@ console.log('processing activeStatusEffects');
 
     capResistance(resistance) {
         return Math.min(this.RESISTANCE_CAP, Math.max(-1.0, resistance));
-    }
-
-    getTemporaryResistances(entityId) {
-        // This could be extended to support buff/debuff systems
-        return null;
-    }
-
-
-    hasResistance(entityId, element, threshold = 0.5) {
-        const defenses = this.getEntityDefenses(entityId);
-        
-        switch (element) {
-            case this.ELEMENT_TYPES.FIRE:
-                return defenses.fireResistance >= threshold;
-            case this.ELEMENT_TYPES.COLD:
-                return defenses.coldResistance >= threshold;
-            case this.ELEMENT_TYPES.LIGHTNING:
-                return defenses.lightningResistance >= threshold;
-            case this.ELEMENT_TYPES.POISON:
-                return false; // Poison cannot be resisted
-            case this.ELEMENT_TYPES.PHYSICAL:
-                return defenses.armor >= threshold * 50; // Arbitrary scaling for armor
-            default:
-                return false;
-        }
     }
 
     getPoisonStacks(entityId) {

@@ -188,7 +188,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
                 components.Animation());
                 
             this.game.addComponent(skeletonId, componentTypes.COLLISION, 
-                components.Collision(skeletonDef.size || 25));
+                components.Collision(skeletonDef.size, skeletonDef.height));
                 
             this.game.addComponent(skeletonId, componentTypes.COMBAT, 
                 components.Combat(

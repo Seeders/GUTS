@@ -1,8 +1,9 @@
 {
   "title": "Fire Golem",
   "size": 25,
+  "height": 100,
   "value": 480,
-  "hp": 720,
+  "hp": 2500,
   "speed": 15,
   "damage": 40,
   "attackSpeed": 0.7,
@@ -138,5 +139,8 @@
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 1,
+  "abilities": [
+    "BurningAuraAbility"
+  ]
 }

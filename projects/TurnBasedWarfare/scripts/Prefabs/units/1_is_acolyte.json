@@ -1,6 +1,7 @@
 {
   "title": "Acolyte",
   "size": 25,
+  "height": 50,
   "value": 35,
   "hp": 80,
   "speed": 45,

@@ -11,6 +11,7 @@ class UnitCreationManager {
             speed: 40,
             attackSpeed: 1.0,
             size: 5,
+            height: 50,
             armor: 0,
             fireResistance: 0,
             coldResistance: 0,
@@ -368,7 +369,7 @@ class UnitCreationManager {
         
         // Collision component for physical interactions
         this.game.addComponent(entity, ComponentTypes.COLLISION, 
-            Components.Collision(unitType.size || this.defaults.size));
+            Components.Collision(unitType.size || this.defaults.size, unitType.height));
     }
     
     /**

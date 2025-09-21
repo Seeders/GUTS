@@ -32,7 +32,7 @@ class BaseAbility {
             const mergedOptions = { ...effectDef.options, ...customOptions, heightOffset: customOptions.heightOffset || 0 };
             this.game.effectsSystem.createParticleEffect(position.x, position.y + mergedOptions.heightOffset, position.z, effectDef.type, mergedOptions);
         } else {
-            this.game.effectsSystem.createParticleEffect(position.x, position.y, position.z, 'magic', customOptions);
+            this.game.effectsSystem.createParticleEffect(position.x, position.y + customOptions.heightOffset || 0, position.z, 'magic', customOptions);
         }
     }
     

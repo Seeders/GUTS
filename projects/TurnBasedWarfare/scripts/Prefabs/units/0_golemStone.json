@@ -1,6 +1,7 @@
 {
   "title": "Stone Golem",
   "size": 25,
+  "height": 100,
   "value": 480,
   "hp": 2500,
   "speed": 15,
@@ -137,6 +138,10 @@
   "buyable": true,
   "squadWidth": 1,
   "squadHeight": 1,
+  "specUnits": [
+    "0_golemIce",
+    "0_golemFire"
+  ],
   "placementGridWidth": 1,
   "placementGridHeight": 1
 }

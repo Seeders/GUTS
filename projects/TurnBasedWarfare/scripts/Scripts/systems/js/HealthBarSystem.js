@@ -8,14 +8,10 @@ class HealthBarSystem extends engine.BaseSystem {
         this.HEALTH_BAR_WIDTH = 32;
         this.HEALTH_BAR_HEIGHT = 4;
         this.HEALTH_BAR_OFFSET_Y = 50; // Units above unit
-        this.HEALTH_BAR_BORDER = 1;
+        this.BACKGROUND_DEPTH = 0.1; // Slight offset to prevent z-fighting
         
-        // Track health bar sprites
-        this.healthBarSprites = new Map(); // entityId -> { sprite, canvas, context, lastHealth }
-        
-        // Canvas size for health bar texture
-        this.CANVAS_WIDTH = 64;
-        this.CANVAS_HEIGHT = 16;
+        // Track health bar meshes
+        this.healthBars = new Map(); // entityId -> { background, fill, group, lastHealth }
         
         // Initialize only after world system is ready
         this.initialized = false;
@@ -25,11 +21,11 @@ class HealthBarSystem extends engine.BaseSystem {
         if (this.initialized || !this.game.scene) return;
         
         this.initialized = true;
-        console.log('Three.js HealthBarSystem initialized');
+        console.log('Simple Quad HealthBarSystem initialized');
     }
     
     update() {
-        // Wait for scene to be available
+        // Wait for scene to be available from WorldSystem
         if (!this.game.scene || !this.game.camera) {
             return;
         }
@@ -55,167 +51,193 @@ class HealthBarSystem extends engine.BaseSystem {
             if (!pos || !health) return;
             
             // Create health bar if it doesn't exist
-            if (!this.healthBarSprites.has(entityId)) {
-                this.createHealthBarSprite(entityId, team);
+            if (!this.healthBars.has(entityId)) {
+                this.createHealthBarMesh(entityId, team);
             }
             
             // Update health bar
-            this.updateHealthBarSprite(entityId, pos, health, team);
+            this.updateHealthBarMesh(entityId, pos, health, team);
         });
         
         // Clean up health bars for destroyed entities
         this.cleanupRemovedHealthBars(healthEntities);
     }
     
-    createHealthBarSprite(entityId, team) {
-        // Create canvas for health bar texture
-        const canvas = document.createElement('canvas');
-        canvas.width = this.CANVAS_WIDTH;
-        canvas.height = this.CANVAS_HEIGHT;
-        const context = canvas.getContext('2d');
+    createHealthBarMesh(entityId, team) {
+        // Create group to hold both background and fill
+        const group = new THREE.Group();
         
-        // Create texture from canvas
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.NearestFilter;
-        texture.magFilter = THREE.NearestFilter;
-        
-        // Create sprite material
-        const material = new THREE.SpriteMaterial({
-            map: texture,
+        // Create background quad (dark background)
+        const backgroundGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
+        const backgroundMaterial = new THREE.MeshBasicMaterial({
+            color: 0x222222,
             transparent: true,
-            alphaTest: 0.1
+            opacity: 0.8,
+            depthWrite: false,
+            depthTest: false // Ensure always visible
         });
+        const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+        background.position.z = -this.BACKGROUND_DEPTH; // Slightly behind
         
-        // Create sprite
-        const sprite = new THREE.Sprite(material);
-        sprite.scale.set(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT, 1);
+        // Create health fill quad
+        const fillGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
+        const fillMaterial = new THREE.MeshBasicMaterial({
+            color: this.getHealthColor(team),
+            transparent: true,
+            opacity: 0.9,
+            depthWrite: false,
+            depthTest: false // Ensure always visible
+        });
+        const fill = new THREE.Mesh(fillGeometry, fillMaterial);
+        
+        // Add both to group
+        group.add(background);
+        group.add(fill);
         
         // Add to scene
-        this.game.scene.add(sprite);
+        this.game.scene.add(group);
         
         // Store references
-        this.healthBarSprites.set(entityId, {
-            sprite: sprite,
-            canvas: canvas,
-            context: context,
-            texture: texture,
-            material: material,
-            lastHealth: -1 // Force initial update
+        this.healthBars.set(entityId, {
+            background: background,
+            fill: fill,
+            group: group,
+            fillGeometry: fillGeometry,
+            fillMaterial: fillMaterial,
+            lastHealth: -1, // Force initial update
+            lastHealthPercent: -1,
+            lastMaxHealth: -1, // Track max health changes for notch updates
+            notches: [] // Array to hold notch meshes
         });
         
+        // Set high render order to ensure health bars render on top of everything
+        background.renderOrder = 9999;
+        fill.renderOrder = 10000;
     }
     
-    updateHealthBarSprite(entityId, pos, health, team) {
-        const healthBarData = this.healthBarSprites.get(entityId);
+    updateHealthBarMesh(entityId, pos, health, team) {
+        const healthBarData = this.healthBars.get(entityId);
         if (!healthBarData) return;
         
-        const { sprite, canvas, context, texture } = healthBarData;
+        const { background, fill, group, fillGeometry, fillMaterial } = healthBarData;
         
-        // Position sprite above unit
-        sprite.position.set(
+        // Position group above unit
+        group.position.set(
             pos.x,
             pos.y + this.HEALTH_BAR_OFFSET_Y,
             pos.z
         );
         
-        // Only redraw canvas if health changed
+        // Make health bar always face camera (billboard effect)
+        const cameraPosition = this.game.camera.position;
+        group.lookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        
+        // Calculate health percentage
         const currentHealthPercent = Math.max(0, Math.min(100, (health.current / health.max) * 100));
-        if (healthBarData.lastHealth !== currentHealthPercent) {
-            this.drawHealthBar(context, canvas, currentHealthPercent, team);
-            texture.needsUpdate = true;
-            healthBarData.lastHealth = currentHealthPercent;
+        
+        // Only update if health changed
+        if (healthBarData.lastHealthPercent !== currentHealthPercent) {
+            // Update fill width by scaling
+            const healthRatio = currentHealthPercent / 100;
+            fill.scale.x = healthRatio;
+            
+            // Adjust position to keep fill left-aligned
+            fill.position.x = -(this.HEALTH_BAR_WIDTH * (1 - healthRatio)) / 2;
+            
+            // Update color based on health percentage
+            fillMaterial.color.setHex(this.getHealthColorByPercent(currentHealthPercent, team));
+            
+            healthBarData.lastHealthPercent = currentHealthPercent;
         }
         
         // Hide health bar if unit is at full health (optional)
         if (this.shouldHideFullHealthBars() && health.current >= health.max) {
-            sprite.material.opacity = 0.3;
+            group.visible = false;
         } else {
-            sprite.material.opacity = 1.0;
+            group.visible = true;
         }
         
-        // Add damage flash effect if unit was recently hit
-        const animation = this.game.getComponent(entityId, this.componentTypes.ANIMATION);
-        if (animation && animation.flash > 0) {
-            // Add red tint for damage flash
-            sprite.material.color.setHex(0xff8888);
-        } else {
-            sprite.material.color.setHex(0xffffff);
-        }
-    }
-    
-    drawHealthBar(context, canvas, healthPercent, team) {
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Clear canvas
-        context.clearRect(0, 0, width, height);
-        
-        // Calculate dimensions
-        const barWidth = width - (this.HEALTH_BAR_BORDER * 2);
-        const barHeight = height - (this.HEALTH_BAR_BORDER * 2);
-        const fillWidth = (barWidth * healthPercent) / 100;
-        
-        // Draw background (dark)
-        context.fillStyle = '#222222';
-        context.fillRect(0, 0, width, height);
-        
-        // Draw border
-        context.strokeStyle = '#000000';
-        context.lineWidth = this.HEALTH_BAR_BORDER;
-        context.strokeRect(
-            this.HEALTH_BAR_BORDER / 2, 
-            this.HEALTH_BAR_BORDER / 2, 
-            width - this.HEALTH_BAR_BORDER, 
-            height - this.HEALTH_BAR_BORDER
-        );
-        
-        // Draw health fill
-        if (fillWidth > 0) {
-            context.fillStyle = this.getHealthColorByPercent(healthPercent, team);
-            context.fillRect(
-                this.HEALTH_BAR_BORDER,
-                this.HEALTH_BAR_BORDER,
-                fillWidth,
-                barHeight
-            );
-        }
-        
-        // Optional: Draw health text
-        if (this.shouldShowHealthText()) {
-            context.fillStyle = '#ffffff';
-            context.font = '8px monospace';
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(
-                `${Math.ceil(healthPercent)}%`,
-                width / 2,
-                height / 2
-            );
-        }
+        // Update notches based on max health
+        this.updateHealthBarNotches(entityId, health.max);
     }
     
     getHealthColor(team) {
         const teamColors = {
-            'player': '#00ff00',  // Green for player
-            'enemy': '#00ff00',   // Red for enemy
-            'neutral': '#00ff00'  // Yellow for neutral
+            'player': 0x00ff00,  // Green for player
+            'enemy': 0x00ff00,   // Green for enemy (all start green)
+            'neutral': 0x00ff00  // Green for neutral
         };
         return teamColors[team?.team] || teamColors.neutral;
     }
     
     getHealthColorByPercent(percent, team) {
-        const baseColor = this.getHealthColor(team);
-        
-        // Modify color based on health percentage
+        // All units start with green, then transition based on health
         if (percent > 75) {
-            return baseColor; // Full color
+            return 0x00ff00; // Green
         } else if (percent > 50) {
-            return team?.team === 'player' ? '#88ff00' : '#ff6644'; // Slightly dimmed
+            return 0x88ff00; // Yellow-green
         } else if (percent > 25) {
-            return team?.team === 'player' ? '#ffff00' : '#ff8844'; // Yellow/Orange
+            return 0xffff00; // Yellow
+        } else if (percent > 10) {
+            return 0xff8800; // Orange
         } else {
-            return '#ff0000'; // Red for critical health
+            return 0xff0000; // Red for critical health
         }
+    }
+    
+    updateHealthBarNotches(entityId, maxHealth) {
+        const healthBarData = this.healthBars.get(entityId);
+        if (!healthBarData) return;
+        
+        // Only update notches if max health changed
+        if (healthBarData.lastMaxHealth === maxHealth) return;
+        
+        // Remove existing notches
+        healthBarData.notches.forEach(notch => {
+            healthBarData.group.remove(notch);
+            notch.geometry.dispose();
+            notch.material.dispose();
+        });
+        healthBarData.notches = [];
+        
+        // Calculate how many 100 HP marks we need
+        const numNotches = Math.floor(maxHealth / 100);
+
+        if (numNotches >= 1) { // Create notches for any unit with 100+ HP
+            const notchWidth = 1; // Make notches wider so they're more visible
+            const notchHeight = this.HEALTH_BAR_HEIGHT; // Make them shorter
+            
+            for (let i = 1; i <= numNotches; i++) { // i represents the HP value (100, 200, 300, etc.)
+                const hpValue = i * 100; // 100, 200, 300, etc.
+                
+                // Calculate position as percentage of max health
+                const positionPercent = hpValue / maxHealth; // 100/140 = 0.714 for your archer
+                
+                // Convert to X offset (-50% to +50% of bar width)
+                const xOffset = (positionPercent - 0.5) * this.HEALTH_BAR_WIDTH;
+                
+                
+                // Create notch geometry
+                const notchGeometry = new THREE.PlaneGeometry(notchWidth, notchHeight);
+                const notchMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x000000, // White notch lines for better visibility
+                    transparent: true,
+                    opacity: 0.5, // Full opacity
+                    depthWrite: false,
+                    depthTest: false
+                });
+                
+                const notch = new THREE.Mesh(notchGeometry, notchMaterial);
+                notch.position.set(xOffset, -this.HEALTH_BAR_HEIGHT * 0.5 + notchHeight * 0.5, 0.2); // Further in front
+                notch.renderOrder = 10001; // Above fill
+                
+                healthBarData.group.add(notch);
+                healthBarData.notches.push(notch);
+                
+            }
+        }
+        
+        healthBarData.lastMaxHealth = maxHealth;
     }
     
     shouldHideFullHealthBars() {
@@ -223,53 +245,64 @@ class HealthBarSystem extends engine.BaseSystem {
         return false; // Set to true to hide health bars when units are at full health
     }
     
-    shouldShowHealthText() {
-        // You can make this configurable or add a toggle
-        return false; // Set to true to show percentage text on health bars
-    }
-    
     cleanupRemovedHealthBars(currentEntities) {
         const currentEntitySet = new Set(currentEntities);
         
-        for (const [entityId] of this.healthBarSprites.entries()) {
+        for (const [entityId] of this.healthBars.entries()) {
             if (!currentEntitySet.has(entityId)) {
-                this.removeHealthBarSprite(entityId);
+                this.removeHealthBarMesh(entityId);
             }
         }
     }
     
-    removeHealthBarSprite(entityId) {
-        const healthBarData = this.healthBarSprites.get(entityId);
+    removeHealthBarMesh(entityId) {
+        const healthBarData = this.healthBars.get(entityId);
         if (healthBarData) {
-            // Remove sprite from scene
+            // Remove group from scene
             if (this.game.scene) {
-                this.game.scene.remove(healthBarData.sprite);
+                this.game.scene.remove(healthBarData.group);
             }
             
-            // Dispose of resources
-            healthBarData.texture.dispose();
-            healthBarData.material.dispose();
+            // Dispose of main geometries and materials
+            healthBarData.background.geometry.dispose();
+            healthBarData.background.material.dispose();
+            healthBarData.fill.geometry.dispose();
+            healthBarData.fill.material.dispose();
+            
+            // Dispose of notches
+            healthBarData.notches.forEach(notch => {
+                notch.geometry.dispose();
+                notch.material.dispose();
+            });
             
             // Remove from map
-            this.healthBarSprites.delete(entityId);
-            
+            this.healthBars.delete(entityId);
         }
     }
     
     // Utility methods for configuration
     setHealthBarScale(scale = 1.0) {
-        this.healthBarSprites.forEach(healthBarData => {
-            healthBarData.sprite.scale.set(
-                this.HEALTH_BAR_WIDTH * scale,
-                this.HEALTH_BAR_HEIGHT * scale,
-                1
-            );
+        this.healthBars.forEach(healthBarData => {
+            const newWidth = this.HEALTH_BAR_WIDTH * scale;
+            const newHeight = this.HEALTH_BAR_HEIGHT * scale;
+            
+            // Update background geometry
+            healthBarData.background.geometry.dispose();
+            healthBarData.background.geometry = new THREE.PlaneGeometry(newWidth, newHeight);
+            
+            // Update fill geometry 
+            healthBarData.fillGeometry.dispose();
+            healthBarData.fillGeometry = new THREE.PlaneGeometry(newWidth, newHeight);
+            healthBarData.fill.geometry = healthBarData.fillGeometry;
+            
+            // Force position update
+            healthBarData.lastHealthPercent = -1;
         });
     }
     
     toggleHealthBars(visible = true) {
-        this.healthBarSprites.forEach(healthBarData => {
-            healthBarData.sprite.visible = visible;
+        this.healthBars.forEach(healthBarData => {
+            healthBarData.group.visible = visible;
         });
     }
     
@@ -278,23 +311,31 @@ class HealthBarSystem extends engine.BaseSystem {
         // Positions will be updated on next frame
     }
     
-    // Show/hide health text on all bars
-    toggleHealthText(show = true) {
-        this.healthBarSprites.forEach((healthBarData, entityId) => {
-            // Force redraw to include/exclude text
-            healthBarData.lastHealth = -1;
+    // Update all health bar colors (useful for team color changes)
+    updateAllHealthBarColors() {
+        this.healthBars.forEach((healthBarData, entityId) => {
+            // Force color update
+            healthBarData.lastHealthPercent = -1;
+        });
+    }
+    
+    // Set render order to ensure health bars appear on top
+    setRenderOrder(order = 1000) {
+        this.healthBars.forEach(healthBarData => {
+            healthBarData.background.renderOrder = order;
+            healthBarData.fill.renderOrder = order + 1;
         });
     }
     
     destroy() {
-        // Clean up all health bar sprites
-        for (const [entityId] of this.healthBarSprites.entries()) {
-            this.removeHealthBarSprite(entityId);
+        // Clean up all health bar meshes
+        for (const [entityId] of this.healthBars.entries()) {
+            this.removeHealthBarMesh(entityId);
         }
         
-        this.healthBarSprites.clear();
+        this.healthBars.clear();
         this.initialized = false;
         
-        console.log('Three.js HealthBarSystem destroyed');
+        console.log('Simple Quad HealthBarSystem destroyed');
     }
 }

@@ -1,6 +1,7 @@
 {
   "title": "Barbarian",
   "size": 25,
+  "height": 50,
   "value": 35,
   "hp": 60,
   "speed": 40,

@@ -1,6 +1,7 @@
 {
   "title": "Skeleton",
   "size": 25,
+  "height": 50,
   "value": -1,
   "hp": 50,
   "speed": 65,

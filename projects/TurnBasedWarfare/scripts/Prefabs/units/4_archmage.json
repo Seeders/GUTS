@@ -1,6 +1,7 @@
 {
   "title": "Archmage",
   "size": 25,
+  "height": 50,
   "value": 420,
   "hp": 200,
   "speed": 30,

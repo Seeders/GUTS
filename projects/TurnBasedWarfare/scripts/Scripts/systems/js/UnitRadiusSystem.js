@@ -14,7 +14,8 @@ class UnitRadiusSystem extends engine.BaseSystem {
     }
     
     update() {
-        if (!this.enabled || this.game.state.phase !== 'battle') {
+        if (!this.enabled ) return;
+        if(this.game.state.phase !== 'battle') {
             this.hideAllCircles();
             return;
         }

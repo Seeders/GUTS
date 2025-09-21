@@ -162,19 +162,19 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
                 components.Position(pos.x, pos.y, pos.z));
             
             this.game.addComponent(creatureId, componentTypes.VELOCITY, 
-                components.Velocity(0, 0, 0, (unitDef.speed || 40) * 20));
+                components.Velocity(0, 0, 0, (unitDef.speed) * 20));
             
             this.game.addComponent(creatureId, componentTypes.RENDERABLE, 
                 components.Renderable("units", unitDefId));
             
             this.game.addComponent(creatureId, componentTypes.HEALTH, 
-                components.Health(unitDef.hp || 60));
+                components.Health(unitDef.hp));
             
             this.game.addComponent(creatureId, componentTypes.COMBAT, 
-                components.Combat(unitDef.damage || 25, unitDef.range || 30, unitDef.attackSpeed || 1.2));
+                components.Combat(unitDef.damage, unitDef.range, unitDef.attackSpeed));
             
             this.game.addComponent(creatureId, componentTypes.COLLISION, 
-                components.Collision(unitDef.size || 20));
+                components.Collision(unitDef.size, unitDef.height));
             
             this.game.addComponent(creatureId, componentTypes.TEAM, 
                 components.Team(team));

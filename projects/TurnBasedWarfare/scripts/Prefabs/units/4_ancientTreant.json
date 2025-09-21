@@ -1,6 +1,7 @@
 {
   "title": "Ancient Treant",
   "size": 25,
+  "height": 100,
   "value": 480,
   "hp": 720,
   "speed": 15,

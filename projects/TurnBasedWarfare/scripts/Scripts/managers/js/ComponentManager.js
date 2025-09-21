@@ -10,7 +10,7 @@ class ComponentManager {
             Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100, affectedByGravity = true) => ({ vx, vy, vz, maxSpeed, affectedByGravity }),
             Facing: (angle) => ({ angle: angle || 0 }),
             Renderable: (objectType, spawnType) => ({ objectType, spawnType }),
-            Collision: (radius = 1) => ({ radius }),
+            Collision: (radius = 1, height = 50) => ({ radius, height }),
             Health: (max = 100) => ({ max, current: max }),
             
             // Enhanced Combat component with elemental damage and defenses
@@ -64,7 +64,6 @@ class ComponentManager {
                 startTime,
                 element
             }),
-            
             Lifetime: (duration = 5, startTime = 0) => ({ duration, startTime }),
             HomingTarget: (targetId = null, homingStrength = 0.5, lastKnownPosition = null) => 
                 ({ targetId, homingStrength, lastKnownPosition }),
@@ -316,8 +315,12 @@ class ComponentManager {
                 }),
                 
                 ...(buffType === 'dark_empowerment' && {
-                    damageMultiplier: modifiers.damageMultiplier || 1.3,
-                    attackSpeedMultiplier: modifiers.attackSpeedMultiplier || 1.2
+                    damageMultiplier: modifiers.damageMultiplier,
+                    attackSpeedMultiplier: modifiers.attackSpeedMultiplier
+                }),
+                
+                ...(buffType === 'ice_armor' && {
+                    armorMultiplier: modifiers.armorMultiplier,
                 }),
                 
                 ...(buffType === 'rage' && {

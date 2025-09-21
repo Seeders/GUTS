@@ -1,6 +1,7 @@
 {
   "title": "Apprentice",
   "size": 25,
+  "height": 50,
   "value": 35,
   "hp": 130,
   "speed": 55,

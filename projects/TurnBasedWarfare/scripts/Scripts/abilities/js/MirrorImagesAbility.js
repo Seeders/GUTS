@@ -160,7 +160,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
                 components.Animation());
                 
             this.game.addComponent(imageId, this.componentTypes.COLLISION, 
-                components.Collision(collision?.radius || 25));
+                components.Collision(collision?.radius, collision.height));
                 
             this.game.addComponent(imageId, this.componentTypes.COMBAT, 
                 components.Combat(

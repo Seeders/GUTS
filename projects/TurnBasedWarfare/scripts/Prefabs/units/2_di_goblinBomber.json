@@ -1,6 +1,7 @@
 {
   "title": "Goblin Bomber (2) [DI]",
   "size": 25,
+  "height": 50,
   "value": 120,
   "hp": 450,
   "speed": 60,

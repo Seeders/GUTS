@@ -305,13 +305,13 @@ class CombatAISystem extends engine.BaseSystem {
         
         // Handle melee units with damage > 0
         if (combat.damage > 0) {
-            if ((this.game.state.now - combat.lastAttack) >= 1 / combat.attackSpeed) {
-    
+            const effectiveAttackSpeed = this.getEffectiveAttackSpeed(entityId, combat.attackSpeed);
+            if ((this.game.state.now - combat.lastAttack) >= 1 / effectiveAttackSpeed) {
                 this.initiateAttack(entityId, aiBehavior.currentTarget, combat);
                 combat.lastAttack = this.game.state.now;
                 aiBehavior.lastAttackStart = this.game.state.now;
             }
-        } 
+        }
         // Handle spell casters (damage <= 0)
         else if (combat.damage <= 0) {
             // Check if any abilities are available
@@ -577,12 +577,14 @@ class CombatAISystem extends engine.BaseSystem {
         return this.game.damageSystem.getPoisonStacks(entityId);
     }
 
-    hasResistance(entityId, element, threshold = 0.5) {
-        if (!this.game.damageSystem) {
-            return false;
+    getEffectiveAttackSpeed(entityId, baseAttackSpeed) {
+        // Get attack speed modifiers from buffs
+        if (!this.game.damageSystem || !this.game.damageSystem.getAttackerModifiers) {
+            return baseAttackSpeed;
         }
         
-        return this.game.damageSystem.hasResistance(entityId, element, threshold);
+        const attackerMods = this.game.damageSystem.getAttackerModifiers(entityId);
+        return baseAttackSpeed * (attackerMods.attackSpeedMultiplier || 1.0);
     }
 
     getStatusEffects(entityId) {

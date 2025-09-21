@@ -1,6 +1,7 @@
 {
   "title": "Rogue",
   "size": 25,
+  "height": 50,
   "value": 35,
   "hp": 450,
   "speed": 60,
