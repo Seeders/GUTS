@@ -19,83 +19,19 @@ export default class ServerGameRoom extends GameRoom {
 
     subscribeToEvents() {
         console.log('game room subscribing to events');
-        if (!this.serverEventManager) {
+        if (!this.game.serverEventManager) {
             console.error('No event manager found on engine');
             return;
         }
 
         // Subscribe to room management events
-        this.serverEventManager.subscribe('JOIN_ROOM', this.handleJoinRoom.bind(this));
-        this.serverEventManager.subscribe('QUICK_MATCH', this.handleQuickMatch.bind(this));
-        this.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
-        this.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
-        this.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
+        this.game.serverEventManager.subscribe('QUICK_MATCH', this.handleQuickMatch.bind(this));
+        this.game.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
+        this.game.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
+        this.game.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
     }
 
-    handleJoinRoom(eventData) {
-        const { playerId, data } = eventData;
-        
-        try {
-            const { roomId, playerName } = data;
-            
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Room code required' 
-                });
-                return;
-            }
-            
-            const room = this.engine.gameRooms.get(roomId);
-            if (!room) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Room not found' 
-                });
-                return;
-            }
-            
-            // Check if room allows joining
-            if (this.game.state.phase !== 'waiting' && this.game.state.phase !== 'lobby') {
-                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Game already in progress' 
-                });
-                return;
-            }
 
-            const result = room.addPlayer(playerId, {
-                name: playerName || `Player ${playerId.substr(-4)}`,
-                isHost: false
-            });
-
-            if (result.success) {
-                this.serverNetworkManager.joinRoom(playerId, roomId);
-                
-                this.serverNetworkManager.sendToPlayer(playerId, 'ROOM_JOINED', {
-                    roomId: roomId,
-                    playerId: playerId,
-                    isHost: false,
-                    gameState: room.getGameState()
-                });
-                
-                // Notify other players
-                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_JOINED', {
-                    playerId: playerId,
-                    playerName: playerName,
-                    gameState: room.getGameState()
-                });
-                
-                console.log(`Player ${playerName} joined room ${roomId}`);
-            } else {
-                this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: result.error || result.reason || 'Failed to join room' 
-                });
-            }
-        } catch (error) {
-            console.error('Error joining room:', error);
-            this.serverNetworkManager.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                error: 'Server error while joining room' 
-            });
-        }
-    }
 
     handleQuickMatch(eventData) {
         const { playerId, data } = eventData;
@@ -164,9 +100,7 @@ export default class ServerGameRoom extends GameRoom {
 
     handleToggleReady(eventData) {
         const { playerId } = eventData;
-        
         try {
-    
             const success = this.togglePlayerReady(playerId);
             if (!success) {
                 this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', { 
@@ -234,6 +168,7 @@ export default class ServerGameRoom extends GameRoom {
         // Use the same cleanup logic as disconnect
         this.handlePlayerDisconnect(eventData);
     }
+
     cleanupPlayerState(room, playerId) {
         const player = room.players.get(playerId);
         if (!player) return;
@@ -437,8 +372,8 @@ export default class ServerGameRoom extends GameRoom {
             }
             
             // Clear all placements
-            if (room.game.multiplayerPlacementSystem) {
-                room.game.multiplayerPlacementSystem.clearAllPlacements();
+            if (room.game.placementSystem) {
+                room.game.placementSystem.clearAllPlacements();
             }
             
             // Reset round counter

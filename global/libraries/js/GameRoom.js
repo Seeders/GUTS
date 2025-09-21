@@ -4,7 +4,6 @@ class GameRoom {
         this.engine = engine;
         this.game = gameInstance;
         this.serverNetworkManager = this.engine.serverNetworkManager;
-        this.serverEventManager = this.engine.serverEventManager;
         this.game.room = this;
         this.maxPlayers = maxPlayers;
         this.players = new Map();
