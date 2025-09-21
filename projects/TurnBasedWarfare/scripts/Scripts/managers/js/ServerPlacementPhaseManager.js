@@ -16,15 +16,15 @@ class ServerPlacementPhaseManager {
          this.subscribeToEvents();
     }
     subscribeToEvents() {
-        if (!this.engine.serverEventManager) {
+        if (!this.game.serverEventManager) {
             console.error('No event manager found on engine');
             return;
         }
 
         // Subscribe to room management events
-        this.engine.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
-        this.engine.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
-        this.engine.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
+        this.game.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
+        this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
+        this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
         //   const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
         //                 { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
 
@@ -192,8 +192,15 @@ class ServerPlacementPhaseManager {
 
 
     submitPlayerPlacement(playerId, player, placement) {
+        console.log(`=== SUBMIT PLACEMENT DEBUG ===`);
+        console.log(`Player ID: ${playerId}`);
+        console.log(`Room ID: ${this.room?.id || 'NO ROOM'}`);
+        console.log(`Game phase: ${this.game.state.phase}`);
+        console.log(`Player object:`, player);
+        console.log(`================================`);
+    
         if (this.game.state.phase !== 'placement') {
-            return { success: false, error: `Not in placement phase (${this.game.state})` };
+            return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
         
         // Validate placements if provided
@@ -263,7 +270,17 @@ class ServerPlacementPhaseManager {
         
         return true;
     }
+    clearAllPlacements(){
 
+        this.playerPlacements.keys().forEach((playerId) => {
+            this.clearPlayerPlacements(playerId);
+        });
+
+        this.playerPlacements = new Map();
+        this.leftPlacements = new Map();
+        this.rightPlacements = new Map();
+        this.placementReadyStates = new Map();  
+    }
     clearPlayerPlacements(playerId) {
         try {
             // Get player's placements

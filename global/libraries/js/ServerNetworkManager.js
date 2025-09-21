@@ -47,7 +47,9 @@ export default class ServerNetworkManager {
             socket.on('CREATE_ROOM', (data) => {
                 this.handleCreateRoom(socket, data);
             });
-                
+            socket.on('JOIN_ROOM', (data) => {
+                this.handleJoinRoom(socket, data);
+            });
             // Catch ALL events and route to game systems
             socket.onAny((eventName, data) => {
                 // Skip internal socket.io events
@@ -117,6 +119,73 @@ export default class ServerNetworkManager {
         }
     }
 
+
+    handleJoinRoom(socket, data) {
+        
+        const playerId = socket.id;
+        console.log('joinRoom', data)
+        try {
+            const { roomId, playerName } = data;
+            
+            if (!roomId) {
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Room code required' 
+                });
+                return;
+            }
+            
+            const room = this.engine.gameRooms.get(roomId);
+            if (!room) {
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Room not found' 
+                });
+                return;
+            }
+            
+            // Check if room allows joining
+            if (room.game.state.phase !== 'waiting' && room.game.state.phase !== 'lobby') {
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: 'Game already in progress' 
+                });
+                return;
+            }
+
+            const result = room.addPlayer(playerId, {
+                name: playerName || `Player ${playerId.substr(-4)}`,
+                isHost: false
+            });
+
+            if (result.success) {
+                this.joinRoom(playerId, roomId);
+                
+                this.sendToPlayer(playerId, 'ROOM_JOINED', {
+                    roomId: roomId,
+                    playerId: playerId,
+                    isHost: false,
+                    gameState: room.getGameState()
+                });
+                
+                // Notify other players
+                this.broadcastToRoom(roomId, 'PLAYER_JOINED', {
+                    playerId: playerId,
+                    playerName: playerName,
+                    gameState: room.getGameState()
+                });
+                
+                console.log(`Player ${playerName} joined room ${roomId}`);
+            } else {
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                    error: result.error || result.reason || 'Failed to join room' 
+                });
+            }
+        } catch (error) {
+            console.error('Error joining room:', error);
+            this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
+                error: 'Server error while joining room' 
+            });
+        }
+    }
+
     generateRoomId() {
         let id;
         do {
@@ -129,24 +198,34 @@ export default class ServerNetworkManager {
         return id.toString();
     }
 
-    // Route ALL events to engine's event system
+    // Generic event routing - just forwards to appropriate room's event manager
     routeEventToEngine(socket, eventName, data) {
+        const playerId = socket.id;
+        const roomId = this.getPlayerRoom(playerId);
+        
         try {
-            if (this.engine.serverEventManager) {
-                this.engine.serverEventManager.emit(eventName, {
-                    playerId: socket.id,
-                    eventName: eventName,
-                    data: data,
-                    socket: socket,
-                    networkManager: this
-                });
-            } else {
-                console.warn('No event system available on engine');
+            // For player-specific events, route to their room's event manager
+            if (roomId) {
+                const room = this.engine.gameRooms.get(roomId);
+                if (room && room.game.serverEventManager) {
+                    room.game.serverEventManager.emit(eventName, {
+                        playerId: playerId,
+                        eventName: eventName,
+                        data: data,
+                        socket: socket,
+                        networkManager: this
+                    });
+                    return;
+                }
             }
+                        
+            console.warn(`No room found for event ${eventName} from player ${playerId}`);
+            
         } catch (error) {
             console.error(`Error routing event ${eventName}:`, error);
         }
     }
+
 
     // Helper methods for systems to use
     sendToPlayer(playerId, eventName, data) {

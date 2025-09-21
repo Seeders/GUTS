@@ -1,7 +1,6 @@
 import BaseEngine from './BaseEngine.js';
 import ServerModuleManager from './ServerModuleManager.js';
 import ServerNetworkManager from '../global/libraries/js/ServerNetworkManager.js';
-import ServerEventManager from '../global/libraries/js/ServerEventManager.js';
 
 export default class ServerEngine extends BaseEngine {
     constructor() {
@@ -12,7 +11,6 @@ export default class ServerEngine extends BaseEngine {
         this.tickRate = 1 / 20; // 20 TPS
         this.lastTick = 0;
         this.serverNetworkManager = null;
-        this.serverEventManager = null;
     }
 
     async init(projectName) {
@@ -35,7 +33,6 @@ export default class ServerEngine extends BaseEngine {
         this.preCompileScripts();
         
         // Initialize network manager
-        this.serverEventManager = new ServerEventManager(this);
         this.serverNetworkManager = new ServerNetworkManager(this);
         await this.serverNetworkManager.init();
         
