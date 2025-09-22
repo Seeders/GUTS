@@ -1,221 +1,327 @@
 class RenderSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.renderSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        // Track entities with 3D models
-        this.entityModels = new Map();
-        this.modelScale = 32;
-        // Configuration for facing direction
-        this.MIN_MOVEMENT_THRESHOLD = 0.1;
-    }
-    
-    update() {
-        // Only update if we have access to Three.js scene from WorldRenderSystem
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) {
-            return;
-        }
+  constructor(game) {
+    super(game);
+    this.game.renderSystem = this;
+    this.componentTypes = this.game.componentManager.getComponentTypes();
 
-        
-        // Update 3D models
-        this.update3DModels();
-    }
-            
-    update3DModels() {
-        // Get entities that should have 3D models
-        const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.UNIT_TYPE
-        );
-        entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
-            
-            // Check if entity needs a model
-            if (!this.entityModels.has(entityId)) {
-                this.createModelForEntity(entityId, renderable.objectType, renderable.spawnType, team);
-            }
-            
-            const modelGroup = this.entityModels.get(entityId);
-            if (modelGroup) {
-                // Use full 3D coordinates directly
-                const worldX = pos.x;
-                const worldY = pos.y; // Use actual Y coordinate from position
-                const worldZ = pos.z; // Use actual Z coordinate from position
-                
-                // Update position with proper 3D coordinates
-                modelGroup.position.set(worldX, worldY, worldZ);              
-               // modelGroup.updateMatrix();
-                // Update facing direction
-                this.updateFacingDirection(entityId, modelGroup, velocity, facing);
-                
-                // Update skeleton for skinned meshes
-                modelGroup.traverse(object => {
-                    if (object.isSkinnedMesh && object.skeleton) {
-                        object.skeleton.update();
-                    }
-                });
-            }
-        });
+    this.entityModels = new Map();            // entityId -> THREE.Group
+    this.modelScale = 32;
+    this.MIN_MOVEMENT_THRESHOLD = 0.1;
 
-        // Clean up removed entities
-        this.cleanupRemovedEntities(entities);
-    }
+    // materialKey -> { material: THREE.Material, refCount: number }
+    this.sharedMaterials = new Map();
+    // entityId -> materialKey
+    this.entityMaterials = new Map();
 
-    updateFacingDirection(entityId, modelGroup, velocity, facing) {
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        let priority = 0;
-        let facingAngle = null;
-        const isAttacking = aiState && (aiState.state === 'attacking' || aiState.state === 'waiting');
-        // Priority 1: Face movement direction if moving (unless attacking)
-        if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
-            // Only face movement direction if NOT actively attacking
-            if (!aiState || !isAttacking) {
-                // Calculate facing angle from movement direction (X and Z)
-                facingAngle = Math.atan2(velocity.vz, velocity.vx);
-                priority = 1;
-            }
-        }
-        
-        // Priority 2: If actively attacking, face the target
-        if (facingAngle === null && aiState && isAttacking && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
-            // Get the current position of the target (fresh every frame)
-            const targetPos = this.game.getComponent(aiState.aiBehavior.currentTarget, this.componentTypes.POSITION);
-            
-            if (targetPos) {
-                const dx = targetPos.x - pos.x;
-                const dz = targetPos.z - pos.z; // Use Z for forward/backward in 3D
-                
-                // Only update if we have a meaningful direction
-                if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dz) > this.MIN_MOVEMENT_THRESHOLD) {
-                    // Calculate facing angle using X and Z coordinates
-                    facingAngle = Math.atan2(dz, dx);
-                    priority = 2;
-                }
-            }
-        }
-        
-        // Priority 3: Use initial facing direction if no movement and not attacking
-        if (facingAngle === null && facing && facing.angle !== undefined) {
-            facingAngle = facing.angle;
-            priority = 3;
-        }
-        
-        // Apply rotation if we have a valid angle
-        if (facingAngle !== null) {
-            // Convert from 2D angle to 3D Y-axis rotation
-            // Adjust the angle offset as needed for your model orientation
-            // Most models face forward along negative Z, so we need to adjust
-            modelGroup.rotation.y = -facingAngle + Math.PI / 2;
-        }
-    }
-    
-    async createModelForEntity(entityId, objectType, spawnType, team) {
-        // Get unit definition from game data        
-        try {
-            // Get model from ModelManager
-            const modelGroup = this.game.modelManager.getModel(objectType, spawnType);
-            if (modelGroup) {
-                // Add to scene
-                modelGroup.scale.set(
-                    modelGroup.scale.x * this.modelScale,
-                    modelGroup.scale.y * this.modelScale,
-                    modelGroup.scale.z * this.modelScale
-                );
-                this.game.scene.add(modelGroup);
-                this.entityModels.set(entityId, modelGroup);
-                
-                // Set up animations through AnimationSystem
-                if (this.game.animationSystem) {
-                    await this.game.animationSystem.setupEntityAnimations(entityId, objectType, spawnType, modelGroup);
-                }
-                
-                // Apply team-based styling
-                if (team) {
-                   // this.applyTeamStyling(modelGroup, team.team);
-                }
-                
-                // Apply initial facing direction
-                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
-                if (facing && facing.angle !== undefined) {
-                    modelGroup.rotation.y = -facing.angle + Math.PI / 2;
-                }
-            } else {
-                console.error("no model group found", objectType, spawnType);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-    
-    applyTeamStyling(modelGroup, team) {
-        const teamColors = {
-            'player': 0x00ff00,
-            'enemy': 0xff0000,
-            'neutral': 0xffffff
+    // ---------- DEBUG CONFIG ----------
+    this.DEBUG = true;                  // master on/off
+    this.DEBUG_LEVEL = 1;               // 0=silent, 1=key events, 2=verbose, 3=spammy
+    this.DEBUG_EVERY_N_FRAMES = 60;     // summary log cadence
+    this._frame = 0;
+    this._stats = {
+      createdModels: 0,
+      removedModels: 0,
+      createdMaterials: 0,
+      disposedMaterials: 0,
+      lastFrameEntities: 0,
+      lastFrameModels: 0,
+    };
+    // ----------------------------------
+
+    this._bindDebugHelpers();
+    this._d(1, "[RenderSystem] constructed");
+  }
+
+  // ===== Debug helpers =====
+  _bindDebugHelpers() {
+    // expose optional dev helpers (safe if window not present)
+    try {
+      if (typeof window !== "undefined") {
+        window.RenderSystemDebug = {
+          dumpMaterials: () => this.dumpMaterials(),
+          dumpEntities: () => this.dumpEntities(),
+          setLevel: (lvl) => (this.DEBUG_LEVEL = lvl),
+          setEveryN: (n) => (this.DEBUG_EVERY_N_FRAMES = n),
+          enable: (v=true) => (this.DEBUG = v),
         };
-        
-        const teamColor = teamColors[team] || teamColors.neutral;
-        
-        modelGroup.traverse(child => {
-            if (child.isMesh && child.material) {
-                if (child.material.emissive) {
-                    child.material.emissive.setHex(teamColor);
-                    child.material.emissiveIntensity = 0.01;
-                }
-            }
-        });
+      }
+    } catch {}
+  }
+  _d(level, ...args) { if (this.DEBUG && this.DEBUG_LEVEL >= level) console.debug(...args); }
+  _w(...args) { console.warn(...args); }
+  _gStart(label) { if (this.DEBUG && this.DEBUG_LEVEL >= 2) console.groupCollapsed(label); }
+  _gEnd() { if (this.DEBUG && this.DEBUG_LEVEL >= 2) console.groupEnd(); }
+  _timeStart(label) { if (this.DEBUG && this.DEBUG_LEVEL >= 2) console.time(label); }
+  _timeEnd(label) { if (this.DEBUG && this.DEBUG_LEVEL >= 2) console.timeEnd(label); }
+
+  dumpMaterials() {
+    const out = [];
+    for (const [key, entry] of this.sharedMaterials) {
+      out.push({ key, refCount: entry.refCount ?? 0, materialAlive: !!entry.material });
     }
-    
-    cleanupRemovedEntities(currentEntities) {
-        const currentEntitySet = new Set(currentEntities);
-        
-        for (const [entityId] of this.entityModels.entries()) {
-            if (!currentEntitySet.has(entityId)) {
-                this.removeEntityModel(entityId);
-            }
-        }
+    this._d(1, "[RenderSystem] dumpMaterials", out);
+    return out;
+  }
+  dumpEntities() {
+    const out = [];
+    for (const [id, group] of this.entityModels) {
+      out.push({ id, hasGroup: !!group, children: group?.children?.length ?? 0, materialKey: this.entityMaterials.get(id) });
     }
-    
-    removeEntityModel(entityId) {
-        // Clean up model
-        const modelGroup = this.entityModels.get(entityId);
-        if (modelGroup && this.game.scene) {
-            this.game.scene.remove(modelGroup);
-            
-            // Dispose of geometries and materials
-            modelGroup.traverse(child => {
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(mat => mat.dispose());
-                    } else {
-                        child.material.dispose();
-                    }
-                }
-            });
-        }
-        
-        // Clean up animations through AnimationSystem
-        if (this.game.animationSystem) {
-            this.game.animationSystem.removeEntityAnimations(entityId);
-        }
-        // Remove from maps
-        this.entityModels.delete(entityId);
+    this._d(1, "[RenderSystem] dumpEntities", out);
+    return out;
+  }
+  _assertNonNegativeRefcount(key, entry) {
+    if ((entry?.refCount ?? 0) < 0) {
+      this._w("[RenderSystem] REFCOUNT NEGATIVE!", key, entry);
     }
-    
-    destroy() {
-        // Clean up all entity models
-        for (const [entityId] of this.entityModels.entries()) {
-            this.removeEntityModel(entityId);
-        }
-        
-        // Clear all maps
-        this.entityModels.clear();
+  }
+
+  update() {
+    if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
+
+    this._frame++;
+    const frameLabel = "RenderSystem.update3DModels";
+    this._timeStart(frameLabel);
+    this.update3DModels();
+    this._timeEnd(frameLabel);
+
+    if (this.DEBUG && (this._frame % this.DEBUG_EVERY_N_FRAMES === 0)) {
+      this._d(1, `[RenderSystem] frame=${this._frame} entities=${this._stats.lastFrameEntities} models=${this._stats.lastFrameModels} ` +
+                 `created(models/materials)=${this._stats.createdModels}/${this._stats.createdMaterials} ` +
+                 `removed(models/materials)=${this._stats.removedModels}/${this._stats.disposedMaterials}`);
     }
+  }
+              
+  update3DModels() {
+    const CT = this.componentTypes;
+    const entities = this.game.getEntitiesWith(CT.POSITION, CT.UNIT_TYPE);
+    this._stats.lastFrameEntities = entities.length;
+
+    entities.forEach(entityId => {
+      const pos = this.game.getComponent(entityId, CT.POSITION);
+      const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
+      if (!pos || !renderable) return;
+
+      const velocity = this.game.getComponent(entityId, CT.VELOCITY);
+      const facing = this.game.getComponent(entityId, CT.FACING);
+
+      if (!this.entityModels.has(entityId)) {
+        this._d(2, "[RenderSystem] creating model for entity", entityId, renderable.objectType, renderable.spawnType);
+        this.createModelForEntity(entityId, renderable.objectType, renderable.spawnType);
+      }
+      const modelGroup = this.entityModels.get(entityId);
+      if (!modelGroup) return;
+
+      modelGroup.position.set(pos.x, (pos.y ?? 0), pos.z);
+      this.updateEntityFacing(entityId, modelGroup, pos, velocity, facing);
+
+      modelGroup.traverse(obj => {
+        if (obj.isSkinnedMesh && obj.skeleton) obj.skeleton.update();
+      });
+    });
+
+    this.cleanupRemovedEntities(entities);
+    this._stats.lastFrameModels = this.entityModels.size;
+  }
+
+  cleanupRemovedEntities(currentEntities) {
+    const alive = new Set(currentEntities);
+    let removed = 0;
+    for (const [entityId] of this.entityModels.entries()) {
+      if (!alive.has(entityId)) {
+        removed++;
+        this._d(2, "[RenderSystem] cleanupRemovedEntities -> removing entity", entityId);
+        this.removeEntityModel(entityId);
+      }
+    }
+    if (removed && this.DEBUG_LEVEL >= 2) {
+      this._d(2, `[RenderSystem] cleaned up ${removed} entities`);
+    }
+  }
+      
+  async createModelForEntity(entityId, objectType, spawnType) {
+    try {
+      const modelGroup = this.game.modelManager.getModel(objectType, spawnType);
+      if (!modelGroup) {
+        console.error("no model group found", objectType, spawnType);
+        return;
+      }
+
+      modelGroup.scale.set(
+        modelGroup.scale.x * this.modelScale,
+        modelGroup.scale.y * this.modelScale,
+        modelGroup.scale.z * this.modelScale
+      );
+
+      const sharedMaterial = this.getSharedMaterial(entityId, modelGroup);
+      this.applyToModel(modelGroup, sharedMaterial);
+
+      this.game.scene.add(modelGroup);
+      this.entityModels.set(entityId, modelGroup);
+      this._stats.createdModels++;
+
+      if (this.game.animationSystem) {
+        await this.game.animationSystem.setupEntityAnimations(entityId, objectType, spawnType, modelGroup);
+      }
+
+      const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+      if (facing && facing.angle !== undefined) {
+        modelGroup.rotation.y = -facing.angle + Math.PI / 2;
+      }
+
+      this._d(2, "[RenderSystem] model created for", entityId, "materialKey=", this.entityMaterials.get(entityId));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  updateEntityFacing(entityId, modelGroup, pos, velocity, facing) {
+    const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+    let facingAngle = null;
+
+    if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
+      facingAngle = Math.atan2(velocity.vz, velocity.vx);
+    }
+
+    const isAttacking = aiState && (aiState.state === 'attacking' || aiState.state === 'waiting');
+    if (facingAngle === null && isAttacking && aiState?.aiBehavior?.currentTarget && pos) {
+      const targetPos = this.game.getComponent(aiState.aiBehavior.currentTarget, this.componentTypes.POSITION);
+      if (targetPos) {
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dz) > this.MIN_MOVEMENT_THRESHOLD) {
+          facingAngle = Math.atan2(dz, dx);
+        }
+      }
+    }
+
+    if (facingAngle === null && facing?.angle !== undefined) {
+      facingAngle = facing.angle;
+    }
+
+    if (facingAngle !== null) {
+      modelGroup.rotation.y = -facingAngle + Math.PI / 2;
+    }
+  }
+
+  removeEntityModel(entityId) {
+    // decrement material refs first
+    this.removeEntity(entityId);
+
+    const modelGroup = this.entityModels.get(entityId);
+    if (modelGroup && this.game.scene) {
+      this.game.scene.remove(modelGroup);
+      modelGroup.traverse(child => {
+        if (child.isMesh && child.geometry) child.geometry.dispose();
+      });
+    }
+    if (this.game.animationSystem) {
+      this.game.animationSystem.removeEntityAnimations(entityId);
+    }
+    this.entityModels.delete(entityId);
+    this._stats.removedModels++;
+    this._d(2, "[RenderSystem] removeEntityModel done", entityId);
+  }
+
+  destroy() {
+    this._gStart("[RenderSystem] destroy()");
+    for (const [entityId] of this.entityModels.entries()) {
+      this.removeEntityModel(entityId);
+    }
+    this.entityModels.clear();
+
+    let leaked = 0;
+    for (const [key, entry] of this.sharedMaterials.entries()) {
+      leaked++;
+      entry?.material?.dispose?.();
+      this._d(2, "[RenderSystem] disposing leftover shared material", key);
+    }
+    if (leaked) this._stats.disposedMaterials += leaked;
+    this.sharedMaterials.clear();
+    this._gEnd();
+
+    if (this.DEBUG) {
+      const mats = this.dumpMaterials();
+      if (mats.length) this._w("[RenderSystem] WARNING: materials remained after destroy()", mats);
+      this._d(1, "[RenderSystem] destroy() complete. stats =", JSON.stringify(this._stats));
+    }
+  }
+
+  // ======== Shared Material Management ========
+
+  getSharedMaterial(entityId, referenceModel) {
+    const materialKey = this.getMaterialKey(entityId);
+
+    if (!this.sharedMaterials.has(materialKey)) {
+      const mat = this.createSharedMaterial(referenceModel);
+      if (!mat) return null;
+      this.sharedMaterials.set(materialKey, { material: mat, refCount: 0 });
+      this._stats.createdMaterials++;
+      this._d(2, "[RenderSystem] createSharedMaterial", materialKey);
+    }
+
+    const entry = this.sharedMaterials.get(materialKey);
+    entry.refCount++;
+    this._assertNonNegativeRefcount(materialKey, entry);
+    this.entityMaterials.set(entityId, materialKey);
+    if (this.DEBUG_LEVEL >= 3) this._d(3, "[RenderSystem] ++ref", materialKey, "=>", entry.refCount);
+    return entry.material;
+  }
+
+  getMaterialKey(entityId) {
+    const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
+    return `${renderable.objectType}_${renderable.spawnType}`;
+  }
+
+  createSharedMaterial(referenceModel) {
+    let baseMaterial = null;
+    referenceModel.traverse(child => {
+      if (child.isMesh && child.material && !baseMaterial) {
+        baseMaterial = child.material;
+      }
+    });
+    if (!baseMaterial) return null;
+    return baseMaterial;
+  }
+
+  // Apply one shared material instance to all meshes.
+  // Preserve each mesh's *own* texture by reattaching it in onBeforeRender.
+  applyToModel(modelGroup, sharedMaterial) {
+    if (!sharedMaterial) return;
+    modelGroup.traverse(child => {
+      if (!child.isMesh || !child.material) return;
+
+      if (!child.userData.originalMap) {
+        child.userData.originalMap = child.material.map || null;
+      }
+
+      child.material = sharedMaterial;
+
+      child.onBeforeRender = () => {
+        if (child.material.map !== child.userData.originalMap) {
+          child.material.map = child.userData.originalMap;
+          child.material.needsUpdate = true;
+          if (this.DEBUG_LEVEL >= 3) this._d(3, "[RenderSystem] reattach map onBeforeRender");
+        }
+      };
+    });
+  }
+
+  // Decrement refcount and free shared materials when unused
+  removeEntity(entityId) {
+    const materialKey = this.entityMaterials.get(entityId);
+    if (materialKey && this.sharedMaterials.has(materialKey)) {
+      const entry = this.sharedMaterials.get(materialKey);
+      entry.refCount = Math.max(0, (entry.refCount || 1) - 1);
+      this._assertNonNegativeRefcount(materialKey, entry);
+      if (this.DEBUG_LEVEL >= 3) this._d(3, "[RenderSystem] --ref", materialKey, "=>", entry.refCount);
+      if (entry.refCount === 0 && entry.material) {
+        entry.material.dispose();
+        this.sharedMaterials.delete(materialKey);
+        this._stats.disposedMaterials++;
+        this._d(2, "[RenderSystem] disposed shared material", materialKey);
+      }
+    }
+    this.entityMaterials.delete(entityId);
+  }
 }
