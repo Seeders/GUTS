@@ -24,10 +24,10 @@ class BaseECSGame {
         return this.app.getCollections();
     }
 
-    update(deltaTime, now) {
+    update(deltaTime) {
   
         if (!this.state.isPaused) {
-            this.currentTime = now;
+            this.currentTime = this.currentTime + deltaTime;
 
             // Only update if a reasonable amount of time has passed
             const timeSinceLastUpdate = this.currentTime - this.lastTime;
@@ -37,7 +37,7 @@ class BaseECSGame {
                 this.lastTime = this.currentTime; // Reset timer without updating
                 return;
             }
-            this.state.now = now;
+            this.state.now = this.currentTime;
             this.state.deltaTime = deltaTime;
             this.deltaTime = deltaTime;        
 
@@ -158,8 +158,7 @@ class BaseECSGame {
     resetCurrentTime() {
         this.state.now = 0;
         this.lastTime = 0;
-        this.currentTime = 0;
-        this.app.resetCurrentTime();        
+        this.currentTime = 0;     
     }
 }
 

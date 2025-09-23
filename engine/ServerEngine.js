@@ -10,6 +10,7 @@ export default class ServerEngine extends BaseEngine {
         this.gameRooms = new Map();
         this.tickRate = 1 / 20; // 20 TPS
         this.lastTick = 0;
+        this.accumulator = 0;
         this.serverNetworkManager = null;
     }
 
@@ -88,11 +89,11 @@ export default class ServerEngine extends BaseEngine {
         
         const now = this.getCurrentTime();
         const deltaTime = (now - this.lastTick) / 1000;
+
         this.lastTick = now;
         
         this.accumulator += deltaTime;
-        while (this.accumulator >= this.tickRate) {
-            this.simulationTime += this.tickRate;            
+        while (this.accumulator >= this.tickRate) {        
             this.tick();
             this.accumulator -= this.tickRate;
         }
@@ -105,9 +106,7 @@ export default class ServerEngine extends BaseEngine {
         // Update all active game rooms
         for (const [roomId, room] of this.gameRooms) {
             if (room.isActive) {
-                room.game.state.simTime = this.simulationTime;
-                room.game.state.simTick = (room.game.state.simTick || 0) + 1;
-                room.update(this.tickRate, this.simulationTime);
+                room.update(this.tickRate);
             }
         }
         

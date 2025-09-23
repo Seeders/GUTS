@@ -115,14 +115,14 @@ class GameRoom {
         });
     }
 
-    update(deltaTime, now) {
+    update(deltaTime) {
         if (!this.isActive) return;
 
         // Process all queued inputs
         this.processQueuedInputs();
         
         // Update game state
-        this.game.update(deltaTime, now);
+        this.game.update(deltaTime);
         
         // Store state snapshot for lag compensation
         this.storeStateSnapshot();
