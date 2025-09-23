@@ -94,11 +94,10 @@ class WorldSystem extends engine.BaseSystem {
         
         this.renderer = new THREE.WebGLRenderer({ 
             canvas: gameCanvas,
-            antialias: true,
+            antialias: false,
             alpha: true
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
         window.addEventListener('resize', this.onWindowResizeHandler);
@@ -149,6 +148,8 @@ class WorldSystem extends engine.BaseSystem {
         this.extensionSize = this.world.extensionSize || 0;
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);
+        
+        this.renderer.shadowMap.enabled = this.shadowSettings?.enabled;
     }
 
     setupWorld() {
