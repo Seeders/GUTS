@@ -163,9 +163,6 @@ class PhaseSystem extends engine.BaseSystem {
     startBattlePhase() {
         const state = this.game.state;
         state.phase = 'battle';
-        state.simTime = 0;
-        state.simTick = 0;
-        this._simAccum = 0;
 
         if (this.game.teamHealthSystem) {
             this.game.teamHealthSystem.onBattleStart();
@@ -615,16 +612,6 @@ class PhaseSystem extends engine.BaseSystem {
         
     update(deltaTime) {
         const nowWall = (this.game.state.now || 0);
-
-        // Deterministic sim clock in battle
-        if (this.game.state?.phase === 'battle') {
-            this._simAccum += deltaTime;
-            while (this._simAccum >= this.FIXED_DT) {
-                this.game.state.simTime += this.FIXED_DT;
-                this.game.state.simTick = (this.game.state.simTick || 0) + 1;
-                this._simAccum -= this.FIXED_DT;
-            }
-        }
 
         // (keep your existing round-end checks/UI here; they can use nowWall safely)
         if (nowWall - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {

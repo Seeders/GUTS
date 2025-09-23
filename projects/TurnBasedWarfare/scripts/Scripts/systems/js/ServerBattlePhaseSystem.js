@@ -1,6 +1,6 @@
-class ServerBattlePhaseSystem {
+class ServerBattlePhaseSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
+        super(game);
         this.engine = this.game.app;    
         this.game.serverBattlePhaseSystem = this;
         this.serverNetworkManager = this.engine.serverNetworkManager;

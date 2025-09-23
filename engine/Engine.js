@@ -5,10 +5,10 @@ class Engine extends BaseEngine {
         this.isServer = false;
         this.tickRate = 1 / 20; // 20 TPS
         this.lastTick = 0;
-        this.simulationTime = 0;
         this.accumulator = 0;
         const urlParams = new URLSearchParams(window.location.search);
         this.serverMode = urlParams.get('isServer');
+        this.services = new Map();
         window.APP = this;
     }
 
@@ -72,7 +72,6 @@ class Engine extends BaseEngine {
         
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
-            this.simulationTime += this.tickRate;
             this.tick();
             this.accumulator -= this.tickRate;
         }
@@ -84,7 +83,7 @@ class Engine extends BaseEngine {
     tick() {
         // Update all active game rooms
         if (this.gameInstance && this.gameInstance.update) {
-            this.gameInstance.update(this.tickRate, this.simulationTime);        
+            this.gameInstance.update(this.tickRate);        
         }
         
     }
@@ -105,5 +104,13 @@ class Engine extends BaseEngine {
     }
     getCurrentTime() {
         return performance.now();
+    }
+
+    addService(key, serviceInstance) {
+        if(!this.services.get(key)){
+            this.services.set(key, serviceInstance);
+        } else {
+            console.warn('duplicate service key', key);
+        }
     }
 }

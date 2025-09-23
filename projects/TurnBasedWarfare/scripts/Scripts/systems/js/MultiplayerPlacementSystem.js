@@ -805,13 +805,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     getWorldPositionFromMouse(event, mouseX, mouseY) {
         if (!this.game.scene || !this.game.camera) return null;
         
-        if (!this.groundMeshCache) {
-            this.groundMeshCache = this.getGroundMesh();
-        }
-        
-        const ground = this.groundMeshCache;
-        if (!ground) return null;
-        
         if (!this.mouse) {
             this.mouse = new THREE.Vector2();
         }
@@ -829,8 +822,28 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         this.raycaster.setFromCamera(this.mouse, this.game.camera);
         
-        const intersects = this.raycaster.intersectObject(ground, false);
-        return intersects.length > 0 ? intersects[0].point : null;
+        // Mathematical intersection with plane at y = 0
+        const ray = this.raycaster.ray;
+        
+        // Check if ray is pointing downward (or upward if camera is below ground)
+        if (Math.abs(ray.direction.y) < 0.0001) {
+            return null; // Ray is parallel to ground plane
+        }
+        
+        // Calculate distance to intersection point
+        const distance = (0 - ray.origin.y) / ray.direction.y;
+        
+        // Only return intersection if it's in front of the camera
+        if (distance < 0) {
+            return null;
+        }
+        
+        // Calculate intersection point
+        const intersectionPoint = ray.origin.clone().add(
+            ray.direction.clone().multiplyScalar(distance)
+        );
+        
+        return intersectionPoint;
     }
 
     findGroundMesh() {

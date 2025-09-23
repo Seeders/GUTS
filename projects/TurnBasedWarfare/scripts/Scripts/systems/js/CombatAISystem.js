@@ -90,7 +90,7 @@ class CombatAISystem extends engine.BaseSystem {
             }
 
             // NEW (deterministic, future-safe)
-            if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0; // simTime domain
+            if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0;
             const shouldMakeDecision = (this.game.state.now >= aiBehavior.nextMoveTime);
             
             if (shouldMakeDecision && aiState.state !== 'waiting') {

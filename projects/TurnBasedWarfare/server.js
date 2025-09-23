@@ -14,6 +14,7 @@ import GameState from '../../global/libraries/js/GameState.js';
 import GameRoom from '../../global/libraries/js/GameRoom.js';
 import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
 import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
+import ServerMatchmakingService from '../../global/libraries/js/ServerMatchmakingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +28,7 @@ global.GUTS = {
     GameState,
     GameRoom,
     ServerNetworkManager,
+    ServerMatchmakingService,
     DesyncDebugger
 };
 

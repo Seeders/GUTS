@@ -7,9 +7,6 @@ class MultiplayerPhaseSystem {
         this.phaseTimer = null;
         this.lastBattleEndCheck = 0;
         this.BATTLE_END_CHECK_INTERVAL = 1.0;
-        this.FIXED_DT = 1 / 60;        // 60Hz simulation
-        this._simAccum = 0;
-        this.MAX_ACCUM = 0.25;         // never try to catch up more than 250ms
         this.MAX_STEPS_PER_FRAME = 8;  // cap work per frame
 
         this.config = {
@@ -84,10 +81,6 @@ class MultiplayerPhaseSystem {
     startBattlePhase() {
         const state = this.game.state;
         state.phase = 'battle';
-        state.simTime = 0;     // deterministic sim clock
-        state.simTick = 0;
-        this._simAccum = 0;
-
         if (this.game.teamHealthSystem) {
             this.game.teamHealthSystem.onBattleStart();
         }
@@ -473,17 +466,6 @@ class MultiplayerPhaseSystem {
         
     update() {
         const nowWall = (this.game.state.now || 0);
-
-        // Deterministic sim clock in battle
-        if (this.game.state?.phase === 'battle') {
-            this._simAccum += this.game.state.deltaTime;
-            while (this._simAccum >= this.FIXED_DT) {
-                this.game.state.simTime += this.FIXED_DT;
-                this.game.state.simTick = (this.game.state.simTick || 0) + 1;
-                this._simAccum -= this.FIXED_DT;
-            }
-        }
-
         // (keep your existing round-end checks/UI here; they can use nowWall safely)
         if (nowWall - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
             this.checkForRoundEnd?.();

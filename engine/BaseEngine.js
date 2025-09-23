@@ -11,8 +11,6 @@ class BaseEngine {
         this.collections = null;
         this.moduleManager = null;
         this.gameInstance = null;
-        this.simulationTime = 0;
-        this.accumulator = 0;
     }
 
     async loadCollections(projectName) {
@@ -44,10 +42,6 @@ class BaseEngine {
         this.running = false;
     }
 
-    resetCurrentTime() {
-        this.simulationTime = 0;
-        this.accumulator = 0;
-    }
     getCurrentTime() {
         return Date.now();
     }

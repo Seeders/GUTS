@@ -894,12 +894,6 @@ console.log('joined room');
     handleStartBattle(data) {
         // Make RNG deterministic across clients for this battle
         this.beginDeterministicRNG(String(data.battleSeed));
-
-        // Reset simulation clock (MultiplayerPhaseSystem will advance it)
-        if (this.game.state) {
-            this.game.state.simTime = 0;
-            this.game.state.simTick = 0;
-        }
         
         this.battleStartTime = Date.now(); // Make sure this is set
         this.checkForBattleCompletion();   // Add this line
