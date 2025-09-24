@@ -757,7 +757,6 @@ class EffectsSystem extends engine.BaseSystem {
     // Missing method that abilities are calling
     createAuraEffect(x, y, z, type, duration) {
         if (!this.game.particleSystem) return;
-        return;
         const auraId = `aura_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const startTime = this.game.state.now;
         const position = new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z);
