@@ -3,40 +3,34 @@ class ParticleSystem extends engine.BaseSystem {
     super(game);
     this.game.particleSystem = this;
 
-    // CHANGED: unified pool for all particles
-    this.CAPACITY = 4000;                     // tune per device
+    this.CAPACITY = 2000;
     this.initialized = false;
     this.activeCount = 0;
-    this.freeList = [];                       // available instance indices
+    this.freeList = [];
 
-    // CHANGED: CPU-side motion (per-instance)
     this.positions = new Array(this.CAPACITY);
     this.velocities = new Array(this.CAPACITY);
     this.gravityArr = new Float32Array(this.CAPACITY);
     this.dragArr = new Float32Array(this.CAPACITY);
 
-    // CHANGED: GPU attributes (per-instance)
     this.aColorStart = new Float32Array(this.CAPACITY * 3);
     this.aColorEnd   = new Float32Array(this.CAPACITY * 3);
     this.aLifetime   = new Float32Array(this.CAPACITY);
     this.aStartTime  = new Float32Array(this.CAPACITY);
     this.aInitScale  = new Float32Array(this.CAPACITY);
-    this.aFlags      = new Float32Array(this.CAPACITY * 2); // x: fadeOut(0/1), y: scaleOverTime(0/1)
+    this.aFlags      = new Float32Array(this.CAPACITY * 2);
 
-    // Temps
     this._tmpMat = new THREE.Matrix4();
     this._cursor = 0;
 
-    // CHANGED: distribute work across frames
     this.UPDATE_STRIDE = 2;
   }
 
   initialize() {
     if (this.initialized || !this.game.scene) return;
 
-    // CHANGED: single billboarded quad; fragment creates soft-round mask (works for sparks/glows)
-    const geometry = new THREE.PlaneGeometry(1, 1);
-    // keep PlaneGeometry's built-in 'uv' for radial mask
+    const geometry = new THREE.PlaneGeometry(0.25, 0.25);
+
     const vertexShader = `
       attribute vec3 aColorStart;
       attribute vec3 aColorEnd;
@@ -46,7 +40,7 @@ class ParticleSystem extends engine.BaseSystem {
       attribute vec2 aFlags; // x: fadeOut, y: scaleOverTime
       varying vec3 vColor;
       varying float vAlpha;
-      varying vec2 vUv; // passthrough for radial mask
+      varying vec2 vUv;
       uniform float uTime;
 
       vec3 camRight() { return vec3(modelViewMatrix[0][0], modelViewMatrix[1][0], modelViewMatrix[2][0]); }
@@ -54,7 +48,6 @@ class ParticleSystem extends engine.BaseSystem {
 
       void main() {
         vUv = uv;
-
         float age = max(uTime - aStartTime, 0.0);
         float lifeT = clamp(1.0 - age / max(aLifetime, 0.0001), 0.0, 1.0);
 
@@ -85,32 +78,31 @@ class ParticleSystem extends engine.BaseSystem {
       varying vec2 vUv;
 
       void main() {
-        // Soft round mask from quad UVs (center at 0.5,0.5)
         vec2 c = vUv - vec2(0.5);
-        float r = length(c) * 2.0;           // 0 at center, ~1 at edge
-        float mask = smoothstep(1.0, 0.6, r); // soft falloff
+        float r = length(c) * 2.0;
+        float mask = smoothstep(1.0, 0.6, r);
         float a = vAlpha * mask;
 
         if (a <= 0.001) discard;
-        gl_FragColor = vec4(vColor, a);
+
+        // CHANGED: simple straight output (no tone mapping), alpha not premultiplied here
+        gl_FragColor = vec4(vColor, a); // CHANGED
       }
     `;
 
-    // CHANGED: one shared ShaderMaterial (default additive)
     this.material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,  // EffectsSystem may request different blending in config; per-particle is not possible with one material
-      uniforms: { uTime: { value: 0 } }
+      blending: THREE.NormalBlending,          // CHANGED: sane default; per-effect override allowed
+      uniforms: { uTime: { value: 0 } },
+      toneMapped: false                        // CHANGED: ensure shader output isn't remapped
     });
 
-    // CHANGED: single InstancedMesh
     this.mesh = new THREE.InstancedMesh(geometry, this.material, this.CAPACITY);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
-    // CHANGED: attach instanced attributes
     const addAttr = (arr, itemSize, name) => {
       const a = new THREE.InstancedBufferAttribute(arr, itemSize);
       this.mesh.geometry.setAttribute(name, a);
@@ -123,7 +115,6 @@ class ParticleSystem extends engine.BaseSystem {
     this.attrInitScale  = addAttr(this.aInitScale,  1, 'aInitScale');
     this.attrFlags      = addAttr(this.aFlags,      2, 'aFlags');
 
-    // CHANGED: initialize offscreen & pool
     for (let i = 0; i < this.CAPACITY; i++) {
       this._writeTranslation(i, 1e9, 1e9, 1e9);
       this.positions[i]  = new THREE.Vector3(1e9, 1e9, 1e9);
@@ -133,13 +124,12 @@ class ParticleSystem extends engine.BaseSystem {
       this.freeList.push(i);
     }
 
-    this.mesh.frustumCulled = false; // safe for screen-space quads
+    this.mesh.frustumCulled = false;
     this.game.scene.add(this.mesh);
 
     this.initialized = true;
   }
 
-  // CHANGED: translation-only instance matrix write
   _writeTranslation(index, x, y, z) {
     const m = this._tmpMat;
     m.identity();
@@ -147,14 +137,12 @@ class ParticleSystem extends engine.BaseSystem {
     this.mesh.setMatrixAt(index, m);
   }
 
-  // ===== Public API (preserved signature) =====
   /**
    * createParticles(config)
-   * Preserves your original config: {
-   *   position: THREE.Vector3, count, lifetime,
-   *   visual: { color, colorRange:{start,end}, scale, fadeOut, scaleOverTime, blending? },
-   *   velocityRange: {x:[min,max], y:[], z:[]}, gravity, drag, shape?
-   * }
+   * Config preserved:
+   *   position, count, lifetime,
+   *   visual.{color|colorRange{start,end}|scale|fadeOut|scaleOverTime|blending|scaleMultiplier},
+   *   velocityRange, gravity, drag, speedMultiplier, heightOffset, shape? (ignored)
    */
   createParticles(config) {
     if (!this.initialized) {
@@ -170,30 +158,31 @@ class ParticleSystem extends engine.BaseSystem {
       velocityRange = { x: [-30, 30], y: [50, 120], z: [-30, 30] },
       gravity = -100.0,
       drag = 0.98,
-      shape // CHANGED: accepted for compatibility; ignored for unified backend
+      speedMultiplier: speedMulTop = 1.0,
+      heightOffset = 0
     } = config;
 
-    // CHANGED: honor color / colorRange exactly as before
-    const startHex = (visual.colorRange && visual.colorRange.start != null)
-      ? visual.colorRange.start
-      : (visual.color != null ? visual.color : 0xffffff);
-    const endHex = (visual.colorRange && visual.colorRange.end != null)
-      ? visual.colorRange.end
-      : (visual.color != null ? visual.color : startHex);
+    // ---------- COLOR RESOLUTION (broad compatibility) ----------
+    // CHANGED: find start/end colors across multiple common fields
+    const { startColorResolved, endColorResolved } = this._resolveColorPair(config, visual); // CHANGED
 
-    const initScale = (visual.scale != null) ? visual.scale : 16.0;
+    // ---------- SCALE / SPEED ----------
+    const scaleMul = (visual.scaleMultiplier != null ? visual.scaleMultiplier : 1.0);
+    const initScale = ((visual.scale != null) ? visual.scale : 16.0) * scaleMul;
+
+    const speedMulVisual = (visual.speedMultiplier != null ? visual.speedMultiplier : 1.0);
+    const speedMul = speedMulTop * speedMulVisual;
+
     const fadeOut = (visual.fadeOut === undefined) ? true : !!visual.fadeOut;
     const scaleOverTime = (visual.scaleOverTime === undefined) ? true : !!visual.scaleOverTime;
 
-    // CHANGED: Single material cannot vary blending per particle; if caller asks for Normal or Multiply,
-    // we switch the *global* material blending (best-effort). If you need per-effect blending,
-    // we can add a second InstancedMesh+material while still being very cheap.
+    // Per-effect blending (global switch for the single material)
     if (visual.blending) {
       const b = String(visual.blending).toLowerCase();
       const target =
-        b === 'normal'   ? THREE.NormalBlending :
+        b === 'additive' ? THREE.AdditiveBlending :
         b === 'multiply' ? THREE.MultiplyBlending :
-                           THREE.AdditiveBlending;
+                           THREE.NormalBlending;
       if (this.material.blending !== target) {
         this.material.blending = target;
         this.material.needsUpdate = true;
@@ -208,21 +197,30 @@ class ParticleSystem extends engine.BaseSystem {
     while (spawned < want && this.freeList.length > 0) {
       const i = this.freeList.pop();
 
-      // motion
-      this.positions[i].set(position.x, position.y, position.z);
-      this._writeTranslation(i, position.x, position.y, position.z);
+      const px = position.x;
+      const py = position.y + heightOffset;
+      const pz = position.z;
 
-      this.velocities[i].set(
-        rv(velocityRange.x[0], velocityRange.x[1]),
-        rv(velocityRange.y[0], velocityRange.y[1]),
-        rv(velocityRange.z[0], velocityRange.z[1])
-      );
+      this.positions[i].set(px, py, pz);
+      this._writeTranslation(i, px, py, pz);
+
+      const vx = rv(velocityRange.x[0], velocityRange.x[1]) * speedMul;
+      const vy = rv(velocityRange.y[0], velocityRange.y[1]) * speedMul;
+      const vz = rv(velocityRange.z[0], velocityRange.z[1]) * speedMul;
+      this.velocities[i].set(vx, vy, vz);
       this.gravityArr[i] = gravity;
       this.dragArr[i]    = drag;
 
-      // attributes
-      this._setColor3(this.aColorStart, i * 3, startHex); // CHANGED
-      this._setColor3(this.aColorEnd,   i * 3, endHex);   // CHANGED
+      // CHANGED: write resolved colors
+      const si = i * 3;
+      this.aColorStart[si    ] = startColorResolved.r;
+      this.aColorStart[si + 1] = startColorResolved.g;
+      this.aColorStart[si + 2] = startColorResolved.b;
+
+      this.aColorEnd[si    ] = endColorResolved.r;
+      this.aColorEnd[si + 1] = endColorResolved.g;
+      this.aColorEnd[si + 2] = endColorResolved.b;
+
       this.aLifetime[i]  = lifetime;
       this.aStartTime[i] = now;
       this.aInitScale[i] = initScale;
@@ -233,7 +231,6 @@ class ParticleSystem extends engine.BaseSystem {
       this.activeCount++;
     }
 
-    // mark buffers dirty
     this.attrColorStart.needsUpdate = true;
     this.attrColorEnd.needsUpdate   = true;
     this.attrLifetime.needsUpdate   = true;
@@ -243,7 +240,6 @@ class ParticleSystem extends engine.BaseSystem {
     this.mesh.instanceMatrix.needsUpdate = true;
   }
 
-  // CHANGED: keep same name used by EffectsSystem
   clearAllParticles() {
     if (!this.initialized) return;
     for (let i = 0; i < this.CAPACITY; i++) {
@@ -265,11 +261,10 @@ class ParticleSystem extends engine.BaseSystem {
 
     const dt = this.game?.state?.deltaTime || 0.016;
     const now = this._now();
-    this.material.uniforms.uTime.value = now;  // CHANGED: drive shader time
+    this.material.uniforms.uTime.value = now;
 
     if (this.activeCount === 0) return;
 
-    // CHANGED: slice updates to reduce CPU spikes
     const total = this.CAPACITY;
     let processed = 0;
     const target = Math.max(1, Math.floor(this.activeCount / this.UPDATE_STRIDE));
@@ -281,7 +276,6 @@ class ParticleSystem extends engine.BaseSystem {
       const life = this.aLifetime[i];
       if (life <= 0.0) continue;
 
-      // expire
       if ((now - this.aStartTime[i]) >= life) {
         this.aLifetime[i] = 0.0;
         this.attrLifetime.needsUpdate = true;
@@ -300,7 +294,6 @@ class ParticleSystem extends engine.BaseSystem {
         continue;
       }
 
-      // integrate motion (seconds-based)
       const vel = this.velocities[i];
       vel.y += this.gravityArr[i] * dt;
       vel.x *= this.dragArr[i];
@@ -328,12 +321,62 @@ class ParticleSystem extends engine.BaseSystem {
   }
 
   // ===== helpers =====
-  // CHANGED: hex -> rgb float triplet
-  _setColor3(buf, idx, hex) {
-    const c = new THREE.Color(hex);
-    buf[idx    ] = c.r;
-    buf[idx + 1] = c.g;
-    buf[idx + 2] = c.b;
+
+  // CHANGED: resolve *pair* of colors from many possible config shapes
+  _resolveColorPair(config, visual) {
+    // Try pairs first (most explicit)
+    const pairCandidates = [
+      visual?.colorRange,
+      config?.colorRange,
+      (visual && (visual.startColor || visual.endColor)) ? { start: visual.startColor, end: visual.endColor } : null,
+      (config && (config.startColor || config.endColor)) ? { start: config.startColor, end: config.endColor } : null
+    ].filter(Boolean);
+
+    for (const pair of pairCandidates) {
+      if (pair?.start != null && pair?.end != null) {
+        return {
+          startColorResolved: this._resolveColor(pair.start),
+          endColorResolved:   this._resolveColor(pair.end)
+        };
+      }
+    }
+
+    // Single color fallbacks (use same for start/end)
+    const singleCandidates = [
+      visual?.color,
+      config?.color
+    ].filter((v) => v != null);
+
+    if (singleCandidates.length) {
+      const c = this._resolveColor(singleCandidates[0]);
+      return { startColorResolved: c, endColorResolved: c };
+    }
+
+    // Default white
+    const white = { r: 1, g: 1, b: 1 };
+    return { startColorResolved: white, endColorResolved: white };
+  }
+
+  // Normalize many color forms to {r,g,b} floats (0..1)
+  _resolveColor(input) {
+    if (input instanceof THREE.Color) {
+      return { r: input.r, g: input.g, b: input.b };
+    }
+    if (typeof input === 'number' || typeof input === 'string') {
+      const c = new THREE.Color(input);
+      return { r: c.r, g: c.g, b: c.b };
+    }
+    if (Array.isArray(input) && input.length >= 3) {
+      let [r, g, b] = input;
+      if (r > 1 || g > 1 || b > 1) { r /= 255; g /= 255; b /= 255; }
+      return { r, g, b };
+    }
+    if (input && typeof input === 'object' && 'r' in input && 'g' in input && 'b' in input) {
+      let { r, g, b } = input;
+      if (r > 1 || g > 1 || b > 1) { r /= 255; g /= 255; b /= 255; }
+      return { r, g, b };
+    }
+    return { r: 1, g: 1, b: 1 };
   }
 
   _now() {

@@ -25,7 +25,6 @@ class RenderSystem extends engine.BaseSystem {
         };
 
         this._bindDebugHelpers();
-        console.log('[RenderSystem] VAT-only rendering system initialized');
     }
 
     _bindDebugHelpers() {
@@ -47,9 +46,6 @@ class RenderSystem extends engine.BaseSystem {
         this.updateAnimations();
         this.finalizeUpdates();
 
-        if (this.DEBUG && this._frame % 60 === 0) {
-            console.log(`[RenderSystem] Frame ${this._frame}: ${this._stats.entitiesProcessed} entities, ${this._stats.batchesActive} batches`);
-        }
     }
 
     updateEntities() {
@@ -97,8 +93,7 @@ class RenderSystem extends engine.BaseSystem {
     }
 
     async createInstance(entityId, objectType, spawnType) {
-        console.log(`[RenderSystem] createInstance called for entity ${entityId} with ${objectType}_${spawnType}`);
-
+   
         if (typeof spawnType !== 'string') {
             console.error(`[RenderSystem] CRITICAL: spawnType should be string but got ${typeof spawnType}:`, spawnType);
             return null;
@@ -111,15 +106,12 @@ class RenderSystem extends engine.BaseSystem {
         if (!batch) {
             // Check if batch is currently being created
             if (this.batchCreationPromises && this.batchCreationPromises.has(batchKey)) {
-                console.log(`[RenderSystem] Waiting for batch creation: ${batchKey}`);
                 try {
                     batch = await this.batchCreationPromises.get(batchKey);
                 } catch (error) {
-                    console.error(`[RenderSystem] Batch creation failed for ${batchKey}:`, error);
                     return null;
                 }
             } else {
-                console.log(`[RenderSystem] Creating new batch for ${batchKey}`);
                 
                 // Track batch creation promise to prevent race conditions
                 if (!this.batchCreationPromises) this.batchCreationPromises = new Map();
@@ -138,10 +130,21 @@ class RenderSystem extends engine.BaseSystem {
             }
         }
 
-        // Find free slot
+        // Verify batch was created successfully
+        if (!batch) {
+            console.error(`[RenderSystem] Batch is null/undefined for ${batchKey}`);
+            return null;
+        }
+
+        if (!batch.capacity) {
+            console.error(`[RenderSystem] Batch has no capacity property:`, batch);
+            return null;
+        }
+
+        // Find free slot with verification
         let instanceIndex = -1;
         for (let i = 0; i < batch.capacity; i++) {
-            if (!batch.entityMap.has(i)) {
+            if (!batch.entityMap.has(i)) {               
                 instanceIndex = i;
                 break;
             }
@@ -158,25 +161,30 @@ class RenderSystem extends engine.BaseSystem {
         batch.entityMap.set(instanceIndex, entityId);
         batch.count = Math.max(batch.count, instanceIndex + 1);
         batch.mesh.count = batch.count;
-
-        // CRITICAL: Initialize VAT attributes for this instance
-        batch.attributes.clipIndex.setX(instanceIndex, 0); // Start with idle (clip 0)
-        batch.attributes.animTime.setX(instanceIndex, 0);
-        batch.attributes.animSpeed.setX(instanceIndex, 1);
-        batch.dirty.animation = true;
+        // CRITICAL: Force-initialize VAT attributes with verification
+        if (batch.attributes && batch.attributes.clipIndex) {
+      
+            // Use both methods to ensure it's set correctly  
+            batch.attributes.clipIndex.setX(instanceIndex, 0); // Start with idle (clip 0)
+            batch.attributes.animTime.setX(instanceIndex, 0);
+            batch.attributes.animSpeed.setX(instanceIndex, 1);
+            
+            // Also directly set array values to be sure
+            batch.attributes.clipIndex.array[instanceIndex] = 0;
+            batch.attributes.animTime.array[instanceIndex] = 0;
+            batch.attributes.animSpeed.array[instanceIndex] = 1;
+            
+            batch.dirty.animation = true; 
+        }
 
         const instance = { batchKey, instanceIndex };
         this.entityToInstance.set(entityId, instance);
         this._stats.instancesCreated++;
 
-        console.log(`[RenderSystem] Successfully created instance for entity ${entityId} in batch ${batchKey} at index ${instanceIndex}`);
-        console.log(`[RenderSystem] Batch ${batchKey} now has ${batch.entityMap.size} active instances`);
-        
+    
         return instance;
     }
-
     async createVATBatch(batchKey, objectType, spawnType) {
-        console.log(`[RenderSystem] Creating VAT batch: ${batchKey}`);
 
         // Get unit definition - handle both string and numeric spawnTypes
         const collections = this.game.getCollections?.();
@@ -189,7 +197,6 @@ class RenderSystem extends engine.BaseSystem {
                 if (spawnType < unitKeys.length) {
                     const unitKey = unitKeys[spawnType];
                     unitDef = collections.units[unitKey];
-                    console.log(`[RenderSystem] Mapped numeric spawnType ${spawnType} to unit key '${unitKey}'`);
                 }
             }
             if (!unitDef) {
@@ -199,12 +206,12 @@ class RenderSystem extends engine.BaseSystem {
         
         if (!unitDef) {
             console.error(`[RenderSystem] No unit definition found for spawnType: ${spawnType} (type: ${typeof spawnType})`);
-            console.log(`[RenderSystem] Available units:`, collections?.units ? Object.keys(collections.units) : 'No units collection');
             return null;
         }
 
+       
+
         // Request VAT bundle from ModelManager
-        console.log(`[RenderSystem] Requesting VAT bundle for ${batchKey}`);
         let bundleResult;
         try {
             bundleResult = await this.game.modelManager.requestVATBundle(objectType, spawnType, unitDef);
@@ -213,7 +220,6 @@ class RenderSystem extends engine.BaseSystem {
             return null;
         }
         
-        console.log(`[RenderSystem] VAT bundle result for ${batchKey}:`, bundleResult);
         
         if (!bundleResult.ready) {
             console.warn(`[RenderSystem] VAT bundle not ready for ${batchKey}`);
@@ -235,17 +241,52 @@ class RenderSystem extends engine.BaseSystem {
             return null;
         }
 
-        console.log(`[RenderSystem] VAT bundle validated for ${batchKey}:`, {
-            geometry: bundle.geometry.type,
-            material: bundle.material.type,
-            clipCount: bundle.meta?.clips?.length
-        });
+        
+        if (bundle.meta) {
+
+         
+            // VERIFY essential animations exist
+            const requiredClips = ['idle', 'walk', 'death', 'attack'];
+            const availableClips = Object.keys(bundle.meta.clipIndexByName || {});
+            const missingRequired = requiredClips.filter(clip => !availableClips.includes(clip));
+        
+            if (missingRequired.length > 0) {
+                console.warn(`[RenderSystem] WARNING: Missing essential animations for ${batchKey}:`, missingRequired);
+            }
+            
+            // CROSS-REFERENCE clips array with clipIndexByName mapping
+            if (bundle.meta.clips && bundle.meta.clipIndexByName) {
+                bundle.meta.clips.forEach((clip, arrayIndex) => {
+                    const mappedIndex = bundle.meta.clipIndexByName[clip.name];
+                    const match = mappedIndex === arrayIndex;
+                    if (!match) {
+                        console.error(`[RenderSystem] METADATA CORRUPTION: Clip "${clip.name}" index mismatch!`);
+                    }
+                });
+            }
+        } else {
+            console.error(`[RenderSystem] CRITICAL: No meta object in VAT bundle for ${batchKey}`);
+        }
+
 
         // Create instanced mesh - DON'T clone the VAT material
         const geometry = bundle.geometry.clone();
         const material = bundle.material; // Use original material, don't clone
         const capacity = this.DEFAULT_CAPACITY;
 
+
+        // IMPORTANT: Force each material to have unique uniforms
+        material.uuid = THREE.MathUtils.generateUUID(); // Force unique ID
+        material.needsUpdate = true; // Force recompilation
+
+        // Add debug identifier to help track material usage
+        material.userData = {
+            batchKey: batchKey,
+            createdAt: Date.now(),
+            vatTexture: bundle.meta.vatTextureId || 'unknown'
+        };
+
+      
         // Add instanced attributes for VAT
         this.setupVATAttributes(geometry, capacity);
 
@@ -267,8 +308,8 @@ class RenderSystem extends engine.BaseSystem {
 
         // Add to scene
         this.game.scene.add(mesh);
-
-        // Create batch data
+     
+        // Create batch data with enhanced debugging info
         const batch = {
             mesh,
             capacity,
@@ -280,30 +321,56 @@ class RenderSystem extends engine.BaseSystem {
                 animSpeed: geometry.getAttribute('aAnimSpeed')
             },
             meta: bundle.meta,
+            bundleSource: `${objectType}_${spawnType}`, // Track source for debugging
+            createdAt: Date.now(),
+            spawnType,
+            objectType,
             dirty: {
                 matrices: false,
                 animation: false
             }
         };
 
+        // VALIDATE batch attributes were created correctly
+   
+        // INITIALIZE all attribute slots to safe defaults
+        for (let i = 0; i < capacity; i++) {
+            batch.attributes.clipIndex.setX(i, 0); // Default to first clip (usually idle)
+            batch.attributes.animTime.setX(i, 0);
+            batch.attributes.animSpeed.setX(i, 1);
+        }
+        batch.dirty.animation = true;
+
         this.vatBatches.set(batchKey, batch);
         this._stats.batchesActive = this.vatBatches.size;
 
-        console.log(`[RenderSystem] Created VAT batch ${batchKey} with ${capacity} capacity`);
-        console.log(`[RenderSystem] Available clips:`, Object.keys(bundle.meta.clipIndexByName));
-
+  
         return batch;
     }
 
+
     setupVATAttributes(geometry, capacity) {
         // Create VAT animation attributes
-        const clipIndexArray = new Float32Array(capacity).fill(0); // Default to first clip
+        const clipIndexArray = new Float32Array(capacity).fill(0);
         const animTimeArray = new Float32Array(capacity).fill(0);
         const animSpeedArray = new Float32Array(capacity).fill(1);
 
-        geometry.setAttribute('aClipIndex', new THREE.InstancedBufferAttribute(clipIndexArray, 1));
-        geometry.setAttribute('aAnimTime', new THREE.InstancedBufferAttribute(animTimeArray, 1));
-        geometry.setAttribute('aAnimSpeed', new THREE.InstancedBufferAttribute(animSpeedArray, 1));
+        // CRITICAL: Set up instanced buffer attributes with correct divisor
+        const clipIndexAttr = new THREE.InstancedBufferAttribute(clipIndexArray, 1);
+        const animTimeAttr = new THREE.InstancedBufferAttribute(animTimeArray, 1);
+        const animSpeedAttr = new THREE.InstancedBufferAttribute(animSpeedArray, 1);
+        
+        // IMPORTANT: Force the attributes to update initially
+        clipIndexAttr.setUsage(THREE.DynamicDrawUsage);
+        animTimeAttr.setUsage(THREE.DynamicDrawUsage);
+        animSpeedAttr.setUsage(THREE.DynamicDrawUsage);
+        
+        // Set attributes on geometry
+        geometry.setAttribute('aClipIndex', clipIndexAttr);
+        geometry.setAttribute('aAnimTime', animTimeAttr);
+        geometry.setAttribute('aAnimSpeed', animSpeedAttr);
+        
+   
     }
 
     updateInstanceTransform(instance, pos, velocity, facing) {
@@ -333,7 +400,7 @@ class RenderSystem extends engine.BaseSystem {
     }
 
     updateAnimations() {
-        const dt = this.game.state?.deltaTime || 1/60;
+        const dt = this.game.state?.deltaTime;
 
         for (const [batchKey, batch] of this.vatBatches) {
             const clipIndexAttr = batch.attributes.clipIndex;
@@ -376,50 +443,101 @@ class RenderSystem extends engine.BaseSystem {
                 batch.dirty.matrices = false;
             }
             
-            if (batch.dirty.animation) {
-                // FIXED: InstancedBufferAttribute updates work differently
-                // We need to increment the version number to trigger GPU update
-                if (batch.attributes.clipIndex) {
+          //  if (batch.dirty.animation) {
+                // Calculate the actual range that needs updating
+                const updateCount = Math.min(batch.count, batch.capacity);
+                
+                if (batch.attributes.clipIndex && updateCount > 0) {
+                    batch.attributes.clipIndex.needsUpdate = true;
                     batch.attributes.clipIndex.version++;
+                    batch.attributes.clipIndex.addUpdateRange(0, updateCount);
+                    batch.mesh.geometry.attributes.aClipIndex.needsUpdate = true;
                 }
-                if (batch.attributes.animTime) {
+                if (batch.attributes.animTime && updateCount > 0) {
+                    batch.attributes.animTime.needsUpdate = true;
                     batch.attributes.animTime.version++;
+                    batch.attributes.animTime.addUpdateRange(0, updateCount);
+                    batch.mesh.geometry.attributes.aAnimTime.needsUpdate = true;
                 }
-                if (batch.attributes.animSpeed) {
+                if (batch.attributes.animSpeed && updateCount > 0) {
+                    batch.attributes.animSpeed.needsUpdate = true;
                     batch.attributes.animSpeed.version++;
+                    batch.attributes.animSpeed.addUpdateRange(0, updateCount);
+                    batch.mesh.geometry.attributes.aAnimSpeed.needsUpdate = true;
                 }
                 batch.dirty.animation = false;
-                
-                if (this.DEBUG_LEVEL >= 3) {
-                    console.log(`[RenderSystem] Updated VAT attribute versions`);
-                }
-            }
+          //  }
         }
     }
 
-    // Animation control methods
+        // Animation control methods
     setInstanceClip(entityId, clipName, resetTime = true) {
         const instance = this.entityToInstance.get(entityId);
-        if (!instance) return false;
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return false;
-
-        const clipIndex = batch.meta.clipIndexByName[clipName];
-        if (clipIndex === undefined) {
-            console.warn(`[RenderSystem] Clip '${clipName}' not found in batch ${instance.batchKey}. Available:`, Object.keys(batch.meta.clipIndexByName));
+        if (!instance) {
+            console.warn(`[RenderSystem] No instance found for entity ${entityId}`);
             return false;
         }
 
+        const batch = this.vatBatches.get(instance.batchKey);
+        if (!batch) {
+            console.warn(`[RenderSystem] No batch found for key ${instance.batchKey}`);
+            return false;
+        }
+
+        const clipIndex = batch.meta.clipIndexByName[clipName];
+        if (clipIndex === undefined) {
+            console.warn(`[RenderSystem] Clip '${clipName}' not found in batch ${instance.batchKey}.`);
+            console.warn(`Available:`, Object.keys(batch.meta.clipIndexByName));
+            
+            // ADDITIONAL DEBUG: Check if the batch has the right clips
+            console.warn(`  - Batch meta clips array:`, batch.meta.clips?.map(c => c.name || 'unnamed'));
+            console.warn(`  - Bundle source:`, batch.bundleSource || 'unknown');
+            
+            return false;
+        }
+
+
+        // CRITICAL: Verify the instance slot before writing
+        const currentClipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
+        const currentEntity = batch.entityMap.get(instance.instanceIndex);
+        
+   
+        if (currentEntity !== entityId) {
+            console.error(`[RenderSystem] SLOT CORRUPTION! Slot ${instance.instanceIndex} maps to ${currentEntity} but trying to write for ${entityId}`);
+            // Try to recover by finding the correct slot
+            let correctSlot = -1;
+            for (const [slot, mappedEntityId] of batch.entityMap.entries()) {
+                if (mappedEntityId === entityId) {
+                    correctSlot = slot;
+                    break;
+                }
+            }
+            if (correctSlot !== -1) {
+                console.warn(`[RenderSystem] RECOVERY: Found correct slot ${correctSlot} for entity ${entityId}`);
+                instance.instanceIndex = correctSlot;
+                this.entityToInstance.set(entityId, instance);
+            } else {
+                console.error(`[RenderSystem] CORRUPTION: Entity ${entityId} not found in any slot!`);
+                return false;
+            }
+        }
+        // Set the attribute with dual method approach
         batch.attributes.clipIndex.setX(instance.instanceIndex, clipIndex);
+        batch.attributes.clipIndex.array[instance.instanceIndex] = clipIndex;
+        
         if (resetTime) {
             batch.attributes.animTime.setX(instance.instanceIndex, 0);
+            batch.attributes.animTime.array[instance.instanceIndex] = 0;
         }
         batch.dirty.animation = true;
 
-        if (this.DEBUG_LEVEL >= 2) {
-            console.log(`[RenderSystem] Set clip '${clipName}' (${clipIndex}) for entity ${entityId}`);
+        // VERIFY the write was successful
+        const verifyClipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
+  
+        if (verifyClipIndex !== clipIndex) {
+            console.error(`[RenderSystem] WRITE FAILED! Expected ${clipIndex} but got ${verifyClipIndex}`);
         }
+
         return true;
     }
 
@@ -433,34 +551,50 @@ class RenderSystem extends engine.BaseSystem {
         batch.attributes.animSpeed.setX(instance.instanceIndex, speed);
         batch.dirty.animation = true;
 
-        if (this.DEBUG_LEVEL >= 3) {
-            console.log(`[RenderSystem] Set speed ${speed} for entity ${entityId}`);
-        }
+    
         return true;
     }
 
     getInstanceAnimationState(entityId) {
         const instance = this.entityToInstance.get(entityId);
-        if (!instance) return null;
+        if (!instance) {
+        
+            return null;
+        }
 
         const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return null;
+        if (!batch) {
+      
+            return null;
+        }
 
-        const clipIndex = batch.attributes.clipIndex.getX(instance.instanceIndex);
-        const animTime = batch.attributes.animTime.getX(instance.instanceIndex);
-        const animSpeed = batch.attributes.animSpeed.getX(instance.instanceIndex);
+        try {
+            // Use .array[] access instead of .getX() - this might be the issue
+            const clipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
+            const animTime = batch.attributes.animTime.array[instance.instanceIndex];
+            const animSpeed = batch.attributes.animSpeed.array[instance.instanceIndex];
 
-        const clipName = Object.keys(batch.meta.clipIndexByName).find(
-            name => batch.meta.clipIndexByName[name] === clipIndex
-        );
+            // Validate the values
+            if (clipIndex === undefined || clipIndex === null) {
+            
+                return null;
+            }
 
-        return {
-            clipName,
-            clipIndex,
-            animTime,
-            animSpeed,
-            clipDuration: batch.meta.clips[clipIndex]?.duration || 1.0
-        };
+            const clipName = Object.keys(batch.meta.clipIndexByName).find(
+                name => batch.meta.clipIndexByName[name] === clipIndex
+            );
+
+
+            return {
+                clipName,
+                clipIndex,
+                animTime,
+                animSpeed,
+                clipDuration: batch.meta.clips[clipIndex]?.duration || 1.0
+            };
+        } catch (error) {
+            return null;
+        }
     }
 
     cleanupRemovedEntities(currentEntities) {
@@ -484,27 +618,41 @@ class RenderSystem extends engine.BaseSystem {
         const batch = this.vatBatches.get(instance.batchKey);
         if (!batch) return;
 
+        // Verify the entity mapping before removal
+        const mappedEntity = batch.entityMap.get(instance.instanceIndex);
+        if (mappedEntity !== entityId) {
+            console.error(`[RenderSystem] CORRUPTION DETECTED! Instance ${instance.instanceIndex} maps to ${mappedEntity} but trying to remove ${entityId}`);
+        }
+
         // Remove from entity map
         batch.entityMap.delete(instance.instanceIndex);
         this.entityToInstance.delete(entityId);
 
-        // Hide the instance by setting scale to 0
+        // IMPORTANT: Completely clear the instance slot
         const matrix = new THREE.Matrix4();
         matrix.scale(new THREE.Vector3(0, 0, 0));
         batch.mesh.setMatrixAt(instance.instanceIndex, matrix);
         batch.dirty.matrices = true;
 
-        // Reset animation attributes
+        // CRITICAL: Reset animation attributes with verification
+        const oldClipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
+        const oldAnimTime = batch.attributes.animTime.array[instance.instanceIndex];
+        const oldAnimSpeed = batch.attributes.animSpeed.array[instance.instanceIndex];
+        
+        // Use both methods to ensure it's cleared
         batch.attributes.clipIndex.setX(instance.instanceIndex, 0);
         batch.attributes.animTime.setX(instance.instanceIndex, 0);
         batch.attributes.animSpeed.setX(instance.instanceIndex, 0);
+        
+        // Also directly set array values to be sure
+        batch.attributes.clipIndex.array[instance.instanceIndex] = 0;
+        batch.attributes.animTime.array[instance.instanceIndex] = 0;
+        batch.attributes.animSpeed.array[instance.instanceIndex] = 0;
+        
         batch.dirty.animation = true;
 
         this._stats.instancesRemoved++;
         
-        if (this.DEBUG_LEVEL >= 2) {
-            console.log(`[RenderSystem] Removed instance for entity ${entityId} from ${instance.batchKey}`);
-        }
     }
 
     // Utility methods
@@ -540,7 +688,6 @@ class RenderSystem extends engine.BaseSystem {
                 entityMappings: Array.from(batch.entityMap.entries())
             });
         }
-        console.log('[RenderSystem] VAT Batches:', batches);
         return batches;
     }
 
@@ -555,12 +702,10 @@ class RenderSystem extends engine.BaseSystem {
                 animationState: state
             });
         }
-        console.log('[RenderSystem] Active Instances:', instances);
         return instances;
     }
 
     destroy() {
-        console.log('[RenderSystem] Destroying VAT render system');
         
         // Remove all meshes from scene
         for (const batch of this.vatBatches.values()) {
@@ -575,6 +720,47 @@ class RenderSystem extends engine.BaseSystem {
         this.vatBatches.clear();
         this.entityToInstance.clear();
         
-        console.log('[RenderSystem] Cleanup complete');
     }
+   // Add this method to RenderSystem.js
+debugAttributeUpdates(entityId) {
+    const instance = this.entityToInstance.get(entityId);
+    if (!instance) {
+        console.log(`❌ No instance found for entity ${entityId}`);
+        return;
+    }
+
+    const batch = this.vatBatches.get(instance.batchKey);
+    if (!batch) {
+        console.log(`❌ No batch found for ${instance.batchKey}`);
+        return;
+    }
+
+    console.log(`🔍 Debug attribute updates for entity ${entityId}:`);
+    console.log(`  - Instance index: ${instance.instanceIndex}`);
+    console.log(`  - Batch key: ${instance.batchKey}`);
+    
+    // Check attribute values
+    const clipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
+    const animTime = batch.attributes.animTime.array[instance.instanceIndex];
+    const animSpeed = batch.attributes.animSpeed.array[instance.instanceIndex];
+    
+    console.log(`  - clipIndex: ${clipIndex}`);
+    console.log(`  - animTime: ${animTime}`);
+    console.log(`  - animSpeed: ${animSpeed}`);
+    
+    // Check if attributes need update
+ const geometry = batch.mesh.geometry;
+    console.log(`  - clipIndex needsUpdate: ${geometry.attributes.aClipIndex?.needsUpdate}`);
+    console.log(`  - clipIndex version: ${geometry.attributes.aClipIndex?.version}`);
+    
+    
+    // Find the clip name
+    const availableClips = Object.keys(batch.meta.clipIndexByName);
+    const clipName = Object.keys(batch.meta.clipIndexByName).find(
+        name => batch.meta.clipIndexByName[name] === clipIndex
+    );
+    
+    console.log(`  - Should be playing: ${clipName || 'unknown'}`);
+    console.log(`  - Available clips: ${availableClips.join(', ')}`);
+}
 }

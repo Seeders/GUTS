@@ -13,6 +13,7 @@ class DeathSystem extends engine.BaseSystem {
             
             if (deathState.isDying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
+                
                 // Remove health (corpses can't be damaged)
                 if (this.game.hasComponent(entityId, this.componentTypes.HEALTH)) {
                     this.game.removeComponent(entityId, this.componentTypes.HEALTH);
@@ -22,12 +23,36 @@ class DeathSystem extends engine.BaseSystem {
                 if (this.game.hasComponent(entityId, this.componentTypes.VELOCITY)) {
                     this.game.removeComponent(entityId, this.componentTypes.VELOCITY);
                 }
-                // Check if death animation is complete
-                if (timeSinceDeath >= deathState.deathAnimationDuration) {
+                
+                // NEW: Check if animation system says death animation is complete
+                const animationCompleted = this.isDeathAnimationCompleted(entityId);
+                
+                // Convert to corpse when EITHER timer expires OR animation completes (whichever comes first)
+                const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration;
+                
+                if (animationCompleted || timerExpired) {
+                    console.log(`[DeathSystem] 💀 Converting entity ${entityId} to corpse:`);
+                    console.log(`  - Timer expired: ${timerExpired} (${timeSinceDeath.toFixed(2)}s / ${deathState.deathAnimationDuration}s)`);
+                    console.log(`  - Animation completed: ${animationCompleted}`);
                     this.convertToCorpse(entityId);
                 }
             }
         });
+    }
+    
+    // NEW: Check if death animation is completed via AnimationSystem
+    isDeathAnimationCompleted(entityId) {
+        if (!this.game.animationSystem) return false;
+        
+        const animState = this.game.animationSystem.entityAnimationStates?.get(entityId);
+        if (!animState) return false;
+        
+        // Only check if entity is currently dying and playing death animation
+        if (!animState.isDying) return false;
+        if (animState.currentClip !== 'death' && animState.currentClip !== 'die') return false;
+        
+        // Check if the animation system considers the death animation finished
+        return this.game.animationSystem.isAnimationFinished(entityId, animState.currentClip);
     }
     
     convertToCorpse(entityId) {
@@ -41,6 +66,11 @@ class DeathSystem extends engine.BaseSystem {
         
         if (!position || !unitType || !team) return;
         
+        // CRITICAL: Notify AnimationSystem FIRST to set corpse state
+        if (this.game.animationSystem && this.game.animationSystem.setCorpseAnimation) {
+            this.game.animationSystem.setCorpseAnimation(entityId);
+        }
+        
         // Remove death state
         this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        
         
@@ -51,13 +81,10 @@ class DeathSystem extends engine.BaseSystem {
             team.team
         ));
         
-        // Update renderable to use corpse appearance if available
-        if (renderable && this.game.animationSystem && this.game.animationSystem.setCorpseAnimation) {
-            this.game.animationSystem.setCorpseAnimation(entityId);
-        }
+        console.log(`[DeathSystem] ✅ Converted entity ${entityId} to corpse`);
     }
     
-    // Utility methods for abilities
+    // Rest of your existing methods remain the same...
     getCorpsesInRange(position, range, teamFilter = null) {
         const corpses = this.game.getEntitiesWith(this.componentTypes.CORPSE);
         const nearbyCorpses = [];
