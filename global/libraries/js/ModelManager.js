@@ -158,8 +158,11 @@ class ModelManager {
             throw new Error(`VAT baking failed for: ${key}`);
         }
 
+        // Add clipIndexByName to vatData before passing to material creation
+        vatData.clipIndexByName = this._buildClipIndexMap(vatData.clips);
+
         // Create VAT-enabled material
-        const material = this._createVATMaterial(skinnedMesh, vatData);
+        const material = this._createVATMaterial(skinnedMesh, vatData, key);
 
         // Prepare geometry (clone to avoid modifying master)
         const geometry = skinnedMesh.geometry.clone();
@@ -179,6 +182,11 @@ class ModelManager {
         this._ensureFloatAttribute(geometry, 'aAnimTime', 1, 0.0);
         this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
 
+        // Debug before returning
+        console.log('vatData.clips before clipIndexByName:', vatData.clips);
+        const clipIndexByName = this._buildClipIndexMap(vatData.clips);
+        console.log('Generated clipIndexByName:', clipIndexByName);
+
         return {
             geometry,
             material,
@@ -188,7 +196,7 @@ class ModelManager {
                 cols: vatData.cols,
                 rows: vatData.rows,
                 clips: vatData.clips,
-                clipIndexByName: this._buildClipIndexMap(vatData.clips)
+                clipIndexByName: clipIndexByName
             }
         };
     }
@@ -357,7 +365,7 @@ class ModelManager {
         };
     }
 
-    _createVATMaterial(baseMesh, vatData) {
+    _createVATMaterial(baseMesh, vatData, batchKey = 'unknown') {
         // Get base material properties
         const sourceMaterial = Array.isArray(baseMesh.material)
             ? baseMesh.material[0]
@@ -372,8 +380,7 @@ class ModelManager {
             transparent: false
         });
 
-                // Add VAT shader modifications
-        // inside _createVATMaterial(baseMesh, vatData) just before returning `material`
+        // Add VAT shader modifications
         material.side = THREE.DoubleSide;           // helps if any frames flip winding
         material.metalness = sourceMaterial?.metalness ?? 0.05; // less metal, easier to see
         material.roughness = sourceMaterial?.roughness ?? 0.9;  // more diffuse light
@@ -381,34 +388,59 @@ class ModelManager {
         vatData.texture.magFilter = THREE.NearestFilter;
         vatData.texture.minFilter = THREE.NearestFilter;
 
+        // Force unique shader compilation per batch
+        material.userData.batchKey = batchKey;
+        material.customProgramCacheKey = () => batchKey;
+
         material.onBeforeCompile = (shader) => {
             shader.uniforms.uVATTexture = { value: vatData.texture };
             shader.uniforms.uVATCols    = { value: vatData.cols };
             shader.uniforms.uVATRows    = { value: vatData.rows };
             shader.uniforms.uVATFPS     = { value: vatData.fps };
 
+            // FIXED: Generate unique defines per batch to prevent cross-batch contamination
+            const batchPrefix = batchKey.toUpperCase().replace(/[^A-Z0-9]/g, '_');
             const clipDefines = vatData.clips.map((clip, index) => `
-                #define CLIP_${index}_START ${clip.startRow}.0
-                #define CLIP_${index}_FRAMES ${clip.frames}.0
+                #define ${batchPrefix}_CLIP_${index}_START ${clip.startRow}.0
+                #define ${batchPrefix}_CLIP_${index}_FRAMES ${clip.frames}.0
             `).join('\n');
+
+            // *** DEBUG CODE ***
+            console.log(`[VAT Debug] Clip mapping for ${batchKey}:`);
+            console.log('vatData.clipIndexByName:', vatData.clipIndexByName);
+            console.log('clips array order:', vatData.clips.map((c, i) => `${i}: ${c.name}`));
+            
+            // Verify each clip's shader define
+            Object.entries(vatData.clipIndexByName || {}).forEach(([name, index]) => {
+                const clip = vatData.clips[index];
+                if (clip) {
+                    console.log(`${name}(${index}) -> startRow:${clip.startRow}, frames:${clip.frames}`);
+                } else {
+                    console.error(`No clip found at index ${index} for ${name}`);
+                }
+            });
 
             const clipHelpers = `
                 float getClipStartRow(float clipIndex) {
-                ${vatData.clips.map((clip, i) => `if (abs(clipIndex - ${i}.0) < 0.5) return CLIP_${i}_START;`).join('\n')}
-                return CLIP_0_START;
+                    ${vatData.clips.map((clip, i) => 
+                        `if (abs(clipIndex - ${i}.0) < 0.5) return ${batchPrefix}_CLIP_${i}_START;`
+                    ).join('\n                    ')}
+                    return ${batchPrefix}_CLIP_0_START;
                 }
                 float getClipFrames(float clipIndex) {
-                ${vatData.clips.map((clip, i) => `if (abs(clipIndex - ${i}.0) < 0.5) return CLIP_${i}_FRAMES;`).join('\n')}
-                return CLIP_0_FRAMES;
+                    ${vatData.clips.map((clip, i) => 
+                        `if (abs(clipIndex - ${i}.0) < 0.5) return ${batchPrefix}_CLIP_${i}_FRAMES;`
+                    ).join('\n                    ')}
+                    return ${batchPrefix}_CLIP_0_FRAMES;
                 }
                 mat4 sampleVATMatrix(float row, float boneIndex) {
-                float boneColStart = boneIndex * 4.0;
-                float v = (row + 0.5) / uVATRows;
-                vec4 c0 = texture2D(uVATTexture, vec2((boneColStart + 0.5) / uVATCols, v));
-                vec4 c1 = texture2D(uVATTexture, vec2((boneColStart + 1.5) / uVATCols, v));
-                vec4 c2 = texture2D(uVATTexture, vec2((boneColStart + 2.5) / uVATCols, v));
-                vec4 c3 = texture2D(uVATTexture, vec2((boneColStart + 3.5) / uVATCols, v));
-                return mat4(c0, c1, c2, c3);  // columns
+                    float boneColStart = boneIndex * 4.0;
+                    float v = (row + 0.5) / uVATRows;
+                    vec4 c0 = texture2D(uVATTexture, vec2((boneColStart + 0.5) / uVATCols, v));
+                    vec4 c1 = texture2D(uVATTexture, vec2((boneColStart + 1.5) / uVATCols, v));
+                    vec4 c2 = texture2D(uVATTexture, vec2((boneColStart + 2.5) / uVATCols, v));
+                    vec4 c3 = texture2D(uVATTexture, vec2((boneColStart + 3.5) / uVATCols, v));
+                    return mat4(c0, c1, c2, c3);  // columns
                 }
             `;
 
@@ -571,4 +603,3 @@ class ModelManager {
         return this.vatBundles.get(`${objectType}_${spawnType}`);
     }
 }
-
