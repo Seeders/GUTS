@@ -14,14 +14,11 @@ class AnimationSystem extends engine.BaseSystem {
 
         // Single-play animations (play once then stop/transition)
         this.SINGLE_PLAY_ANIMATIONS = new Set([
-            'attack', 'cast', 'death'
+            'attack', 'combat', 'fight', 'swing', 'strike',
+            'shoot', 'bow', 'aim', 'fire', 'cast', 'spell', 'magic',
+            'throw', 'leap', 'jump', 'hurt', 'damage', 'hit', 'pain',
+            'death', 'die', 'celebrate', 'victory', 'cheer', 'dance'
         ]);
-        // Debug
-        this.DEBUG = true;
-        this.DEBUG_LEVEL = 2; // Increased for testing
-        
-        // Debug tracking
-        this.debuggedEntities = new Set();
 
     }
 
@@ -42,8 +39,6 @@ class AnimationSystem extends engine.BaseSystem {
             const health = this.game.getComponent(entityId, CT.HEALTH);
             const combat = this.game.getComponent(entityId, CT.COMBAT);
             const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-            const death = this.game.getComponent(entityId, CT.DEATH_STATE);
-            const corpse = this.game.getComponent(entityId, CT.CORPSE);
 
             // Ensure entity has animation state
             if (!this.entityAnimationStates.has(entityId)) {
@@ -51,7 +46,7 @@ class AnimationSystem extends engine.BaseSystem {
             }
 
             // Update animation logic
-            this.updateEntityAnimationLogic(entityId, velocity, health, combat, death, corpse, aiState);
+            this.updateEntityAnimationLogic(entityId, velocity, health, combat, aiState);
         });
 
         // Clean up removed entities
@@ -68,6 +63,9 @@ class AnimationSystem extends engine.BaseSystem {
             pendingSpeed: null,
             pendingMinTime: null,
             isTriggered: false,
+            isDying: false,
+            isCorpse: false,
+            isCelebrating: false,
             // NEW: Track fallback usage to prevent thrashing
             lastRequestedClip: null,    // What was originally requested
             lastResolvedClip: null,     // What actually got set
@@ -82,7 +80,7 @@ class AnimationSystem extends engine.BaseSystem {
 
     }
 
-    updateEntityAnimationLogic(entityId, velocity, health, combat, death, corpse, aiState) {
+    updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState) return;
 
@@ -90,6 +88,26 @@ class AnimationSystem extends engine.BaseSystem {
         const deltaTime = this.game.state?.deltaTime || 1/60;
         animState.animationTime += deltaTime;
 
+        // DEBUG: Check for death/corpse state changes
+        const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
+        const corpse = this.game.getComponent(entityId, this.componentTypes.CORPSE);
+        
+
+
+        // NEW: Handle animation completion for locked states
+        if (animState.isDying || animState.isCorpse || animState.isCelebrating) {
+            // Handle celebration completion ONLY
+            if (animState.isCelebrating && this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
+                const isFinished = this.isAnimationFinished(entityId, animState.currentClip);
+                
+                if (isFinished) {
+                    this.stopCelebration(entityId);
+                    return;
+                }
+            }
+            
+            return; // Still locked, don't process normal animation logic
+        }
         // Handle pending triggered animations (from external calls)
         if (animState.isTriggered && animState.pendingClip) {
             this.applyTriggeredAnimation(entityId, animState);
@@ -97,7 +115,7 @@ class AnimationSystem extends engine.BaseSystem {
         }
 
         // Determine desired animation based on game state
-        const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, death, corpse, aiState);
+        const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, aiState);
         
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
@@ -110,15 +128,10 @@ class AnimationSystem extends engine.BaseSystem {
         }
     }
 
-    determineDesiredAnimation(entityId, velocity, health, combat, death, corpse, aiState) {
+    determineDesiredAnimation(entityId, velocity, health, combat, aiState) {
         let clip = 'idle';
         let speed = 1.0;
         let minTime = 0;
-
-        if(corpse?.isCorpse || death?.isDying){
-            clip = 'death';
-            return { clip, speed, minTime };
-        }
 
         // Check movement first
         const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
@@ -127,7 +140,7 @@ class AnimationSystem extends engine.BaseSystem {
             clip = 'walk';
             speed = this.calculateWalkSpeed(velocity);
         }
-        
+
         // AI state overrides
         if (aiState) {
             switch (aiState.state) {
@@ -186,10 +199,7 @@ class AnimationSystem extends engine.BaseSystem {
 
     changeAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
         const animState = this.entityAnimationStates.get(entityId);
-        if (!animState){
-            console.log('changeAnimation ANIM STATE NOT FOUND', entityId, clipName);
-             return false;
-        }
+        if (!animState) return false;
 
         // Try to resolve clip name to available clip
         const resolvedClip = this.resolveClipName(entityId, clipName);
@@ -197,8 +207,6 @@ class AnimationSystem extends engine.BaseSystem {
         // Apply animation change
         const success = this.game.renderSystem?.setInstanceClip(entityId, resolvedClip, true);
         if (success) {
-
-            this.game.renderSystem?.debugAttributeUpdates?.(entityId);
             this.game.renderSystem?.setInstanceSpeed(entityId, speed);
             
             // Update state
@@ -244,6 +252,11 @@ class AnimationSystem extends engine.BaseSystem {
     
     triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
         const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) {
+            console.warn(`[AnimationSystem] No animation state for entity ${entityId}`);
+            return false;
+        }
+
         
         // Queue the animation
         animState.pendingClip = clipName;
@@ -255,20 +268,73 @@ class AnimationSystem extends engine.BaseSystem {
     }
 
     playDeathAnimation(entityId) {
-        // Apply death animation immediately
-        this.triggerSinglePlayAnimation(entityId, 'death');
-    }
+        const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) {
+            console.warn(`[AnimationSystem] ❌ No animation state found for entity ${entityId} during death`);
+            return;
+        }
 
-    setCorpseAnimation(entityId) {        
-        this.game.renderSystem?.setInstanceSpeed(entityId, 0);       
+        // Set death state
+        animState.isDying = true;
+        animState.isCorpse = false;
+        animState.isCelebrating = false;
+        
+        // Clear any pending animations
+        animState.isTriggered = false;
+        animState.pendingClip = null;
+        animState.pendingSpeed = null;
+        animState.pendingMinTime = null;
+        
+        // Reset fallback tracking for death animation
+        animState.lastRequestedClip = null;
+        animState.lastResolvedClip = null;
+        animState.fallbackCooldown = 0;
+        
+        // Apply death animation immediately
+        this.changeAnimation(entityId, 'death', 1.0, 0);
         
     }
 
-    startCelebration(entityId, teamType = null) {
-        // Try celebration animations, fallback to idle
-        let clipToUse = 'celebrate';      
+    setCorpseAnimation(entityId) {
+        const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) return;
 
-        this.triggerSinglePlayAnimation(entityId, clipToUse, 1.0, 0);
+        // Update animation state flags
+        animState.isDying = false;
+        animState.isCorpse = true;
+        
+        // Stop the animation completely - set speed to 0 and freeze at current frame
+        this.game.renderSystem?.setInstanceSpeed(entityId, 0);
+        
+    
+    }
+
+    startCelebration(entityId, teamType = null) {
+        const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) return;
+
+        animState.isCelebrating = true;
+        
+        // Try celebration animations, fallback to idle
+        const celebrationClips = ['celebrate'];
+        let clipToUse = 'idle';
+        
+        for (const clip of celebrationClips) {
+            if (this.hasClip(entityId, clip)) {
+                clipToUse = clip;
+                break;
+            }
+        }
+
+        this.changeAnimation(entityId, clipToUse, 1.0, 0);
+    }
+
+    stopCelebration(entityId) {
+        const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) return;
+
+        animState.isCelebrating = false;
+        this.changeAnimation(entityId, 'idle', 1.0, 0);
     }
 
     entityJump(entityId, speed = 1.0) {
@@ -336,8 +402,27 @@ class AnimationSystem extends engine.BaseSystem {
             return desiredClip;
         }
 
+        // Try fallbacks
+        const fallbacks = {
+            'attack': ['combat', 'fight', 'swing', 'strike', 'idle'],
+            'shoot': ['bow', 'cast', 'throw', 'attack', 'idle'],
+            'bow': ['shoot', 'cast', 'throw', 'attack', 'idle'],
+            'cast': ['shoot', 'throw', 'attack', 'idle'],
+            'walk': ['run', 'move', 'step', 'idle'],
+            'hurt': ['damage', 'hit', 'pain', 'idle'],
+            'death': ['die', 'idle'],
+            'celebrate': ['victory', 'cheer', 'dance', 'happy', 'win', 'idle']
+        };
+
+        const fallbackList = fallbacks[desiredClip] || ['idle'];
+        for (const fallback of fallbackList) {
+            if (availableClips.includes(fallback)) {
+                return fallback;
+            }
+        }
+
         // Final fallback
-        return 'idle';
+        return availableClips[0] || 'idle';
     }
 
     // Cleanup methods
@@ -365,40 +450,4 @@ class AnimationSystem extends engine.BaseSystem {
         this.entityAnimationStates.clear();
     }
 
-    getAnimationStats() {
-        return {
-            trackedEntities: this.entityAnimationStates.size,
-            singlePlayAnimations: Array.from(this.SINGLE_PLAY_ANIMATIONS)
-        };
-    }
-
-    validateVATMapping(entityId, expectedClip) {
-        console.log(`\n=== VAT MAPPING VALIDATION for Entity ${entityId} ===`);
-        
-        const animState = this.entityAnimationStates.get(entityId);
-        console.log('AnimationSystem thinks currentClip is:', animState?.currentClip);
-        
-        // Get what the render system has
-        const renderState = this.game.renderSystem?.getInstanceAnimationState(entityId);
-        console.log('RenderSystem reports:', renderState);
-        
-        // Get the raw debug info
-        this.game.renderSystem?.debugInstanceState(entityId);
-        
-        // Check the expected vs actual mapping
-        const CT = this.componentTypes;
-        const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-        if (renderable) {
-            const batchInfo = this.game.renderSystem?.getBatchInfo(renderable.objectType, renderable.spawnType);
-            const expectedIndex = batchInfo?.clipIndexByName?.[expectedClip];
-            console.log(`Expected clip '${expectedClip}' should have index:`, expectedIndex);
-            
-            if (renderState && renderState.clipIndex !== expectedIndex) {
-                console.log(`🚨 MISMATCH! Expected ${expectedIndex} but got ${renderState.clipIndex}`);
-                console.log(`This means '${expectedClip}' is showing as '${renderState.clipName}'`);
-            }
-        }
-        
-        console.log('=== END VAT MAPPING VALIDATION ===\n');
-    }
 }

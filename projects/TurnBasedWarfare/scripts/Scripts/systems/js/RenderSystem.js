@@ -62,10 +62,10 @@ class RenderSystem extends engine.BaseSystem {
             if (!pos || !renderable) return;
 
             // FILTER: Only process units for VAT rendering, skip projectiles/effects/etc
-            if (renderable.objectType !== 'units') {
-                // Let other rendering systems handle non-units (projectiles, effects, buildings, etc.)
-                return;
-            }
+            // if (renderable.objectType !== 'units') {
+            //     // Let other rendering systems handle non-units (projectiles, effects, buildings, etc.)
+            //     return;
+            // }
 
             // Validate that units have proper string spawnTypes
             if (typeof renderable.spawnType !== 'string') {
@@ -188,24 +188,24 @@ class RenderSystem extends engine.BaseSystem {
 
         // Get unit definition - handle both string and numeric spawnTypes
         const collections = this.game.getCollections?.();
-        let unitDef = null;
+        let objectDef = null;
         
-        if (collections?.units) {
-            unitDef = collections.units[spawnType];
-            if (!unitDef && typeof spawnType === 'number') {
-                const unitKeys = Object.keys(collections.units);
-                if (spawnType < unitKeys.length) {
-                    const unitKey = unitKeys[spawnType];
-                    unitDef = collections.units[unitKey];
+        if (collections[objectType]) {
+            objectDef = collections[objectType][spawnType];
+            if (!objectDef && typeof spawnType === 'number') {
+                const objectKeys = Object.keys(collections[objectType]);
+                if (spawnType < objectKeys.length) {
+                    const unitKey = objectKeys[spawnType];
+                    objectDef = collections[objectType][unitKey];
                 }
             }
-            if (!unitDef) {
-                unitDef = collections.units[String(spawnType)];
+            if (!objectDef) {
+                objectDef = collections[objectType][String(spawnType)];
             }
         }
         
-        if (!unitDef) {
-            console.error(`[RenderSystem] No unit definition found for spawnType: ${spawnType} (type: ${typeof spawnType})`);
+        if (!objectDef) {
+            console.error(`[RenderSystem] No object definition found for ${objectType} - ${spawnType}`);
             return null;
         }
 
@@ -214,7 +214,7 @@ class RenderSystem extends engine.BaseSystem {
         // Request VAT bundle from ModelManager
         let bundleResult;
         try {
-            bundleResult = await this.game.modelManager.requestVATBundle(objectType, spawnType, unitDef);
+            bundleResult = await this.game.modelManager.requestVATBundle(objectType, spawnType, objectDef);
         } catch (error) {
             console.error(`[RenderSystem] VAT bundle request failed for ${batchKey}:`, error);
             return null;
@@ -443,7 +443,7 @@ class RenderSystem extends engine.BaseSystem {
                 batch.dirty.matrices = false;
             }
             
-          //  if (batch.dirty.animation) {
+            if (batch.dirty.animation) {
                 // Calculate the actual range that needs updating
                 const updateCount = Math.min(batch.count, batch.capacity);
                 
@@ -466,7 +466,7 @@ class RenderSystem extends engine.BaseSystem {
                     batch.mesh.geometry.attributes.aAnimSpeed.needsUpdate = true;
                 }
                 batch.dirty.animation = false;
-          //  }
+            }
         }
     }
 
@@ -749,10 +749,8 @@ debugAttributeUpdates(entityId) {
     console.log(`  - animSpeed: ${animSpeed}`);
     
     // Check if attributes need update
- const geometry = batch.mesh.geometry;
-    console.log(`  - clipIndex needsUpdate: ${geometry.attributes.aClipIndex?.needsUpdate}`);
-    console.log(`  - clipIndex version: ${geometry.attributes.aClipIndex?.version}`);
-    
+    console.log(`  - clipIndex needsUpdate: ${batch.attributes.clipIndex.needsUpdate}`);
+    console.log(`  - clipIndex version: ${batch.attributes.clipIndex.version}`);
     
     // Find the clip name
     const availableClips = Object.keys(batch.meta.clipIndexByName);

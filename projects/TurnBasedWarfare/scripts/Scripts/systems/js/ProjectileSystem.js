@@ -37,6 +37,7 @@ class ProjectileSystem extends engine.BaseSystem {
         
         if (!sourcePos || !sourceCombat || !targetPos) return null;
         
+        console.log('fire projectile', projectileData);
         // Create projectile entity
         const projectileId = this.game.createEntity();
         const components = this.game.componentManager.getComponents();
@@ -543,57 +544,12 @@ class ProjectileSystem extends engine.BaseSystem {
     }
     
     createHitEffect(projectileId, targetId, isBallistic = false) {
-        const projectilePos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
-        const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
-        
-        if (!projectilePos) return;
-        
-        // Create a temporary visual effect entity
-        const effectId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        
-        // Position at hit location (full 3D)
-        this.game.addComponent(effectId, this.componentTypes.POSITION, 
-            components.Position(projectilePos.x, projectilePos.y, projectilePos.z));
-        
-        // Visual component for the effect - color based on element
-        const effectColor = this.getElementalEffectColor(projectile.element);
-        const effectSize = 6; // Smaller effect for direct hits
-        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
-            components.Renderable(effectColor, effectSize, 'impact'));
-        
-        // Short lifetime for direct hit effects
-        const effectDuration = 0.3;
-        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(effectDuration, (this.game.state.now || 0)));
-        
-        // Animation for the effect
-        const effectScale = 2;
-        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
-            components.Animation(effectScale, 0, 1));
+
+    
     }
 
     createGroundExplosion(projectileId, pos, projectile, groundLevel) {
-        // Create a visual explosion effect
-        const effectId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        
-        // Position at ground impact point (use actual terrain height)
-        this.game.addComponent(effectId, this.componentTypes.POSITION, 
-            components.Position(pos.x, groundLevel + 5, pos.z));
-        
-        // Visual component for explosion - color based on element
-        const explosionColor = this.getElementalExplosionEffect(projectile.element);
-        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
-            components.Renderable("effects", explosionColor));
-        
-        // Explosion lifetime
-        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(1.5, (this.game.state.now || 0))); // Longer explosion duration
-        
-        // Explosion animation
-        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
-            components.Animation(6, 0, 1)); // Large, dramatic explosion
+
     }
 
     // Get visual effect color based on element
