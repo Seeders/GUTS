@@ -2,595 +2,573 @@ class ModelManager {
     constructor(app, config, { ShapeFactory, palette, textures }) {
         this.app = app;
         this.config = config;
-        this.models = {};
-        this.gltfModelScale = 1;
-        // Pass the GLTF scale to ShapeFactory
-        this.shapeFactory = new ShapeFactory(palette, textures, null, this.gltfModelScale);
-        
-        if(location.hostname.indexOf('github') >= 0) {
+        this.shapeFactory = new ShapeFactory(palette, textures, null, 1);
+
+        if (location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
-        this.textureAtlases = new Map();
-        this.uvMappings = new Map();
-        this.mergedGeometries = new Map();
-        // Store original UV mappings before atlas remapping
-        this.originalUVMappings = new Map();
+
+        // VAT-focused storage
+        this.masterModels = new Map();           // objectType_spawnType -> THREE.Group (master models)
+        this.animationModels = new Map();        // objectType_spawnType_animName -> THREE.Group
+        this.vatBundles = new Map();             // objectType_spawnType -> { geometry, material, vatTexture, meta }
+        this.vatBundlePromises = new Map();      // objectType_spawnType -> Promise
+
         this.assetsLoaded = false;
         this.app.modelManager = this;
     }
 
     clear() {
-        this.models = {};
-        this.uvMappings.clear();
-        this.originalUVMappings.clear();
-        this.mergedGeometries.clear();
-        this.textureAtlases.clear();
+        this.masterModels.clear();
+        this.animationModels.clear();
+        this.vatBundles.clear();
+        this.vatBundlePromises.clear();
     }
 
     dispose() {
-        for (const [key, model] of Object.entries(this.models)) {
-            this.disposeModel(model);
+        // Dispose VAT bundles
+        for (const [key, bundle] of this.vatBundles) {
+            if (bundle.geometry) bundle.geometry.dispose();
+            if (bundle.material) bundle.material.dispose();
+            if (bundle.vatTexture) bundle.vatTexture.dispose();
         }
-        this.models = {};
-        this.uvMappings.clear();
-        this.originalUVMappings.clear();
-        this.mergedGeometries.clear();
-        this.textureAtlases.clear();
-    }
-
-    disposeModel(model) {
-        if (!model) return;
-        if (model.animations) {
-            for (const [animType, frames] of Object.entries(model.animations)) {
-                for (const frame of frames) {
-                    if (frame.group) {
-                        this.shapeFactory.disposeObject(frame.group);
-                        frame.group = null;
-                    }
-                }
-            }
-        }
+        this.clear();
     }
 
     async loadModels(prefix, config) {
-        if (!prefix || !config || typeof config !== 'object') {
-            throw new Error('Invalid prefix or config provided to loadModels');
-        }
+        console.log(`[ModelManager] Loading models for VAT rendering: ${prefix}`);
 
-        const textures = [];
-        const textureInfo = [];
-
-        // First pass: Load temporary models to collect textures
-        const tempModels = [];
+        // Load all models first (master + animations)
         for (const [type, cfg] of Object.entries(config)) {
-            if (cfg.render && cfg.render.model) {
-                const modelGroupName = Object.keys(cfg.render.model)[0];
-                const modelGroup = cfg.render.model[modelGroupName];
-                const isGLTF = modelGroup.shapes.length > 0 && modelGroup.shapes[0].type === "gltf";
-                if (isGLTF) {
-                    const modelKey = `${prefix}_${type}`;
-                    
-                    const model = await this.createModel(prefix, type, cfg.render.model, false, true); // Pass isGLTF flag
-                    tempModels.push({ modelKey, model, spawnType: type });
-                }
-            }
-        }
+            if (!cfg.render?.model) continue;
 
-        // Collect textures and store original UV mappings
-        tempModels.forEach(({ modelKey, model, spawnType }) => {
-            let meshIndex = 0;
-            model.traverse(child => {
-                if (child.isMesh && child.material.map) {
-                    textures.push(child.material.map);                    
-                    textureInfo.push({ modelKey, spawnType, meshIndex });
-                    
-                    // Store original UV mapping for this mesh
-                    const uvKey = `${spawnType}_${meshIndex}`;
-                    this.storeOriginalUVMapping(child.geometry, uvKey);
-                    
-                    meshIndex++;
-                }
-            });
-        });
+            const modelKey = `${prefix}_${type}`;
 
-        // Generate texture atlas if textures exist
-        if (textures.length > 0) {
-            await this.generateTextureAtlas(prefix, textures, textureInfo);
-        }
+            // Load master model
+            this.masterModels.set(modelKey, await this.createModel(cfg.render.model));
 
-        // Second pass: Create final models WITHOUT applying atlas UVs yet
-        for (const [type, cfg] of Object.entries(config)) {
-            if (cfg.render && cfg.render.model) {
-                const modelGroupName = Object.keys(cfg.render.model)[0];
-                const modelGroup = cfg.render.model[modelGroupName];
-                const isGLTF = modelGroup.shapes.length > 0 && modelGroup.shapes[0].type === "gltf";
-                
-                if (isGLTF) {
-                    const modelKey = `${prefix}_${type}`;
-                    
-                    // Create master model without UV remapping
-                    this.models[modelKey] = await this.createModel(prefix, type, cfg.render.model, false, true); // Pass isGLTF flag
-                    
-                    const animations = cfg.render.animations;
-                    if (animations) {
-                        await Promise.all(Object.keys(animations).map(async (animationName) => {
-                            const animVariants = animations[animationName];
-                            
-                            // Load all variants of this animation
-                            await Promise.all(animVariants.map(async (anim, variantIndex) => {
-                                let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
-                                let animMainGroup = mergedModel[Object.keys(mergedModel)[0]]; 
-                                
-                                if (anim && Object.keys(anim).length > 0) {
-                                    animMainGroup = anim[Object.keys(anim)[0]];                                
-                                }
-                                if (!animMainGroup) return;
-                                
-                                if (animMainGroup && animMainGroup.shapes && animMainGroup.shapes[0] && animMainGroup.shapes[0].url) {
-                                    mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
-                                }
-                                
-                                // Create unique key for each variant
-                                const modelKey = variantIndex === 0 
-                                    ? `${prefix}_${type}_${animationName}` 
-                                    : `${prefix}_${type}_${animationName}_${variantIndex}`;
-                                    
-                                this.models[modelKey] = await this.createModel(prefix, type, mergedModel, false, true);
-                            }));
-                        }));
+            // Load animation variants
+            if (cfg.render.animations) {
+                for (const [animName, variants] of Object.entries(cfg.render.animations)) {
+                    for (let variantIndex = 0; variantIndex < variants.length; variantIndex++) {
+                        const animVariant = variants[variantIndex];
+                        const animKey = variantIndex === 0
+                            ? `${modelKey}_${animName}`
+                            : `${modelKey}_${animName}_${variantIndex}`;
+
+                        // Merge animation model data
+                        let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
+                        if (animVariant && Object.keys(animVariant).length > 0) {
+                            const mainGroupName = Object.keys(mergedModel)[0];
+                            const animGroupName = Object.keys(animVariant)[0];
+                            if (animVariant[animGroupName]?.shapes?.[0]?.url) {
+                                mergedModel[mainGroupName].shapes[0].url = animVariant[animGroupName].shapes[0].url;
+                            }
+                        }
+
+                        this.animationModels.set(animKey, await this.createModel(mergedModel));
                     }
-                } else {
-                    // Non-GLTF model
-                    this.models[`${prefix}_${type}`] = await this.createModel(prefix, type, cfg.render.model, false, false); // Pass isGLTF as false
                 }
             }
-        }  
-
-        // Dispose temporary models
-        tempModels.forEach(({ model }) => this.shapeFactory.disposeObject(model));
+        }
 
         this.assetsLoaded = true;
+        console.log(`[ModelManager] Loaded ${this.masterModels.size} master models and ${this.animationModels.size} animation models`);
     }
 
-    storeOriginalUVMapping(geometry, uvKey) {
-        if (geometry.attributes.uv) {
-            const uvAttribute = geometry.attributes.uv;
-            const originalUVs = new Float32Array(uvAttribute.array.length);
-            originalUVs.set(uvAttribute.array);
-            this.originalUVMappings.set(uvKey, {
-                uvs: originalUVs,
-                itemSize: uvAttribute.itemSize,
-                count: uvAttribute.count
-            });
-        }
-    }
-
-    async generateTextureAtlas(objectType, textures, textureInfo) {
-        const textureSizes = textures.map((texture) => {
-            const img = texture.image;
-            return { width: img.width, height: img.height };
-        });
-
-        const gridSize = Math.ceil(Math.sqrt(textures.length));
-        let maxWidth = 0;
-        let maxHeight = 0;
-        const gridPositions = [];
-
-        textureSizes.forEach((size, i) => {
-            const row = Math.floor(i / gridSize);
-            const col = i % gridSize;
-            const x = col * Math.max(...textureSizes.map(s => s.width));
-            const y = row * Math.max(...textureSizes.map(s => s.height));
-            gridPositions.push({ x, y });
-            maxWidth = Math.max(maxWidth, x + size.width);
-            maxHeight = Math.max(maxHeight, y + size.height);
-        });
-
-        let atlasWidth = Math.pow(2, Math.ceil(Math.log2(maxWidth)));
-        let atlasHeight = Math.pow(2, Math.ceil(Math.log2(maxHeight)));
-
-        const maxTextureSize = 4096;
-        let scale = 1;
-        if (atlasWidth > maxTextureSize || atlasHeight > maxTextureSize) {
-            console.warn('Atlas size exceeds GPU limit. Scaling down textures.');
-            scale = Math.min(maxTextureSize / atlasWidth, maxTextureSize / atlasHeight);
-            maxWidth = Math.floor(maxWidth * scale);
-            maxHeight = Math.floor(maxHeight * scale);
-            atlasWidth = Math.pow(2, Math.ceil(Math.log2(maxWidth)));
-            atlasHeight = Math.pow(2, Math.ceil(Math.log2(maxHeight)));
-            textureSizes.forEach(size => {
-                size.width = Math.floor(size.width * scale);
-                size.height = Math.floor(size.height * scale);
-            });
-            gridPositions.forEach(pos => {
-                pos.x = Math.floor(pos.x * scale);
-                pos.y = Math.floor(pos.y * scale);
-            });
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = atlasWidth;
-        canvas.height = atlasHeight;
-        const ctx = canvas.getContext('2d');
-
-        this.uvMappings.clear();
-        textures.forEach((texture, i) => {
-            const img = texture.image;
-            const size = textureSizes[i];
-            const pos = gridPositions[i];
-            ctx.drawImage(img, pos.x, pos.y, size.width, size.height);
-            this.uvMappings.set(`${textureInfo[i].spawnType}_${textureInfo[i].meshIndex}`, [
-                pos.x / atlasWidth,
-                pos.y / atlasHeight,
-                (pos.x + size.width) / atlasWidth,
-                (pos.y + size.height) / atlasHeight
-            ]);
-        });
-        this.textureAtlases[objectType] = new THREE.CanvasTexture(canvas);
-        this.textureAtlases[objectType].flipY = false;
-        this.textureAtlases[objectType].colorSpace = THREE.SRGBColorSpace;
-        this.textureAtlases[objectType].needsUpdate = true;
-    }
-
-    async createModel(objectType, spawnType, modelData, useAtlas = false) {
-        const modelGroup = await this.createObjectsFromJSON(modelData, {}, objectType, spawnType);
-        if (modelGroup && !useAtlas) {
-            // For master models, just set up basic properties
-            modelGroup.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-            // Scale is now handled in ShapeFactory for GLTF models automatically
-        }
-        return modelGroup;
-    }
-
-    // Apply UV remapping to a specific geometry instance
-    applyAtlasUVMapping(geometry, spawnType, meshIndex, objectType) {
-        const uvKey = `${spawnType}_${meshIndex}`;
-        const originalMapping = this.originalUVMappings.get(uvKey);
-        const atlasMapping = this.uvMappings.get(uvKey);
-        
-        if (!originalMapping || !atlasMapping || !this.textureAtlases[objectType]) {
-            return false;
-        }
-
-        const [uMin, vMin, uMax, vMax] = atlasMapping;
-        const uvAttribute = geometry.attributes.uv;
-        
-        if (uvAttribute && originalMapping.uvs) {
-            // Create new UV array from original UVs
-            const newUVArray = new Float32Array(originalMapping.uvs.length);
-            
-            for (let i = 0; i < originalMapping.count; i++) {
-                const u = originalMapping.uvs[i * 2];
-                const v = originalMapping.uvs[i * 2 + 1];
-                
-                // Map original UVs to atlas region
-                const uNew = uMin + u * (uMax - uMin);
-                const vNew = vMin + v * (vMax - vMin);
-                
-                newUVArray[i * 2] = uNew;
-                newUVArray[i * 2 + 1] = vNew;
-            }
-            
-            // Replace the UV attribute with the remapped version
-            geometry.setAttribute('uv', new THREE.BufferAttribute(newUVArray, originalMapping.itemSize));
-            return true;
-        }
-        
-        return false;
-    }
-
-    // Updated getModel to create fresh instances with atlas UVs applied
-    getModel(prefix, type) {
-        const modelKey = `${prefix}_${type}`;
-        const masterModel = this.models[modelKey];
-        
-        if (!masterModel) {
-            console.error(`Model not found for ${modelKey}`);
-            return null;
-        }
-        
-        // Create a properly cloned model and apply atlas UVs
-        let model = this.deepCloneModel(masterModel, prefix, type);
-        
-        return model;
-    }
-
-    getAnimation(prefix, type, anim, variantIndex = 0) {
-        // Create the model key based on variant index
-        const modelKey = variantIndex === 0 
-            ? `${prefix}_${type}_${anim}` 
-            : `${prefix}_${type}_${anim}_${variantIndex}`;
-            
-        const masterModel = this.models[modelKey];
-        
-        if (!masterModel) {
-            console.error(`Animation model not found for ${modelKey}`);
-            return null;
-        }
-        
-        // Create a properly cloned model and apply atlas UVs
-        let model = this.deepCloneModel(masterModel, prefix, type);
-        
-        return model;
-    }
-
-    // Helper method to properly clone a THREE.js model with deferred UV remapping
-    deepCloneModel(sourceRoot, prefix, type) {
-        // Create a new root group to hold all cloned children
-        const clonedRoot = new THREE.Group();
-        clonedRoot.name = sourceRoot.name;
-        clonedRoot.position.copy(sourceRoot.position);
-        clonedRoot.quaternion.copy(sourceRoot.quaternion);
-        clonedRoot.scale.copy(sourceRoot.scale);
-        clonedRoot.userData = this.safeCloneUserData(sourceRoot.userData || {});
-
-        // Clone all children of the sourceRoot
-        sourceRoot.children.forEach(sourceModel => {
-            const clonedModel = new THREE.Group();
-            clonedModel.name = sourceModel.name;
-            clonedModel.position.copy(sourceModel.position);
-            clonedModel.quaternion.copy(sourceModel.quaternion);
-            clonedModel.scale.copy(sourceModel.scale);
-            clonedModel.userData = this.safeCloneUserData(sourceModel.userData || {});
-
-            let meshIndex = 0;
-            // Clone children of the current sourceModel
-            sourceModel.children.forEach(child => {
-                const clonedChild = this.cloneObject3D(child, type, meshIndex, prefix);
-                if (clonedChild) {
-                    clonedModel.add(clonedChild);
-                    
-                    // Increment mesh index for UV mapping
-                    if (child.isMesh || child.isSkinnedMesh) {
-                        meshIndex++;
-                    }
-                }
-
-                // Handle animations for this child if it has them
-                if (clonedChild.userData.isGLTFRoot && clonedChild.userData.animations && clonedChild.userData.animations.length > 0) {
-                    // Create a map of original bone UUIDs to cloned bones
-                    const boneMap = new Map();
-                    sourceModel.traverse(src => {
-                        if (src.isBone) {
-                            clonedChild.traverse(cloned => {
-                                if (cloned.isBone && cloned.name === src.name) {
-                                    boneMap.set(src.uuid, cloned);
-                                }
-                            });
-                        }
-                    });
-
-                    // Remap AnimationClip tracks to cloned bones
-                    clonedChild.userData.animations = clonedChild.userData.animations.map(clip => {
-                        const newTracks = clip.tracks.map(track => {
-                            const [uuid, property] = track.name.split('.');
-                            const newBone = boneMap.get(uuid);
-                            if (newBone) {
-                                return new THREE[track.constructor.name](`${newBone.uuid}.${property}`, track.times, track.values);
-                            }
-                            return track;
-                        });
-                        return new THREE.AnimationClip(clip.name, clip.duration, newTracks);
-                    });
-
-                    // Create new AnimationMixer
-                    const mixer = new THREE.AnimationMixer(clonedChild);
-                    const action = mixer.clipAction(clonedChild.userData.animations[0]);
-                    clonedChild.userData.mixer = mixer;
-                    clonedChild.userData.action = action;
-                } 
-            });
-
-            // Add the cloned model to the root
-            clonedRoot.add(clonedModel);
-        });
-
-        return clonedRoot;
-    }
-
-    cloneObject3D(source, spawnType, meshIndex, objectType) {
-        if (!source) return null;
-
-        let cloned;
-
-        if (source.isSkinnedMesh) {
-            // Clone geometry with complete independence
-            const geometry = this.deepCloneGeometry(source.geometry);
-            
-            // Apply atlas UV mapping to this instance
-            if (this.applyAtlasUVMapping(geometry, spawnType, meshIndex, objectType)) {
-                // Create material with atlas texture
-                const material = new THREE.MeshStandardMaterial({
-                    map: this.textureAtlases[objectType],
-                    metalness: source.material.metalness || 0.5,
-                    roughness: source.material.roughness || 0.5
-                });
-                material.needsUpdate = true;
-                cloned = new THREE.SkinnedMesh(geometry, material);
-            } else {
-                // Fallback to original material
-                let material;
-                if (Array.isArray(source.material)) {
-                    material = source.material.map(mat => mat.clone());
-                } else {
-                    material = source.material.clone();
-                }
-                cloned = new THREE.SkinnedMesh(geometry, material);
-            }
-
-            // Clone skeleton and preserve bone hierarchy
-            if (source.skeleton) {
-                // Create a map to track cloned bones
-                const boneMap = new Map();
-                const clonedBones = [];
-
-                // Clone bones and preserve hierarchy
-                source.skeleton.bones.forEach(bone => {
-                    const clonedBone = bone.clone(false); // Clone without children
-                    boneMap.set(bone.uuid, clonedBone);
-                    clonedBones.push(clonedBone);
-                });
-
-                // Rebuild bone hierarchy
-                source.skeleton.bones.forEach(bone => {
-                    const clonedBone = boneMap.get(bone.uuid);
-                    if (bone.parent && bone.parent.isBone) {
-                        const clonedParent = boneMap.get(bone.parent.uuid);
-                        if (clonedParent) {
-                            clonedParent.add(clonedBone);
-                        }
-                    } else {
-                        // Root bones are added to the SkinnedMesh or its parent group
-                        cloned.add(clonedBone);
-                    }
-                });
-
-                // Create new skeleton
-                const clonedSkeleton = new THREE.Skeleton(clonedBones, source.skeleton.boneInverses.map(m => m.clone()));
-
-                // Bind skeleton to the cloned mesh
-                cloned.bind(clonedSkeleton, source.bindMatrix.clone());
-
-                // Store skeleton in userData
-                cloned.userData.skeleton = clonedSkeleton;
-            }
-        } else if (source.isMesh) {
-            // Clone geometry with complete independence
-            const geometry = this.deepCloneGeometry(source.geometry);
-            
-            // Apply atlas UV mapping to this instance
-            if (this.applyAtlasUVMapping(geometry, spawnType, meshIndex, objectType)) {
-                // Create material with atlas texture
-                const material = new THREE.MeshStandardMaterial({
-                    map: this.textureAtlases[objectType],
-                    metalness: source.material.metalness || 0.5,
-                    roughness: source.material.roughness || 0.5
-                });
-                material.needsUpdate = true;
-                cloned = new THREE.Mesh(geometry, material);
-            } else {
-                // Fallback to original material
-                let material;
-                if (Array.isArray(source.material)) {
-                    material = source.material.map(mat => mat.clone());
-                } else {
-                    material = source.material.clone();
-                }
-                cloned = new THREE.Mesh(geometry, material);
-            }
-        } else if (source.isGroup) {
-            cloned = new THREE.Group();
-        } else {
-            cloned = new THREE.Object3D();
-        }
-
-        // Copy common properties
-        cloned.name = source.name;
-        cloned.position.copy(source.position);
-        cloned.quaternion.copy(source.quaternion);
-        cloned.scale.copy(source.scale);
-        cloned.castShadow = source.castShadow;
-        cloned.receiveShadow = source.receiveShadow;
-
-        // Clone userData
-        cloned.userData = this.safeCloneUserData(source.userData || {});
-
-        // Clone children recursively
-        let childMeshIndex = meshIndex;
-        source.children.forEach(child => {
-            const clonedChild = this.cloneObject3D(child, spawnType, childMeshIndex, objectType);
-            if (clonedChild) {
-                cloned.add(clonedChild);
-                if (child.isMesh || child.isSkinnedMesh) {
-                    childMeshIndex++;
-                }
-            }
-        });
-
-        return cloned;
-    }
-
-    // Ensure complete geometry independence with proper UV handling
-    deepCloneGeometry(sourceGeometry) {
-        const clonedGeometry = new THREE.BufferGeometry();
-        
-        // Clone all attributes
-        for (const attributeName in sourceGeometry.attributes) {
-            const sourceAttribute = sourceGeometry.attributes[attributeName];
-            const newArray = new sourceAttribute.array.constructor(sourceAttribute.array.length);
-            newArray.set(sourceAttribute.array);
-            
-            clonedGeometry.setAttribute(
-                attributeName, 
-                new THREE.BufferAttribute(newArray, sourceAttribute.itemSize, sourceAttribute.normalized)
-            );
-        }
-        
-        // Clone index if it exists
-        if (sourceGeometry.index) {
-            const sourceIndex = sourceGeometry.index;
-            const newIndexArray = new sourceIndex.array.constructor(sourceIndex.array.length);
-            newIndexArray.set(sourceIndex.array);
-            clonedGeometry.setIndex(new THREE.BufferAttribute(newIndexArray, 1));
-        }
-        
-        // Copy other properties
-        clonedGeometry.name = sourceGeometry.name;
-        if (sourceGeometry.userData) {
-            clonedGeometry.userData = { ...sourceGeometry.userData };
-        }
-        
-        return clonedGeometry;
-    }
-
-    safeCloneUserData(userData) {
-        const result = {};
-
-        for (const key in userData) {
-            const value = userData[key];
-
-            if (value === null || value === undefined) {
-                result[key] = value;
-            } else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-                result[key] = value;
-            } else if (value instanceof Array) {
-                if (value.length > 0 && value[0] instanceof THREE.AnimationClip) {
-                    result[key] = value.map(clip => clip.clone());
-                } else {
-                    result[key] = [...value];
-                }
-            } else if (typeof value === 'object') {
-                if (key === 'mixer' || key === 'skeleton') {
-                    continue; // Skip mixer and skeleton
-                }
-                if (Object.getPrototypeOf(value) === Object.prototype) {
-                    result[key] = { ...value };
-                } else if (typeof value.clone === 'function') {
-                    try {
-                        result[key] = value.clone();
-                    } catch (e) {
-                        console.warn(`Failed to clone userData property ${key}`, e);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    async createObjectsFromJSON(model, frameData, objectType, spawnType) {
+    async createModel(modelData) {
         const rootGroup = new THREE.Group();
-        for (const groupName in model) {
-            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName, objectType, spawnType);
+        for (const groupName in modelData) {
+            const group = await this.shapeFactory.createMergedGroupFromJSON(
+                modelData, {}, groupName, null, null
+            );
             if (group) {
                 rootGroup.add(group);
             }
         }
         return rootGroup;
     }
+
+    // Main VAT bundle creation - called by RenderSystem
+    async requestVATBundle(objectType, spawnType, unitDef) {
+        const key = `${objectType}_${spawnType}`;
+
+        // Return existing bundle
+        if (this.vatBundles.has(key)) {
+            return { ready: true, bundle: this.vatBundles.get(key) };
+        }
+
+        // Return in-progress promise
+        if (this.vatBundlePromises.has(key)) {
+            return { ready: false, promise: this.vatBundlePromises.get(key) };
+        }
+
+        // Start building VAT bundle
+        const promise = this._buildVATBundle(key, objectType, spawnType, unitDef);
+        this.vatBundlePromises.set(key, promise);
+
+        try {
+            const bundle = await promise;
+            if (bundle) {
+                this.vatBundles.set(key, bundle);
+                console.log(`[ModelManager] VAT bundle ready: ${key}`, bundle.meta.clips.map(c => c.name));
+                return { ready: true, bundle };
+            }
+        } catch (error) {
+            console.error(`[ModelManager] VAT bundle failed: ${key}`, error);
+        } finally {
+            this.vatBundlePromises.delete(key);
+        }
+
+        return { ready: false, error: 'VAT bundle creation failed' };
+    }
+
+    async _buildVATBundle(key, objectType, spawnType, unitDef) {
+        console.log(`[ModelManager] Building VAT bundle: ${key}`);
+
+        // Get master model
+        const masterModel = this.masterModels.get(key);
+        if (!masterModel) {
+            throw new Error(`Master model not found: ${key}`);
+        }
+
+        // Find skinned mesh and skeleton
+        let skinnedMesh = null;
+        let skeleton = null;
+        masterModel.traverse(obj => {
+            if (obj.isSkinnedMesh && obj.skeleton) {
+                skinnedMesh = obj;
+                skeleton = obj.skeleton;
+            }
+        });
+
+        if (!skinnedMesh || !skeleton) {
+            throw new Error(`No skinned mesh with skeleton found in: ${key}`);
+        }
+
+        // Collect animation clips
+        const clips = await this._collectAnimationClips(key, objectType, spawnType, unitDef);
+        if (clips.length === 0) {
+            throw new Error(`No animation clips found for: ${key}`);
+        }
+
+        // Bake VAT texture
+        const vatData = await this._bakeVATTexture(masterModel, skeleton, clips);
+        if (!vatData) {
+            throw new Error(`VAT baking failed for: ${key}`);
+        }
+
+        // Create VAT-enabled material
+        const material = this._createVATMaterial(skinnedMesh, vatData);
+
+        // Prepare geometry (clone to avoid modifying master)
+        const geometry = skinnedMesh.geometry.clone();
+
+        // ===== IMPORTANT: Copy bone data into custom attributes so we don't depend on SkinnedMesh pipeline =====
+        const skinIndexAttr = skinnedMesh.geometry.getAttribute('skinIndex');
+        const skinWeightAttr = skinnedMesh.geometry.getAttribute('skinWeight');
+        if (!skinIndexAttr || !skinWeightAttr) {
+            throw new Error('Skinned geometry missing skinIndex/skinWeight attributes.');
+        }
+        // Clone into custom attributes visible even on plain Mesh / InstancedMesh
+        geometry.setAttribute('aBoneIndex', skinIndexAttr.clone());
+        geometry.setAttribute('aBoneWeight', skinWeightAttr.clone());
+
+        // Provide safe defaults for VAT driving attributes (engine may overwrite later)
+        this._ensureFloatAttribute(geometry, 'aClipIndex', 1, 0.0);
+        this._ensureFloatAttribute(geometry, 'aAnimTime', 1, 0.0);
+        this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
+
+        return {
+            geometry,
+            material,
+            vatTexture: vatData.texture,
+            meta: {
+                fps: vatData.fps,
+                cols: vatData.cols,
+                rows: vatData.rows,
+                clips: vatData.clips,
+                clipIndexByName: this._buildClipIndexMap(vatData.clips)
+            }
+        };
+    }
+
+    _ensureFloatAttribute(geometry, name, itemSize, fillValue = 0.0) {
+        if (!geometry.getAttribute(name)) {
+            const pos = geometry.getAttribute('position');
+            const count = pos ? pos.count : 0;
+            const arr = new Float32Array(count * itemSize);
+            if (fillValue !== 0.0) arr.fill(fillValue);
+            geometry.setAttribute(name, new THREE.BufferAttribute(arr, itemSize));
+        }
+    }
+
+    async _collectAnimationClips(key, objectType, spawnType, unitDef) {
+        const clips = [];
+
+        // Define standard animation names in order
+        const animNames = ['idle', 'walk', 'attack', 'cast', 'death', 'celebrate'];
+
+        for (const animName of animNames) {
+            // Skip if not defined in unit config
+            if (!unitDef?.render?.animations?.[animName]) continue;
+
+            try {
+                // Try to get animation model
+                const animKey = `${key}_${animName}`;
+                const animModel = this.animationModels.get(animKey);
+
+                if (animModel) {
+                    // Extract clip from animation model
+                    let clip = null;
+                    animModel.traverse(obj => {
+                        if (obj.userData?.animations?.[0]) {
+                            clip = obj.userData.animations[0];
+                        }
+                    });
+
+                    if (clip) {
+                        clips.push({ name: animName, clip });
+                        console.log(`[ModelManager] Found clip '${animName}' (${clip.duration}s) for ${key}`);
+                    } else {
+                        console.warn(`[ModelManager] No clip data in animation model ${animKey}`);
+                    }
+                } else {
+                    console.warn(`[ModelManager] Animation model not found: ${animKey}`);
+                }
+            } catch (error) {
+                console.warn(`[ModelManager] Failed to load animation '${animName}' for ${key}:`, error);
+            }
+        }
+
+        // Ensure we have at least idle
+        if (clips.length === 0 || !clips.some(c => c.name === 'idle')) {
+            // Create a default idle clip
+            const defaultClip = new THREE.AnimationClip('idle', 1.0, []);
+            clips.unshift({ name: 'idle', clip: defaultClip });
+            console.log(`[ModelManager] Added default idle clip for ${key}`);
+        }
+
+        return clips;
+    }
+
+    async _bakeVATTexture(masterModel, skeleton, clipData, fps = 30) {
+        console.log(`[ModelManager] Baking VAT texture for ${clipData.length} clips at ${fps}fps`);
+
+        const bones = skeleton.bones;
+        const boneCount = bones.length;
+        const bindMatrices = skeleton.boneInverses;
+
+        // Calculate texture dimensions
+        const cols = boneCount * 4; // 4 columns per bone (matrix rows)
+        let totalFrames = 0;
+
+        const clipMeta = clipData.map(({ name, clip }) => {
+            const duration = clip.duration || 1.0;
+            const frames = Math.max(1, Math.ceil(duration * fps));
+            totalFrames += frames;
+            return { name, clip, duration, frames };
+        });
+
+        const rows = totalFrames;
+        console.log(`[ModelManager] VAT texture size: ${cols}x${rows} (${boneCount} bones, ${totalFrames} total frames)`);
+
+        // Create texture data
+        const textureData = new Float32Array(rows * cols * 4); // RGBA
+        const mixer = new THREE.AnimationMixer(masterModel);
+        const tempMatrix = new THREE.Matrix4();
+
+        let currentRow = 0;
+
+        // Bake each clip
+        for (const clipInfo of clipMeta) {
+            const action = mixer.clipAction(clipInfo.clip);
+            action.play();
+
+            console.log(`[ModelManager] Baking clip '${clipInfo.name}': ${clipInfo.frames} frames`);
+
+            // Bake frames for this clip
+            for (let frame = 0; frame < clipInfo.frames; frame++) {
+                // Calculate time for this frame
+                const t = clipInfo.frames > 1 ? (frame / (clipInfo.frames - 1)) * clipInfo.duration : 0;
+                mixer.setTime(t);
+                masterModel.updateMatrixWorld(true);
+
+                // Bake bone matrices for this frame
+                for (let boneIndex = 0; boneIndex < boneCount; boneIndex++) {
+                    // Calculate final bone matrix (world * inverse bind)
+                    tempMatrix.copy(bones[boneIndex].matrixWorld);
+                    tempMatrix.multiply(bindMatrices[boneIndex]);
+
+                    // Store matrix as 4 columns (transposed for shader)
+                    const elements = tempMatrix.elements; // column-major
+                    const textureRowIndex = currentRow + frame;
+                    const boneColumnStart = boneIndex * 4;
+
+                    for (let col = 0; col < 4; col++) {
+                        const pixelIndex = (textureRowIndex * cols + boneColumnStart + col) * 4;
+                        // Store column of matrix as RGBA
+                        textureData[pixelIndex + 0] = elements[col * 4 + 0]; // x
+                        textureData[pixelIndex + 1] = elements[col * 4 + 1]; // y
+                        textureData[pixelIndex + 2] = elements[col * 4 + 2]; // z
+                        textureData[pixelIndex + 3] = elements[col * 4 + 3]; // w
+                    }
+                }
+            }
+
+            action.stop();
+            currentRow += clipInfo.frames;
+        }
+
+        // Create texture
+        const texture = new THREE.DataTexture(
+            textureData,
+            cols,
+            rows,
+            THREE.RGBAFormat,
+            THREE.FloatType
+        );
+        texture.needsUpdate = true;
+        texture.flipY = false;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+
+        // Build clip info with row ranges
+        let rowOffset = 0;
+        const clips = clipMeta.map(info => {
+            const clipData = {
+                name: info.name,
+                startRow: rowOffset,
+                endRow: rowOffset + info.frames,
+                frames: info.frames,
+                duration: info.duration
+            };
+            rowOffset += info.frames;
+            return clipData;
+        });
+
+        return {
+            texture,
+            cols,
+            rows,
+            fps,
+            clips,
+            boneCount
+        };
+    }
+
+    _createVATMaterial(baseMesh, vatData) {
+        // Get base material properties
+        const sourceMaterial = Array.isArray(baseMesh.material)
+            ? baseMesh.material[0]
+            : baseMesh.material;
+
+        // Create VAT material (do NOT enable skinning; we aren't using Three's path)
+        const material = new THREE.MeshStandardMaterial({
+            map: sourceMaterial?.map || null,
+            color: sourceMaterial?.color?.clone() || new THREE.Color(0xffffff),
+            metalness: sourceMaterial?.metalness ?? 0.5,
+            roughness: sourceMaterial?.roughness ?? 0.5,
+            transparent: false
+        });
+
+                // Add VAT shader modifications
+        // inside _createVATMaterial(baseMesh, vatData) just before returning `material`
+        material.side = THREE.DoubleSide;           // helps if any frames flip winding
+        material.metalness = sourceMaterial?.metalness ?? 0.05; // less metal, easier to see
+        material.roughness = sourceMaterial?.roughness ?? 0.9;  // more diffuse light
+        // Make VAT lookups crisp (optional but recommended)
+        vatData.texture.magFilter = THREE.NearestFilter;
+        vatData.texture.minFilter = THREE.NearestFilter;
+
+        material.onBeforeCompile = (shader) => {
+            shader.uniforms.uVATTexture = { value: vatData.texture };
+            shader.uniforms.uVATCols    = { value: vatData.cols };
+            shader.uniforms.uVATRows    = { value: vatData.rows };
+            shader.uniforms.uVATFPS     = { value: vatData.fps };
+
+            const clipDefines = vatData.clips.map((clip, index) => `
+                #define CLIP_${index}_START ${clip.startRow}.0
+                #define CLIP_${index}_FRAMES ${clip.frames}.0
+            `).join('\n');
+
+            const clipHelpers = `
+                float getClipStartRow(float clipIndex) {
+                ${vatData.clips.map((clip, i) => `if (abs(clipIndex - ${i}.0) < 0.5) return CLIP_${i}_START;`).join('\n')}
+                return CLIP_0_START;
+                }
+                float getClipFrames(float clipIndex) {
+                ${vatData.clips.map((clip, i) => `if (abs(clipIndex - ${i}.0) < 0.5) return CLIP_${i}_FRAMES;`).join('\n')}
+                return CLIP_0_FRAMES;
+                }
+                mat4 sampleVATMatrix(float row, float boneIndex) {
+                float boneColStart = boneIndex * 4.0;
+                float v = (row + 0.5) / uVATRows;
+                vec4 c0 = texture2D(uVATTexture, vec2((boneColStart + 0.5) / uVATCols, v));
+                vec4 c1 = texture2D(uVATTexture, vec2((boneColStart + 1.5) / uVATCols, v));
+                vec4 c2 = texture2D(uVATTexture, vec2((boneColStart + 2.5) / uVATCols, v));
+                vec4 c3 = texture2D(uVATTexture, vec2((boneColStart + 3.5) / uVATCols, v));
+                return mat4(c0, c1, c2, c3);  // columns
+                }
+            `;
+
+            // strip three's skinning prelude (we supply our own attributes)
+            shader.vertexShader = shader.vertexShader.replace('#include <skinning_pars_vertex>', '');
+
+            shader.vertexShader = shader.vertexShader.replace(
+                'void main() {',
+                `
+                // Custom VAT attributes
+                attribute vec4 aBoneIndex;
+                attribute vec4 aBoneWeight;
+                attribute float aClipIndex;
+                attribute float aAnimTime;
+                attribute float aAnimSpeed;
+
+                uniform sampler2D uVATTexture;
+                uniform float uVATCols;
+                uniform float uVATRows;
+                uniform float uVATFPS;
+
+                ${clipDefines}
+                ${clipHelpers}
+
+                // Shared temporaries
+                float _vat_currentRow;
+                mat4 _vat_bm0, _vat_bm1, _vat_bm2, _vat_bm3;
+
+                void main() {
+                `
+            );
+
+            shader.vertexShader = shader.vertexShader.replace(
+            '#include <beginnormal_vertex>',
+            `
+            // Determine current frame
+            float _clipStart  = getClipStartRow(aClipIndex);
+            float _clipFrames = getClipFrames(aClipIndex);
+            float _frame      = floor(mod(aAnimTime * uVATFPS, _clipFrames));
+            _vat_currentRow   = _clipStart + _frame;
+
+            // Normalize bone weights (must be available here)
+            float wsum_bn = aBoneWeight.x + aBoneWeight.y + aBoneWeight.z + aBoneWeight.w;
+            vec4 w = (wsum_bn > 0.0) ? (aBoneWeight / wsum_bn) : vec4(1.0, 0.0, 0.0, 0.0);
+
+            // Sample bone matrices for this frame (needed for normals too)
+            _vat_bm0 = sampleVATMatrix(_vat_currentRow, aBoneIndex.x);
+            _vat_bm1 = sampleVATMatrix(_vat_currentRow, aBoneIndex.y);
+            _vat_bm2 = sampleVATMatrix(_vat_currentRow, aBoneIndex.z);
+            _vat_bm3 = sampleVATMatrix(_vat_currentRow, aBoneIndex.w);
+
+            // Skin the normal and renormalize
+            vec3 n = normal;
+            vec3 skinnedN =
+                    mat3(_vat_bm0) * n * w.x +
+                    mat3(_vat_bm1) * n * w.y +
+                    mat3(_vat_bm2) * n * w.z +
+                    mat3(_vat_bm3) * n * w.w;
+
+            vec3 objectNormal = normalize(skinnedN);
+            `
+            );
+
+            // --- begin_vertex: (re)compute weights & use same matrices to skin position
+            shader.vertexShader = shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            `
+            // Recompute (safe if driver reorders chunks)
+            float wsum_bv = aBoneWeight.x + aBoneWeight.y + aBoneWeight.z + aBoneWeight.w;
+            vec4 w2 = (wsum_bv > 0.0) ? (aBoneWeight / wsum_bv) : vec4(1.0, 0.0, 0.0, 0.0);
+
+            // Ensure matrices are available (cheap duplicates; keeps things robust)
+            _vat_bm0 = sampleVATMatrix(_vat_currentRow, aBoneIndex.x);
+            _vat_bm1 = sampleVATMatrix(_vat_currentRow, aBoneIndex.y);
+            _vat_bm2 = sampleVATMatrix(_vat_currentRow, aBoneIndex.z);
+            _vat_bm3 = sampleVATMatrix(_vat_currentRow, aBoneIndex.w);
+
+            // Skin the position
+            vec4 _pos = vec4(position, 1.0);
+            vec4 _skinnedPos =
+                    (_vat_bm0 * _pos) * w2.x +
+                    (_vat_bm1 * _pos) * w2.y +
+                    (_vat_bm2 * _pos) * w2.z +
+                    (_vat_bm3 * _pos) * w2.w;
+
+            vec3 transformed = _skinnedPos.xyz;
+            `
+            );
+        };
+        material.needsUpdate = true;
+        return material;
+    }
+
+    _buildClipIndexMap(clips) {
+        const map = {};
+        clips.forEach((clip, index) => {
+            map[clip.name] = index;
+        });
+        return map;
+    }
+
+    // Legacy compatibility for non-unit objects (buildings, environment objects, etc.)
+    getModel(objectType, spawnType) {
+        const key = `${objectType}_${spawnType}`;
+
+        // For units, redirect to VAT system
+        if (objectType === 'units') {
+            console.warn(`[ModelManager] Unit '${spawnType}' should use VAT batching, not getModel()`);
+            // Return master model clone for emergency compatibility
+            const master = this.masterModels.get(key);
+            return master ? master.clone() : null;
+        }
+
+        // For environment objects, buildings, etc. - return master model clone
+        const masterModel = this.masterModels.get(key);
+        if (masterModel) {
+            const clone = masterModel.clone();
+            // Apply basic material setup
+            clone.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            return clone;
+        }
+
+        console.warn(`[ModelManager] No model found for ${objectType}_${spawnType}`);
+        return null;
+    }
+
+    // Legacy compatibility for animations
+    async getAnimation(objectType, spawnType, animName, variantIndex = 0) {
+        const key = variantIndex === 0
+            ? `${objectType}_${spawnType}_${animName}`
+            : `${objectType}_${spawnType}_${animName}_${variantIndex}`;
+
+        const animModel = this.animationModels.get(key);
+        if (animModel) {
+            const clone = animModel.clone();
+            clone.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            return clone;
+        }
+
+        console.warn(`[ModelManager] No animation model found for ${key}`);
+        return null;
+    }
+
+    // Public API
+    hasVATBundle(objectType, spawnType) {
+        return this.vatBundles.has(`${objectType}_${spawnType}`);
+    }
+
+    getVATBundle(objectType, spawnType) {
+        return this.vatBundles.get(`${objectType}_${spawnType}`);
+    }
 }
+

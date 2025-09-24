@@ -152,8 +152,8 @@ class AbilitySystem extends engine.BaseSystem {
         const animationsToTry = [ability.animationName, 'cast', 'attack', 'idle'];
         
         for (const anim of animationsToTry) {
-            const animationActions = this.game.animationSystem.entityAnimations.get(entityId);
-            if (animationActions?.[anim]) {
+            const animationAction = this.game.animationSystem.entityAnimationStates.get(entityId);
+            if (anim && animationAction?.currentClip == anim) {
                 // For abilities, use normal speed unless it's an attack-based ability
                 let animationSpeed = 1.0;
                 let minAnimationTime = 1.5;

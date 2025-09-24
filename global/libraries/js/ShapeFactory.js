@@ -61,7 +61,7 @@ class ShapeFactory {
     }
 
     async handleGLTFShape(shape, index, group) {
-        const applyTransformations = (model, gltf) => {
+        const applyTransformations = async (model, gltf) => {
             // Extract animations
             const animations = gltf.animations;
             
@@ -160,6 +160,10 @@ class ShapeFactory {
                             bone.userData.modelIndex = index;
                         }
                     });
+                    if (skeleton && animations && animations.length > 0) {
+                        const baked = await this.bakeGpuAnimFromModel(model, animations, skeleton, { fps: 30 });
+                        model.userData.gpuAnim = baked; // stash VAT + meta on the GLTF root
+                    }
                     
                     // Update bones map in userData
                     model.userData.bones = modelBones;
@@ -171,15 +175,15 @@ class ShapeFactory {
             const cached = this.gltfCache.get(shape.url);
             if (cached) {
                 const clonedScene = this.skeleUtils.clone(cached.scene);
-                applyTransformations(clonedScene, cached);
+                await applyTransformations(clonedScene, cached);
             } else if (shape.url && location.hostname !== "") {
                 await new Promise((resolve, reject) => {
                     this.gltfLoader.load(
                         `${this.urlRoot}${shape.url}`,
-                        (gltf) => {
+                        async (gltf) => {
                             const clonedScene = this.skeleUtils.clone(gltf.scene);
                             this.gltfCache.set(shape.url, gltf);
-                            applyTransformations(clonedScene, gltf);
+                            await applyTransformations(clonedScene, gltf);
                             resolve();
                         },
                         undefined,
@@ -435,4 +439,98 @@ class ShapeFactory {
             delete frameData[groupName];
         }
     }
+        // ---- GPU Animation Bake (VAT) ----
+    async bakeGpuAnimFromModel(model, animations, skeleton, opts = {}) {
+        // opts: { fps=30, useDualQuat=false }  // keep simple: matrices
+        const fps = opts.fps ?? 30;
+        if (!skeleton || !animations || animations.length === 0) return null;
+
+        const clips = animations; // THREE.AnimationClip[]
+        const bones = skeleton.bones;
+        const boneCount = bones.length;
+
+        // Build meta per clip: {name, frames, duration}
+        const perClipMeta = clips.map(clip => {
+            const frames = Math.max(1, Math.ceil((clip.duration || 0) * fps));
+            return { name: clip.name, duration: clip.duration, frames };
+        });
+
+        // Layout: one big atlas: rows = sum(frames over clips), columns = boneCount * 4 (mat4)
+        const totalFrames = perClipMeta.reduce((a, c) => a + c.frames, 0);
+        const cols = boneCount * 4;   // 4 texels per bone (mat4 rows)
+        const rows = totalFrames;
+
+        // R32F/RGBA32F: we’ll pack mat4 rows into RGBA floats per texel
+        const floatCount = rows * cols * 4; // 4 channels per texel
+        const data = new Float32Array(floatCount);
+
+        const mixer = new THREE.AnimationMixer(model);
+        const tmpQuat = new THREE.Quaternion();
+        const tmpPos = new THREE.Vector3();
+        const tmpScl = new THREE.Vector3();
+        const boneM = new THREE.Matrix4();
+        const bindI = skeleton.boneInverses;
+
+        let rowOffset = 0;
+        for (let c = 0; c < clips.length; c++) {
+            const clip = clips[c];
+            const { frames } = perClipMeta[c];
+            const action = mixer.clipAction(clip);
+            action.play();
+
+            for (let f = 0; f < frames; f++) {
+                const t = (f / Math.max(1, frames - 1)) * (clip.duration || 0);
+                mixer.setTime(t);
+
+                // ensure world/bone matrices are fresh
+                model.updateMatrixWorld(true);
+                bones.forEach((b) => b.updateMatrixWorld(true));
+
+                // For each bone: final palette matrix = world * bindInverse (classic skinning)
+                for (let b = 0; b < boneCount; b++) {
+                    boneM.copy(bones[b].matrixWorld).multiply(bindI[b]);
+
+                    // write 4 rows (vec4 each) into data
+                    // column-major three.js Matrix4 elements
+                    const e = boneM.elements; // [n11,n12, ... n44], column-major
+                    const baseTexel = ((rowOffset + f) * cols + (b * 4)) * 4;
+                    // Row0
+                    data[baseTexel + 0] = e[0]; data[baseTexel + 1] = e[4]; data[baseTexel + 2] = e[8];  data[baseTexel + 3] = e[12];
+                    // Row1
+                    data[baseTexel + 4] = e[1]; data[baseTexel + 5] = e[5]; data[baseTexel + 6] = e[9];  data[baseTexel + 7] = e[13];
+                    // Row2
+                    data[baseTexel + 8] = e[2]; data[baseTexel + 9] = e[6]; data[baseTexel +10] = e[10]; data[baseTexel +11] = e[14];
+                    // Row3
+                    data[baseTexel +12] = e[3]; data[baseTexel +13] = e[7]; data[baseTexel +14] = e[11]; data[baseTexel +15] = e[15];
+                }
+            }
+
+            rowOffset += frames;
+            action.stop();
+        }
+
+        const tex = new THREE.DataTexture(
+            data, cols, rows, THREE.RGBAFormat, THREE.FloatType
+        );
+        tex.needsUpdate = true;
+        tex.flipY = false;
+
+        // clip row ranges
+        let acc = 0;
+        const clipRows = perClipMeta.map(m => {
+            const start = acc;
+            const end = acc + m.frames; // exclusive
+            acc = end;
+            return { name: m.name, start, end, frames: m.frames, duration: m.duration };
+        });
+
+        return {
+            texture: tex,
+            bones: boneCount,
+            rows, cols,
+            fps,
+            clips: clipRows
+        };
+    }
+
 }

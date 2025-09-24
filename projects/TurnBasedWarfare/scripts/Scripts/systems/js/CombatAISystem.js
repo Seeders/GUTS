@@ -364,20 +364,52 @@ class CombatAISystem extends engine.BaseSystem {
     calculateAttackAnimationSpeed(attackerId, combat) {
         const attackInterval = 1 / combat.attackSpeed;
         
-        // Get the base animation duration
-        let baseAnimationDuration = 0.8; // Default fallback
+        // Default fallback duration
+        let baseAnimationDuration = 0.8;
         
         if (this.game.animationSystem) {
-            const animationActions = this.game.animationSystem.entityAnimations.get(attackerId);
-            if (animationActions && animationActions.attack) {
-                const attackAction = animationActions.attack;
-                if (attackAction.getClip) {
-                    baseAnimationDuration = attackAction.getClip().duration;
+            // NEW: Get duration from VAT bundle instead of mixer actions
+            const CT = this.componentTypes;
+            const renderable = this.game.getComponent(attackerId, CT.RENDERABLE);
+            
+            if (renderable) {
+                const batchInfo = this.game.renderSystem?.getBatchInfo(
+                    renderable.objectType, 
+                    renderable.spawnType
+                );
+                
+                if (batchInfo) {
+                    const bundle = this.game.modelManager?.getVATBundle(
+                        renderable.objectType, 
+                        renderable.spawnType
+                    );
+                    
+                    if (bundle?.meta?.clips) {
+                        // Find attack clip duration
+                        const attackClip = bundle.meta.clips.find(clip => 
+                            clip.name === 'attack' || clip.name === 'combat' || clip.name === 'fight'
+                        );
+                        if (attackClip) {
+                            baseAnimationDuration = attackClip.duration;
+                        }
+                    }
+                }
+            }
+            
+            // OLD SYSTEM COMPATIBILITY (remove this once VAT is working):
+            // Keep this as fallback in case you need it temporarily
+            if (this.game.animationSystem.entityAnimations) {
+                const animationActions = this.game.animationSystem.entityAnimations.get(attackerId);
+                if (animationActions && animationActions.attack) {
+                    const attackAction = animationActions.attack;
+                    if (attackAction.getClip) {
+                        baseAnimationDuration = attackAction.getClip().duration;
+                    }
                 }
             }
         }
         
-        // Calculate speed to fit animation into attack interval (leaving some buffer)
+        // Calculate speed to fit animation into attack interval
         const targetAnimationDuration = Math.max(attackInterval * 0.9, 0.2);
         let animationSpeed = baseAnimationDuration / targetAnimationDuration;
         

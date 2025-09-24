@@ -416,10 +416,8 @@ class MultiplayerPhaseSystem {
         });
         
         if (this.game.renderSystem) {
-            const modelEntities = Array.from(this.game.renderSystem.entityModels.keys());
-            modelEntities.forEach(entityId => {
-                this.game.renderSystem.removeEntityModel(entityId);
-            });
+            const ids = Array.from(this.game.renderSystem.entityToInstance.keys());
+            ids.forEach(id => this.game.renderSystem.removeInstance(id));
         }
         
         if (this.game.animationSystem) {

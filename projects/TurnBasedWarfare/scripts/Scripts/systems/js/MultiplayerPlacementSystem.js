@@ -163,6 +163,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     if (Math.random() < 0.3) { // Only 30% of units get effects
                         this.createRespawnEffect(unit.position, team);
                     }
+                    
+                    // IMPORTANT: Let RenderSystem handle instancing in its next update cycle
+                    // Don't call playDefaultAnimation here - it will be handled automatically
                 });
             } else {
                 const entityId = this.unitCreator.create(
@@ -176,14 +179,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 newUnitIds.push(entityId);
                 
                 this.createRespawnEffect({ x: placement.x, y: placement.y, z: placement.z }, team);
+                // Again, don't call playDefaultAnimation - let RenderSystem handle it
             }
             
             // Re-initialize in experience system with restored level bonuses
             if (this.game.squadExperienceSystem && placement.placementId) {
-                // Initialize squad with the unit type directly
                 this.game.squadExperienceSystem.initializeSquad(
                     placement.placementId, 
-                    placement.unitType,  // Pass unit type directly
+                    placement.unitType,
                     newUnitIds, 
                     team
                 );
