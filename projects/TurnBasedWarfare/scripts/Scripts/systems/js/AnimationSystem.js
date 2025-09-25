@@ -14,10 +14,7 @@ class AnimationSystem extends engine.BaseSystem {
 
         // Single-play animations (play once then stop/transition)
         this.SINGLE_PLAY_ANIMATIONS = new Set([
-            'attack', 'combat', 'fight', 'swing', 'strike',
-            'shoot', 'bow', 'aim', 'fire', 'cast', 'spell', 'magic',
-            'throw', 'leap', 'jump', 'hurt', 'damage', 'hit', 'pain',
-            'death', 'die', 'celebrate', 'victory', 'cheer', 'dance'
+            'attack', 'cast', 'death'
         ]);
 
     }
@@ -88,12 +85,6 @@ class AnimationSystem extends engine.BaseSystem {
         const deltaTime = this.game.state?.deltaTime || 1/60;
         animState.animationTime += deltaTime;
 
-        // DEBUG: Check for death/corpse state changes
-        const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
-        const corpse = this.game.getComponent(entityId, this.componentTypes.CORPSE);
-        
-
-
         // NEW: Handle animation completion for locked states
         if (animState.isDying || animState.isCorpse || animState.isCelebrating) {
             // Handle celebration completion ONLY
@@ -120,6 +111,8 @@ class AnimationSystem extends engine.BaseSystem {
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
         
+        console.log(entityId, animState, desired, shouldChange);
+
         if (shouldChange) {
             this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
         } else {
@@ -170,27 +163,48 @@ class AnimationSystem extends engine.BaseSystem {
     }
 
     shouldChangeAnimation(entityId, animState, desired, currentTime) {
-        // Always change if different clip is desired
+        // 1) If we are in a single-play clip, don't allow state changes until it's finished
+        if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
+            const finished = this.isAnimationFinished(entityId, animState.currentClip);
+
+            // Respect explicit minAnimationTime as an additional guard
+            const minTimeSatisfied = (animState.minAnimationTime <= 0) || (animState.animationTime >= animState.minAnimationTime);
+
+            // Block changes until BOTH: (a) clip finished OR (b) min time satisfied (use whichever is stricter for your game)
+            // If you want strictly "finished", change to: if (!finished) return false;
+            if (!finished && !minTimeSatisfied) {
+                console.log(entityId, 'not finished', finished, minTimeSatisfied);
+                return false;
+            }
+            // Once finished (or min time hit), we can flow through to normal logic below.
+        }
+
+        // 2) Cooldown: prevent thrashing even for continuous animations
+        const timeSinceLastChange = currentTime - animState.lastStateChange;
+        if(timeSinceLastChange < 0){
+            return true;
+
+        }
+        if (timeSinceLastChange < this.STATE_CHANGE_COOLDOWN) {
+            console.log(entityId, 'cooldown', timeSinceLastChange);
+            return false;
+        }
+
+        // 3) If the desired clip differs, allow change (this now runs AFTER the single-play guard)
         if (animState.currentClip !== desired.clip) {
             return true;
         }
+        console.log(entityId, 'currentClip', animState.currentClip, 'desired clip', desired.clip);
 
-        // For single-play animations, check if finished
+        // 4) For single-play, if somehow the clip finished (edge case) allow refresh
         if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
-            const isFinished = this.isAnimationFinished(entityId, animState.currentClip);
-            if (isFinished) {
+            if (this.isAnimationFinished(entityId, animState.currentClip)) {
                 return true;
             }
         }
 
-        // Check minimum animation time
+        // 5) Respect minAnimationTime for non-single-play too
         if (animState.minAnimationTime > 0 && animState.animationTime < animState.minAnimationTime) {
-            return false;
-        }
-
-        // Check state change cooldown
-        const timeSinceLastChange = currentTime - animState.lastStateChange;
-        if (timeSinceLastChange < this.STATE_CHANGE_COOLDOWN) {
             return false;
         }
 
@@ -442,8 +456,7 @@ class AnimationSystem extends engine.BaseSystem {
     }
 
     removeEntityAnimations(entityId) {
-        this.entityAnimationStates.delete(entityId);
-        
+        this.entityAnimationStates.delete(entityId);        
     }
 
     destroy() {
