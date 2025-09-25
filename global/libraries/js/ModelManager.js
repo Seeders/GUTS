@@ -36,7 +36,6 @@ class ModelManager {
     }
 
     async loadModels(prefix, config) {
-        console.log(`[ModelManager] Loading models for VAT rendering: ${prefix}`);
 
         // Load all models first (master + animations)
         for (const [type, cfg] of Object.entries(config)) {
@@ -73,7 +72,6 @@ class ModelManager {
         }
 
         this.assetsLoaded = true;
-        console.log(`[ModelManager] Loaded ${this.masterModels.size} master models and ${this.animationModels.size} animation models`);
     }
 
     async createModel(modelData) {
@@ -82,7 +80,6 @@ class ModelManager {
             const group = await this.shapeFactory.createMergedGroupFromJSON(
                 modelData, {}, groupName, null, null
             );
-            console.log(modelData, groupName, group);
             if (group) {
                 rootGroup.add(group);
             }
@@ -112,7 +109,6 @@ class ModelManager {
             const bundle = await promise;
             if (bundle) {
                 this.vatBundles.set(key, bundle);
-                console.log(`[ModelManager] VAT bundle ready: ${key}`, bundle.meta.clips.map(c => c.name));
                 return { ready: true, bundle };
             }
         } catch (error) {
@@ -125,7 +121,6 @@ class ModelManager {
     }
 
     async _buildVATBundle(key, objectType, spawnType, unitDef) {
-        console.log(`[ModelManager] Building VAT bundle: ${key}`);
 
         // Get master model
         const masterModel = this.masterModels.get(key);
@@ -198,7 +193,6 @@ class ModelManager {
 
     // Add method for static meshes without skeletons:
     _buildStaticVATBundle(key, masterModel, mesh) {
-        console.log(`[ModelManager] Building static VAT bundle: ${key}`);
             
         const clips = [{ name: 'idle', startRow: 0, frames: 1 }];
         const clipIndexByName = { 'idle': 0 };
@@ -252,7 +246,6 @@ class ModelManager {
         this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
         const baseScale = (masterModel && masterModel.children[0]?.scale) ? masterModel.children[0].scale : new THREE.Vector3(1, 1, 1);
 
-        console.log('created baseScale', baseScale, masterModel);
         return {
             geometry,
             material,
@@ -303,9 +296,6 @@ class ModelManager {
 
                     if (clip) {
                         clips.push({ name: animName, clip });
-                        console.log(`[ModelManager] Found clip '${animName}' (${clip.duration}s) for ${key}`);
-                    } else {
-                        console.warn(`[ModelManager] No clip data in animation model ${animKey}`);
                     }
                 } else {
                     console.warn(`[ModelManager] Animation model not found: ${animKey}`);
@@ -320,14 +310,12 @@ class ModelManager {
             // Create a default idle clip
             const defaultClip = new THREE.AnimationClip('idle', 1.0, []);
             clips.unshift({ name: 'idle', clip: defaultClip });
-            console.log(`[ModelManager] Added default idle clip for ${key}`);
         }
 
         return clips;
     }
 
     async _bakeVATTexture(masterModel, skeleton, clipData, fps = 30) {
-        console.log(`[ModelManager] Baking VAT texture for ${clipData.length} clips at ${fps}fps`);
 
         const bones = skeleton.bones;
         const boneCount = bones.length;
@@ -345,7 +333,6 @@ class ModelManager {
         });
 
         const rows = totalFrames;
-        console.log(`[ModelManager] VAT texture size: ${cols}x${rows} (${boneCount} bones, ${totalFrames} total frames)`);
 
         // Create texture data
         const textureData = new Float32Array(rows * cols * 4); // RGBA
@@ -359,7 +346,6 @@ class ModelManager {
             const action = mixer.clipAction(clipInfo.clip);
             action.play();
 
-            console.log(`[ModelManager] Baking clip '${clipInfo.name}': ${clipInfo.frames} frames`);
 
             // Bake frames for this clip
             for (let frame = 0; frame < clipInfo.frames; frame++) {
@@ -472,20 +458,6 @@ class ModelManager {
                 #define ${batchPrefix}_CLIP_${index}_FRAMES ${clip.frames}.0
             `).join('\n');
 
-            // *** DEBUG CODE ***
-            console.log(`[VAT Debug] Clip mapping for ${batchKey}:`);
-            console.log('vatData.clipIndexByName:', vatData.clipIndexByName);
-            console.log('clips array order:', vatData.clips.map((c, i) => `${i}: ${c.name}`));
-            
-            // Verify each clip's shader define
-            Object.entries(vatData.clipIndexByName || {}).forEach(([name, index]) => {
-                const clip = vatData.clips[index];
-                if (clip) {
-                    console.log(`${name}(${index}) -> startRow:${clip.startRow}, frames:${clip.frames}`);
-                } else {
-                    console.error(`No clip found at index ${index} for ${name}`);
-                }
-            });
 
             const clipHelpers = `
                 float getClipStartRow(float clipIndex) {
