@@ -379,7 +379,6 @@ console.log("apply poison dot");
                 this.activeStatusEffects.delete(entityId);
                 continue;
             }
-console.log('processing activeStatusEffects');
             // Process poison effects
             statusEffects.poison = statusEffects.poison.filter(poisonEffect => {
                 if (this.game.state.now >= poisonEffect.nextTickTime) {
@@ -563,24 +562,13 @@ console.log('processing activeStatusEffects');
         this.activeStatusEffects.delete(entityId);
     }
 
+    clearAll() {        
+        this.activeStatusEffects.clear();  
+        this.pendingDamageEvents.clear();
+    }
+
     getStatusEffects(entityId) {
         return this.activeStatusEffects.get(entityId) || { poison: [] };
-    }
-    entityDestroyed(entityId) {
-        // Clear status effects
-        if (this.statusEffects) {
-            this.statusEffects.delete(entityId);
-        }
-        
-        // Clear poison stacks
-        if (this.poisonStacks) {
-            this.poisonStacks.delete(entityId);
-        }
-        
-        // Clear any damage tracking
-        if (this.damageHistory) {
-            this.damageHistory.delete(entityId);
-        }
     }
 
 }

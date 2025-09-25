@@ -82,6 +82,7 @@ class ModelManager {
             const group = await this.shapeFactory.createMergedGroupFromJSON(
                 modelData, {}, groupName, null, null
             );
+            console.log(modelData, groupName, group);
             if (group) {
                 rootGroup.add(group);
             }
@@ -132,60 +133,54 @@ class ModelManager {
             throw new Error(`Master model not found: ${key}`);
         }
 
-        // Find skinned mesh and skeleton
-        let skinnedMesh = null;
+        // Find any mesh - prefer skinned mesh but fallback to any mesh
+        let targetMesh = null;
         let skeleton = null;
+        
         masterModel.traverse(obj => {
-            if (obj.isSkinnedMesh && obj.skeleton) {
-                skinnedMesh = obj;
+            if (obj.isSkinnedMesh && obj.skeleton && !targetMesh) {
+                targetMesh = obj;
                 skeleton = obj.skeleton;
+            } else if (obj.isMesh && !targetMesh) {
+                targetMesh = obj;
             }
         });
 
-        if (!skinnedMesh || !skeleton) {
-            throw new Error(`No skinned mesh with skeleton found in: ${key}`);
+        if (!targetMesh) {
+            throw new Error(`No mesh found in: ${key}`);
         }
 
-        // Collect animation clips
+        // Collect animation clips (may be empty for static meshes)
         const clips = await this._collectAnimationClips(key, objectType, spawnType, unitDef);
-        if (clips.length === 0) {
-            throw new Error(`No animation clips found for: ${key}`);
+        
+        // If no skeleton or no clips, create a static "animation" 
+        if (!skeleton || clips.length === 0) {
+            return this._buildStaticVATBundle(key, masterModel, targetMesh);
         }
 
-        // Bake VAT texture
+        // Standard VAT bundle with animations
         const vatData = await this._bakeVATTexture(masterModel, skeleton, clips);
         if (!vatData) {
             throw new Error(`VAT baking failed for: ${key}`);
         }
 
-        // Add clipIndexByName to vatData before passing to material creation
         vatData.clipIndexByName = this._buildClipIndexMap(vatData.clips);
+        const material = this._createVATMaterial(targetMesh, vatData, key);
+        const geometry = targetMesh.geometry.clone();
 
-        // Create VAT-enabled material
-        const material = this._createVATMaterial(skinnedMesh, vatData, key);
-
-        // Prepare geometry (clone to avoid modifying master)
-        const geometry = skinnedMesh.geometry.clone();
-
-        // ===== IMPORTANT: Copy bone data into custom attributes so we don't depend on SkinnedMesh pipeline =====
-        const skinIndexAttr = skinnedMesh.geometry.getAttribute('skinIndex');
-        const skinWeightAttr = skinnedMesh.geometry.getAttribute('skinWeight');
+        // Copy bone data
+        const skinIndexAttr = targetMesh.geometry.getAttribute('skinIndex');
+        const skinWeightAttr = targetMesh.geometry.getAttribute('skinWeight');
         if (!skinIndexAttr || !skinWeightAttr) {
             throw new Error('Skinned geometry missing skinIndex/skinWeight attributes.');
         }
-        // Clone into custom attributes visible even on plain Mesh / InstancedMesh
+        
         geometry.setAttribute('aBoneIndex', skinIndexAttr.clone());
         geometry.setAttribute('aBoneWeight', skinWeightAttr.clone());
 
-        // Provide safe defaults for VAT driving attributes (engine may overwrite later)
         this._ensureFloatAttribute(geometry, 'aClipIndex', 1, 0.0);
         this._ensureFloatAttribute(geometry, 'aAnimTime', 1, 0.0);
         this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
-
-        // Debug before returning
-        console.log('vatData.clips before clipIndexByName:', vatData.clips);
-        const clipIndexByName = this._buildClipIndexMap(vatData.clips);
-        console.log('Generated clipIndexByName:', clipIndexByName);
 
         return {
             geometry,
@@ -196,11 +191,82 @@ class ModelManager {
                 cols: vatData.cols,
                 rows: vatData.rows,
                 clips: vatData.clips,
-                clipIndexByName: clipIndexByName
+                clipIndexByName: vatData.clipIndexByName
             }
         };
     }
 
+    // Add method for static meshes without skeletons:
+    _buildStaticVATBundle(key, masterModel, mesh) {
+        console.log(`[ModelManager] Building static VAT bundle: ${key}`);
+            
+        const clips = [{ name: 'idle', startRow: 0, frames: 1 }];
+        const clipIndexByName = { 'idle': 0 };
+        
+        // Now use clips in the material creation
+        const identityData = new Float32Array([
+            1, 0, 0, 0,  // identity matrix column 0
+            0, 1, 0, 0,  // identity matrix column 1  
+            0, 0, 1, 0,  // identity matrix column 2
+            0, 0, 0, 1   // identity matrix column 3
+        ]);
+
+        const identityTexture = new THREE.DataTexture(
+            identityData, 4, 1, THREE.RGBAFormat, THREE.FloatType
+        );
+        identityTexture.needsUpdate = true;
+        identityTexture.flipY = false;
+
+        // Then use this instead of null:
+        const material = this._createVATMaterial(mesh, {
+            texture: identityTexture,  // Instead of null
+            clips: clips,
+            clipIndexByName: clipIndexByName,
+            fps: 30,
+            cols: 4,
+            rows: 1
+        }, key);
+
+        material.userData.batchKey = key;
+        material.customProgramCacheKey = () => key;
+        material.needsUpdate = true;
+
+        const geometry = mesh.geometry.clone();
+        const positionCount = geometry.getAttribute('position').count;
+        
+        // Create identity bone data (all vertices use bone 0 with weight 1)
+        const boneIndices = new Float32Array(positionCount * 4);
+        const boneWeights = new Float32Array(positionCount * 4);
+        
+        for (let i = 0; i < positionCount; i++) {
+            boneIndices[i * 4] = 0;     // bone index 0
+            boneWeights[i * 4] = 1;     // full weight
+            // other indices/weights remain 0
+        }
+        
+        geometry.setAttribute('aBoneIndex', new THREE.BufferAttribute(boneIndices, 4));
+        geometry.setAttribute('aBoneWeight', new THREE.BufferAttribute(boneWeights, 4));
+
+        this._ensureFloatAttribute(geometry, 'aClipIndex', 1, 0.0);
+        this._ensureFloatAttribute(geometry, 'aAnimTime', 1, 0.0);
+        this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
+        const baseScale = (masterModel && masterModel.children[0]?.scale) ? masterModel.children[0].scale : new THREE.Vector3(1, 1, 1);
+
+        console.log('created baseScale', baseScale, masterModel);
+        return {
+            geometry,
+            material,
+            vatTexture: null, // No animation texture needed
+            meta: {
+                fps: 30,
+                cols: 4,   // Identity matrix
+                rows: 1,   // Single frame
+                clips: clips,
+                clipIndexByName: clipIndexByName,
+                baseScale: baseScale
+            }
+        };
+    }
     _ensureFloatAttribute(geometry, name, itemSize, fillValue = 0.0) {
         if (!geometry.getAttribute(name)) {
             const pos = geometry.getAttribute('position');
@@ -385,9 +451,10 @@ class ModelManager {
         material.metalness = sourceMaterial?.metalness ?? 0.05; // less metal, easier to see
         material.roughness = sourceMaterial?.roughness ?? 0.9;  // more diffuse light
         // Make VAT lookups crisp (optional but recommended)
-        vatData.texture.magFilter = THREE.NearestFilter;
-        vatData.texture.minFilter = THREE.NearestFilter;
-
+        if(vatData.texture){
+            vatData.texture.magFilter = THREE.NearestFilter;
+            vatData.texture.minFilter = THREE.NearestFilter;
+        }
         // Force unique shader compilation per batch
         material.userData.batchKey = batchKey;
         material.customProgramCacheKey = () => batchKey;

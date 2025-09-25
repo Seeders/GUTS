@@ -377,28 +377,37 @@ class RenderSystem extends engine.BaseSystem {
         const batch = this.vatBatches.get(instance.batchKey);
         if (!batch) return;
 
-        // Calculate transform matrix
         const matrix = new THREE.Matrix4();
         const position = new THREE.Vector3(pos.x, pos.y || 0, pos.z);
+        const baseScale = (batch.meta && batch.meta.baseScale) ? batch.meta.baseScale : new THREE.Vector3(1, 1, 1);
+
+        if(batch?.meta?.baseScale){
+            console.log(baseScale);
+        }
+        const scale = new THREE.Vector3(baseScale.x*this.modelScale, baseScale.y*this.modelScale, baseScale.z*this.modelScale);
+
+        let quaternion;
         
-        // Calculate rotation
-        let rotationY = 0;
-        if (facing?.angle !== undefined) {
-            rotationY = -facing.angle + Math.PI / 2;
+        if (facing && facing?.angle !== undefined) {
+            // Use existing facing logic for units
+            const rotationY = -facing.angle + Math.PI / 2;
+            quaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
         } else if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
-            rotationY = -Math.atan2(velocity.vz, velocity.vx) + Math.PI / 2;
+            // BRUTE FORCE TEST - try different rotation combinations
+            const directionY = Math.atan2(velocity.vz, velocity.vx);
+            
+            // Try this combination - if it doesn't work, I'll give you 5 more to test rapidly
+            const quatX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI / 2); // +90° around X
+            const quatY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -directionY);
+            quaternion = quatY.multiply(quatX);
+        } else {
+            quaternion = new THREE.Quaternion();
         }
         
-        const rotation = new THREE.Euler(0, rotationY, 0);
-        const scale = new THREE.Vector3(this.modelScale, this.modelScale, this.modelScale);
-        
-        matrix.compose(position, new THREE.Quaternion().setFromEuler(rotation), scale);
-        
-        // Set instance matrix
+        matrix.compose(position, quaternion, scale);
         batch.mesh.setMatrixAt(instance.instanceIndex, matrix);
         batch.dirty.matrices = true;
     }
-
     updateAnimations() {
         const dt = this.game.state?.deltaTime;
 

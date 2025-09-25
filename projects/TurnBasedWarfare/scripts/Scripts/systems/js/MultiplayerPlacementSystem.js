@@ -122,6 +122,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
            
         if (this.game.shopSystem) {
             this.game.shopSystem.reset();
+        }  
+        if (this.game.damageSystem) {
+            this.game.damageSystem.clearAll();
+        }
+        if(this.game.effectsSystem){
+            this.game.effectsSystem.clearAllEffects();
         }
         // Enable placement UI
         this.enablePlacementUI();
