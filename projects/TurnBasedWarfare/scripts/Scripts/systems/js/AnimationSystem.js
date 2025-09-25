@@ -111,7 +111,6 @@ class AnimationSystem extends engine.BaseSystem {
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
         
-        console.log(entityId, animState, desired, shouldChange);
 
         if (shouldChange) {
             this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
@@ -173,7 +172,6 @@ class AnimationSystem extends engine.BaseSystem {
             // Block changes until BOTH: (a) clip finished OR (b) min time satisfied (use whichever is stricter for your game)
             // If you want strictly "finished", change to: if (!finished) return false;
             if (!finished && !minTimeSatisfied) {
-                console.log(entityId, 'not finished', finished, minTimeSatisfied);
                 return false;
             }
             // Once finished (or min time hit), we can flow through to normal logic below.
@@ -186,7 +184,6 @@ class AnimationSystem extends engine.BaseSystem {
 
         }
         if (timeSinceLastChange < this.STATE_CHANGE_COOLDOWN) {
-            console.log(entityId, 'cooldown', timeSinceLastChange);
             return false;
         }
 
@@ -194,7 +191,6 @@ class AnimationSystem extends engine.BaseSystem {
         if (animState.currentClip !== desired.clip) {
             return true;
         }
-        console.log(entityId, 'currentClip', animState.currentClip, 'desired clip', desired.clip);
 
         // 4) For single-play, if somehow the clip finished (edge case) allow refresh
         if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {

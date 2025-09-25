@@ -155,7 +155,6 @@ class RenderSystem extends engine.BaseSystem {
             return null;
         }
 
-        console.log(`[RenderSystem] Assigning entity ${entityId} to batch ${batchKey} at index ${instanceIndex}`);
 
         // Assign instance
         batch.entityMap.set(instanceIndex, entityId);
@@ -244,16 +243,6 @@ class RenderSystem extends engine.BaseSystem {
         
         if (bundle.meta) {
 
-         
-            // VERIFY essential animations exist
-            const requiredClips = ['idle', 'walk', 'death', 'attack'];
-            const availableClips = Object.keys(bundle.meta.clipIndexByName || {});
-            const missingRequired = requiredClips.filter(clip => !availableClips.includes(clip));
-        
-            if (missingRequired.length > 0) {
-                console.warn(`[RenderSystem] WARNING: Missing essential animations for ${batchKey}:`, missingRequired);
-            }
-            
             // CROSS-REFERENCE clips array with clipIndexByName mapping
             if (bundle.meta.clips && bundle.meta.clipIndexByName) {
                 bundle.meta.clips.forEach((clip, arrayIndex) => {
@@ -381,9 +370,6 @@ class RenderSystem extends engine.BaseSystem {
         const position = new THREE.Vector3(pos.x, pos.y || 0, pos.z);
         const baseScale = (batch.meta && batch.meta.baseScale) ? batch.meta.baseScale : new THREE.Vector3(1, 1, 1);
 
-        if(batch?.meta?.baseScale){
-            console.log(baseScale);
-        }
         const scale = new THREE.Vector3(baseScale.x*this.modelScale, baseScale.y*this.modelScale, baseScale.z*this.modelScale);
 
         let quaternion;
@@ -730,44 +716,5 @@ class RenderSystem extends engine.BaseSystem {
         this.entityToInstance.clear();
         
     }
-   // Add this method to RenderSystem.js
-debugAttributeUpdates(entityId) {
-    const instance = this.entityToInstance.get(entityId);
-    if (!instance) {
-        console.log(`❌ No instance found for entity ${entityId}`);
-        return;
-    }
-
-    const batch = this.vatBatches.get(instance.batchKey);
-    if (!batch) {
-        console.log(`❌ No batch found for ${instance.batchKey}`);
-        return;
-    }
-
-    console.log(`🔍 Debug attribute updates for entity ${entityId}:`);
-    console.log(`  - Instance index: ${instance.instanceIndex}`);
-    console.log(`  - Batch key: ${instance.batchKey}`);
-    
-    // Check attribute values
-    const clipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
-    const animTime = batch.attributes.animTime.array[instance.instanceIndex];
-    const animSpeed = batch.attributes.animSpeed.array[instance.instanceIndex];
-    
-    console.log(`  - clipIndex: ${clipIndex}`);
-    console.log(`  - animTime: ${animTime}`);
-    console.log(`  - animSpeed: ${animSpeed}`);
-    
-    // Check if attributes need update
-    console.log(`  - clipIndex needsUpdate: ${batch.attributes.clipIndex.needsUpdate}`);
-    console.log(`  - clipIndex version: ${batch.attributes.clipIndex.version}`);
-    
-    // Find the clip name
-    const availableClips = Object.keys(batch.meta.clipIndexByName);
-    const clipName = Object.keys(batch.meta.clipIndexByName).find(
-        name => batch.meta.clipIndexByName[name] === clipIndex
-    );
-    
-    console.log(`  - Should be playing: ${clipName || 'unknown'}`);
-    console.log(`  - Available clips: ${availableClips.join(', ')}`);
-}
+ 
 }

@@ -31,9 +31,7 @@ class DeathSystem extends engine.BaseSystem {
                 const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration;
                 
                 if (animationCompleted || timerExpired) {
-                    console.log(`[DeathSystem] 💀 Converting entity ${entityId} to corpse:`);
-                    console.log(`  - Timer expired: ${timerExpired} (${timeSinceDeath.toFixed(2)}s / ${deathState.deathAnimationDuration}s)`);
-                    console.log(`  - Animation completed: ${animationCompleted}`);
+
                     this.convertToCorpse(entityId);
                 }
             }
@@ -81,7 +79,6 @@ class DeathSystem extends engine.BaseSystem {
             team.team
         ));
         
-        console.log(`[DeathSystem] ✅ Converted entity ${entityId} to corpse`);
     }
     
     // Rest of your existing methods remain the same...

@@ -37,7 +37,6 @@ class ProjectileSystem extends engine.BaseSystem {
         
         if (!sourcePos || !sourceCombat || !targetPos) return null;
         
-        console.log('fire projectile', projectileData);
         // Create projectile entity
         const projectileId = this.game.createEntity();
         const components = this.game.componentManager.getComponents();

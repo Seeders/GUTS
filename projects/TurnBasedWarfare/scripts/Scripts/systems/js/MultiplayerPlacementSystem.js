@@ -225,7 +225,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
 
     updatePlacementUI() {
-        console.log('update ui');
           
         if (this.elements.undoButton) {
             this.elements.undoButton.disabled = this.undoStack.length === 0;
