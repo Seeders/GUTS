@@ -260,6 +260,7 @@ class ModelManager {
             }
         };
     }
+    
     _ensureFloatAttribute(geometry, name, itemSize, fillValue = 0.0) {
         if (!geometry.getAttribute(name)) {
             const pos = geometry.getAttribute('position');
