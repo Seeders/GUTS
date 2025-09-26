@@ -73,16 +73,7 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
             const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
             if (!allyPos) return;
             // Shield effect
-            this.createVisualEffect(allyPos, 'shield');
-            
-            // Create wind barrier aura
-            if (this.game.effectsSystem) {
-                this.game.effectsSystem.createAuraEffect(
-                    allyPos.x, allyPos.y, allyPos.z,
-                    'magic',
-                    this.shieldDuration * 1000
-                );
-            }
+            this.createVisualEffect(allyPos, 'shield');            
             
             // DESYNC SAFE: Add shield component using scheduling system for duration
             const Components = this.game.componentManager.getComponents();

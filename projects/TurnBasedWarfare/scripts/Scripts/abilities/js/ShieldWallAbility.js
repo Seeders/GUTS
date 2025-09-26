@@ -26,7 +26,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x708090,
                     colorRange: { start: 0x708090, end: 0xC0C0C0 },
                     scaleMultiplier: 1.5,
@@ -36,7 +36,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             shield_formation: {
                 type: 'magic',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0x4682B4,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 0.8
@@ -45,7 +45,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             defensive_stance: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0x2F4F4F,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 0.6
@@ -54,7 +54,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             taunt_aura: {
                 type: 'magic',
                 options: {
-                    count: 10,
+                    count: 3,
                     color: 0xFF6347,
                     scaleMultiplier: 1.2,
                     speedMultiplier: 1.5

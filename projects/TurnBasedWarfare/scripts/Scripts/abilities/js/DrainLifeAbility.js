@@ -25,7 +25,7 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 2,
+                    count: 3,
                     color: 0x800080,
                     colorRange: { start: 0x800080, end: 0x4B0082 },
                     scaleMultiplier: 1.2,
@@ -35,7 +35,7 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             drain: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x8B008B,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 2.5
@@ -44,7 +44,7 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             heal: {
                 type: 'heal',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x9400D3,
                     scaleMultiplier: 1.0,
                     speedMultiplier: 1.0

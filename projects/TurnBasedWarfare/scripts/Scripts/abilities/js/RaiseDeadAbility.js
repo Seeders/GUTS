@@ -35,7 +35,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
             raise_dead: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x8B008B,
                     colorRange: { start: 0x8B008B, end: 0x32CD32 },
                     scaleMultiplier: 2.0,
@@ -45,7 +45,7 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
             necromancy: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x228B22,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 1.2

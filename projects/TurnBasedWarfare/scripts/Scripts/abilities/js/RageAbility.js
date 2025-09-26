@@ -25,7 +25,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: { 
-                    count: 12, 
+                    count: 3, 
                     color: 0xff4444, 
                     colorRange: { start: 0xff4444, end: 0xff8800 },
                     scaleMultiplier: 1.3,
@@ -35,7 +35,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             rage: {
                 type: 'magic',
                 options: { 
-                    count: 8, 
+                    count: 3, 
                     color: 0xff0000, 
                     scaleMultiplier: 1.8,
                     speedMultiplier: 2.0
@@ -44,7 +44,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             fury: {
                 type: 'magic',
                 options: { 
-                    count: 15, 
+                    count: 3, 
                     color: 0xcc0000, 
                     scaleMultiplier: 2.2,
                     speedMultiplier: 0.8

@@ -28,7 +28,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x4169E1,
                     colorRange: { start: 0x4169E1, end: 0xB0C4DE },
                     scaleMultiplier: 1.5,
@@ -38,7 +38,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             formation: {
                 type: 'magic',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0x6495ED,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 0.8
@@ -47,7 +47,7 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             phalanx: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x87CEEB,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 1.2

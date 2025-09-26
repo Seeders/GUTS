@@ -35,7 +35,7 @@ class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
             arrow_launch: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xCD853F,
                     scaleMultiplier: 1.0,
                     speedMultiplier: 2.0
@@ -44,7 +44,7 @@ class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
             volley: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xF4A460,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 1.2

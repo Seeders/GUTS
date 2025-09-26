@@ -24,7 +24,7 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x4B0082,
                     colorRange: { start: 0x4B0082, end: 0x000000 },
                     scaleMultiplier: 2.0,
@@ -43,7 +43,7 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             empowerment: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x8B0000,
                     scaleMultiplier: 1.3,
                     speedMultiplier: 1.2

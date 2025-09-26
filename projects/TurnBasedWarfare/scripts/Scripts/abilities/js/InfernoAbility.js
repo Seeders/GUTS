@@ -37,7 +37,7 @@ class InfernoAbility extends engine.app.appClasses['BaseAbility'] {
             inferno: {
                 type: 'explosion',
                 options: {
-                    count: 4,
+                    count: 3,
                     color: 0xff4400,
                     scaleMultiplier: 3.0,
                     speedMultiplier: 0.8
@@ -46,7 +46,7 @@ class InfernoAbility extends engine.app.appClasses['BaseAbility'] {
             tick: {
                 type: 'explosion',
                 options: {
-                    count: 15,
+                    count: 3,
                     color: 0xff3300,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 0.6

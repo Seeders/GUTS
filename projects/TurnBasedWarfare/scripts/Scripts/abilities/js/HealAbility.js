@@ -34,7 +34,7 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             heal: {
                 type: 'heal',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x88ffaa,
                     scaleMultiplier: 1.2,
                     speedMultiplier: 0.8

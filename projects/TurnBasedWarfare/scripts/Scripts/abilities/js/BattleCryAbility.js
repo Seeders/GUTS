@@ -23,7 +23,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xFFD700,
                     colorRange: { start: 0xFFD700, end: 0xFF4500 },
                     scaleMultiplier: 2.0,
@@ -33,7 +33,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             rally: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xFF6347,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 1.8

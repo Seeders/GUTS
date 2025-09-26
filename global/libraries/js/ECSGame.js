@@ -13,10 +13,8 @@ class ECSGame extends BaseECSGame {
         this.moduleManager = app.moduleManager;
         this.desyncDebugger = new DesyncDebugger(this);
     }
+
     init() {       
         this.imageManager.dispose();
     }
-
- 
-        
 }

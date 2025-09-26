@@ -36,7 +36,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
             mirror: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x6495ED,
                     scaleMultiplier: 2.5,
                     speedMultiplier: 1.5
@@ -45,7 +45,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
             illusion: {
                 type: 'magic',
                 options: {
-                    count: 2,
+                    count: 3,
                     color: 0xB0C4DE,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 3.0

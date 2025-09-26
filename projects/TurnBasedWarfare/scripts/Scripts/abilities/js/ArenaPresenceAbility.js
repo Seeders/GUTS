@@ -26,7 +26,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 10,
+                    count: 3,
                     color: 0x8B0000,
                     colorRange: { start: 0x8B0000, end: 0xFF4500 },
                     scaleMultiplier: 1.8,
@@ -36,7 +36,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             intimidation_aura: {
                 type: 'magic',
                 options: {
-                    count: 15,
+                    count: 3,
                     color: 0x800000,
                     scaleMultiplier: 2.5,
                     speedMultiplier: 0.6
@@ -45,7 +45,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             fear_effect: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0x4B0000,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 2.0
@@ -54,7 +54,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             presence_wave: {
                 type: 'magic',
                 options: {
-                    count: 20,
+                    count: 3,
                     color: 0x660000,
                     scaleMultiplier: 3.0,
                     speedMultiplier: 0.8

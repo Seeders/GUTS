@@ -26,7 +26,7 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xff4400,
                     colorRange: { start: 0xff4400, end: 0xffaa00 },
                     scaleMultiplier: 2.0,
@@ -45,7 +45,7 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             meteor_explosion: {
                 type: 'explosion',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0xff2200,
                     colorRange: { start: 0xff2200, end: 0xffaa00 },
                     scaleMultiplier: 4.0,

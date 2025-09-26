@@ -126,7 +126,7 @@ class LifetimeSystem extends engine.BaseSystem {
             this.game.effectsSystem.createParticleEffect(
                 summonPos.x, summonPos.y, summonPos.z, 
                 'magic', 
-                { count: 20, color: 0x9370DB, scaleMultiplier: 1.5 }
+                { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
             );
         }
         
@@ -148,7 +148,7 @@ class LifetimeSystem extends engine.BaseSystem {
             this.game.effectsSystem.createParticleEffect(
                 imagePos.x, imagePos.y, imagePos.z, 
                 'magic', 
-                { count: 15, color: 0x6495ED, scaleMultiplier: 1.2 }
+                { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
             );
         }
     }
@@ -160,7 +160,7 @@ class LifetimeSystem extends engine.BaseSystem {
             this.game.effectsSystem.createParticleEffect(
                 trapPos.x, trapPos.y, trapPos.z, 
                 'magic', 
-                { count: 10, color: 0x696969, scaleMultiplier: 0.8 }
+                { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
             );
         }
         
@@ -179,7 +179,7 @@ class LifetimeSystem extends engine.BaseSystem {
             this.game.effectsSystem.createParticleEffect(
                 effectPos.x, effectPos.y, effectPos.z, 
                 'magic', 
-                { count: 5, color: 0xFFFFFF, scaleMultiplier: 0.5 }
+                { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
             );
         }
     }
@@ -205,7 +205,7 @@ class LifetimeSystem extends engine.BaseSystem {
                 this.game.effectsSystem.createParticleEffect(
                     targetPos.x, targetPos.y, targetPos.z, 
                     'magic', 
-                    { count: 15, color: 0xDA70D6, scaleMultiplier: 1.0 }
+                    { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
                 );
             }
             
@@ -242,7 +242,7 @@ class LifetimeSystem extends engine.BaseSystem {
             pos.x, pos.y, pos.z,
             effectConfig.type || 'magic',
             {
-                count: effectConfig.count || 10,
+                count: effectConfig.count || 3,
                 color: effectConfig.color || 0xFFFFFF,
                 scaleMultiplier: effectConfig.scaleMultiplier || 1.0,
                 speedMultiplier: effectConfig.speedMultiplier || 1.0

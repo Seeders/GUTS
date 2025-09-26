@@ -24,7 +24,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 10,
+                    count: 3,
                     color: 0xFFD700,
                     colorRange: { start: 0xFFD700, end: 0xFFA500 },
                     scaleMultiplier: 1.8,
@@ -34,7 +34,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             enchant_fire: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0xFF4500,
                     scaleMultiplier: 1.3,
                     speedMultiplier: 1.2
@@ -43,7 +43,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             enchant_cold: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0x00BFFF,
                     scaleMultiplier: 1.3,
                     speedMultiplier: 1.2
@@ -52,7 +52,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             enchant_lightning: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0xFFFF00,
                     scaleMultiplier: 1.3,
                     speedMultiplier: 1.2

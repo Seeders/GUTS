@@ -36,7 +36,7 @@ class FirestormAbility extends engine.app.appClasses['BaseAbility'] {
             firestorm: {
                 type: 'explosion',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xff4400,
                     colorRange: { start: 0xff4400, end: 0xff0000 },
                     scaleMultiplier: 2.5,

@@ -23,7 +23,7 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x228b22,
                     colorRange: { start: 0x228b22, end: 0x90ee90 },
                     scaleMultiplier: 1.5,
@@ -33,7 +33,7 @@ class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
             summon: {
                 type: 'magic',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0x32cd32,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 0.8

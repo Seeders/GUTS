@@ -26,7 +26,7 @@ class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x4488ff,
                     colorRange: { start: 0x4488ff, end: 0xaaffff },
                     scaleMultiplier: 1.0,
@@ -36,7 +36,7 @@ class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
             shard: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x88bbff,
                     scaleMultiplier: 0.6,
                     speedMultiplier: 3.0

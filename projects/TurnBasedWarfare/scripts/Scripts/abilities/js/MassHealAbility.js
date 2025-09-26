@@ -25,7 +25,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x88ff88,
                     colorRange: { start: 0x88ff88, end: 0xffffaa },
                     scaleMultiplier: 1.5,
@@ -35,7 +35,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
             heal: {
                 type: 'heal',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x88ffaa,
                     scaleMultiplier: 1.2,
                     speedMultiplier: 0.8
@@ -44,7 +44,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
             mass_heal: {
                 type: 'heal',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xaaffaa,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 0.6

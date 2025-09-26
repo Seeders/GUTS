@@ -25,7 +25,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
             cast: { 
                 type: 'magic', 
                 options: { 
-                    count: 15, 
+                    count: 3, 
                     color: 0x880000, 
                     colorRange: { start: 0x880000, end: 0xDC143C },
                     scaleMultiplier: 1.4,
@@ -35,7 +35,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
             bloodlust: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xB22222,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 0.8

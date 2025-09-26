@@ -101,12 +101,6 @@ class ProjectileSystem extends engine.BaseSystem {
         if (this.game.lifetimeSystem) {
             this.game.lifetimeSystem.addLifetime(projectileId, this.PROJECTILE_LIFETIME, {
                 fadeOutDuration: 1.0, // Fade out in last second
-                destructionEffect: {
-                    type: 'magic',
-                    count: 5,
-                    color: this.getElementalEffectColor(projectileElement),
-                    scaleMultiplier: 0.8
-                },
                 onDestroy: (entityId) => {
                     // Custom cleanup for projectiles
                     this.cleanupProjectileData(entityId);
@@ -449,7 +443,7 @@ class ProjectileSystem extends engine.BaseSystem {
             // Check collision for direct hit
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
                 // Direct hit detected!
-                this.handleProjectileHit(projectileId, entityId, projectile);
+                this.handleProjectileHit(projectileId, entityId, entityPos, projectile);
                 hitDetected = true;
                 break;
             }
@@ -472,7 +466,7 @@ class ProjectileSystem extends engine.BaseSystem {
         }
     }
 
-    handleProjectileHit(projectileId, targetId, projectile) {
+    handleProjectileHit(projectileId, targetId, targetPos, projectile) {
         // Use centralized damage system for projectile hits
         if (this.game.damageSystem) {
             const damage = projectile.damage;
@@ -499,10 +493,10 @@ class ProjectileSystem extends engine.BaseSystem {
                     );
                 }
             }
+            // Create hit effect
+            this.createHitEffect(projectileId, targetId, targetPos, element, false);
         }
         
-        // Create hit effect
-        this.createHitEffect(projectileId, targetId, false);
         
         // Destroy projectile
         this.destroyProjectile(projectileId);
@@ -542,8 +536,12 @@ class ProjectileSystem extends engine.BaseSystem {
         this.destroyProjectile(entityId);
     }
     
-    createHitEffect(projectileId, targetId, isBallistic = false) {
-
+    createHitEffect(projectileId, targetId, targetPos, element, isBallistic = false) {
+        
+        this.game.effectsSystem.createParticleEffect(targetPos.x, targetPos.y, targetPos.z, 'magic', {
+            color: this.getElementalEffectColor(element),
+            count: 3
+        });
     
     }
 
@@ -553,11 +551,11 @@ class ProjectileSystem extends engine.BaseSystem {
 
     // Get visual effect color based on element
     getElementalEffectColor(element) {
-        if (!this.game.damageSystem) return '#ffaa00'; // Default orange
+        if (!this.game.damageSystem) return '#ff2200'; // blood-red
         
         switch (element) {
             case this.game.damageSystem.ELEMENT_TYPES.FIRE:
-                return '#ff4400'; // Orange-red
+                return '#ffaa00'; // Default orange
             case this.game.damageSystem.ELEMENT_TYPES.COLD:
                 return '#44aaff'; // Light blue
             case this.game.damageSystem.ELEMENT_TYPES.LIGHTNING:
@@ -568,7 +566,7 @@ class ProjectileSystem extends engine.BaseSystem {
                 return '#ffddaa'; // Golden
             case this.game.damageSystem.ELEMENT_TYPES.PHYSICAL:
             default:
-                return '#ffaa00'; // Default orange
+                return '#ff2200'; // Default orange
         }
     }
 

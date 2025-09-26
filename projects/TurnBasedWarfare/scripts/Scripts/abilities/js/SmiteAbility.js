@@ -36,7 +36,7 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
             smite: {
                 type: 'magic',
                 options: {
-                    count: 4,
+                    count: 3,
                     color: 0xFFF8DC,
                     scaleMultiplier: 3.0,
                     speedMultiplier: 0.8
@@ -45,7 +45,7 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
             pillar: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xF0E68C,
                     scaleMultiplier: 4.0,
                     speedMultiplier: 2.0
@@ -54,7 +54,7 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
             divine_judgment: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xFFFFE0,
                     scaleMultiplier: 2.5,
                     speedMultiplier: 1.5

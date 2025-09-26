@@ -21,7 +21,7 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x2F2F2F,
                     colorRange: { start: 0x2F2F2F, end: 0x000000 },
                     scaleMultiplier: 1.5,
@@ -31,7 +31,7 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             teleport: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x8B0000,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 3.0
@@ -40,7 +40,7 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             backstab: {
                 type: 'damage',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0xFF0000,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 1.0

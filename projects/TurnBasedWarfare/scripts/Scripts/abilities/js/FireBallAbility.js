@@ -24,7 +24,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 2,
+                    count: 3,
                     color: 0xff4400,
                     colorRange: { start: 0xff4400, end: 0xff8800 },
                     scaleMultiplier: 1.2,
@@ -34,7 +34,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             projectile: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xff2200,
                     scaleMultiplier: 0.6,
                     speedMultiplier: 1.5
@@ -43,7 +43,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             explosion: {
                 type: 'explosion',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xff4400,
                     colorRange: { start: 0xff4400, end: 0xff0000 },
                     scaleMultiplier: 1.5,
@@ -53,7 +53,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             impact: {
                 type: 'damage',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xff0000,
                     scaleMultiplier: 1.0
                 }

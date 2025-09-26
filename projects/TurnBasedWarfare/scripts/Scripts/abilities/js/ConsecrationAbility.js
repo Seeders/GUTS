@@ -26,7 +26,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             cast: { 
                 type: 'magic', 
                 options: { 
-                    count: 25, 
+                    count: 3, 
                     color: 0xffffaa, 
                     colorRange: { start: 0xffffaa, end: 0xffffff },
                     scaleMultiplier: 1.6,
@@ -36,7 +36,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             consecration: { 
                 type: 'heal', 
                 options: { 
-                    count: 4, 
+                    count: 3, 
                     color: 0xffffdd, 
                     scaleMultiplier: 0.6,
                     speedMultiplier: 1.0
@@ -45,7 +45,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             purge: { 
                 type: 'damage', 
                 options: { 
-                    count: 6, 
+                    count: 3, 
                     color: 0xffffff, 
                     scaleMultiplier: 1.2,
                     speedMultiplier: 1.5

@@ -31,7 +31,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x8A2BE2,
                     colorRange: { start: 0x8A2BE2, end: 0xDDA0DD },
                     scaleMultiplier: 1.5,
@@ -50,7 +50,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             charm: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xDA70D6,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 1.5

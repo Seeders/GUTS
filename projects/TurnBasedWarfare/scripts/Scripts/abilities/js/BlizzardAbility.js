@@ -27,7 +27,7 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 4,
+                    count: 3,
                     color: 0x88ccff,
                     colorRange: { start: 0x88ccff, end: 0xffffff },
                     scaleMultiplier: 2.0,
@@ -37,7 +37,7 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
             blizzard: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0xaaddff,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 0.8

@@ -24,7 +24,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0x4682B4,
                     colorRange: { start: 0x4682B4, end: 0x87CEEB },
                     scaleMultiplier: 1.2,
@@ -34,7 +34,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
             beam_charge: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x6495ED,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 0.8
@@ -43,7 +43,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
             piercing_beam: {
                 type: 'magic',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0xB0C4DE,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 2.5
@@ -52,7 +52,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
             impact: {
                 type: 'damage',
                 options: {
-                    count: 4,
+                    count: 3,
                     color: 0x4169E1,
                     scaleMultiplier: 1.0,
                     speedMultiplier: 1.2

@@ -26,7 +26,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x8B4513,
                     colorRange: { start: 0x8B4513, end: 0xA0522D },
                     scaleMultiplier: 1.2,
@@ -36,7 +36,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
             trap_place: {
                 type: 'magic',
                 options: {
-                    count: 4,
+                    count: 3,
                     color: 0x696969,
                     scaleMultiplier: 0.8,
                     speedMultiplier: 1.0
@@ -45,7 +45,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
             trap_explosion: {
                 type: 'explosion',
                 options: {
-                    count: 12,
+                    count: 3,
                     color: 0xFF4500,
                     colorRange: { start: 0xFF4500, end: 0xFF8C00 },
                     scaleMultiplier: 2.5,

@@ -25,7 +25,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xFF6347,
                     colorRange: { start: 0xFF6347, end: 0xFF4500 },
                     scaleMultiplier: 1.2,
@@ -35,7 +35,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
             mark_target: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xDC143C,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 2.0
@@ -53,7 +53,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
             mark_stack: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0x8B0000,
                     scaleMultiplier: 1.5,
                     speedMultiplier: 1.8

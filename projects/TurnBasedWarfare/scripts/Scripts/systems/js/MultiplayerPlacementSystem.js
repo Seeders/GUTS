@@ -209,7 +209,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             position.y,
             position.z,
             effectType,
-            { count: 4, speedMultiplier: 0.6 } // Reduced particle count
+            { count: 3, speedMultiplier: 0.6 } // Reduced particle count
         );
     }
         
@@ -599,7 +599,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 unitY,
                 pos.z,
                 effectType,
-                { count: 4, speedMultiplier: 0.8 }
+                { count: 3, speedMultiplier: 0.8 }
             );
         }
     }

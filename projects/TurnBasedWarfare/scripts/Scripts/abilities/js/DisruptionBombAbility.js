@@ -25,7 +25,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0xFF4500,
                     colorRange: { start: 0xFF4500, end: 0xFF8C00 },
                     scaleMultiplier: 1.5,
@@ -35,7 +35,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
             explosion: {
                 type: 'explosion',
                 options: {
-                    count: 15,
+                    count: 3,
                     color: 0x8A2BE2,
                     colorRange: { start: 0x8A2BE2, end: 0x4B0082 },
                     scaleMultiplier: 2.5,
@@ -45,7 +45,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
             disruption: {
                 type: 'magic',
                 options: {
-                    count: 6,
+                    count: 3,
                     color: 0x9932CC,
                     scaleMultiplier: 1.3,
                     speedMultiplier: 1.0

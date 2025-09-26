@@ -698,7 +698,7 @@ class EffectsSystem extends engine.BaseSystem {
             // Convert to the config format that ParticleSystem.createParticles expects
             const config = {
                 position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-                count: options.count || 10,
+                count: options.count || 3,
                 shape: options.shape || 'circle',
                 color: options.color || 0xffffff,
                 colorRange: options.colorRange || null,

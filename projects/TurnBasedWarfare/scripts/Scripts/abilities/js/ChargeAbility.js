@@ -25,7 +25,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 5,
+                    count: 3,
                     color: 0xC0C0C0,
                     colorRange: { start: 0xC0C0C0, end: 0xFFFFFF },
                     scaleMultiplier: 1.5,
@@ -35,7 +35,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             charge: {
                 type: 'magic',
                 options: {
-                    count: 8,
+                    count: 3,
                     color: 0x8B4513,
                     scaleMultiplier: 1.8,
                     speedMultiplier: 3.0
@@ -44,7 +44,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
             impact: {
                 type: 'damage',
                 options: {
-                    count: 10,
+                    count: 3,
                     color: 0xFF4500,
                     scaleMultiplier: 2.0,
                     speedMultiplier: 1.5

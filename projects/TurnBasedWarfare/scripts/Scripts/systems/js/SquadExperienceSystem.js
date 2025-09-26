@@ -237,11 +237,10 @@ class SquadExperienceSystem extends engine.BaseSystem {
                 const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
                 if (pos) {
                     const effectType = specializationId ? 'magic' : 'heal';
-                    const particleCount = specializationId ? 12 : 8;
                     this.game.effectsSystem.createParticleEffect(
                         pos.x, pos.y + 20, pos.z,
                         effectType,
-                        { count: particleCount, speedMultiplier: specializationId ? 1.5 : 1.2 }
+                        { count: 3, speedMultiplier: specializationId ? 1.5 : 1.2 }
                     );
                 }
             });
