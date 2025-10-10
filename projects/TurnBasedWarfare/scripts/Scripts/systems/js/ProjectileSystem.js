@@ -537,11 +537,12 @@ class ProjectileSystem extends engine.BaseSystem {
     }
     
     createHitEffect(projectileId, targetId, targetPos, element, isBallistic = false) {
-        
-        this.game.effectsSystem.createParticleEffect(targetPos.x, targetPos.y, targetPos.z, 'magic', {
-            color: this.getElementalEffectColor(element),
-            count: 3
-        });
+        if(this.game.effectsSystem){
+            this.game.effectsSystem.createParticleEffect(targetPos.x, targetPos.y, targetPos.z, 'magic', {
+                color: this.getElementalEffectColor(element),
+                count: 3
+            });
+        }
     
     }
 
