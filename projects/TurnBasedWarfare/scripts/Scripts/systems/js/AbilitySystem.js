@@ -131,7 +131,7 @@ class AbilitySystem extends engine.BaseSystem {
             return false;
         }
         
-        if (ability.animation && this.game.animationSystem) {
+        if (this.game.animationSystem) {
             this.startAbilityAnimation(entityId, ability);
         }
         this.abilityQueue.set(entityId, {
@@ -149,27 +149,22 @@ class AbilitySystem extends engine.BaseSystem {
     startAbilityAnimation(entityId, ability) {
         if (!this.game.animationSystem?.triggerSinglePlayAnimation) return;
         
-        const animationsToTry = [ability.animationName, 'cast', 'attack', 'idle'];
+        const animationsToTry = ['attack', 'idle'];
         
         for (const anim of animationsToTry) {
-            const animationAction = this.game.animationSystem.entityAnimationStates.get(entityId);
-            if (anim && animationAction?.currentClip == anim) {
-                // For abilities, use normal speed unless it's an attack-based ability
-                let animationSpeed = 1.0;
-                let minAnimationTime = 1.5;
-                
-                // If this is an attack-based ability, scale with attack speed
-                if (anim === 'attack') {
-                    const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
-                    if (combat && this.game.combatAISystems) {
-                        animationSpeed = this.game.combatAISystems.calculateAttackAnimationSpeed(entityId, { ...combat, attackSpeed: ability.castTime });
-                        minAnimationTime = 1 / combat.attackSpeed * 0.8;
-                    }
-                }
-                
-                this.game.animationSystem.triggerSinglePlayAnimation(entityId, anim, animationSpeed, minAnimationTime);
-                break;
+    
+            // For abilities, use normal speed unless it's an attack-based ability
+            let animationSpeed = 1.0;
+            let minAnimationTime = 1.5;                
+                    
+            if (ability && this.game.combatAISystems) {
+                animationSpeed = this.game.combatAISystems.calculateAnimationSpeed(entityId, ability.castTime);
+                minAnimationTime = 1 / ability.castTime;
             }
+            
+            this.game.animationSystem.triggerSinglePlayAnimation(entityId, anim, animationSpeed, minAnimationTime);
+            break;
+            
         }
     }
     

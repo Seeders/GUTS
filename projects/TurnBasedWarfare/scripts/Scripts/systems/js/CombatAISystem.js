@@ -182,21 +182,7 @@ class CombatAISystem extends engine.BaseSystem {
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
-            if (combat.damage <= 0 && this.game.abilitySystem) {
-                const abilities = this.game.abilitySystem.getEntityAbilities(entityId);
-                const hasAvailableAbility = abilities.some(ability => {
-                    return this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id) &&
-                           ability.canExecute(entityId);
-                });
-                
-                if (hasAvailableAbility) {
-                    this.changeAIState(aiState, 'attacking');
-                } else {
-                    this.changeAIState(aiState, 'waiting');
-                }
-            } else {
-                this.changeAIState(aiState, 'attacking');
-            }
+            this.changeAIState(aiState, 'attacking');
         } else {
             // Always chase if not in attack range
             this.changeAIState(aiState, 'chasing');
@@ -311,35 +297,8 @@ class CombatAISystem extends engine.BaseSystem {
                 combat.lastAttack = this.game.state.now;
                 aiBehavior.lastAttackStart = this.game.state.now;
             }
-        }
-        // Handle spell casters (damage <= 0)
-        else if (combat.damage <= 0) {
-            // Check if any abilities are available
-            let hasAvailableAbility = false;
-            if (this.game.abilitySystem) {
-                const abilities = this.game.abilitySystem.getEntityAbilities(entityId);
-                hasAvailableAbility = abilities.some(ability => {
-                    return this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id) &&
-                           ability.canExecute(entityId);
-                });
-            }
-            
-            if (hasAvailableAbility) {
-                // We have spells ready - stay in attacking state
-                // The ability system will handle casting and animations
-            } else {
-                // No abilities available - switch to waiting state and stop movement
-                this.changeAIState(aiState, 'waiting');
-                
-                // Stop movement while waiting for cooldowns
-                const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-                if (velocity) {
-                    velocity.vx = 0;
-                    velocity.vz = 0;
-                }
-            }
-        }
-        
+        } 
+          
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
     }
     
@@ -349,7 +308,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) return;
         
         if (this.game.animationSystem) {
-            const animationSpeed = this.calculateAttackAnimationSpeed(attackerId, combat);
+            const animationSpeed = this.calculateAnimationSpeed(attackerId, combat.attackSpeed);
             const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
             this.game.animationSystem.triggerSinglePlayAnimation(attackerId, 'attack', animationSpeed, minAnimationTime);
         }
@@ -361,8 +320,8 @@ class CombatAISystem extends engine.BaseSystem {
         }
     }
 
-    calculateAttackAnimationSpeed(attackerId, combat) {
-        const attackInterval = 1 / combat.attackSpeed;
+    calculateAnimationSpeed(attackerId, animationSpeed) {
+        const attackInterval = 1 / animationSpeed;
         
         // Default fallback duration
         let baseAnimationDuration = 0.8;
@@ -411,9 +370,9 @@ class CombatAISystem extends engine.BaseSystem {
         
         // Calculate speed to fit animation into attack interval
         const targetAnimationDuration = Math.max(attackInterval * 0.9, 0.2);
-        let animationSpeed = baseAnimationDuration / targetAnimationDuration;
+        let resultSpeed = baseAnimationDuration / targetAnimationDuration;
         
-        return animationSpeed;
+        return resultSpeed;
     }
 
     scheduleMeleeDamage(attackerId, targetId, combat) {

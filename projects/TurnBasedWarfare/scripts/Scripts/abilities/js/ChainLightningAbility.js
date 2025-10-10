@@ -82,10 +82,8 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         const firstTarget = this.findClosestEnemy(casterEntity, enemies);
         if (!firstTarget) return;
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout for chain lightning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.startChainLightning(casterEntity, firstTarget, enemies);
-        }, this.castTime, casterEntity);
+        // DESYNC SAFE: Use scheduling system instead of setTimeout for chain lightning        
+        this.startChainLightning(casterEntity, firstTarget, enemies);
     }
     
     // DESYNC SAFE: Start the chain lightning sequence deterministically
