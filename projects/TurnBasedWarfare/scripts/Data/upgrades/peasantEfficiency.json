@@ -1,0 +1,8 @@
+{
+  "title": "Peasant Efficiency",
+  "description": "Increase Gold Per Round by 10",
+  "value": 100,
+  "effects": [
+    "goldPerRound"
+  ]
+}

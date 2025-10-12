@@ -2176,3 +2176,242 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
         box-shadow: 0 0 40px rgba(74, 20, 140, 0.7);
     }
 }
+
+
+
+
+
+/* Building Shop Container */
+#buildingShop {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+/* Building Section */
+.building-section {
+    margin-bottom: 20px;
+}
+
+.building-section-header {
+    color: var(--primary-gold);
+    font-family: var(--font-title);
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+/* Building Card */
+.building-card {
+    background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
+    border: 2px solid var(--dark-bronze);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.building-card.owned {
+    border-color: var(--primary-gold);
+}
+
+.building-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--blood-red);
+}
+
+.building-card.phase-disabled {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.building-card.hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.building-card.shake {
+    animation: shake 0.5s;
+}
+
+/* Building Card Header */
+.building-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.building-card-title {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.building-card-progress {
+    color: var(--accent-amber);
+    font-size: 0.7rem;
+}
+
+/* Building Card Details */
+.building-card-cost {
+    color: var(--accent-amber);
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.building-card-locked {
+    color: var(--blood-red);
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+}
+
+.building-card-description {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    color: var(--stone-gray);
+}
+
+.building-card-owned {
+    color: var(--forest-green);
+    font-size: 0.7rem;
+    margin-top: 6px;
+}
+
+/* Upgrade Modal */
+.upgrade-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s;
+}
+
+.upgrade-panel {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 2px solid var(--primary-gold);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 90%;
+}
+
+.upgrade-panel-header {
+    color: var(--primary-gold);
+    margin-bottom: 15px;
+    font-family: var(--font-title);
+}
+
+/* Upgrade List */
+.upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Upgrade Card */
+.upgrade-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--dark-bronze);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s;
+}
+
+.upgrade-card.purchased {
+    border-color: var(--forest-green);
+}
+
+.upgrade-card.locked {
+    border-color: var(--blood-red);
+}
+
+.upgrade-card.available {
+    cursor: pointer;
+}
+
+.upgrade-card.available:hover {
+    transform: translateX(5px);
+    border-color: var(--primary-gold);
+}
+
+/* Upgrade Card Header */
+.upgrade-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 6px;
+}
+
+.upgrade-card-name {
+    color: var(--primary-gold);
+    font-weight: 600;
+}
+
+.upgrade-card-status {
+    color: var(--accent-amber);
+}
+
+.upgrade-card.purchased .upgrade-card-status {
+    color: var(--forest-green);
+}
+
+.upgrade-card.locked .upgrade-card-status {
+    color: var(--blood-red);
+}
+
+/* Upgrade Card Details */
+.upgrade-card-description {
+    color: var(--stone-gray);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+}
+
+.upgrade-card-requirement {
+    color: var(--blood-red);
+    font-size: 0.75rem;
+}
+
+/* Upgrade Close Button */
+.upgrade-close-button {
+    width: 100%;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}

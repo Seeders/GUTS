@@ -1,0 +1,6 @@
+{
+  "title": "Gold Per Round",
+  "desc": "Extra gold per round.",
+  "type": "upgrade",
+  "value": 10
+}

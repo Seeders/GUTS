@@ -3,12 +3,9 @@
   "projectName": "TurnBasedWarfare",
   "tickRate": 20,
   "seed": "auto",
-
   "appLoaderLibrary": "ServerGameLoader",
   "appLibrary": "ServerECSGame",
-
   "initialScene": "server",
-
   "libraries": [
     "BaseSystem",
     "GameRoom",
@@ -16,7 +13,7 @@
     "GameState",
     "BaseECSGame",
     "GameUtils",
-    "ServerECSGame",    
+    "ServerECSGame",
     "ServerEventManager",
     "ServerNetworkManager",
     "ServerSceneManager",

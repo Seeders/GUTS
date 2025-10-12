@@ -5,8 +5,8 @@
   "value": 35,
   "hp": 130,
   "speed": 55,
-  "damage": 0,
-  "attackSpeed": 0,
+  "damage": 15,
+  "attackSpeed": 1.1,
   "range": 150,
   "element": "fire",
   "armor": 1,
@@ -171,7 +171,5 @@
   "squadHeight": 3,
   "placementGridWidth": 1,
   "placementGridHeight": 3,
-  "abilities": [
-    "ChainLightningAbility"
-  ]
+  "abilities": []
 }

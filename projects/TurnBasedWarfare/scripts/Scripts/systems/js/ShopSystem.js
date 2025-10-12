@@ -38,6 +38,9 @@ class ShopSystem extends engine.BaseSystem {
                 shop.appendChild(card);
             }
         });
+        if(this.game.buildingShopSystem){
+            this.game.buildingShopSystem.createShop();
+        }
     }
 
     createExperiencePanel() {

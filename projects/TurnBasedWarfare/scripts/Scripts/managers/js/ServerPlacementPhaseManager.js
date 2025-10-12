@@ -23,6 +23,8 @@ class ServerPlacementPhaseManager {
 
         // Subscribe to room management events
         this.game.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
+        this.game.serverEventManager.subscribe('PURCHASE_BUILDING', this.handlePurchaseBuilding.bind(this));
+        this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
         //   const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
@@ -135,6 +137,62 @@ class ServerPlacementPhaseManager {
             console.error('Error submitting placements:', error);
             this.serverNetworkManager.sendToPlayer(eventData.playerId, 'READY_FOR_BATTLE_UPDATE', { 
                 error: 'Server error while submitting placements',
+                playerId: eventData.playerId,
+                ready: false,
+                received: data
+            });
+        }
+    }
+
+    handlePurchaseBuilding(eventData) {
+        try {
+            const { playerId, data } = eventData;
+            
+  
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_BUILDING', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            // Broadcast ready state update to all players in room
+            this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_BUILDING', this.purchaseBuilding(playerId, player, data.data, true));
+            
+        } catch (error) {
+            console.error('Error purchasing building:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'PURCHASED_BUILDING', { 
+                error: 'Server error while purchasing building',
+                playerId: eventData.playerId,
+                ready: false,
+                received: data
+            });
+        }
+    }
+
+    handlePurchaseUpgrade(eventData) {
+        try {
+            const { playerId, data } = eventData;
+            
+  
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            // Broadcast ready state update to all players in room
+            this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', this.purchaseUpgrade(playerId, player, data.data, true));
+            
+        } catch (error) {
+            console.error('Error purchasing upgrades:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'PURCHASED_UPGRADE', { 
+                error: 'Server error while purchasing upgrades',
                 playerId: eventData.playerId,
                 ready: false,
                 received: data
@@ -319,6 +377,55 @@ class ServerPlacementPhaseManager {
         } catch (error) {
             console.error(`Error clearing placements for player ${playerId}:`, error);
         }
+    }
+
+    purchaseBuilding(playerId, player, data) {
+        console.log(`=== Purchase Building DEBUG ===`);     
+        console.log(`Data received:`, data);
+    
+        if (this.game.state.phase !== 'placement') {
+            return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
+        }
+
+        const building = this.game.getCollections().buildings[data.buildingId];
+        if(building?.value <= player.stats.gold){
+            player.stats.gold -= building.value;
+            player.stats.buildings.push(data.buildingId); 
+            console.log(`SUCCESS`);
+            console.log(`Resulting player object:`, player);
+            console.log(`================================`);
+            return { success: true };
+        }
+
+        console.log(`ERROR`);       
+        console.log(`Resulting player object:`, player);
+        console.log(`================================`);
+        return { success: false, error: "Not enough gold." };
+    }
+
+    purchaseUpgrade(playerId, player, data) {
+        console.log(`=== Purchase Upgrade DEBUG ===`);        
+        console.log(`Player object:`, playerId, player);
+        console.log(`Data received:`, data);
+    
+        if (this.game.state.phase !== 'placement') {
+            return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
+        }
+
+        const upgrade = this.game.getCollections().upgrades[data.upgradeId];
+        if(upgrade?.value <= player.stats.gold){
+            player.stats.gold -= upgrade.value;
+            player.stats.upgrades.push(data.upgradeId);
+            console.log(`SUCCESS`);
+            console.log(`Resulting player object:`, player);
+            console.log(`================================`);
+            return { success: true };
+        }
+
+        console.log(`ERROR`);    
+        console.log(`================================`);
+        
+        return { success: false, error: "Not enough gold." };
     }
 
 }

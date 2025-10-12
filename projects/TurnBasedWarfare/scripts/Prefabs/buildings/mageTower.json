@@ -1,0 +1,362 @@
+{
+  "title": "Mage Tower",
+  "info": "Intelligence based training.",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "energy": {
+            "shapes": [
+              {
+                "rotationX": 0,
+                "id": 1,
+                "rotationZ": 45
+              },
+              {
+                "rotationX": 90,
+                "id": 2,
+                "rotationZ": 0
+              }
+            ]
+          }
+        },
+        {
+          "shapes": [],
+          "energy": {
+            "shapes": [
+              {
+                "rotationX": 90,
+                "id": 2,
+                "rotationY": -45
+              }
+            ]
+          }
+        },
+        {
+          "energy": {
+            "shapes": [
+              {
+                "rotationX": 90,
+                "id": 1
+              },
+              {
+                "id": 2,
+                "rotationY": -90
+              }
+            ]
+          }
+        },
+        {
+          "shapes": [],
+          "energy": {
+            "shapes": [
+              {
+                "id": 1,
+                "rotationX": 135
+              },
+              {
+                "rotationX": -90,
+                "id": 2,
+                "rotationY": 135
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 24,
+            "height": 8,
+            "color": "#3e4f57",
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "Foundation"
+          },
+          {
+            "type": "cylinder",
+            "size": 20,
+            "height": 12,
+            "color": "#78909c",
+            "x": 0,
+            "y": 10,
+            "z": 0,
+            "name": "main structure"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 4,
+            "depth": 8,
+            "color": "#3e4f57",
+            "x": 16,
+            "y": 2,
+            "z": 0,
+            "name": "module1"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 4,
+            "depth": 8,
+            "color": "#3e4f57",
+            "x": -16,
+            "y": 2,
+            "z": 0,
+            "name": "module2"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 4,
+            "depth": 8,
+            "color": "#3e4f57",
+            "x": 0,
+            "y": 2,
+            "z": 16,
+            "name": "module3"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 4,
+            "depth": 8,
+            "color": "#3e4f57",
+            "x": 0,
+            "y": 2,
+            "z": -16,
+            "name": "module4"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "pillar1": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 4,
+            "height": 10,
+            "color": "#3e4f57",
+            "x": 12,
+            "y": 6,
+            "z": 12,
+            "name": "pillar1"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#4fc3f7",
+            "x": 12,
+            "y": 12,
+            "z": 12,
+            "name": "pillar1sphere"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "pillar2": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 4,
+            "height": 10,
+            "color": "#3e4f57",
+            "x": -12,
+            "y": 6,
+            "z": 12,
+            "name": "pillar2"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#4fc3f7",
+            "x": -12,
+            "y": 12,
+            "z": 12,
+            "name": "pillar2sphere"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "pillar3": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 4,
+            "height": 10,
+            "color": "#3e4f57",
+            "x": 12,
+            "y": 6,
+            "z": -12,
+            "name": "pillar3"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#4fc3f7",
+            "x": 12,
+            "y": 12,
+            "z": -12,
+            "name": "pillar3sphere"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "pillar4": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 4,
+            "height": 10,
+            "color": "#3e4f57",
+            "x": -12,
+            "y": 6,
+            "z": -12,
+            "name": "pillar4"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#4fc3f7",
+            "x": -12,
+            "y": 12,
+            "z": -12,
+            "name": "pillar4sphere"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "energy": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 14,
+            "color": "#6a1b9a",
+            "x": 0,
+            "y": 30,
+            "z": 0,
+            "name": "energy sphere"
+          },
+          {
+            "type": "torus",
+            "size": 22,
+            "tubeSize": 2,
+            "color": "#0288d1",
+            "x": 0,
+            "y": 30,
+            "z": 0,
+            "rotationX": 45,
+            "name": "rotating thing 1"
+          },
+          {
+            "type": "torus",
+            "size": 22,
+            "tubeSize": 2,
+            "color": "#0288d1",
+            "x": 0,
+            "y": 30,
+            "z": 0,
+            "rotationX": -45,
+            "rotationZ": 45,
+            "name": "rotating thing 2"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "upgrades": [
+    "spellDamage"
+  ]
+}

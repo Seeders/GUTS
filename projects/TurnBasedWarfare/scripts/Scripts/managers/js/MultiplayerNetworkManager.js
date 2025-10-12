@@ -178,6 +178,40 @@ class MultiplayerNetworkManager {
         );
     }
 
+    purchaseBuilding(data, callback){
+        this.game.clientNetworkManager.call(
+            'PURCHASE_BUILDING',
+            { data },
+            'PURCHASED_BUILDING',
+            (data, error) => {           
+                if (data.error) {
+                    console.log('Purchase error:', data.error);
+                    callback(false, error);
+                } else {
+                    console.log('Purchase response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
+    purchaseUpgrade(data, callback){
+        this.game.clientNetworkManager.call(
+            'PURCHASE_UPGRADE',
+            { data },
+            'PURCHASED_UPGRADE',
+            (data, error) => {           
+                if (data.error) {
+                    console.log('Purchase error:', data.error);
+                    callback(false, error);
+                } else {
+                    console.log('Purchase response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     toggleReadyForBattle(callback) {
         this.game.clientNetworkManager.call(
             'READY_FOR_BATTLE',

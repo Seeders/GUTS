@@ -1,0 +1,8 @@
+{
+  "title": "Spell Damage",
+  "description": "Increase Spell Damage",
+  "value": 100,
+  "effects": [
+    "spellDamage"
+  ]
+}

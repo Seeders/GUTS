@@ -177,7 +177,5 @@
   "squadHeight": 4,
   "placementGridWidth": 2,
   "placementGridHeight": 4,
-  "abilities": [
-    "BloodlustAbility"
-  ]
+  "abilities": []
 }

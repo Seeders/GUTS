@@ -93,6 +93,9 @@
           "type": "ShopSystem"
         },
         {
+          "type": "BuildingShopSystem"
+        },
+        {
           "type": "TeamHealthSystem"
         },
         {

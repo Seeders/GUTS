@@ -166,7 +166,5 @@
   "squadHeight": 4,
   "placementGridWidth": 2,
   "placementGridHeight": 4,
-  "abilities": [
-    "RageAbility"
-  ]
+  "abilities": []
 }
