@@ -255,7 +255,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         // Start the game
         this.game.gameManager.startSelectedMode();
         
-        this.game.placementSystem.startNewPlacementPhase();
+        this.game.placementSystem.startGame();
     }
 
     showNotification(message, type = 'info', duration = 4000) {
@@ -336,6 +336,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.game.placementSystem.startNewPlacementPhase();
     
      
+        this.game.shopSystem?.createShop(); // Refresh experience panels
         
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(`Round ${state.round} - Deploy your army! Waiting for opponent...`);

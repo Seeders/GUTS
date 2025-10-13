@@ -161,6 +161,23 @@ class MultiplayerNetworkManager {
         );
     }
 
+    getStartingState(callback){
+        this.game.clientNetworkManager.call(
+            'GET_STARTING_STATE',
+            {},
+            'GOT_STARTING_STATE',
+            (data, error) => {           
+                if (data.error) {
+                    console.log('getStartingState error:', data.error);
+                    callback(false, error);
+                } else {
+                    console.log('getStartingState response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     submitPlacement(placement, callback){
         this.game.clientNetworkManager.call(
             'SUBMIT_PLACEMENT',
@@ -368,6 +385,13 @@ class MultiplayerNetworkManager {
                 }
 
                 this.game.placementSystem.setPlacementExperience(myPlayer.placements);
+            }
+
+                
+            // Update UI to reflect synced experience data
+            if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
+                this.game.shopSystem.updateGoldDisplay();
+                this.game.shopSystem.createShop(); // Refresh experience panels
             }
             
         }

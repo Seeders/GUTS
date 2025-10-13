@@ -5,8 +5,8 @@ class ServerPlacementPhaseManager {
         this.game.placementSystem = this;
         this.serverNetworkManager = this.engine.serverNetworkManager;  
         this.playerPlacements = new Map();
-        this.leftPlacements = new Map();
-        this.rightPlacements = new Map();
+        this.leftPlacements = [];
+        this.rightPlacements = [];
         this.placementReadyStates = new Map();
         this.numPlayers = 2;
      }
@@ -22,16 +22,12 @@ class ServerPlacementPhaseManager {
         }
 
         // Subscribe to room management events
+        this.game.serverEventManager.subscribe('GET_STARTING_STATE', this.handleGetStartingState.bind(this));
         this.game.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
         this.game.serverEventManager.subscribe('PURCHASE_BUILDING', this.handlePurchaseBuilding.bind(this));
         this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
-        //   const success = await this.makeNetworkCall('APPLY_SPECIALIZATION', 
-        //                 { placementId, specializationId }, 'SPECIALIZATION_APPLIED');
-
-        //             const success = await this.makeNetworkCall('LEVEL_SQUAD', 
-        //                 { placementId }, 'SQUAD_LEVELED');
                     
     }
 
@@ -69,6 +65,36 @@ class ServerPlacementPhaseManager {
             return this.leftPlacements;
         } else {
             return this.rightPlacements;
+        }
+    }
+
+    handleGetStartingState(eventData) {
+        try {
+            const { playerId, data } = eventData;
+  
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            // Broadcast ready state update to all players in room
+            if(player){
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', this.getStartingState(player));
+            }
+            
+        } catch (error) {
+            console.error('Error getting starting state:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', { 
+                error: 'Server error while submitting placements',
+                playerId: eventData.playerId,
+                ready: false,
+                received: data,
+                success: false
+            });
         }
     }
 
@@ -428,4 +454,11 @@ class ServerPlacementPhaseManager {
         return { success: false, error: "Not enough gold." };
     }
 
+    getStartingState(player){
+        player.stats.buildings = ["townHall"];
+        return {
+            success: true, 
+            buildings: player.stats.buildings
+        }
+    }
 }

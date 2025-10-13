@@ -99,6 +99,23 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.groundMeshCache = this.findGroundMesh();
     }
 
+    startGame() {
+        this.getStartingState();
+        this.startNewPlacementPhase();
+    }
+
+    getStartingState() {
+         this.game.networkManager.getStartingState((success, response) => {
+            if(success){
+                const buildingTypes = this.game.getCollections().buildings;
+                response.buildings.forEach((buildingId) => {
+                    const building = buildingTypes[buildingId];
+                    this.game.shopSystem.addBuilding(buildingId, building);
+                });
+            }
+        });   
+    }
+
     getPlacementsForSide(side){
         if(side == this.game.state.mySide){
             return this.playerPlacements;
@@ -552,28 +569,20 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     setPlacementExperience(placements) {
-        if (!placements || !this.game.squadExperienceSystem) {
-            return;
-        }
-        
-        placements.forEach(placement => {
-            if (placement.experience && placement.placementId) {
-                const experienceData = placement.experience;                
-                let squadData = this.game.squadExperienceSystem.getSquadInfo(placement.placementId);
-                
-                if (squadData) {
-                    squadData.level = experienceData.level;
-                    squadData.experience = experienceData.experience;
-                    squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
-                    squadData.canLevelUp = experienceData.canLevelUp;                    
+        if (placements && this.game.squadExperienceSystem) {
+            placements.forEach(placement => {
+                if (placement.experience && placement.placementId) {
+                    const experienceData = placement.experience;                
+                    let squadData = this.game.squadExperienceSystem.getSquadInfo(placement.placementId);
+                    
+                    if (squadData) {
+                        squadData.level = experienceData.level;
+                        squadData.experience = experienceData.experience;
+                        squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
+                        squadData.canLevelUp = experienceData.canLevelUp;                    
+                    }
                 }
-            }
-        });            
-        
-        // Update UI to reflect synced experience data
-        if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
-            this.game.shopSystem.updateGoldDisplay();
-            this.game.shopSystem.createShop(); // Refresh experience panels
+            });            
         }
         
     }

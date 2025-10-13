@@ -68,5 +68,9 @@
         }
       }
     }
-  }
+  },
+  "units": [
+    "1_s_barbarian",
+    "1_sd_soldier"
+  ]
 }

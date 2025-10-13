@@ -3,62 +3,471 @@ class ShopSystem extends engine.BaseSystem {
         super(game);
         this.game.shopSystem = this;
         
-        // Experience UI state
-        this.showingExperiencePanel = false;
-        this.lastExperienceUpdate = 0;
+        this.ownedBuildings = new Set();
+        this.buildingUpgrades = new Map();
+        this.selectedBuilding = null;
+        this.townHallLevel = 0;
         
-        // Initialize fantasy UI enhancements
+        this.lastExperienceUpdate = 0;
         this.uiEnhancements = new FantasyUIEnhancements(game);
     }
 
-
     createShop() {
-        const shop = document.getElementById('unitShop');
-        shop.innerHTML = '';
-        
-        // Add experience panel at the top (only during placement phase)
-        if (this.game.state.phase === 'placement') {
-            this.createExperiencePanel();
-        }
-        
-        // Add undo button with fantasy styling
-        
-        const UnitTypes = this.game.getCollections().units;
+        this.renderBuildingList();
+        this.renderActionPanel();
+        this.createExperiencePanel();
+    }
 
-        // Get all valid units and sort by price (cheapest first)
-        const sortedUnits = Object.keys(UnitTypes)
-            .map(unitId => ({ id: unitId, ...UnitTypes[unitId] }))
-            .filter(unit => unit.value >= 0)
-            .sort((a, b) => a.value - b.value);
+    renderBuildingList() {
+        const container = document.getElementById('buildingList');
+        if (!container) return;
+        
+        container.innerHTML = '';
 
-        // Create enhanced unit cards with animations
-        sortedUnits.forEach(unit => {
-            const card = this.createUnitCard(unit.id, unit);
-            if (card) {
-                shop.appendChild(card);
+        const BuildingTypes = this.game.getCollections().buildings;
+        
+        this.ownedBuildings.forEach(buildingId => {
+            const building = BuildingTypes[buildingId];
+            if (!building) return;
+            
+            const item = document.createElement('div');
+            item.className = 'building-list-item';
+            if (this.selectedBuilding === buildingId) {
+                item.classList.add('selected');
             }
+            
+            const icon = document.createElement('div');
+            icon.className = 'building-list-icon';
+            icon.textContent = building.icon || '🏛️';
+            item.appendChild(icon);
+            
+            const info = document.createElement('div');
+            info.className = 'building-list-info';
+            
+            const title = document.createElement('div');
+            title.className = 'building-list-title';
+            title.textContent = building.title;
+            info.appendChild(title);
+            
+            const upgrades = this.buildingUpgrades.get(buildingId) || new Set();
+            const totalUpgrades = building.upgrades ? building.upgrades.length : 0;
+            
+            if (totalUpgrades > 0) {
+                const progress = document.createElement('div');
+                progress.className = 'building-list-progress';
+                progress.textContent = `${upgrades.size}/${totalUpgrades} upgrades`;
+                info.appendChild(progress);
+            }
+            
+            item.appendChild(info);
+            
+            item.addEventListener('click', () => {
+                this.selectedBuilding = buildingId;
+                this.createShop();
+            });
+            
+            container.appendChild(item);
         });
-        if(this.game.buildingShopSystem){
-            this.game.buildingShopSystem.createShop();
+        
+        if (this.ownedBuildings.size === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'building-list-empty';
+            empty.textContent = 'No buildings yet';
+            container.appendChild(empty);
         }
     }
 
+    renderActionPanel() {
+        const container = document.getElementById('actionPanel');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (this.selectedBuilding) {
+            this.renderBuildingActions(container);
+        } else {
+            this.renderBuildOptions(container);
+        }
+    }
+
+    renderBuildOptions(container) {
+        const header = document.createElement('div');
+        header.className = 'action-panel-header';
+        header.textContent = 'BUILD';
+        container.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'action-grid';
+
+        const BuildingTypes = this.game.getCollections().buildings;
+        let availableCount = 0;
+        Object.keys(BuildingTypes).forEach(buildingId => {
+            if (!this.ownedBuildings.has(buildingId)) {
+                const building = BuildingTypes[buildingId];
+                const btn = this.createActionButton({
+                    icon: building.icon || '🏛️',
+                    title: building.title,
+                    cost: building.value,
+                    locked: this.isBuildingLocked(buildingId, building),
+                    lockReason: this.getLockReason(buildingId, building),
+                    onClick: () => this.purchaseBuilding(buildingId, building)
+                });
+                grid.appendChild(btn);
+                availableCount++;
+            }
+        });
+
+        container.appendChild(grid);
+
+        if(availableCount == 0){
+            container.style.display = 'none';
+        } else {
+            container.removeAttribute('style');
+        }
+    }
+
+    renderBuildingActions(container) {
+        const BuildingTypes = this.game.getCollections().buildings;
+        const building = BuildingTypes[this.selectedBuilding];
+        
+        if (!building) {
+            this.selectedBuilding = null;
+            this.renderBuildOptions(container);
+            return;
+        }
+
+        const header = document.createElement('div');
+        header.className = 'action-panel-header';
+        header.innerHTML = `
+            <button class="deselect-btn" id="deselectBtn">←</button>
+            <span>${building.icon || '🏛️'} ${building.title}</span>
+        `;
+        container.appendChild(header);
+
+        document.getElementById('deselectBtn').addEventListener('click', () => {
+            this.selectedBuilding = null;
+            this.createShop();
+        });
+
+        const hasUnits = building.units && building.units.length > 0;
+        const hasUpgrades = building.upgrades && building.upgrades.length > 0;
+
+        if (hasUnits) {
+            const unitsSection = this.createUnitsSection(building);
+            container.appendChild(unitsSection);
+        }
+
+        if (hasUpgrades) {
+            const upgradesSection = this.createUpgradesSection(building);
+            container.appendChild(upgradesSection);
+        }
+
+        if (!hasUnits && !hasUpgrades) {
+            const empty = document.createElement('div');
+            empty.className = 'action-empty';
+            empty.textContent = 'No actions available';
+            container.appendChild(empty);
+        }
+        container.removeAttribute('style');
+    }
+
+    createUnitsSection(building) {
+        const section = document.createElement('div');
+        section.className = 'action-section';
+
+        const header = document.createElement('div');
+        header.className = 'action-section-header';
+        header.textContent = 'RECRUIT';
+        section.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'action-grid';
+        const UnitTypes = this.game.getCollections().units;
+        building.units.forEach(unitId => {
+            const unit = UnitTypes[unitId];
+            const locked = this.game.state.playerGold <= unit.value;
+            const btn = this.createActionButton({
+                icon: unit.icon || '⚔️',
+                title: unit.title,
+                cost: unit.value,
+                locked: locked,
+                lockReason: locked ? "Can't afford" : null,
+                onClick: () => this.purchaseUnit(unitId, unit)
+            });
+            grid.appendChild(btn);
+        
+        });
+
+        section.appendChild(grid);
+        return section;
+    }
+
+    createUpgradesSection(building) {
+        const section = document.createElement('div');
+        section.className = 'action-section';
+
+        const header = document.createElement('div');
+        header.className = 'action-section-header';
+        header.textContent = 'UPGRADES';
+        section.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'action-grid';
+
+        const currentUpgrades = this.buildingUpgrades.get(this.selectedBuilding) || new Set();
+
+        building.upgrades.forEach(upgradeId => {
+            const upgrade = this.game.getCollections().upgrades[upgradeId];
+            if (upgrade) {
+                const purchased = currentUpgrades.has(upgradeId);
+                const locked = !purchased && upgrade.requires && !this.upgradeRequirementsMet(upgrade.requires);
+                
+                const btn = this.createActionButton({
+                    icon: upgrade.icon || '⭐',
+                    title: upgrade.title,
+                    cost: purchased ? null : upgrade.value,
+                    locked: locked,
+                    purchased: purchased,
+                    lockReason: locked ? 'Requires other upgrades' : null,
+                    onClick: purchased ? null : () => this.purchaseUpgrade(upgradeId, upgrade)
+                });
+                grid.appendChild(btn);
+            }
+        });
+
+        section.appendChild(grid);
+        return section;
+    }
+
+    createActionButton(options) {
+        const btn = document.createElement('button');
+        btn.className = 'action-btn';
+
+        if (options.locked) btn.classList.add('locked');
+        if (options.purchased) btn.classList.add('purchased');
+        if (!options.locked && !options.purchased && options.cost !== null && this.game.state.playerGold < options.cost) {
+            btn.classList.add('disabled');
+        }
+
+        const icon = document.createElement('div');
+        icon.className = 'action-btn-icon';
+        icon.textContent = options.icon;
+        btn.appendChild(icon);
+
+        const title = document.createElement('div');
+        title.className = 'action-btn-title';
+        title.textContent = options.title;
+        btn.appendChild(title);
+
+        if (options.cost !== null && !options.purchased) {
+            const cost = document.createElement('div');
+            cost.className = 'action-btn-cost';
+            cost.textContent = `${options.cost}g`;
+            btn.appendChild(cost);
+        }
+
+        if (options.purchased) {
+            const check = document.createElement('div');
+            check.className = 'action-btn-check';
+            check.textContent = '✓';
+            btn.appendChild(check);
+        }
+
+        if (options.locked) {
+            const lock = document.createElement('div');
+            lock.className = 'action-btn-lock';
+            lock.textContent = '🔒';
+            btn.appendChild(lock);
+
+            if (options.lockReason) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'action-btn-tooltip';
+                tooltip.textContent = options.lockReason;
+                btn.appendChild(tooltip);
+            }
+        }
+
+        if (options.onClick && !options.locked && !options.purchased) {
+            btn.addEventListener('click', options.onClick);
+        }
+
+        return btn;
+    }
+
+    canBuildingProduceUnit(building, unitId, unit) {
+        if (!unit.requires || !unit.requires.buildings) return false;
+        return unit.requires.buildings.includes(this.selectedBuilding);
+    }
+
+    purchaseBuilding(buildingId, building) {
+        this.game.networkManager.purchaseBuilding({ buildingId }, (success, response) => {
+            if (success) {                
+                if (building.category === 'attribute') {
+                    this.townHallLevel = building.townHallLevel || 1;
+                }
+                this.game.state.playerGold -= building.value;
+                this.showNotification(`${building.title} constructed!`, 'success');
+                this.addBuilding(buildingId, building);
+            } else {
+                this.showNotification(`Could not purchase ${building.title}!`, 'error');
+            }
+        });
+    }
+
+    addBuilding(buildingId, building){
+        if(!this.ownedBuildings.has(buildingId)){
+            this.ownedBuildings.add(buildingId);
+            this.applyBuildingEffects(building);
+            this.createShop();
+        }
+    }
+
+    purchaseUnit(unitId, unit) {
+        const state = this.game.state;
+        
+        if (state.playerGold < unit.value) {
+            this.showNotification('Not enough gold!', 'error');
+            return;
+        }
+
+        state.selectedUnitType = { id: unitId, ...unit };
+        if (this.game.placementSystem) {
+            this.game.placementSystem.handleUnitSelectionChange(state.selectedUnitType);
+        }
+    }
+
+    purchaseUpgrade(upgradeId, upgrade) {
+        this.game.networkManager.purchaseUpgrade({ 
+            upgradeId, 
+            buildingId: this.selectedBuilding 
+        }, (success, response) => {
+            if (success) {
+                if (!this.buildingUpgrades.has(this.selectedBuilding)) {
+                    this.buildingUpgrades.set(this.selectedBuilding, new Set());
+                }
+                this.buildingUpgrades.get(this.selectedBuilding).add(upgradeId);
+                this.game.state.playerGold -= upgrade.value;
+                this.applyUpgradeEffects(upgrade);
+                this.showNotification(`${upgrade.title} purchased!`, 'success');
+                this.createShop();
+            } else {
+                this.showNotification(`Could not purchase ${upgrade.title}!`, 'error');
+            }
+        });
+    }
+
+    isBuildingLocked(buildingId, building) {
+        if (building.requires) {
+            if (building.requires.townHallLevel && this.townHallLevel < building.requires.townHallLevel) {
+                return true;
+            }
+            if (building.requires.buildings) {
+                for (const reqBuilding of building.requires.buildings) {
+                    if (!this.ownedBuildings.has(reqBuilding)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    getLockReason(buildingId, building) {
+        if (building.requires) {
+            if (building.requires.townHallLevel && this.townHallLevel < building.requires.townHallLevel) {
+                return `Requires Town Hall Level ${building.requires.townHallLevel}`;
+            }
+            if (building.requires.buildings) {
+                const BuildingTypes = this.game.getCollections().buildings;
+                for (const reqBuilding of building.requires.buildings) {
+                    if (!this.ownedBuildings.has(reqBuilding)) {
+                        const reqBuildingData = BuildingTypes[reqBuilding];
+                        return `Requires ${reqBuildingData?.title || reqBuilding}`;
+                    }
+                }
+            }
+        }
+        return 'Locked';
+    }
+
+    meetsRequirements(requires) {
+        if (requires.buildings) {
+            for (const reqBuilding of requires.buildings) {
+                if (!this.ownedBuildings.has(reqBuilding)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    upgradeRequirementsMet(requires) {
+        const currentUpgrades = this.buildingUpgrades.get(this.selectedBuilding) || new Set();
+        
+        if (requires.upgrades) {
+            for (const reqUpgrade of requires.upgrades) {
+                if (!currentUpgrades.has(reqUpgrade)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+
+    applyBuildingEffects(building) {
+        if (building.effects) {
+            building.effects.forEach(effectId => {
+                const effect = this.game.getCollections().effects[effectId];
+                if (effect) {
+                    effect.id = effectId;
+                    this.applyEffect(effect);
+                }
+            });
+        }
+    }
+
+    applyUpgradeEffects(upgrade) {
+        if (upgrade.effects) {
+            upgrade.effects.forEach(effectId => {
+                const effect = this.game.getCollections().effects[effectId];
+                if (effect) {
+                    effect.id = effectId;
+                    this.applyEffect(effect);
+                }
+            });
+        }
+    }
+
+    applyEffect(effectData) {
+        const state = this.game.state;
+        
+        if (!state.buildingBonuses) {
+            state.buildingBonuses = {
+                goldPerRound: 0,
+                unitStats: {}
+            };
+        }
+        state.buildingBonuses[effectData.id] = 1;
+    }
+
     createExperiencePanel() {
-        if (!this.game.squadExperienceSystem) return null;
+        if (!this.game.squadExperienceSystem) return;
         
         const container = document.getElementById('unitPromotions');
+        if (!container) return;
+        
         container.innerHTML = '';
 
         const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
         
-        if (squadsReadyToLevelUp.length === 0) return null;
+        if (squadsReadyToLevelUp.length === 0) return;
 
-        squadsReadyToLevelUp.forEach((squad, index) => {
+        squadsReadyToLevelUp.forEach(squad => {
             const panel = this.createExperienceCard(squad);
-            container.appendChild(panel);
+            if (panel) {
+                container.appendChild(panel);
+            }
         });
-
-        return container;
     }
 
     createExperienceCard(squad) {
@@ -68,10 +477,10 @@ class ShopSystem extends engine.BaseSystem {
         const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         const isSpecializationLevel = (squad.level) == 2;
         const canSpecialize = isSpecializationLevel && hasSpecializations;
+        
         const card = document.createElement('div');
         card.className = 'experience-panel';
 
-        // Add magical shimmer effect for specialization
         if (canSpecialize) {
             const shimmer = document.createElement('div');
             shimmer.classList.add("shimmer");
@@ -79,323 +488,160 @@ class ShopSystem extends engine.BaseSystem {
         }
 
         const currentLevelText = ` (Lvl ${squad.level})`;
-        const nextLevelText = canSpecialize ? 
-            '⭐ Ascend!' : ` → ${squad.nextLevelName}`;
-        const buttonText = canSpecialize ? 
-            `🌟 Ascend` : 
-            `⚡ Level Up`;
-        
-        card.innerHTML = `
-            <div class="experience-squad-info">
-                <span class="experience-squad-name">
-                    🛡️ ${squad.displayName}${currentLevelText}
-                </span>
-                <span class="${canSpecialize ? 'experience-nextLevelSpec' : 'experience-nextLevel'}">
-                    ${nextLevelText}
-                </span>
-            </div>
-            <div class="experience-bar">
-                <div class="experience-fill"></div>
-            </div>
-            <div class="experience-levelUpCost">
-                <span>💰 ${squad.levelUpCost}g cost</span>
-            </div>
-        `;
-        
-        const levelUpButton = document.createElement('button');
-        levelUpButton.className = 'level-up-button';
-        levelUpButton.textContent = buttonText;
-        levelUpButton.disabled = this.game.state.playerGold < squad.levelUpCost;
-        
+        const nextLevelText = canSpecialize ? '⭐ Ascend!' : ` Level ${squad.level + 1}`;
+
+        const header = document.createElement('div');
+        header.className = 'experience-header';
+
+        const unitIcon = document.createElement('div');
+        unitIcon.className = 'experience-unit-icon';
+        unitIcon.textContent = currentUnitType.icon || '⚔️';
+        header.appendChild(unitIcon);
+
+        const info = document.createElement('div');
+        info.className = 'experience-info';
+
+        const title = document.createElement('div');
+        title.className = 'experience-title';
+        title.textContent = this.getSquadDisplayName(squad.placementId);
+        info.appendChild(title);
+
+        const subtitle = document.createElement('div');
+        subtitle.className = 'experience-subtitle';
+        subtitle.textContent = `${currentUnitType.title}${currentLevelText}`;
+        info.appendChild(subtitle);
+
+        header.appendChild(info);
+        card.appendChild(header);
+
+        const progress = document.createElement('div');
+        progress.className = 'experience-progress';
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'experience-progress-bar';
+
+        const progressFill = document.createElement('div');
+        progressFill.className = 'experience-progress-fill';
+        progressFill.style.width = '100%';
+        progressBar.appendChild(progressFill);
+
+        progress.appendChild(progressBar);
+
+        const xpText = document.createElement('div');
+        xpText.className = 'experience-xp-text';
+        xpText.textContent = 'Ready to advance!';
+        progress.appendChild(xpText);
+
+        card.appendChild(progress);
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'experience-buttons';
+
         if (canSpecialize) {
-            levelUpButton.classList.add('level-up-button-spec');
-        }
-        
-        levelUpButton.addEventListener('click', () => {
-            // Create level up animation
-            this.animateLevelUp(card);
-            
-           this.game.squadExperienceSystem.levelUpSquad(squad.placementId, null, null, (success) => {
-                if (success || canSpecialize) {
-                    // Show success notification
-                    this.uiEnhancements.showNotification(
-                        `🌟 ${squad.displayName} has been enhanced!`, 
-                        'success'
-                    );                    
-                    
+            const specBtn = document.createElement('button');
+            specBtn.className = 'btn btn-primary experience-btn';
+            specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
+            specBtn.onclick = () => {
+                if (this.game.squadExperienceSystem) {
+                    this.game.squadExperienceSystem.showSpecializationSelection(
+                        squad.placementId, 
+                        squad, 
+                        squad.levelUpCost
+                    );
                 }
-                this.createShop();
-            });
-      
-        });
-        
-        card.appendChild(levelUpButton);
-        
-        // Add specialization preview if available
-        if (canSpecialize && currentUnitType.specUnits.length > 0) {
-            const previewDiv = document.createElement('div');
-            previewDiv.classList.add('spec-unit-preview')
-            
-            const collections = this.game.getCollections();
-            const specNames = currentUnitType.specUnits
-                .map(specId => {
-                    const spec = collections.units[specId];
-                    return spec ? (spec.title || specId) : specId;
-                })
-                .join(', ');
-            
-            previewDiv.innerHTML = `⭐ Available Specializations: ${specNames}`;
-            card.appendChild(previewDiv);
+            };
+            buttonContainer.appendChild(specBtn);
+        } else {
+            const levelUpBtn = document.createElement('button');
+            levelUpBtn.className = 'btn btn-primary experience-btn';
+            levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
+            levelUpBtn.onclick = () => {
+                if (this.game.squadExperienceSystem) {
+                    this.game.squadExperienceSystem.levelUpSquad(squad.placementId, squad.team);
+                }
+            };
+            buttonContainer.appendChild(levelUpBtn);
         }
-        
+
+        card.appendChild(buttonContainer);
         return card;
     }
 
-    getUnitIcon(unitType) {
-        // Extract the base unit name from the unit ID
-        // This assumes your icon files follow the pattern: icon_<unitname>.png
-        const unitId = unitType.id || unitType.type || '';
-        
-        // Map unit IDs to icon file names
-        const iconMap = {
-            // Primary units
-            '1_d_archer': 'archer',
-            '1_sd_soldier': 'soldier', 
-            '1_s_barbarian': 'barbarian',
-            '1_is_acolyte': 'acolyte',
-            '1_i_apprentice': 'apprentice',
-            '1_di_scout': 'rogue',
-            '0_golemStone': 'stoneGolem'            
-        };
-        
-        // Get the icon filename or fallback to a default
-        const iconName = iconMap[unitId] || 'default';
-        const iconPath = `/projects/TurnBasedWarfare/resources/images/icon_${iconName}.png`;
-        
-        // Return an img element instead of emoji
-        return `<img src="${iconPath}" alt="${unitType.title}" class="unit-icon">`;
-    }
-
-
-    createUnitCard(unitId, unitType) {
-        if (unitType.value < 0 || !unitType.buyable) return null;
-        
-        const card = document.createElement('div');
-        card.className = 'unit-card';
-        card.dataset.unitId = unitId;
-
-        // Add rarity-based effects
-        const rarity = this.determineUnitRarity(unitType);
-        if (rarity !== 'common') {
-            this.addRarityEffects(card, rarity);
-        }
-
-        // Enhanced unit card with squad info
-        const squadInfo = this.game.squadManager ? 
-            this.game.squadManager.getSquadInfo(unitType) : null;
-        const statsText = squadInfo ? 
-            `💥 ${squadInfo.squadSize} units, ${squadInfo.formationType} formation` :
-            `⚔️ ${unitType.damage} DMG | 🛡️ ${unitType.hp} HP`;
-        
-        // Create the card content with proper HTML structure
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'unit-name';
-        nameDiv.innerHTML = `${this.getUnitIcon(unitType)} ${unitType.title}`;
-        
-        const costDiv = document.createElement('div');
-        costDiv.className = 'unit-cost';
-        costDiv.textContent = `💰 Cost: ${unitType.value}g`;
-        
-        const statsDiv = document.createElement('div');
-        statsDiv.className = 'unit-stats';
-        statsDiv.textContent = statsText;
-        
-        // Add shimmer effect element for CSS hover animation
-        const shimmerEffect = document.createElement('div');
-        shimmerEffect.className = "shimmer";
-        card.appendChild(shimmerEffect);
-        
-        // Append all elements to the card
-        card.appendChild(nameDiv);
-        card.appendChild(costDiv);
-        card.appendChild(statsDiv);
-
-        // Add unit description tooltip
-        if (unitType.description) {
-            card.title = unitType.description;
-        }
-
-        // Click handler only (no hover listeners)
-        card.addEventListener('click', (e) => {
-            this.selectUnitWithAnimation(card, { id: unitId, ...unitType }, e);
-        });
-
-        return card;
-    }
-
-    selectUnitWithAnimation(card, unitType, event) {
+    getCurrentUnitType(placementId, team) {
         const state = this.game.state;
-        if (state.phase !== 'placement' || state.playerGold < unitType.value) {
-            // Show insufficient gold animation
-            this.showInsufficientGoldEffect(card);
-            return;
+        const placement = state.placements?.[team]?.[placementId];
+        if (!placement) return null;
+        
+        const UnitTypes = this.game.getCollections().units;
+        return placement.unitType ? UnitTypes[placement.unitType] : null;
+    }
+
+    getSquadDisplayName(placementId) {
+        const match = placementId.match(/^([a-z]+)_(\d+)$/);
+        if (match) {
+            const side = match[1];
+            const index = parseInt(match[2], 10);
+            const sideLabel = side === 'left' ? 'Left' : side === 'right' ? 'Right' : side === 'center' ? 'Center' : 'Unknown';
+            return `${sideLabel} Squad ${index + 1}`;
         }
-        
-        state.selectedUnitType = unitType;
-        this.game.placementSystem.handleUnitSelectionChange(unitType);
-        
-        // Update UI selection with animation
-        document.querySelectorAll('.unit-card').forEach(c => {
-            c.classList.remove('selected');
-            c.style.transform = 'scale(1)';
-        });
-        
-        card.classList.add('selected');
-        
-        // Create selection effect
-        this.createSelectionEffect(card, event);
-        
-        // Show selection feedback
-        const squadInfo = this.game.squadManager ? 
-            this.game.squadManager.getSquadInfo(unitType) : null;
-        const message = squadInfo ? 
-            `🛡️ Selected ${unitType.title} squad (${squadInfo.squadSize} units, ${unitType.value}g)` :
-            `⚔️ Selected ${unitType.title} (${unitType.value}g)`;
-        
-        this.game.battleLogSystem.add(message);
-        this.uiEnhancements.showNotification(`Selected: ${unitType.title}`, 'success', 2000);
+        return placementId;
     }
 
-    createSelectionEffect(card, event) {
-        const ripple = document.createElement('div');
-        ripple.className = 'selection-ripple';
-        
-        const rect = card.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        ripple.style.left = `${x - 10}px`;
-        ripple.style.top = `${y - 10}px`;
-        
-        card.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-        
-        // Add golden glow effect
-        card.style.boxShadow = '0 0 20px rgba(255, 140, 0, 0.6), inset 0 0 20px rgba(255, 140, 0, 0.1)';
-    }
-
-    showInsufficientGoldEffect(card) {
-        const flash = document.createElement('div');
-        flash.style.className = "insufficientGoldEffect";
-        
-        card.appendChild(flash);
-        setTimeout(() => flash.remove(), 600);
-        
-        // Show error message
-        this.uiEnhancements.showNotification('💰 Insufficient gold!', 'error', 2000);
-    }
-
-
-    determineUnitRarity(unitType) {
-        if (unitType.value > 150) return 'legendary';
-        if (unitType.value > 100) return 'epic';
-        if (unitType.value > 50) return 'rare';
-        return 'common';
-    }
-
-    addRarityEffects(card, rarity) {
-        // Add rarity class for CSS styling
-        card.classList.add(`rarity-${rarity}`);
-
-        // Add animated border element for legendary units
-        if (rarity === 'legendary') {
-            const borderAnimation = document.createElement('div');
-            borderAnimation.className = 'legendary-border';
-            card.appendChild(borderAnimation);
+    showNotification(message, type) {
+        if (this.uiEnhancements) {
+            this.uiEnhancements.showNotification(message, type);
+        } else if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(message);
         }
     }
-    getCurrentUnitType(placementId, side) {
-        if (!this.game.placementSystem) return null;
-        const placements = this.game.placementSystem.getPlacementsForSide(side);
-        const placement = placements.find(p => p.placementId === placementId);
-        return placement ? placement.unitType : null;
-    }
 
-    animateLevelUp(panel) {
-        // Create magical level up burst effect
-        const burst = document.createElement('div');
-        burst.className = 'level-up-burst';
-        panel.appendChild(burst);
-        
-        // Create sparkle effects
-        for (let i = 0; i < 6; i++) {
-            const sparkle = document.createElement('div');
-            sparkle.className = 'level-up-sparkle';
-            sparkle.style.top = `${20 + Math.random() * 60}%`;
-            sparkle.style.left = `${20 + Math.random() * 60}%`;
-            sparkle.style.animationDelay = `${Math.random() * 0.4}s`;
-            panel.appendChild(sparkle);
-            
-            setTimeout(() => sparkle.remove(), 1200);
-        }
-        
-        setTimeout(() => burst.remove(), 1200);
-    }
-    // Enhanced update method with better performance
     update() {
         const state = this.game.state;
-        const UnitTypes = this.game.getCollections().units;
         const inPlacementPhase = state.phase === 'placement';
         
-        // Update experience panel if needed (throttled)
         if (inPlacementPhase && this.game.squadExperienceSystem) {
             if (this.game.state.now - this.lastExperienceUpdate > 2) {
                 const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
                 const hasReadySquads = squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
                 
-                // Refresh shop if experience panel state changed
                 if (hasReadySquads !== hasExperiencePanel) {
-                    this.createShop();
+                    this.createExperiencePanel();
                 }
                 
                 this.lastExperienceUpdate = this.game.state.now;
             }
         }
-        
-        // Update unit card states efficiently using CSS classes
-        document.querySelectorAll('.unit-card').forEach(card => {
-            const unitId = card.dataset.unitId;
-            const unitType = UnitTypes[unitId];
-            
-            if (!unitType) return;
-            
-            const canAfford = state.playerGold >= unitType.value;
-            const wasDisabled = card.classList.contains('disabled');
-            const shouldBeDisabled = !canAfford || !inPlacementPhase;
-            
-            if (wasDisabled !== shouldBeDisabled) {
-                card.classList.toggle('disabled', shouldBeDisabled);
-                
-                // Update cost display color using CSS classes
-                const costElement = card.querySelector('.unit-cost');
-                if (costElement) {
-                    if (canAfford) {
-                        costElement.classList.add('cost-affordable');
-                        costElement.classList.remove('cost-unaffordable');
-                    } else {
-                        costElement.classList.add('cost-unaffordable');
-                        costElement.classList.remove('cost-affordable');
-                    }
-                }
-            }
-        });
     }
 
     reset() {
-        this.lastExperienceUpdate = 0;
-        this.showingExperiencePanel = false;
+        this.selectedBuilding = null;
+    }
+
+    saveState() {
+        return {
+            ownedBuildings: Array.from(this.ownedBuildings),
+            buildingUpgrades: Array.from(this.buildingUpgrades.entries()).map(([k, v]) => [k, Array.from(v)]),
+            townHallLevel: this.townHallLevel,
+            selectedBuilding: this.selectedBuilding
+        };
+    }
+
+    loadState(savedState) {
+        if (savedState.ownedBuildings) {
+            this.ownedBuildings = new Set(savedState.ownedBuildings);
+        }
+        if (savedState.buildingUpgrades) {
+            this.buildingUpgrades = new Map(
+                savedState.buildingUpgrades.map(([k, v]) => [k, new Set(v)])
+            );
+        }
+        if (savedState.townHallLevel !== undefined) {
+            this.townHallLevel = savedState.townHallLevel;
+        }
+        if (savedState.selectedBuilding) {
+            this.selectedBuilding = savedState.selectedBuilding;
+        }
+        this.createShop();
     }
 }
-
-

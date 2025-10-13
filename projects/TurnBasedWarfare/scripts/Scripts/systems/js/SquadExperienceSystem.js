@@ -434,8 +434,11 @@ class SquadExperienceSystem extends engine.BaseSystem {
     getCurrentUnitType(placementId, side) {
         if (!this.game.placementSystem) return null;
         const placements = this.game.placementSystem.getPlacementsForSide(side);
-        const placement = placements.find(p => p.placementId === placementId);
-        return placement ? placement.unitType : null;
+        if(placements){
+            const placement = placements.find(p => p.placementId === placementId);
+            return placement ? placement.unitType : null;
+        }
+        return null;
     }
     
     /**

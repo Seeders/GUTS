@@ -358,5 +358,9 @@
   },
   "upgrades": [
     "spellDamage"
+  ],
+  "units": [
+    "1_is_acolyte",
+    "1_i_apprentice"
   ]
 }
