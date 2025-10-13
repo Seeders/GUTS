@@ -224,7 +224,8 @@ export default class ServerGameRoom extends GameRoom {
                 gold: this.game.state.startingGold,
                 side: playerData.isHost ? 'left' : 'right',
                 buildings: [],
-                upgrades: []
+                upgrades: [],
+                squadsPlacedThisRound: 0
             };
             // If room is full, enter lobby phase (don't auto-start like parent does)
             if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
