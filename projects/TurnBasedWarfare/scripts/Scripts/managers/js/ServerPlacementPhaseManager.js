@@ -319,6 +319,9 @@ class ServerPlacementPhaseManager {
             // Small delay to ensure clients receive the ready update
             setTimeout(() => {
                 this.applyTargetPositions();
+                this.game.resetCurrentTime();
+                this.game.desyncDebugger.displaySync(true);
+                this.resetAI();
                 this.game.serverBattlePhaseSystem.startBattle(room);
             }, 500);
         } else {
@@ -329,6 +332,17 @@ class ServerPlacementPhaseManager {
             });
         }
 
+    }
+    
+    resetAI() {
+        const componentTypes = this.game.componentManager.getComponentTypes();            
+        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
+        AIEntities.forEach((entityId) => {
+            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
+            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            combat.lastAttack = 0;
+            aiState.aiBehavior = {};
+        });
     }
 
     applyTargetPositions() {
@@ -444,7 +458,7 @@ class ServerPlacementPhaseManager {
 
         console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
     }
-    
+
     updateGridPositionsAfterRound() {
         if (!this.game.gridSystem || !this.game.componentManager) return;
 

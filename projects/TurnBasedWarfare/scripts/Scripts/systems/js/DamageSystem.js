@@ -81,7 +81,8 @@ class DamageSystem extends engine.BaseSystem {
         if (targetHealth.current <= 0) {
             this.handleEntityDeath(targetId);
         }
-
+ console.log('apply damage', sourceId, targetId, damageResult.finalDamage);
+           
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,
@@ -171,7 +172,7 @@ class DamageSystem extends engine.BaseSystem {
                 // Calculate damage based on distance (closer = more damage)
                 const damageMultiplier = Math.max(0.2, 1 - (distance / radius));
                 const adjustedDamage = Math.floor(baseDamage * damageMultiplier);
-                
+           
                 // Apply damage (experience will be awarded inside applyDamage)
                 const result = this.applyDamage(sourceId, entityId, adjustedDamage, element, {
                     ...options,
@@ -341,7 +342,6 @@ class DamageSystem extends engine.BaseSystem {
                 return { damage: 0, prevented: true, reason: 'stack_limit' };
             }
         }
-console.log("apply poison dot");
         const poisonEffect = {
             sourceId,
             remainingTicks: ticks,
@@ -468,8 +468,7 @@ console.log("apply poison dot");
                 
                 if (targetHealth && targetHealth.current > 0 && (!targetDeathState || !targetDeathState.isDying)) {
                     // Apply the delayed damage
-                    
-                    this.applyDamage(event.sourceId, event.targetId, event.damage, event.element, {
+                     this.applyDamage(event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,
                         isDelayed: true
                     });

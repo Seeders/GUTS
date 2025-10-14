@@ -291,6 +291,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.applyTargetPositions();
             this.game.state.phase = 'battle';
             this.game.resetCurrentTime();
+            this.resetAI();
             this.game.desyncDebugger.displaySync(true);
             if (this.elements.readyButton) {
                 this.elements.readyButton.disabled = true;
@@ -303,6 +304,17 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.game.uiSystem?.showNotification('Opponent is ready for battle!', 'info');
             }
         }
+    }
+
+    resetAI() {
+        const componentTypes = this.game.componentManager.getComponentTypes();            
+        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
+        AIEntities.forEach((entityId) => {
+            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
+            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            combat.lastAttack = 0;
+            aiState.aiBehavior = {};
+        });
     }
 
     applyTargetPositions(){
@@ -994,7 +1006,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (!this.game.componentManager) return;
 
         const ComponentTypes = this.game.componentManager.getComponentTypes();
-debugger;
         this.playerPlacements = this.filterDeadSquads(this.playerPlacements, ComponentTypes);
         this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements, ComponentTypes);
     }

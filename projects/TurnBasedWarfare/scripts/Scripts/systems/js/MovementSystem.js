@@ -133,7 +133,6 @@ class MovementSystem extends engine.BaseSystem {
             
             if (!projectile && unitData.has(entityId)) {
                 let entityData = unitData.get(entityId);
-                console.log(entityData);
                 if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vy != 0){
                     this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
                 }

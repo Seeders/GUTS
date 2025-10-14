@@ -26,8 +26,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
-            this.game.resetCurrentTime();
-            this.game.desyncDebugger.displaySync(true);
             // Start battle timer
             this.startBattleTimer(room);
             
