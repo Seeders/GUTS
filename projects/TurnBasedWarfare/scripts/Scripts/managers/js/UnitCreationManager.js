@@ -68,7 +68,7 @@ class UnitCreationManager {
      * @param {string} team - Team identifier ('left' or 'right')
      * @returns {number} Entity ID
      */
-    create(worldX, worldY, worldZ, unitType, team) {
+    create(worldX, worldY, worldZ, targetPosition, unitType, team) {
         try {
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
@@ -79,7 +79,7 @@ class UnitCreationManager {
             this.addCombatComponents(entity, unitType);
             
             // Add AI and behavior components
-            this.addBehaviorComponents(entity, teamConfig);
+            this.addBehaviorComponents(entity, targetPosition, teamConfig);
             
             // Add visual and interaction components
             this.addVisualComponents(entity, unitType, teamConfig);
@@ -104,7 +104,8 @@ class UnitCreationManager {
      * @param {string|null} playerId - Optional player ID for multiplayer
      * @returns {Object} Squad placement data with entity IDs
      */
-    createSquad(gridPosition, unitType, team, playerId = null) {
+    createSquad(gridPosition, targetPosition, unitType, team, playerId = null) {
+        console.log('CREATE SQUAD', gridPosition, 'targetPosition', targetPosition);
         try {
             // Get squad configuration
             const squadData = this.game.squadManager.getSquadData(unitType);
@@ -134,7 +135,7 @@ class UnitCreationManager {
                 const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-                const entityId = this.create(pos.x, unitY, pos.z, unitType, team);
+                const entityId = this.create(pos.x, unitY, pos.z, targetPosition, unitType, team);
 
                 // Add playerId to the team component if provided
                 if (playerId && this.game.componentManager) {
@@ -191,13 +192,14 @@ class UnitCreationManager {
      */
     createSquadsFromPlacements(placements, team, playerId = null) {
         const createdSquads = [];
-        
         try {
             
             for (const placement of placements) {
                 try {
+                    console.log('createSquadsFromPlacement', placement);
                     const squadPlacement = this.createSquad(
-                        placement.gridPosition,
+                        placement.gridPosition,                        
+                        placement.targetPosition,
                         placement.unitType,
                         team,
                         playerId
@@ -377,14 +379,16 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      * @param {Object} teamConfig - Team configuration
      */
-    addBehaviorComponents(entity, teamConfig) {
+    addBehaviorComponents(entity, targetPosition, teamConfig) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
+        console.log('addBehaviorComponents', 'targetPosition', targetPosition);
         // AI state for behavior control
         this.game.addComponent(entity, ComponentTypes.AI_STATE, 
-            Components.AIState(teamConfig.aiState));
+            Components.AIState(teamConfig.aiState, targetPosition));
         
+        console.log(this.game.getComponent(entity, ComponentTypes.AI_STATE));
         // Animation state
         this.game.addComponent(entity, ComponentTypes.ANIMATION, 
             Components.Animation());

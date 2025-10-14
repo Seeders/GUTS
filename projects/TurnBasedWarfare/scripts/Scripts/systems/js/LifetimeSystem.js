@@ -196,8 +196,8 @@ class LifetimeSystem extends engine.BaseSystem {
             // Clear AI target
             const targetAI = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
             if (targetAI && targetAI.aiBehavior) {
-                targetAI.aiBehavior.currentTarget = null;
-                targetAI.aiBehavior.targetPosition = null;
+                targetAI.target = null;
+                targetAI.targetPosition = null;
             }
             
             // Visual effect

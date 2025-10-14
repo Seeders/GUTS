@@ -28,7 +28,8 @@ class ServerPlacementPhaseManager {
         this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
-                    
+        this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
+    
     }
 
     getPlacementById(placementId) {
@@ -226,6 +227,68 @@ class ServerPlacementPhaseManager {
         }
     }
 
+    handleSetSquadTarget(eventData) {
+        try {
+            const { playerId, data } = eventData;
+            const { placementId, targetPosition } = data;
+            
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            
+            if (!player) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                    error: 'Player not found'
+                });
+                return;
+            }
+            
+            // Validate placement belongs to player            
+            const placement = this.getPlacementById(placementId);
+            
+            if (!placement) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                    error: 'Placement not found'
+                });
+                return;
+            }
+            
+            // Store target position in placement data
+            placement.targetPosition = targetPosition;
+            
+            // Send success response to requesting player
+            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                success: true,
+                placementId,
+                targetPosition
+            });
+            
+            // Broadcast to other players in the room
+            for (const [otherPlayerId, otherPlayer] of room.players) {
+                if (otherPlayerId !== playerId) {
+                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
+                        placementId,
+                        targetPosition
+                    });
+                }
+            }
+            
+            console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
+            
+        } catch (error) {
+            console.error('Error setting squad target:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGET_SET', { 
+                error: 'Server error while setting squad target'
+            });
+        }
+    }
     handleReadyForBattle(eventData) {
         const { playerId, data } = eventData; 
         const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
@@ -278,9 +341,8 @@ class ServerPlacementPhaseManager {
     submitPlayerPlacement(playerId, player, placement) {
         console.log(`=== SUBMIT PLACEMENT DEBUG ===`);
         console.log(`Player ID: ${playerId}`);
-        console.log(`Room ID: ${this.room?.id || 'NO ROOM'}`);
+        console.log(`Room ID: ${this.game.room?.id || 'NO ROOM'}`);
         console.log(`Game phase: ${this.game.state.phase}`);
-        console.log(`Player object:`, player);
         console.log(`================================`);
     
         if (this.game.state.phase !== 'placement') {
@@ -418,20 +480,17 @@ class ServerPlacementPhaseManager {
             player.stats.gold -= building.value;
             player.stats.buildings.push(data.buildingId); 
             console.log(`SUCCESS`);
-            console.log(`Resulting player object:`, player);
             console.log(`================================`);
             return { success: true };
         }
 
         console.log(`ERROR`);       
-        console.log(`Resulting player object:`, player);
         console.log(`================================`);
         return { success: false, error: "Not enough gold." };
     }
 
     purchaseUpgrade(playerId, player, data) {
-        console.log(`=== Purchase Upgrade DEBUG ===`);        
-        console.log(`Player object:`, playerId, player);
+        console.log(`=== Purchase Upgrade DEBUG ===`);       
         console.log(`Data received:`, data);
     
         if (this.game.state.phase !== 'placement') {
@@ -443,7 +502,6 @@ class ServerPlacementPhaseManager {
             player.stats.gold -= upgrade.value;
             player.stats.upgrades.push(data.upgradeId);
             console.log(`SUCCESS`);
-            console.log(`Resulting player object:`, player);
             console.log(`================================`);
             return { success: true };
         }

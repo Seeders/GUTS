@@ -24,17 +24,15 @@ class CombatAISystem extends engine.BaseSystem {
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
     }
-        
+            
     update() {
         if (this.game.state.phase !== 'battle') return;
 
         const CT = this.componentTypes;
- 
-        // Stable order of updates across machines (cheap, by id; ties already deterministic)
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         );
-        // Process one deterministic step
+        
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
             const pos = this.game.getComponent(entityId, CT.POSITION);
@@ -43,66 +41,80 @@ class CombatAISystem extends engine.BaseSystem {
             const aiState = this.game.getComponent(entityId, CT.AI_STATE);
             const vel = this.game.getComponent(entityId, CT.VELOCITY);
             const collision = this.game.getComponent(entityId, CT.COLLISION);
+
             if (!pos || !vel || !combat || !team || !aiState) continue;
 
             if (!aiState.aiBehavior) {
                 aiState.aiBehavior = {
                     lastDecisionTime: 0,
-                    currentTarget: null,
                     targetLockTime: 0,
-                    targetPosition: null,
                     lastStateChange: 0,
                     lastAttackStart: 0
                 };
             }
             const aiBehavior = aiState.aiBehavior;
 
-            // Get a stable, filtered list of enemies
-            const enemies = this.getAllEnemies(entityId, team) || [];
+            // DEBUG: Log combat range and position
 
-    
-            // Validate current target
-            if (aiBehavior.currentTarget) {
-                const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
-                const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+            const enemiesInRange = this.getAllEnemiesInRange(entityId, team, pos, combat.range) || [];
+            
+            // DEBUG: Log enemies found
+            if (aiState.target) {
+                const targetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
+                const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
-                    aiBehavior.currentTarget = null;
-                    aiBehavior.targetPosition = null;
+                    aiState.target = null;
                 }
             }
 
-            // If no enemies exist anywhere on map, go idle
-            if (enemies.length === 0) {
-                if (aiState.state !== 'idle') {
-                    this.changeAIState(aiState, 'idle');
-                    aiBehavior.currentTarget = null;
-                    aiBehavior.targetPosition = null;
-                }
-                return;
+            if (enemiesInRange.length === 0) {
+                if(!aiState.targetPosition){
+                    if (aiState.state !== 'idle') {
+                        this.changeAIState(aiState, 'idle');
+                        aiState.target = null;
+                    }
+                    continue;
+                } else {
+                    const distance = Math.sqrt(
+                        Math.pow( aiState.targetPosition.x - pos.x, 2) + 
+                        Math.pow( aiState.targetPosition.z - pos.z, 2)
+                    );
+
+                    if(distance > 2){
+                        if(aiState.state !== 'chasing'){
+                            this.changeAIState(aiState, 'chasing');
+                        }
+                    } else {
+                        if (aiState.state !== 'idle') {
+                            this.changeAIState(aiState, 'idle');
+                            aiState.target = null;
+                        }
+                    }
+                    continue;
+                }   
             }
 
-            // Update target position if we have a current target
-            if (aiBehavior.currentTarget) {
-                const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
+            if (aiState.target) {
+                const targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
                 if (targetPos) {
-                    aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+                    aiState.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
                 }
             }
 
-            // NEW (deterministic, future-safe)
             if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0;
             const shouldMakeDecision = (this.game.state.now >= aiBehavior.nextMoveTime);
             
             if (shouldMakeDecision && aiState.state !== 'waiting') {
                 aiBehavior.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
-                this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision);
+                this.makeAIDecision(entityId, pos, combat, team, aiState, enemiesInRange, collision);
                 aiBehavior.lastDecisionTime = this.game.state.now;
             }
 
             this.handleCombat(entityId, pos, combat, aiState, collision);
         }
     }
-    getAllEnemies(entityId, team) {
+
+    getAllEnemiesInRange(entityId, team, position, range) {
         const allUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
@@ -122,6 +134,13 @@ class CombatAISystem extends engine.BaseSystem {
             if (otherDeathState && otherDeathState.isDying) return false;
             if (!otherPos) return false;
             
+            const distance = Math.sqrt(
+                Math.pow(otherPos.x - position.x, 2) + 
+                Math.pow(otherPos.z - position.z, 2)
+            );
+
+            if(distance > range) return false;
+
             return true;
         });
     }
@@ -144,24 +163,23 @@ class CombatAISystem extends engine.BaseSystem {
         return false;
     }
 
-    makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision) {
+    makeAIDecision(entityId, pos, combat, team, aiState, enemiesInRange, collision) {
         const aiBehavior = aiState.aiBehavior;
         
         // CHANGED: Always try to find the best target from ALL enemies
-        let targetEnemy = this.findBestTarget(entityId, pos, enemies, aiBehavior);
+        let targetEnemy = this.findBestTarget(entityId, pos, combat.range, enemiesInRange, aiState);
         
         if (!targetEnemy) {
-            aiBehavior.currentTarget = null;
-            aiBehavior.targetPosition = null;
-            this.changeAIState(aiState, 'idle');
+            aiState.target = null;
+            console.log('set current target null 4');
             return;
         }
         
         const targetHealth = this.game.getComponent(targetEnemy, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetEnemy, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
-            aiBehavior.currentTarget = null;
-            aiBehavior.targetPosition = null;
+            aiState.target = null;
+            console.log('set current target null 5');
             return;
         }
         
@@ -169,7 +187,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (!enemyPos) return;
         
         // Set the target
-        if (aiBehavior.currentTarget !== targetEnemy) {
+        if (aiState.target !== targetEnemy) {
             if (this.DEBUG_ENEMY_DETECTION) {
                 const distance = Math.sqrt(
                     Math.pow(enemyPos.x - pos.x, 2) + 
@@ -178,8 +196,8 @@ class CombatAISystem extends engine.BaseSystem {
              }
         }
         
-        aiBehavior.currentTarget = targetEnemy;
-        aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
+        aiState.target = targetEnemy;
+        aiState.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
             this.changeAIState(aiState, 'attacking');
@@ -189,16 +207,17 @@ class CombatAISystem extends engine.BaseSystem {
         }
     }
 
-    findBestTarget(entityId, pos, enemies, aiBehavior) {
+    findBestTarget(entityId, pos, range, enemiesInRange, aiState) {
+        const aiBehavior = aiState.aiBehavior;
         let bestTarget = null;
         let bestScore = -Infinity;
         
         // If unit is currently attacking, stick with current target unless switching would be much better
-        if (aiBehavior.currentTarget && enemies.includes(aiBehavior.currentTarget)) {
-            const currentTargetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
-            const currentTargetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
-            const currentTargetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
-            
+        if (aiState.target && enemiesInRange.includes(aiState.target)) {
+            const currentTargetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
+            const currentTargetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
+            const currentTargetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+
             const isCurrentTargetValid = currentTargetHealth && 
                                        currentTargetHealth.current > 0 && 
                                        (!currentTargetDeathState || !currentTargetDeathState.isDying) &&
@@ -215,12 +234,12 @@ class CombatAISystem extends engine.BaseSystem {
                 
                 // Only switch if we find a significantly better target
                 bestScore = currentScore * 1.2; // 20% bonus for current target (sticky targeting)
-                bestTarget = aiBehavior.currentTarget;
+                bestTarget = aiState.target;
             }
         }
         
         // Evaluate all enemies to find the best target
-        enemies.forEach(enemyId => {
+        enemiesInRange.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
             const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
@@ -232,8 +251,9 @@ class CombatAISystem extends engine.BaseSystem {
                 Math.pow(enemyPos.x - pos.x, 2) + 
                 Math.pow(enemyPos.z - pos.z, 2)
             );
+
             const healthRatio = enemyHealth.current / (enemyHealth.max || enemyHealth.current);
-            const isCurrentTarget = (enemyId === aiBehavior.currentTarget);
+            const isCurrentTarget = (enemyId === aiState.target);
             
             const score = this.calculateTargetScore(distance, healthRatio, isCurrentTarget);
             
@@ -241,9 +261,10 @@ class CombatAISystem extends engine.BaseSystem {
                 bestScore = score;
                 bestTarget = enemyId;
             }
+            
         });
         
-        if (bestTarget !== aiBehavior.currentTarget) {
+        if (bestTarget !== aiState.target) {
             aiBehavior.targetLockTime = this.game.state.now;
         }
         
@@ -271,20 +292,19 @@ class CombatAISystem extends engine.BaseSystem {
 
     handleCombat(entityId, pos, combat, aiState, collision) {
         const aiBehavior = aiState.aiBehavior;
-        if (!aiBehavior.currentTarget || aiState.state !== 'attacking') return;
+        if (!aiState.target || aiState.state !== 'attacking') return;
         
-        const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
-        const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
-        const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+        const targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+        const targetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
         
         if (!targetPos || !targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
-            aiBehavior.currentTarget = null;
-            aiBehavior.targetPosition = null;
-            this.changeAIState(aiState, 'idle');
+            aiState.target = null;
+            console.log('set current target null 6');
             return;
         }
         
-        if (!this.isInAttackRange(entityId, aiBehavior.currentTarget, combat, 5)) {
+        if (!this.isInAttackRange(entityId, aiState.target, combat, 5)) {
             this.changeAIState(aiState, 'chasing');
             return;
         }
@@ -293,13 +313,13 @@ class CombatAISystem extends engine.BaseSystem {
         if (combat.damage > 0) {
             const effectiveAttackSpeed = this.getEffectiveAttackSpeed(entityId, combat.attackSpeed);
             if ((this.game.state.now - combat.lastAttack) >= 1 / effectiveAttackSpeed) {
-                this.initiateAttack(entityId, aiBehavior.currentTarget, combat);
+                this.initiateAttack(entityId, aiState.target, combat);
                 combat.lastAttack = this.game.state.now;
                 aiBehavior.lastAttackStart = this.game.state.now;
             }
         } 
           
-        aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+        aiState.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
     }
     
     initiateAttack(attackerId, targetId, combat) {

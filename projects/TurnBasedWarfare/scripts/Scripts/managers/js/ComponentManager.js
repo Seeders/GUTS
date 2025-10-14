@@ -42,8 +42,8 @@ class ComponentManager {
             
             Team: (team = 'neutral') => ({ team }),
             UnitType: (id = 'default', type = 'basic', value = 10) => ({ id, type, value }),
-            AIState: (state = 'idle', target = null, lastStateChange = 0) => 
-                ({ state, target, lastStateChange }),
+            AIState: (state = 'idle', targetPosition = null, target = null, lastStateChange = 0) => 
+                ({ state, targetPosition, target, lastStateChange }),
             Animation: (scale = 1, rotation = 0, flash = 0) => ({ scale, rotation, flash }),
             
             // Enhanced Projectile component with element support

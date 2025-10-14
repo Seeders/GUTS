@@ -309,6 +309,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
             
             const entityId = this.game.unitCreationManager.create(
                 pos.x, unitY, pos.z, 
+                placement.targetPosition,
                 placement.unitType, 
                 squadData.team
             );

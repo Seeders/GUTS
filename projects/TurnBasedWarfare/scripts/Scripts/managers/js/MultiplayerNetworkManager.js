@@ -75,7 +75,10 @@ class MultiplayerNetworkManager {
                 this.syncWithServerState(data);   
                 this.handleGameStarted(data);
             }),
-
+            nm.listen('OPPONENT_SQUAD_TARGET_SET', (data) => {
+                this.syncWithServerState(data);   
+                this.handleOpponentSquadTarget(data);
+            }),
             nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
                 this.syncWithServerState(data);   
                 this.handleReadyForBattleUpdate(data);
@@ -229,6 +232,23 @@ class MultiplayerNetworkManager {
         );
     }
 
+    setSquadTarget(data, callback) {
+        this.game.clientNetworkManager.call(
+            'SET_SQUAD_TARGET',
+            data,
+            'SQUAD_TARGET_SET',
+            (data, error) => {
+                if (error || data.error) {
+                    console.log('Set target error:', error || data.error);
+                    callback(false, error || data.error);
+                } else {
+                    console.log('Set target response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     toggleReadyForBattle(callback) {
         this.game.clientNetworkManager.call(
             'READY_FOR_BATTLE',
@@ -344,6 +364,11 @@ class MultiplayerNetworkManager {
     handleRoundResult(roundResult) {
         const state = this.game.state;
         state.phase = 'ended';      
+    }
+
+    handleOpponentSquadTarget(data) {
+        const { placementId, targetPosition } = data;
+        this.game.placementSystem.applySquadTargetPosition(placementId, targetPosition);        
     }
 
     syncWithServerState(data) {

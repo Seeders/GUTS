@@ -5,7 +5,10 @@ class ShopSystem extends engine.BaseSystem {
         
         this.ownedBuildings = new Set();
         this.buildingUpgrades = new Map();
-        this.selectedBuilding = null;
+        this.game.state.selectedEntity = {
+            "type": null,
+            "entityId": null
+        };
         this.townHallLevel = 0;
         
         this.lastExperienceUpdate = 0;
@@ -32,7 +35,7 @@ class ShopSystem extends engine.BaseSystem {
             
             const item = document.createElement('div');
             item.className = 'building-list-item';
-            if (this.selectedBuilding === buildingId) {
+            if (this.game.state.selectedEntity.entityId === buildingId) {
                 item.classList.add('selected');
             }
             
@@ -62,7 +65,8 @@ class ShopSystem extends engine.BaseSystem {
             item.appendChild(info);
             
             item.addEventListener('click', () => {
-                this.selectedBuilding = buildingId;
+                this.game.state.selectedEntity.entityId = buildingId;
+                this.game.state.selectedEntity.type = "building";
                 this.createShop();
             });
             
@@ -82,7 +86,7 @@ class ShopSystem extends engine.BaseSystem {
         if (!container) return;
         container.innerHTML = '';
 
-        if (this.selectedBuilding) {
+        if (this.game.state.selectedEntity.type == 'building') {
             this.renderBuildingActions(container);
         } else {
             this.renderBuildOptions(container);
@@ -125,12 +129,17 @@ class ShopSystem extends engine.BaseSystem {
         }
     }
 
+    clearSelectedEntity() {    
+        this.game.state.selectedEntity.entityId = null;
+        this.game.state.selectedEntity.type = null;
+    }
+
     renderBuildingActions(container) {
         const BuildingTypes = this.game.getCollections().buildings;
-        const building = BuildingTypes[this.selectedBuilding];
+        const building = BuildingTypes[this.game.state.selectedEntity.entityId];
         
         if (!building) {
-            this.selectedBuilding = null;
+            this.clearSelectedEntity();
             this.renderBuildOptions(container);
             return;
         }
@@ -144,7 +153,7 @@ class ShopSystem extends engine.BaseSystem {
         container.appendChild(header);
 
         document.getElementById('deselectBtn').addEventListener('click', () => {
-            this.selectedBuilding = null;
+            this.clearSelectedEntity();
             this.createShop();
         });
 
@@ -213,7 +222,7 @@ class ShopSystem extends engine.BaseSystem {
         const grid = document.createElement('div');
         grid.className = 'action-grid';
 
-        const currentUpgrades = this.buildingUpgrades.get(this.selectedBuilding) || new Set();
+        const currentUpgrades = this.buildingUpgrades.get(this.game.state.selectedEntity.entityId) || new Set();
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.game.getCollections().upgrades[upgradeId];
@@ -295,7 +304,7 @@ class ShopSystem extends engine.BaseSystem {
 
     canBuildingProduceUnit(building, unitId, unit) {
         if (!unit.requires || !unit.requires.buildings) return false;
-        return unit.requires.buildings.includes(this.selectedBuilding);
+        return unit.requires.buildings.includes(this.game.state.selectedEntity.entityId);
     }
 
     purchaseBuilding(buildingId, building) {
@@ -338,13 +347,13 @@ class ShopSystem extends engine.BaseSystem {
     purchaseUpgrade(upgradeId, upgrade) {
         this.game.networkManager.purchaseUpgrade({ 
             upgradeId, 
-            buildingId: this.selectedBuilding 
+            buildingId: this.game.state.selectedEntity.entityId 
         }, (success, response) => {
             if (success) {
-                if (!this.buildingUpgrades.has(this.selectedBuilding)) {
-                    this.buildingUpgrades.set(this.selectedBuilding, new Set());
+                if (!this.buildingUpgrades.has(this.game.state.selectedEntity.entityId)) {
+                    this.buildingUpgrades.set(this.game.state.selectedEntity.entityId, new Set());
                 }
-                this.buildingUpgrades.get(this.selectedBuilding).add(upgradeId);
+                this.buildingUpgrades.get(this.game.state.selectedEntity.entityId).add(upgradeId);
                 this.game.state.playerGold -= upgrade.value;
                 this.applyUpgradeEffects(upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
@@ -401,7 +410,7 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     upgradeRequirementsMet(requires) {
-        const currentUpgrades = this.buildingUpgrades.get(this.selectedBuilding) || new Set();
+        const currentUpgrades = this.buildingUpgrades.get(this.game.state.selectedEntity.entityId) || new Set();
         
         if (requires.upgrades) {
             for (const reqUpgrade of requires.upgrades) {
@@ -615,15 +624,14 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     reset() {
-        this.selectedBuilding = null;
+        this.clearSelectedEntity();
     }
 
     saveState() {
         return {
             ownedBuildings: Array.from(this.ownedBuildings),
             buildingUpgrades: Array.from(this.buildingUpgrades.entries()).map(([k, v]) => [k, Array.from(v)]),
-            townHallLevel: this.townHallLevel,
-            selectedBuilding: this.selectedBuilding
+            townHallLevel: this.townHallLevel
         };
     }
 
@@ -638,9 +646,6 @@ class ShopSystem extends engine.BaseSystem {
         }
         if (savedState.townHallLevel !== undefined) {
             this.townHallLevel = savedState.townHallLevel;
-        }
-        if (savedState.selectedBuilding) {
-            this.selectedBuilding = savedState.selectedBuilding;
         }
         this.createShop();
     }

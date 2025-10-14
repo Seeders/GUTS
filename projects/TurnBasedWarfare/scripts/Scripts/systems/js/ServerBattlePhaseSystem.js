@@ -120,7 +120,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             return health && health.current > 0 && (!deathState || !deathState.isDying);
         });
 
-        // Group by teams
         const teams = new Map();
         for (const entityId of aliveEntities) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
@@ -131,30 +130,66 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 teams.get(team.team).push(entityId);
             }
         }
-
-        // Check for battle end conditions
         const aliveTeams = Array.from(teams.keys());
         
-        if (aliveTeams.length <= 1) {
-            const winner = aliveTeams.length === 1 ? 
-                this.getPlayerIdBySide(aliveTeams[0]) : null;
-            
-            // Find the room this battle belongs to
-            const room = this.game.room;
-            if (room) {
-                this.endBattle(room, winner, 'victory');
-            }
+        if (aliveEntities.length === 0) {
+            console.log('no alive entities');
+            this.endBattle(this.game.room, null);
+            return;
+        }
+        
+        if (aliveTeams.length === 1) {
+            console.log('aliveTeams length is 1', aliveTeams);
+            this.endBattle(this.game.room, aliveTeams[0]);
+            return;
+        }
+        
+        const noCombatActive = this.checkNoCombatActive(aliveEntities);
+        const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
+        
+        if (noCombatActive && allUnitsAtTarget) {
+            console.log('no combat active and all units at target');
+            this.endBattle(this.game.room, null);
         }
     }
 
-    getPlayerIdBySide(side) {
-        const room = this.game.room;
-        for (const [playerId, player] of room.players) {
-            if (player.stats && player.stats.side === side) {
-                return playerId; // Found the player on this team side
+    checkNoCombatActive(aliveEntities) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        
+        for (const entityId of aliveEntities) {
+            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+         //   console.log(entityId, 'currentTarget', aiState.target);
+            if (aiState && aiState.target) {
+                return false;
             }
         }
-        return null;
+        
+        return true;
+    }
+
+    checkAllUnitsAtTargetPosition(aliveEntities) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const TARGET_POSITION_THRESHOLD = 20;
+        
+        for (const entityId of aliveEntities) {
+            const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
+            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const targetPos = aiState?.targetPosition;
+
+            if (!pos || !targetPos) {
+                continue;
+            }
+            const distance = Math.sqrt(
+                Math.pow(targetPos.x - pos.x, 2) + 
+                Math.pow(targetPos.z - pos.z, 2)
+            );
+  
+            if (distance > TARGET_POSITION_THRESHOLD) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     endBattle(room, winner = null, reason = 'unknown') {

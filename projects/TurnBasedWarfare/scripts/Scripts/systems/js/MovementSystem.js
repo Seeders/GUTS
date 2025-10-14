@@ -90,7 +90,7 @@ class MovementSystem extends engine.BaseSystem {
                     !!aiState &&
                     (aiState.state === 'attacking' || aiState.state === 'waiting') &&
                     aiState.aiBehavior &&
-                    !!aiState.aiBehavior.currentTarget;
+                    !!aiState.target;
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
@@ -420,8 +420,8 @@ class MovementSystem extends engine.BaseSystem {
             return;
         }
         
-        const targetPos = aiState.aiBehavior.targetPosition;
-        const targetEntityId = aiState.aiBehavior?.currentTarget;
+        const targetPos = aiState.targetPosition;
+        const targetEntityId = aiState.target;
         
         const desiredDirection = {
             x: targetPos.x - pos.x,
@@ -602,8 +602,8 @@ class MovementSystem extends engine.BaseSystem {
             return;
         }
         
-        if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && aiState.aiBehavior.targetPosition) {
-            const targetPos = aiState.aiBehavior.targetPosition;
+        if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && aiState.targetPosition) {
+            const targetPos = aiState.targetPosition;
             const dx = targetPos.x - pos.x;
             const dz = targetPos.z - pos.z;
             

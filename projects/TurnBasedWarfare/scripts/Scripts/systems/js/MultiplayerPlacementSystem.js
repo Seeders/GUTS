@@ -13,6 +13,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.undoStack = [];
         this.maxUndoSteps = 10;
         
+        this.game.state.targetPositions = new Map();
         // Track placement state
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
@@ -176,6 +177,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         unit.position.x,
                         unit.position.y,
                         unit.position.z,
+                        placement.targetPosition,
                         placement.unitType,
                         team
                     );
@@ -195,6 +197,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     placement.x,
                     placement.y,
                     placement.z,
+                    placement.targetPosition,
                     placement.unitType,
                     team
                 );
@@ -285,6 +288,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             });
             console.log('applying opponent placements', opponentPlacements);
             this.applyOpponentPlacements(opponentPlacements);
+            this.applyTargetPositions();
             this.game.state.phase = 'battle';
             this.game.resetCurrentTime();
             this.game.desyncDebugger.displaySync(true);
@@ -301,7 +305,24 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-
+    applyTargetPositions(){
+        for (const [placementId, targetPosition] of this.game.state.targetPositions.entries()) {
+            const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
+            if (!squadData) return;
+            
+            const componentTypes = this.game.componentManager.getComponentTypes();
+            
+            squadData.unitIds.forEach(entityId => {
+                const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
+                if (aiState) {
+                    if (!aiState.aiBehavior) {
+                        aiState.aiBehavior = {};
+                    }
+                    aiState.targetPosition = { ...targetPosition };
+                }
+            });
+        }
+    }
 
     update() {
         if (this.game.state.phase !== 'placement') {
@@ -367,6 +388,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     pos.x,
                     unitY,
                     pos.z,
+                    opponentPlacement.targetPosition,
                     opponentPlacement.unitType,
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
@@ -407,19 +429,27 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     // Handle canvas clicks for unit placement
+    
     handleCanvasClick(event) {
         const state = this.game.state;
         
-        if (state.phase !== 'placement' || !state.selectedUnitType) {
+        if (this.settingTargetPosition) {
+            this.setSquadTargetPosition(event);
             return;
         }
         
-        // Don't allow placement if already ready
+        if (state.phase !== 'placement') {
+            return;
+        }
+        if(!state.selectedUnitType) {
+            this.checkUnitSelection(event);
+            return;
+        }
+        
         if (this.isPlayerReady) {
             return;
         }
         
-        // Check squad limit first
         if (!this.canPlayerPlaceSquad()) {
             return;
         }
@@ -430,17 +460,20 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         let isValidPlacement = false;
         let gridPos = null;
-        const worldPosition = this.getWorldPositionFromMouse(event);
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+        
         if (worldPosition) {
             gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
             isValidPlacement = this.isValidPlayerPlacement(worldPosition);
         }
-    
+
         if (!isValidPlacement || !gridPos) {
             return;
         }
         
-        // Validate squad configuration before placement
         if (this.game.squadManager) {
             const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
             const validation = this.game.squadManager.validateSquadConfig(squadData);
@@ -450,7 +483,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
         }
         const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
-       
+    
         this.game.networkManager.submitPlacement(placement, (success, response) => {
             if(success){
                 this.placeSquad(placement);
@@ -498,6 +531,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
+
+        this.game.state.selectedUnitType = null;
+        this.handleUnitSelectionChange();
+        
         
         return placement;
             
@@ -515,7 +552,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : 0;
             
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, unitType, team);
+            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, unitType, team);
             createdUnits.push({
                 entityId: entityId,
                 position: { x: pos.x, y: unitY, z: pos.z }
@@ -551,6 +588,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             cells: cells,
             unitType: { ...unitType },
             squadUnits: [],
+            team: team,
+            targetPosition: this.game.state.targetPositions.get(placementId),
             roundPlaced: this.game.state.round,
             timestamp: this.game.state.now
         };
@@ -995,5 +1034,188 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.resetAllPlacements();
         
         console.log('MultiplayerPlacementSystem disposed');
+    }
+
+
+    checkUnitSelection(event) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        const worldPos = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+        
+        if (!worldPos) return;
+        
+        const gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
+        const placementId = this.getPlacementAtGridPosition(gridPos);
+        
+        if (placementId) {
+            const placement = this.getPlacementById(placementId);
+            if (placement && placement.team === this.game.state.mySide) {
+                this.selectSquad(placementId);
+            }
+        }
+    }
+
+    getPlacementAtGridPosition(gridPos) {
+        const key = `${gridPos.x},${gridPos.z}`;
+        const cellState = this.game.gridSystem.state.get(key);
+        return cellState?.placementId || null;
+    }
+
+    selectSquad(placementId) {
+        if (!placementId) return;
+        
+        this.game.state.selectedEntity.entityId = placementId;
+        this.game.state.selectedEntity.type = 'squad';
+        const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
+        
+        if (squadData) {
+            const displayName = this.game.squadExperienceSystem.getSquadDisplayName(placementId);
+            this.showSquadActionPanel(placementId, displayName, squadData);
+            this.highlightSquadUnits(squadData.unitIds);
+        }
+    }
+
+    showSquadActionPanel(placementId, squadName, squadData) {
+        
+        const actionPanel = document.getElementById('actionPanel');
+        if (actionPanel) {
+            actionPanel.innerHTML = "";
+            
+            let squadPanel = document.createElement('div');
+            squadPanel.id = 'squadActionPanel';
+            squadPanel.style.cssText = `
+                margin-top: 1.5rem;
+                padding: 15px;
+                background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
+                border: 2px solid #ffaa00;
+                border-radius: 8px;
+            `;
+        
+            actionPanel.appendChild(squadPanel);
+    
+        
+            const componentTypes = this.game.componentManager.getComponentTypes();
+            const aliveUnits = squadData.unitIds.filter(id => 
+                this.game.getComponent(id, componentTypes.HEALTH)
+            ).length;
+            
+            const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
+            const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
+            
+            squadPanel.innerHTML = `
+                <div class="panel-title">🛡️ SQUAD ACTIONS</div>
+                <div style="color: var(--primary-gold); font-weight: 600; margin-bottom: 10px;">
+                    ${squadName}${levelInfo}
+                </div>
+                <div style="color: var(--stone-gray); font-size: 0.85rem; margin-bottom: 10px;">
+                    <div>Units: ${aliveUnits}/${squadData.totalUnitsInSquad}</div>
+                    <div>XP: ${squadData.experience}/${squadData.experienceToNextLevel} (${expProgress}%)</div>
+                    ${squadData.canLevelUp ? '<div style="color: #4ade80;">✨ Ready to Level Up!</div>' : ''}
+                </div>
+                <button id="setTargetBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
+                    🎯 Set Target Position
+                </button>
+                <button id="deselectSquadBtn" class="btn btn-secondary" style="width: 100%;">
+                    Close
+                </button>
+            `;
+        }
+        
+        document.getElementById('setTargetBtn').addEventListener('click', () => {
+            this.startSettingTargetPosition(placementId);
+        });
+        
+        document.getElementById('deselectSquadBtn').addEventListener('click', () => {
+            this.clearSquadSelection();
+        });
+    }
+
+    clearSquadSelection() {
+        const actionPanel = document.getElementById('actionPanel');
+        if (actionPanel) {
+            actionPanel.innerHTML = "";
+        }
+        this.clearSquadHighlights();
+        this.clearSelectedEntity();
+    }
+
+    clearSelectedEntity(){
+        this.game.state.selectedEntity.entityId = null;
+        this.game.state.selectedEntity.type = null;
+    }
+
+    startSettingTargetPosition(placementId) {
+        this.settingTargetPosition = true;
+        this.targetPlacementId = placementId;
+        document.body.style.cursor = 'crosshair';
+        
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(`🎯 Click on battlefield to set target position`);
+        }
+    }
+
+    setSquadTargetPosition(event) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        const worldPos = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+        
+        if (!worldPos) return;
+        
+        const squadData = this.game.squadExperienceSystem?.getSquadInfo(this.targetPlacementId);
+        if (!squadData) return;
+        
+        const targetPosition = {
+            x: worldPos.x,
+            y: 0,
+            z: worldPos.z
+        };
+        
+        // Send to server first
+        this.game.networkManager.setSquadTarget(
+            { 
+                placementId: this.targetPlacementId,
+                targetPosition: targetPosition 
+            },
+            (success, response) => {
+                if (success) {
+                    // Apply locally after server confirms
+                    this.applySquadTargetPosition(this.targetPlacementId, targetPosition);
+                    
+                    if (this.game.effectsSystem) {
+                        this.game.effectsSystem.createParticleEffect(
+                            worldPos.x, 0, worldPos.z,
+                            'magic',
+                            { count: 10, color: 0x00ff00 }
+                        );
+                    }
+
+                    this.cancelSettingTargetPosition();
+                } else {
+                    this.cancelSettingTargetPosition();
+                }
+            }
+        );
+    }
+
+    applySquadTargetPosition(placementId, targetPosition) {       
+        this.game.state.targetPositions.set(placementId, targetPosition);  
+    }
+
+    cancelSettingTargetPosition() {
+        this.settingTargetPosition = false;
+        this.targetPlacementId = null;
+        document.body.style.cursor = 'default';
+    }
+
+
+    highlightSquadUnits(unitIds) {
+        this.clearSquadHighlights();
+        this.highlightedUnits = new Set(unitIds);
+    }
+
+    clearSquadHighlights() {
+        this.highlightedUnits = new Set();
     }
 }

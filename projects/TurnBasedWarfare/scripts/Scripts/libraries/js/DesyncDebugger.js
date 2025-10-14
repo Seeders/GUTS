@@ -20,11 +20,7 @@ class DesyncDebugger {
             hash: hash,
             entityCount: entities.length,
             time: this.game.state.now
-        });        
-        console.log(`Hash=${hash}, Entities=${entities.length}, Time=${this.game.state.now.toFixed(3)}`);        
-        if (detailed) {
-            console.log("Detailed state:", stateData);
-        }            
+        });                       
     }
 
     createStateSnapshot(entities) {
@@ -65,7 +61,8 @@ class DesyncDebugger {
                 } : null),
                 aiState: this.hash(aiState ? {
                     state: aiState.state,
-                    currentTarget: aiState.aiBehavior ? String(aiState.aiBehavior.currentTarget || 'null') : 'null'
+                    targetPosition: aiState.targetPosition || 'null',
+                    target: aiState.target || 'null'
                 } : null)
             };
 

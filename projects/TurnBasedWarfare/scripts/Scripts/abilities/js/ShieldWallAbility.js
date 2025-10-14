@@ -187,11 +187,11 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             );
             
             // Force AI to target the shield wall user
-            if (enemyAI.aiBehavior) {
-                enemyAI.aiBehavior.currentTarget = casterEntity;
-                enemyAI.aiBehavior.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-            }
-            
+  
+            enemyAI.target = casterEntity;
+            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
                 const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
