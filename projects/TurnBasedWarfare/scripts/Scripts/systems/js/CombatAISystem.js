@@ -94,13 +94,6 @@ class CombatAISystem extends engine.BaseSystem {
                 }   
             }
 
-            if (aiState.target) {
-                const targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
-                if (targetPos) {
-                    aiState.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
-                }
-            }
-
             if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0;
             const shouldMakeDecision = (this.game.state.now >= aiBehavior.nextMoveTime);
             
@@ -197,7 +190,7 @@ class CombatAISystem extends engine.BaseSystem {
         }
         
         aiState.target = targetEnemy;
-        aiState.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
+        //aiState.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
             this.changeAIState(aiState, 'attacking');
@@ -317,9 +310,7 @@ class CombatAISystem extends engine.BaseSystem {
                 combat.lastAttack = this.game.state.now;
                 aiBehavior.lastAttackStart = this.game.state.now;
             }
-        } 
-          
-        aiState.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+        }           
     }
     
     initiateAttack(attackerId, targetId, combat) {

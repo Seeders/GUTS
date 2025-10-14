@@ -602,8 +602,14 @@ class MovementSystem extends engine.BaseSystem {
             return;
         }
         
-        if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && aiState.targetPosition) {
-            const targetPos = aiState.targetPosition;
+        if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
+
+            let targetPos = aiState.targetPosition;
+
+            if(aiState.target){                
+                targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+            }
+
             const dx = targetPos.x - pos.x;
             const dz = targetPos.z - pos.z;
             
