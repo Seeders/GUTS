@@ -11,7 +11,14 @@ class GridSystem extends engine.BaseSystem {
         this.rightBounds = null;
     }
     
-    init({terrainSize = 1536, cellSize = 48}) {
+    init() {
+
+        const collections = this.game.getCollections();
+        
+        const cellSize = collections.configs.game.gridSize; 
+        const currentLevel = collections.configs.state.level;
+        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * cellSize;
+        
         this.cellSize = cellSize;
         this.showGrid = true;
         this.snapToGrid = true;
@@ -24,6 +31,7 @@ class GridSystem extends engine.BaseSystem {
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
+        console.log("dimensions", this.dimensions);
         
         this.gridVisualization = null;
 
@@ -164,6 +172,7 @@ class GridSystem extends engine.BaseSystem {
         for (const cell of cells) {
             if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                 cell.z < bounds.minZ || cell.z > bounds.maxZ) {
+                console.log('out of bounds', cell, bounds);
 
                 return false;
             }

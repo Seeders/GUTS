@@ -132,7 +132,11 @@ class MovementSystem extends engine.BaseSystem {
             const isAffectedByGravity = vel.affectedByGravity;
             
             if (!projectile && unitData.has(entityId)) {
-                this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
+                let entityData = unitData.get(entityId);
+                console.log(entityData);
+                if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vy != 0){
+                    this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
+                }
             }
             
             if (isAffectedByGravity) {
@@ -595,7 +599,7 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         // Don't move if waiting for cooldowns
-        if (aiState && aiState.state === 'waiting') {
+        if (aiState && aiState.state === 'waiting' || aiState.state === 'idle') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -615,10 +619,16 @@ class MovementSystem extends engine.BaseSystem {
             
             const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
             
-            if (horizontalDistance > 0) {
+            const STOPPING_DISTANCE = 5;
+            
+            if (horizontalDistance > STOPPING_DISTANCE) {
                 const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
                 data.desiredVelocity.vx = (dx / horizontalDistance) * moveSpeed;
                 data.desiredVelocity.vz = (dz / horizontalDistance) * moveSpeed;
+                data.desiredVelocity.vy = 0;
+            } else {
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vz = 0;
                 data.desiredVelocity.vy = 0;
             }
         } else if (aiState && aiState.state === 'attacking') {
@@ -626,9 +636,9 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
         } else {
-            data.desiredVelocity.vx = vel.vx;
-            data.desiredVelocity.vy = vel.vy;
-            data.desiredVelocity.vz = vel.vz;
+            data.desiredVelocity.vx = 0;//vel.vx;
+            data.desiredVelocity.vy = 0;//vel.vy;
+            data.desiredVelocity.vz = 0;//vel.vz;
         }
     }
     

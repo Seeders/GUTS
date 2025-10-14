@@ -700,6 +700,10 @@ class RenderSystem extends engine.BaseSystem {
         return instances;
     }
 
+    entityDestroyed(entityId){
+        this.removeInstance(entityId);
+    }
+
     destroy() {
         
         // Remove all meshes from scene

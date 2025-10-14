@@ -451,6 +451,9 @@ class AnimationSystem extends engine.BaseSystem {
         });
     }
 
+    entityDestroyed(entityId){
+        this.removeEntityAnimations(entityId);
+    }
     removeEntityAnimations(entityId) {
         this.entityAnimationStates.delete(entityId);        
     }

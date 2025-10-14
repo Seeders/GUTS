@@ -310,8 +310,6 @@ class ServerPlacementPhaseManager {
         // Check if all players are ready and start battle if so
         if (this.areAllPlayersReady() && this.game.state.phase === 'placement') {
 
-                        // Spawn units from placements
-            this.game.serverBattlePhaseSystem.spawnSquadsFromPlacements(room);
             const gameState = room.getGameState();
             this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {                       
                 gameState: gameState,
@@ -320,6 +318,7 @@ class ServerPlacementPhaseManager {
             this.placementReadyStates.clear();
             // Small delay to ensure clients receive the ready update
             setTimeout(() => {
+                this.applyTargetPositions();
                 this.game.serverBattlePhaseSystem.startBattle(room);
             }, 500);
         } else {
@@ -330,6 +329,27 @@ class ServerPlacementPhaseManager {
             });
         }
 
+    }
+
+    applyTargetPositions() {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        console.log('APPLY TARGET POSITIONS');
+        for (const [playerId, placements] of this.playerPlacements) {
+            placements.forEach(placement => {
+                const targetPosition = placement.targetPosition;
+                console.log('placement targetPosition', placement.placementId, placement.targetPosition);
+                if (!targetPosition) return;
+                
+                if (placement.experience && placement.experience.unitIds.length > 0) {
+                    placement.experience.unitIds.forEach(entityId => {                        
+                        const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+                        if (aiState) {
+                            aiState.targetPosition = { ...targetPosition };                            
+                        }
+                    });
+                }
+            });
+        }
     }
 
     areAllPlayersReady() {
@@ -377,9 +397,97 @@ class ServerPlacementPhaseManager {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
         
+        this.game.serverBattlePhaseSystem.spawnSquadFromPlacement(playerId, placement);
+
         return { success: true };
     }
 
+    removeDeadSquadsAfterRound() {
+        if (!this.game.componentManager) return;
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+
+        this.playerPlacements.forEach((placements, playerId) => {
+            const survivingPlacements = placements.filter(placement => {
+                if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) {
+                    this.cleanupDeadSquad(placement);
+                    return false;
+                }
+
+                const aliveUnits = placement.experience.unitIds.filter(entityId => {
+                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+                    return health && health.current > 0 && (!deathState || !deathState.isDying);
+                });
+
+                if (aliveUnits.length === 0) {
+                    this.cleanupDeadSquad(placement);
+                    return false;
+                }
+
+                placement.experience.unitIds = aliveUnits;
+                return true;
+            });
+
+            this.playerPlacements.set(playerId, survivingPlacements);
+        });
+    }
+
+    cleanupDeadSquad(placement) {
+        if (this.game.gridSystem && placement.placementId) {
+            this.game.gridSystem.freeCells(placement.placementId);
+        }
+
+        if (this.game.squadExperienceSystem && placement.placementId) {
+            this.game.squadExperienceSystem.removeSquad(placement.placementId);
+        }
+
+        console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
+    }
+    
+    updateGridPositionsAfterRound() {
+        if (!this.game.gridSystem || !this.game.componentManager) return;
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        this.game.gridSystem.clear();
+
+        this.playerPlacements.forEach((placements, playerId) => {
+            placements.forEach(placement => {
+                if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) return;
+
+                const aliveUnits = placement.experience.unitIds.filter(entityId => {
+                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+                    return health && health.current > 0 && (!deathState || !deathState.isDying);
+                });
+
+                if (aliveUnits.length === 0) return;
+
+                const positions = aliveUnits.map(entityId => {
+                    const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                    return pos ? { x: pos.x, z: pos.z } : null;
+                }).filter(p => p !== null);
+
+                if (positions.length === 0) return;
+
+                const avgX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
+                const avgZ = positions.reduce((sum, p) => sum + p.z, 0) / positions.length;
+                const newGridPos = this.game.gridSystem.worldToGrid(avgX, avgZ);
+
+                if (this.game.gridSystem.isValidPosition(newGridPos)) {
+                    placement.gridPosition = newGridPos;
+                    placement.experience.unitIds = aliveUnits;
+
+                    const squadData = this.game.squadManager?.getSquadData(placement.unitType);
+                    if (squadData) {
+                        const cells = this.game.squadManager.getSquadCells(newGridPos, squadData);
+                        placement.cells = cells;
+                        this.game.gridSystem.occupyCells(cells, placement.placementId);
+                    }
+                }
+            });
+        });
+    }
 
 
     validatePlacement(placement, player) {

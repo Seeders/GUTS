@@ -31,7 +31,7 @@ class DeathSystem extends engine.BaseSystem {
                 const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration;
                 
                 if (animationCompleted || timerExpired) {
-
+                    console.log(entityId, "DIED");
                     this.convertToCorpse(entityId);
                 }
             }

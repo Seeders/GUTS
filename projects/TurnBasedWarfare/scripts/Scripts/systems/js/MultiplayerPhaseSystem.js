@@ -27,39 +27,7 @@ class MultiplayerPhaseSystem {
         this.params = params || {};
         console.log('MultiplayerPhaseSystem initialized');
     }
-    
-    startPlacementPhase() {
-        const state = this.game.state;
-        state.phase = 'placement';
-        state.phaseTimeLeft = null; // No timer in multiplayer
-        state.playerReady = false;
-        state.enemyPlacementComplete = false; // Actually opponent placement
-        state.roundEnding = false;
-        
-        // Reset squad counters for the new round
-        state.playerSquadsPlacedThisRound = 0;
-        state.enemySquadsPlacedThisRound = 0;
-        
-        // Gold is managed by server in multiplayer
-        this.updateGoldDisplay();
-        
-        if (state.round > 1) {
-            this.clearBattlefield();
-            this.game.placementSystem.startNewPlacementPhase();
-        }
-        
-        this.showPlacementHints();
-        this.updateReadyButtonState();
-        this.updateSquadCountDisplay();
-        
-        // Update UI elements
-        this.updatePhaseUI();
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`Round ${state.round} - Deploy your army! Waiting for opponent...`);
-        }
-    }
-
+ 
     toggleReady() {
         const state = this.game.state;
         
@@ -387,62 +355,6 @@ class MultiplayerPhaseSystem {
         this.updatePhaseUI();
     }
     
-    clearBattlefield() {
-        // Save player squad experience BEFORE clearing
-        if (this.game.squadExperienceSystem) {
-            this.game.squadExperienceSystem.savePlayerExperience();
-        }
-        
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const entitiesToDestroy = new Set();
-        
-        [
-            ComponentTypes.TEAM,
-            ComponentTypes.UNIT_TYPE,
-            ComponentTypes.PROJECTILE,
-            ComponentTypes.LIFETIME,
-            ComponentTypes.HEALTH
-        ].forEach(componentType => {
-            const entities = this.game.getEntitiesWith(componentType);
-            entities.forEach(id => entitiesToDestroy.add(id));
-        });
-        
-        entitiesToDestroy.forEach(entityId => {
-            try {
-                this.game.destroyEntity(entityId);
-            } catch (error) {
-                console.warn(`Error destroying entity ${entityId}:`, error);
-            }
-        });
-        
-        if (this.game.renderSystem) {
-            const ids = Array.from(this.game.renderSystem.entityToInstance.keys());
-            ids.forEach(id => this.game.renderSystem.removeInstance(id));
-        }
-        
-        if (this.game.animationSystem) {
-            const animationEntities = Array.from(this.game.animationSystem.entityAnimationStates.keys());
-            animationEntities.forEach(entityId => {
-                this.game.animationSystem.removeEntityAnimations(entityId);
-            });
-        }
-        
-        if (this.game.projectileSystem?.clearAllProjectiles) {
-            this.game.projectileSystem.clearAllProjectiles();
-        }
-        
-        // Clean up experience data but keep earned experience
-        if (this.game.squadExperienceSystem) {
-            this.game.squadExperienceSystem.cleanupInvalidSquads();
-        }
-    
-        // Drop any opponent cache so we don't double-spawn next round
-        if (this.game.placementSystem) {
-          this.game.placementSystem.enemyPlacements = [];
-          this.game.placementSystem.opponentPlacements = [];
-        }
-    }
-    
     showPlacementHints() {
         const hints = [
             '💡 Place tanks in front to absorb damage',
@@ -497,7 +409,6 @@ class MultiplayerPhaseSystem {
         state.enemySquadsPlacedThisRound = 0;
         state.gameOver = false;
         
-        this.clearBattlefield();
         
         if (this.game.teamHealthSystem) {
             this.game.teamHealthSystem.resetTeamHealth();

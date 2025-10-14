@@ -127,12 +127,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     startNewPlacementPhase() { 
         if (this.playerPlacements.length > 0) {
-            this.respawnSquads(this.playerPlacements, this.game.state.mySide);
+           // this.respawnSquads(this.playerPlacements, this.game.state.mySide);
             const totalUnits = this.getTotalUnitCount(this.playerPlacements);
             this.game.battleLogSystem?.add(`Respawned ${totalUnits} player units from previous rounds`);
         }
         if(this.opponentPlacements.length > 0){
-            this.respawnEnemyUnits();
+           // this.respawnEnemyUnits();
         }
                 // Reset placement state for new round
         this.isPlayerReady = false;
@@ -308,7 +308,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     applyTargetPositions(){
         for (const [placementId, targetPosition] of this.game.state.targetPositions.entries()) {
             const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
-            if (!squadData) return;
+            if (!squadData) continue;
             
             const componentTypes = this.game.componentManager.getComponentTypes();
             
@@ -343,11 +343,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     // Apply opponent placements received from multiplayer server
     applyOpponentPlacements(opponentData) {
       
-        // Clear existing enemy placements
-        this.opponentPlacements = [];
-        
         // Create enemy units from opponent data
         opponentData.forEach(placement => {
+            if(this.game.placementSystem.opponentPlacements.find(p => p.placementId === placement.placementId)) {
+                return;
+            }
             this.createEnemyFromOpponentPlacement(placement);
             if(this.game.squadExperienceSystem){
                 this.game.squadExperienceSystem.initializeSquad(
@@ -358,10 +358,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 );
             }
         });
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`Opponent deployed ${this.opponentPlacements.length} squads`);
-        }
-        
+
         // Mark opponent as having completed placement
         if (this.game.state) {
             this.game.state.enemyPlacementComplete = true;
@@ -379,12 +376,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 opponentPlacement.unitType
             );
 
-        
+            let squadUnits = [];
             unitPositions.forEach((pos, index) => {
                 const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-                this.game.unitCreationManager.create(
+                let entityId = this.game.unitCreationManager.create(
                     pos.x,
                     unitY,
                     pos.z,
@@ -392,7 +389,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     opponentPlacement.unitType,
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
+                squadUnits.push({
+                    entityId: entityId,
+                    position: { x: pos.x, y: unitY, z: pos.z }
+                });
             });
+            opponentPlacement.squadUnits = squadUnits;
         }
 
         // Occupy the provided cells exactly as given
@@ -987,6 +989,97 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'default';
         }
     }
+        
+    removeDeadSquadsAfterRound() {
+        if (!this.game.componentManager) return;
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+debugger;
+        this.playerPlacements = this.filterDeadSquads(this.playerPlacements, ComponentTypes);
+        this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements, ComponentTypes);
+    }
+
+    filterDeadSquads(placements, ComponentTypes) {
+        return placements.filter(placement => {
+            if (!placement.squadUnits || placement.squadUnits.length === 0) {
+                this.cleanupDeadSquad(placement);
+                return false;
+            }
+
+            const aliveUnits = placement.squadUnits.filter(unit => {
+                const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
+                const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
+                return health && health.current > 0 && (!deathState || !deathState.isDying);
+            });
+
+            if (aliveUnits.length === 0) {
+                this.cleanupDeadSquad(placement);
+                return false;
+            }
+
+            placement.squadUnits = aliveUnits;
+            return true;
+        });
+    }
+
+    cleanupDeadSquad(placement) {
+        if (this.game.gridSystem && placement.placementId) {
+            this.game.gridSystem.freeCells(placement.placementId);
+        }
+
+        if (this.game.squadExperienceSystem && placement.placementId) {
+            this.game.squadExperienceSystem.removeSquad(placement.placementId);
+        }
+
+        if (this.game.battleLogSystem) {
+            const unitName = placement.unitType?.title || 'Squad';
+            this.game.battleLogSystem.add(`${unitName} eliminated`, 'log-defeat');
+        }
+    }
+
+    updateGridPositionsAfterRound() {
+        if (!this.game.gridSystem || !this.game.componentManager) return;
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        this.game.gridSystem.clear();
+
+        [this.playerPlacements, this.opponentPlacements].forEach(placements => {
+            placements.forEach(placement => {
+                if (!placement.squadUnits || placement.squadUnits.length === 0) return;
+
+                const aliveUnits = placement.squadUnits.filter(unit => {
+                    const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
+                    const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
+                    return health && health.current > 0 && (!deathState || !deathState.isDying);
+                });
+
+                if (aliveUnits.length === 0) return;
+
+                const positions = aliveUnits.map(unit => {
+                    const pos = this.game.getComponent(unit.entityId, ComponentTypes.POSITION);
+                    return pos ? { x: pos.x, z: pos.z } : null;
+                }).filter(p => p !== null);
+
+                if (positions.length === 0) return;
+
+                const avgX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
+                const avgZ = positions.reduce((sum, p) => sum + p.z, 0) / positions.length;
+                const newGridPos = this.game.gridSystem.worldToGrid(avgX, avgZ);
+
+                if (this.game.gridSystem.isValidPosition(newGridPos)) {
+                    placement.gridPosition = newGridPos;
+                    placement.squadUnits = aliveUnits;
+
+                    const squadData = this.game.squadManager?.getSquadData(placement.unitType);
+                    if (squadData) {
+                        const cells = this.game.squadManager.getSquadCells(newGridPos, squadData);
+                        placement.cells = cells;
+                        this.game.gridSystem.occupyCells(cells, placement.placementId);
+                    }
+                }
+            });
+        });
+    }
 
     resetAllPlacements() {
         // Clean up experience system first
@@ -995,7 +1088,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         this.playerPlacements = [];
-        this.opponentPlacements = [];
         this.opponentPlacements = [];
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;

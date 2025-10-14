@@ -26,7 +26,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
-            
             this.game.resetCurrentTime();
             this.game.desyncDebugger.displaySync(true);
             // Start battle timer
@@ -39,11 +38,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             return { success: false, error: error.message };
         }
     }
-
-    spawnSquadsFromPlacements(room) {
+    spawnSquadFromPlacement(playerId, placement) {
         try {
-            // Clear existing battle entities
-            this.clearBattlefield();
+            const player = this.game.room.getPlayer(playerId);
             
             if (!this.game.unitCreationManager) {
                 throw new Error('Unit creation manager not available');
@@ -55,28 +52,25 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 throw new Error('Placement phase manager not available');
             }
             let success = true;
-            // Spawn squads for each player
-            for (const [playerId, player] of room.players) {
-                const placements = placementManager.playerPlacements.get(playerId) || [];
-                
-                if (placements.length === 0) continue;
-                
-                // Create squads using unit creation manager
-                const createdSquads = this.game.unitCreationManager.createSquadsFromPlacements(
-                    placements,
-                    player.stats.side,
-                    playerId
-                );
-                if(!createdSquads){
-                    console.log("Failed to create squads");
-                    success = false;
+            // Create squads using unit creation manager
+            const createdSquad = this.game.unitCreationManager.createSquadFromPlacement(
+                placement,
+                player.stats.side,
+                playerId
+            );
+            if(!createdSquad){
+                console.log("Failed to create squads");
+                success = false;
+            } else {
+                // Store created squads for tracking
+                let playerSquads = this.createdSquads.get(playerId);
+                if(playerSquads){
+                    playerSquads.push(createdSquad);
                 } else {
-                    // Store created squads for tracking
-                    this.createdSquads.set(playerId, createdSquads);
+                    playerSquads = [createdSquad];                    
                 }
-                
+                this.createdSquads.set(playerId, playerSquads);
             }
-            
             return { success: success };
             
         } catch (error) {
@@ -131,6 +125,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             }
         }
         const aliveTeams = Array.from(teams.keys());
+           
+        const noCombatActive = this.checkNoCombatActive(aliveEntities);
+        const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
         
         if (aliveEntities.length === 0) {
             console.log('no alive entities');
@@ -138,15 +135,14 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             return;
         }
         
-        if (aliveTeams.length === 1) {
-            console.log('aliveTeams length is 1', aliveTeams);
+        if (aliveTeams.length === 1 && allUnitsAtTarget) {
+            console.log('aliveTeams length is 1', aliveTeams, aliveEntities);
+            console.log('all entities', allBattleEntities);
+            console.log('aliveEntities', aliveEntities);
             this.endBattle(this.game.room, aliveTeams[0]);
             return;
         }
-        
-        const noCombatActive = this.checkNoCombatActive(aliveEntities);
-        const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
-        
+     
         if (noCombatActive && allUnitsAtTarget) {
             console.log('no combat active and all units at target');
             this.endBattle(this.game.room, null);
@@ -378,18 +374,11 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         
         // Collect battle entities (but not players)
         [
-            ComponentTypes.TEAM,
-            ComponentTypes.UNIT_TYPE,
-            ComponentTypes.PROJECTILE,
-            ComponentTypes.DEATH_STATE,
             ComponentTypes.CORPSE
         ].forEach(componentType => {
             const entities = this.game.getEntitiesWith(componentType);
             entities.forEach(id => {
-                // Don't destroy player entities
-                if (!this.game.hasComponent(id, ComponentTypes.PLAYER)) {
-                    entitiesToDestroy.add(id);
-                }
+                entitiesToDestroy.add(id);                
             });
         });
         
@@ -401,6 +390,8 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 console.warn(`Error destroying entity ${entityId}:`, error);
             }
         });
+        this.game.placementSystem.removeDeadSquadsAfterRound();
+        this.game.placementSystem.updateGridPositionsAfterRound();
         
         // Clear squad references
         this.createdSquads.clear();

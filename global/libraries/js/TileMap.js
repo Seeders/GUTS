@@ -153,7 +153,7 @@ class TileMap {
 		this.heightMapCtx.fillRect(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
 		
 		// Load all textures
-		if(this.layerTextures.length == 0) {
+		if(this.layerTextures.length == 0 && this.layerSpriteSheets) {
 			this.layerSpriteSheets.forEach((layerSprites, index) => {      
 				const moleculeData = this.buildBaseMolecules(layerSprites.sprites);
 				this.layerTextures[index] = moleculeData;

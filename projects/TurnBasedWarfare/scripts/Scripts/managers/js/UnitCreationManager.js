@@ -70,6 +70,7 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, targetPosition, unitType, team) {
         try {
+            debugger;
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
             // Add core components
@@ -190,36 +191,26 @@ class UnitCreationManager {
      * @param {string|null} playerId - Optional player ID
      * @returns {Array} Array of created squad placement data
      */
-    createSquadsFromPlacements(placements, team, playerId = null) {
-        const createdSquads = [];
+    createSquadFromPlacement(placement, team, playerId = null) {
+
         try {
-            
-            for (const placement of placements) {
-                try {
-                    console.log('createSquadsFromPlacement', placement);
-                    const squadPlacement = this.createSquad(
-                        placement.gridPosition,                        
-                        placement.targetPosition,
-                        placement.unitType,
-                        team,
-                        playerId
-                    );
-                    createdSquads.push(squadPlacement);
-                } catch (error) {
-                    console.error(`Failed to create squad from placement:`, placement, error);
-                    // Continue with other placements even if one fails
-                }
-            }
-            
-           
+            console.log('createSquadFromPlacement', placement);
+            const squad = this.createSquad(
+                placement.gridPosition,                        
+                placement.targetPosition,
+                placement.unitType,
+                team,
+                playerId
+            );
+            return squad;
         } catch (error) {
-            console.error('Batch squad creation failed:', error);
-            // Clean up any partially created squads
-            this.cleanupSquads(createdSquads);
-            throw error;
+            console.error(`Failed to create squad from placement:`, placement, error);
+            // Continue with other placements even if one fails
         }
         
-        return createdSquads;
+
+        
+        return null;
     }
 
     /**

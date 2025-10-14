@@ -352,11 +352,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         const entitiesToDestroy = new Set();
         
         [
-            ComponentTypes.TEAM,
-            ComponentTypes.UNIT_TYPE,
-            ComponentTypes.PROJECTILE,
-            ComponentTypes.LIFETIME,
-            ComponentTypes.HEALTH
+            ComponentTypes.CORPSE
         ].forEach(componentType => {
             const entities = this.game.getEntitiesWith(componentType);
             entities.forEach(id => entitiesToDestroy.add(id));
@@ -364,24 +360,13 @@ class MultiplayerUISystem extends engine.BaseSystem {
         
         entitiesToDestroy.forEach(entityId => {
             try {
-                this.game.destroyEntity(entityId);
+                this.game.destroyEntity(entityId); 
             } catch (error) {
                 console.warn(`Error destroying entity ${entityId}:`, error);
             }
         });
         
-        if (this.game.renderSystem) {
-            const ids = Array.from(this.game.renderSystem.entityToInstance.keys());
-            ids.forEach(id => this.game.renderSystem.removeInstance(id));
-        }
-        
-        if (this.game.animationSystem) {
-            const animationEntities = Array.from(this.game.animationSystem.entityAnimationStates.keys());
-            animationEntities.forEach(entityId => {
-                this.game.animationSystem.removeEntityAnimations(entityId);
-            });
-        }
-        
+ 
         if (this.game.projectileSystem?.clearAllProjectiles) {
             this.game.projectileSystem.clearAllProjectiles();
         }
@@ -390,12 +375,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
-    
-        // Drop any opponent cache so we don't double-spawn next round
-        if (this.game.placementSystem) {
-          this.game.placementSystem.enemyPlacements = [];
-          this.game.placementSystem.opponentPlacements = [];
-        }
+        
+        this.game.placementSystem.removeDeadSquadsAfterRound();
+        this.game.placementSystem.updateGridPositionsAfterRound();
     }
        
     startVictoryCelebration(victoriousUnits) {
