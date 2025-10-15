@@ -20,15 +20,29 @@ class CombatAISystem extends engine.BaseSystem {
 
         this.DAMAGE_TIMING_RATIO = 0.5;
         
+        this.TARGET_POSITION_THRESHOLD = 20;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
     }
             
     update() {
-        if (this.game.state.phase !== 'battle') return;
-
         const CT = this.componentTypes;
+        if (this.game.state.phase !== 'battle'){
+            const combatUnits = this.game.getEntitiesWith(
+               CT.AI_STATE
+            );
+            for (let i = 0; i < combatUnits.length; i++) {
+                const entityId = combatUnits[i];
+                const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+                if (aiState.state !== 'idle') {
+                    this.changeAIState(aiState, 'idle');
+                }
+                aiState.target = null;
+            }
+            return;
+        }
+
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         );
@@ -66,14 +80,20 @@ class CombatAISystem extends engine.BaseSystem {
                     aiState.target = null;
                 }
             }
+            if(aiState.targetPosition){
+                const distance = Math.sqrt(
+                    Math.pow( aiState.targetPosition.x - pos.x, 2) + 
+                    Math.pow( aiState.targetPosition.z - pos.z, 2)
+                );
+                aiState.targetDistance = distance;
+            } else {
+                aiState.targetDistance = 0;
+            }
             if (enemiesInRange.length === 0) {
                 if(aiState.targetPosition){
-                    const distance = Math.sqrt(
-                        Math.pow( aiState.targetPosition.x - pos.x, 2) + 
-                        Math.pow( aiState.targetPosition.z - pos.z, 2)
-                    );
+            
 
-                    if(distance > 10){
+                    if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
                         }
@@ -182,8 +202,9 @@ class CombatAISystem extends engine.BaseSystem {
    
             this.changeAIState(aiState, 'attacking');
         } else {
-            // Always chase if not in attack range
-            this.changeAIState(aiState, 'chasing');
+            if(aiState.state !== 'chasing'){
+                this.changeAIState(aiState, 'chasing');
+            }
         }
     }
 
