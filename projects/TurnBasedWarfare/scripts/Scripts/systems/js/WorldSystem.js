@@ -519,7 +519,7 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         // Add grass
-        this.addGrassToTerrain();
+       // this.addGrassToTerrain();
 
         // Render environment objects
         this.renderEnvironmentObjects();
@@ -593,16 +593,17 @@ class WorldSystem extends engine.BaseSystem {
             const dummy = new THREE.Object3D();
 
             objects.forEach((obj, index) => {
+                                const worldX = (obj.x + this.extensionSize) - this.extendedSize / 2;
+                const worldZ = (obj.y + this.extensionSize) - this.extendedSize / 2;
+
                 let height = 0;
                 if (this.heightMapSettings?.enabled) {
-                    height = this.heightMapSettings.heightStep * this.tileMap.extensionTerrainType;
+                    height = this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
                 }
 
                 // Original positioning but with proper centering
                 // The terrain canvas is drawn at position (extensionSize, extensionSize) on the ground canvas
                 // So we need to account for that offset
-                const worldX = (obj.x + this.extensionSize) - this.extendedSize / 2;
-                const worldZ = (obj.y + this.extensionSize) - this.extendedSize / 2;
 
                 dummy.position.set(worldX, height, worldZ);
                 dummy.rotation.y = Math.random() * Math.PI * 2;

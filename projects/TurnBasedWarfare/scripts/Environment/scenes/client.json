@@ -25,8 +25,8 @@
         { "type": "InputManager" }
       ],
       "systems": [
-        { "type": "WorldSystem" },
         { "type": "TerrainSystem" },
+        { "type": "WorldSystem" },
         { "type": "RenderSystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
