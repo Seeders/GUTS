@@ -116,7 +116,6 @@ class ImageManager {
                 return;
             }
         }
-    
         for (const [type, cfg] of Object.entries(config)) {
             if (cfg.render && cfg.render.animations) {
                 this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
