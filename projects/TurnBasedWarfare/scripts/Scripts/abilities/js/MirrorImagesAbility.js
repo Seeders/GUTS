@@ -192,14 +192,14 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
                 components.Position(imagePos.x, imagePos.y, imagePos.z));
                 
             this.game.addComponent(imageId, this.componentTypes.RENDERABLE, 
-                components.Renderable("units", unitType.id || unitType.type));
+                components.Renderable("units", unitType.id || unitType.title));
                 
             this.game.addComponent(imageId, this.componentTypes.TEAM, 
                 components.Team(team.team));
                 
             this.game.addComponent(imageId, this.componentTypes.UNIT_TYPE, 
                 components.UnitType(
-                    unitType.id || unitType.type,
+                    unitType.id || unitType.title,
                     `Mirror Image`,
                     0 // No value - they're illusions
                 ));

@@ -3,91 +3,17 @@
   "render": {
     "animations": {
       "idle": [
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 1
-              },
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 2
-              },
-              {
-                "color": {
-                  "paletteColor": "greenDColor"
-                },
-                "id": 3
-              }
-            ]
-          }
-        }
+        {}
       ]
     },
     "model": {
       "shapes": {
         "shapes": [
           {
-            "type": "cylinder",
-            "size": 10,
-            "color": {
-              "paletteColor": "brownDColor"
-            },
-            "x": 0,
-            "y": 10.625,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
-            "height": 20,
-            "scaleX": 1
-          },
-          {
-            "type": "cone",
-            "size": 40,
-            "color": {
-              "paletteColor": "greenDColor"
-            },
-            "x": 0,
-            "y": 50.625,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
-            "height": 60
-          },
-          {
-            "type": "cone",
-            "size": 35,
-            "color": {
-              "paletteColor": "greenDColor"
-            },
-            "x": 0,
-            "y": 60.625,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
-            "height": 40
-          },
-          {
-            "type": "cone",
-            "size": 15,
-            "color": {
-              "paletteColor": "greenDColor"
-            },
-            "x": 0,
-            "y": 75.625,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
-            "height": 15
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "url": "projects/TurnBasedWarfare/resources/models/new_fir/new_fir.glb"
           }
         ],
         "position": {

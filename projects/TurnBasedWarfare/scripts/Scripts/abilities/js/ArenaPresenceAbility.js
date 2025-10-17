@@ -151,7 +151,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (casterUnitType && casterTeam) {
                 this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.type} unleashes intimidating arena presence! (${intimidatedCount + refreshedCount} enemies affected)`,
+                    `${casterTeam.team} ${casterUnitType.title} unleashes intimidating arena presence! (${intimidatedCount + refreshedCount} enemies affected)`,
                     'log-intimidation'
                 );
             }
@@ -184,7 +184,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
                 
                 if (enemyUnitType && enemyTeam) {
                     this.game.battleLogSystem.add(
-                        `${enemyTeam.team} ${enemyUnitType.type}'s fear is renewed!`,
+                        `${enemyTeam.team} ${enemyUnitType.title}'s fear is renewed!`,
                         'log-intimidation'
                     );
                 }
@@ -218,7 +218,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
                 
                 if (enemyUnitType && enemyTeam) {
                     this.game.battleLogSystem.add(
-                        `${enemyTeam.team} ${enemyUnitType.type} is intimidated by arena presence!`,
+                        `${enemyTeam.team} ${enemyUnitType.title} is intimidated by arena presence!`,
                         'log-intimidation'
                     );
                 }

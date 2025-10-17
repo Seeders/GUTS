@@ -9,7 +9,8 @@
   "worldObjects": [
     "tree",
     "rock",
-    "fir"
+    "fir",
+    "goldVein"
   ],
   "backgroundColor": "#b3e5fc"
 }

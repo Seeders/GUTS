@@ -9,125 +9,49 @@
       "parent": null,
       "children": [],
       "managers": [
-        {
-          "type": "ComponentManager"
-        },
-        {
-          "type": "EventManager"
-        },
-        {
-          "type": "GameManager"
-        },
-        {
-          "type": "GameModeManager"
-        },
-        {
-          "type": "KeyboardManager"
-        },
-        {
-          "type": "LoadingManager"
-        },
-        {
-          "type": "ResultsManager"
-        },
-        {
-          "type": "SaveManager"
-        },
-        {
-          "type": "ScreenManager"
-        },
-        {
-          "type": "UnitCreationManager"
-        },        
-        {
-          "type": "SquadManager"
-        },         
-        {
-          "type": "MultiplayerNetworkManager"
-        },    
-        {
-          "type": "InputManager"
-        }
+        { "type": "ComponentManager" },
+        { "type": "EventManager" },
+        { "type": "GameManager" },
+        { "type": "GameModeManager" },
+        { "type": "KeyboardManager" },
+        { "type": "LoadingManager" },
+        { "type": "ResultsManager" },
+        { "type": "SaveManager" },
+        { "type": "ScreenManager" },
+        { "type": "UnitCreationManager" },
+        { "type": "BuildingCreationManager" },        
+        { "type": "SquadManager" },         
+        { "type": "MultiplayerNetworkManager" },    
+        { "type": "InputManager" }
       ],
       "systems": [
-        {
-          "type": "WorldSystem"
-        },
-        {
-          "type": "TerrainSystem"
-        },
-        {
-          "type": "RenderSystem"
-        },
-        {
-          "type": "MovementSystem"
-        },
-        {
-          "type": "CombatAISystem"
-        },
-        {
-          "type": "ProjectileSystem"
-        },
-        {
-          "type": "AnimationSystem"
-        },
-        {
-          "type": "ArmyDisplaySystem"
-        },
-        {
-          "type": "EffectsSystem"
-        },
-        {
-          "type": "GridSystem"
-        },
-        {
-          "type": "MultiplayerPlacementSystem"
-        },
-        {
-          "type": "StatisticsTrackingSystem"
-        },
-        {
-          "type": "BattleLogSystem"
-        },
-        {
-          "type": "ShopSystem"
-        },
-        {
-          "type": "TeamHealthSystem"
-        },
-        {
-          "type": "HealthBarSystem"
-        },
-        {
-          "type": "UnitRadiusSystem"
-        },
-        {
-          "type": "EquipmentSystem"
-        },
-        {
-          "type": "DeathSystem"
-        },
-        {
-          "type": "DamageSystem"
-        },
-        {
-          "type": "AbilitySystem"
-        },
-        {
-          "type": "ParticleSystem"
-        },
-        {
-          "type": "SquadExperienceSystem"
-        },
-        {
-          "type": "LifetimeSystem"
-        },
-        {
-          "type": "MultiplayerUISystem"
-        },    
-        {
-          "type": "SchedulingSystem"
-        }
+        { "type": "WorldSystem" },
+        { "type": "TerrainSystem" },
+        { "type": "RenderSystem" },
+        { "type": "MovementSystem" },
+        { "type": "CombatAISystem" },
+        { "type": "ProjectileSystem" },
+        { "type": "AnimationSystem" },
+        { "type": "ArmyDisplaySystem" },
+        { "type": "EffectsSystem" },
+        { "type": "GridSystem" },
+        { "type": "MultiplayerPlacementSystem" },
+        { "type": "StatisticsTrackingSystem" },
+        { "type": "BattleLogSystem" },
+        { "type": "ShopSystem" },
+        { "type": "TeamHealthSystem" },
+        { "type": "HealthBarSystem" },
+        { "type": "UnitRadiusSystem" },
+        { "type": "EquipmentSystem" },
+        { "type": "DeathSystem" },
+        { "type": "DamageSystem" },
+        { "type": "AbilitySystem" },
+        { "type": "ParticleSystem" },
+        { "type": "SquadExperienceSystem" },
+        { "type": "LifetimeSystem" },
+        { "type": "MultiplayerUISystem" },    
+        { "type": "SchedulingSystem" },    
+        { "type": "GoldMineSystem" }
       ],
       "classes": [
         {

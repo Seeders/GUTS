@@ -488,7 +488,7 @@ class ProjectileSystem extends engine.BaseSystem {
                 if (sourceUnitType && targetUnitType && sourceTeam && targetTeam) {
                     const elementText = element !== this.game.damageSystem.ELEMENT_TYPES.PHYSICAL ? ` (${element})` : '';
                     this.game.battleLogSystem.add(
-                        `${sourceTeam.team} ${sourceUnitType.type} projectile${elementText} hits ${targetTeam.team} ${targetUnitType.type} for ${result.damage} damage`, 
+                        `${sourceTeam.team} ${sourceUnitType.title} projectile${elementText} hits ${targetTeam.team} ${targetUnitType.title} for ${result.damage} damage`, 
                         'log-damage'
                     );
                 }
@@ -631,7 +631,7 @@ class ProjectileSystem extends engine.BaseSystem {
         
         const collections = this.game.getCollections && this.game.getCollections();
         if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id || unitType.type];
+            const unitDef = collections.units[unitType.id];
             if (unitDef && unitDef.size) {
                 return Math.max(DEFAULT_UNIT_RADIUS, unitDef.size);
             }

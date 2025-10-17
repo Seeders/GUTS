@@ -70,7 +70,6 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, targetPosition, unitType, team) {
         try {
-            debugger;
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
             const teamConfig = this.teamConfigs[team];
             // Add core components
@@ -323,6 +322,7 @@ class UnitCreationManager {
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, 
             Components.UnitType(
                 unitType.id || 'unknown', 
+                "units",
                 unitType.title || 'Unknown Unit', 
                 unitType.value || this.defaults.value
             ));
@@ -370,14 +370,14 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      * @param {Object} teamConfig - Team configuration
      */
-    addBehaviorComponents(entity, targetPosition, teamConfig) {
+    addBehaviorComponents(entity, targetPosition) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
         console.log('addBehaviorComponents', 'targetPosition', targetPosition);
         // AI state for behavior control
         this.game.addComponent(entity, ComponentTypes.AI_STATE, 
-            Components.AIState(teamConfig.aiState, targetPosition));
+            Components.AIState('idle', targetPosition));
         
         console.log(this.game.getComponent(entity, ComponentTypes.AI_STATE));
         // Animation state

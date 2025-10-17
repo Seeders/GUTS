@@ -156,7 +156,7 @@ class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (targetUnitType && targetTeam) {
                 this.game.battleLogSystem.add(
-                    `Arrow ${shotIndex + 1} targets ${targetTeam.team} ${targetUnitType.type}!`,
+                    `Arrow ${shotIndex + 1} targets ${targetTeam.team} ${targetUnitType.title}!`,
                     'log-projectile'
                 );
             }

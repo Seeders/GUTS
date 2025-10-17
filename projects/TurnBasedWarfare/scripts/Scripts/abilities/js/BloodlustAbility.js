@@ -141,7 +141,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type}'s bloodlust fades (${stacksGained} kills achieved).`,
+                            `${unitType.title}'s bloodlust fades (${stacksGained} kills achieved).`,
                             'log-ability'
                         );
                     }
@@ -177,7 +177,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
                 const unitType = this.game.getComponent(killerId, this.componentTypes.UNIT_TYPE);
                 if (unitType) {
                     this.game.battleLogSystem.add(
-                        `${unitType.type} gains bloodlust stack (${buff.modifiers.currentStacks}/${this.maxStacks})!`,
+                        `${unitType.title} gains bloodlust stack (${buff.modifiers.currentStacks}/${this.maxStacks})!`,
                         'log-ability'
                     );
                 }

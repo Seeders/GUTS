@@ -223,7 +223,28 @@ class AbilitySystem extends engine.BaseSystem {
         keysToRemove.forEach(key => this.abilityCooldowns.delete(key));
         
     }
+            
+    handleEndBattle() {
+        console.log('[AbilitySystem] Cleaning up abilities for end of battle');
         
+        // Call handleEndBattle on all ability instances
+        for (const [entityId, abilities] of this.entityAbilities.entries()) {
+            abilities.forEach(ability => {
+                if (typeof ability.handleEndBattle === 'function') {
+                    ability.handleEndBattle();
+                }
+            });
+        }
+        
+        // Clear all ability queues and cooldowns
+        this.abilityQueue.clear();
+        this.abilityActions.clear();
+        this.abilityCooldowns.clear();
+        this.abilityActionCounter = 0;
+        
+        console.log('[AbilitySystem] Ability cleanup complete');
+    }
+
     destroy() {
         this.entityAbilities.clear();
         this.abilityCooldowns.clear();

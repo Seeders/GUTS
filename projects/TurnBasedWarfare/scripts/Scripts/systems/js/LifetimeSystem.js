@@ -134,7 +134,7 @@ class LifetimeSystem extends engine.BaseSystem {
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             if (unitType) {
                 this.game.battleLogSystem.add(
-                    `${unitType.title || unitType.type} fades back to its realm`,
+                    `${unitType.title} fades back to its realm`,
                     'log-summon'
                 );
             }
@@ -216,7 +216,7 @@ class LifetimeSystem extends engine.BaseSystem {
                 const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
                 if (unitType) {
                     this.game.battleLogSystem.add(
-                        `${unitType.title || unitType.type} breaks free from mind control!`,
+                        `${unitType.title} breaks free from mind control!`,
                         'log-control'
                     );
                 }
@@ -438,7 +438,7 @@ class LifetimeSystem extends engine.BaseSystem {
         if (unitType) {
             const age = ((this.game.state.now || 0)) - lifetime.startTime;
             this.game.battleLogSystem.add(
-                `${unitType.title || unitType.type} expires after ${age.toFixed(1)} seconds`,
+                `${unitType.title} expires after ${age.toFixed(1)} seconds`,
                 'log-lifetime'
             );
         }

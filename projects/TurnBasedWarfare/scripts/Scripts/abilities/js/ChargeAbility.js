@@ -211,7 +211,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
                 const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
                 if (targetUnitType) {
                     this.game.battleLogSystem.add(
-                        `Knight's charge strikes ${targetUnitType.type} with devastating force!`,
+                        `Knight's charge strikes ${targetUnitType.title} with devastating force!`,
                         'log-ability'
                     );
                 }
@@ -250,7 +250,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type} recovers from being stunned.`,
+                            `${unitType.title} recovers from being stunned.`,
                             'log-ability'
                         );
                     }

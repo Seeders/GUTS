@@ -1,7 +1,7 @@
 {
   "title": "Barracks",
   "info": "Strength based training.",
-  "value": 100,
+  "value": 50,
   "category": "attribute",
   "render": {
     "animations": {
@@ -11,49 +11,21 @@
       "shapes": {
         "shapes": [
           {
-            "type": "box",
-            "width": 40,
-            "height": 4,
-            "depth": 40,
+            "type": "gltf",
             "color": {
-              "paletteColor": "greyDColor"
+              "paletteColor": "blueDColor"
             },
+            "metalness": 0,
+            "roughness": 1,
             "x": 0,
-            "y": 2,
             "z": 0,
             "scaleX": 1,
-            "name": "foundation"
-          },
-          {
-            "type": "box",
-            "width": 36,
-            "height": 12,
-            "depth": 36,
-            "color": {
-              "paletteColor": "greyMColor"
-            },
-            "x": 0,
-            "y": 10,
-            "z": 0,
-            "name": "structure"
-          },
-          {
-            "type": "box",
-            "width": 40,
-            "height": 2,
-            "depth": 40,
-            "color": {
-              "paletteColor": "greyDColor"
-            },
-            "x": 0,
-            "y": 17,
-            "z": 0,
-            "name": "roof"
+            "name": "foundation",
+            "url": "projects/TurnBasedWarfare/resources/models/barracks/barracks.glb"
           }
         ],
         "position": {
           "x": 0,
-          "y": 0,
           "z": 0
         },
         "rotation": {
@@ -62,9 +34,9 @@
           "z": 0
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+          "x": 2,
+          "y": 2,
+          "z": 2
         }
       }
     }
@@ -72,5 +44,8 @@
   "units": [
     "1_s_barbarian",
     "1_sd_soldier"
-  ]
+  ],
+  "placementGridWidth": 3,
+  "placementGridHeight": 2,
+  "height": 100
 }

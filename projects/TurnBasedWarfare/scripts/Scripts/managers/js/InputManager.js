@@ -255,8 +255,8 @@ class InputManager {
     cancelSelectedUnit() {
         const state = this.game.state;
         if (state.selectedUnitType) {
-            document.querySelectorAll('.unit-card').forEach(card => {
-                card.classList.remove('selected');
+            document.querySelectorAll('.selected').forEach(selected => {
+                selected.classList.remove('selected');
             });
             state.selectedUnitType = null;
             this.game.placementSystem.handleUnitSelectionChange(null);

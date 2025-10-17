@@ -188,7 +188,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type}'s weapon enchantment fades away.`,
+                            `${unitType.title}'s weapon enchantment fades away.`,
                             'log-ability'
                         );
                     }

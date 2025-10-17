@@ -194,14 +194,25 @@ class BuildingShopSystem extends engine.BaseSystem {
             this.showNotification('Not enough gold!', 'error');
             return;
         }
-
+        console.log('purchase building', buildingId);
+        if (buildingId === 'goldMine') {
+            if (this.game.goldMineSystem) {
+                const result = this.game.goldMineSystem.buildGoldMine(state.mySide);
+                
+                if (!result.success) {
+                    this.showNotification(result.error, 'error');
+                    this.showInsufficientGoldEffect(card);
+                    return;
+                }
+            }
+        }
         state.playerGold -= cost;
         this.ownedBuildings.add(buildingId);
         
         if (buildingType.category == 'attribute') {
             this.townHallLevel = buildingType.townHallLevel || 1;
         }
-        
+       
         this.applyBuildingEffects(buildingType);
         
         this.showNotification(`${buildingType.title} constructed!`, 'success');

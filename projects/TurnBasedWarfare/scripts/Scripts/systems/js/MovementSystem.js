@@ -590,7 +590,7 @@ class MovementSystem extends engine.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored) {
+        if (isAnchored || !aiState) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -598,14 +598,14 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         // Don't move if waiting for cooldowns
-        if (aiState && aiState.state === 'waiting' || aiState.state === 'idle') {
+        if (aiState.state === 'waiting' || aiState.state === 'idle') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
             return;
         }
         
-        if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
+        if (aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
 
             let targetPos = aiState.targetPosition;
 
@@ -630,7 +630,7 @@ class MovementSystem extends engine.BaseSystem {
                 data.desiredVelocity.vz = 0;
                 data.desiredVelocity.vy = 0;
             }
-        } else if (aiState && aiState.state === 'attacking') {
+        } else if (aiState.state === 'attacking') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -749,10 +749,10 @@ class MovementSystem extends engine.BaseSystem {
             return true;
         }
         
-        if (unitType && unitType.type) {
+        if (unitType) {
             const collections = this.game.getCollections && this.game.getCollections();
             if (collections && collections.units) {
-                const unitDef = collections.units[unitType.id || unitType.type];
+                const unitDef = collections.units[unitType.id];
                 if (unitDef && unitDef.flying) {
                     return true;
                 }

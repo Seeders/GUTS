@@ -1,0 +1,65 @@
+{
+  "title": "Gold Vein",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 2,
+            "color": "#ff0000",
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "url": "projects/TurnBasedWarfare/resources/models/goldvein/goldvein.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "placementGridWidth": 2,
+  "placementGridHeight": 2
+}

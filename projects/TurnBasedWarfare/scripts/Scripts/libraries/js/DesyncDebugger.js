@@ -49,7 +49,7 @@ class DesyncDebugger {
                     vx: parseFloat(vel.vx.toFixed(3)),
                     vy: parseFloat(vel.vy.toFixed(3)),
                     vz: parseFloat(vel.vz.toFixed(3))
-                } : null)} ${vel.vx}, ${vel.vy}, ${vel.vz}`,
+                } : null)} ${vel?.vx || 0}, ${vel?.vy || 0}, ${vel?.vz || 0}`,
                 health: this.hash(health ? {
                     current: health.current,
                     max: health.max

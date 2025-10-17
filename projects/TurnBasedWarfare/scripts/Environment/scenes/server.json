@@ -11,6 +11,7 @@
         { "type": "EventManager" },
         { "type": "GameManager" },
         { "type": "UnitCreationManager" },
+        { "type": "BuildingCreationManager" },
         { "type": "ServerPlacementPhaseManager" },
         { "type": "SquadManager" }
       ],
@@ -27,7 +28,8 @@
         { "type": "ServerBattlePhaseSystem" },
         { "type": "LifetimeSystem" },
         { "type": "GridSystem" },
-        { "type": "SchedulingSystem" }
+        { "type": "SchedulingSystem" },    
+        { "type": "GoldMineSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }

@@ -159,7 +159,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type}'s battle fury fades.`,
+                            `${unitType.title}'s battle fury fades.`,
                             'log-ability'
                         );
                     }

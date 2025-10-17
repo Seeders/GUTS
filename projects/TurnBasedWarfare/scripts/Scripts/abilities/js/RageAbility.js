@@ -133,7 +133,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (unitType && team) {
                 this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.type} is consumed by primal fury!`,
+                    `${team.team} ${unitType.title} is consumed by primal fury!`,
                     'log-buff'
                 );
             }
@@ -168,7 +168,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (unitType && team) {
                 this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.type}'s rage begins to fade...`,
+                    `${team.team} ${unitType.title}'s rage begins to fade...`,
                     'log-buff'
                 );
             }

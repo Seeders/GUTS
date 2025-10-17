@@ -367,10 +367,11 @@ class RenderSystem extends engine.BaseSystem {
         if (!batch) return;
 
         const matrix = new THREE.Matrix4();
-        const position = new THREE.Vector3(pos.x, pos.y || 0, pos.z);
         const baseScale = (batch.meta && batch.meta.baseScale) ? batch.meta.baseScale : new THREE.Vector3(1, 1, 1);
+        const basePosition = (batch.meta && batch.meta.basePos) ? batch.meta.basePos : new THREE.Vector3(0, 0, 0);
 
         const scale = new THREE.Vector3(baseScale.x*this.modelScale, baseScale.y*this.modelScale, baseScale.z*this.modelScale);
+        const position = new THREE.Vector3(pos.x + basePosition.x*this.modelScale, (pos.y || 0)  + basePosition.y*this.modelScale, pos.z + basePosition.z*this.modelScale);
 
         let quaternion;
         

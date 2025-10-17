@@ -156,7 +156,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
                 
                 if (enemyUnitType && enemyTeam) {
                     this.game.battleLogSystem.add(
-                        `Piercing bolt strikes ${enemyTeam.team} ${enemyUnitType.type}!`,
+                        `Piercing bolt strikes ${enemyTeam.team} ${enemyUnitType.title}!`,
                         'log-piercing'
                     );
                 }

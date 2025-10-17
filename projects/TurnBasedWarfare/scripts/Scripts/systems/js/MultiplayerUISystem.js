@@ -343,6 +343,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
         }
     }
     clearBattlefield() {
+        if (this.game.abilitySystem) {
+            this.game.abilitySystem.handleEndBattle();
+        }
         // Save player squad experience BEFORE clearing
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.saveSquadExperience();

@@ -1499,12 +1499,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1320,
-        "y": 319.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1442,
         "y": 334.8125
       },
@@ -1519,12 +1513,6 @@
         "imageIndex": 0,
         "x": 1504,
         "y": 314.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1373,
-        "y": 220.8125
       },
       {
         "type": "tree",
@@ -1583,20 +1571,8 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1378,
-        "y": 321.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1431,
         "y": 255.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1281,
-        "y": 201.8125
       },
       {
         "type": "tree",
@@ -1661,12 +1637,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1382,
-        "y": 171.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1182,
         "y": 326.8125
       },
@@ -1687,24 +1657,6 @@
         "imageIndex": 0,
         "x": 1168,
         "y": 72.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1318,
-        "y": 163.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1426,
-        "y": 139.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1458,
-        "y": 199.8125
       },
       {
         "type": "tree",
@@ -1931,12 +1883,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 162,
-        "y": 1272.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 8,
         "y": 1223.8125
       },
@@ -1951,12 +1897,6 @@
         "imageIndex": 0,
         "x": 70,
         "y": 1226.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 216,
-        "y": 1217.8125
       },
       {
         "type": "tree",
@@ -2009,20 +1949,8 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 244,
-        "y": 1304.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 406,
         "y": 1357.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 331,
-        "y": 1233.8125
       },
       {
         "type": "tree",
@@ -2245,18 +2173,6 @@
         "imageIndex": 0,
         "x": 214,
         "y": 1128.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 215,
-        "y": 1128.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 283,
-        "y": 1133.8125
       },
       {
         "type": "tree",
@@ -2765,18 +2681,6 @@
       {
         "type": "rock",
         "imageIndex": 7,
-        "x": 253,
-        "y": 1323.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 254,
-        "y": 1324.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
         "x": 120,
         "y": 1224.8125
       },
@@ -2807,12 +2711,6 @@
       {
         "type": "rock",
         "imageIndex": 7,
-        "x": 1386,
-        "y": 309.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
         "x": 1117,
         "y": 137.8125
       },
@@ -2839,18 +2737,6 @@
         "imageIndex": 4,
         "x": 265,
         "y": 139.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 1392,
-        "y": 131.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 1316,
-        "y": 279.8125
       },
       {
         "type": "rock",
@@ -2893,12 +2779,6 @@
         "imageIndex": 2,
         "x": 1227,
         "y": 141.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 2,
-        "x": 1354,
-        "y": 275.8125
       },
       {
         "type": "rock",
@@ -3064,12 +2944,6 @@
       },
       {
         "type": "tree",
-        "imageIndex": 5,
-        "x": 147,
-        "y": 852.8125
-      },
-      {
-        "type": "tree",
         "imageIndex": 4,
         "x": 1432,
         "y": 683.8125
@@ -3121,6 +2995,18 @@
         "imageIndex": 2,
         "x": 86,
         "y": 612.8125
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 7,
+        "x": 1374,
+        "y": 149.79998779296875
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 5,
+        "x": 207,
+        "y": 1291.7999877929688
       }
     ],
     "extensionTerrainType": 3

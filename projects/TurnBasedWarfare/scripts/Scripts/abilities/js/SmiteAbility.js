@@ -131,9 +131,9 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         let isUndeadTarget = false;
         
         if (targetUnitType && (
-            targetUnitType.type.includes('undead') || 
-            targetUnitType.type.includes('skeleton') ||
-            targetUnitType.type.includes('zombie') ||
+            targetUnitType.title.includes('undead') || 
+            targetUnitType.title.includes('skeleton') ||
+            targetUnitType.title.includes('zombie') ||
             targetUnitType.id.includes('undead')
         )) {
             damage = Math.floor(damage * this.bonusDamageVsUndead);
@@ -167,7 +167,7 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
             if (casterUnitType && casterTeam && targetTeam && targetUnitType) {
                 const effectivenessNote = isUndeadTarget ? ' (EXTRA EFFECTIVE vs undead)' : '';
                 this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.type} smites ${targetTeam.team} ${targetUnitType.type} for ${damage} divine damage${effectivenessNote}!`,
+                    `${casterTeam.team} ${casterUnitType.title} smites ${targetTeam.team} ${targetUnitType.title} for ${damage} divine damage${effectivenessNote}!`,
                     'log-divine'
                 );
             }
@@ -204,9 +204,9 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
         if (!targetUnitType) return false;
         
-        return targetUnitType.type.includes('undead') || 
-               targetUnitType.type.includes('skeleton') ||
-               targetUnitType.type.includes('zombie') ||
+        return targetUnitType.title.includes('undead') || 
+               targetUnitType.title.includes('skeleton') ||
+               targetUnitType.title.includes('zombie') ||
                targetUnitType.id.includes('undead');
     }
     

@@ -157,7 +157,7 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type} breaks free from the curse!`,
+                            `${unitType.title} breaks free from the curse!`,
                             'log-ability'
                         );
                     }

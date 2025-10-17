@@ -140,7 +140,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (unitType && team) {
                 this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.type} forms a protective shield wall!`,
+                    `${team.team} ${unitType.title} forms a protective shield wall!`,
                     'log-defense'
                 );
             }
@@ -230,7 +230,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (unitType && team) {
                 this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.type}'s shield wall begins to weaken...`,
+                    `${team.team} ${unitType.title}'s shield wall begins to weaken...`,
                     'log-defense'
                 );
             }
@@ -261,7 +261,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (unitType && team) {
                 this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.type}'s shield wall dissolves.`,
+                    `${team.team} ${unitType.title}'s shield wall dissolves.`,
                     'log-defense'
                 );
             }

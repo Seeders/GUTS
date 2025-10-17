@@ -225,7 +225,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                     const unitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
                     if (unitType) {
                         this.game.battleLogSystem.add(
-                            `${unitType.type}'s systems come back online.`,
+                            `${unitType.title}'s systems come back online.`,
                             'log-ability'
                         );
                     }

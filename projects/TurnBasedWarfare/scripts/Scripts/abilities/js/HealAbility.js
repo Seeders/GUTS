@@ -98,7 +98,7 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (targetUnitType && targetTeam) {
                 this.game.battleLogSystem.add(
-                    `${targetTeam.team} ${targetUnitType.type} healed for ${actualHeal} health!`,
+                    `${targetTeam.team} ${targetUnitType.title} healed for ${actualHeal} health!`,
                     'log-heal'
                 );
             }

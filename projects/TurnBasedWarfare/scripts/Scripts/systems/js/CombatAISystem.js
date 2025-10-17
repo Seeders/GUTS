@@ -70,7 +70,7 @@ class CombatAISystem extends engine.BaseSystem {
 
             // DEBUG: Log combat range and position
 
-            const enemiesInRange = this.getAllEnemiesInRange(entityId, team, pos, combat.range) || [];
+            const enemiesInRange = this.getAllEnemiesInRange(entityId, team, combat) || [];
             
             // DEBUG: Log enemies found
             if (aiState.target) {
@@ -91,8 +91,6 @@ class CombatAISystem extends engine.BaseSystem {
             }
             if (enemiesInRange.length === 0) {
                 if(aiState.targetPosition){
-            
-
                     if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
@@ -100,10 +98,8 @@ class CombatAISystem extends engine.BaseSystem {
                     } else {
                         if (aiState.state !== 'idle') {
                             this.changeAIState(aiState, 'idle');
-                            aiState.target = null;
                         }
                     }
-                    continue;
                 }   
             }
 
@@ -120,12 +116,13 @@ class CombatAISystem extends engine.BaseSystem {
         }
     }
 
-    getAllEnemiesInRange(entityId, team, position, range) {
+    getAllEnemiesInRange(entityId, team, combat) {
         const allUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
             this.componentTypes.HEALTH
         );
+        
         return allUnits.filter(otherId => {
             if (otherId === entityId) return false;
             
@@ -139,17 +136,7 @@ class CombatAISystem extends engine.BaseSystem {
             if (otherDeathState && otherDeathState.isDying) return false;
             if (!otherPos) return false;
             
-            const distance = Math.sqrt(
-                Math.pow(otherPos.x - position.x, 2) + 
-                Math.pow(otherPos.z - position.z, 2)
-            );
-   
-            if(distance > range){
-                 //console.log('not in range', entityId, otherId, 'r:', range, 'd:', distance, 'pos:', position, 'otherPos:', otherPos);            
-                 return false;
-            }
-
-            return true;
+            return this.isInAttackRange(entityId, otherId, combat, 5);                   
         });
     }
 

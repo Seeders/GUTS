@@ -136,7 +136,7 @@ class CorruptingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             if (!unitType || !allyPos) return;
             
             // Check if this is an undead unit
-            if (unitType.id === 'skeleton' || unitType.type.includes('undead') || unitType.type.includes('Skeleton')) {
+            if (unitType.id === 'skeleton' || unitType.title.includes('undead') || unitType.title.includes('Skeleton')) {
                 const distance = Math.sqrt(
                     Math.pow(allyPos.x - casterPos.x, 2) + 
                     Math.pow(allyPos.z - casterPos.z, 2)

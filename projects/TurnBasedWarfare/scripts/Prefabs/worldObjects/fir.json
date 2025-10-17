@@ -2,7 +2,9 @@
   "title": "Fir",
   "render": {
     "animations": {
-      "idle": []
+      "idle": [
+        {}
+      ]
     },
     "model": {
       "shapes": {

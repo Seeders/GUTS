@@ -224,12 +224,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             unitType.id === 'zombie' ||
             unitType.id === 'lich' ||
             unitType.id === 'wraith' ||
-            unitType.id === 'demon' ||
-            unitType.type.toLowerCase().includes('undead') ||
-            unitType.type.toLowerCase().includes('skeleton') ||
-            unitType.type.toLowerCase().includes('zombie') ||
-            unitType.type.toLowerCase().includes('demon') ||
-            unitType.type.toLowerCase().includes('evil')
+            unitType.id === 'demon'
         );
     }
     

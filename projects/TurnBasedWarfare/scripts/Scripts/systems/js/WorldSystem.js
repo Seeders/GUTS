@@ -519,7 +519,7 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         // Add grass
-        //this.addGrassToTerrain();
+        this.addGrassToTerrain();
 
         // Render environment objects
         this.renderEnvironmentObjects();
@@ -575,6 +575,7 @@ class WorldSystem extends engine.BaseSystem {
                     objects.length
                 );
                 instancedMesh.userData.relativeMatrix = relativeMatrix;
+                instancedMesh.userData.objectType = type;
                 instancedMesh.castShadow = true;   
                 instancedMesh.receiveShadow = true;
                 if(instancedMesh.material.map){
@@ -605,7 +606,7 @@ class WorldSystem extends engine.BaseSystem {
 
                 dummy.position.set(worldX, height, worldZ);
                 dummy.rotation.y = Math.random() * Math.PI * 2;
-                const scale = (0.8 + Math.random() * 0.4) * ( type == 'tree' || type == 'rock' ? 1 : 50);
+                const scale = (0.8 + Math.random() * 0.4) * ( type == 'rock' ? 1 : 50);
                 dummy.scale.set(scale, scale, scale);
                 dummy.updateMatrix();
         

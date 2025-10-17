@@ -134,10 +134,11 @@ class ShopSystem extends engine.BaseSystem {
         this.game.state.selectedEntity.type = null;
     }
 
-    renderBuildingActions(container) {
-        const BuildingTypes = this.game.getCollections().buildings;
-        const building = BuildingTypes[this.game.state.selectedEntity.entityId];
-        
+    renderBuildingActions(placement) {
+        const building = placement.unitType;
+        const container = document.getElementById('actionPanel');  
+        if (!container) return;
+        container.innerHTML = '';
         if (!building) {
             this.clearSelectedEntity();
             this.renderBuildOptions(container);
@@ -307,7 +308,21 @@ class ShopSystem extends engine.BaseSystem {
         return unit.requires.buildings.includes(this.game.state.selectedEntity.entityId);
     }
 
-    purchaseBuilding(buildingId, building) {
+    purchaseBuilding(buildingId, building){ 
+        const state = this.game.state;
+        
+        if (state.playerGold < building.value) {
+            this.showNotification('Not enough gold!', 'error');
+            return;
+        }
+
+        state.selectedUnitType = { id: buildingId, collection: 'buildings', ...building };
+        if (this.game.placementSystem) {
+            this.game.placementSystem.handleUnitSelectionChange();
+        }
+    }
+
+    oldpurchaseBuilding(buildingId, building) {
         this.game.networkManager.purchaseBuilding({ buildingId }, (success, response) => {
             if (success) {                
                 if (building.category === 'attribute') {
@@ -338,7 +353,7 @@ class ShopSystem extends engine.BaseSystem {
             return;
         }
 
-        state.selectedUnitType = { id: unitId, ...unit };
+        state.selectedUnitType = { id: unitId, collection: 'units', ...unit };
         if (this.game.placementSystem) {
             this.game.placementSystem.handleUnitSelectionChange(state.selectedUnitType);
         }

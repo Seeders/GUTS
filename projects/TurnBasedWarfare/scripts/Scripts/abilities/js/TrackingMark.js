@@ -237,7 +237,7 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
                                markResult.wasStacked ? `stacks mark on` : 'refreshes mark on';
                                
                 this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.type} ${actionText} ${targetTeam.team} ${targetUnitType.type} (${markResult.currentStacks} stacks)!`,
+                    `${casterTeam.team} ${casterUnitType.title} ${actionText} ${targetTeam.team} ${targetUnitType.title} (${markResult.currentStacks} stacks)!`,
                     'log-mark'
                 );
             }

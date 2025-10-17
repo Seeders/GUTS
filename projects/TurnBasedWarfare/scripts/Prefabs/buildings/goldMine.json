@@ -1,0 +1,45 @@
+{
+  "title": "Gold Mine",
+  "info": "Mine gold veins",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": []
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "projects/TurnBasedWarfare/resources/models/goldmine/goldmine.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "upgrades": [
+    "peasantEfficiency"
+  ],
+  "units": [],
+  "placementGridWidth": 2,
+  "placementGridHeight": 2
+}

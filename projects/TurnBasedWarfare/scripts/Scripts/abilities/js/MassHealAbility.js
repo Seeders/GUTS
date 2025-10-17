@@ -122,7 +122,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
                         
                         if (allyUnitType && allyTeam) {
                             this.game.battleLogSystem.add(
-                                `${allyTeam.team} ${allyUnitType.type} healed for ${actualHeal} health!`,
+                                `${allyTeam.team} ${allyUnitType.title} healed for ${actualHeal} health!`,
                                 'log-heal'
                             );
                         }

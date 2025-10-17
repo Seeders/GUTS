@@ -41,7 +41,7 @@ class ComponentManager {
             }),
             
             Team: (team = 'neutral') => ({ team }),
-            UnitType: (id = 'default', type = 'basic', value = 10) => ({ id, type, value }),
+            UnitType: (id = 'default', collection = 'units', title, value = 10) => ({ id, collection, title, value }),
             AIState: (state = 'idle', targetPosition = null, target = null, lastStateChange = 0) => 
                 ({ state, targetPosition, target, lastStateChange }),
             Animation: (scale = 1, rotation = 0, flash = 0) => ({ scale, rotation, flash }),
@@ -183,7 +183,10 @@ class ComponentManager {
             // =============================================
             // TACTICAL ABILITY COMPONENTS (from original)
             // =============================================
-            
+            MiningState: (state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team) => ({
+                state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team
+            }),
+
             MindControlled: (originalTeam = 'neutral', controller = null, endTime = 0) => ({
                 originalTeam,
                 controller,
@@ -660,7 +663,7 @@ class ComponentManager {
             // Visual Effects
             VISUAL_EFFECT: 'visualEffect',
             AURA: 'aura',
-            
+            MINING_STATE: 'miningState',
             // AI and Targeting
             TARGETING_PREFERENCE: 'targetingPreference',
             THREAT: 'threat',

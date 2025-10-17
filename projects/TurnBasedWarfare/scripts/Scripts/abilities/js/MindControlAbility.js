@@ -235,7 +235,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
             if (targetUnitType) {
                 this.game.battleLogSystem.add(
-                    `${targetUnitType.type} has been charmed!`,
+                    `${targetUnitType.title} has been charmed!`,
                     'log-ability'
                 );
             }
@@ -290,7 +290,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
             if (targetUnitType) {
                 this.game.battleLogSystem.add(
-                    `${targetUnitType.type} breaks free from mind control!`,
+                    `${targetUnitType.title} breaks free from mind control!`,
                     'log-ability'
                 );
             }

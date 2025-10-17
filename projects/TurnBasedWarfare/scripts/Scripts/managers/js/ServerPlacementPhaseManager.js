@@ -592,13 +592,25 @@ class ServerPlacementPhaseManager {
     purchaseBuilding(playerId, player, data) {
         console.log(`=== Purchase Building DEBUG ===`);     
         console.log(`Data received:`, data);
-    
+
         if (this.game.state.phase !== 'placement') {
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
 
         const building = this.game.getCollections().buildings[data.buildingId];
         if(building?.value <= player.stats.gold){
+            
+            if (data.buildingId === 'goldMine') {
+                const gridPos = data.gridPos || data.gridPosition;
+                const gridWidth = building.placementGridWidth || 2;
+                const gridHeight = building.placementGridHeight || 2;
+                
+                const result = this.game.goldMineSystem.buildGoldMine(player.stats.side, gridPos, gridWidth, gridHeight);
+                if (!result.success) {
+                    return result;
+                }
+            }
+            
             player.stats.gold -= building.value;
             player.stats.buildings.push(data.buildingId); 
             console.log(`SUCCESS`);
@@ -635,7 +647,17 @@ class ServerPlacementPhaseManager {
     }
 
     getStartingState(player){
-        player.stats.buildings = ["townHall"];
+
+        let startPosition = { x: 2, z: 15 };
+        if(player.stats.side == 'right'){
+            startPosition = { x: 29, z: 15 };
+        }
+        player.stats.buildings = [
+            {
+                type: "townHall",
+                position: startPosition
+            }
+        ];
         return {
             success: true, 
             buildings: player.stats.buildings

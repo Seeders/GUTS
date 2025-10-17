@@ -191,7 +191,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             clearTimeout(this.battleTimer);
             this.battleTimer = null;
         }
-        
+        if (this.game.abilitySystem) {
+            this.game.abilitySystem.handleEndBattle();
+        }
         this.game.state.phase = 'round_end';
         
         let battleResult = {

@@ -162,7 +162,7 @@ class ModelManager {
         vatData.clipIndexByName = this._buildClipIndexMap(vatData.clips);
         const material = this._createVATMaterial(targetMesh, vatData, key);
         const geometry = targetMesh.geometry.clone();
-
+console.log('geometry');
         // Copy bone data
         const skinIndexAttr = targetMesh.geometry.getAttribute('skinIndex');
         const skinWeightAttr = targetMesh.geometry.getAttribute('skinWeight');
@@ -245,6 +245,7 @@ class ModelManager {
         this._ensureFloatAttribute(geometry, 'aAnimTime', 1, 0.0);
         this._ensureFloatAttribute(geometry, 'aAnimSpeed', 1, 1.0);
         const baseScale = (masterModel && masterModel.children[0]?.scale) ? masterModel.children[0].scale : new THREE.Vector3(1, 1, 1);
+        const basePos = (masterModel && masterModel.children[0]?.position) ? masterModel.children[0].position : new THREE.Vector3(0, 0, 0);
 
         return {
             geometry,
@@ -256,7 +257,8 @@ class ModelManager {
                 rows: 1,   // Single frame
                 clips: clips,
                 clipIndexByName: clipIndexByName,
-                baseScale: baseScale
+                baseScale: baseScale,
+                basePos: basePos
             }
         };
     }

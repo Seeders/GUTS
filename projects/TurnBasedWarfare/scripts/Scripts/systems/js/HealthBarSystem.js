@@ -121,10 +121,13 @@ class HealthBarSystem extends engine.BaseSystem {
         
         const { background, fill, group, fillGeometry, fillMaterial } = healthBarData;
         
+        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const unitData = this.game.getCollections()[unitType.collection][unitType.id];
+
         // Position group above unit
         group.position.set(
             pos.x,
-            pos.y + this.HEALTH_BAR_OFFSET_Y,
+            pos.y + unitData.height ? unitData.height : this.HEALTH_BAR_OFFSET_Y,
             pos.z
         );
         

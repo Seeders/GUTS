@@ -43,7 +43,7 @@ class BaseAbility {
         const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
         
         if (unitType && team) {
-            const defaultMessage = `${team.team} ${unitType.type} uses ${this.name}!`;
+            const defaultMessage = `${team.team} ${unitType.title} uses ${this.name}!`;
             this.game.battleLogSystem.add(message || defaultMessage, 'log-ability');
             
             if (showScreenEffect && this.game.effectsSystem) {
@@ -144,7 +144,8 @@ class BaseAbility {
         
         return bestPos;
     }
-    
+    handleEndBattle() {
+    }
     canExecute(casterEntity) { return true; }
     execute(casterEntity, targetData = null) { console.log(`${this.name} executed by entity ${casterEntity}`); }
 }
