@@ -604,10 +604,85 @@ class ServerPlacementPhaseManager {
 
     getStartingState(player){
 
-        let startPosition = { x: 2, z: 15 };
+        let startPosition = { x: 5, z: 5 };
         if(player.stats.side == 'right'){
-            startPosition = { x: 29, z: 15 };
+            startPosition = { x: 26, z: 26 };
         }
+        
+        // Find nearest unclaimed gold vein
+        let nearestGoldVeinLocation = null;
+        let minDistance = Infinity;
+        
+        if (this.game.goldMineSystem && this.game.goldMineSystem.goldVeinLocations) {
+            this.game.goldMineSystem.goldVeinLocations.forEach(vein => {
+                // Skip if already claimed
+                if (vein.claimed) return;
+                
+                // Calculate distance from start position to vein
+                const dx = vein.gridPos.x - startPosition.x;
+                const dz = vein.gridPos.z - startPosition.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestGoldVeinLocation = vein.gridPos;
+                }
+            });
+        }
+        
+        
+        // Calculate peasant positions on the same side as gold mine
+        // TownHall is 2x2, so it occupies a 2x2 area centered at startPosition
+        const dx = nearestGoldVeinLocation.x - startPosition.x;
+        const dz = nearestGoldVeinLocation.z - startPosition.z;
+        
+        let peasantPositions = [];
+        
+        // Determine which side the gold mine is on and place peasants accordingly
+        if (Math.abs(dx) > Math.abs(dz)) {
+            // Gold mine is more to the east or west
+            if (dx > 0) {
+                // Gold mine is to the EAST, place peasants on east side
+                // TownHall occupies x to x+1, so peasants start at x+2
+                peasantPositions = [
+                    { x: startPosition.x + 2, z: startPosition.z - 1 },
+                    { x: startPosition.x + 2, z: startPosition.z },
+                    { x: startPosition.x + 2, z: startPosition.z + 1 },
+                    { x: startPosition.x + 2, z: startPosition.z + 2 }
+                ];
+            } else {
+                // Gold mine is to the WEST, place peasants on west side
+                // TownHall occupies x-1 to x, so peasants start at x-2
+                peasantPositions = [
+                    { x: startPosition.x - 2, z: startPosition.z - 1 },
+                    { x: startPosition.x - 2, z: startPosition.z },
+                    { x: startPosition.x - 2, z: startPosition.z + 1 },
+                    { x: startPosition.x - 2, z: startPosition.z + 2 }
+                ];
+            }
+        } else {
+            // Gold mine is more to the north or south
+            if (dz > 0) {
+                // Gold mine is to the SOUTH, place peasants on south side
+                // TownHall occupies z to z+1, so peasants start at z+2
+                peasantPositions = [
+                    { x: startPosition.x - 1, z: startPosition.z + 2 },
+                    { x: startPosition.x, z: startPosition.z + 2 },
+                    { x: startPosition.x + 1, z: startPosition.z + 2 },
+                    { x: startPosition.x + 2, z: startPosition.z + 2 }
+                ];
+            } else {
+                // Gold mine is to the NORTH, place peasants on north side
+                // TownHall occupies z-1 to z, so peasants start at z-2
+                peasantPositions = [
+                    { x: startPosition.x - 1, z: startPosition.z - 2 },
+                    { x: startPosition.x, z: startPosition.z - 2 },
+                    { x: startPosition.x + 1, z: startPosition.z - 2 },
+                    { x: startPosition.x + 2, z: startPosition.z - 2 }
+                ];
+            }
+        }
+        
         const startingUnits = [
             {
                 type: "townHall",
@@ -615,36 +690,29 @@ class ServerPlacementPhaseManager {
                 position: startPosition
             },
             {
-                type: "peasant",
-                collection: "units",
-                position: {
-                    x: startPosition.x - 1,
-                    z: startPosition.z + 2
-                }
+                type: "goldMine",
+                collection: "buildings",
+                position: nearestGoldVeinLocation
             },
             {
                 type: "peasant",
                 collection: "units",
-                position: {
-                    x: startPosition.x,
-                    z: startPosition.z + 2
-                }
+                position: peasantPositions[0]
             },
             {
                 type: "peasant",
                 collection: "units",
-                position: {
-                    x: startPosition.x + 1,
-                    z: startPosition.z + 2
-                }
+                position: peasantPositions[1]
             },
             {
                 type: "peasant",
                 collection: "units",
-                position: {
-                    x: startPosition.x + 2,
-                    z: startPosition.z + 2
-                }
+                position: peasantPositions[2]
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: peasantPositions[3]
             }
         ];
         return {

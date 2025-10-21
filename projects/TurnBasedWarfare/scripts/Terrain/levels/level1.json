@@ -68,6 +68,54 @@
         "buildable": true
       },
       {
+        "type": "cliff",
+        "texture": "rock",
+        "color": "#3e4f57",
+        "image": [
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+        ],
+        "buildable": false
+      },
+      {
+        "type": "cliff",
+        "texture": "rock",
+        "color": "#3e4f57",
+        "image": [
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+        ],
+        "buildable": false
+      },
+      {
+        "type": "cliff",
+        "texture": "rock",
+        "color": "#3e4f57",
+        "image": [
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+        ],
+        "buildable": false
+      },
+      {
         "type": "rock",
         "texture": "rock",
         "color": "#3e4f57",
@@ -392,49 +440,15 @@
         2
       ],
       [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        0,
-        0,
-        0,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
         2,
         2,
         2,
@@ -460,22 +474,22 @@
         2
       ],
       [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
         2,
         2,
         2,
         0,
         0,
         0,
-        0,
+        2,
         2,
         2,
         2,
@@ -494,19 +508,19 @@
         2
       ],
       [
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
         2,
         2,
         2,
         2,
         2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
+        0,
         0,
         0,
         0,
@@ -575,7 +589,7 @@
         2,
         2,
         2,
-        2,
+        0,
         0,
         0,
         2,
@@ -680,41 +694,7 @@
         2,
         0,
         0,
-        0,
         2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
-      ],
-      [
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        0,
-        0,
-        0,
         2,
         2,
         2,
@@ -793,11 +773,79 @@
         2,
         2,
         2,
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      [
         2,
         2,
         2,
         2,
-        2
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7
       ],
       [
         2,
@@ -824,8 +872,8 @@
         2,
         2,
         2,
-        2,
-        2,
+        7,
+        7,
         2,
         2,
         2,
@@ -1295,18 +1343,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 146,
-        "y": 220.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 100,
-        "y": 113.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 350,
         "y": 98.8125
       },
@@ -1315,12 +1351,6 @@
         "imageIndex": 0,
         "x": 549,
         "y": 137.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 229,
-        "y": 266.8125
       },
       {
         "type": "tree",
@@ -1337,12 +1367,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 291,
-        "y": 313.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 73,
         "y": 266.8125
       },
@@ -1351,18 +1375,6 @@
         "imageIndex": 0,
         "x": 375,
         "y": 196.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 178,
-        "y": 140.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 272,
-        "y": 81.8125
       },
       {
         "type": "tree",
@@ -1381,12 +1393,6 @@
         "imageIndex": 0,
         "x": 8,
         "y": 135.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 302,
-        "y": 178.8125
       },
       {
         "type": "tree",
@@ -1411,18 +1417,6 @@
         "imageIndex": 0,
         "x": 432,
         "y": 274.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 214,
-        "y": 364.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 147,
-        "y": 300.8125
       },
       {
         "type": "tree",
@@ -1979,12 +1973,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1479,
-        "y": 1527.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1516,
         "y": 1350.8125
       },
@@ -1993,12 +1981,6 @@
         "imageIndex": 0,
         "x": 1482,
         "y": 1175.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1277,
-        "y": 1131.8125
       },
       {
         "type": "tree",
@@ -2021,12 +2003,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1315,
-        "y": 1402.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1145,
         "y": 1498.8125
       },
@@ -2045,18 +2021,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1408,
-        "y": 1462.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1427,
-        "y": 1307.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1179,
         "y": 1321.8125
       },
@@ -2069,32 +2033,14 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1303,
-        "y": 1267.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1205,
         "y": 1405.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1461,
-        "y": 1424.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1493,
         "y": 1242.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1359,
-        "y": 1208.8125
       },
       {
         "type": "tree",
@@ -2159,12 +2105,6 @@
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1343,
-        "y": 1343.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
         "x": 1398,
         "y": 1146.8125
       },
@@ -2197,12 +2137,6 @@
         "imageIndex": 0,
         "x": 1258,
         "y": 1458.8125
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1263,
-        "y": 1310.8125
       },
       {
         "type": "tree",
@@ -2247,12 +2181,6 @@
         "y": 1528.8125
       },
       {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1496,
-        "y": 1479.8125
-      },
-      {
         "type": "rock",
         "imageIndex": 0,
         "x": 94,
@@ -2281,18 +2209,6 @@
         "imageIndex": 0,
         "x": 619,
         "y": 136.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 0,
-        "x": 231,
-        "y": 159.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 0,
-        "x": 54,
-        "y": 97.8125
       },
       {
         "type": "rock",
@@ -2651,18 +2567,6 @@
       {
         "type": "rock",
         "imageIndex": 7,
-        "x": 1421,
-        "y": 1378.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 1291,
-        "y": 1238.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
         "x": 1049,
         "y": 1315.8125
       },
@@ -2671,12 +2575,6 @@
         "imageIndex": 7,
         "x": 1091,
         "y": 1499.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 1393,
-        "y": 1221.8125
       },
       {
         "type": "rock",
@@ -2723,24 +2621,6 @@
       {
         "type": "rock",
         "imageIndex": 4,
-        "x": 320,
-        "y": 363.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 287,
-        "y": 242.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 265,
-        "y": 139.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
         "x": 1409,
         "y": 305.8125
       },
@@ -2755,12 +2635,6 @@
         "imageIndex": 4,
         "x": 195,
         "y": 323.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 2,
-        "x": 206,
-        "y": 243.8125
       },
       {
         "type": "rock",
@@ -2797,18 +2671,6 @@
         "imageIndex": 2,
         "x": 1118,
         "y": 1459.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 2,
-        "x": 1369,
-        "y": 1389.8125
-      },
-      {
-        "type": "rock",
-        "imageIndex": 2,
-        "x": 1369,
-        "y": 1388.8125
       },
       {
         "type": "rock",
@@ -3007,6 +2869,18 @@
         "imageIndex": 5,
         "x": 207,
         "y": 1291.7999877929688
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 0,
+        "x": 1440,
+        "y": 1440
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 0,
+        "x": 96,
+        "y": 96
       }
     ],
     "extensionTerrainType": 3
