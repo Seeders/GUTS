@@ -38,7 +38,6 @@ class SceneEditor {
         }   
         this.gameEditor.modelManager = new ModelManager(this.gameEditor, {}, {ShapeFactory, palette: this.gameEditor.palette, textures: this.gameEditor.getCollections().textures});    
      
-        this.nextEntityId = 1;
         this.initThreeJS(this.canvas);
         this.gizmoManager = new SE_GizmoManager();
         this.gizmoManager.init(this);
@@ -319,7 +318,7 @@ class SceneEditor {
     }
 
     createEntity(type, prefabData) {
-        const id = this.nextEntityId++;
+        const id = this.game.getEntityId();
         const entity = {
             id,
             type,

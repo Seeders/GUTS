@@ -339,6 +339,25 @@ class MultiplayerNetworkManager {
                 this.game.uiSystem.startVictoryCelebration(winningUnits);
             }
         }
+
+        if (data.entitySync) {
+            this.resyncEntities(data.entitySync);
+        }
+    }
+
+    resyncEntities(entitySync) {
+
+        for (const [entityId, components] of Object.entries(entitySync)) {
+        
+            
+            for (const [componentType, componentData] of Object.entries(components)) {
+                if (this.game.hasComponent(entityId, componentType)) {
+                    const existing = this.game.getComponent(entityId, componentType);
+                    Object.assign(existing, componentData);
+                } 
+            }
+        }
+        
     }
 
     handleNextRound(data) {

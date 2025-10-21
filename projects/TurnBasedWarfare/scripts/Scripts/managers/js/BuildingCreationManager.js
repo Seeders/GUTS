@@ -46,7 +46,9 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, targetPosition, unitType, team) {
         try {
-            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
+            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}_${this.game.state.round}`); 
+            console.log('created building', unitType.id, team, entity);
+           
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team);
             

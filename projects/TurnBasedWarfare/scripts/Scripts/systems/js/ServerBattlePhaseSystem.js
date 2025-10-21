@@ -6,9 +6,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         
         // Battle configuration
-        this.battleDuration = 90000; // 90 seconds max
-        this.battleTimer = null;
-        
+        this.maxBattleDuration = 10; // 90 seconds max
+        this.minBattleDuration = 5;
+        this.currentBattleTime = 0;
         // Battle state tracking
         this.battleResults = new Map();
         this.createdSquads = new Map();
@@ -26,8 +26,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
-            // Start battle timer
-            this.startBattleTimer(room);
             
             return { success: true };
             
@@ -50,12 +48,15 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 throw new Error('Placement phase manager not available');
             }
             let success = true;
+            let createdSquad = null;
+      
             // Create squads using unit creation manager
-            const createdSquad = this.game.unitCreationManager.createSquadFromPlacement(
+            createdSquad = this.game.unitCreationManager.createSquadFromPlacement(
                 placement,
                 player.stats.side,
                 playerId
             );
+
             if(!createdSquad){
                 console.log("Failed to create squads");
                 success = false;
@@ -77,21 +78,12 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         }
     }
 
-    startBattleTimer(room) {
-        if (this.battleTimer) {
-            clearTimeout(this.battleTimer);
-        }
-        
-        this.battleTimer = setTimeout(() => {
-            this.endBattle(room, null, 'timeout');
-        }, this.battleDuration);
-    }
     // Called by game update loop to check for battle end
     update() {
         if (this.game.state?.phase !== 'battle') {
             return;
         }
-
+        this.currentBattleTime += this.game.state.deltaTime;
         // Check for battle end conditions
         this.checkForBattleEnd();
     }
@@ -127,6 +119,14 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         const noCombatActive = this.checkNoCombatActive(aliveEntities);
         const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
         
+        if( this.currentBattleTime < this.minBattleDuration){
+            return;
+        }
+        if( this.currentBattleTime > this.maxBattleDuration){
+            this.endBattle(this.game.room, null);
+            return;
+        }
+
         if (aliveEntities.length === 0) {
             console.log('no alive entities');
             this.endBattle(this.game.room, null);
@@ -187,22 +187,19 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
     }
 
     endBattle(room, winner = null, reason = 'unknown') {
-        if (this.battleTimer) {
-            clearTimeout(this.battleTimer);
-            this.battleTimer = null;
-        }
+
         if (this.game.abilitySystem) {
             this.game.abilitySystem.handleEndBattle();
         }
-        this.game.state.phase = 'round_end';
-        
+        const playerStats = this.getPlayerStats(room);
         let battleResult = {
             winner: winner,
             reason: reason,
             round: this.game.state.round,
             survivingUnits: this.getSurvivingUnits(),
-            playerStats: this.getPlayerStats(room)
+            playerStats: playerStats
         };
+        console.log('playerStats', playerStats);
         
         let winningUnits = battleResult.survivingUnits[winner]; 
         let winningSide = battleResult.playerStats[winner]?.stats.side || null;
@@ -229,7 +226,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                         } else if (player.stats.side === 'right') {
                             player.stats.health = newRightHealth;
                         }
-                        
                     }
                 }
                 
@@ -252,20 +248,35 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             }
         }
         
+        const entitySync = this.serializeAllEntities();
         // Broadcast with updated health values
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
-            gameState: room.getGameState() // This will also have updated player health
+            gameState: room.getGameState(), // This will also have updated player health
+            entitySync: entitySync
         });
-        
         // Check for game end or continue to next round
-        setTimeout(() => {
-            if (this.shouldEndGame(room)) {
-                this.endGame(room);
-            } else {
-                this.prepareNextRound(room);
+        if (this.shouldEndGame(room)) {
+            this.endGame(room);
+        } else {
+            this.prepareNextRound(room);
+        }
+    }
+    serializeAllEntities() {
+        const serialized = {};
+        
+        for (const [entityId, componentTypes] of this.game.entities) {
+            serialized[entityId] = {};
+            
+            for (const componentType of componentTypes) {
+                const component = this.game.getComponent(entityId, componentType);
+                if (component) {
+                    serialized[entityId][componentType] = JSON.parse(JSON.stringify(component));
+                }
             }
-        }, 3000);
+        }
+        
+        return serialized;
     }
     calculateRoundGold(round) {
         return this.baseGoldPerRound + (round * this.baseGoldPerRound);
@@ -324,13 +335,21 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         // Reset placement ready states
         for (const [playerId, player] of room.players) {
             player.placementReady = false;
-            player.stats.gold = player.stats.gold + this.calculateRoundGold(this.game.state.round);
         }
         
         this.serverNetworkManager.broadcastToRoom(room.id, 'NEXT_ROUND', {
             round: this.game.state.round,
             gameState: room.getGameState()
         });
+    }
+
+    addGoldForTeam(goldAmt, team){
+        for (const [playerId, player] of room.players) {
+            if(player.side == team){
+                player.stats.gold = player.stats.gold + goldAmt;
+                break;
+            }
+        }
     }
 
     endGame(room) {
@@ -369,6 +388,8 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
         if (!this.game.componentManager) return;
         
+        this.currentBattleTime = 0;
+        
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const entitiesToDestroy = new Set();
         
@@ -399,10 +420,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
     // Cleanup method
     cleanup() {
-        if (this.battleTimer) {
-            clearTimeout(this.battleTimer);
-            this.battleTimer = null;
-        }
+
         
         this.clearBattlefield();
         this.battleResults.clear();

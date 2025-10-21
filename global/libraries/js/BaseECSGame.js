@@ -20,6 +20,9 @@ class BaseECSGame {
         this.isServer = false;
     }
 
+    getEntityId() {
+        return this.nextEntityId++;
+    }
     getCollections() {
         return this.app.getCollections();
     }
@@ -62,8 +65,8 @@ class BaseECSGame {
         
     }
 
-    createEntity(presetID) {
-        const id = presetID || this.nextEntityId++;
+    createEntity(setId) {
+        const id = setId || this.getEntityId();
         this.entities.set(id, new Set());
         return id;
     }

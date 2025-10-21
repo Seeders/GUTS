@@ -128,7 +128,7 @@ class GoldMineSystem extends engine.BaseSystem {
         }
     }
 
-    buildGoldMine(team, gridPos, buildingGridWidth, buildingGridHeight) {
+    buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
         console.log('[GoldMineSystem] Attempting to build gold mine for player:', team, 'at grid:', gridPos);
         
         const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
@@ -152,6 +152,7 @@ class GoldMineSystem extends engine.BaseSystem {
         }
 
         this.claimedGoldMines.set(team, {
+            entityId: entityId,
             position: { x: vein.x, z: vein.y },
             worldPosition: { x: vein.worldX, z: vein.worldZ },
             gridPos: vein.gridPos,
@@ -165,12 +166,11 @@ class GoldMineSystem extends engine.BaseSystem {
         return { success: true };
     }
 
-    destroyGoldMine(team) {
+    destroyGoldMine(entityId) {
         console.log('[GoldMineSystem] Attempting to destroy gold mine for player:', team);
         
         const goldMine = this.claimedGoldMines.get(team);
         if (!goldMine) {
-            console.warn('[GoldMineSystem] No gold mine found for player');
             return { success: false, error: 'No gold mine to destroy' };
         }
 

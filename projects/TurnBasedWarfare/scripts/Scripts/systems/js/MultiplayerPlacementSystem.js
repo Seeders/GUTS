@@ -389,19 +389,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.squadExperienceSystem.setSquadInfo(opponentPlacement.placementId, opponentPlacement.experience);
         }
 
-        if (opponentPlacement.collection === 'buildings' && opponentPlacement.unitType.id === 'goldMine') {
-            const gridWidth = opponentPlacement.unitType.placementGridWidth || 2;
-            const gridHeight = opponentPlacement.unitType.placementGridHeight || 2;
-            
-            const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
-            
-            this.game.goldMineSystem.buildGoldMine(
-                opponentSide,
-                opponentPlacement.gridPosition,
-                gridWidth,
-                gridHeight
-            );
-        }
 
         if (this.game.squadManager && this.game.unitCreationManager) {
             const unitPositions = this.game.squadManager.calculateUnitPositions(
@@ -413,33 +400,35 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             unitPositions.forEach((pos, index) => {
                 const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
-                if(opponentPlacement.collection == 'units'){
-                    let entityId = this.game.unitCreationManager.create(
-                        pos.x,
-                        unitY,
-                        pos.z,
-                        opponentPlacement.targetPosition,
-                        opponentPlacement.unitType,
-                        this.game.state.mySide == 'right' ? 'left' : 'right'
+
+                let entityId = this.game.unitCreationManager.create(
+                    pos.x,
+                    unitY,
+                    pos.z,
+                    opponentPlacement.targetPosition,
+                    opponentPlacement.unitType,
+                    this.game.state.mySide == 'right' ? 'left' : 'right'
+                );
+                if (opponentPlacement.unitType.id === 'goldMine') {
+                    const gridWidth = opponentPlacement.unitType.placementGridWidth || 2;
+                    const gridHeight = opponentPlacement.unitType.placementGridHeight || 2;
+                    
+                    const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
+                    
+                    this.game.goldMineSystem.buildGoldMine(
+                        entityId,
+                        opponentSide,
+                        opponentPlacement.gridPosition,
+                        gridWidth,
+                        gridHeight
                     );
-                    squadUnits.push({
-                        entityId: entityId,
-                        position: { x: pos.x, y: unitY, z: pos.z }
-                    });
-                } else {
-                    let entityId = this.game.buildingCreationManager.create(
-                        pos.x,
-                        unitY,
-                        pos.z,
-                        opponentPlacement.targetPosition,
-                        opponentPlacement.unitType,
-                        this.game.state.mySide == 'right' ? 'left' : 'right'
-                    );
-                    squadUnits.push({
-                        entityId: entityId,
-                        position: { x: pos.x, y: unitY, z: pos.z }
-                    });
                 }
+                squadUnits.push({
+                    entityId: entityId,
+                    position: { x: pos.x, y: unitY, z: pos.z }
+                });
+
+            
             });
             opponentPlacement.squadUnits = squadUnits;
         }
@@ -551,9 +540,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             if(success){
                 this.placeSquad(placement);
                 if(placement.collection == "buildings" && placement.unitType.id === 'goldMine'){
-                    const gridWidth = placement.unitType.placementGridWidth || 2;
-                    const gridHeight = placement.unitType.placementGridHeight || 2;
-                    this.game.goldMineSystem.buildGoldMine(state.mySide, gridPos, gridWidth, gridHeight);
                     this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
                 } else {
                     if(placement.collection == "buildings"){
@@ -581,7 +567,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const undoInfo = this.createUndoInfo(placement);
         
         // Batch unit creation for better performance
-        const createdUnits = this.createSquadUnits(unitPositions, placement.unitType, team, undoInfo);
+        const createdUnits = this.createSquadUnits(placement, unitPositions, team, undoInfo);
         squadUnits.push(...createdUnits);
         placement.squadUnits = squadUnits;
         placement.isSquad = squadUnits.length > 1;
@@ -615,7 +601,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     }
 
-    createSquadUnits(unitPositions, unitType, team, undoInfo) {
+    createSquadUnits(placement, unitPositions, team, undoInfo) {
         const createdUnits = [];
         
         // Limit unit creation for very large formations
@@ -625,22 +611,21 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         positions.forEach(pos => {
             const terrainHeight = this.game.terrainSystem?.getTerrainHeightAtPosition(pos.x, pos.z) || 0;
             const unitY = terrainHeight !== null ? terrainHeight : 0;
+        
+            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement.unitType, team);
+            createdUnits.push({
+                entityId: entityId,
+                position: { x: pos.x, y: unitY, z: pos.z }
+            });
+            undoInfo.unitIds.push(entityId);
             
-            if(unitType.collection == 'units'){
-                const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, unitType, team);
-                createdUnits.push({
-                    entityId: entityId,
-                    position: { x: pos.x, y: unitY, z: pos.z }
-                });
-                undoInfo.unitIds.push(entityId);
-            } else if(unitType.collection == "buildings"){
-                const entityId = this.game.buildingCreationManager.create(pos.x, unitY, pos.z, pos, unitType, team);
-                createdUnits.push({
-                    entityId: entityId,
-                    position: { x: pos.x, y: unitY, z: pos.z }
-                });
-                undoInfo.unitIds.push(entityId);
+            
+            if(placement.unitType.id == 'goldMine'){
+                const gridWidth = placement.unitType.placementGridWidth || 2;
+                const gridHeight = placement.unitType.placementGridHeight || 2;
+                this.game.goldMineSystem.buildGoldMine(entityId, team, placement.gridPosition, gridWidth, gridHeight);
             }
+
         });
         
         return createdUnits;

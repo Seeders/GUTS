@@ -18,13 +18,11 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     canExecute(entityId) {
-        
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
         
         if (!miningState) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-            
             
             this.game.addComponent(entityId, ComponentTypes.MINING_STATE, {
                 state: 'idle',
@@ -49,7 +47,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
         const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
         const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-
+        
         if (!miningState || !pos || !vel || !health || health.current <= 0) {
             return null;
         }
@@ -81,18 +79,21 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     findMineTarget(miningState) {
-        console.log('[MineGoldAbility] Finding mine for team:', miningState.team);
-        
         const goldMine = this.game.goldMineSystem?.claimedGoldMines.get(miningState.team);
         
         if (!goldMine) {
-            console.log('[MineGoldAbility] No gold mine found for player:', miningState.team);
             return;
         }
 
-        miningState.targetMine = goldMine.worldPosition;
+        miningState.targetMine = { x: goldMine.worldPosition.x, y: goldMine.worldPosition.y, z: goldMine.worldPosition.z };
         miningState.state = 'walking_to_mine';
-        console.log('[MineGoldAbility] Set target mine:', miningState.targetMine);
+        
+        const pos = this.game.getComponent(miningState.entityId, this.componentTypes.POSITION);
+        console.log('[MineGoldAbility] Starting walk to mine from:', 
+            { x: pos.x, z: pos.z }, 
+            'target:', miningState.targetMine, 
+            'time:', this.game.state.now
+        );
     }
 
     walkToMine(miningState, pos, vel) {
@@ -108,20 +109,31 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         const dz = miningState.targetMine.z - pos.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
 
+        // console.log('[MineGoldAbility] Walking:',
+        //     miningState.entityId,
+        //     'pos:', { x: Math.round(pos.x * 100) / 100, z: Math.round(pos.z * 100) / 100 },
+        //     'dist:', Math.round(dist * 100) / 100,
+        //     'vel:', { vx: Math.round(vel.vx * 100) / 100, vz: Math.round(vel.vz * 100) / 100 },
+        //     'mag:', Math.round(Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz) * 100) / 100,
+        //     'time:', this.game.state.now
+        // );
+
         if (dist < this.miningRange) {
             const ComponentTypes = this.game.componentManager.getComponentTypes();
             const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-            
+         
             if (aiState) {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;
             }
-            
+            pos.x = miningState.targetMine.x;
+            pos.z = miningState.targetMine.z;
+
             vel.vx = 0;
             vel.vz = 0;
             miningState.state = 'mining';
             miningState.miningStartTime = this.game.state.now;
-            console.log('[MineGoldAbility] Started mining');
+            console.log('[MineGoldAbility] Started mining', this.game.state.now);
         } else {
             const ComponentTypes = this.game.componentManager.getComponentTypes();
             const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
@@ -136,7 +148,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     mineGold(miningState) {
         const elapsed = this.game.state.now - miningState.miningStartTime;
         
-        if (elapsed > this.miningDuration) {
+        if (elapsed >= this.miningDuration) {
             miningState.hasGold = true;
             miningState.state = 'walking_to_hall';
             this.findTownHall(miningState);
@@ -146,9 +158,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
 
     findTownHall(miningState) {
         const CT = this.game.componentManager.getComponentTypes();
-        const combatUnits = this.game.getEntitiesWith(
-            CT.POSITION, CT.TEAM, CT.UNIT_TYPE
-        );
+        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);
+        
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
             const pos = this.game.getComponent(entityId, CT.POSITION);
@@ -156,7 +167,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             const team = this.game.getComponent(entityId, CT.TEAM);
             
             if(team.team == miningState.team && unitType.id == "townHall"){
-                miningState.targetTownHall = pos;
+                miningState.targetTownHall = { x: pos.x, y: pos.y, z: pos.z };
                 break;
             }
         } 
@@ -165,7 +176,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
 
     walkToTownHall(miningState, pos, vel) {
         if (!miningState.targetTownHall) {
-
             this.findTownHall(miningState);
             if (!miningState.targetTownHall) {
                 miningState.state = 'idle';
@@ -185,7 +195,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;
             }
-            
+            pos.x = miningState.targetTownHall.x;
+            pos.z = miningState.targetTownHall.z;
             vel.vx = 0;
             vel.vz = 0;
             miningState.state = 'depositing';
@@ -205,7 +216,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     depositGold(miningState) {
         const elapsed = this.game.state.now - miningState.depositStartTime;
         
-        if (elapsed > this.depositDuration) {
+        if (elapsed >= this.depositDuration) {
             this.awardGold(miningState.team);
             miningState.hasGold = false;
             miningState.state = 'idle';
@@ -214,7 +225,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     awardGold(team) {
-        console.log('awardGold', team);
+        console.log('awardGold', team, this.game.state.now);
         if (this.game.isServer) {
             const room = this.game.room;
             for (const [playerId, player] of room.players) {
@@ -230,8 +241,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             }
         }
     }
+    
     handleEndBattle() {
-        // Reset all mining states for next round
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const entities = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         
@@ -245,6 +256,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             }
         });
     }
+    
     logAbilityUsage(entityId) {
         // Passive ability, no logging needed
     }

@@ -79,10 +79,15 @@ class AbilitySystem extends engine.BaseSystem {
             }
         }
     }
-    updateAIAbilityUsage() {                
-        for (const [entityId, abilities] of this.entityAbilities.entries()) {
+    updateAIAbilityUsage() {
+        const sortedEntityIds = Array.from(this.entityAbilities.keys()).sort((a, b) => 
+            String(a).localeCompare(String(b))
+        );
+        
+        sortedEntityIds.forEach(entityId => {
+            const abilities = this.entityAbilities.get(entityId);
             this.considerAbilityUsage(entityId, abilities);
-        }
+        });
     }
     
     considerAbilityUsage(entityId, abilities) {

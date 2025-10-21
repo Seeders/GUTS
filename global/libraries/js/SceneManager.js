@@ -81,7 +81,10 @@ class SceneManager {
    
                 this.game.addSystem(systemInst, params);
                 
-            });                        
+            });   
+            this.game.systems.forEach((system) => {
+                system.postAllInit();                
+            });                      
         });
     }
 

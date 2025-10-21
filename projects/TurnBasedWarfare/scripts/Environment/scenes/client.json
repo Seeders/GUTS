@@ -18,8 +18,7 @@
         { "type": "ResultsManager" },
         { "type": "SaveManager" },
         { "type": "ScreenManager" },
-        { "type": "UnitCreationManager" },
-        { "type": "BuildingCreationManager" },        
+        { "type": "UnitCreationManager" },     
         { "type": "SquadManager" },         
         { "type": "MultiplayerNetworkManager" },    
         { "type": "InputManager" }
@@ -51,7 +50,8 @@
         { "type": "LifetimeSystem" },
         { "type": "MultiplayerUISystem" },    
         { "type": "SchedulingSystem" },    
-        { "type": "GoldMineSystem" }
+        { "type": "GoldMineSystem" },    
+        { "type": "FogOfWarSystem" }
       ],
       "classes": [
         {

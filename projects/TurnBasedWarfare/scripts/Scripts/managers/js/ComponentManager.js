@@ -12,6 +12,7 @@ class ComponentManager {
             Renderable: (objectType, spawnType) => ({ objectType, spawnType }),
             Collision: (radius = 1, height = 50) => ({ radius, height }),
             Health: (max = 100) => ({ max, current: max }),
+            Building: (type) => ( { type }),
             
             // Enhanced Combat component with elemental damage and defenses
             Combat: (
@@ -611,6 +612,7 @@ class ComponentManager {
             HEALTH: 'health',
             COMBAT: 'combat',
             COLLISION: 'collision',
+            BUILDING: 'building',
             
             // Projectile System
             PROJECTILE: 'projectile',

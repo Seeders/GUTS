@@ -267,9 +267,12 @@ class WorldSystem extends engine.BaseSystem {
         pixelPass.normalEdgeStrength = 0;
         this.composer.addPass(pixelPass);
         
-        const outputPass = new THREE_.OutputPass();
+    
+    }
+    
+    postAllInit() {
+            const outputPass = new THREE_.OutputPass();
         this.composer.addPass(outputPass);
-
     }
 
     setupCamera() {

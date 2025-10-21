@@ -3,7 +3,10 @@ class BaseSystem {
         this.game = game;
         this.componentTypes = this.game.componentManager.getComponentTypes();
     }
+    postAllInit() {
 
+    }
+    
     update(){
 
     }

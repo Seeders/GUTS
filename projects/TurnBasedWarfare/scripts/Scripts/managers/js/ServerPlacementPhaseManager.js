@@ -24,7 +24,6 @@ class ServerPlacementPhaseManager {
         // Subscribe to room management events
         this.game.serverEventManager.subscribe('GET_STARTING_STATE', this.handleGetStartingState.bind(this));
         this.game.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
-        this.game.serverEventManager.subscribe('PURCHASE_BUILDING', this.handlePurchaseBuilding.bind(this));
         this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
@@ -171,34 +170,6 @@ class ServerPlacementPhaseManager {
         }
     }
 
-    handlePurchaseBuilding(eventData) {
-        try {
-            const { playerId, data } = eventData;
-            
-  
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) { 
-                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_BUILDING', { 
-                    error: 'Room not found'
-                });
-                return;
-            }
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-            // Broadcast ready state update to all players in room
-            this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_BUILDING', this.purchaseBuilding(playerId, player, data.data, true));
-            
-        } catch (error) {
-            console.error('Error purchasing building:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'PURCHASED_BUILDING', { 
-                error: 'Server error while purchasing building',
-                playerId: eventData.playerId,
-                ready: false,
-                received: data
-            });
-        }
-    }
-
     handlePurchaseUpgrade(eventData) {
         try {
             const { playerId, data } = eventData;
@@ -317,13 +288,12 @@ class ServerPlacementPhaseManager {
             });
             this.placementReadyStates.clear();
             // Small delay to ensure clients receive the ready update
-            setTimeout(() => {
-                this.applyTargetPositions();
-                this.game.resetCurrentTime();
-                this.game.desyncDebugger.displaySync(true);
-                this.resetAI();
-                this.game.serverBattlePhaseSystem.startBattle(room);
-            }, 500);
+
+            this.game.resetCurrentTime();
+            this.applyTargetPositions();
+            this.game.desyncDebugger.displaySync(true);
+            this.resetAI();
+            this.game.serverBattlePhaseSystem.startBattle(room);
         } else {
             const gameState = room.getGameState();
             this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {                       
@@ -412,6 +382,7 @@ class ServerPlacementPhaseManager {
         }
         
         this.game.serverBattlePhaseSystem.spawnSquadFromPlacement(playerId, placement);
+
 
         return { success: true };
     }
@@ -589,38 +560,22 @@ class ServerPlacementPhaseManager {
         }
     }
 
-    purchaseBuilding(playerId, player, data) {
+    saveBuilding(entityId, team, gridPosition, unitType) {
         console.log(`=== Purchase Building DEBUG ===`);     
-        console.log(`Data received:`, data);
+        console.log(`Data received:`, entityId, team, unitType);
 
-        if (this.game.state.phase !== 'placement') {
-            return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
-        }
-
-        const building = this.game.getCollections().buildings[data.buildingId];
-        if(building?.value <= player.stats.gold){
+        if (unitType.id === 'goldMine') {
+            const gridWidth = unitType.placementGridWidth || 2;
+            const gridHeight = unitType.placementGridHeight || 2;
             
-            if (data.buildingId === 'goldMine') {
-                const gridPos = data.gridPos || data.gridPosition;
-                const gridWidth = building.placementGridWidth || 2;
-                const gridHeight = building.placementGridHeight || 2;
-                
-                const result = this.game.goldMineSystem.buildGoldMine(player.stats.side, gridPos, gridWidth, gridHeight);
-                if (!result.success) {
-                    return result;
-                }
+            const result = this.game.goldMineSystem.buildGoldMine(entityId, team, gridPosition, gridWidth, gridHeight);
+            if (!result.success) {
+                return result;
             }
-            
-            player.stats.gold -= building.value;
-            player.stats.buildings.push(data.buildingId); 
-            console.log(`SUCCESS`);
-            console.log(`================================`);
-            return { success: true };
-        }
-
-        console.log(`ERROR`);       
+        }            
+        console.log(`SUCCESS`);
         console.log(`================================`);
-        return { success: false, error: "Not enough gold." };
+        return { success: true };
     }
 
     purchaseUpgrade(playerId, player, data) {

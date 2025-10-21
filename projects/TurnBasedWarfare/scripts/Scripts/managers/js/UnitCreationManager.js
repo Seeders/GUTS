@@ -2,7 +2,7 @@ class UnitCreationManager {
     constructor(game) {
         this.game = game;
         this.game.unitCreationManager = this;
-        
+        this.SPEED_MODIFIER = 20;
         // Default component values for missing unit data
         this.defaults = {
             hp: 100,
@@ -70,7 +70,8 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, targetPosition, unitType, team) {
         try {
-            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}`);
+            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}_${this.game.state.round}`);
+            console.log('created unit', unitType.id, team, entity);
             const teamConfig = this.teamConfigs[team];
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
@@ -145,7 +146,9 @@ class UnitCreationManager {
                         teamComponent.playerId = playerId;
                     }
                 }
-
+                if(unitType.collection == 'buildings'){
+                    this.game.placementSystem.saveBuilding(entityId, team, gridPosition, unitType)
+                }
                 squadUnits.push({
                     entityId: entityId,
                     position: { x: pos.x, y: unitY, z: pos.z }
@@ -310,7 +313,7 @@ class UnitCreationManager {
             Components.Position(worldX, worldY, worldZ));
         
         // Velocity component with movement capabilities
-        const maxSpeed = (unitType.speed || this.defaults.speed) * 20;
+        const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         this.game.addComponent(entity, ComponentTypes.VELOCITY, 
             Components.Velocity(0, 0, 0, maxSpeed));
         
@@ -322,7 +325,7 @@ class UnitCreationManager {
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, 
             Components.UnitType(
                 unitType.id || 'unknown', 
-                "units",
+                unitType.collection,
                 unitType.title || 'Unknown Unit', 
                 unitType.value || this.defaults.value
             ));
@@ -401,7 +404,7 @@ class UnitCreationManager {
         
         // Renderable component for visual representation
         this.game.addComponent(entity, ComponentTypes.RENDERABLE, 
-            Components.Renderable("units", unitType.id || 'default'));
+            Components.Renderable(unitType.collection, unitType.id || 'default'));
         
         // Add team-specific visual modifications
         if (teamConfig.colorTint && this.game.addComponent) {

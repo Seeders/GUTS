@@ -166,7 +166,7 @@ class CombatAISystem extends engine.BaseSystem {
         
         if (!targetEnemy) {
             aiState.target = null;
-            console.log('set current target null 4');
+            //console.log('set current target null 4');
             return;
         }
         
@@ -281,7 +281,7 @@ class CombatAISystem extends engine.BaseSystem {
     handleCombat(entityId, pos, combat, aiState, collision) {
         const aiBehavior = aiState.aiBehavior;
         if (!aiState.target || aiState.state !== 'attacking'){
-            console.log('no target or not attacking', aiState);
+           // console.log('no target or not attacking', aiState);
             return;
         }
         

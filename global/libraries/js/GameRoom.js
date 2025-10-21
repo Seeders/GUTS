@@ -26,8 +26,6 @@ class GameRoom {
             latency: 0
         });
 
-        // Spawn player entity in game
-        this.spawnPlayerEntity(playerId);
 
         if (this.players.size === this.maxPlayers) {
             this.startGame();
@@ -39,7 +37,6 @@ class GameRoom {
     removePlayer(playerId) {
         if (this.players.has(playerId)) {
             // Remove player entity from game
-            this.despawnPlayerEntity(playerId);
             this.players.delete(playerId);
             
             if (this.players.size === 0) {
@@ -52,38 +49,7 @@ class GameRoom {
         return this.players.get(playerId);
     }
 
-    spawnPlayerEntity(playerId) {
-        // Create player entity in ECS
-        const entityId = this.game.createEntity();
-        
-        // Add components for player
-        this.game.addComponent(entityId, 'Transform', {
-            x: 100 + (this.players.size * 50),
-            y: 100,
-            rotation: 0
-        });
-        
-        this.game.addComponent(entityId, 'Player', {
-            playerId: playerId,
-            health: 100,
-            score: 0
-        });
-        
-        this.game.addComponent(entityId, 'NetworkSync', {
-            playerId: playerId,
-            lastUpdate: Date.now()
-        });
 
-        // Store entity reference
-        this.players.get(playerId).entityId = entityId;
-    }
-
-    despawnPlayerEntity(playerId) {
-        const player = this.players.get(playerId);
-        if (player && player.entityId) {
-            this.game.destroyEntity(player.entityId);
-        }
-    }
 
     startGame() {
         this.isActive = true;

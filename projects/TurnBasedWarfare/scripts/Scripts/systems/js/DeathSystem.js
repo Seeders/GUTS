@@ -10,7 +10,8 @@ class DeathSystem extends engine.BaseSystem {
         const dyingEntities = this.game.getEntitiesWith(this.componentTypes.DEATH_STATE);
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
-            
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        
             if (deathState.isDying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
                 
@@ -32,10 +33,29 @@ class DeathSystem extends engine.BaseSystem {
                 
                 if (animationCompleted || timerExpired) {
                     console.log(entityId, "DIED");
-                    this.convertToCorpse(entityId);
+                    if(unitType && unitType.collection == "buildings"){
+                        this.destroyBuilding(entityId, unitType);
+                    } else {
+                        this.convertToCorpse(entityId);
+                    }
                 }
             }
         });
+    }
+
+
+
+    destroyBuilding(entityId, unitType) {
+        console.log(`=== Destroy Building DEBUG ===`);     
+        console.log(`Data received:`, entityId, unitType);        
+
+        if (unitType.id === 'goldMine') {
+            const result = this.game.goldMineSystem.destroyGoldMine(entityId);
+            if (!result.success) {
+                return result;
+            }
+        }   
+        return { success: true };
     }
     
     // NEW: Check if death animation is completed via AnimationSystem
