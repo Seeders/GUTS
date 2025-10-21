@@ -16,7 +16,7 @@ class MultiplayerPhaseSystem {
             roundTransitionDelay: 500,
             notificationDisplayTime: 5000,
             baseGoldPerRound: 25,
-            startingGold: 100,
+            startingGold: this.game.state.startingGold,
             hintDisplayDelay: 3000,
             maxSquadsPerRound: 2
         };

@@ -105,19 +105,25 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
          this.game.networkManager.getStartingState((success, response) => {
             if(success){
                 const buildingTypes = this.game.getCollections().buildings;
-                response.buildings.forEach((buildingDef) => {
-                    const buildingId = buildingDef.type;
-                    const buildingPos = buildingDef.position;
-                    const building = buildingTypes[buildingId];
-                    const placementData = { id: buildingId, collection: 'buildings', ...building };       
-                    const placement = this.createPlacementData(buildingPos, placementData, this.game.state.mySide);
-    
-                    this.game.networkManager.submitPlacement(placement, (success, response) => {
-                        if(success){
-                            this.placeSquad(placement);
-                            this.game.shopSystem.addBuilding(buildingId, building);
-                        }
-                    });                      
+                const unitTypes = this.game.getCollections().buildings;
+                response.startingUnits.forEach((unitData) => {
+                    const unitId = unitData.type;
+                    const unitPos = unitData.position;
+                    const collection = this.game.getCollections()[unitData.collection];
+                    if(collection){
+                        const unitDef = collection[unitId];
+                        const placementData = { id: unitId, collection: unitData.collection, ...unitDef };       
+                        const placement = this.createPlacementData(unitPos, placementData, this.game.state.mySide);
+                        placement.isStartingState = true;
+                        this.game.networkManager.submitPlacement(placement, (success, response) => {
+                            if(success){
+                                this.placeSquad(placement);
+                                if(unitData.collection == "buildings"){
+                                    this.game.shopSystem.addBuilding(unitId, unitDef);
+                                }
+                            }
+                        });            
+                    }          
                 });
             }
         });   
@@ -650,7 +656,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const squadData = this.game.squadManager.getSquadData(unitType);
         const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
         
-        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}`;
+        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}_${this.game.state.round}`;
         return {
             placementId: placementId,
             gridPosition: gridPos,
@@ -669,8 +675,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.isMyTeam(team)) {
         
             this.addToUndoStack(undoInfo);
-            this.game.state.playerGold -= (placement.unitType.value || 0);
-            this.game.state.squadsPlacedThisRound = (this.game.state.squadsPlacedThisRound || 0) + 1;
+            if(!placement.isStartingState){
+                this.game.state.playerGold -= (placement.unitType.value || 0);
+                this.game.state.squadsPlacedThisRound = (this.game.state.squadsPlacedThisRound || 0) + 1;
+            }
             this.playerPlacements.push(placement);
         } else {
             this.opponentPlacements.push(placement);

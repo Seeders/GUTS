@@ -360,7 +360,7 @@ class ServerPlacementPhaseManager {
 
 
         // Deduct gold only for new units
-        if (placement.unitType?.value > 0) {
+        if (placement.unitType?.value > 0 && !placement.isStartingState) {
             player.stats.gold -= placement.unitType?.value;
         }            
         
@@ -373,8 +373,9 @@ class ServerPlacementPhaseManager {
             playerPlacements = [placement];
         }
         this.playerPlacements.set(playerId, playerPlacements);
-        player.stats.squadsPlacedThisRound++;
-        
+        if(!placement.isStartingState){
+            player.stats.squadsPlacedThisRound++;
+        }
         if(player.stats.side == 'left'){
             this.leftPlacements = this.playerPlacements.get(playerId);
         } else {
@@ -607,15 +608,48 @@ class ServerPlacementPhaseManager {
         if(player.stats.side == 'right'){
             startPosition = { x: 29, z: 15 };
         }
-        player.stats.buildings = [
+        const startingUnits = [
             {
                 type: "townHall",
+                collection: "buildings",
                 position: startPosition
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: {
+                    x: startPosition.x - 1,
+                    z: startPosition.z + 2
+                }
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: {
+                    x: startPosition.x,
+                    z: startPosition.z + 2
+                }
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: {
+                    x: startPosition.x + 1,
+                    z: startPosition.z + 2
+                }
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: {
+                    x: startPosition.x + 2,
+                    z: startPosition.z + 2
+                }
             }
         ];
         return {
             success: true, 
-            buildings: player.stats.buildings
+            startingUnits: startingUnits
         }
     }
 }

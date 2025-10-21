@@ -194,7 +194,9 @@ class ShopSystem extends engine.BaseSystem {
         const UnitTypes = this.game.getCollections().units;
         building.units.forEach(unitId => {
             const unit = UnitTypes[unitId];
-            const locked = this.game.state.playerGold <= unit.value;
+
+            const locked = this.game.state.playerGold < unit.value;
+            console.log('locked:', locked, unit.value, this.game.state.playerGold);
             const btn = this.createActionButton({
                 icon: unit.icon || '⚔️',
                 title: unit.title,
