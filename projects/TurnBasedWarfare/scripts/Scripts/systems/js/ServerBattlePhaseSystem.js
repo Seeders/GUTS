@@ -47,7 +47,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             if (!placementManager) {
                 throw new Error('Placement phase manager not available');
             }
-            let success = true;
             let createdSquad = null;
       
             // Create squads using unit creation manager
@@ -59,7 +58,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
             if(!createdSquad){
                 console.log("Failed to create squads");
-                success = false;
+                return { success: false };
             } else {
                 // Store created squads for tracking
                 let playerSquads = this.createdSquads.get(playerId);
@@ -69,8 +68,8 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                     playerSquads = [createdSquad];                    
                 }
                 this.createdSquads.set(playerId, playerSquads);
+                return { success: true, squad: createdSquad };
             }
-            return { success: success };
             
         } catch (error) {
             console.error('Error spawning units from placements:', error);
@@ -199,7 +198,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             survivingUnits: this.getSurvivingUnits(),
             playerStats: playerStats
         };
-        console.log('playerStats', playerStats);
         
         let winningUnits = battleResult.survivingUnits[winner]; 
         let winningSide = battleResult.playerStats[winner]?.stats.side || null;

@@ -321,14 +321,15 @@ class ServerPlacementPhaseManager {
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach(placement => {
                 const targetPosition = placement.targetPosition;
-                console.log('placement targetPosition', placement.placementId, placement.targetPosition);
                 if (!targetPosition) return;
-                
-                if (placement.experience && placement.experience.unitIds.length > 0) {
-                    placement.experience.unitIds.forEach(entityId => {                        
+                console.log(placement);
+                if (placement.squadUnits.length > 0) {
+                    placement.squadUnits.forEach(entityId => {                        
                         const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                         if (aiState) {
-                            aiState.targetPosition = { ...targetPosition };                            
+                            aiState.targetPosition = { ...targetPosition };            
+                           
+                console.log('aiState targetPosition', entityId, aiState.targetPosition);
                         }
                     });
                 }
@@ -382,10 +383,27 @@ class ServerPlacementPhaseManager {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
         
-        this.game.serverBattlePhaseSystem.spawnSquadFromPlacement(playerId, placement);
+        const result = this.game.serverBattlePhaseSystem.spawnSquadFromPlacement(playerId, placement);
+
+        if(result.success && result.squad){
+            let squadUnits = [];
+            result.squad.squadUnits.forEach((unit) => {
+                squadUnits.push(unit.entityId);
+            })
+            placement.squadUnits = squadUnits;
+
+            if (this.game.squadExperienceSystem && placement.placementId) {
+                this.game.squadExperienceSystem.initializeSquad(
+                    placement.placementId, 
+                    placement.unitType,
+                    placement.squadUnits, 
+                    placement.team
+                );
+            }
+        }
 
 
-        return { success: true };
+        return { success: result.success };
     }
 
     removeDeadSquadsAfterRound() {

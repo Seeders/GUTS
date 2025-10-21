@@ -133,7 +133,7 @@ class MovementSystem extends engine.BaseSystem {
             
             if (!projectile && unitData.has(entityId)) {
                 let entityData = unitData.get(entityId);
-                if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vy != 0){
+                if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vz != 0){
                     this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
                 }
             }
@@ -146,7 +146,7 @@ class MovementSystem extends engine.BaseSystem {
             pos.x += vel.vx * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-        
+
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
                 this.enforceBoundaries(pos, collision);
@@ -594,6 +594,7 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
+
             return;
         }
         
@@ -602,6 +603,7 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
+
             return;
         }
         
@@ -625,19 +627,23 @@ class MovementSystem extends engine.BaseSystem {
                 data.desiredVelocity.vx = (dx / horizontalDistance) * moveSpeed;
                 data.desiredVelocity.vz = (dz / horizontalDistance) * moveSpeed;
                 data.desiredVelocity.vy = 0;
+
             } else {
                 data.desiredVelocity.vx = 0;
                 data.desiredVelocity.vz = 0;
                 data.desiredVelocity.vy = 0;
+
             }
         } else if (aiState.state === 'attacking') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
+
         } else {
             data.desiredVelocity.vx = 0;//vel.vx;
             data.desiredVelocity.vy = 0;//vel.vy;
             data.desiredVelocity.vz = 0;//vel.vz;
+
         }
     }
     
