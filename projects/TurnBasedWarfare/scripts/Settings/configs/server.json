@@ -18,6 +18,7 @@
     "ServerNetworkManager",
     "ServerSceneManager",
     "SeededRandom",
+    "MinHeap",
     "DesyncDebugger"
   ]
 }

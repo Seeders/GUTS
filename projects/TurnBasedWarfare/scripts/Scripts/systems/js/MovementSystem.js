@@ -4,59 +4,54 @@ class MovementSystem extends engine.BaseSystem {
         this.game.movementSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Configuration variables
         this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         
-        // AI movement configuration
         this.AI_SPEED_MULTIPLIER = 0.1;
         this.DEFAULT_AI_SPEED = 50;
         this.POSITION_UPDATE_MULTIPLIER = 1;
         this.DEFAULT_TERRAIN_SIZE = 768 * 2;
         
-        // Physics configuration
         this.GRAVITY = 200;
         this.GROUND_LEVEL = 0;
         this.GROUND_IMPACT_THRESHOLD = 5;
         this.TERRAIN_FOLLOW_SPEED = 8;
         
-        // Unit separation configuration
-        this.SEPARATION_FORCE = 80; // Reduced from 100
-        this.SEPARATION_RADIUS_MULTIPLIER = 2.5;
+        this.SEPARATION_FORCE = 80;
+        this.SEPARATION_RADIUS_MULTIPLIER = 0.1;
         this.MAX_SEPARATION_CHECKS = 8;
-        this.AVOIDANCE_SMOOTHING = 0.15; // Increased from 1 for much smoother transitions
+        this.AVOIDANCE_SMOOTHING = 0.15;
         
-        // Pathfinding configuration (optimized)
         this.PATHFINDING_LOOKAHEAD = 100;
-        this.OBSTACLE_AVOIDANCE_FORCE = 120; // Reduced from 150
+        this.OBSTACLE_AVOIDANCE_FORCE = 70;
         this.AVOIDANCE_ANGLE = Math.PI / 3;
         this.STUCK_THRESHOLD = 5;
         this.STUCK_TIME_LIMIT = 2000;
         this.REPATH_DISTANCE = 50;
         
-        // Performance optimizations
+        this.PATH_WAYPOINT_DISTANCE = 50;
+        this.PATH_REACHED_DISTANCE = 24;
+        this.PATH_REREQUEST_INTERVAL = 0.5;
+        
         this.SPATIAL_GRID_SIZE = 80;
         this.MAX_PATHFINDING_CHECKS = 6;
         this.PATHFINDING_CHECK_POINTS = 3;
         this.PATHFINDING_UPDATE_INTERVAL = 3;
         this.NEAR_UNIT_RADIUS = 150;
         
-        // Movement smoothing configuration
-        this.VELOCITY_SMOOTHING = 0.12; // How quickly velocity changes
-        this.DIRECTION_SMOOTHING = 0.08; // How quickly direction changes
-        this.FORCE_DAMPING = 0.85; // Dampen forces over time
-        this.MIN_DIRECTION_CHANGE = 0.1; // Minimum angle change to apply
-        this.OSCILLATION_DETECTION_FRAMES = 5; // Frames to track for oscillation
-        this.OSCILLATION_THRESHOLD = Math.PI / 6; // 30 degrees
+        this.VELOCITY_SMOOTHING = 0.9;
+        this.DIRECTION_SMOOTHING = 0.9;
+        this.FORCE_DAMPING = 0.85;
+        this.MIN_DIRECTION_CHANGE = 0.1;
+        this.OSCILLATION_DETECTION_FRAMES = 5;
+        this.OSCILLATION_THRESHOLD = Math.PI / 6;
         
-        // Track unit states and spatial optimization
         this.unitStates = new Map();
         this.spatialGrid = new Map();
         this.frameCounter = 0;
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
         
-        // Movement history for smoothing
         this.movementHistory = new Map();
     }
     
@@ -64,16 +59,12 @@ class MovementSystem extends engine.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
-        // Entities are already sorted by game.getEntitiesWith()
         const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
         
-        // Build spatial grid for fast neighbor lookups
         this.buildSpatialGrid(entities);
         
-        // First pass: calculate desired velocities and separation forces
         const unitData = new Map();
         
-        // No need to sort again - entities are already sorted from getEntitiesWith()
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
@@ -82,7 +73,6 @@ class MovementSystem extends engine.BaseSystem {
             const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             
-            // Store unit data for calculations
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
@@ -106,23 +96,18 @@ class MovementSystem extends engine.BaseSystem {
             }
         });
         
-        // unitData.keys() preserves insertion order, which is already sorted since entities were sorted
         const sortedEntityIds = Array.from(unitData.keys());
 
-        // Calculate desired velocities for all units
         sortedEntityIds.forEach((entityId) => {
             this.calculateDesiredVelocity(entityId, unitData.get(entityId));
         });
         
-        // Calculate separation forces (with spatial optimization)
         sortedEntityIds.forEach((entityId) => {
             this.calculateSeparationForceOptimized(entityId, unitData.get(entityId));
         });
         
-        // Staggered pathfinding updates - only update subset each frame
         this.updatePathfindingStaggered(unitData);
         
-        // Apply movement to all entities - entities already sorted
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
@@ -142,7 +127,6 @@ class MovementSystem extends engine.BaseSystem {
                 vel.vy -= this.GRAVITY * this.game.state.deltaTime;
             }
             
-            // Update position
             pos.x += vel.vx * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
@@ -154,7 +138,6 @@ class MovementSystem extends engine.BaseSystem {
         });
     }
     
-    // Track movement history for oscillation detection
     updateMovementHistory(entityId, vel) {
         if (!this.movementHistory.has(entityId)) {
             this.movementHistory.set(entityId, {
@@ -166,20 +149,17 @@ class MovementSystem extends engine.BaseSystem {
         
         const history = this.movementHistory.get(entityId);
         
-        // Store velocity history
         history.velocityHistory.push({ 
             vx: vel.vx, 
             vz: vel.vz, 
             frame: this.frameCounter 
         });
         
-        // Keep only recent history
         if (history.velocityHistory.length > this.OSCILLATION_DETECTION_FRAMES) {
             history.velocityHistory.shift();
         }
     }
     
-    // Detect if unit is oscillating
     isUnitOscillating(entityId) {
         const history = this.movementHistory.get(entityId);
         if (!history || history.velocityHistory.length < this.OSCILLATION_DETECTION_FRAMES) {
@@ -205,10 +185,9 @@ class MovementSystem extends engine.BaseSystem {
             lastDirection = direction;
         }
         
-        return directionChanges >= 2; // Multiple direction changes indicate oscillation
+        return directionChanges >= 2;
     }
     
-    // Build spatial grid for fast neighbor lookups (deterministic)
     buildSpatialGrid(entities) {
         this.spatialGrid.clear();
         
@@ -228,20 +207,17 @@ class MovementSystem extends engine.BaseSystem {
             }
         });
         
-        // Sort each grid cell for deterministic neighbor lookups
         for (const [gridKey, entityList] of this.spatialGrid.entries()) {
             entityList.sort((a, b) => String(a).localeCompare(String(b)));
         }
     }
     
-    // Get nearby units using spatial grid (deterministic)
     getNearbyUnits(pos, radius) {
         const nearbyUnits = [];
         const gridRadius = Math.ceil(Math.round(radius * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
         const centerGridX = Math.floor(Math.round(pos.x * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
         const centerGridZ = Math.floor(Math.round(pos.z * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
         
-        // Process grid cells in deterministic order
         const gridCells = [];
         for (let gridX = centerGridX - gridRadius; gridX <= centerGridX + gridRadius; gridX++) {
             for (let gridZ = centerGridZ - gridRadius; gridZ <= centerGridZ + gridRadius; gridZ++) {
@@ -249,7 +225,6 @@ class MovementSystem extends engine.BaseSystem {
             }
         }
         
-        // Sort grid keys for deterministic processing
         gridCells.sort();
         
         for (const gridKey of gridCells) {
@@ -262,9 +237,7 @@ class MovementSystem extends engine.BaseSystem {
         return nearbyUnits.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
-    // Staggered pathfinding updates (deterministic)
     updatePathfindingStaggered(unitData) {
-        // Build queue of units that need pathfinding on first frame (deterministic)
         if (this.pathfindingQueue.length === 0) {
             const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
             sortedEntityIds.forEach(entityId => {
@@ -275,7 +248,6 @@ class MovementSystem extends engine.BaseSystem {
             });
         }
         
-        // Update pathfinding for a subset of units each frame
         const unitsPerFrame = Math.max(1, Math.ceil(this.pathfindingQueue.length / this.PATHFINDING_UPDATE_INTERVAL));
         
         for (let i = 0; i < unitsPerFrame && this.pathfindingQueueIndex < this.pathfindingQueue.length; i++) {
@@ -286,7 +258,6 @@ class MovementSystem extends engine.BaseSystem {
             this.pathfindingQueueIndex++;
         }
         
-        // Reset queue when we've processed all units
         if (this.pathfindingQueueIndex >= this.pathfindingQueue.length) {
             this.pathfindingQueueIndex = 0;
             this.pathfindingQueue = [];
@@ -328,7 +299,6 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    // Use spatial grid for separation with damping
     calculateSeparationForceOptimized(entityId, data) {
         const { pos, unitRadius, isAnchored } = data;
 
@@ -380,14 +350,12 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         if (neighborCount > 0) {
-            // Apply damping to previous forces
             const history = this.movementHistory.get(entityId);
             if (history) {
                 const dampedSeparation = history.dampedForces.separation;
                 dampedSeparation.x *= this.FORCE_DAMPING;
                 dampedSeparation.z *= this.FORCE_DAMPING;
                 
-                // Blend new forces with damped old forces
                 separationForceX = (separationForceX / neighborCount) * 0.7 + dampedSeparation.x * 0.3;
                 separationForceZ = (separationForceZ / neighborCount) * 0.7 + dampedSeparation.z * 0.3;
                 
@@ -397,34 +365,33 @@ class MovementSystem extends engine.BaseSystem {
                 separationForceX /= neighborCount;
                 separationForceZ /= neighborCount;
             }
-            
-            data.separationForce.x = separationForceX;
-            data.separationForce.z = separationForceZ;
-        } else {
-            data.separationForce.x = 0;
-            data.separationForce.z = 0;
         }
-        data.separationForce.y = 0;
+        
+        data.separationForce.x = separationForceX;
+        data.separationForce.z = separationForceZ;
     }
     
-    // Faster pathfinding with limited checks and damping
     calculatePathfindingAvoidanceOptimized(entityId, data, allUnitData) {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
-        
-        if (isAnchored) {
+
+        if (isAnchored || !aiState || aiState.state !== 'chasing') {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
             return;
         }
         
-        if (!aiState || aiState.state !== 'chasing' || !aiState.aiBehavior?.targetPosition) {
-            data.avoidanceForce.x = 0;
-            data.avoidanceForce.z = 0;
-            return;
-        }
-        
-        const targetPos = aiState.targetPosition;
+        let targetPos = aiState.targetPosition;
         const targetEntityId = aiState.target;
+
+        if(targetEntityId){
+            targetPos = this.game.getComponent(targetEntityId, this.componentTypes.POSITION);
+        }
+        
+        if (!targetPos) {
+            data.avoidanceForce.x = 0;
+            data.avoidanceForce.z = 0;
+            return;
+        }
         
         const desiredDirection = {
             x: targetPos.x - pos.x,
@@ -442,7 +409,6 @@ class MovementSystem extends engine.BaseSystem {
         desiredDirection.x /= desiredDistance;
         desiredDirection.z /= desiredDistance;
         
-        // Use spatial grid for faster obstacle detection
         const obstacleInfo = this.findObstaclesInPathOptimized(pos, desiredDirection, unitRadius, entityId, targetEntityId);
         
         if (obstacleInfo.hasObstacle) {
@@ -451,14 +417,12 @@ class MovementSystem extends engine.BaseSystem {
                 pos, desiredDirection, obstacleInfo, unitState, unitRadius
             );
             
-            // Apply damping to avoidance forces
             const history = this.movementHistory.get(entityId);
             if (history) {
                 const dampedAvoidance = history.dampedForces.avoidance;
                 dampedAvoidance.x *= this.FORCE_DAMPING;
                 dampedAvoidance.z *= this.FORCE_DAMPING;
                 
-                // Blend new forces with damped old forces
                 const blendedX = avoidanceForce.x * 0.6 + dampedAvoidance.x * 0.4;
                 const blendedZ = avoidanceForce.z * 0.6 + dampedAvoidance.z * 0.4;
                 
@@ -477,19 +441,16 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    // Use spatial grid for pathfinding
     findObstaclesInPathOptimized(pos, direction, unitRadius, entityId, targetEntityId = null) {
         const lookaheadDistance = this.PATHFINDING_LOOKAHEAD;
         const checkRadius = unitRadius * 1.5;
         
-        // Get units within lookahead range using spatial grid
         const nearbyUnits = this.getNearbyUnits(pos, lookaheadDistance + checkRadius);
         
         let closestObstacle = null;
         let closestDistance = Infinity;
         let checksPerformed = 0;
         
-        // Reduced check points for better performance
         for (let i = 1; i <= this.PATHFINDING_CHECK_POINTS; i++) {
             const checkDistance = (lookaheadDistance / this.PATHFINDING_CHECK_POINTS) * i;
             const checkPos = {
@@ -594,60 +555,101 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
-
             return;
         }
         
-        // Don't move if waiting for cooldowns
         if (aiState.state === 'waiting' || aiState.state === 'idle') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
-
             return;
         }
         
         if (aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
-
-            let targetPos = aiState.targetPosition;
-
-            if(aiState.target){                
-                targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
-            }
-
-            const dx = targetPos.x - pos.x;
-            const dz = targetPos.z - pos.z;
+            this.requestPathIfNeeded(entityId, data);
             
-            const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-            
-            const STOPPING_DISTANCE = 5;
-            
-            if (horizontalDistance > STOPPING_DISTANCE) {
-                const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
-                data.desiredVelocity.vx = (dx / horizontalDistance) * moveSpeed;
-                data.desiredVelocity.vz = (dz / horizontalDistance) * moveSpeed;
-                data.desiredVelocity.vy = 0;
-
+            if (aiState.path && aiState.path.length > 0) {
+                this.followPath(entityId, data);
             } else {
                 data.desiredVelocity.vx = 0;
-                data.desiredVelocity.vz = 0;
                 data.desiredVelocity.vy = 0;
-
+                data.desiredVelocity.vz = 0;
             }
         } else if (aiState.state === 'attacking') {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
-
         } else {
-            data.desiredVelocity.vx = 0;//vel.vx;
-            data.desiredVelocity.vy = 0;//vel.vy;
-            data.desiredVelocity.vz = 0;//vel.vz;
-
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vy = 0;
+            data.desiredVelocity.vz = 0;
         }
     }
     
-    // Enhanced movement application with multiple smoothing techniques
+    requestPathIfNeeded(entityId, data) {
+        const { pos, aiState } = data;
+        const now = this.game.state.now;
+        if(!aiState.aiBehavior){
+            aiState.aiBehavior = {};
+        }
+        if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
+            aiState.aiBehavior.lastPathRequest = now;
+            
+            let targetPos = aiState.targetPosition;
+            if (aiState.target) {
+                targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+            }
+            
+            if ((!aiState.path || aiState.path.length == 0) && targetPos) {
+                aiState.path = this.game.pathfindingSystem.requestPath(
+                    entityId,
+                    pos.x,
+                    pos.z,
+                    targetPos.x,
+                    targetPos.z,
+                    1
+                );
+            } 
+        }
+    }
+    
+    followPath(entityId, data) {
+        const { pos, vel, aiState } = data;
+        
+        if (aiState.pathIndex === undefined) {
+            aiState.pathIndex = 0;
+        }
+        
+        if (aiState.pathIndex >= aiState.path.length) {
+            aiState.path = null;
+            aiState.pathIndex = 0;
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vz = 0;
+            data.desiredVelocity.vy = 0;
+            return;
+        }
+        
+        const waypoint = aiState.path[aiState.pathIndex];
+        const dx = waypoint.x - pos.x;
+        const dz = waypoint.z - pos.z;
+        const distToWaypoint = Math.sqrt(dx * dx + dz * dz);
+        
+        if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
+            aiState.pathIndex++;
+            
+            if (aiState.pathIndex >= aiState.path.length) {
+                aiState.path = null;
+                aiState.pathIndex = 0;
+            }
+            return;
+        }
+        
+        const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+        data.desiredVelocity.vx = (dx / distToWaypoint) * moveSpeed;
+        data.desiredVelocity.vz = (dz / distToWaypoint) * moveSpeed;
+        data.desiredVelocity.vy = 0;
+    }
+    
     applyUnitMovementWithSmoothing(entityId, data) {
         const { vel, desiredVelocity, separationForce, avoidanceForce, isAnchored } = data;
 
@@ -661,38 +663,30 @@ class MovementSystem extends engine.BaseSystem {
         const history = this.movementHistory.get(entityId);
         const isOscillating = this.isUnitOscillating(entityId);
         
-        // Calculate target velocity
         let targetVx = desiredVelocity.vx + separationForce.x + avoidanceForce.x;
         let targetVz = desiredVelocity.vz + separationForce.z + avoidanceForce.z;
         
-        // If oscillating, prioritize the desired velocity and reduce other forces
         if (isOscillating) {
             targetVx = desiredVelocity.vx + (separationForce.x + avoidanceForce.x) * 0.3;
             targetVz = desiredVelocity.vz + (separationForce.z + avoidanceForce.z) * 0.3;
         }
         
-        // Apply different smoothing based on oscillation state
         const velocitySmoothing = isOscillating ? this.VELOCITY_SMOOTHING * 0.5 : this.VELOCITY_SMOOTHING;
         const directionSmoothing = isOscillating ? this.DIRECTION_SMOOTHING * 0.3 : this.DIRECTION_SMOOTHING;
         
-        // Smooth velocity changes
         const newVx = this.lerp(vel.vx, targetVx, velocitySmoothing);
         const newVz = this.lerp(vel.vz, targetVz, velocitySmoothing);
         
-        // Apply direction smoothing for more gradual turns
         if (history && history.smoothedDirection) {
             const targetDirection = Math.atan2(targetVz, targetVx);
             
-            // Get current direction from FACING component if velocity is negligible
             let currentDirection;
             const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
             
             if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
-                // Use facing component for direction when not moving
                 const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
                 currentDirection = facing ? facing.angle : 0;
             } else {
-                // Use velocity direction when moving
                 currentDirection = Math.atan2(vel.vz, vel.vx);
             }
             
@@ -700,7 +694,6 @@ class MovementSystem extends engine.BaseSystem {
             if (directionDiff > Math.PI) directionDiff -= 2 * Math.PI;
             if (directionDiff < -Math.PI) directionDiff += 2 * Math.PI;
             
-            // Only apply direction change if it's significant enough
             if (Math.abs(directionDiff) > this.MIN_DIRECTION_CHANGE) {
                 const smoothedDirection = currentDirection + directionDiff * directionSmoothing;
                 const speed = Math.sqrt(newVx * newVx + newVz * newVz);
@@ -709,7 +702,6 @@ class MovementSystem extends engine.BaseSystem {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
                     
-                    // Update the facing component to match the new direction
                     const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
                     if (facing) {
                         facing.angle = smoothedDirection;
@@ -729,14 +721,12 @@ class MovementSystem extends engine.BaseSystem {
         
         vel.vy = desiredVelocity.vy;
         
-        // Apply minimum movement threshold
         const speedSqrd = vel.vx * vel.vx + vel.vz * vel.vz;
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
             vel.vx = 0;
             vel.vz = 0;
         }
         
-        // Enforce max speed
         const maxSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED) * 1.4;
         const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
         if (currentSpeed > maxSpeed) {
@@ -808,20 +798,26 @@ class MovementSystem extends engine.BaseSystem {
         }
         return this.DEFAULT_UNIT_RADIUS;
     }
+    
     entityDestroyed(entityId) {
-        // Clear from spatial grid
         if (this.spatialGrid) {
             this.spatialGrid.delete(entityId);
         }
         
-        // Clear unit states
         if (this.unitStates) {
             this.unitStates.delete(entityId);
         }
         
-        // Clear any movement tracking
         if (this.movementTracking) {
             this.movementTracking.delete(entityId);
         }
+        
+        if (this.movementHistory) {
+            this.movementHistory.delete(entityId);
+        }
+    }
+
+    ping() {
+        console.log('pong');
     }
 }

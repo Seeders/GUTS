@@ -51,6 +51,7 @@
         { "type": "MultiplayerUISystem" },    
         { "type": "SchedulingSystem" },    
         { "type": "GoldMineSystem" },    
+        { "type": "PathfindingSystem" },    
         { "type": "FogOfWarSystem" }
       ],
       "classes": [

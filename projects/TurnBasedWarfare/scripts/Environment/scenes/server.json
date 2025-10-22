@@ -28,6 +28,7 @@
         { "type": "LifetimeSystem" },
         { "type": "GridSystem" },
         { "type": "SchedulingSystem" },    
+        { "type": "PathfindingSystem" }, 
         { "type": "GoldMineSystem" }
       ],
       "classes": [

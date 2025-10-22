@@ -39,7 +39,8 @@
     "BaseSystem",
     "SeededRandom",
     "DesyncDebugger",
-    "FantasyUIEnhancements"
+    "FantasyUIEnhancements",
+    "MinHeap"
   ],
   "fileName": "game",
   "interface": "main",

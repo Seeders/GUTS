@@ -83,7 +83,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const pos = this.game.getComponent(miningState.entityId, ComponentTypes.POSITION);
-        
+        const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+         
         if (!pos) return;
         
         // Search through all claimed gold mines
@@ -114,6 +115,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             z: closestMine.worldPosition.z 
         };
         miningState.state = 'walking_to_mine';
+        aiState.targetPosition = miningState.targetMine;
     }
 
     walkToMine(miningState, pos, vel) {
@@ -161,13 +163,15 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         if (elapsed >= this.miningDuration) {
             miningState.hasGold = true;
             miningState.state = 'walking_to_hall';
-            this.findTownHall(miningState);
+            this.findTownHall(miningState);  
+         
         }
     }
 
     findTownHall(miningState) {
         const CT = this.game.componentManager.getComponentTypes();
-        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);
+        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);        
+        const aiState = this.game.getComponent(miningState.entityId, CT.AI_STATE);
         
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
@@ -177,6 +181,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             
             if(team.team == miningState.team && unitType.id == "townHall"){
                 miningState.targetTownHall = { x: pos.x, y: pos.y, z: pos.z };
+                aiState.targetPosition = miningState.targetTownHall;
                 break;
             }
         } 
@@ -226,7 +231,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         if (elapsed >= this.depositDuration) {
             this.awardGold(miningState.team);
             miningState.hasGold = false;
-            miningState.state = 'idle';
+            this.findMineTarget(miningState);
+         
         }
     }
 
