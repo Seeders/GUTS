@@ -134,26 +134,42 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
 
-
     findTownHall(miningState) {
         const CT = this.game.componentManager.getComponentTypes();
         const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);        
         const aiState = this.game.getComponent(miningState.entityId, CT.AI_STATE);
+        const pos = this.game.getComponent(miningState.entityId, CT.POSITION);
         
+        if (!pos) return;
+        
+        let closestTownHall = null;
+        let closestDistance = Infinity;
+    
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
-            const pos = this.game.getComponent(entityId, CT.POSITION);
+            const townHallPos = this.game.getComponent(entityId, CT.POSITION);
             const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
             const team = this.game.getComponent(entityId, CT.TEAM);
+        
+            if (team.team == miningState.team && unitType.id == "townHall") {
+                // Calculate distance to this town hall
+                const dx = townHallPos.x - pos.x;
+                const dz = townHallPos.z - pos.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
             
-            if(team.team == miningState.team && unitType.id == "townHall"){
-                miningState.targetTownHall = { x: pos.x, y: pos.y, z: pos.z };
-                if (aiState) {
-                    aiState.targetPosition = miningState.targetTownHall;
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestTownHall = { x: townHallPos.x, y: townHallPos.y, z: townHallPos.z };
                 }
-                break;
             }
-        } 
+        }
+        
+        if (closestTownHall) {
+            miningState.targetTownHall = closestTownHall;
+            if (aiState) {
+                aiState.targetPosition = miningState.targetTownHall;
+            }
+        }
     }
 
     walkToMine(miningState, pos, vel) {

@@ -61,5 +61,6 @@
     }
   },
   "placementGridWidth": 2,
-  "placementGridHeight": 2
+  "placementGridHeight": 2,
+  "snapToGrid": true
 }

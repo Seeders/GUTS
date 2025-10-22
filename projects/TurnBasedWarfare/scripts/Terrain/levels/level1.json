@@ -17,7 +17,11 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
         ],
-        "walkableNeighbors": ["water", "grass", "forest"],
+        "walkableNeighbors": [
+          "water",
+          "grass",
+          "forest"
+        ],
         "buildable": false
       },
       {
@@ -50,7 +54,11 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABIpJREFUSEvtlbmrZEUUxn+nqu7W2+v3ZlGZJxoKpoLRiBgMLiOYqomJGGggCgajsYm4gLH+LYaCYuAkxiPM6My8vbvvVoucujiGRmZW09y+TdU55/vOd76SV998Ki3WwsN7gaoR+jbSzB3nxyPBJ/oWnAMpYDYzFIXQdxFbkJc1htGn/DtFSClRlMLDu579ywVy/cZhalbC2VGgKCEmqGcGPyQWewVd69mcBhZrh0giRcmJRYQQIg+e+YSX5z/z6+0fSCHx8bsf8uX337A7i1gnyPWXDxMJimo6YAtD8BEjghjAC+0QIAnzlVBVju2Fz0k0gCLWil0pIEJZmoxuexaIPiI33346HT8YCCPsXy04PxkpK8NypbwI7c4Tg9BtA8HD8kALIKOdzR0xJj7ihC/imr4Nmd7dxmfKRL+aYLf1xN6Ai4x9pJoZSIY4Qtd5CieUM5M5ztWdJKy11KvEfKkBR+rGUTVweuSpZ5bzE4+1grz0xmHSSkalQYR+Fxk6TWIxAuurjotjn8uJUZg1lgf3RlYHhpgSgrBYFWw3o7YZIxbvIyGk3LucQOGMu4SxBlPC7jwyWxoWK5ebPJsXmSpt8jhAXQtl4zj+Y8ioFuuCcfDaSuZKG9BuPbuLMFH0x+89+1eKTIVuOjsJ1A2kICz3HLudJ6VJhpUGryxDH/J/fZvynq7T96yX/NS+pZhURdfS3qWpuUpD0zjKRmi3gfYiUlWGvctl5lkmoTxaiuzifJjU40xO4grBGMPRnwOXniiQF18/TM3M5s7bQnKAsnIcP/s5j/32aX7ftX5ShEBQ/DApqbCMfaCoJctytW/zHFWFpRs8zcwhL7xymJZrR1T8gDGCHxN3eY7H/U8s11P13ic+e/6Ur29foe09w06nO9GULlfdD575osiN71tPiClTKC+8ci25SrLMUgAfA86arATlrCyEqpmkqIetkYxC+U1JsA6cMey2gXomxOlYVpTGlBdvPpl0s8rKGtheCAdXoV6UvOeP+bEt+aWsETH4EHHOMowh79VEGksp6X3IIlAaNYmYNFF0/cY1FS9iwaqqVUkJuk2gnkuGr40fhkBVTpNrS0MYdAagH32mLwce1XIcfeexZWLYxn/moNtGmoXgxNIPMVdjnOC7xPpy8ajR7Tm4cuq4c4nNBewdaCqDtTE3udfARhj6iLz21lNJnbGew707I6u9gr7TqVY9Zyqz8cWgg6DmFvIcNMtJRUf3BwpnqRYTXXXtJrMs4OzITwhWBxbfC+pJemgYImqk6yuWs4eBqi44ud+xOKgwErKNb8/HXMDYJ3wfGdUI9y3vXFny3d3zjCQb3t9WoX6kCcY2ZXiawJZqv0qZ3hVCv0msr062oT5lnSX4QLdJ+BGaPZ2HyHzPZKnrJydQ95uGJ3JxGrJV67OsDeMQ0UGM6v+V8NWtb3n/1gfUS2HYJMqFZO+SlHCFxVYq/sSfdybZil6ZepG0m0w3pw9HZnNLEhW7eqVqO2XjU4Rarc6NJJNRBBOZLxzdVh03sT0VynkieqFrwzQS/+X6P8G/svsXXBt/Z1jfQFwAAAAASUVORK5CYII=",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABFtJREFUSEvtVUuLXEUYPfW4j759pzPOw2TM9GiIokvBTVYZkcgMZFADhmyycOkikL0b8QfoTnAlIggKYlSCQYkPUNzpRgURxExMDJlknun7rMcnX90Y0j0LNy4taLqbW7e+75zvnFPi6bUhQRCkAoQg7N4mJKkGkUWcCBABJPgZQA7wnqAjiSxXKAuHLNeoS4s0U6hKh68/uSZw3xLHTixQpCWEEBjtOMwc1HCWDwEIAnvbDvMLMbZvtYhTibb26E3xNyFKBLwFhALggSiR+OLDq+MFTpxaoqZ0oSZ3qhWQ5hrkAesI3nhY6yEgoBMRiueDKOzf3TRQGgEe748TicsXJgosn1wkZz0ICC8yXEZDRJBaIO0pVIVDPtAoCwutJJKegHMCdWUx2vEQEugPGAbhq48nKDp55hHa3TH3IDPv1jLxQDZQYHRxomCdv8dsr68x2jV3G3KB2v4BnovGxfeujFO0cnpI5cjDthS45WXabpDwhCgWIJ4wCFEkYayHMwTXAjJi4lgBHrdvWMwt6P0Injy2QM4Cw8di3L5u8OAwDlSQFRCKkGYavxx9A0d/Og9WG69eptA2BFN39DSNh1YC/QMal95fH0fw3NkjVNYWnmm5u4o9jyRR4NkkmUBdeigJRD3J/Qa1tI0P1O1tGhgLzC9EqCu3H8HK6YfpzKEdvPN7Dh13xbO+xo0rTfifZjIoxTsKKuJDyzsOUSpwc91gZi6GcRauEZg7HO2fwVMvLFPz56+YX30F8W+vB8MVe51qtm4ZSO48loATMNYhzSVsQ0HCbd0ZkOekYwSpfnvp+gRFLy3RxrqDjAj9gYapXXhLqm6wvFwrsLtlMJjVyDKJonDhkTWEKl7CA9G1gJo84bPJGaydXaTtDQodsP77Uzp0xYPuZTrMtTUO1cghPxChLlyIDxnxsLu9zhGa2oUi+2S6vDokKFakR1sRZg91UcGHcBwkmcL2TYN8WkFFQFv50L2KRSjALjdt5xEpCZc/mqDo+OoiWUbsORKYTwRtNyVBxcDcQzHKkYVSBO8FPNNSUCiW9mUIufpu1LC6Pv9gMipWFkmye40PXSspQkQYww7ujMcd8/A5NjauOqiYi1Hn3r6GMR2KfKDw6bsTPlh5cYnYnbyxKjyc8yEh+ZsNmA1kKMDjZr7ZI6YVyKcQZMuLqeSI8Q745uJEFj3z/JB6mQxZXt/xqBtgelZBaYmmtoEupordu7dlMXdYY2ejS99wN8QCdzY9wEq2hB++uzEu00cfP0jDJyKYhi8aid1NC60lerkIXSepQtt6vPnqWzj32svwzqM/iFAVfBF0tLHxRnsd8h+//2u8wPG1ReIc4e54aPASTWXRtMDhI3wQwTQOiZ9BhS1Mz0SoKhcyKNxyBPRzjaq0+PLCOD2MUjx7akhF4ZFmIlyJaV9halrgj59bpAMBpboP5xHnEi92MhuxKj3OTZd42+X7rsp/cm0Mzv136X/1+/8C/8rk3zEjOzeChQgxAAAAAElFTkSuQmCC"
         ],
-        "walkableNeighbors": ["grass", "water", "forest"],
+        "walkableNeighbors": [
+          "grass",
+          "water",
+          "forest"
+        ],
         "buildable": true
       },
       {
@@ -67,7 +75,11 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgfSoi6AQKFTBSqJ+g9qFvAQAZ2yCt7eMyfAAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAJ5QUBlAsncEAAAAAElFTkSuQmCC"
         ],
-        "walkableNeighbors": ["forest", "grass", "water"],
+        "walkableNeighbors": [
+          "forest",
+          "grass",
+          "water"
+        ],
         "buildable": true
       },
       {
@@ -132,7 +144,9 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
         ],
-        "walkableNeighbors": ["rock"],
+        "walkableNeighbors": [
+          "rock"
+        ],
         "buildable": false
       }
     ],
@@ -2864,18 +2878,6 @@
       },
       {
         "type": "goldVein",
-        "imageIndex": 7,
-        "x": 1374,
-        "y": 149.79998779296875
-      },
-      {
-        "type": "goldVein",
-        "imageIndex": 5,
-        "x": 207,
-        "y": 1291.7999877929688
-      },
-      {
-        "type": "goldVein",
         "imageIndex": 0,
         "x": 1440,
         "y": 1440
@@ -2885,6 +2887,18 @@
         "imageIndex": 0,
         "x": 96,
         "y": 96
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 0,
+        "x": 144,
+        "y": 1296
+      },
+      {
+        "type": "goldVein",
+        "imageIndex": 0,
+        "x": 1392,
+        "y": 144
       }
     ],
     "extensionTerrainType": 3

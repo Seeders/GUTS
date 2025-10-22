@@ -121,8 +121,6 @@ class GoldMineSystem extends engine.BaseSystem {
             }
         });
 
-        console.log('[GoldMineSystem] Found', goldVeinInstancedMeshes.length, 'gold vein instanced meshes');
-
         let globalIndex = 0;
         for (const vein of this.goldVeinLocations) {
             vein.instanceIndex = globalIndex;
@@ -132,7 +130,6 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
-        console.log('[GoldMineSystem] Attempting to build gold mine for player:', team, 'at grid:', gridPos);
         
         const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
         if (!validation.valid) {
@@ -141,17 +138,13 @@ class GoldMineSystem extends engine.BaseSystem {
         }
 
         const vein = validation.vein;
-        console.log('[GoldMineSystem] Claiming vein at position:', vein.x, vein.y);
         
         vein.claimed = true;
         vein.claimedBy = team;
 
         let mineModel = null;
         if (!this.game.isServer) {
-            console.log('[GoldMineSystem] CLIENT: Replacing vein with mine model');
             mineModel = this.replaceVeinWithMine(vein);
-        } else {
-            console.log('[GoldMineSystem] SERVER: Tracking mine claim (no rendering)');
         }
 
         this.claimedGoldMines.set(entityId, {
@@ -166,7 +159,6 @@ class GoldMineSystem extends engine.BaseSystem {
             model: mineModel
         });
 
-        console.log('[GoldMineSystem] Gold mine built successfully. Total mines:', this.claimedGoldMines.size);
         return { success: true };
     }
 
@@ -206,22 +198,17 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     claimMine(mineEntityId, minerEntityId) {
-        console.log('claim mine', minerEntityId);
         this.mineOccupancy.set(mineEntityId, minerEntityId);
     }
 
     releaseMine(mineEntityId, minerEntityId = null) {
-        console.log('releaseMine', minerEntityId);
         if (minerEntityId) {
             const currentOccupant = this.mineOccupancy.get(mineEntityId);
-            console.log('current occupant', currentOccupant);
     
             this.mineOccupancy.delete(mineEntityId);
-            console.log('delete mine occupancy', minerEntityId);
             this.processNextInQueue(mineEntityId);
     
         } else {
-            console.log('delete mine occupancy', minerEntityId);
             this.mineOccupancy.delete(mineEntityId);
         }
     }
@@ -232,7 +219,6 @@ class GoldMineSystem extends engine.BaseSystem {
         if (!queue || queue.length === 0) {
             return;
         }
-        console.log(mineEntityId, 'queue', queue);
         const nextMinerId = queue[0];
         
         queue.shift();
@@ -306,7 +292,6 @@ class GoldMineSystem extends engine.BaseSystem {
 
     replaceVeinWithMine(vein) {
         if (vein.instancedMeshes && vein.instanceIndex !== null) {
-            console.log('[GoldMineSystem] Hiding vein instance at index:', vein.instanceIndex);
             vein.instancedMeshes.forEach(mesh => {
                 const matrix = new THREE.Matrix4();
                 const position = new THREE.Vector3(0, -10000, 0);
@@ -315,9 +300,7 @@ class GoldMineSystem extends engine.BaseSystem {
                 mesh.setMatrixAt(vein.instanceIndex, matrix);
                 mesh.instanceMatrix.needsUpdate = true;
             });
-        } else {
-            console.warn('[GoldMineSystem] No instanced meshes found for vein');
-        }
+        } 
     }
 
     restoreVein(vein) {
@@ -348,9 +331,7 @@ class GoldMineSystem extends engine.BaseSystem {
                 }
                 mesh.setMatrixAt(vein.instanceIndex, matrix);
                 mesh.instanceMatrix.needsUpdate = true;
-            });
-            
-            console.log('[GoldMineSystem] Vein instance restored');
+            });            
         }
 
         vein.claimed = false;
@@ -372,7 +353,6 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     reset() {
-        console.log('[GoldMineSystem] Resetting system');
         
         if (!this.game.isServer) {
             for (const [entityId, goldMine] of this.claimedGoldMines) {
@@ -389,6 +369,5 @@ class GoldMineSystem extends engine.BaseSystem {
         this.mineOccupancy.clear();
         this.mineQueues.clear();
         
-        console.log('[GoldMineSystem] Reset complete');
     }
 }
