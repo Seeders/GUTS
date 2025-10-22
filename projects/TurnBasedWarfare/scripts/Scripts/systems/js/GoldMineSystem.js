@@ -151,7 +151,7 @@ class GoldMineSystem extends engine.BaseSystem {
             console.log('[GoldMineSystem] SERVER: Tracking mine claim (no rendering)');
         }
 
-        this.claimedGoldMines.set(team, {
+        this.claimedGoldMines.set(entityId, {
             entityId: entityId,
             position: { x: vein.x, z: vein.y },
             worldPosition: { x: vein.worldX, z: vein.worldZ },
@@ -159,6 +159,7 @@ class GoldMineSystem extends engine.BaseSystem {
             cells: vein.cells,
             veinIndex: vein.originalIndex,
             veinData: vein,
+            team: team,
             model: mineModel
         });
 
@@ -167,9 +168,8 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     destroyGoldMine(entityId) {
-        console.log('[GoldMineSystem] Attempting to destroy gold mine for player:', team);
-        
-        const goldMine = this.claimedGoldMines.get(team);
+
+        const goldMine = this.claimedGoldMines.get(entityId);
         if (!goldMine) {
             return { success: false, error: 'No gold mine to destroy' };
         }
@@ -183,7 +183,7 @@ class GoldMineSystem extends engine.BaseSystem {
             goldMine.veinData.claimedBy = null;
         }
         
-        this.claimedGoldMines.delete(team);
+        this.claimedGoldMines.delete(entityId);
 
         console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', this.claimedGoldMines.size);
         return { success: true };
@@ -243,25 +243,15 @@ class GoldMineSystem extends engine.BaseSystem {
         vein.claimedBy = null;
     }
 
-    getGoldMinePosition(team) {
-        const goldMine = this.claimedGoldMines.get(team);
-        if (!goldMine) return null;
-        return goldMine.worldPosition;
-    }
-
-    hasGoldMine(team) {
-        return this.claimedGoldMines.has(team);
-    }
-
     reset() {
         console.log('[GoldMineSystem] Resetting system');
         
         if (!this.game.isServer) {
-            for (const [playerId, goldMine] of this.claimedGoldMines) {
+            for (const [entityId, goldMine] of this.claimedGoldMines) {
                 this.restoreVein(goldMine.veinData, goldMine.model);
             }
         } else {
-            for (const [playerId, goldMine] of this.claimedGoldMines) {
+            for (const [entityId, goldMine] of this.claimedGoldMines) {
                 goldMine.veinData.claimed = false;
                 goldMine.veinData.claimedBy = null;
             }

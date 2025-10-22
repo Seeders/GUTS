@@ -78,14 +78,42 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     findMineTarget(miningState) {
-        const goldMine = this.game.goldMineSystem?.claimedGoldMines.get(miningState.team);
+        let closestMine = null;
+        let closestDistance = Infinity;
         
-        if (!goldMine) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const pos = this.game.getComponent(miningState.entityId, ComponentTypes.POSITION);
+        
+        if (!pos) return;
+        
+        // Search through all claimed gold mines
+        for (const [entityId, goldMine] of this.game.goldMineSystem.claimedGoldMines.entries()) {
+            // Check if this mine belongs to our team
+            const mineTeam = this.game.getComponent(entityId, ComponentTypes.TEAM);
+            
+            if (mineTeam && mineTeam.team === miningState.team) {
+                // Calculate distance to this mine
+                const dx = goldMine.worldPosition.x - pos.x;
+                const dz = goldMine.worldPosition.z - pos.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestMine = goldMine;
+                }
+            }
+        }
+        
+        if (!closestMine) {
             return;
         }
 
-        miningState.targetMine = { x: goldMine.worldPosition.x, y: goldMine.worldPosition.y, z: goldMine.worldPosition.z };
-        miningState.state = 'walking_to_mine';       
+        miningState.targetMine = { 
+            x: closestMine.worldPosition.x, 
+            y: closestMine.worldPosition.y || 0, 
+            z: closestMine.worldPosition.z 
+        };
+        miningState.state = 'walking_to_mine';
     }
 
     walkToMine(miningState, pos, vel) {

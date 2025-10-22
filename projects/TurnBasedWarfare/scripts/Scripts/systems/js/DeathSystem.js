@@ -54,7 +54,8 @@ class DeathSystem extends engine.BaseSystem {
             if (!result.success) {
                 return result;
             }
-        }   
+        } 
+        this.game.destroyEntity(entityId);  
         return { success: true };
     }
     

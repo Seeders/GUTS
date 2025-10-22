@@ -112,9 +112,6 @@ class AnimationSystem extends engine.BaseSystem {
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
         
 
-        if(entityId.startsWith('peasant')){
-            console.log(desired, shouldChange);
-        }
         if (shouldChange) {
             this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
         } else {
