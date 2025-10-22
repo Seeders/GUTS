@@ -107,11 +107,14 @@ class AnimationSystem extends engine.BaseSystem {
 
         // Determine desired animation based on game state
         const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, aiState);
-        
+
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
         
 
+        if(entityId.startsWith('peasant')){
+            console.log(desired, shouldChange);
+        }
         if (shouldChange) {
             this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
         } else {

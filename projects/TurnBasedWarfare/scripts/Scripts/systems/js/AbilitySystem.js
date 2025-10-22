@@ -136,7 +136,7 @@ class AbilitySystem extends engine.BaseSystem {
             return false;
         }
         
-        if (this.game.animationSystem) {
+        if (this.game.animationSystem && !ability.isPassive) {
             this.startAbilityAnimation(entityId, ability);
         }
         this.abilityQueue.set(entityId, {

@@ -16,7 +16,20 @@
           "main": {
             "shapes": [
               {
+                "type": "gltf",
                 "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
@@ -119,7 +132,25 @@
         ]
       }
     },
-    "equipment": []
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "axe1h",
+        "attachmentData": {
+          "bone": "",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
   },
   "buyable": true,
   "specUnits": [],
