@@ -105,19 +105,17 @@ class ShopSystem extends engine.BaseSystem {
         const BuildingTypes = this.game.getCollections().buildings;
         let availableCount = 0;
         Object.keys(BuildingTypes).forEach(buildingId => {
-            if (!this.ownedBuildings.has(buildingId)) {
-                const building = BuildingTypes[buildingId];
-                const btn = this.createActionButton({
-                    icon: building.icon || '🏛️',
-                    title: building.title,
-                    cost: building.value,
-                    locked: this.isBuildingLocked(buildingId, building),
-                    lockReason: this.getLockReason(buildingId, building),
-                    onClick: () => this.purchaseBuilding(buildingId, building)
-                });
-                grid.appendChild(btn);
-                availableCount++;
-            }
+            const building = BuildingTypes[buildingId];
+            const btn = this.createActionButton({
+                icon: building.icon || '🏛️',
+                title: building.title,
+                cost: building.value,
+                locked: this.isBuildingLocked(buildingId, building),
+                lockReason: this.getLockReason(buildingId, building),
+                onClick: () => this.purchaseBuilding(buildingId, building)
+            });
+            grid.appendChild(btn);
+            availableCount++;
         });
 
         container.appendChild(grid);
