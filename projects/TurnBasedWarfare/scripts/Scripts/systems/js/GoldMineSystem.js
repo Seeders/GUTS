@@ -5,6 +5,9 @@ class GoldMineSystem extends engine.BaseSystem {
         this.goldVeinLocations = [];
         this.claimedGoldMines = new Map();
         
+        this.mineOccupancy = new Map();
+        this.mineQueues = new Map();
+        
         console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
     }
 
@@ -168,10 +171,15 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     destroyGoldMine(entityId) {
-
         const goldMine = this.claimedGoldMines.get(entityId);
         if (!goldMine) {
             return { success: false, error: 'No gold mine to destroy' };
+        }
+
+        this.releaseMine(entityId);
+        const queue = this.mineQueues.get(entityId);
+        if (queue) {
+            this.mineQueues.delete(entityId);
         }
 
         if (!this.game.isServer) {
@@ -189,6 +197,113 @@ class GoldMineSystem extends engine.BaseSystem {
         return { success: true };
     }
 
+    isMineOccupied(mineEntityId) {
+        return this.mineOccupancy.has(mineEntityId);
+    }
+
+    getCurrentMiner(mineEntityId) {
+        return this.mineOccupancy.get(mineEntityId);
+    }
+
+    claimMine(mineEntityId, minerEntityId) {
+        console.log('claim mine', minerEntityId);
+        this.mineOccupancy.set(mineEntityId, minerEntityId);
+    }
+
+    releaseMine(mineEntityId, minerEntityId = null) {
+        console.log('releaseMine', minerEntityId);
+        if (minerEntityId) {
+            const currentOccupant = this.mineOccupancy.get(mineEntityId);
+            console.log('current occupant', currentOccupant);
+            if (currentOccupant === minerEntityId) {
+                this.mineOccupancy.delete(mineEntityId);
+                console.log('delete mine occupancy', minerEntityId);
+                this.processNextInQueue(mineEntityId);
+            }
+        } else {
+            console.log('delete mine occupancy', minerEntityId);
+            this.mineOccupancy.delete(mineEntityId);
+        }
+    }
+
+    processNextInQueue(mineEntityId) {
+   
+        const queue = this.mineQueues.get(mineEntityId);
+        if (!queue || queue.length === 0) {
+            return;
+        }
+        
+        const nextMinerId = queue[0];
+        
+        queue.shift();
+        if (queue.length === 0) {
+            this.mineQueues.delete(mineEntityId);
+        }
+        
+        this.mineOccupancy.set(mineEntityId, nextMinerId);
+        
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
+        
+        if (miningState && (miningState.state === 'waiting_at_mine' || miningState.state === 'walking_to_mine')) {
+            const aiState = this.game.getComponent(nextMinerId, ComponentTypes.AI_STATE);
+            const pos = this.game.getComponent(nextMinerId, ComponentTypes.POSITION);
+            const vel = this.game.getComponent(nextMinerId, ComponentTypes.VELOCITY);
+            
+            if (pos && vel && miningState.targetMinePosition) {
+                miningState.waitingPosition = null;
+                
+                pos.x = miningState.targetMinePosition.x;
+                pos.z = miningState.targetMinePosition.z;
+                vel.vx = 0;
+                vel.vz = 0;
+                
+                miningState.state = 'mining';
+                miningState.miningStartTime = this.game.state.now;
+                
+                if (aiState) {
+                    aiState.state = 'idle';
+                    aiState.targetPosition = null;
+                }
+            }
+        }
+    }
+
+    addToQueue(mineEntityId, minerEntityId) {
+        if (!this.mineQueues.has(mineEntityId)) {
+            this.mineQueues.set(mineEntityId, []);
+        }
+        const queue = this.mineQueues.get(mineEntityId);
+        
+        if (!queue.includes(minerEntityId)) {
+            queue.push(minerEntityId);
+        }
+    }
+
+    removeFromQueue(mineEntityId, minerEntityId) {
+        const queue = this.mineQueues.get(mineEntityId);
+        if (queue) {
+            const index = queue.indexOf(minerEntityId);
+            if (index > -1) {
+                queue.splice(index, 1);
+            }
+            if (queue.length === 0) {
+                this.mineQueues.delete(mineEntityId);
+            }
+        }
+    }
+
+    isNextInQueue(mineEntityId, minerEntityId) {
+        const queue = this.mineQueues.get(mineEntityId);
+        return queue && queue.length > 0 && queue[0] === minerEntityId;
+    }
+
+    getQueuePosition(mineEntityId, minerEntityId) {
+        const queue = this.mineQueues.get(mineEntityId);
+        if (!queue) return -1;
+        return queue.indexOf(minerEntityId);
+    }
+
     replaceVeinWithMine(vein) {
         if (vein.instancedMeshes && vein.instanceIndex !== null) {
             console.log('[GoldMineSystem] Hiding vein instance at index:', vein.instanceIndex);
@@ -203,7 +318,6 @@ class GoldMineSystem extends engine.BaseSystem {
         } else {
             console.warn('[GoldMineSystem] No instanced meshes found for vein');
         }
-
     }
 
     restoreVein(vein) {
@@ -258,6 +372,9 @@ class GoldMineSystem extends engine.BaseSystem {
         }
         
         this.claimedGoldMines.clear();
+        this.mineOccupancy.clear();
+        this.mineQueues.clear();
+        
         console.log('[GoldMineSystem] Reset complete');
     }
 }

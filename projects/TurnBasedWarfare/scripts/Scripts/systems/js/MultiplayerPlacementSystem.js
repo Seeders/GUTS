@@ -327,6 +327,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
+        const MiningEntities = this.game.getEntitiesWith(componentTypes.MINING_STATE);      
+        MiningEntities.forEach((entityId) => {
+            const miningState = this.game.getComponent(entityId, componentTypes.MINING_STATE);
+            miningState.miningStartTime = 0; 
+            miningState.depositStartTime = 0;
+        });
+
     }
 
     applyTargetPositions(){
