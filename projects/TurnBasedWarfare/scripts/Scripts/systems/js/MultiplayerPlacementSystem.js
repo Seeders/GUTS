@@ -190,7 +190,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         unit.position.y,
                         unit.position.z,
                         placement.targetPosition,
-                        placement.unitType,
+                        placement,
                         team
                     );
                     unit.entityId = entityId;
@@ -210,7 +210,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     placement.y,
                     placement.z,
                     placement.targetPosition,
-                    placement.unitType,
+                    placement,
                     team
                 );
                 placement.entityId = entityId;
@@ -413,7 +413,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     unitY,
                     pos.z,
                     opponentPlacement.targetPosition,
-                    opponentPlacement.unitType,
+                    opponentPlacement,
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
                 if (opponentPlacement.unitType.id === 'goldMine') {
@@ -619,7 +619,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const terrainHeight = this.game.terrainSystem?.getTerrainHeightAtPosition(pos.x, pos.z) || 0;
             const unitY = terrainHeight !== null ? terrainHeight : 0;
         
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement.unitType, team);
+            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
             createdUnits.push({
                 entityId: entityId,
                 position: { x: pos.x, y: unitY, z: pos.z }
@@ -1007,13 +1007,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return this.findGroundMesh();
     }
 
-    isValidGridPlacement(worldPos) {
+    isValidGridPlacement(worldPos, selectedUnitType = null) {
         if (!worldPos) return false;
 
         const gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
         if (!this.game.gridSystem.isValidPosition(gridPos)) return false;
 
-        const selectedUnit = this.game.state.selectedUnitType;
+        const selectedUnit = selectedUnitType || this.game.state.selectedUnitType;
         if (!selectedUnit) return false;
 
         // Build cells for the squad
@@ -1078,7 +1078,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     handleBattleEnd() {        
         this.removeDeadSquadsAfterRound();
-        this.updateGridPositionsAfterRound();
+      //  this.updateGridPositionsAfterRound();
     }
         
     removeDeadSquadsAfterRound() {
@@ -1224,12 +1224,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPos = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-        
+    
         if (!worldPos) return;
-        
-        const gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
-        const placementId = this.getPlacementAtGridPosition(gridPos);
-        
+    
+        const placementId = this.getPlacementAtWorldPosition(worldPos);
+    
         if (placementId) {
             const placement = this.getPlacementById(placementId);
             if (placement && placement.team === this.game.state.mySide) {
@@ -1238,10 +1237,31 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    getPlacementAtGridPosition(gridPos) {
-        const key = `${gridPos.x},${gridPos.z}`;
-        const cellState = this.game.gridSystem.state.get(key);
-        return cellState?.placementId || null;
+    getPlacementAtWorldPosition(worldPos) {
+        const clickRadius = 30;
+        let closestPlacementId = null;
+        let closestDistance = clickRadius;
+        
+        const entities = this.game.getEntitiesWith(
+            this.game.componentManager.getComponentTypes().POSITION,
+            this.game.componentManager.getComponentTypes().TEAM
+        );
+        
+        entities.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+            const team = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().TEAM);
+            
+            const dx = pos.x - worldPos.x;
+            const dz = pos.z - worldPos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPlacementId = team.placementId;
+            }
+        });
+        
+        return closestPlacementId;
     }
 
     selectSquad(placementId) {
@@ -1405,4 +1425,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     clearSquadHighlights() {
         this.highlightedUnits = new Set();
     }
+
+
 }

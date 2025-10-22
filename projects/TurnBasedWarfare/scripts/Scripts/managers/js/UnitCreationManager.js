@@ -68,13 +68,14 @@ class UnitCreationManager {
      * @param {string} team - Team identifier ('left' or 'right')
      * @returns {number} Entity ID
      */
-    create(worldX, worldY, worldZ, targetPosition, unitType, team) {
+    create(worldX, worldY, worldZ, targetPosition, placement, team) {
+        const unitType = placement.unitType;
         try {
             const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}_${this.game.state.round}`);
             console.log('created unit', unitType.id, team, entity);
             const teamConfig = this.teamConfigs[team];
             // Add core components
-            this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
+            this.addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig);
             
             // Add combat components
             this.addCombatComponents(entity, unitType);
@@ -97,16 +98,20 @@ class UnitCreationManager {
         }
     }
 
+
     /**
-     * Create a squad of units at the specified grid position
-     * @param {Object} gridPosition - Grid position {x, z}
-     * @param {Object} unitType - Unit type definition
-     * @param {string} team - Team identifier ('player' or 'enemy')
-     * @param {string|null} playerId - Optional player ID for multiplayer
-     * @returns {Object} Squad placement data with entity IDs
+     * Create multiple squads efficiently from placement data
+     * @param {Array} placements - Array of placement data from client
+     * @param {string} team - Team identifier
+     * @param {string|null} playerId - Optional player ID
+     * @returns {Array} Array of created squad placement data
      */
-    createSquad(gridPosition, targetPosition, unitType, team, playerId = null) {
-        console.log('CREATE SQUAD', gridPosition, 'targetPosition', targetPosition);
+    createSquadFromPlacement(placement, team, playerId = null) {
+
+        const gridPosition = placement.gridPosition;
+        const targetPosition = placement.targetPosition;
+        const unitType = placement.unitType;
+
         try {
             // Get squad configuration
             const squadData = this.game.squadManager.getSquadData(unitType);
@@ -136,7 +141,7 @@ class UnitCreationManager {
                 const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-                const entityId = this.create(pos.x, unitY, pos.z, targetPosition, unitType, team);
+                const entityId = this.create(pos.x, unitY, pos.z, targetPosition, placement, team);
 
                 // Add playerId to the team component if provided
                 if (playerId && this.game.componentManager) {
@@ -184,35 +189,7 @@ class UnitCreationManager {
             console.error('Squad creation failed:', error);
             throw new Error(`Squad creation failed: ${error.message}`);
         }
-    }
-
-    /**
-     * Create multiple squads efficiently from placement data
-     * @param {Array} placements - Array of placement data from client
-     * @param {string} team - Team identifier
-     * @param {string|null} playerId - Optional player ID
-     * @returns {Array} Array of created squad placement data
-     */
-    createSquadFromPlacement(placement, team, playerId = null) {
-
-        try {
-            console.log('createSquadFromPlacement', placement);
-            const squad = this.createSquad(
-                placement.gridPosition,                        
-                placement.targetPosition,
-                placement.unitType,
-                team,
-                playerId
-            );
-            return squad;
-        } catch (error) {
-            console.error(`Failed to create squad from placement:`, placement, error);
-            // Continue with other placements even if one fails
-        }
-        
-
-        
-        return null;
+    
     }
 
     /**
@@ -304,7 +281,8 @@ class UnitCreationManager {
      * @param {string} team - Team identifier
      * @param {Object} teamConfig - Team configuration
      */
-    addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig) {
+    addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
+        const unitType = placement.unitType;
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
@@ -319,7 +297,7 @@ class UnitCreationManager {
         
         // Team identification
         this.game.addComponent(entity, ComponentTypes.TEAM, 
-            Components.Team(team));
+            Components.Team(team, placement.placementId));
         
         // Unit type information
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, 

@@ -41,7 +41,7 @@ class ComponentManager {
                 poisonResistance
             }),
             
-            Team: (team = 'neutral') => ({ team }),
+            Team: (team = 'neutral', placementId = null) => ({ team, placementId }),
             UnitType: (id = 'default', collection = 'units', title, value = 10) => ({ id, collection, title, value }),
             AIState: (state = 'idle', targetPosition = null, target = null, lastStateChange = 0) => 
                 ({ state, targetPosition, target, lastStateChange }),

@@ -182,7 +182,7 @@ class GridSystem extends engine.BaseSystem {
             const key = `${cell.x},${cell.z}`;
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
-                console.log('cell is occupied, invalid placement');
+                console.log('cell is occupied, invalid placement', key, cellState);
                 return false;
             }
         }
@@ -190,7 +190,11 @@ class GridSystem extends engine.BaseSystem {
         
         return true;
     }
-    
+    updateUnitPosition(placementId, worldX, worldZ) {
+        this.freeCells(placementId);
+        const gridPos = this.worldToGrid(worldX, worldZ);        
+        this.occupyCells([gridPos], placementId);
+    }
     occupyCells(cells, placementId) {        
         const updates = cells.map(cell => ({
             key: `${cell.x},${cell.z}`,
@@ -199,7 +203,7 @@ class GridSystem extends engine.BaseSystem {
                 placementId: placementId
             }
         }));
-        
+        console.log('occupying cells', placementId, cells);
         updates.forEach(({ key, value }) => {
             this.state.set(key, value);
         });

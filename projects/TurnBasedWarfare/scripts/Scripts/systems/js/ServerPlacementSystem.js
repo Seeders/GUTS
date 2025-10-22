@@ -408,7 +408,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     handleBattleEnd() {        
         this.removeDeadSquadsAfterRound();
-        this.updateGridPositionsAfterRound();
+       // this.updateGridPositionsAfterRound();
     }
     
     removeDeadSquadsAfterRound() {

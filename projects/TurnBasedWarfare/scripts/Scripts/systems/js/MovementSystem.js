@@ -130,10 +130,15 @@ class MovementSystem extends engine.BaseSystem {
             pos.x += vel.vx * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
-
+      
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
                 this.enforceBoundaries(pos, collision);
+                    
+                const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+                if (team && team.placementId && this.game.gridSystem) {
+                    this.game.gridSystem.updateUnitPosition(team.placementId, pos.x, pos.z);
+                }
             }
         });
     }

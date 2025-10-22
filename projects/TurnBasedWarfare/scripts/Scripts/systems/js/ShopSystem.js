@@ -353,10 +353,108 @@ class ShopSystem extends engine.BaseSystem {
             return;
         }
 
-        state.selectedUnitType = { id: unitId, collection: 'units', ...unit };
-        if (this.game.placementSystem) {
-            this.game.placementSystem.handleUnitSelectionChange(state.selectedUnitType);
+        const placementId = state.selectedEntity.entityId;
+        if (!placementId) {
+            this.showNotification('No building selected!', 'error');
+            return;
         }
+
+        unit.id = unitId;
+        unit.collection = 'units';
+        const placementPos = this.findBuildingPlacementPosition(placementId, unit);
+        if (!placementPos) {
+            this.showNotification('No valid placement near building!', 'error');
+            return;
+        }
+        const placement = this.game.placementSystem.createPlacementData(placementPos, unit, this.game.state.mySide);
+        console.log('purchase', placement, unit);
+        this.game.networkManager.submitPlacement(placement, (success, response) => {
+            if(success){
+                this.game.placementSystem.placeSquad(placement);
+                if(placement.collection == "buildings" && placement.unitType.id === 'goldMine'){
+                    this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
+                } else {
+                    if(placement.collection == "buildings"){
+                        this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
+                    }
+                }
+            }
+        });       
+    }
+
+    findBuildingPlacementPosition(placementId, unitDef) {
+        const buildingGridPos = this.getBuildingGridPosition(placementId);
+        const placement = this.game.placementSystem.getPlacementById(placementId);
+        if (!buildingGridPos) return null;
+
+        const gridSystem = this.game.gridSystem;
+        const placementSystem = this.game.placementSystem;
+        if (!gridSystem || !placementSystem) return null;
+
+        const buildingCells = placement.cells || [];
+        const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
+
+        const searchRadius = 12;
+        const spiralOffsets = this.generateSpiralOffsets(searchRadius);
+
+        for (const offset of spiralOffsets) {
+            const testPos = {
+                x: buildingGridPos.x + offset.x,
+                z: buildingGridPos.z + offset.z
+            };
+            
+            const testCellKey = `${testPos.x},${testPos.z}`;
+            if (buildingCellSet.has(testCellKey)) {
+                continue;
+            }
+            
+            const unitSquadData = this.game.squadManager.getSquadData(unitDef);
+            const unitCells = this.game.squadManager.getSquadCells(testPos, unitSquadData);
+            
+            const overlapsBuilding = unitCells.some(cell => 
+                buildingCellSet.has(`${cell.x},${cell.z}`)
+            );
+            
+            if (overlapsBuilding) {
+                continue;
+            }
+
+            const worldPos = gridSystem.gridToWorld(testPos.x, testPos.z);
+            if (placementSystem.isValidGridPlacement(worldPos, unitDef)) {
+                return testPos;
+            }
+        }
+
+        return null;
+    }
+
+    generateSpiralOffsets(maxRadius) {
+        const offsets = [];
+        let x = 0, z = 0;
+        let dx = 0, dz = -1;
+        
+        for (let i = 0; i < (maxRadius * 2) * (maxRadius * 2); i++) {
+            if ((-maxRadius < x && x <= maxRadius) && (-maxRadius < z && z <= maxRadius)) {
+                offsets.push({ x, z });
+            }
+            
+            if (x === z || (x < 0 && x === -z) || (x > 0 && x === 1 - z)) {
+                const temp = dx;
+                dx = -dz;
+                dz = temp;
+            }
+            
+            x += dx;
+            z += dz;
+        }
+        
+        return offsets;
+    }
+
+    getBuildingGridPosition(placementId) {
+        const placement = this.game.placementSystem.getPlacementById(placementId);
+        console.log('got placement', placement);
+        return placement.gridPosition;
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
