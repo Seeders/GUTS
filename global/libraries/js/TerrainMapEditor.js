@@ -1096,14 +1096,18 @@ class TerrainMapEditor {
             }
         } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && 
                    this.selectedEnvironmentItem !== null) {
+            
+            const objDef = this.gameEditor.getCollections().worldObjects[this.selectedEnvironmentType];
+            const isoPos = { x: mouseX, y: mouseY};
+            let pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
+            
+            if(objDef.snapToGrid){
             // Environment object placement logic
-            const isoPos = { x: mouseX, y: mouseY };
-            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-            
-            // Get the image to calculate its size
-            const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
-            const image = images.idle[0][this.selectedEnvironmentItem];
-            
+                const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+                const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+                pixelPos = this.translator.gridToIso(snappedGrid.x, snappedGrid.y);
+            }          
+    
             // Create new environment object
             const newObject = {
                 type: this.selectedEnvironmentType,
