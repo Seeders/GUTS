@@ -327,12 +327,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
-        const MiningEntities = this.game.getEntitiesWith(componentTypes.MINING_STATE);      
-        MiningEntities.forEach((entityId) => {
-            const miningState = this.game.getComponent(entityId, componentTypes.MINING_STATE);
-            miningState.miningStartTime = 0; 
-            miningState.depositStartTime = 0;
-        });
 
     }
 
@@ -1080,6 +1074,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         } else {
             document.body.style.cursor = 'default';
         }
+    }
+
+    handleBattleEnd() {        
+        this.removeDeadSquadsAfterRound();
+        this.updateGridPositionsAfterRound();
     }
         
     removeDeadSquadsAfterRound() {

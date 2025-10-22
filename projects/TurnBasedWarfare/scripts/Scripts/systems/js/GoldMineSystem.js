@@ -215,11 +215,11 @@ class GoldMineSystem extends engine.BaseSystem {
         if (minerEntityId) {
             const currentOccupant = this.mineOccupancy.get(mineEntityId);
             console.log('current occupant', currentOccupant);
-            if (currentOccupant === minerEntityId) {
-                this.mineOccupancy.delete(mineEntityId);
-                console.log('delete mine occupancy', minerEntityId);
-                this.processNextInQueue(mineEntityId);
-            }
+    
+            this.mineOccupancy.delete(mineEntityId);
+            console.log('delete mine occupancy', minerEntityId);
+            this.processNextInQueue(mineEntityId);
+    
         } else {
             console.log('delete mine occupancy', minerEntityId);
             this.mineOccupancy.delete(mineEntityId);
@@ -232,7 +232,7 @@ class GoldMineSystem extends engine.BaseSystem {
         if (!queue || queue.length === 0) {
             return;
         }
-        
+        console.log(mineEntityId, 'queue', queue);
         const nextMinerId = queue[0];
         
         queue.shift();
@@ -355,6 +355,20 @@ class GoldMineSystem extends engine.BaseSystem {
 
         vein.claimed = false;
         vein.claimedBy = null;
+    }
+
+    
+    handleEndBattle() {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const entities = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        
+        entities.forEach(entityId => {
+            const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+            if (miningState) {
+                miningState.miningStartTime = 0;
+                miningState.depositStartTime = 0;
+            }
+        });
     }
 
     reset() {

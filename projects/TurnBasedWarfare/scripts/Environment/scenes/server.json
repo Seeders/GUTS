@@ -11,7 +11,6 @@
         { "type": "EventManager" },
         { "type": "GameManager" },
         { "type": "UnitCreationManager" },
-        { "type": "ServerPlacementPhaseManager" },
         { "type": "SquadManager" }
       ],
       "systems": [
@@ -25,6 +24,7 @@
         { "type": "AbilitySystem" },
         { "type": "SquadExperienceSystem" },
         { "type": "ServerBattlePhaseSystem" },
+        { "type": "ServerPlacementSystem" },
         { "type": "LifetimeSystem" },
         { "type": "GridSystem" },
         { "type": "SchedulingSystem" },    

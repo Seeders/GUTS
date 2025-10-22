@@ -343,9 +343,12 @@ class MultiplayerUISystem extends engine.BaseSystem {
         }
     }
     clearBattlefield() {
-        if (this.game.abilitySystem) {
-            this.game.abilitySystem.handleEndBattle();
-        }
+
+        this.game.systems.forEach(system => {
+            if (system.handleEndBattle) {
+                system.handleEndBattle();
+            }
+        });
         // Save player squad experience BEFORE clearing
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.saveSquadExperience();
@@ -379,8 +382,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
             this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
         
-        this.game.placementSystem.removeDeadSquadsAfterRound();
-        this.game.placementSystem.updateGridPositionsAfterRound();
     }
        
     startVictoryCelebration(victoriousUnits) {

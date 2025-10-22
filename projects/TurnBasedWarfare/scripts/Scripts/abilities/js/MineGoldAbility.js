@@ -134,6 +134,28 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
 
+
+    findTownHall(miningState) {
+        const CT = this.game.componentManager.getComponentTypes();
+        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);        
+        const aiState = this.game.getComponent(miningState.entityId, CT.AI_STATE);
+        
+        for (let i = 0; i < combatUnits.length; i++) {
+            const entityId = combatUnits[i];
+            const pos = this.game.getComponent(entityId, CT.POSITION);
+            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const team = this.game.getComponent(entityId, CT.TEAM);
+            
+            if(team.team == miningState.team && unitType.id == "townHall"){
+                miningState.targetTownHall = { x: pos.x, y: pos.y, z: pos.z };
+                if (aiState) {
+                    aiState.targetPosition = miningState.targetTownHall;
+                }
+                break;
+            }
+        } 
+    }
+
     walkToMine(miningState, pos, vel) {
         if (!miningState.targetMinePosition || !miningState.targetMineEntityId) {
             this.findMineTarget(miningState);
@@ -209,6 +231,43 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
 
+    walkToTownHall(miningState, pos, vel) {
+        if (!miningState.targetTownHall) {
+            this.findTownHall(miningState);
+            if (!miningState.targetTownHall) {
+                miningState.state = 'idle';
+                return;
+            }
+        }
+
+        const dx = miningState.targetTownHall.x - pos.x;
+        const dz = miningState.targetTownHall.z - pos.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < this.depositRange) {
+            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+            
+            if (aiState) {
+                aiState.state = 'idle';
+                aiState.targetPosition = null;
+            }
+            pos.x = miningState.targetTownHall.x;
+            pos.z = miningState.targetTownHall.z;
+            vel.vx = 0;
+            vel.vz = 0;
+            miningState.state = 'depositing';
+            miningState.depositStartTime = this.game.state.now;
+        } else {
+            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+            
+            if (aiState) {
+                aiState.state = 'chasing';
+                aiState.targetPosition = miningState.targetTownHall;
+            }
+        }
+    }
     waitAtMine(miningState, pos, vel) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
@@ -250,65 +309,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
 
-    findTownHall(miningState) {
-        const CT = this.game.componentManager.getComponentTypes();
-        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);        
-        const aiState = this.game.getComponent(miningState.entityId, CT.AI_STATE);
-        
-        for (let i = 0; i < combatUnits.length; i++) {
-            const entityId = combatUnits[i];
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
-            const team = this.game.getComponent(entityId, CT.TEAM);
-            
-            if(team.team == miningState.team && unitType.id == "townHall"){
-                miningState.targetTownHall = { x: pos.x, y: pos.y, z: pos.z };
-                if (aiState) {
-                    aiState.targetPosition = miningState.targetTownHall;
-                }
-                break;
-            }
-        } 
-    }
-
-    walkToTownHall(miningState, pos, vel) {
-        if (!miningState.targetTownHall) {
-            this.findTownHall(miningState);
-            if (!miningState.targetTownHall) {
-                miningState.state = 'idle';
-                return;
-            }
-        }
-
-        const dx = miningState.targetTownHall.x - pos.x;
-        const dz = miningState.targetTownHall.z - pos.z;
-        const dist = Math.sqrt(dx * dx + dz * dz);
-
-        if (dist < this.depositRange) {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-            
-            if (aiState) {
-                aiState.state = 'idle';
-                aiState.targetPosition = null;
-            }
-            pos.x = miningState.targetTownHall.x;
-            pos.z = miningState.targetTownHall.z;
-            vel.vx = 0;
-            vel.vz = 0;
-            miningState.state = 'depositing';
-            miningState.depositStartTime = this.game.state.now;
-        } else {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-            
-            if (aiState) {
-                aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetTownHall;
-            }
-        }
-    }
-
     depositGold(miningState) {
         const elapsed = this.game.state.now - miningState.depositStartTime;
         
@@ -333,19 +333,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 this.game.state.playerGold += this.goldPerTrip;
             }
         }
-    }
-    
-    handleEndBattle() {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const entities = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
-        entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
-            if (miningState) {
-                miningState.miningStartTime = 0;
-                miningState.depositStartTime = 0;
-            }
-        });
     }
     
     logAbilityUsage(entityId) {

@@ -1,7 +1,6 @@
-class ServerPlacementPhaseManager {
+class ServerPlacementSystem extends engine.BaseSystem {
     constructor(game) {
-        this.game = game;
-        this.engine = this.game.app;    
+        super(game);  
         this.game.placementSystem = this;
         this.serverNetworkManager = this.engine.serverNetworkManager;  
         this.playerPlacements = new Map();
@@ -313,12 +312,6 @@ class ServerPlacementPhaseManager {
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
-        const MiningEntities = this.game.getEntitiesWith(componentTypes.MINING_STATE);      
-        MiningEntities.forEach((entityId) => {
-            const miningState = this.game.getComponent(entityId, componentTypes.MINING_STATE);
-            miningState.miningStartTime = 0; 
-            miningState.depositStartTime = 0;
-        });
     }
 
     applyTargetPositions() {
@@ -412,6 +405,12 @@ class ServerPlacementPhaseManager {
         return { success: result.success };
     }
 
+
+    handleBattleEnd() {        
+        this.removeDeadSquadsAfterRound();
+        this.updateGridPositionsAfterRound();
+    }
+    
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 

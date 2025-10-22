@@ -187,9 +187,11 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
     endBattle(room, winner = null, reason = 'unknown') {
 
-        if (this.game.abilitySystem) {
-            this.game.abilitySystem.handleEndBattle();
-        }
+        this.game.systems.forEach(system => {
+            if (system.handleEndBattle) {
+                system.handleEndBattle();
+            }
+        });
         const playerStats = this.getPlayerStats(room);
         let battleResult = {
             winner: winner,
@@ -198,53 +200,6 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             survivingUnits: this.getSurvivingUnits(),
             playerStats: playerStats
         };
-        
-        let winningUnits = battleResult.survivingUnits[winner]; 
-        let winningSide = battleResult.playerStats[winner]?.stats.side || null;
-        battleResult.winningUnits = winningUnits;
-        battleResult.winningSide = winningSide;
-        
-        // Apply round damage and get the health results
-        if(winningSide) {
-            let roundDamageResult = this.game.teamHealthSystem.applyRoundDamage(winningSide, winningUnits);
-
-            // CRITICAL: Use the health values from roundDamageResult.remainingHealth
-            if (roundDamageResult && roundDamageResult.remainingHealth) {
-                const newLeftHealth = roundDamageResult.remainingHealth.left;
-                const newRightHealth = roundDamageResult.remainingHealth.right;
-
-                
-                // Update room player stats with the new health values from damage result
-                for (const [playerId, player] of room.players) {
-                    if (player.stats && player.stats.side) {
-                        const oldHealth = player.stats.health;
-                        
-                        if (player.stats.side === 'left') {
-                            player.stats.health = newLeftHealth;
-                        } else if (player.stats.side === 'right') {
-                            player.stats.health = newRightHealth;
-                        }
-                    }
-                }
-                
-                // CRITICAL: Regenerate playerStats AFTER updating room player data
-                battleResult.playerStats = this.getPlayerStats(room);
-                
-                // Add the damage information to battle result for client display
-                battleResult.damageInfo = {
-                    winningTeam: roundDamageResult.winningTeam,
-                    losingTeam: roundDamageResult.losingTeam,
-                    damage: roundDamageResult.damage,
-                    survivingSquads: roundDamageResult.survivingSquads,
-                    gameOver: roundDamageResult.gameOver,
-                    healthAfterDamage: {
-                        left: newLeftHealth,
-                        right: newRightHealth
-                    }
-                };
-                
-            }
-        }
         
         const entitySync = this.serializeAllEntities();
         // Broadcast with updated health values
@@ -325,8 +280,8 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
     }
 
     prepareNextRound(room) {
-        this.game.state.round += 1;
         this.clearBattlefield();
+        this.game.state.round += 1;
         
         // Transition back to placement phase
         this.game.state.phase = 'placement';
@@ -409,9 +364,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 console.warn(`Error destroying entity ${entityId}:`, error);
             }
         });
-        this.game.placementSystem.removeDeadSquadsAfterRound();
-        this.game.placementSystem.updateGridPositionsAfterRound();
-        
+  
         // Clear squad references
         this.createdSquads.clear();
     }
