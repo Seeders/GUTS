@@ -5,8 +5,8 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
 
         this.VISION_RADIUS = 300;
-        this.WORLD_SIZE = 2000;
-        this.FOG_TEXTURE_SIZE = 2048; // Increased for smoother edges
+        this.WORLD_SIZE = this.game.worldSystem.extendedSize;
+        this.FOG_TEXTURE_SIZE = 64; // Increased for smoother edges
 
         this.fogRenderTarget = null;
         this.explorationRenderTarget = null;
@@ -31,7 +31,6 @@ class FogOfWarSystem extends engine.BaseSystem {
 
     init(params = {}) {
         this.params = params;
-        this.WORLD_SIZE = params.worldSize || 2000;
         
         this.fogRenderTarget = new THREE.WebGLRenderTarget(
             this.FOG_TEXTURE_SIZE,
