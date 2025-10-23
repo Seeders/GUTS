@@ -6,14 +6,26 @@ class FogOfWarSystem extends engine.BaseSystem {
 
         this.VISION_RADIUS = 300;
         this.WORLD_SIZE = 2000;
-        this.FOG_TEXTURE_SIZE = 512;
+        this.FOG_TEXTURE_SIZE = 2048; // Increased for smoother edges
 
         this.fogRenderTarget = null;
+        this.explorationRenderTarget = null;
         this.fogScene = null;
         this.fogCamera = null;
         this.fogPass = null;
 
-        this.visibilityBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
+        // No more CPU buffers needed!
+        
+        // Reusable circle pool
+        this.circlePool = [];
+        this.circleGeometry = null;
+        this.circleMaterial = null;
+        
+        // Accumulation shader for exploration
+        this.accumulationMaterial = null;
+        this.accumulationQuad = null;
+        this.accumulationScene = null;
+        this.accumulationCamera = null;
     }
 
 
@@ -22,6 +34,17 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.WORLD_SIZE = params.worldSize || 2000;
         
         this.fogRenderTarget = new THREE.WebGLRenderTarget(
+            this.FOG_TEXTURE_SIZE,
+            this.FOG_TEXTURE_SIZE,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBAFormat
+            }
+        );
+        
+        // Render target for persistent exploration
+        this.explorationRenderTarget = new THREE.WebGLRenderTarget(
             this.FOG_TEXTURE_SIZE,
             this.FOG_TEXTURE_SIZE,
             {
@@ -43,7 +66,54 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.fogScene = new THREE.Scene();
         this.fogScene.background = new THREE.Color(0x000000);
         
-        console.log('[FogOfWarSystem] Texture-based fog initialized');
+        this.circleTexture = this.createGradientCircleTexture();
+        
+        // Create shared geometry and material
+        this.circleGeometry = new THREE.CircleGeometry(this.VISION_RADIUS, 32);
+        this.circleMaterial = new THREE.MeshBasicMaterial({
+            map: this.circleTexture,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        
+        // Create accumulation shader (max blending for exploration)
+        this.accumulationMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                currentExploration: { value: null },
+                newVisibility: { value: null }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D currentExploration;
+                uniform sampler2D newVisibility;
+                varying vec2 vUv;
+                
+                void main() {
+                    float explored = texture2D(currentExploration, vUv).r;
+                    float visible = texture2D(newVisibility, vUv).r;
+                    float newExploration = max(explored, visible);
+                    gl_FragColor = vec4(newExploration, newExploration, newExploration, 1.0);
+                }
+            `
+        });
+        
+        // Create accumulation scene (reused every frame)
+        this.accumulationQuad = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2),
+            this.accumulationMaterial
+        );
+        this.accumulationScene = new THREE.Scene();
+        this.accumulationScene.add(this.accumulationQuad);
+        this.accumulationCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        
+        console.log('[FogOfWarSystem] GPU-accelerated RTS-style fog initialized');
     }
 
     postAllInit() {
@@ -61,11 +131,15 @@ class FogOfWarSystem extends engine.BaseSystem {
             enabled: true,
             needsSwap: true,
             clear: false,
-                        
+                                    
             uniforms: {
                 tDiffuse: { value: null },
+                tDepth: { value: null },
                 fogTexture: { value: this.fogRenderTarget.texture },
+                explorationTexture: { value: this.explorationRenderTarget.texture },
                 worldSize: { value: this.WORLD_SIZE },
+                cameraNear: { value: 1 },
+                cameraFar: { value: 100 },
                 cameraWorldMatrix: { value: new THREE.Matrix4() },
                 cameraProjectionMatrixInv: { value: new THREE.Matrix4() }
             },
@@ -87,49 +161,88 @@ class FogOfWarSystem extends engine.BaseSystem {
             `,
             fragmentShader: `
                 uniform sampler2D tDiffuse;
+                uniform sampler2D tDepth;
                 uniform sampler2D fogTexture;
+                uniform sampler2D explorationTexture;
                 uniform float worldSize;
+                uniform float cameraNear;
+                uniform float cameraFar;
                 uniform mat4 cameraWorldMatrix;
                 uniform mat4 cameraProjectionMatrixInv;
-                
+
                 varying vec2 vUv;
                 
+                float readDepth(vec2 coord) {
+                    return texture2D(tDepth, coord).x;
+                }
+                
+                float perspectiveDepthToViewZ(float depth, float near, float far) {
+                    return (near * far) / ((far - near) * depth - far);
+                }
+                
+                vec3 getWorldPosition(vec2 uv, float depth) {
+                    // NDC coordinates
+                    float x = uv.x * 2.0 - 1.0;
+                    float y = uv.y * 2.0 - 1.0;
+                    float z = depth * 2.0 - 1.0;
+                    
+                    vec4 clipPos = vec4(x, y, z, 1.0);
+                    
+                    // To view space
+                    vec4 viewPos = cameraProjectionMatrixInv * clipPos;
+                    viewPos /= viewPos.w;
+                    
+                    // To world space
+                    vec4 worldPos = cameraWorldMatrix * viewPos;
+                    
+                    return worldPos.xyz;
+                }
+
                 void main() {
-                    vec4 color = texture2D(tDiffuse, vUv);
+                    vec4 sceneColor = texture2D(tDiffuse, vUv);
                     
-                    // Simpler approach: convert NDC to world space ray
-                    vec4 nearPoint = vec4(vUv * 2.0 - 1.0, -1.0, 1.0);
-                    vec4 farPoint = vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
+                    // Read depth and reconstruct world position
+                    float depth = readDepth(vUv);
+                    vec3 worldPos = getWorldPosition(vUv, depth);
                     
-                    // Unproject to world space
-                    vec4 nearWorld = cameraWorldMatrix * (cameraProjectionMatrixInv * nearPoint);
-                    vec4 farWorld = cameraWorldMatrix * (cameraProjectionMatrixInv * farPoint);
-                    
-                    nearWorld /= nearWorld.w;
-                    farWorld /= farWorld.w;
-                    
-                    // Ray from camera through pixel
-                    vec3 rayDir = normalize(farWorld.xyz - nearWorld.xyz);
-                    vec3 rayOrigin = nearWorld.xyz;
-                    
-                    // Intersect with Y=0 plane
-                    float t = (0.0 - rayOrigin.y) / rayDir.y;
-                    vec3 worldPos = rayOrigin + rayDir * t;
-                    
-                    // Convert to fog UV
+                    // Convert world XZ to fog UV
+                    float halfSize = worldSize * 0.5;
                     vec2 fogUV = vec2(
-                        (worldPos.x + worldSize * 0.5) / worldSize,
-                        (-worldPos.z + worldSize * 0.5) / worldSize
+                        (worldPos.x + halfSize) / worldSize,
+                        (-worldPos.z + halfSize) / worldSize
                     );
                     
-                    vec4 fogSample = texture2D(fogTexture, fogUV);
-                    float visibility = fogSample.r;
-                    float fogAmount = 1.0 - visibility;
+                    // Check bounds - out of bounds is unexplored
+                    float inset = 1e-4;
+                    if (fogUV.x < inset || fogUV.x > 1.0 - inset ||
+                        fogUV.y < inset || fogUV.y > 1.0 - inset) {
+                        // Completely black (unexplored)
+                        gl_FragColor = vec4(vec3(0.0), 1.0);
+                        return;
+                    }
                     
-                    vec3 finalColor = mix(color.rgb, color.rgb * 0.2, fogAmount);
+                    // Sample gradient fog texture (smooth visibility with gradients)
+                    vec4 fogSample = texture2D(fogTexture, fogUV);
+                    float visibleGradient = fogSample.r; // Smooth gradient from circles
+                    
+                    // Sample exploration texture (now also has gradients)
+                    vec4 explorationSample = texture2D(explorationTexture, fogUV);
+                    float explorationGradient = explorationSample.g;
+                    
+                    // Calculate explored color (darkened/desaturated)
+                    vec3 grayscale = vec3(dot(sceneColor.rgb, vec3(0.299, 0.587, 0.114)));
+                    vec3 exploredColor = mix(grayscale, sceneColor.rgb, 0.2) * 0.4;
+                    
+                    // Blend between explored and fully visible based on visibility gradient
+                    vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
+                    
+                    // Finally, blend from black (unexplored) to visible/explored based on exploration gradient
+                    vec3 finalColor = mix(vec3(0.0), visibleColor, explorationGradient);
+                    
                     gl_FragColor = vec4(finalColor, 1.0);
                 }
             `
+
         });
         
         const geometry = new THREE.PlaneGeometry(2, 2);
@@ -154,9 +267,19 @@ class FogOfWarSystem extends engine.BaseSystem {
         
         // NOW create the pass render function (after fsQuad exists)
         this.fogPass.render = function(renderer, writeBuffer, readBuffer) {
+            // CRITICAL: Update camera matrices RIGHT NOW to match the depth buffer
+            // that was just rendered, preventing lag/swimming effect
+            if (fogSystemRef.game.camera) {
+                fogPassObj.uniforms.cameraWorldMatrix.value.copy(fogSystemRef.game.camera.matrixWorld);
+                fogPassObj.uniforms.cameraProjectionMatrixInv.value.copy(fogSystemRef.game.camera.projectionMatrixInverse);
+                fogPassObj.uniforms.cameraNear.value = fogSystemRef.game.camera.near;
+                fogPassObj.uniforms.cameraFar.value = fogSystemRef.game.camera.far;
+            }
+            
             fogSystemRef.renderFogTexture();
             
             fogPassObj.uniforms.tDiffuse.value = readBuffer.texture;
+            fogPassObj.uniforms.tDepth.value = readBuffer.depthTexture;
             
             if (fogPassObj.needsSwap) {
                 renderer.setRenderTarget(writeBuffer);
@@ -166,16 +289,15 @@ class FogOfWarSystem extends engine.BaseSystem {
             
             fogPassObj.fsQuad.render(renderer);
         };
-        
+                
         this.fogPass.setSize = function(width, height) {
             // No-op
         };
     }
+
     renderFogTexture() {
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
-
-        this.visibilityBuffer.fill(0);
 
         const myUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
@@ -185,97 +307,174 @@ class FogOfWarSystem extends engine.BaseSystem {
             return team?.team === myTeam;
         });
 
-        // clean fogScene
-        this.fogScene.children.forEach(child => {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) child.material.dispose();
-        });
-        this.fogScene.children = [];
+        // Hide all circles first
+        this.circlePool.forEach(circle => circle.visible = false);
 
-        const radiusPx = (this.VISION_RADIUS / this.WORLD_SIZE) * this.FOG_TEXTURE_SIZE;
-        const texSize = this.FOG_TEXTURE_SIZE;
-
-        for (const entityId of myUnits) {
+        // Position visible circles for each unit
+        myUnits.forEach((entityId, index) => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            if (!pos) continue;
+            if (!pos) return;
 
-            // === GPU draw
-            const geometry = new THREE.CircleGeometry(this.VISION_RADIUS, 32);
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                side: THREE.DoubleSide
-            });
-            const circle = new THREE.Mesh(geometry, material);
-            circle.position.set(pos.x, 0, pos.z);
-            circle.rotation.x = -Math.PI / 2;
-            this.fogScene.add(circle);
-
-            // === CPU rasterize
-            const half = this.WORLD_SIZE * 0.5;
-            const u = (pos.x + half) / this.WORLD_SIZE;
-            const v = (-pos.z + half) / this.WORLD_SIZE;
-            const centerX = Math.floor(u * texSize);
-            const centerY = Math.floor(v * texSize);
-            const r2 = radiusPx * radiusPx;
-
-            const minY = Math.max(0, Math.floor(centerY - radiusPx));
-            const maxY = Math.min(texSize - 1, Math.ceil(centerY + radiusPx));
-            for (let y = minY; y <= maxY; y++) {
-                const dy = y - centerY;
-                const dxMax = Math.floor(Math.sqrt(r2 - dy * dy));
-                const x0 = Math.max(0, centerX - dxMax);
-                const x1 = Math.min(texSize - 1, centerX + dxMax);
-                const row = y * texSize;
-                for (let x = x0; x <= x1; x++) {
-                    this.visibilityBuffer[row + x] = 255;
-                }
+            // Reuse or create circle
+            let circle;
+            if (index < this.circlePool.length) {
+                circle = this.circlePool[index];
+                circle.visible = true;
+            } else {
+                circle = new THREE.Mesh(this.circleGeometry, this.circleMaterial);
+                circle.rotation.x = -Math.PI / 2;
+                this.circlePool.push(circle);
+                this.fogScene.add(circle);
             }
-        }
+            
+            circle.position.set(pos.x, 0, pos.z);
+        });
 
+        // Render current visibility to fogRenderTarget (GPU, fast!)
         this.game.renderer.setRenderTarget(this.fogRenderTarget);
         this.game.renderer.render(this.fogScene, this.fogCamera);
+        
+        // Accumulate into exploration using GPU shader
+        // This does: exploration = max(exploration, visibility)
+        this.accumulationMaterial.uniforms.currentExploration.value = this.explorationRenderTarget.texture;
+        this.accumulationMaterial.uniforms.newVisibility.value = this.fogRenderTarget.texture;
+        
+        // Create temporary render target for output
+        const tempTarget = new THREE.WebGLRenderTarget(
+            this.FOG_TEXTURE_SIZE,
+            this.FOG_TEXTURE_SIZE,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBAFormat
+            }
+        );
+        
+        this.game.renderer.setRenderTarget(tempTarget);
+        
+        // Render fullscreen quad with accumulation shader (scene already created in init)
+        this.game.renderer.render(this.accumulationScene, this.accumulationCamera);
+        
+        // Swap render targets
+        const oldExploration = this.explorationRenderTarget;
+        this.explorationRenderTarget = tempTarget;
+        oldExploration.dispose();
+        
+        // Update uniform reference
+        this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
+        
         this.game.renderer.setRenderTarget(null);
     }
 
-
-    update() {
-        if (this.fogPass && this.game.camera) {
-            this.fogPass.uniforms.cameraWorldMatrix.value.copy(this.game.camera.matrixWorld);
-            this.fogPass.uniforms.cameraProjectionMatrixInv.value.copy(this.game.camera.projectionMatrixInverse);
-        }
+    createGradientCircleTexture() {
+        const size = 128;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = size / 2;
+        
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1.0)');
+        gradient.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
     }
 
     setVisionRadius(radius) {
         this.VISION_RADIUS = radius;
         console.log(`[FogOfWarSystem] Vision radius set to ${radius}`);
     }
+
     isVisibleAt(x, z) {
-        const idx = this.worldToFogIndex(x, z);
-        return this.visibilityBuffer[idx] > 0;
+        // Read pixel from visibility render target
+        const uv = this.worldToUV(x, z);
+        if (!uv) return false;
+        
+        const pixelBuffer = new Uint8Array(4);
+        this.game.renderer.readRenderTargetPixels(
+            this.fogRenderTarget,
+            Math.floor(uv.x * this.FOG_TEXTURE_SIZE),
+            Math.floor(uv.y * this.FOG_TEXTURE_SIZE),
+            1, 1,
+            pixelBuffer
+        );
+        
+        return pixelBuffer[0] > 0; // R channel has visibility
     }
-    worldToFogIndex(x, z) {
+
+    isExploredAt(x, z) {
+        // Read pixel from exploration render target
+        const uv = this.worldToUV(x, z);
+        if (!uv) return false;
+        
+        const pixelBuffer = new Uint8Array(4);
+        this.game.renderer.readRenderTargetPixels(
+            this.explorationRenderTarget,
+            Math.floor(uv.x * this.FOG_TEXTURE_SIZE),
+            Math.floor(uv.y * this.FOG_TEXTURE_SIZE),
+            1, 1,
+            pixelBuffer
+        );
+        
+        return pixelBuffer[0] > 0; // R channel has exploration
+    }
+
+    worldToUV(x, z) {
         const half = this.WORLD_SIZE * 0.5;
         let u = (x + half) / this.WORLD_SIZE;
         let v = (-z + half) / this.WORLD_SIZE;
 
-        // Clamp to 0..1
-        u = Math.min(Math.max(u, 0), 1);
-        v = Math.min(Math.max(v, 0), 1);
+        // Return null if out of bounds
+        if (u < 0 || u > 1 || v < 0 || v > 1) {
+            return null;
+        }
 
-        const texX = Math.floor(u * this.FOG_TEXTURE_SIZE);
-        const texY = Math.floor(v * this.FOG_TEXTURE_SIZE);
-        return texY * this.FOG_TEXTURE_SIZE + texX;
+        return { x: u, y: v };
     }
+
+    resetExploration() {
+        // Clear exploration render target to black
+        this.game.renderer.setRenderTarget(this.explorationRenderTarget);
+        this.game.renderer.clear();
+        this.game.renderer.setRenderTarget(null);
+        console.log('[FogOfWarSystem] Exploration reset');
+    }
+
     dispose() {
         if (this.fogRenderTarget) {
             this.fogRenderTarget.dispose();
         }
+        if (this.explorationRenderTarget) {
+            this.explorationRenderTarget.dispose();
+        }
         if (this.game.postProcessingSystem) {
             this.game.postProcessingSystem.removePass('fog');
         }
-        this.fogScene.children.forEach(child => {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) child.material.dispose();
-        });
+        if (this.circleGeometry) {
+            this.circleGeometry.dispose();
+        }
+        if (this.circleMaterial) {
+            this.circleMaterial.dispose();
+        }
+        if (this.circleTexture) {
+            this.circleTexture.dispose();
+        }
+        if (this.accumulationMaterial) {
+            this.accumulationMaterial.dispose();
+        }
+        if (this.accumulationQuad) {
+            this.accumulationQuad.geometry.dispose();
+        }
+        this.circlePool = [];
     }
 }

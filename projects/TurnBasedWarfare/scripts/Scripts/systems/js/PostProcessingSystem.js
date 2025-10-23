@@ -26,16 +26,22 @@ class PostProcessingSystem extends engine.BaseSystem {
         this.composer = new THREE_.EffectComposer(this.game.renderer);
         
         // Create depth textures for both render targets
-        // const depthTexture1 = new THREE.DepthTexture();
-        // depthTexture1.format = THREE.DepthFormat;
-        // depthTexture1.type = THREE.UnsignedShortType;
-        
-        // const depthTexture2 = new THREE.DepthTexture();
-        // depthTexture2.format = THREE.DepthFormat;
-        // depthTexture2.type = THREE.UnsignedShortType;
-        
-        // this.composer.renderTarget1.depthTexture = depthTexture1;
-        // this.composer.renderTarget2.depthTexture = depthTexture2;
+        const depthTexture1 = new THREE.DepthTexture();
+        depthTexture1.format = THREE.DepthFormat;
+        depthTexture1.type   = THREE.UnsignedIntType; // 24/32-bit depth
+
+        const depthTexture2 = new THREE.DepthTexture();
+        depthTexture2.format = THREE.DepthFormat;
+        depthTexture2.type   = THREE.UnsignedIntType;
+
+        this.composer.renderTarget1.depthTexture = depthTexture1;
+        this.composer.renderTarget1.depthBuffer  = true;
+        this.composer.renderTarget2.depthTexture = depthTexture2;
+        this.composer.renderTarget2.depthBuffer  = true;
+
+        // Make sure sizes are synced after attaching:
+        const size = this.game.renderer.getSize(new THREE.Vector2());
+        this.composer.setSize(size.x, size.y);
         
         if (this.passes.size > 0) {
             this.rebuildComposer();
