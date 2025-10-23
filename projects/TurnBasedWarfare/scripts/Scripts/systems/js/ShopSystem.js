@@ -353,7 +353,9 @@ class ShopSystem extends engine.BaseSystem {
             return;
         }
 
-        const placementId = state.selectedEntity.entityId;
+        const CT = this.game.componentManager.getComponentTypes();
+        const team = this.game.getComponent(state.selectedEntity.entityId, CT.TEAM);        
+        const placementId = team.placementId;
         if (!placementId) {
             this.showNotification('No building selected!', 'error');
             return;

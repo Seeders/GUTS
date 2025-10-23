@@ -33,13 +33,13 @@ class BaseECSGame {
             this.currentTime = this.currentTime + deltaTime;
 
             // Only update if a reasonable amount of time has passed
-            const timeSinceLastUpdate = this.currentTime - this.lastTime;
+            // const timeSinceLastUpdate = this.currentTime - this.lastTime;
 
-            // Skip update if more than 1 second has passed (tab was inactive)
-            if (timeSinceLastUpdate > 1000) {
-                this.lastTime = this.currentTime; // Reset timer without updating
-                return;
-            }
+            // // Skip update if more than 1 second has passed (tab was inactive)
+            // if (timeSinceLastUpdate > 1000) {
+            //     this.lastTime = this.currentTime; // Reset timer without updating
+            //     return;
+            // }
             this.state.now = this.currentTime;
             this.state.deltaTime = deltaTime;
             this.deltaTime = deltaTime;        

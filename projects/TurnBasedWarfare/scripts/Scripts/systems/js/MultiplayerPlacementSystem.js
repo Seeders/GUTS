@@ -479,7 +479,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const state = this.game.state;
         
         if (this.settingTargetPosition) {
-            this.setSquadTargetPosition(event);
+          //  this.setSquadTargetPosition(event);
             return;
         }
         
@@ -487,7 +487,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         }
         if(!state.selectedUnitType) {
-            this.checkUnitSelection(event);
+          //  this.game.selectedUnitSystem.checkUnitSelectionClick(event);
             return;
         }
         
@@ -1218,25 +1218,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         console.log('MultiplayerPlacementSystem disposed');
     }
 
-
-    checkUnitSelection(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPos = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-    
-        if (!worldPos) return;
-    
-        const placementId = this.getPlacementAtWorldPosition(worldPos);
-    
-        if (placementId) {
-            const placement = this.getPlacementById(placementId);
-            if (placement && placement.team === this.game.state.mySide) {
-                this.selectSquad(placementId);
-            }
-        }
-    }
-
     getPlacementAtWorldPosition(worldPos) {
         const clickRadius = 30;
         let closestPlacementId = null;
@@ -1264,167 +1245,33 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return closestPlacementId;
     }
 
-    selectSquad(placementId) {
-        if (!placementId) return;
+    getUnitAtWorldPosition(worldPos) {
+        const clickRadius = 30;
+        let closestEntityId = null;
+        let closestDistance = clickRadius;
         
-        this.game.state.selectedEntity.entityId = placementId;
-        this.game.state.selectedEntity.type = 'squad';
-        const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
-        
-        if (squadData) {
-            const placement = this.getPlacementById(placementId);
-            if(placement.collection == "units"){
-                const displayName = this.game.squadExperienceSystem.getSquadDisplayName(placementId);
-                this.showSquadActionPanel(placementId, displayName, squadData);
-            } else {
-                this.game.shopSystem.renderBuildingActions(placement);
-            }
-            this.game.selectedUnitSystem.highlightUnits(squadData.unitIds);
-        }
-    }
-
-    showSquadActionPanel(placementId, squadName, squadData) {
-        
-        const actionPanel = document.getElementById('actionPanel');
-        if (actionPanel) {
-            actionPanel.innerHTML = "";
-            
-            let squadPanel = document.createElement('div');
-            squadPanel.id = 'squadActionPanel';
-            squadPanel.style.cssText = `
-                margin-top: 1.5rem;
-                padding: 15px;
-                background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
-                border: 2px solid #ffaa00;
-                border-radius: 8px;
-            `;
-        
-            actionPanel.appendChild(squadPanel);
-    
-        
-            const componentTypes = this.game.componentManager.getComponentTypes();
-            const aliveUnits = squadData.unitIds.filter(id => 
-                this.game.getComponent(id, componentTypes.HEALTH)
-            ).length;
-            
-            const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
-            const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
-            
-            squadPanel.innerHTML = `
-                <div class="panel-title">🛡️ SQUAD ACTIONS</div>
-                <div style="color: var(--primary-gold); font-weight: 600; margin-bottom: 10px;">
-                    ${squadName}${levelInfo}
-                </div>
-                <div style="color: var(--stone-gray); font-size: 0.85rem; margin-bottom: 10px;">
-                    <div>Units: ${aliveUnits}/${squadData.totalUnitsInSquad}</div>
-                    <div>XP: ${squadData.experience}/${squadData.experienceToNextLevel} (${expProgress}%)</div>
-                    ${squadData.canLevelUp ? '<div style="color: #4ade80;">✨ Ready to Level Up!</div>' : ''}
-                </div>
-                <button id="setTargetBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
-                    🎯 Set Target Position
-                </button>
-                <button id="deselectSquadBtn" class="btn btn-secondary" style="width: 100%;">
-                    Close
-                </button>
-            `;
-        }
-        
-        document.getElementById('setTargetBtn').addEventListener('click', () => {
-            this.startSettingTargetPosition(placementId);
-        });
-        
-        document.getElementById('deselectSquadBtn').addEventListener('click', () => {
-            this.clearSquadSelection();
-        });
-    }
-
-    clearSquadSelection() {
-        const actionPanel = document.getElementById('actionPanel');
-        if (actionPanel) {
-            actionPanel.innerHTML = "";
-        }
-        this.clearSquadHighlights();
-        this.clearSelectedEntity();
-    }
-
-    clearSelectedEntity(){
-        this.game.state.selectedEntity.entityId = null;
-        this.game.state.selectedEntity.type = null;
-    }
-
-    startSettingTargetPosition(placementId) {
-        this.settingTargetPosition = true;
-        this.targetPlacementId = placementId;
-        document.body.style.cursor = 'crosshair';
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`🎯 Click on battlefield to set target position`);
-        }
-    }
-
-    setSquadTargetPosition(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPos = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-        
-        if (!worldPos) return;
-        
-        const squadData = this.game.squadExperienceSystem?.getSquadInfo(this.targetPlacementId);
-        if (!squadData) return;
-        
-        const targetPosition = {
-            x: worldPos.x,
-            y: 0,
-            z: worldPos.z
-        };
-        
-        // Send to server first
-        this.game.networkManager.setSquadTarget(
-            { 
-                placementId: this.targetPlacementId,
-                targetPosition: targetPosition 
-            },
-            (success, response) => {
-                if (success) {
-                    // Apply locally after server confirms
-                    this.applySquadTargetPosition(this.targetPlacementId, targetPosition);
-                    
-                    if (this.game.effectsSystem) {
-                        this.game.effectsSystem.createParticleEffect(
-                            worldPos.x, 0, worldPos.z,
-                            'magic',
-                            { count: 10, color: 0x00ff00 }
-                        );
-                    }
-
-                    this.cancelSettingTargetPosition();
-                } else {
-                    this.cancelSettingTargetPosition();
-                }
-            }
+        const entities = this.game.getEntitiesWith(
+            this.game.componentManager.getComponentTypes().POSITION,
+            this.game.componentManager.getComponentTypes().TEAM
         );
+        
+        entities.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+            const team = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().TEAM);
+            
+            const dx = pos.x - worldPos.x;
+            const dz = pos.z - worldPos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestEntityId = entityId;
+            }
+        });
+        
+        return closestEntityId;
     }
 
-    applySquadTargetPosition(placementId, targetPosition) {       
-        this.game.state.targetPositions.set(placementId, targetPosition);  
-    }
-
-    cancelSettingTargetPosition() {
-        this.settingTargetPosition = false;
-        this.targetPlacementId = null;
-        document.body.style.cursor = 'default';
-    }
-
-
-    highlightSquadUnits(unitIds) {
-        this.clearSquadHighlights();
-        this.highlightedUnits = new Set(unitIds);
-    }
-
-    clearSquadHighlights() {
-        this.highlightedUnits = new Set();
-    }
 
 
 }

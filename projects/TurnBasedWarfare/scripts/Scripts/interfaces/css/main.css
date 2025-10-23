@@ -307,7 +307,6 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     top: 0;
     width: 380px;
     height: 100%;
-    border-left: 3px solid var(--light-forest);
     padding: 1rem;
     overflow-y: auto;
     backdrop-filter: blur(10px);

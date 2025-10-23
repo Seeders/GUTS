@@ -91,7 +91,7 @@ class CombatAISystem extends engine.BaseSystem {
             }
             if (enemiesInRange.length === 0) {
                 if(aiState.targetPosition){
-                    if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD){
+                    if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
                         }

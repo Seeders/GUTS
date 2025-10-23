@@ -27,6 +27,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
+        this.game.serverEventManager.subscribe('SET_SQUAD_TARGETS', this.handleSetSquadTargets.bind(this));
     
     }
 
@@ -259,6 +260,76 @@ class ServerPlacementSystem extends engine.BaseSystem {
             });
         }
     }
+
+    handleSetSquadTargets(eventData) {
+        try {
+            const { playerId, data } = eventData;
+            const { placementIds, targetPositions } = data;
+            
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            
+            if (!player) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                    error: 'Player not found'
+                });
+                return;
+            }
+            
+            for(let i = 0; i < placementIds.length; i++){
+                let placementId = placementIds[i];
+                let targetPosition = targetPositions[i];
+                // Validate placement belongs to player            
+                const placement = this.getPlacementById(placementId);
+                
+                if (!placement) {
+                    console.log(placementId, 'not found');
+                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                        error: 'Placement not found'
+                    });
+                    return;
+                }
+                
+                // Store target position in placement data
+                placement.targetPosition = targetPosition;
+                
+
+                
+                console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
+            }
+
+                        // Send success response to requesting player
+            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                success: true
+            });
+            
+            // Broadcast to other players in the room
+            for (const [otherPlayerId, otherPlayer] of room.players) {
+                if (otherPlayerId !== playerId) {
+                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
+                        placementIds,
+                        targetPositions
+                    });
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error setting squad target:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGETS_SET', { 
+                error: 'Server error while setting squad target'
+            });
+        }
+    }
+
+
     handleReadyForBattle(eventData) {
         const { playerId, data } = eventData; 
         const roomId = this.serverNetworkManager.getPlayerRoom(playerId);

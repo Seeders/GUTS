@@ -79,6 +79,10 @@ class MultiplayerNetworkManager {
                 this.syncWithServerState(data);   
                 this.handleOpponentSquadTarget(data);
             }),
+            nm.listen('OPPONENT_SQUAD_TARGETS_SET', (data) => {
+                this.syncWithServerState(data);   
+                this.handleOpponentSquadTargets(data);
+            }),
             nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
                 this.syncWithServerState(data);   
                 this.handleReadyForBattleUpdate(data);
@@ -249,6 +253,23 @@ class MultiplayerNetworkManager {
         );
     }
 
+    setSquadTargets(data, callback) {
+        this.game.clientNetworkManager.call(
+            'SET_SQUAD_TARGETS',
+            data,
+            'SQUAD_TARGETS_SET',
+            (data, error) => {
+                if (error || data.error) {
+                    console.log('Set target error:', error || data.error);
+                    callback(false, error || data.error);
+                } else {
+                    console.log('Set target response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     toggleReadyForBattle(callback) {
         this.game.clientNetworkManager.call(
             'READY_FOR_BATTLE',
@@ -387,7 +408,12 @@ class MultiplayerNetworkManager {
 
     handleOpponentSquadTarget(data) {
         const { placementId, targetPosition } = data;
-        this.game.placementSystem.applySquadTargetPosition(placementId, targetPosition);        
+        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition);        
+    }
+
+    handleOpponentSquadTargets(data) {
+        const { placementIds, targetPositions } = data;
+        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions);        
     }
 
     syncWithServerState(data) {

@@ -293,7 +293,7 @@ class UnitCreationManager {
         // Velocity component with movement capabilities
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         this.game.addComponent(entity, ComponentTypes.VELOCITY, 
-            Components.Velocity(0, 0, 0, maxSpeed));
+            Components.Velocity(0, 0, 0, maxSpeed, true, unitType.collection == 'buildings' ? true : false));
         
         // Team identification
         this.game.addComponent(entity, ComponentTypes.TEAM, 

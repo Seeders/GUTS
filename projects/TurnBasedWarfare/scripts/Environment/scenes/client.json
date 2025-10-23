@@ -54,7 +54,8 @@
         { "type": "GoldMineSystem" },    
         { "type": "PathfindingSystem" },    
         { "type": "FogOfWarSystem" },    
-        { "type": "SelectedUnitSystem" }
+        { "type": "SelectedUnitSystem" },    
+        { "type": "UnitOrderSystem" }
       ],
       "classes": [
         {
