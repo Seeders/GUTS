@@ -2,9 +2,36 @@ class ComponentManager {
     constructor(game) {
         this.game = game;
         this.game.componentManager = this;
+        this.models = this.game.getCollections().models;
+
+        //this.models.position == { x: 0, y: 0, z: 0 };
     }
 
-    getComponents() {
+    deepMerge(target, source) {
+        const result = { ...target };
+        
+        for (const key in source) {
+            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                result[key] = this.deepMerge(result[key] || {}, source[key]);
+            } else {
+                result[key] = source[key] == 'null' ? null : source[key];
+            }
+        }
+        
+        return result;
+    }
+
+    getModels() {
+        let components = {};
+        Object.keys(this.models).forEach((modelId) => {
+            const data = this.models[modelId];
+            components[modelId] = (params = {}) => {
+                return this.deepMerge(data, params);
+            };        
+        });
+        return components;
+    }
+    getComponents(){
         return {
             Position: (x = 0, y = 0, z = 0) => ({ x, y, z }),
             Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100, affectedByGravity = true) => ({ vx, vy, vz, maxSpeed, affectedByGravity }),

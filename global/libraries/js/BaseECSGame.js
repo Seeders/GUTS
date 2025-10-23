@@ -88,17 +88,17 @@ class BaseECSGame {
         }
     }
     
-    addComponent(entityId, componentType, componentData) {
+    addComponent(entityId, componentId, componentData) {
         if (!this.entities.has(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
         }
         
-        if (!this.components.has(componentType)) {
-            this.components.set(componentType, new Map());
+        if (!this.components.has(componentId)) {
+            this.components.set(componentId, new Map());
         }
         
-        this.components.get(componentType).set(entityId, componentData);
-        this.entities.get(entityId).add(componentType);
+        this.components.get(componentId).set(entityId, componentData);
+        this.entities.get(entityId).add(componentId);
     }
     
     removeComponent(entityId, componentType) {
