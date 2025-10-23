@@ -167,11 +167,12 @@ class UnitOrderSystem extends engine.BaseSystem {
     issueMoveOrders(placementIds, targetPosition) {
         let targetPositions = [];
         const gridSize = this.game.getCollections().configs.game.gridSize;
+        const unitPadding =  0.5;
 
         for(let i = 0; i < placementIds.length; i++){
             targetPositions.push({
                 x: targetPosition.x,
-                z: i % 2 == 0 ? targetPosition.z + i * gridSize : targetPosition.z - i * gridSize
+                z: i % 2 == 0 ? targetPosition.z + i * gridSize * unitPadding : targetPosition.z - i * gridSize * unitPadding
             })
         }
 
