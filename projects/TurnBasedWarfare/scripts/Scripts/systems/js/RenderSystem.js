@@ -25,6 +25,7 @@ class RenderSystem extends engine.BaseSystem {
         };
 
         this._bindDebugHelpers();
+        this.hiddenEntities = new Set();
     }
 
     _bindDebugHelpers() {
@@ -54,18 +55,28 @@ class RenderSystem extends engine.BaseSystem {
         this._stats.entitiesProcessed = entities.length;
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, CT.POSITION);
+            const pos        = this.game.getComponent(entityId, CT.POSITION);
             const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-            const velocity = this.game.getComponent(entityId, CT.VELOCITY);
-            const facing = this.game.getComponent(entityId, CT.FACING);
+            const velocity   = this.game.getComponent(entityId, CT.VELOCITY);
+            const facing     = this.game.getComponent(entityId, CT.FACING);
+            const teamComp   = this.game.getComponent(entityId, CT.TEAM);
 
             if (!pos || !renderable) return;
 
-            // FILTER: Only process units for VAT rendering, skip projectiles/effects/etc
-            // if (renderable.objectType !== 'units') {
-            //     // Let other rendering systems handle non-units (projectiles, effects, buildings, etc.)
-            //     return;
-            // }
+            // === FOW visibility filter (only for enemies) ===
+            if (this.isEnemy(teamComp) && !this.isVisibleForPlayer(pos)) {
+                // If we already have an instance, hide it; otherwise, don't create one
+                if (this.entityToInstance.has(entityId)) {
+                    this.hideEntityInstance(entityId);
+                }
+                return; // skip any creation/transform work
+            } else {
+                // if coming back into vision, unhide
+                if (this.hiddenEntities.has(entityId)) {
+                    this.showEntityInstance(entityId);
+                }
+            }
+            // === end FOW visibility filter ===
 
             // Validate that units have proper string spawnTypes
             if (typeof renderable.spawnType !== 'string') {
@@ -84,7 +95,7 @@ class RenderSystem extends engine.BaseSystem {
                 if (!instance) return; // Failed to create
             }
 
-            // Update transform
+            // Update transform (also makes sure previously-hidden instances get a real matrix again)
             this.updateInstanceTransform(instance, pos, velocity, facing);
         });
 
@@ -703,6 +714,37 @@ class RenderSystem extends engine.BaseSystem {
 
     entityDestroyed(entityId){
         this.removeInstance(entityId);
+    }
+    isEnemy(teamComp) {
+        const myTeam = this.game?.state?.mySide;
+        if (!teamComp || myTeam == null) return false;
+        return teamComp.team !== myTeam;
+    }
+
+    isVisibleForPlayer(pos) {
+        const fow = this.game?.fogOfWarSystem;
+        if (!fow || !pos) return true; // if no FOW, everything is visible
+        return fow.isVisibleAt(pos.x, pos.z);
+    }
+
+    hideEntityInstance(entityId) {
+        const instance = this.entityToInstance.get(entityId);
+        if (!instance) return;
+        const batch = this.vatBatches.get(instance.batchKey);
+        if (!batch) return;
+
+        // zero-scale the instance transform (keeps slot; no churn)
+        const m = new THREE.Matrix4();
+        m.scale(new THREE.Vector3(0, 0, 0));
+        batch.mesh.setMatrixAt(instance.instanceIndex, m);
+        batch.dirty.matrices = true;
+
+        this.hiddenEntities.add(entityId);
+    }
+
+    showEntityInstance(entityId) {
+        // simply mark as visible again; updateInstanceTransform will write a real matrix this frame
+        this.hiddenEntities.delete(entityId);
     }
 
     destroy() {

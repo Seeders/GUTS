@@ -159,7 +159,6 @@ class WorldSystem extends engine.BaseSystem {
 
         this.setupFog();
         this.setupLighting();
-        this.setupPostProcessing();
         this.setupCamera();
         this.setupGround();
         
@@ -250,30 +249,58 @@ class WorldSystem extends engine.BaseSystem {
 
     }
 
-    setupPostProcessing() {
-        const gameConfig = this.game.getCollections()?.configs?.game;
-        if (!gameConfig) {
-            return;
-        }
-
-        this.composer = new THREE_.EffectComposer(this.renderer);
-        const pixelSize = gameConfig.pixelSize || 1;
+    postAllInit(){
         
-        const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
-        if (pixelSize === 1) {
-            pixelPass.enabled = false;
-        }
-        
-        pixelPass.normalEdgeStrength = 0;
-        this.composer.addPass(pixelPass);
-        
-    
+        this.setupPostProcessing();
     }
+        setupPostProcessing() {
+            const gameConfig = this.game.getCollections()?.configs?.game;
+            if (!gameConfig) return;
+            
+            const pixelSize = gameConfig.pixelSize || 1;
+            this.game.postProcessingSystem.registerPass('render', {
+                enabled: true,
+                create: () => {
+                    return {
+                        enabled: true,
+                        needsSwap: true,
+                        clear: true,
+                        renderToScreen: false,
+                        
+                        render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
+                            renderer.setRenderTarget(writeBuffer);
+                            renderer.clear(true, true, true); // Clear color, depth, and stencil
+                            renderer.render(this.scene, this.camera);
+                        },
+                        
+                        setSize: (width, height) => {
+                            // No-op
+                        }
+                    };
+                }
+            });
+            // Register pixel pass
+            this.game.postProcessingSystem.registerPass('pixel', {
+                enabled: pixelSize !== 1,
+                create: () => {
+                    const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
+                    pixelPass.enabled = pixelSize !== 1;
+                    pixelPass.normalEdgeStrength = 0;
+                    return pixelPass;
+                }
+            });
+            
+            // Register output pass (always last)
+            this.game.postProcessingSystem.registerPass('output', {
+                enabled: true,
+                create: () => {
+                    return new THREE_.OutputPass();
+                }
+            });
+            
+            console.log('[WorldSystem] Registered post-processing passes');
+        }
     
-    postAllInit() {
-            const outputPass = new THREE_.OutputPass();
-        this.composer.addPass(outputPass);
-    }
 
     setupCamera() {
         if (!this.cameraSettings) {
@@ -669,17 +696,15 @@ class WorldSystem extends engine.BaseSystem {
 
     render() {
         if (!this.scene || !this.camera || !this.renderer) {
-            console.warn('WorldRenderSystem: Missing components for rendering', {
-                scene: !!this.scene,
-                camera: !!this.camera,
-                renderer: !!this.renderer
-            });
+            console.warn('WorldRenderSystem: Missing components for rendering');
             return;
         }
 
-        // Always use basic renderer for now to debug
-        this.renderer.render(this.scene, this.camera);
-
+        if (this.game.postProcessingSystem?.composer) {
+            this.game.postProcessingSystem.render();
+        } else {
+            this.renderer.render(this.scene, this.camera);
+        }
     }
 
     updateHeightMap() {

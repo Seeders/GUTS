@@ -26,6 +26,7 @@
       "systems": [
         { "type": "TerrainSystem" },
         { "type": "WorldSystem" },
+        { "type": "PostProcessingSystem" },
         { "type": "RenderSystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
