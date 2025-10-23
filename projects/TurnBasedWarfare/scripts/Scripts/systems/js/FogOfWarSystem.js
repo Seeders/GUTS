@@ -200,7 +200,7 @@ class FogOfWarSystem extends engine.BaseSystem {
 
                 void main() {
                     vec4 sceneColor = texture2D(tDiffuse, vUv);
-                    
+                    float unexploredIntensity = 0.02;
                     // Read depth and reconstruct world position
                     float depth = readDepth(vUv);
                     vec3 worldPos = getWorldPosition(vUv, depth);
@@ -212,12 +212,13 @@ class FogOfWarSystem extends engine.BaseSystem {
                         (-worldPos.z + halfSize) / worldSize
                     );
                     
+                    vec3 grayscale = vec3(dot(sceneColor.rgb, vec3(0.299, 0.587, 0.114)));
                     // Check bounds - out of bounds is unexplored
                     float inset = 1e-4;
                     if (fogUV.x < inset || fogUV.x > 1.0 - inset ||
                         fogUV.y < inset || fogUV.y > 1.0 - inset) {
                         // Completely black (unexplored)
-                        gl_FragColor = vec4(vec3(0.0), 1.0);
+                        gl_FragColor = vec4(grayscale * unexploredIntensity, 1.0);
                         return;
                     }
                     
@@ -230,14 +231,13 @@ class FogOfWarSystem extends engine.BaseSystem {
                     float explorationGradient = explorationSample.g;
                     
                     // Calculate explored color (darkened/desaturated)
-                    vec3 grayscale = vec3(dot(sceneColor.rgb, vec3(0.299, 0.587, 0.114)));
                     vec3 exploredColor = mix(grayscale, sceneColor.rgb, 0.2) * 0.4;
                     
                     // Blend between explored and fully visible based on visibility gradient
                     vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
                     
                     // Finally, blend from black (unexplored) to visible/explored based on exploration gradient
-                    vec3 finalColor = mix(vec3(0.0), visibleColor, explorationGradient);
+                    vec3 finalColor = mix(grayscale * unexploredIntensity, visibleColor, explorationGradient);
                     
                     gl_FragColor = vec4(finalColor, 1.0);
                 }
