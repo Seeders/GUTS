@@ -2,6 +2,7 @@ class PlacementPreview {
     constructor(game) {
         this.game = game;
         
+        this.game.placementPreview = this;
         // Preview state
         this.isActive = false;
         this.gridPosition = null;
@@ -14,7 +15,7 @@ class PlacementPreview {
         this.previewGroup = new THREE.Group();
         this.previewGroup.name = 'PlacementPreview';
         this.previewGroup.visible = false;
-        this.game.scene.add(this.previewGroup);
+        this.game.uiScene.add(this.previewGroup);
         
         
         // Visual configuration

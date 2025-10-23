@@ -6,8 +6,8 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         
         // Battle configuration
-        this.maxBattleDuration = 10; // 90 seconds max
-        this.minBattleDuration = 5;
+        this.maxBattleDuration = 30; // 90 seconds max
+        this.minBattleDuration = 29;
         this.currentBattleTime = 0;
         // Battle state tracking
         this.battleResults = new Map();

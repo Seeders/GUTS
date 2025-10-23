@@ -8,7 +8,7 @@ class HealthBarSystem extends engine.BaseSystem {
         this.HEALTH_BAR_WIDTH = 32;
         this.HEALTH_BAR_HEIGHT = 4;
         this.HEALTH_BAR_OFFSET_Y = 50; // Units above unit
-        this.BACKGROUND_DEPTH = 0.1; // Slight offset to prevent z-fighting
+        this.BACKGROUND_DEPTH = 2; // Slight offset to prevent z-fighting
         
         // Track health bar meshes
         this.healthBars = new Map(); // entityId -> { background, fill, group, lastHealth }
@@ -84,11 +84,7 @@ class HealthBarSystem extends engine.BaseSystem {
         // Create background quad (dark background)
         const backgroundGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
         const backgroundMaterial = new THREE.MeshBasicMaterial({
-            color: 0x222222,
-            transparent: true,
-            opacity: 0.8,
-            depthWrite: false,
-            depthTest: false // Ensure always visible
+            color: 0x222222
         });
         const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
         background.position.z = -this.BACKGROUND_DEPTH; // Slightly behind
@@ -96,11 +92,7 @@ class HealthBarSystem extends engine.BaseSystem {
         // Create health fill quad
         const fillGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
         const fillMaterial = new THREE.MeshBasicMaterial({
-            color: this.getHealthColor(team),
-            transparent: true,
-            opacity: 0.9,
-            depthWrite: false,
-            depthTest: false // Ensure always visible
+            color: this.getHealthColor(team)
         });
         const fill = new THREE.Mesh(fillGeometry, fillMaterial);
         
@@ -244,10 +236,7 @@ class HealthBarSystem extends engine.BaseSystem {
                 const notchGeometry = new THREE.PlaneGeometry(notchWidth, notchHeight);
                 const notchMaterial = new THREE.MeshBasicMaterial({
                     color: 0x000000, // White notch lines for better visibility
-                    transparent: true,
-                    opacity: 0.5, // Full opacity
-                    depthWrite: false,
-                    depthTest: false
+                    transparent: false
                 });
                 
                 const notch = new THREE.Mesh(notchGeometry, notchMaterial);

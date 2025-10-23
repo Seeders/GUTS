@@ -61,7 +61,6 @@ class FogOfWarSystem extends engine.BaseSystem {
         );
         this.fogCamera.position.set(0, 500, 0);
         this.fogCamera.lookAt(0, 0, 0);
-        
         this.fogScene = new THREE.Scene();
         this.fogScene.background = new THREE.Color(0x000000);
         
@@ -199,7 +198,8 @@ class FogOfWarSystem extends engine.BaseSystem {
 
                 void main() {
                     vec4 sceneColor = texture2D(tDiffuse, vUv);
-                    float unexploredIntensity = 0.02;
+                    float unexploredIntensity = 0.025;
+                    float exploredIntensity = 0.2;
                     // Read depth and reconstruct world position
                     float depth = readDepth(vUv);
                     vec3 worldPos = getWorldPosition(vUv, depth);
@@ -230,7 +230,7 @@ class FogOfWarSystem extends engine.BaseSystem {
                     float explorationGradient = explorationSample.g;
                     
                     // Calculate explored color (darkened/desaturated)
-                    vec3 exploredColor = mix(grayscale, sceneColor.rgb, 0.2) * 0.4;
+                    vec3 exploredColor = sceneColor.rgb * exploredIntensity;
                     
                     // Blend between explored and fully visible based on visibility gradient
                     vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
@@ -303,7 +303,8 @@ class FogOfWarSystem extends engine.BaseSystem {
             this.componentTypes.TEAM
         ).filter(id => {
             const team = this.game.getComponent(id, this.componentTypes.TEAM);
-            return team?.team === myTeam;
+            const projectile = this.game.getComponent(id, this.componentTypes.PROJECTILE);
+            return team?.team === myTeam && !projectile;
         });
 
         // Hide all circles first

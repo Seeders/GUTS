@@ -53,7 +53,8 @@
         { "type": "SchedulingSystem" },    
         { "type": "GoldMineSystem" },    
         { "type": "PathfindingSystem" },    
-        { "type": "FogOfWarSystem" }
+        { "type": "FogOfWarSystem" },    
+        { "type": "SelectedUnitSystem" }
       ],
       "classes": [
         {

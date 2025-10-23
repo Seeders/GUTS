@@ -117,7 +117,15 @@ class PostProcessingSystem extends engine.BaseSystem {
 
     render() {
         if (this.composer) {
+            // Render main scene with all post-processing (including fog)
             this.composer.render();
+            
+            if (this.game.uiScene) {
+                this.game.renderer.autoClear = false;  // Don't clear the screen    
+                this.game.renderer.clearDepth();             
+                this.game.renderer.render(this.game.uiScene, this.game.camera);
+                this.game.renderer.autoClear = true;   // Reset for next frame
+            }
         }
     }
 

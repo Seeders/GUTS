@@ -84,14 +84,14 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         this.scene = new THREE.Scene();
-        
+        this.uiScene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(
             75, 
             window.innerWidth / window.innerHeight, 
             0.1, 
             5000
         );
-        
+
         this.renderer = new THREE.WebGLRenderer({ 
             canvas: gameCanvas,
             antialias: false,
@@ -104,6 +104,7 @@ class WorldSystem extends engine.BaseSystem {
         
         this.game.camera = this.camera;
         this.game.scene = this.scene;
+        this.game.uiScene = this.uiScene;
         this.game.renderer = this.renderer;
     }
 

@@ -1279,7 +1279,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             } else {
                 this.game.shopSystem.renderBuildingActions(placement);
             }
-            this.highlightSquadUnits(squadData.unitIds);
+            this.game.selectedUnitSystem.highlightUnits(squadData.unitIds);
         }
     }
 
