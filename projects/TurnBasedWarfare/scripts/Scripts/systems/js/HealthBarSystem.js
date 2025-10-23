@@ -44,17 +44,31 @@ class HealthBarSystem extends engine.BaseSystem {
         
         // Update existing health bars and create new ones
         healthEntities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const pos    = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            
+            const team   = this.game.getComponent(entityId, this.componentTypes.TEAM);
             if (!pos || !health) return;
-            
+
+            // === Fog-of-war visibility filter (enemies only) ===
+            const isEnemy = this.isEnemy(team);
+            const isVisible = !isEnemy || this.isVisibleAt(pos);
+
+            // If enemy not visible: hide existing bar (if any) and skip work
+            if (!isVisible) {
+                const hb = this.healthBars.get(entityId);
+                if (hb) hb.group.visible = false;
+                return;
+            }
+            // Coming back into vision: unhide if we already have one
+            const existing = this.healthBars.get(entityId);
+            if (existing) existing.group.visible = true;
+            // === end FOW filter ===
+
             // Create health bar if it doesn't exist
-            if (!this.healthBars.has(entityId)) {
+            if (!existing) {
                 this.createHealthBarMesh(entityId, team);
             }
-            
+
             // Update health bar
             this.updateHealthBarMesh(entityId, pos, health, team);
         });
@@ -121,15 +135,21 @@ class HealthBarSystem extends engine.BaseSystem {
         
         const { background, fill, group, fillGeometry, fillMaterial } = healthBarData;
         
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        const unitData = this.game.getCollections()[unitType.collection][unitType.id];
 
         // Position group above unit
-        group.position.set(
-            pos.x,
-            pos.y + unitData.height ? unitData.height : this.HEALTH_BAR_OFFSET_Y,
-            pos.z
-        );
+        const unitType  = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const collections = this.game.getCollections?.();
+        const unitData = (unitType && collections && collections[unitType.collection])
+            ? collections[unitType.collection][unitType.id]
+            : null;
+
+        const baseY   = pos.y || 0;
+        const heightY = (unitData && unitData.height != null)
+            ? unitData.height
+            : this.HEALTH_BAR_OFFSET_Y;
+
+        group.position.set(pos.x, baseY + heightY, pos.z);
+
         
         // Make health bar always face camera (billboard effect)
         const cameraPosition = this.game.camera.position;
@@ -302,7 +322,18 @@ class HealthBarSystem extends engine.BaseSystem {
             healthBarData.lastHealthPercent = -1;
         });
     }
-    
+    isEnemy(teamComp) {
+        const myTeam = this.game?.state?.mySide;
+        if (myTeam == null || !teamComp) return false;
+        return teamComp.team !== myTeam;
+    }
+
+    isVisibleAt(pos) {
+        const fow = this.game?.fogOfWarSystem;
+        if (!fow || !pos) return true; // if no FOW, default to visible
+        return fow.isVisibleAt(pos.x, pos.z);
+    }
+
     toggleHealthBars(visible = true) {
         this.healthBars.forEach(healthBarData => {
             healthBarData.group.visible = visible;

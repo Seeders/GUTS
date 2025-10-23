@@ -4,7 +4,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.game.fogOfWarSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
 
-        this.VISION_RADIUS = 200;
+        this.VISION_RADIUS = 300;
         this.WORLD_SIZE = 2000;
         this.FOG_TEXTURE_SIZE = 512;
 

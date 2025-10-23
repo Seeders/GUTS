@@ -291,6 +291,7 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     replaceVeinWithMine(vein) {
+        return;
         if (vein.instancedMeshes && vein.instanceIndex !== null) {
             vein.instancedMeshes.forEach(mesh => {
                 const matrix = new THREE.Matrix4();
@@ -304,35 +305,35 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     restoreVein(vein) {
-        if (vein.instancedMeshes && vein.instanceIndex !== null) {
-            const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-            const extendedSize = this.game.terrainSystem?.extendedSize || 0;
-            const heightMapSettings = this.game.worldSystem?.heightMapSettings;
+        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
+        //     const extensionSize = this.game.terrainSystem?.extensionSize || 0;
+        //     const extendedSize = this.game.terrainSystem?.extendedSize || 0;
+        //     const heightMapSettings = this.game.worldSystem?.heightMapSettings;
             
-            let height = 0;
-            if (heightMapSettings?.enabled) {
-                height = heightMapSettings.heightStep * this.game.terrainSystem.tileMap.extensionTerrainType;
-            }
+        //     let height = 0;
+        //     if (heightMapSettings?.enabled) {
+        //         height = heightMapSettings.heightStep * this.game.terrainSystem.tileMap.extensionTerrainType;
+        //     }
 
-            const worldX = (vein.x + extensionSize) - extendedSize / 2;
-            const worldZ = (vein.y + extensionSize) - extendedSize / 2;
+        //     const worldX = (vein.x + extensionSize) - extendedSize / 2;
+        //     const worldZ = (vein.y + extensionSize) - extendedSize / 2;
 
-            const dummy = new THREE.Object3D();
-            dummy.position.set(worldX, height, worldZ);
-            dummy.rotation.y = Math.random() * Math.PI * 2;
-            dummy.scale.set(50, 50, 50);
-            dummy.updateMatrix();
+        //     const dummy = new THREE.Object3D();
+        //     dummy.position.set(worldX, height, worldZ);
+        //     dummy.rotation.y = Math.random() * Math.PI * 2;
+        //     dummy.scale.set(50, 50, 50);
+        //     dummy.updateMatrix();
 
-            vein.instancedMeshes.forEach(mesh => {
-                const matrix = new THREE.Matrix4();
-                matrix.copy(dummy.matrix);
-                if (mesh.userData.relativeMatrix) {
-                    matrix.multiply(mesh.userData.relativeMatrix);
-                }
-                mesh.setMatrixAt(vein.instanceIndex, matrix);
-                mesh.instanceMatrix.needsUpdate = true;
-            });            
-        }
+        //     vein.instancedMeshes.forEach(mesh => {
+        //         const matrix = new THREE.Matrix4();
+        //         matrix.copy(dummy.matrix);
+        //         if (mesh.userData.relativeMatrix) {
+        //             matrix.multiply(mesh.userData.relativeMatrix);
+        //         }
+        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
+        //         mesh.instanceMatrix.needsUpdate = true;
+        //     });            
+        // }
 
         vein.claimed = false;
         vein.claimedBy = null;
