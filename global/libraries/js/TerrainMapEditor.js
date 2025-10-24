@@ -10,6 +10,15 @@ class TerrainMapEditor {
         this.currentTerrainId = 3; // Default to grass (index 3)
         this.isMouseDown = false;
         this.objectData = {};
+        
+        // Performance optimization: track last painted tile and debounce operations
+        this.lastPaintedTile = null;
+        this.needsRender = false;
+        this.exportDebounceTimer = null;
+        this.renderAnimationFrame = null;
+        this.previewAnimationFrame = null;
+        this.pendingPreviewEvent = null;
+        this.isInitializing = false;
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -80,37 +89,29 @@ class TerrainMapEditor {
                 this.terrainImageProcessor.processImage(this.gameEditor.getCollections().textures[textureName].image);
             }
         });
-        document.getElementById('terrainMapSize').addEventListener('change', (ev) => {    
+        document.getElementById('terrainMapSize').addEventListener('change', async (ev) => {    
             const newGridSize = parseInt(ev.target.value);
             const oldGridSize = this.tileMap.size;
             
             // Create a new map to hold the resized terrain
             const newTerrainMap = [];
+            
+            // Default terrain for new tiles (grass = index 3, or extension terrain type)
+            const defaultTerrainId = this.tileMap.extensionTerrainType || 3;
+            
+            // Initialize with default terrain
             for (let i = 0; i < newGridSize; i++) {
-                newTerrainMap.push(new Array(newGridSize));
+                newTerrainMap.push(new Array(newGridSize).fill(defaultTerrainId));
             }
             
-            // Calculate offsets for maintaining center
-            const oldOffset = Math.floor(oldGridSize / 2);
-            const newOffset = Math.floor(newGridSize / 2);
-            
-            // Fill the new map
-            for (let newI = 0; newI < newGridSize; newI++) {
-                for (let newJ = 0; newJ < newGridSize; newJ++) {
-                    const absI = newI - newOffset;
-                    const absJ = newJ - newOffset;
-                    
-                    const oldI = absI + oldOffset;
-                    const oldJ = absJ + oldOffset;
-                    
-                    if (oldI >= 0 && oldI < oldGridSize && oldJ >= 0 && oldJ < oldGridSize) {
-                        // Copy existing terrain
-                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[oldI][oldJ];
-                    } else {
-                        // Use nearest edge value for new areas
-                        const clampedI = Math.max(0, Math.min(oldGridSize - 1, oldI));
-                        const clampedJ = Math.max(0, Math.min(oldGridSize - 1, oldJ));
-                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[clampedI][clampedJ];
+            // Copy existing terrain data if it exists
+            if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {
+                // Simple approach: copy from top-left, expanding to the right and down
+                for (let y = 0; y < Math.min(oldGridSize, newGridSize); y++) {
+                    for (let x = 0; x < Math.min(oldGridSize, newGridSize); x++) {
+                        if (this.tileMap.terrainMap[y] && this.tileMap.terrainMap[y][x] !== undefined) {
+                            newTerrainMap[y][x] = this.tileMap.terrainMap[y][x];
+                        }
                     }
                 }
             }
@@ -118,11 +119,15 @@ class TerrainMapEditor {
             // Update tileMap with new terrain
             this.tileMap.terrainMap = newTerrainMap;
             this.tileMap.size = newGridSize;
+            this.mapSize = newGridSize;
             this.translator = new this.engineClasses.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
+            
+            // Resize canvas to fit new map size
+            this.updateCanvasSize();
             
             this.updateTerrainStyles();
             this.setupTerrainTypesUI();
-            this.initGridCanvas();
+            await this.initGridCanvas();
             this.exportMap();
         });
         document.getElementById('extensionTerrainType').addEventListener('change', (ev) => {    
@@ -133,8 +138,20 @@ class TerrainMapEditor {
         });
        
         // Handle mouseup event (stop dragging)
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', async () => {
             this.isMouseDown = false;
+            this.lastPaintedTile = null; // Reset for next paint operation
+            
+            // Ensure final render and export happen
+            if (this.needsRender) {
+                await this.updateCanvasWithData();
+                this.needsRender = false;
+            }
+            if (this.exportDebounceTimer) {
+                clearTimeout(this.exportDebounceTimer);
+                this.exportMap();
+                this.exportDebounceTimer = null;
+            }
         });
 
         // Add mouse down event for canvas
@@ -151,7 +168,14 @@ class TerrainMapEditor {
         
         // Add mouse move event for drawing while dragging
         this.canvasEl.addEventListener('mousemove', (e) => {
-            this.updatePreviewPosition(e);
+            // Throttle preview position updates using requestAnimationFrame
+            this.pendingPreviewEvent = e;
+            if (!this.previewAnimationFrame) {
+                this.previewAnimationFrame = requestAnimationFrame(() => {
+                    this.updatePreviewPosition(this.pendingPreviewEvent);
+                    this.previewAnimationFrame = null;
+                });
+            }
             
             if (this.isMouseDown) {
                 this.handleCanvasInteraction(e);
@@ -227,12 +251,17 @@ class TerrainMapEditor {
             }
             
             document.getElementById('terrainMapSize').value = this.mapSize;
-            requestAnimationFrame(() => {
-                // Load terrain types if provided
-                this.updateTerrainStyles();
-                this.setupTerrainTypesUI();
-                this.initGridCanvas();
-            });
+            
+            // Resize canvas to fit map size
+            this.updateCanvasSize();
+            
+            // Load terrain types if provided
+            this.updateTerrainStyles();
+            this.setupTerrainTypesUI();
+            
+            // Wait for next frame to ensure DOM is updated, then initialize
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await this.initGridCanvas();
         });
 
         document.getElementById('terrainsBtn').addEventListener('click', () => {
@@ -303,6 +332,10 @@ class TerrainMapEditor {
             }  
         } 
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
+        
+        // Ensure translator is up to date before creating game object
+        this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        
         this.game = { 
             state: {}, 
             modelManager: this.gameEditor.modelManager, 
@@ -323,6 +356,9 @@ class TerrainMapEditor {
                 palette: palette,
                 canvas: this.canvasEl
             });
+            
+        // Give the renderer a moment to fully initialize
+        await new Promise(resolve => setTimeout(resolve, 50));
     }
     updatePreviewImage() {
         if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {
@@ -384,8 +420,8 @@ class TerrainMapEditor {
             posX = e.clientX;
             posY = e.clientY;
         }
-        posX = e.clientX;
-        posY = e.clientY;
+        posX = e.clientX + window.scrollX;
+        posY = e.clientY + window.scrollY;
         // Center the preview on the cursor
         this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;
         this.previewCanvas.style.display = 'block';
@@ -450,14 +486,14 @@ class TerrainMapEditor {
     
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-terrain-btn';
-            editBtn.innerHTML = '✏️';
+            editBtn.innerHTML = 'âœï¸';
             editBtn.title = 'Edit terrain';
             editBtn.addEventListener('click', () => this.showTerrainEditForm(index));
             buttonContainer.appendChild(editBtn);
     
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-terrain-btn';
-            deleteBtn.innerHTML = '❌';
+            deleteBtn.innerHTML = 'âŒ';
             deleteBtn.title = 'Delete terrain';
             deleteBtn.addEventListener('click', () => this.deleteTerrain(index));
             buttonContainer.appendChild(deleteBtn);
@@ -995,6 +1031,32 @@ class TerrainMapEditor {
         this.exportMap();
     }
 
+
+    updateCanvasSize() {
+        const isIsometric = this.gameEditor.getCollections().configs.game.isIsometric;
+        const gridSize = this.config.gridSize;
+        
+        if (isIsometric) {
+            // For isometric: width needs to accommodate the diamond shape
+            // Height is roughly half the width for isometric projection
+            const requiredWidth = (this.mapSize * gridSize) + gridSize;
+            const requiredHeight = (this.mapSize * gridSize * 0.5) + (gridSize * 0.5);
+            
+            // Add some padding
+            this.config.canvasWidth = Math.max(1536, requiredWidth + 200);
+            this.config.canvasHeight = Math.max(768, requiredHeight + 200);
+        } else {
+            // For non-isometric: simple square grid
+            const requiredSize = this.mapSize * gridSize;
+            
+            // Add padding for centering
+            this.config.canvasWidth = Math.max(1536, requiredSize + 400);
+            this.config.canvasHeight = Math.max(768, requiredSize + 400);
+        }
+        
+        this.canvasEl.width = this.config.canvasWidth;
+        this.canvasEl.height = this.config.canvasHeight;
+    }
     updateTerrainStyles() {
         let styleElem = document.getElementById('terrainStyles');
         if (!styleElem) {
@@ -1056,24 +1118,58 @@ class TerrainMapEditor {
 
     async initGridCanvas() {
         // Initialize the canvas with our map renderer
-
-        await this.initImageManager();
-
-        // Render the initial map
-        this.updateCanvasWithData();
+        this.isInitializing = true;
         
-        // Clean up resources
-        this.imageManager.dispose();
+        try {
+            await this.initImageManager();
+
+            // Render the initial map
+            await this.updateCanvasWithData();
+        } finally {
+            // Clean up resources
+            this.imageManager.dispose();
+            this.isInitializing = false;
+        }
+    }
+
+
+    // Performance optimization: schedule render with requestAnimationFrame
+    scheduleRender() {
+        if (this.renderAnimationFrame) {
+            return; // Already scheduled
+        }
+        
+        this.renderAnimationFrame = requestAnimationFrame(async () => {
+            this.renderAnimationFrame = null;
+            if (this.needsRender) {
+                await this.updateCanvasWithData();
+                this.needsRender = false;
+            }
+        });
+    }
+
+    // Performance optimization: debounce export to reduce save frequency
+    debouncedExport() {
+        if (this.exportDebounceTimer) {
+            clearTimeout(this.exportDebounceTimer);
+        }
+        
+        this.exportDebounceTimer = setTimeout(() => {
+            this.exportMap();
+            this.exportDebounceTimer = null;
+        }, 300); // Export 300ms after last change
     }
 
     handleCanvasInteraction(event) {
         // Get mouse position relative to canvas
         const rect = this.canvasEl.getBoundingClientRect();
         let mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        let mouseY = event.clientY - rect.top;
+        
         
         if(!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+            mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
         }
         
         if (this.placementMode === 'terrain') {
@@ -1085,29 +1181,33 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && 
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
                 
-                // Update terrain map with selected terrain ID
-                this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
+                // Performance: Check if this tile already has this terrain ID
+                const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
+                const currentValue = this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x];
                 
-                // Update the map rendering
-                this.updateCanvasWithData();
-                
-                // Export the updated map
-                this.exportMap();
+                if (currentValue !== this.currentTerrainId || this.lastPaintedTile !== tileKey) {
+                    // Update terrain map with selected terrain ID
+                    this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
+                    this.lastPaintedTile = tileKey;
+                    
+                    // Schedule render instead of immediate render
+                    this.needsRender = true;
+                    this.scheduleRender();
+                    
+                    // Debounce export to reduce frequency
+                    this.debouncedExport();
+                }
             }
         } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && 
                    this.selectedEnvironmentItem !== null) {
-            
-            const objDef = this.gameEditor.getCollections().worldObjects[this.selectedEnvironmentType];
-            const isoPos = { x: mouseX, y: mouseY};
-            let pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-            
-            if(objDef.snapToGrid){
             // Environment object placement logic
-                const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-                const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-                pixelPos = this.translator.gridToIso(snappedGrid.x, snappedGrid.y);
-            }          
-    
+            const isoPos = { x: mouseX, y: mouseY };
+            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
+            
+            // Get the image to calculate its size
+            const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
+            const image = images.idle[0][this.selectedEnvironmentItem];
+            
             // Create new environment object
             const newObject = {
                 type: this.selectedEnvironmentType,
@@ -1122,19 +1222,28 @@ class TerrainMapEditor {
             }
             this.tileMap.environmentObjects.push(newObject);
             
-            // Update the map rendering
-            this.updateCanvasWithData();
+            // Schedule render instead of immediate render
+            this.needsRender = true;
+            this.scheduleRender();
             
-            // Export the updated map
-            this.exportMap();
+            // Debounce export to reduce frequency
+            this.debouncedExport();
         }
     }
 
     async updateCanvasWithData() {
-        if(this.tileMap.terrainMap.length > 0){
+        // Don't render if still initializing (prevents race conditions)
+        if (this.isInitializing && !this.mapRenderer) {
+            return;
+        }
+        
+        if(this.tileMap.terrainMap.length > 0 && this.mapRenderer){
             this.mapRenderer.isMapCached = false;
-            this.mapRenderer.renderBG(this.tileMap, []);
-            this.mapRenderer.renderFG();
+            await new Promise(resolve => {
+                this.mapRenderer.renderBG(this.tileMap, []);
+                this.mapRenderer.renderFG();
+                resolve();
+            });
         }
     }
 
@@ -1150,4 +1259,3 @@ class TerrainMapEditor {
         document.body.dispatchEvent(myCustomEvent);
     }
 }
-                   

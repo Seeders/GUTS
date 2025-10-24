@@ -1,129 +1,581 @@
-#level-editor-container {
-    gap: 20px;
-    height: 50vh;
-    overflow: hidden;
-    background-color: #080815;
-    color: #00f0ff;
-    position: relative;    
-    padding: .5em .5em 0 .5em;
-}
-#level-editor-container.show {
-    display: flex;
-}
- 
-.grid-container {
-  position: relative;
-}
-
-/* Add these to your existing levelEditor.css file */
-
-/* Terrain type management */
-#level-editor-container .terrain-types-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
+#level-editor-container :root {
+	--primary: #6366f1;
+	--primary-dark: #4f46e5;
+	--secondary: #10b981;
+	--dark: #1e293b;
+	--darker: #0f172a;
+	--light: #e2e8f0;
+	--accent: #8b5cf6;
+	--danger: #ef4444;
+	--text: #f8fafc;
+	--text-muted: #94a3b8;
+	--border-radius: 8px;
+	--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
-  
+
+  #level-editor-container * {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  #level-editor-container {
+	background-color: var(--darker);
+	color: var(--text);
+  }
+
+  #level-editor-container button {
+	cursor: pointer;
+	border: none;
+	border-radius: var(--border-radius);
+	padding: 8px 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+  }
+
+  #level-editor-container button:hover {
+	opacity: 0.9;
+	transform: translateY(-1px);
+  }
+
+  #level-editor-container button:active {
+	transform: translateY(0);
+  }
+
+  #level-editor-container input {
+	background-color: var(--dark);
+	border: 1px solid #334155;
+	color: var(--text);
+	border-radius: var(--border-radius);
+	padding: 8px 12px;
+	outline: none;
+  }
+
+  #level-editor-container input:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+
+  #level-editor-container input[type="number"] {
+	width: 80px;
+  }
+
+  #level-editor-container input[type="color"] {
+	width: 40px;
+	height: 40px;
+	padding: 2px;
+	cursor: pointer;
+  }
+
+  #level-editor-container {
+	display: flex;
+	gap: 24px;
+	height: 90vh;
+	overflow: hidden;
+	background-color: var(--darker);
+	color: var(--text);
+	position: relative;
+  }
+
+  #level-editor-container .content-sidebar {
+	display: flex;
+	flex-direction: column;
+	width: 320px;
+	background-color: var(--dark);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow);
+	overflow: hidden;
+  }
+
+  #level-editor-container .toolbar {
+	display: flex;
+	padding: 16px;
+	background-color: rgba(255, 255, 255, 0.03);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #level-editor-container .toolbar button {
+	background-color: transparent;
+	color: var(--text-muted);
+	font-weight: 600;
+	padding: 8px 16px;
+	border-radius: var(--border-radius);
+  }
+
+  #level-editor-container .toolbar button.active {
+	background-color: var(--primary);
+	color: white;
+  }
+
+  #level-editor-container .tools {
+	padding: 20px;
+	flex-grow: 1;
+	overflow-y: auto;
+  }
+
+  #level-editor-container .form-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+  }
+
+  #level-editor-container .form-row label {
+	color: var(--text-muted);
+	font-size: 14px;
+	flex: 1;
+  }
+
+  #level-editor-container h3 {
+	color: var(--light);
+	font-size: 18px;
+	margin-bottom: 24px;
+	font-weight: 600;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding-bottom: 12px;
+  }
+
+  #level-editor-container h4 {
+	color: var(--text-muted);
+	font-size: 16px;
+	margin: 24px 0 16px;
+	font-weight: 600;
+  }
+
+  #level-editor-container .grid-container {
+	flex-grow: 1;
+	position: relative;
+	background-color: var(--dark);
+	border-radius: var(--border-radius);
+	overflow: auto; /* Enable scrolling for large maps */
+	box-shadow: var(--shadow);
+	scroll-behavior: smooth;
+  }
+
+  /* Scrollbar styling for terrain editor */
+  #level-editor-container .grid-container::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+	display: block !important;
+  }
+
+  #level-editor-container .grid-container::-webkit-scrollbar-track {
+	background: var(--darker);
+	border-radius: 6px;
+  }
+
+  #level-editor-container .grid-container::-webkit-scrollbar-thumb {
+	background: var(--primary);
+	border-radius: 6px;
+	border: 2px solid var(--darker);
+  }
+
+  #level-editor-container .grid-container::-webkit-scrollbar-thumb:hover {
+	background: var(--primary-dark);
+  }
+
+  /* Firefox scrollbar styling */
+  #level-editor-container .grid-container {
+	scrollbar-width: auto !important;
+	scrollbar-color: var(--primary) var(--darker) !important;
+  }
+
+  #level-editor-container .grid-background {
+	background-image: 
+	  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+	  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+	background-size: 20px 20px;
+  }
+
+  #level-editor-container #grid {
+	display: block;
+	image-rendering: pixelated;
+	min-width: min-content;
+	min-height: min-content;
+  }
+
+  #level-editor-container .translation-controls {
+	position: absolute;
+	right: 20px;
+	bottom: 20px;
+	display: grid;
+	grid-template-columns: repeat(3, 40px);
+	grid-template-rows: repeat(3, 40px);
+	gap: 4px;
+	z-index: 10;
+  }
+
+  #level-editor-container .translation-controls button {
+	width: 40px;
+	height: 40px;
+	background-color: rgba(15, 23, 42, 0.8);
+	color: var(--light);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	font-size: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+
+  #level-editor-container #translate-up {
+	grid-column: 2;
+	grid-row: 1;
+  }
+
+  #level-editor-container #translate-left {
+	grid-column: 1;
+	grid-row: 2;
+  }
+
+  #level-editor-container #translate-right {
+	grid-column: 3;
+	grid-row: 2;
+  }
+
+  #level-editor-container #translate-down {
+	grid-column: 2;
+	grid-row: 3;
+  }
+
+  /* Terrain item styling */
+  #level-editor-container .terrain-types-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 16px;
+  }
+
   #level-editor-container .terrain-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 5px;
-    border-radius: 4px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: var(--border-radius);
+	background-color: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	cursor: move;
+	user-select: none;
+	transition: all 0.2s ease;
   }
-  
+
+  #level-editor-container .terrain-item:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+	transform: translateY(-2px);
+  }
+
   #level-editor-container .color-option {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	border-radius: var(--border-radius);
+	cursor: pointer;
+	border: 2px solid transparent;
+	flex-shrink: 0;
   }
-  
-  #level-editor-container .color-option:hover {
-    opacity: 0.8;
+
+  #level-editor-container .color-option.active {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
   }
-  
-  #level-editor-container .terrain-label {
-    flex-grow: 1;
+
+  #level-editor-container  .terrain-label {
+	flex-grow: 1;
+	font-weight: 500;
   }
-  
+
   #level-editor-container .terrain-buttons {
-    display: flex;
-    gap: 5px;
+	display: flex;
+	gap: 8px;
   }
 
-.translation-controls {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    display: grid;
-    grid-template-columns: repeat(2, 32px);
-    grid-template-rows: repeat(2, 32px);
-    gap: 5px;
-}
-.translation-controls button {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 4px;
-}
-.translation-controls button span {
-    display: inline-block;
-    transform: rotate(45deg); /* Rotate arrows 45 degrees */
-}
-#translate-up { grid-column: 2; grid-row: 1; }
-#translate-left { grid-column: 1; grid-row: 1; }
-#translate-right { grid-column: 2; grid-row: 2; }
-#translate-down { grid-column: 1; grid-row: 2; }
+  #level-editor-container .terrain-buttons button {
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	background-color: transparent;
+	color: var(--text-muted);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-#terrain-image-editor { 
-  border: 1px solid black; 
-  image-rendering: pixelated; 
-  width: 960px; 
-  height: 480px; 
-}
+  #level-editor-container  .terrain-buttons button:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+	color: var(--text);
+  }
 
-#terrainForm .modal-content {
-  max-width: 960px;
-}
+  #level-editor-container .status-bar {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 28px;
+	background-color: rgba(15, 23, 42, 0.9);
+	display: flex;
+	align-items: center;
+	padding: 0 16px;
+	font-size: 13px;
+	color: var(--text-muted);
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-.terrain-item {
-  /* Your existing styles */
-  cursor: move; /* Shows it's draggable */
-  user-select: none; /* Prevents text selection while dragging */
-}
+  /* Add a terrainsPanel container */
+  #level-editor-container  #terrainsPanel {
+	margin-top: 24px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	padding-top: 16px;
+  }
 
-.terrain-item:hover {
-  /* Optional: Add a hover effect to indicate draggability */
-  opacity: 0.8;
-}
-.canvas-container {
-  position: relative;
-}
 
-#terrain-image-editor {
-  position: relative;
-  z-index: 1;
-}
-#terrain-grid-canvas {
-  image-rendering: pixelated; 
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none; /* Allow clicks to pass through */
-  z-index: 10; /* Ensure it's above the pixel canvas */  
-  width: 960px;
-  height: 480px;
-}
 
-#terrain-image-display {
-  width: 960px;
-  image-rendering: pixelated;
+  /* Environment Panel Styles */
+  #level-editor-container #environmentPanel {
+	overflow-y: auto;
+	max-height: calc(100vh - 200px);
+  }
+  
+  #level-editor-container .environment-objects-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+  }
+  
+  #level-editor-container .environment-objects-container h3 {
+	margin-top: 0;
+	margin-bottom: 12px;
+	color: #e5e7eb;
+	font-size: 16px;
+	border-bottom: 1px solid #374151;
+	padding-bottom: 8px;
+  }
+  
+  #level-editor-container .environment-type {
+	background-color: #1f2937;
+	border-radius: 6px;
+	overflow: hidden;
+	margin-bottom: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	transition: box-shadow 0.2s ease;
+  }
+  
+  #level-editor-container .environment-type:hover {
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  #level-editor-container .environment-type-header {
+	padding: 10px 12px;
+	font-weight: 500;
+	cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #2d3748;
+	color: #e5e7eb;
+	position: relative;
+	text-transform: capitalize;
+  }
+  
+  #level-editor-container .environment-type-header::after {
+	content: 'â–¼';
+	font-size: 10px;
+	transition: transform 0.2s ease;
+  }
+  
+  #level-editor-container .environment-type-header.open::after {
+	transform: rotate(180deg);
+  }
+  
+  #level-editor-container .environment-items {
+	padding: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	background-color: #1f2937;
+  }
+  
+  #level-editor-container .environment-item {
+	width: 128px;
+	height: 128px;
+	border: 2px solid #4b5563;
+	border-radius: 4px;
+	cursor: pointer;
+	padding: 2px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #374151;
+	transition: all 0.2s ease;
+	position: relative;
+  }
+  
+  #level-editor-container .environment-item:hover {
+	border-color: #9ca3af;
+	transform: translateY(-2px);
+  }
+  
+  #level-editor-container .environment-item.active {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  
+  #level-editor-container .environment-item canvas {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+  }
+  
+  /* Tooltip for environment items */
+  #level-editor-container .environment-item::before {
+	content: attr(data-name);
+	position: absolute;
+	bottom: calc(100% + 5px);
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #111827;
+	color: white;
+	text-align: center;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	white-space: nowrap;
+	visibility: hidden;
+	opacity: 0;
+	transition: all 0.2s ease;
+	z-index: 10;
+	pointer-events: none;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  #level-editor-container .environment-item:hover::before {
+	visibility: visible;
+	opacity: 1;
+  }
+  
+  /* Indicator for placement mode */
+  #level-editor-container .placement-mode-indicator {
+	position: absolute;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: rgba(17, 24, 39, 0.8);
+	color: white;
+	padding: 5px 10px;
+	border-radius: 4px;
+	font-size: 14px;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	z-index: 100;
+  }
+  
+  /* Improved toolbar buttons */
+  #level-editor-container .toolbar .btn {
+	padding: 8px 16px;
+	border: none;
+	background-color: #374151;
+	color: #e5e7eb;
+	cursor: pointer;
+	border-radius: 4px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+  }
+  
+  #level-editor-container .toolbar .btn:hover {
+	background-color: #4b5563;
+  }
+  
+  #level-editor-container .toolbar .btn.active {
+	background-color: #3b82f6;
+	color: white;
+  }
+  
+  /* Better spacing for the tools panels */
+  #level-editor-container .tools > div {
+	margin-bottom: 20px;
+  }
+  
+  /* Environment object count badge */
+  #level-editor-container .environment-type-header .object-count-container {
+	flex: 1;
+	margin-left: 8px;
+  }
+  #level-editor-container .environment-type-header .object-count {
+	background-color: #4b5563;
+	color: white;
+	padding: 2px 6px;
+	border-radius: 10px;
+	font-size: 12px;
+  }
+  
+  /* Empty state for environment types */
+  #level-editor-container .environment-items.empty {
+	padding: 20px;
+	text-align: center;
+	color: #9ca3af;
+	font-style: italic;
+  }
+  
+  /* Styles for delete mode */
+  #level-editor-container .delete-mode-active .grid-container {
+	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v6M14 11v6"/></svg>'), auto;
+  }
+  
+  /* Object control panel */
+  #level-editor-container .object-controls {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px;
+	background-color: #1f2937;
+	border-radius: 6px;
+	margin-bottom: 10px;
+	gap: 8px;
+  }
+  
+  #level-editor-container .object-controls button {
+	background-color: #374151;
+	color: #e5e7eb;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	transition: background-color 0.2s;
+  }
+  
+  #level-editor-container .object-controls button:hover {
+	background-color: #4b5563;
+  }
+  
+  #level-editor-container .object-controls button.delete-mode {
+	background-color: #ef4444;
+	color: white;
+  }
+  
+  #level-editor-container .object-controls button.delete-mode:hover {
+	background-color: #dc2626;
+  }
+  
+  
+ #object-preview-canvas {
+	transition: transform 0.05s ease-out;
+	will-change: transform;
+	image-rendering: pixelated;
+	position: absolute;
+	pointer-events: none; 
+	z-index: 9999;
+	opacity: 0.7; 
 }
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+	#level-editor-container .environment-items {
+	  justify-content: center;
+	}
+	
+	#level-editor-container .environment-item {
+	  width: 56px;
+	  height: 56px;
+	}
+  }
