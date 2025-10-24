@@ -129,16 +129,7 @@ class LifetimeSystem extends engine.BaseSystem {
                 { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
             );
         }
-        
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            if (unitType) {
-                this.game.battleLogSystem.add(
-                    `${unitType.title} fades back to its realm`,
-                    'log-summon'
-                );
-            }
-        }
+   
     }
     
     handleMirrorImageExpiration(entityId) {
@@ -164,12 +155,7 @@ class LifetimeSystem extends engine.BaseSystem {
             );
         }
         
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                'An unused trap crumbles away',
-                'log-trap'
-            );
-        }
+       
     }
     
     handleTemporaryEffectExpiration(entityId) {
@@ -212,15 +198,7 @@ class LifetimeSystem extends engine.BaseSystem {
             // Remove mind control component
             this.game.removeComponent(entityId, this.componentTypes.MIND_CONTROLLED);
             
-            if (this.game.battleLogSystem) {
-                const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-                if (unitType) {
-                    this.game.battleLogSystem.add(
-                        `${unitType.title} breaks free from mind control!`,
-                        'log-control'
-                    );
-                }
-            }
+          
         }
     }
 
@@ -432,16 +410,7 @@ class LifetimeSystem extends engine.BaseSystem {
     // =============================================
     
     logEntityDestruction(entityId, lifetime) {
-        if (!this.game.battleLogSystem || !lifetime.logDestruction) return;
-        
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        if (unitType) {
-            const age = ((this.game.state.now || 0)) - lifetime.startTime;
-            this.game.battleLogSystem.add(
-                `${unitType.title} expires after ${age.toFixed(1)} seconds`,
-                'log-lifetime'
-            );
-        }
+       
     }
     
     getStatistics() {

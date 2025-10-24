@@ -129,33 +129,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenFlash('#8B0000', 0.6);
         }
         
-        // Enhanced logging
-        if (intimidatedCount > 0 && refreshedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Gladiator intimidates ${intimidatedCount} enemies and renews fear in ${refreshedCount} others!`);
-        } else if (intimidatedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Gladiator intimidates ${intimidatedCount} enemies!`);
-        } else if (refreshedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Gladiator's presence renews fear in ${refreshedCount} enemies!`);
-        } else {
-            this.logAbilityUsage(casterEntity, 
-                `The arena trembles, but enemies stand firm!`);
-        }
-        
-        // Battle log integration
-        if (this.game.battleLogSystem && (intimidatedCount > 0 || refreshedCount > 0)) {
-            const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (casterUnitType && casterTeam) {
-                this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.title} unleashes intimidating arena presence! (${intimidatedCount + refreshedCount} enemies affected)`,
-                    'log-intimidation'
-                );
-            }
-        }
+       
     }
     
     applyIntimidation(casterEntity, enemyId) {
@@ -177,18 +151,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
             existingBuff.endTime = endTime;
             existingBuff.appliedTime = currentTime;
             
-            // Log individual refresh
-            if (this.game.battleLogSystem) {
-                const enemyUnitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
-                const enemyTeam = this.game.getComponent(enemyId, this.componentTypes.TEAM);
-                
-                if (enemyUnitType && enemyTeam) {
-                    this.game.battleLogSystem.add(
-                        `${enemyTeam.team} ${enemyUnitType.title}'s fear is renewed!`,
-                        'log-intimidation'
-                    );
-                }
-            }
+         
             
             return { success: true, wasRefreshed: true };
         } else {
@@ -211,18 +174,7 @@ class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
                 )
             );
             
-            // Log individual intimidation
-            if (this.game.battleLogSystem) {
-                const enemyUnitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
-                const enemyTeam = this.game.getComponent(enemyId, this.componentTypes.TEAM);
-                
-                if (enemyUnitType && enemyTeam) {
-                    this.game.battleLogSystem.add(
-                        `${enemyTeam.team} ${enemyUnitType.title} is intimidated by arena presence!`,
-                        'log-intimidation'
-                    );
-                }
-            }
+       
             
             return { success: true, wasRefreshed: false };
         }

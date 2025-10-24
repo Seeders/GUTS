@@ -139,13 +139,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
         }
         
-        // Log results
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Enchanter enhances ${enchantedCount} weapons with elemental magic!`,
-                'log-ability'
-            );
-        }
+     
     }
     
     // DESYNC SAFE: Select element deterministically instead of randomly
@@ -183,16 +177,7 @@ class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
                     });
                 }
                 
-                // Log enchantment expiration
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title}'s weapon enchantment fades away.`,
-                            'log-ability'
-                        );
-                    }
-                }
+              
             }
         }
     }

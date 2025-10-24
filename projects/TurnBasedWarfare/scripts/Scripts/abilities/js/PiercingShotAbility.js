@@ -149,18 +149,7 @@ class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
             // Create impact effect at each enemy position
             this.createVisualEffect(position, 'impact');
             
-            // Log individual hits
-            if (this.game.battleLogSystem) {
-                const enemyUnitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
-                const enemyTeam = this.game.getComponent(enemyId, this.componentTypes.TEAM);
-                
-                if (enemyUnitType && enemyTeam) {
-                    this.game.battleLogSystem.add(
-                        `Piercing bolt strikes ${enemyTeam.team} ${enemyUnitType.title}!`,
-                        'log-piercing'
-                    );
-                }
-            }
+         
         });
         
         // Screen effects for dramatic impact

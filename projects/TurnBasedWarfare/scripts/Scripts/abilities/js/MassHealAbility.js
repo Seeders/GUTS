@@ -114,19 +114,7 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
                             actualHeal, 'heal'
                         );
                     }
-                    
-                    // Log individual healing for battle log
-                    if (this.game.battleLogSystem) {
-                        const allyUnitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-                        const allyTeam = this.game.getComponent(allyId, this.componentTypes.TEAM);
-                        
-                        if (allyUnitType && allyTeam) {
-                            this.game.battleLogSystem.add(
-                                `${allyTeam.team} ${allyUnitType.title} healed for ${actualHeal} health!`,
-                                'log-heal'
-                            );
-                        }
-                    }
+                
                 }
             }
         });

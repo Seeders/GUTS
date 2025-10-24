@@ -191,16 +191,6 @@ class DamageSystem extends engine.BaseSystem {
             }
         });
 
-        // Log splash summary
-        if (results.length > 0 && this.game.battleLogSystem) {
-            const totalDamage = results.reduce((sum, r) => sum + r.damage, 0);
-            const elementText = element !== this.ELEMENT_TYPES.PHYSICAL ? ` ${element}` : '';
-            this.game.battleLogSystem.add(
-                `${elementText} explosion affects ${results.length} targets for ${totalDamage} total damage!`, 
-                'log-explosion'
-            );
-        }
-
         return results;
     }
 

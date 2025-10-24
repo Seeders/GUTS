@@ -99,7 +99,6 @@ class UnitOrderSystem extends engine.BaseSystem {
         document.body.style.cursor = this.cursorWhenTargeting;
 
         this.game.uiSystem?.showNotification('🎯 Click the ground to set a target for selected units', 'info', 1200);
-        this.game.battleLogSystem?.add('🎯 Targeting started');
     }
 
     stopTargeting() {

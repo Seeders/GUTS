@@ -321,6 +321,7 @@ class RenderSystem extends engine.BaseSystem {
                 animSpeed: geometry.getAttribute('aAnimSpeed')
             },
             meta: bundle.meta,
+            vatTexture: bundle.vatTexture,     
             bundleSource: `${objectType}_${spawnType}`, // Track source for debugging
             createdAt: Date.now(),
             spawnType,

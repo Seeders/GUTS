@@ -575,32 +575,32 @@ class EffectsSystem extends engine.BaseSystem {
     }
 
     playScreenFlash(color = '#ffffff', duration = 0.3) {
-        if (this.flashActive) return;
-        return;
-        this.flashActive = true;
-        const flash = document.createElement('div');
-        flash.className = 'screen-flash';
-        flash.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: ${color};
-            pointer-events: none;
-            z-index: 999;
-            opacity: 0.6;
-        `;
+        // if (this.flashActive) return;
+        // return;
+        // this.flashActive = true;
+        // const flash = document.createElement('div');
+        // flash.className = 'screen-flash';
+        // flash.style.cssText = `
+        //     position: fixed;
+        //     top: 0;
+        //     left: 0;
+        //     width: 100%;
+        //     height: 100%;
+        //     background-color: ${color};
+        //     pointer-events: none;
+        //     z-index: 999;
+        //     opacity: 0.6;
+        // `;
         
-        document.body.appendChild(flash);
+        // document.body.appendChild(flash);
         
-        // Store flash data for game loop processing
-        this.flashData = {
-            element: flash,
-            startTime: this.game.state.now,
-            duration: duration,
-            startOpacity: 0.6
-        };
+        // // Store flash data for game loop processing
+        // this.flashData = {
+        //     element: flash,
+        //     startTime: this.game.state.now,
+        //     duration: duration,
+        //     startOpacity: 0.6
+        // };
     }
 
     

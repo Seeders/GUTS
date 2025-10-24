@@ -213,35 +213,8 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     logMarkResult(casterEntity, targetId, markResult) {
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
+       
         
-        if (markResult.isNewMark) {
-            this.logAbilityUsage(casterEntity, 
-                `Ranger marks their prey for the hunt! (+${Math.round((markResult.damageMultiplier - 1) * 100)}% damage)`);
-        } else if (markResult.wasStacked) {
-            this.logAbilityUsage(casterEntity, 
-                `Target marked ${markResult.currentStacks} times! (+${Math.round((markResult.damageMultiplier - 1) * 100)}% damage)`);
-        } else if (markResult.wasRefreshed) {
-            this.logAbilityUsage(casterEntity, 
-                `Mark refreshed (max stacks reached)! (+${Math.round((markResult.damageMultiplier - 1) * 100)}% damage)`);
-        }
-        
-        // Battle log integration
-        if (this.game.battleLogSystem && targetUnitType && targetTeam) {
-            const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (casterUnitType && casterTeam) {
-                let actionText = markResult.isNewMark ? 'marks' : 
-                               markResult.wasStacked ? `stacks mark on` : 'refreshes mark on';
-                               
-                this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.title} ${actionText} ${targetTeam.team} ${targetUnitType.title} (${markResult.currentStacks} stacks)!`,
-                    'log-mark'
-                );
-            }
-        }
     }
     
     // FIXED: Deterministic target selection

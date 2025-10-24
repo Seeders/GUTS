@@ -158,23 +158,8 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
         if (this.game.effectsSystem && formationSuccess > 0) {
             this.game.effectsSystem.playScreenFlash('#4169E1', 0.4);
         }
-        
-        // Enhanced logging
-        this.logAbilityUsage(casterEntity, 
-            `Phalanx formation complete! ${formationSuccess} Hoplites gain ${Math.round((armorMultiplier - 1) * 100)}% armor bonus!`);
-            
-        // Battle log integration
-        if (this.game.battleLogSystem && formationSuccess > 0) {
-            const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (casterUnitType && casterTeam) {
-                this.game.battleLogSystem.add(
-                    `${casterTeam.team} Hoplites form a mighty phalanx formation! (${formationSuccess} warriors)`,
-                    'log-formation'
-                );
-            }
-        }
+    
+      
         
         // Schedule formation expiration warning
         this.game.schedulingSystem.scheduleAction(() => {
@@ -218,12 +203,6 @@ class PhalanxFormationAbility extends engine.app.appClasses['BaseAbility'] {
             
             activeFormationMembers++;
         });
-        
-        if (this.game.battleLogSystem && activeFormationMembers > 0) {
-            this.game.battleLogSystem.add(
-                `The phalanx formation begins to weaken...`,
-                'log-formation'
-            );
-        }
+       
     }
 }

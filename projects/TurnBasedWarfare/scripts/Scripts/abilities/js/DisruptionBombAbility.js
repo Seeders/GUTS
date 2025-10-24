@@ -154,13 +154,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
             }
         });
         
-        // Log results
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Saboteur's bomb disrupts ${disruptedCount} enemy systems!`,
-                'log-ability'
-            );
-        }
+       
     }
     
     // DESYNC SAFE: Find best cluster position deterministically
@@ -220,16 +214,7 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
                     });
                 }
                 
-                // Log disruption expiration
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title}'s systems come back online.`,
-                            'log-ability'
-                        );
-                    }
-                }
+           
             }
         }
     }

@@ -289,12 +289,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
     
     start() {
-       // this.game.statisticsTrackingSystem.startSession();
         this.game.shopSystem.createShop();
         this.game.particleSystem.initialize(); 
-        this.game.effectsSystem.initialize();                  
-        // Welcome messages
-        this.game.battleLogSystem.addWelcomeMessages();
+        this.game.effectsSystem.initialize();          
     }
 
     exitToMainMenu() {
@@ -338,9 +335,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
      
         this.game.shopSystem?.createShop(); // Refresh experience panels
         
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`Round ${state.round} - Deploy your army! Waiting for opponent...`);
-        }
     }
     clearBattlefield() {
 

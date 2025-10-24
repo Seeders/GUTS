@@ -230,16 +230,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual charm effect
         this.createVisualEffect(targetPos, 'charm');
 
-        // Log the mind control
-        if (this.game.battleLogSystem) {
-            const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-            if (targetUnitType) {
-                this.game.battleLogSystem.add(
-                    `${targetUnitType.title} has been charmed!`,
-                    'log-ability'
-                );
-            }
-        }
+       
 
         // Clean up beams
         this.clearAllBeamsForTarget(targetId);
@@ -285,16 +276,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
             this.createVisualEffect(targetPos, 'control', { count: 2 });
         }
 
-        // Log the expiration
-        if (this.game.battleLogSystem) {
-            const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-            if (targetUnitType) {
-                this.game.battleLogSystem.add(
-                    `${targetUnitType.title} breaks free from mind control!`,
-                    'log-ability'
-                );
-            }
-        }
+    
     }
 
     // DESYNC SAFE: Create visual beam effect

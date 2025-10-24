@@ -129,22 +129,8 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenShake(0.3, 1);
         }
         
-        // Enhanced logging
-        this.logAbilityUsage(casterEntity, 
-            `Soldier forms a shield wall, gaining ${Math.round((1 - this.damageReduction) * 100)}% damage resistance!`);
-            
-        // Battle log integration
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (unitType && team) {
-                this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.title} forms a protective shield wall!`,
-                    'log-defense'
-                );
-            }
-        }
+    
+      
         
         // Schedule shield wall expiration warning
         this.game.schedulingSystem.scheduleAction(() => {
@@ -223,18 +209,7 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
             color: 0x708090,
             scaleMultiplier: 0.8 
         });
-        
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (unitType && team) {
-                this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.title}'s shield wall begins to weaken...`,
-                    'log-defense'
-                );
-            }
-        }
+     
     }
     
     // FIXED: Proper shield wall removal
@@ -255,16 +230,6 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
         // Remove shield wall component
         this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
         
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (unitType && team) {
-                this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.title}'s shield wall dissolves.`,
-                    'log-defense'
-                );
-            }
-        }
+       
     }
 }

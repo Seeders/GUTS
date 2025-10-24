@@ -13,12 +13,10 @@ class UISystem extends engine.BaseSystem {
     }
     
     start() {
-        this.game.statisticsTrackingSystem.startSession();
         this.game.shopSystem.createShop();
         this.game.particleSystem.initialize(); 
         this.game.effectsSystem.initialize();                  
         // Welcome messages
-        this.game.battleLogSystem.addWelcomeMessages();
     }
     
     update() {

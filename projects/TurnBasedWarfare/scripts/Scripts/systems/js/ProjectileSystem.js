@@ -473,26 +473,12 @@ class ProjectileSystem extends engine.BaseSystem {
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
             
             // Apply elemental damage through the damage system
-            const result = this.game.damageSystem.applyDamage(projectile.source, targetId, damage, element, {
+            this.game.damageSystem.applyDamage(projectile.source, targetId, damage, element, {
                 isProjectile: true,
                 projectileId: projectileId
             });
             
-            // Log projectile hit
-            if (result.damage > 0 && this.game.battleLogSystem) {
-                const sourceUnitType = this.game.getComponent(projectile.source, this.componentTypes.UNIT_TYPE);
-                const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-                const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
-                const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-                
-                if (sourceUnitType && targetUnitType && sourceTeam && targetTeam) {
-                    const elementText = element !== this.game.damageSystem.ELEMENT_TYPES.PHYSICAL ? ` (${element})` : '';
-                    this.game.battleLogSystem.add(
-                        `${sourceTeam.team} ${sourceUnitType.title} projectile${elementText} hits ${targetTeam.team} ${targetUnitType.title} for ${result.damage} damage`, 
-                        'log-damage'
-                    );
-                }
-            }
+          
             // Create hit effect
             this.createHitEffect(projectileId, targetId, targetPos, element, false);
         }
@@ -525,11 +511,7 @@ class ProjectileSystem extends engine.BaseSystem {
                 }
             );
             
-            // Log explosion with results
-            if (this.game.battleLogSystem) {
-                const elementText = element !== this.game.damageSystem.ELEMENT_TYPES.PHYSICAL ? ` ${element}` : '';
-                this.game.battleLogSystem.add(`Ballistic${elementText} projectile explodes on impact!`, 'log-explosion');
-            }
+       
         }
         
         // Destroy the projectile

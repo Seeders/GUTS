@@ -137,7 +137,7 @@
         "slot": "mainHand",
         "item": "axe1h",
         "attachmentData": {
-          "bone": "",
+          "bone": "RightHand",
           "offset": {
             "x": 0,
             "y": 0,

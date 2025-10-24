@@ -129,14 +129,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual trap placement effect
         this.createVisualEffect(trapPos, 'trap_place');
         
-        // Log successful trap placement
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Trapper places an explosive trap at the ready!`,
-                'log-ability'
-            );
-        }
-        
+      
         // DESYNC SAFE: Schedule trap cleanup after lifetime
         this.game.schedulingSystem.scheduleAction(() => {
             this.cleanupTrap(trapId);
@@ -278,13 +271,7 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
             });
         });
         
-        // Log explosion results
-        if (this.game.battleLogSystem && damageTargets.length > 0) {
-            this.game.battleLogSystem.add(
-                `Explosive trap detonates, catching ${damageTargets.length} enemies in the blast!`,
-                'log-ability'
-            );
-        }
+     
     }
     
     // DESYNC SAFE: Clean up trap entity

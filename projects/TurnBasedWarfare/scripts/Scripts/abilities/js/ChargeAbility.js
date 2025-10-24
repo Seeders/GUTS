@@ -206,24 +206,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
                 this.game.effectsSystem.playScreenShake(0.4, 2);
             }
             
-            // Log successful charge
-            if (this.game.battleLogSystem) {
-                const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-                if (targetUnitType) {
-                    this.game.battleLogSystem.add(
-                        `Knight's charge strikes ${targetUnitType.title} with devastating force!`,
-                        'log-ability'
-                    );
-                }
-            }
-        } else {
-            // Charge missed - log it
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(
-                    `Knight's charge misses its target!`,
-                    'log-ability'
-                );
-            }
+        
         }
     }
     
@@ -244,17 +227,7 @@ class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
                         color: 0x87CEEB 
                     });
                 }
-                
-                // Log stun expiration
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title} recovers from being stunned.`,
-                            'log-ability'
-                        );
-                    }
-                }
+          
             }
         }
     }

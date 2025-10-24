@@ -203,7 +203,6 @@ class InputManager {
     
     handleSaveGame() {
         // Trigger save game functionality
-        this.game.statisticsTrackingSystem.saveSessionStats();
         GUTS.NotificationSystem.show('Game saved!', 'success', 2000);
     }
     
@@ -260,7 +259,6 @@ class InputManager {
             });
             state.selectedUnitType = null;
             this.game.placementSystem.handleUnitSelectionChange(null);
-            this.game.battleLogSystem.add('Selection cancelled');
         }
     }
     cycleThroughUnits() {

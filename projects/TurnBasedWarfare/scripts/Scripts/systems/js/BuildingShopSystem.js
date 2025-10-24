@@ -442,9 +442,7 @@ class BuildingShopSystem extends engine.BaseSystem {
     showNotification(message, type) {
         if (this.game.shopSystem?.uiEnhancements) {
             this.game.shopSystem.uiEnhancements.showNotification(message, type);
-        } else if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(message);
-        }
+        } 
     }
 
     update() {

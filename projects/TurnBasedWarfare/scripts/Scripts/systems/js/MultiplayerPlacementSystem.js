@@ -138,14 +138,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     startNewPlacementPhase() { 
-        if (this.playerPlacements.length > 0) {
-           // this.respawnSquads(this.playerPlacements, this.game.state.mySide);
-            const totalUnits = this.getTotalUnitCount(this.playerPlacements);
-            this.game.battleLogSystem?.add(`Respawned ${totalUnits} player units from previous rounds`);
-        }
-        if(this.opponentPlacements.length > 0){
-           // this.respawnEnemyUnits();
-        }
+ 
+        
                 // Reset placement state for new round
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
@@ -168,10 +162,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     
     respawnEnemyUnits() {
         this.respawnSquads(this.opponentPlacements, this.game.state.mySide == 'left' ? 'right' : 'left');
-        if (this.opponentPlacements.length > 0) {
-            const totalUnits = this.getTotalUnitCount(this.opponentPlacements);
-            this.game.battleLogSystem?.add(`Enemy respawned ${totalUnits} units from previous rounds`);
-        }
+
     }
           
     getTotalUnitCount(placements) {
@@ -487,7 +478,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         }
         if(!state.selectedUnitType) {
-          //  this.game.selectedUnitSystem.checkUnitSelectionClick(event);
+        //    this.game.selectedUnitSystem.checkUnitSelectionClick(event);
             return;
         }
         
@@ -737,24 +728,18 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const state = this.game.state;
         
         if (state.phase !== 'placement') {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Can only undo during placement phase!', 'log-damage');
-            }
+          
             return;
         }
         
         // Don't allow undo if already ready
         if (this.isPlayerReady) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Cannot undo - already ready for battle!', 'log-damage');
-            }
+       
             return;
         }
         
         if (this.undoStack.length === 0) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Nothing to undo!', 'log-damage');
-            }
+     
             return;
         }
         
@@ -789,9 +774,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             
         } catch (error) {
             console.error('Undo failed:', error);
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Undo failed!', 'log-damage');
-            }
+          
         }
     }
 
@@ -1121,10 +1104,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.squadExperienceSystem.removeSquad(placement.placementId);
         }
 
-        if (this.game.battleLogSystem) {
-            const unitName = placement.unitType?.title || 'Squad';
-            this.game.battleLogSystem.add(`${unitName} eliminated`, 'log-defeat');
-        }
     }
 
     updateGridPositionsAfterRound() {
@@ -1199,9 +1178,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.placementPreview.clear();
         }
         
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add('All unit placements cleared');
-        }
     }
 
     dispose() {

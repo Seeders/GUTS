@@ -53,10 +53,6 @@ class MultiplayerPhaseSystem {
             this.game.teamHealthSystem.onBattleStart();
         }
 
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`Round ${state.round} multiplayer battle begins!`);
-        }
-
         this.updatePhaseUI();
 
         const readyButton = document.getElementById('multiplayerReadyButton');
@@ -259,22 +255,10 @@ class MultiplayerPhaseSystem {
         state.playerSquadsPlacedThisRound++;
         this.updateSquadCountDisplay();
         
-        // Log squad info using SquadManager
-        if (this.game.squadManager && unitType) {
-            const squadInfo = this.game.squadManager.getSquadInfo(unitType);
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(
-                    `Deployed ${squadInfo.unitName} (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`,
-                    'log-victory'
-                );
-            }
-        }
+
         
         if (state.playerSquadsPlacedThisRound >= this.config.maxSquadsPerRound) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add('Maximum squads placed this round!', 'log-damage');
-            }
-            
+          
             // Clear selected unit type when limit reached
             state.selectedUnitType = null;
             
@@ -287,17 +271,7 @@ class MultiplayerPhaseSystem {
     onEnemySquadPlaced(unitType) {
         const state = this.game.state;
         state.enemySquadsPlacedThisRound++;
-        
-        // Log enemy squad deployment using SquadManager
-        if (this.game.squadManager && unitType) {
-            const squadInfo = this.game.squadManager.getSquadInfo(unitType);
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(
-                    `Opponent deployed ${squadInfo.unitName} (${squadInfo.squadSize} units, ${squadInfo.formationType} formation)`,
-                    'log-damage'
-                );
-            }
-        }
+      
     }
     
     startVictoryCelebration(victoriousUnits) {
@@ -317,15 +291,7 @@ class MultiplayerPhaseSystem {
     handleRoundResult(roundResult) {
         const state = this.game.state;
         state.phase = 'ended';
-        
-        if (this.game.battleLogSystem) {
-            if (roundResult.winner === this.game.multiplayerManager.playerId) {
-                this.game.battleLogSystem.add(`Round ${state.round} - VICTORY! 🎉`, 'log-victory');
-            } else {
-                this.game.battleLogSystem.add(`Round ${state.round} - Defeat 💀`, 'log-death');
-            }
-        }
-        
+
         this.updatePhaseUI();
         
         // Server will handle next round transition
@@ -344,33 +310,14 @@ class MultiplayerPhaseSystem {
         state.phase = 'ended';
         state.gameOver = true;
         
-        if (this.game.battleLogSystem) {
-            if (gameResult.winner === this.game.multiplayerManager.playerId) {
-                this.game.battleLogSystem.add('🏆 GAME WON! Congratulations! 🏆', 'log-victory');
-            } else {
-                this.game.battleLogSystem.add('💀 GAME LOST! Better luck next time! 💀', 'log-death');
-            }
-        }
+
         
         this.updatePhaseUI();
     }
     
     showPlacementHints() {
-        const hints = [
-            '💡 Place tanks in front to absorb damage',
-            '💡 Position archers behind melee units', 
-            '💡 Spread units to avoid area attacks',
-            '💡 Consider unit synergies against your opponent',
-            '💡 Save gold for critical moments',
-            '💡 Watch your opponent\'s strategy and adapt'
-        ];
-        
-        const hint = hints[Math.floor(Math.random() * hints.length)];
-        setTimeout(() => {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(hint);
-            }
-        }, this.config.hintDisplayDelay);
+     
+       
     }
             
         
@@ -423,9 +370,6 @@ class MultiplayerPhaseSystem {
             this.game.squadExperienceSystem.reset();
         }
         
-        if (this.game.statisticsTrackingSystem) {
-            this.game.statisticsTrackingSystem.resetSession();
-        }
         
         this.updatePhaseUI();
     }

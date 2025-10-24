@@ -115,15 +115,6 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
             }
         }
         
-        if (this.game.battleLogSystem && createdImages.length > 0) {
-            this.game.battleLogSystem.add(
-                `${createdImages.length} mirror images shimmer into existence!`,
-                'log-illusion'
-            );
-        }
-        
-        this.logAbilityUsage(casterEntity, 
-            `${createdImages.length} mirror images created successfully!`);
     }
     
     // FIXED: Deterministic positioning algorithm
@@ -232,13 +223,7 @@ class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
         } else if (this.game.destroyEntity) {
             this.game.destroyEntity(imageId);
         }
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `A mirror image fades away...`,
-                'log-illusion'
-            );
-        }
+       
     }
     
     // Fallback method for deterministic ID generation (if needed)

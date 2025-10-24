@@ -292,16 +292,16 @@ class GoldMineSystem extends engine.BaseSystem {
 
     replaceVeinWithMine(vein) {
         return;
-        if (vein.instancedMeshes && vein.instanceIndex !== null) {
-            vein.instancedMeshes.forEach(mesh => {
-                const matrix = new THREE.Matrix4();
-                const position = new THREE.Vector3(0, -10000, 0);
-                matrix.makeTranslation(position.x, position.y, position.z);
-                matrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
-                mesh.setMatrixAt(vein.instanceIndex, matrix);
-                mesh.instanceMatrix.needsUpdate = true;
-            });
-        } 
+        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
+        //     vein.instancedMeshes.forEach(mesh => {
+        //         const matrix = new THREE.Matrix4();
+        //         const position = new THREE.Vector3(0, -10000, 0);
+        //         matrix.makeTranslation(position.x, position.y, position.z);
+        //         matrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
+        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
+        //         mesh.instanceMatrix.needsUpdate = true;
+        //     });
+        // } 
     }
 
     restoreVein(vein) {

@@ -107,13 +107,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
             this.removeBloodlust(casterEntity);
         }, this.duration, casterEntity);
         
-        // Log activation
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Berserker's bloodlust awakens - gaining life steal and kill bonuses!`,
-                'log-ability'
-            );
-        }
+ 
     }
     
     // DESYNC SAFE: Remove bloodlust buff
@@ -136,16 +130,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
                     });
                 }
                 
-                // Log bloodlust expiration with stack info
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title}'s bloodlust fades (${stacksGained} kills achieved).`,
-                            'log-ability'
-                        );
-                    }
-                }
+             
             }
         }
     }
@@ -171,17 +156,7 @@ class BloodlustAbility extends engine.app.appClasses['BaseAbility'] {
                     heightOffset: 10 
                 });
             }
-            
-            // Log stack gain
-            if (this.game.battleLogSystem) {
-                const unitType = this.game.getComponent(killerId, this.componentTypes.UNIT_TYPE);
-                if (unitType) {
-                    this.game.battleLogSystem.add(
-                        `${unitType.title} gains bloodlust stack (${buff.modifiers.currentStacks}/${this.maxStacks})!`,
-                        'log-ability'
-                    );
-                }
-            }
+    
         }
     }
 }

@@ -714,9 +714,7 @@ class ShopSystem extends engine.BaseSystem {
     showNotification(message, type) {
         if (this.uiEnhancements) {
             this.uiEnhancements.showNotification(message, type);
-        } else if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(message);
-        }
+        } 
     }
 
     update() {

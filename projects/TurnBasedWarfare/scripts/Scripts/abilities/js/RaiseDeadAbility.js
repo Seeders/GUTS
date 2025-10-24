@@ -241,12 +241,6 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     logCorpseRaising(corpse, team) {
-        if (this.game.battleLogSystem) {
-            const originalTeam = corpse.teamAtDeath || 'unknown';
-            this.game.battleLogSystem.add(
-                `A ${originalTeam} corpse rises as a ${team} skeleton!`,
-                'log-ability'
-            );
-        }
+       
     }
 }

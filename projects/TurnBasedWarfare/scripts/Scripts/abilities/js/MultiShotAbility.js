@@ -149,18 +149,6 @@ class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
             });
         }
         
-        // Log individual arrow
-        if (this.game.battleLogSystem) {
-            const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-            const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-            
-            if (targetUnitType && targetTeam) {
-                this.game.battleLogSystem.add(
-                    `Arrow ${shotIndex + 1} targets ${targetTeam.team} ${targetUnitType.title}!`,
-                    'log-projectile'
-                );
-            }
-        }
     }
     
     // FIXED: Deterministic target selection

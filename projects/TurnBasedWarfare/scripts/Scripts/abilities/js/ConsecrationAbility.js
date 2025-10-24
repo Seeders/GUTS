@@ -205,13 +205,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             });
         }
         
-        // Log significant tick activity
-        if (this.game.battleLogSystem && (undeadDamaged > 0 || livingHealed > 0)) {
-            let message = `Consecration affects the battlefield`;
-            if (undeadDamaged > 0) message += ` (${undeadDamaged} undead purged)`;
-            if (livingHealed > 0) message += ` (${livingHealed} allies blessed)`;
-            this.game.battleLogSystem.add(message, 'log-ability');
-        }
+   
     }
     
     // DESYNC SAFE: Determine if unit is undead deterministically
@@ -268,13 +262,7 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
             
             this.game.destroyEntity(consecrationId);
             
-            // Log consecration ending
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(
-                    `The consecrated ground fades away.`,
-                    'log-ability'
-                );
-            }
+       
         }
     }
 }

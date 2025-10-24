@@ -82,13 +82,7 @@ class TeamHealthSystem extends engine.BaseSystem {
     applyRoundDraw() {
         if (this.roundProcessed) return null;
         this.roundProcessed = true;
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(
-                `Round ${this.game.state.round} ended in draw! No damage dealt.`, 
-                'log-death'
-            );
-        }
+
         
         // Return draw result
         return {

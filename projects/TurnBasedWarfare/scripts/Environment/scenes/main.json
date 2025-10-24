@@ -34,8 +34,6 @@
       {"type": "EffectsSystem"}, 
       {"type": "GridSystem"}, 
       {"type": "PlacementSystem"}, 
-      {"type": "StatisticsTrackingSystem"},
-      {"type": "BattleLogSystem"}, 
       {"type": "ShopSystem"}, 
       {"type": "PhaseSystem"}, 
       {"type": "TeamHealthSystem"}, 

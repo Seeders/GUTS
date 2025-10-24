@@ -91,18 +91,7 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             );
         }
         
-        // Log healing
-        if (this.game.battleLogSystem && actualHeal > 0) {
-            const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-            const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-            
-            if (targetUnitType && targetTeam) {
-                this.game.battleLogSystem.add(
-                    `${targetTeam.team} ${targetUnitType.title} healed for ${actualHeal} health!`,
-                    'log-heal'
-                );
-            }
-        }
+    
     }
         
     findMostInjuredAlly(allies) {

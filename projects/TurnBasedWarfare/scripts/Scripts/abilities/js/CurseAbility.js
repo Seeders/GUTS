@@ -125,13 +125,7 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
             }
         });
         
-        // Log how many enemies were cursed
-        if (this.game.battleLogSystem && cursedEnemies.length > 0) {
-            this.game.battleLogSystem.add(
-                `${cursedEnemies.length} enemies have been cursed!`,
-                'log-ability'
-            );
-        }
+      
     }
     
     // DESYNC SAFE: Remove curse effect
@@ -152,16 +146,7 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                     });
                 }
                 
-                // Log curse expiration
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(enemyId, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title} breaks free from the curse!`,
-                            'log-ability'
-                        );
-                    }
-                }
+            
             }
         }
     }

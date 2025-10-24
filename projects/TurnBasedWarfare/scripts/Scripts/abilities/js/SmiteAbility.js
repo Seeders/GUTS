@@ -150,28 +150,8 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Create smite impact effect
         this.createVisualEffect(targetPos, 'smite');
-        
-        // Enhanced logging based on target type
-        const damageMessage = isUndeadTarget 
-            ? `Divine smite DEVASTATES undead for ${damage} damage!`
-            : `Divine smite strikes for ${damage} damage!`;
-            
-        this.logAbilityUsage(casterEntity, damageMessage);
-        
-        // Battle log integration
-        if (this.game.battleLogSystem) {
-            const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-            
-            if (casterUnitType && casterTeam && targetTeam && targetUnitType) {
-                const effectivenessNote = isUndeadTarget ? ' (EXTRA EFFECTIVE vs undead)' : '';
-                this.game.battleLogSystem.add(
-                    `${casterTeam.team} ${casterUnitType.title} smites ${targetTeam.team} ${targetUnitType.title} for ${damage} divine damage${effectivenessNote}!`,
-                    'log-divine'
-                );
-            }
-        }
+      
+    
     }
     
     // FIXED: Deterministic highest health enemy selection

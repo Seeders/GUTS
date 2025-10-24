@@ -10,18 +10,15 @@ class PostProcessingSystem extends engine.BaseSystem {
 
     init(params = {}) {
         this.params = params;
-        console.log('[PostProcessingSystem] Initialized');
     }
 
     postAllInit() {
-        console.log('[PostProcessingSystem] postAllInit called');
         
         if (!this.game.renderer || !this.game.scene || !this.game.camera) {
             console.error('[PostProcessingSystem] Missing renderer, scene, or camera in postAllInit');
             return;
         }
         
-        console.log('[PostProcessingSystem] Creating composer with depth buffer support');
         
         this.composer = new THREE_.EffectComposer(this.game.renderer);
         
@@ -47,11 +44,9 @@ class PostProcessingSystem extends engine.BaseSystem {
             this.rebuildComposer();
         }
         
-        console.log('[PostProcessingSystem] Composer ready with depth buffer');
     }
 
     registerPass(name, passConfig) {
-        console.log(`[PostProcessingSystem] Registering pass: ${name}`);
         
         if (this.passes.has(name)) {
             console.warn(`[PostProcessingSystem] Pass ${name} already exists, replacing`);
@@ -61,13 +56,10 @@ class PostProcessingSystem extends engine.BaseSystem {
         
         if (this.composer) {
             this.rebuildComposer();
-        } else {
-            console.log(`[PostProcessingSystem] Pass ${name} queued (composer not ready yet)`);
-        }
+        } 
     }
 
     removePass(name) {
-        console.log(`[PostProcessingSystem] Removing pass: ${name}`);
         
         if (this.passes.has(name)) {
             const passConfig = this.passes.get(name);
@@ -88,7 +80,6 @@ class PostProcessingSystem extends engine.BaseSystem {
             return;
         }
         
-        console.log('[PostProcessingSystem] Rebuilding composer');
         
         this.composer.passes = [];
         
@@ -98,21 +89,17 @@ class PostProcessingSystem extends engine.BaseSystem {
             if (!passConfig) continue;
             
             if (passConfig.enabled === false) {
-                console.log(`[PostProcessingSystem] Skipping disabled pass: ${passName}`);
                 continue;
             }
             
             if (typeof passConfig.create === 'function') {
                 const pass = passConfig.create();
                 this.composer.addPass(pass);
-                console.log(`[PostProcessingSystem] Added pass: ${passName}`);
             } else if (passConfig.pass) {
                 this.composer.addPass(passConfig.pass);
-                console.log(`[PostProcessingSystem] Added pass: ${passName}`);
             }
         }
         
-        console.log('[PostProcessingSystem] Composer rebuilt with', this.composer.passes.length, 'passes');
     }
 
     render() {

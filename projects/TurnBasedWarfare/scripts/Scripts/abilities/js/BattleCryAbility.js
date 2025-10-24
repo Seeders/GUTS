@@ -126,14 +126,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             scaleMultiplier: 3.0,
             heightOffset: 20 
         });
-        
-        // Log final rally results
-        if (this.game.battleLogSystem && ralliedCount > 0) {
-            this.game.battleLogSystem.add(
-                `${ralliedCount} allies are filled with battle fury!`,
-                'log-ability'
-            );
-        }
+ 
     }
     
     // DESYNC SAFE: Remove rally buff
@@ -153,17 +146,7 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
                         color: 0xCD853F 
                     });
                 }
-                
-                // Log rally expiration
-                if (this.game.battleLogSystem) {
-                    const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-                    if (unitType) {
-                        this.game.battleLogSystem.add(
-                            `${unitType.title}'s battle fury fades.`,
-                            'log-ability'
-                        );
-                    }
-                }
+       
             }
         }
     }

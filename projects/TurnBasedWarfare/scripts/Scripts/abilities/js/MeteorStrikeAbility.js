@@ -121,16 +121,7 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
                 this.splashRadius,
                 { allowFriendlyFire: false, isSpell: true }
             );
-            
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(
-                    `Meteor strike devastates ${results.length} enemies!`,
-                    'log-explosion'
-                );
-            }
-            
-            this.logAbilityUsage(casterEntity, 
-                `Meteor impact devastates ${results.length} enemies for massive damage!`);
+         
         }
     }
     

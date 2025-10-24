@@ -37,19 +37,7 @@ class BaseAbility {
     }
     
     logAbilityUsage(casterEntity, message = null, showScreenEffect = false) {
-        if (!this.game.battleLogSystem) return;
-        
-        const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-        const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        
-        if (unitType && team) {
-            const defaultMessage = `${team.team} ${unitType.title} uses ${this.name}!`;
-            this.game.battleLogSystem.add(message || defaultMessage, 'log-ability');
-            
-            if (showScreenEffect && this.game.effectsSystem) {
-                this.game.effectsSystem.playScreenShake(0.2, 1);
-            }
-        }
+      
     }
     
     dealDamageWithEffects(sourceId, targetId, damage, element = 'physical', options = {}) {

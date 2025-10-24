@@ -12,9 +12,10 @@
     
 </div>
 <script>    
-    const game = new Engine("appContainer");  
+    const engine = new Engine("appContainer");  
     async function main() {  
-        await game.init("TurnBasedWarfare");
+        await engine.init("TurnBasedWarfare");
+        window.game = engine.gameInstance;
     }
     window.onload = main;
 </script>

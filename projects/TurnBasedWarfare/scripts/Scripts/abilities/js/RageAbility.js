@@ -121,23 +121,7 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
             this.game.effectsSystem.playScreenShake(0.3, 2);
             this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
         }
-        
-        // Enhanced logging
-        this.logAbilityUsage(casterEntity, 
-            `Warrior enters a berserker rage, gaining ${Math.round((this.damageMultiplier - 1) * 100)}% damage!`);
-            
-        // Log to battle system
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (unitType && team) {
-                this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.title} is consumed by primal fury!`,
-                    'log-buff'
-                );
-            }
-        }
+    
         
         // Schedule buff expiration warning
         this.game.schedulingSystem.scheduleAction(() => {
@@ -161,17 +145,6 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
                 scaleMultiplier: 0.8 
             });
         }
-        
-        if (this.game.battleLogSystem) {
-            const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-            const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-            
-            if (unitType && team) {
-                this.game.battleLogSystem.add(
-                    `${team.team} ${unitType.title}'s rage begins to fade...`,
-                    'log-buff'
-                );
-            }
-        }
+       
     }
 }
