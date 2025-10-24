@@ -162,7 +162,7 @@ class ModelManager {
         vatData.clipIndexByName = this._buildClipIndexMap(vatData.clips);
         const material = this._createVATMaterial(targetMesh, vatData, key);
         const geometry = targetMesh.geometry.clone();
-console.log('geometry');
+
         // Copy bone data
         const skinIndexAttr = targetMesh.geometry.getAttribute('skinIndex');
         const skinWeightAttr = targetMesh.geometry.getAttribute('skinWeight');
@@ -186,7 +186,10 @@ console.log('geometry');
                 cols: vatData.cols,
                 rows: vatData.rows,
                 clips: vatData.clips,
-                clipIndexByName: vatData.clipIndexByName
+                clipIndexByName: vatData.clipIndexByName,
+                skeleton: skeleton,
+                attachmentTexture: vatData.attachmentTexture,
+                attachmentBones: vatData.attachmentBones
             }
         };
     }
@@ -410,14 +413,22 @@ console.log('geometry');
             return clipData;
         });
 
+        const attachmentData = await this._bakeBoneAttachmentTexture(
+            masterModel, bones, bindMatrices, mixer, clipMeta, fps
+        );
+
         return {
             texture,
             cols,
             rows,
             fps,
             clips,
-            boneCount
+            boneCount,
+            attachmentTexture: attachmentData.texture,
+            attachmentBones: attachmentData.bones
         };
+
+  
     }
 
     _createVATMaterial(baseMesh, vatData, batchKey = 'unknown') {
@@ -643,5 +654,90 @@ console.log('geometry');
 
     getVATBundle(objectType, spawnType) {
         return this.vatBundles.get(`${objectType}_${spawnType}`);
+    }
+    async _bakeBoneAttachmentTexture(masterModel, bones, bindMatrices, mixer, clipMeta, fps) {
+        const attachmentBoneNames = [
+            'RightHand', 'LeftHand', 'Head', 'Spine2', 'Spine'
+        ];
+        const bonePrefix = 'mixamorig';
+        
+        const attachmentBones = [];
+        for (const boneName of attachmentBoneNames) {
+            let foundIndex = -1;
+            for (let i = 0; i < bones.length; i++) {
+                const bone = bones[i];
+                const cleanName = bone.name.replace(bonePrefix, '');
+                if (bone.name === boneName || cleanName === boneName || bone.name.includes(boneName)) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+            attachmentBones.push({ name: boneName, index: foundIndex });
+        }
+
+        const validBones = attachmentBones.filter(b => b.index >= 0);
+        const cols = validBones.length * 4;
+        const totalFrames = clipMeta.reduce((sum, info) => sum + info.frames, 0);
+        const rows = totalFrames;
+
+        const textureData = new Float32Array(rows * cols * 4);
+        const tempMatrix = new THREE.Matrix4();
+        const worldMatrix = new THREE.Matrix4();
+
+        let currentRow = 0;
+
+        for (const clipInfo of clipMeta) {
+            const action = mixer.clipAction(clipInfo.clip);
+            action.play();
+
+            for (let frame = 0; frame < clipInfo.frames; frame++) {
+                const t = clipInfo.frames > 1 ? (frame / (clipInfo.frames - 1)) * clipInfo.duration : 0;
+                mixer.setTime(t);
+                masterModel.updateMatrixWorld(true);
+
+                for (let i = 0; i < validBones.length; i++) {
+                    const boneIndex = validBones[i].index;
+                    const bone = bones[boneIndex];
+                    
+                    worldMatrix.copy(bone.matrixWorld);
+                    tempMatrix.copy(worldMatrix).multiply(bindMatrices[boneIndex]);
+
+                    const elements = tempMatrix.elements;
+                    const textureRowIndex = currentRow + frame;
+                    const boneColumnStart = i * 4;
+
+                    for (let col = 0; col < 4; col++) {
+                        const pixelIndex = (textureRowIndex * cols + boneColumnStart + col) * 4;
+                        textureData[pixelIndex + 0] = elements[col * 4 + 0];
+                        textureData[pixelIndex + 1] = elements[col * 4 + 1];
+                        textureData[pixelIndex + 2] = elements[col * 4 + 2];
+                        textureData[pixelIndex + 3] = elements[col * 4 + 3];
+                    }
+                }
+            }
+
+            action.stop();
+            currentRow += clipInfo.frames;
+        }
+
+        const texture = new THREE.DataTexture(
+            textureData,
+            cols,
+            rows,
+            THREE.RGBAFormat,
+            THREE.FloatType
+        );
+        texture.needsUpdate = true;
+        texture.flipY = false;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+
+        console.log(`[ModelManager] Baked attachment texture: ${cols}x${rows} for ${validBones.length} bones`);
+
+        return {
+            texture,
+            bones: attachmentBones,
+            validBones
+        };
     }
 }
