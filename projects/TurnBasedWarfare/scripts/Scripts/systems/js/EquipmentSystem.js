@@ -158,18 +158,17 @@ class EquipmentSystem extends engine.BaseSystem {
         );
         
         if (equipInstance.attachmentData?.offset) {
-            offsetVec.x -= (equipInstance.attachmentData.offset.x) * 0.5;
-            offsetVec.y -= (equipInstance.attachmentData.offset.y) * 0.5;
-            offsetVec.z -= (equipInstance.attachmentData.offset.z) * 0.5;
+            offsetVec.x += (equipInstance.attachmentData.offset.x * 0.5);
+            offsetVec.y += (equipInstance.attachmentData.offset.y * 0.5);
+            offsetVec.z += (equipInstance.attachmentData.offset.z * 0.5);
         }
-        
         const boneRotation = boneQuat.clone();
         if (equipInstance.attachmentData?.rotation) {
             const offsetRot = new THREE.Quaternion();
             offsetRot.setFromEuler(new THREE.Euler(
                 (equipInstance.attachmentData.rotation.x) * Math.PI / 180,
                 (equipInstance.attachmentData.rotation.y) * Math.PI / 180,
-                (equipInstance.attachmentData.rotation.z - 90) * Math.PI / 180,
+                (equipInstance.attachmentData.rotation.z) * Math.PI / 180,
                 'XYZ'
             ));
             boneRotation.multiply(offsetRot);
@@ -192,7 +191,7 @@ class EquipmentSystem extends engine.BaseSystem {
         
         const finalRotation = new THREE.Quaternion().multiplyQuaternions(worldRotation, boneRotation);
         
-        const finalScale = new THREE.Vector3(this.scaleFactor * 0.5, this.scaleFactor * 0.5, this.scaleFactor * 0.5);
+        const finalScale = new THREE.Vector3(this.scaleFactor * 0.25, this.scaleFactor * 0.25, this.scaleFactor * 0.25);
         
         const matrix = new THREE.Matrix4();
         matrix.compose(bonePos, finalRotation, finalScale);
@@ -300,18 +299,22 @@ class EquipmentSystem extends engine.BaseSystem {
     createEquipmentBatch(batchKey, equipmentModel) {
         let geometry = null;
         let material = null;
+            
+        equipmentModel.updateMatrixWorld(true);
         
         equipmentModel.traverse(child => {
             if (child.isMesh && !geometry) {
                 geometry = child.geometry.clone();
+                child.updateMatrixWorld(true);
+                geometry.applyMatrix4(child.matrixWorld);
                 material = child.material.clone();
             }
         });
         
         if (!geometry || !material) return null;
         
-        material.metalness = material.metalness || 0.8;
-        material.roughness = material.roughness || 0.2;
+        material.metalness = material.metalness || 0;
+        material.roughness = material.roughness || 1;
         
         const instancedMesh = new THREE.InstancedMesh(geometry, material, this.DEFAULT_CAPACITY);
         instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -405,13 +408,12 @@ class EquipmentSystem extends engine.BaseSystem {
                         child.castShadow = true;
                         child.receiveShadow = true;
                         if (child.material) {
-                            child.material.metalness = child.material.metalness || 0.8;
-                            child.material.roughness = child.material.roughness || 0.2;
+                            child.material.metalness = child.material.metalness || 0;
+                            child.material.roughness = child.material.roughness || 1;
                         }
                     }
                 });
                 
-                model.scale.set(this.scaleFactor, this.scaleFactor, this.scaleFactor);
                 this.equipmentCache.set(cacheKey, model);
                 return model.clone();
             }

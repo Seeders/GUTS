@@ -10,7 +10,8 @@
       "main": {
         "position": {
           "x": 0,
-          "y": 0.1
+          "y": 0.1,
+          "z": 0
         },
         "rotation": {
           "x": 0,
@@ -24,15 +25,24 @@
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.99,
+              "y": 0.99,
+              "z": 0.99
+            }
           }
         ]
       }

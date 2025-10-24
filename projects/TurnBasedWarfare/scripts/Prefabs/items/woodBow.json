@@ -24,12 +24,6 @@
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
             "roughness": "1",
@@ -41,20 +35,15 @@
             "rotation": {
               "x": 0,
               "y": 0,
-              "z": 90
+              "z": 0
             },
             "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
+              "x": 2,
+              "y": 2,
+              "z": 5
             }
           }
-        ],
-        "scale": {
-          "x": 2,
-          "y": 2,
-          "z": 5
-        }
+        ]
       }
     }
   }
