@@ -417,6 +417,7 @@ class UnitCreationManager {
      * @param {Object} unitType - Unit type definition
      */
     async setupEquipment(entityId, unitType) {
+
         if (!this.game.equipmentSystem || !unitType?.render?.equipment) {
             return;
         }

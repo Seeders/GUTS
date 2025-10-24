@@ -40,7 +40,8 @@
     "SeededRandom",
     "DesyncDebugger",
     "FantasyUIEnhancements",
-    "MinHeap"
+    "MinHeap",
+    "PerformanceProfiler"
   ],
   "fileName": "game",
   "interface": "main",

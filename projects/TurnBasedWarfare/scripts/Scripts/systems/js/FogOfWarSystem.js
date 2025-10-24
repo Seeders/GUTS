@@ -10,6 +10,7 @@ class FogOfWarSystem extends engine.BaseSystem {
 
         this.fogRenderTarget = null;
         this.explorationRenderTarget = null;
+        this.explorationRenderTargetPingPong = null;
         this.fogScene = null;
         this.fogCamera = null;
         this.fogPass = null;
@@ -26,6 +27,13 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.accumulationQuad = null;
         this.accumulationScene = null;
         this.accumulationCamera = null;
+        
+        this.pixelBuffer = new Uint8Array(4);
+        
+        this.cachedVisibilityBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE * 4);
+        this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE * 4);
+        this.visibilityCacheValid = false;
+        this.explorationCacheValid = false;
     }
 
 
@@ -44,6 +52,16 @@ class FogOfWarSystem extends engine.BaseSystem {
         
         // Render target for persistent exploration
         this.explorationRenderTarget = new THREE.WebGLRenderTarget(
+            this.FOG_TEXTURE_SIZE,
+            this.FOG_TEXTURE_SIZE,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBAFormat
+            }
+        );
+        
+        this.explorationRenderTargetPingPong = new THREE.WebGLRenderTarget(
             this.FOG_TEXTURE_SIZE,
             this.FOG_TEXTURE_SIZE,
             {
@@ -339,31 +357,23 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.accumulationMaterial.uniforms.currentExploration.value = this.explorationRenderTarget.texture;
         this.accumulationMaterial.uniforms.newVisibility.value = this.fogRenderTarget.texture;
         
-        // Create temporary render target for output
-        const tempTarget = new THREE.WebGLRenderTarget(
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat
-            }
-        );
-        
-        this.game.renderer.setRenderTarget(tempTarget);
+        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
         
         // Render fullscreen quad with accumulation shader (scene already created in init)
         this.game.renderer.render(this.accumulationScene, this.accumulationCamera);
         
-        // Swap render targets
-        const oldExploration = this.explorationRenderTarget;
-        this.explorationRenderTarget = tempTarget;
-        oldExploration.dispose();
+        // Swap render targets (no allocation/deallocation!)
+        const temp = this.explorationRenderTarget;
+        this.explorationRenderTarget = this.explorationRenderTargetPingPong;
+        this.explorationRenderTargetPingPong = temp;
         
         // Update uniform reference
         this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
         
         this.game.renderer.setRenderTarget(null);
+        
+        this.visibilityCacheValid = false;
+        this.explorationCacheValid = false;
     }
 
     createGradientCircleTexture() {
@@ -395,38 +405,58 @@ class FogOfWarSystem extends engine.BaseSystem {
         console.log(`[FogOfWarSystem] Vision radius set to ${radius}`);
     }
 
+    updateVisibilityCache() {
+        if (this.visibilityCacheValid) return;
+        
+        this.game.renderer.readRenderTargetPixels(
+            this.fogRenderTarget,
+            0, 0,
+            this.FOG_TEXTURE_SIZE,
+            this.FOG_TEXTURE_SIZE,
+            this.cachedVisibilityBuffer
+        );
+        
+        this.visibilityCacheValid = true;
+    }
+
+    updateExplorationCache() {
+        if (this.explorationCacheValid) return;
+        
+        this.game.renderer.readRenderTargetPixels(
+            this.explorationRenderTarget,
+            0, 0,
+            this.FOG_TEXTURE_SIZE,
+            this.FOG_TEXTURE_SIZE,
+            this.cachedExplorationBuffer
+        );
+        
+        this.explorationCacheValid = true;
+    }
+
     isVisibleAt(x, z) {
-        // Read pixel from visibility render target
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
-        const pixelBuffer = new Uint8Array(4);
-        this.game.renderer.readRenderTargetPixels(
-            this.fogRenderTarget,
-            Math.floor(uv.x * this.FOG_TEXTURE_SIZE),
-            Math.floor(uv.y * this.FOG_TEXTURE_SIZE),
-            1, 1,
-            pixelBuffer
-        );
+        this.updateVisibilityCache();
         
-        return pixelBuffer[0] > 0; // R channel has visibility
+        const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
+        const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
+        const index = (py * this.FOG_TEXTURE_SIZE + px) * 4;
+        
+        return this.cachedVisibilityBuffer[index] > 0;
     }
 
     isExploredAt(x, z) {
-        // Read pixel from exploration render target
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
-        const pixelBuffer = new Uint8Array(4);
-        this.game.renderer.readRenderTargetPixels(
-            this.explorationRenderTarget,
-            Math.floor(uv.x * this.FOG_TEXTURE_SIZE),
-            Math.floor(uv.y * this.FOG_TEXTURE_SIZE),
-            1, 1,
-            pixelBuffer
-        );
+        this.updateExplorationCache();
         
-        return pixelBuffer[0] > 0; // R channel has exploration
+        const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
+        const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
+        const index = (py * this.FOG_TEXTURE_SIZE + px) * 4;
+        
+        return this.cachedExplorationBuffer[index] > 0;
     }
 
     worldToUV(x, z) {
@@ -446,7 +476,10 @@ class FogOfWarSystem extends engine.BaseSystem {
         // Clear exploration render target to black
         this.game.renderer.setRenderTarget(this.explorationRenderTarget);
         this.game.renderer.clear();
+        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
+        this.game.renderer.clear();
         this.game.renderer.setRenderTarget(null);
+        this.explorationCacheValid = false;
         console.log('[FogOfWarSystem] Exploration reset');
     }
 
@@ -456,6 +489,9 @@ class FogOfWarSystem extends engine.BaseSystem {
         }
         if (this.explorationRenderTarget) {
             this.explorationRenderTarget.dispose();
+        }
+        if (this.explorationRenderTargetPingPong) {
+            this.explorationRenderTargetPingPong.dispose();
         }
         if (this.game.postProcessingSystem) {
             this.game.postProcessingSystem.removePass('fog');

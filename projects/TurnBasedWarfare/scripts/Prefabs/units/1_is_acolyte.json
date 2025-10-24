@@ -121,23 +121,6 @@
     },
     "equipment": [
       {
-        "slot": "mainHand",
-        "item": "knightSword",
-        "attachmentData": {
-          "bone": "RightHand",
-          "offset": {
-            "x": -1,
-            "y": 10,
-            "z": 2
-          },
-          "rotation": {
-            "x": 0,
-            "y": 8,
-            "z": 0
-          }
-        }
-      },
-      {
         "slot": "offHand",
         "item": "knightShield",
         "attachmentData": {

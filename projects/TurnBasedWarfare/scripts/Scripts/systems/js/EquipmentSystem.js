@@ -301,7 +301,7 @@ class EquipmentSystem extends engine.BaseSystem {
         let material = null;
             
         equipmentModel.updateMatrixWorld(true);
-        
+
         equipmentModel.traverse(child => {
             if (child.isMesh && !geometry) {
                 geometry = child.geometry.clone();
