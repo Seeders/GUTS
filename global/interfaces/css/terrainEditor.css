@@ -81,7 +81,7 @@
   #level-editor-container .content-sidebar {
 	display: flex;
 	flex-direction: column;
-	width: 320px;
+	min-width: 320px;
 	background-color: var(--dark);
 	border-radius: var(--border-radius);
 	box-shadow: var(--shadow);
@@ -273,6 +273,15 @@
 	background-color: rgba(255, 255, 255, 0.05);
 	color: var(--text);
   }
+
+#level-editor-container #saveMapBtn {
+	width: 100%; 
+	margin-top: 10px; 
+	padding: 10px; 
+	background-color: var(--secondary); 
+	color: white; 
+	font-weight: bold;
+}
 
   #level-editor-container .status-bar {
 	position: absolute;

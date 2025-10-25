@@ -81,7 +81,7 @@
   #level-editor-container .content-sidebar {
 	display: flex;
 	flex-direction: column;
-	width: 320px;
+	min-width: 320px;
 	background-color: var(--dark);
 	border-radius: var(--border-radius);
 	box-shadow: var(--shadow);

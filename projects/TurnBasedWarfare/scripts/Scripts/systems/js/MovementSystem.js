@@ -789,10 +789,16 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     enforceBoundaries(pos, collision) {
-        const terrainSize = this.game.worldSystem?.terrainSize || this.DEFAULT_TERRAIN_SIZE;
+        const collections = this.game.getCollections();
+        const currentLevel = this.game.state.level;
+        const level = collections.levels[currentLevel];        
+        const tileMap = level.tileMap;
+
+        const terrainSize = tileMap.size * collections.configs.game.gridSize;
         const halfTerrain = terrainSize / 2;
         const unitRadius = this.getUnitRadius(collision);
         
+
         pos.x = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.x));
         pos.z = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.z));
     }

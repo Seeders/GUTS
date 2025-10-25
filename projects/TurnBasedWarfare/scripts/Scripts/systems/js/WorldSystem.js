@@ -146,6 +146,7 @@ class WorldSystem extends engine.BaseSystem {
 
         // Calculate world dimensions
         this.terrainSize = this.tileMap.size * collections.configs.game.gridSize;
+        console.log('set terrain size', this.tileMap.size, collections.configs.game.gridSize, this.terrainSize);
         this.extensionSize = this.world.extensionSize || 0;
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);

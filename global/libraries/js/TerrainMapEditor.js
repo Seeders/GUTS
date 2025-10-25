@@ -136,21 +136,30 @@ class TerrainMapEditor {
             this.initGridCanvas();
             this.exportMap();
         });
+        
+        // Save button - manual save only
+        document.getElementById('saveMapBtn').addEventListener('click', () => {
+            this.exportMap();
+            // Show feedback
+            const btn = document.getElementById('saveMapBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Saved!';
+            btn.style.backgroundColor = '#10b981';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.backgroundColor = 'var(--secondary)';
+            }, 1500);
+        });
        
         // Handle mouseup event (stop dragging)
-        document.addEventListener('mouseup', async () => {
+        document.addEventListener('mouseup', () => {
             this.isMouseDown = false;
             this.lastPaintedTile = null; // Reset for next paint operation
             
-            // Ensure final render and export happen
+            // Ensure final render happens (no auto-save)
             if (this.needsRender) {
-                await this.updateCanvasWithData();
+                this.updateCanvasWithData();
                 this.needsRender = false;
-            }
-            if (this.exportDebounceTimer) {
-                clearTimeout(this.exportDebounceTimer);
-                this.exportMap();
-                this.exportDebounceTimer = null;
             }
         });
 
@@ -706,9 +715,10 @@ class TerrainMapEditor {
     }
     deleteEnvironmentObjectAt(e) {
         // Get mouse position and convert to game coordinates
+        let offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;//48*4;
         const rect = this.canvasEl.getBoundingClientRect();
         let mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        const mouseY = e.clientY - rect.top - offsetY;
         
         if(!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
@@ -1117,17 +1127,24 @@ class TerrainMapEditor {
     }
 
     async initGridCanvas() {
-        // Initialize the canvas with our map renderer
+        // Load environment images but keep fast tile rendering
         this.isInitializing = true;
         
         try {
-            await this.initImageManager();
-
-            // Render the initial map
-            await this.updateCanvasWithData();
+            // Load environment images if we have environment objects
+            if (this.worldObjects && Object.keys(this.worldObjects).length > 0) {
+                let palette = this.gameEditor.getPalette();
+                this.imageManager = new this.engineClasses.ImageManager(
+                    this.gameEditor, 
+                    { imageSize: this.config.imageSize, palette: palette}, 
+                    {ShapeFactory: this.engineClasses.ShapeFactory}
+                );
+                await this.imageManager.loadImages("environment", this.worldObjects, false, false);
+            }
+            
+            // Render with fast renderer
+            this.updateCanvasWithData();
         } finally {
-            // Clean up resources
-            this.imageManager.dispose();
             this.isInitializing = false;
         }
     }
@@ -1139,10 +1156,10 @@ class TerrainMapEditor {
             return; // Already scheduled
         }
         
-        this.renderAnimationFrame = requestAnimationFrame(async () => {
+        this.renderAnimationFrame = requestAnimationFrame(() => {
             this.renderAnimationFrame = null;
             if (this.needsRender) {
-                await this.updateCanvasWithData();
+                this.updateCanvasWithData(); // Now synchronous and fast
                 this.needsRender = false;
             }
         });
@@ -1162,6 +1179,7 @@ class TerrainMapEditor {
 
     handleCanvasInteraction(event) {
         // Get mouse position relative to canvas
+        const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
         const rect = this.canvasEl.getBoundingClientRect();
         let mouseX = event.clientX - rect.left;
         let mouseY = event.clientY - rect.top;
@@ -1194,8 +1212,6 @@ class TerrainMapEditor {
                     this.needsRender = true;
                     this.scheduleRender();
                     
-                    // Debounce export to reduce frequency
-                    this.debouncedExport();
                 }
             }
         } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && 
@@ -1227,24 +1243,120 @@ class TerrainMapEditor {
             this.scheduleRender();
             
             // Debounce export to reduce frequency
-            this.debouncedExport();
         }
     }
 
-    async updateCanvasWithData() {
-        // Don't render if still initializing (prevents race conditions)
-        if (this.isInitializing && !this.mapRenderer) {
+    // Fast rendering method - draws simple colored squares
+    renderMap() {
+        if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
             return;
         }
+
+        const ctx = this.canvasEl.getContext('2d');
+        const gridSize = this.config.gridSize;
+        const isIsometric = this.gameEditor.getCollections().configs.game.isIsometric;
         
-        if(this.tileMap.terrainMap.length > 0 && this.mapRenderer){
-            this.mapRenderer.isMapCached = false;
-            await new Promise(resolve => {
-                this.mapRenderer.renderBG(this.tileMap, []);
-                this.mapRenderer.renderFG();
-                resolve();
-            });
+        // Clear canvas
+        ctx.fillStyle = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType || 3].color;
+        ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
+        
+        if (isIsometric) {
+            // Isometric rendering
+            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                    const terrainId = this.tileMap.terrainMap[y][x];
+                    const terrain = this.tileMap.terrainTypes[terrainId];
+                    
+                    if (!terrain) continue;
+                    
+                    const isoCoords = this.translator.gridToIso(x, y);
+                    const tileWidth = gridSize;
+                    const tileHeight = gridSize * 0.5;
+                    
+                    ctx.fillStyle = terrain.color;
+                    ctx.beginPath();
+                    ctx.moveTo(isoCoords.x, isoCoords.y);
+                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Optional: draw borders
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        } else {
+            // Non-isometric rendering (simple squares)
+            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+            
+            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                    const terrainId = this.tileMap.terrainMap[y][x];
+                    const terrain = this.tileMap.terrainTypes[terrainId];
+                    
+                    if (!terrain) continue;
+                    
+                    const drawX = offsetX + x * gridSize;
+                    const drawY = offsetY + y * gridSize;
+                    
+                    ctx.fillStyle = terrain.color;
+                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
+                    
+                    // Optional: draw grid lines
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                }
+            }
         }
+        
+        // Render environment objects with their actual images
+        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0 && this.imageManager) {
+            for (const obj of this.tileMap.environmentObjects) {
+                if (!obj || obj.x === undefined || obj.y === undefined) continue;
+                
+                // Get the image for this object
+                const images = this.imageManager.getImages("environment", obj.type);
+                if (!images || !images.idle || !images.idle[0] || !images.idle[0][obj.imageIndex]) {
+                    continue;
+                }
+                
+                const image = images.idle[0][obj.imageIndex];
+                if (!image) continue;
+                
+                let screenX, screenY;
+                
+                if (isIsometric) {
+                    // Convert pixel coordinates to isometric screen coordinates
+                    const isoPos = this.translator.pixelToIso(obj.x, obj.y);
+                    screenX = isoPos.x;
+                    screenY = isoPos.y;
+                } else {
+                    // Convert pixel coordinates to screen coordinates
+                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+                    screenX = offsetX + obj.x;
+                    screenY = offsetY + obj.y;
+                }
+                
+                // Draw the image centered at the position
+                ctx.drawImage(
+                    image,
+                    screenX - image.width / 2,
+                    screenY - image.height / 2,
+                    image.width,
+                    image.height
+                );
+            }
+        }
+    }
+    async updateCanvasWithData() {
+        // Use fast rendering for instant feedback
+        this.renderMap();
     }
 
     exportMap() {
