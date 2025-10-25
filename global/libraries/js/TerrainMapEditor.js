@@ -486,14 +486,14 @@ class TerrainMapEditor {
     
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-terrain-btn';
-            editBtn.innerHTML = 'âœï¸';
+            editBtn.innerHTML = '✏️';
             editBtn.title = 'Edit terrain';
             editBtn.addEventListener('click', () => this.showTerrainEditForm(index));
             buttonContainer.appendChild(editBtn);
     
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-terrain-btn';
-            deleteBtn.innerHTML = 'âŒ';
+            deleteBtn.innerHTML = '❌';
             deleteBtn.title = 'Delete terrain';
             deleteBtn.addEventListener('click', () => this.deleteTerrain(index));
             buttonContainer.appendChild(deleteBtn);
