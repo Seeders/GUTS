@@ -145,9 +145,7 @@ class FogOfWarSystem extends engine.BaseSystem {
     }
 
     update() {
-        console.log('isVisibleAt count:', this.isVisibleAtCount);
-        console.log('isExploredAtCount count:', this.isExploredAtCount);
-
+     
         
         this.isVisibleAtCount = 0;
         this.isExploredAtCount = 0;
@@ -419,7 +417,6 @@ class FogOfWarSystem extends engine.BaseSystem {
     updateVisibilityCache() {
         if (this.visibilityCacheValid) return;
         
-        console.log('updateVisibilityCache');
 
         this.game.renderer.readRenderTargetPixels(
             this.fogRenderTarget,

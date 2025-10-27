@@ -331,9 +331,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
         
         this.clearBattlefield();
         this.game.placementSystem.startNewPlacementPhase();
-    
-     
-        this.game.shopSystem?.createShop(); // Refresh experience panels
+  
+        this.game.shopSystem.onPlacementPhaseStart();
         
     }
     clearBattlefield() {

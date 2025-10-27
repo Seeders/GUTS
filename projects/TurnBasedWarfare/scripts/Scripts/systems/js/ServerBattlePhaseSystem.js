@@ -289,7 +289,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         for (const [playerId, player] of room.players) {
             player.placementReady = false;
         }
-        
+        if (this.game.shopSystem) {
+            this.game.shopSystem.onPlacementPhaseStart();
+        }
         this.serverNetworkManager.broadcastToRoom(room.id, 'NEXT_ROUND', {
             round: this.game.state.round,
             gameState: room.getGameState()

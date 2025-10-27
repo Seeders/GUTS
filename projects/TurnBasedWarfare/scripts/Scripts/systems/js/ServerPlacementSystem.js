@@ -461,7 +461,6 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 squadUnits.push(unit.entityId);
             })
             placement.squadUnits = squadUnits;
-
             if (this.game.squadExperienceSystem && placement.placementId) {
                 this.game.squadExperienceSystem.initializeSquad(
                     placement.placementId, 

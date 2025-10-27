@@ -118,9 +118,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         this.game.networkManager.submitPlacement(placement, (success, response) => {
                             if(success){
                                 this.placeSquad(placement);
-                                if(unitData.collection == "buildings"){
-                                    this.game.shopSystem.addBuilding(unitId, unitDef);
-                                }
                             }
                         });            
                     }          
@@ -537,13 +534,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.networkManager.submitPlacement(placement, (success, response) => {
             if(success){
                 this.placeSquad(placement);
-                if(placement.collection == "buildings" && placement.unitType.id === 'goldMine'){
-                    this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
-                } else {
-                    if(placement.collection == "buildings"){
-                        this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
-                    }
-                }
             }
         });        
     }
@@ -577,7 +567,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const unitIds = createdUnits.map(unit => unit.entityId);
             this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, unitIds, team);
         }
-        
+
+        if(placement.collection == "buildings" && createdUnits.length > 0){
+            this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType, createdUnits[0].entityId);
+        }
         // Batch effects creation
         if (this.game.effectsSystem && createdUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), team);

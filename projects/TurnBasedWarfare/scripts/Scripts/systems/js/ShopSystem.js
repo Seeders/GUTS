@@ -3,8 +3,9 @@ class ShopSystem extends engine.BaseSystem {
         super(game);
         this.game.shopSystem = this;
         
-        this.ownedBuildings = new Set();
+        this.ownedBuildings = new Map();
         this.buildingUpgrades = new Map();
+        this.buildingProductionProgress = new Map();
         this.game.state.selectedEntity = {
             "type": null,
             "entityId": null
@@ -27,58 +28,68 @@ class ShopSystem extends engine.BaseSystem {
         
         container.innerHTML = '';
 
-        const BuildingTypes = this.game.getCollections().buildings;
+        // const BuildingTypes = this.game.getCollections().buildings;
         
-        this.ownedBuildings.forEach(buildingId => {
-            const building = BuildingTypes[buildingId];
-            if (!building) return;
+        // this.ownedBuildings.forEach(buildingId => {
+        //     const building = BuildingTypes[buildingId];
+        //     if (!building) return;
             
-            const item = document.createElement('div');
-            item.className = 'building-list-item';
-            if (this.game.state.selectedEntity.entityId === buildingId) {
-                item.classList.add('selected');
-            }
+        //     const item = document.createElement('div');
+        //     item.className = 'building-list-item';
+        //     if (this.game.state.selectedEntity.entityId === buildingId) {
+        //         item.classList.add('selected');
+        //     }
             
-            const icon = document.createElement('div');
-            icon.className = 'building-list-icon';
-            icon.textContent = building.icon || '🏛️';
-            item.appendChild(icon);
+        //     const icon = document.createElement('div');
+        //     icon.className = 'building-list-icon';
+        //     icon.textContent = building.icon || '🏛️';
+        //     item.appendChild(icon);
             
-            const info = document.createElement('div');
-            info.className = 'building-list-info';
+        //     const info = document.createElement('div');
+        //     info.className = 'building-list-info';
             
-            const title = document.createElement('div');
-            title.className = 'building-list-title';
-            title.textContent = building.title;
-            info.appendChild(title);
+        //     const title = document.createElement('div');
+        //     title.className = 'building-list-title';
+        //     title.textContent = building.title;
+        //     info.appendChild(title);
             
-            const upgrades = this.buildingUpgrades.get(buildingId) || new Set();
-            const totalUpgrades = building.upgrades ? building.upgrades.length : 0;
+        //     const upgrades = this.buildingUpgrades.get(buildingId) || new Set();
+        //     const totalUpgrades = building.upgrades ? building.upgrades.length : 0;
             
-            if (totalUpgrades > 0) {
-                const progress = document.createElement('div');
-                progress.className = 'building-list-progress';
-                progress.textContent = `${upgrades.size}/${totalUpgrades} upgrades`;
-                info.appendChild(progress);
-            }
+        //     if (totalUpgrades > 0) {
+        //         const progress = document.createElement('div');
+        //         progress.className = 'building-list-progress';
+        //         progress.textContent = `${upgrades.size}/${totalUpgrades} upgrades`;
+        //         info.appendChild(progress);
+        //     }
             
-            item.appendChild(info);
+        //     const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
+        //     if (productionProgress > 0) {
+        //         const prodInfo = document.createElement('div');
+        //         prodInfo.className = 'building-list-production';
+        //         prodInfo.style.fontSize = '0.85em';
+        //         prodInfo.style.color = '#ffa500';
+        //         prodInfo.textContent = `Building: ${(productionProgress * 100).toFixed(0)}%`;
+        //         info.appendChild(prodInfo);
+        //     }
             
-            item.addEventListener('click', () => {
-                this.game.state.selectedEntity.entityId = buildingId;
-                this.game.state.selectedEntity.type = "building";
-                this.createShop();
-            });
+        //     item.appendChild(info);
             
-            container.appendChild(item);
-        });
+        //     item.addEventListener('click', () => {
+        //         this.game.state.selectedEntity.entityId = buildingId;
+        //         this.game.state.selectedEntity.type = "building";
+        //         this.createShop();
+        //     });
+            
+        //     container.appendChild(item);
+        // });
         
-        if (this.ownedBuildings.size === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'building-list-empty';
-            empty.textContent = 'No buildings yet';
-            container.appendChild(empty);
-        }
+        // if (this.ownedBuildings.size === 0) {
+        //     const empty = document.createElement('div');
+        //     empty.className = 'building-list-empty';
+        //     empty.textContent = 'No buildings yet';
+        //     container.appendChild(empty);
+        // }
     }
 
     renderActionPanel() {
@@ -190,21 +201,35 @@ class ShopSystem extends engine.BaseSystem {
         const grid = document.createElement('div');
         grid.className = 'action-grid';
         const UnitTypes = this.game.getCollections().units;
+        
+        const buildingId = this.game.state.selectedEntity.entityId;
+        const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
+        const remainingCapacity = 1 - productionProgress;
+        
         building.units.forEach(unitId => {
             const unit = UnitTypes[unitId];
-
-            const locked = this.game.state.playerGold < unit.value;
-            console.log('locked:', locked, unit.value, this.game.state.playerGold);
+            const buildTime = unit.buildTime || 1;
+            const canAfford = this.game.state.playerGold >= unit.value;
+            const hasCapacity = buildTime <= remainingCapacity + 0.001;
+            
+            let locked = !canAfford || !hasCapacity;
+            let lockReason = null;
+            if (!canAfford) {
+                lockReason = "Can't afford";
+            } else if (!hasCapacity) {
+                lockReason = `Need ${buildTime.toFixed(1)} rounds`;
+            }
+            
             const btn = this.createActionButton({
                 icon: unit.icon || '⚔️',
                 title: unit.title,
                 cost: unit.value,
+                buildTime: buildTime,
                 locked: locked,
-                lockReason: locked ? "Can't afford" : null,
+                lockReason: lockReason,
                 onClick: () => this.purchaseUnit(unitId, unit)
             });
             grid.appendChild(btn);
-        
         });
 
         section.appendChild(grid);
@@ -223,25 +248,26 @@ class ShopSystem extends engine.BaseSystem {
         const grid = document.createElement('div');
         grid.className = 'action-grid';
 
-        const currentUpgrades = this.buildingUpgrades.get(this.game.state.selectedEntity.entityId) || new Set();
+        const buildingId = this.game.state.selectedEntity.entityId;
+        const purchasedUpgrades = this.buildingUpgrades.get(buildingId) || new Set();
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.game.getCollections().upgrades[upgradeId];
-            if (upgrade) {
-                const purchased = currentUpgrades.has(upgradeId);
-                const locked = !purchased && upgrade.requires && !this.upgradeRequirementsMet(upgrade.requires);
-                
-                const btn = this.createActionButton({
-                    icon: upgrade.icon || '⭐',
-                    title: upgrade.title,
-                    cost: purchased ? null : upgrade.value,
-                    locked: locked,
-                    purchased: purchased,
-                    lockReason: locked ? 'Requires other upgrades' : null,
-                    onClick: purchased ? null : () => this.purchaseUpgrade(upgradeId, upgrade)
-                });
-                grid.appendChild(btn);
-            }
+            if (!upgrade) return;
+
+            const isOwned = purchasedUpgrades.has(upgradeId);
+            const locked = isOwned || this.game.state.playerGold < upgrade.value;
+
+            const btn = this.createActionButton({
+                icon: upgrade.icon || '⭐',
+                title: upgrade.title,
+                cost: upgrade.value,
+                locked: locked,
+                lockReason: isOwned ? 'Owned' : (locked ? "Can't afford" : null),
+                owned: isOwned,
+                onClick: () => !isOwned && this.purchaseUpgrade(upgradeId, upgrade, buildingId)
+            });
+            grid.appendChild(btn);
         });
 
         section.appendChild(grid);
@@ -249,115 +275,125 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     createActionButton(options) {
+        const {
+            icon,
+            title,
+            cost,
+            buildTime,
+            locked = false,
+            lockReason = null,
+            onClick
+        } = options;
+
         const btn = document.createElement('button');
         btn.className = 'action-btn';
+        
+        if (locked) btn.classList.add('locked');
 
-        if (options.locked) btn.classList.add('locked');
-        if (options.purchased) btn.classList.add('purchased');
-        if (!options.locked && !options.purchased && options.cost !== null && this.game.state.playerGold < options.cost) {
-            btn.classList.add('disabled');
+        const iconEl = document.createElement('div');
+        iconEl.className = 'action-btn-icon';
+        iconEl.textContent = icon;
+        btn.appendChild(iconEl);
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'action-btn-title';
+        titleEl.textContent = title;
+        btn.appendChild(titleEl);
+
+        if (buildTime !== undefined) {
+            const buildTimeEl = document.createElement('div');
+            buildTimeEl.className = 'action-btn-buildtime';
+            buildTimeEl.style.fontSize = '0.8em';
+            buildTimeEl.style.color = '#888';
+            buildTimeEl.textContent = `⏱ ${buildTime.toFixed(1)} rounds`;
+            btn.appendChild(buildTimeEl);
         }
 
-        const icon = document.createElement('div');
-        icon.className = 'action-btn-icon';
-        icon.textContent = options.icon;
-        btn.appendChild(icon);
-
-        const title = document.createElement('div');
-        title.className = 'action-btn-title';
-        title.textContent = options.title;
-        btn.appendChild(title);
-
-        if (options.cost !== null && !options.purchased) {
-            const cost = document.createElement('div');
-            cost.className = 'action-btn-cost';
-            cost.textContent = `${options.cost}g`;
-            btn.appendChild(cost);
+        const costEl = document.createElement('div');
+        costEl.className = 'action-btn-cost';
+        
+        if (lockReason) {
+            costEl.textContent = lockReason;
+            costEl.style.color = '#f44336';
+        } else {
+            costEl.innerHTML = `💰 ${cost}`;
         }
+        
+        btn.appendChild(costEl);
 
-        if (options.purchased) {
-            const check = document.createElement('div');
-            check.className = 'action-btn-check';
-            check.textContent = '✓';
-            btn.appendChild(check);
-        }
-
-        if (options.locked) {
-            const lock = document.createElement('div');
-            lock.className = 'action-btn-lock';
-            lock.textContent = '🔒';
-            btn.appendChild(lock);
-
-            if (options.lockReason) {
-                const tooltip = document.createElement('div');
-                tooltip.className = 'action-btn-tooltip';
-                tooltip.textContent = options.lockReason;
-                btn.appendChild(tooltip);
-            }
-        }
-
-        if (options.onClick && !options.locked && !options.purchased) {
-            btn.addEventListener('click', options.onClick);
+        if (!locked) {
+            btn.addEventListener('click', onClick);
         }
 
         return btn;
     }
 
-    canBuildingProduceUnit(building, unitId, unit) {
-        if (!unit.requires || !unit.requires.buildings) return false;
-        return unit.requires.buildings.includes(this.game.state.selectedEntity.entityId);
+    isBuildingLocked(buildingId, building) {
+        return this.game.state.playerGold < building.value ||
+               (building.requires && !this.hasRequirements(building.requires));
     }
 
-    purchaseBuilding(buildingId, building){ 
-        const state = this.game.state;
-        
-        if (state.playerGold < building.value) {
-            this.showNotification('Not enough gold!', 'error');
+    getLockReason(buildingId, building) {
+        if (this.game.state.playerGold < building.value) return "Can't afford";
+        if (building.requires && !this.hasRequirements(building.requires)) {
+            return 'Missing requirements';
+        }
+        return null;
+    }
+
+    hasRequirements(requirements) {
+        if (requirements.townHallLevel) {
+            if (this.townHallLevel < requirements.townHallLevel) return false;
+        }
+        if (requirements.buildings) {
+            for (const reqBuilding of requirements.buildings) {
+                if (!this.ownedBuildings.has(reqBuilding)) return false;
+            }
+        }
+        return true;
+    }
+
+    purchaseBuilding(buildingId, building) {
+        if (this.isBuildingLocked(buildingId, building)) {
             return;
         }
-
-        state.selectedUnitType = { id: buildingId, collection: 'buildings', ...building };
+        this.game.state.selectedUnitType = { id: buildingId, collection: 'buildings', ...building };
         if (this.game.placementSystem) {
             this.game.placementSystem.handleUnitSelectionChange();
         }
     }
 
-    oldpurchaseBuilding(buildingId, building) {
-        this.game.networkManager.purchaseBuilding({ buildingId }, (success, response) => {
-            if (success) {                
-                if (building.category === 'attribute') {
-                    this.townHallLevel = building.townHallLevel || 1;
-                }
-                this.game.state.playerGold -= building.value;
-                this.showNotification(`${building.title} constructed!`, 'success');
-                this.addBuilding(buildingId, building);
-            } else {
-                this.showNotification(`Could not purchase ${building.title}!`, 'error');
-            }
-        });
-    }
-
-    addBuilding(buildingId, building){
+    addBuilding(buildingId, building, entityId){
         if(!this.ownedBuildings.has(buildingId)){
-            this.ownedBuildings.add(buildingId);
-            this.applyBuildingEffects(building);
-            this.createShop();
+            this.ownedBuildings.set(buildingId, [entityId]);
+        } else {
+            this.ownedBuildings.get(buildingId).push(entityId)            
         }
+
+        this.buildingProductionProgress.set(entityId, 0);
+        console.log('set progress', buildingId, 0);
+        this.buildingUpgrades.set(buildingId, new Set());
+        this.applyBuildingEffects(building);
+        this.createShop();
+        
     }
 
     purchaseUnit(unitId, unit) {
-        const state = this.game.state;
+        const buildingId = this.game.state.selectedEntity.entityId;
+        const placementId = this.getBuildingPlacementId(buildingId);
         
-        if (state.playerGold < unit.value) {
-            this.showNotification('Not enough gold!', 'error');
+        if (!placementId) {
+            console.log('no building selected');
+            this.showNotification('No building selected!', 'error');
             return;
         }
 
-        const CT = this.game.componentManager.getComponentTypes();
-        const team = this.game.getComponent(state.selectedEntity.entityId, CT.TEAM);        
-        const placementId = team.placementId;
-        if (!placementId) {
-            this.showNotification('No building selected!', 'error');
+        const buildTime = unit.buildTime || 1;
+        const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
+        const remainingCapacity = 1 - productionProgress;
+        
+        if (buildTime > remainingCapacity + 0.001) {
+            this.showNotification(`Not enough production capacity! Need ${buildTime.toFixed(1)} rounds`, 'error');
             return;
         }
 
@@ -365,21 +401,19 @@ class ShopSystem extends engine.BaseSystem {
         unit.collection = 'units';
         const placementPos = this.findBuildingPlacementPosition(placementId, unit);
         if (!placementPos) {
+            console.log('no valid placement');
             this.showNotification('No valid placement near building!', 'error');
             return;
         }
         const placement = this.game.placementSystem.createPlacementData(placementPos, unit, this.game.state.mySide);
-        console.log('purchase', placement, unit);
+        
         this.game.networkManager.submitPlacement(placement, (success, response) => {
             if(success){
-                this.game.placementSystem.placeSquad(placement);
-                if(placement.collection == "buildings" && placement.unitType.id === 'goldMine'){
-                    this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
-                } else {
-                    if(placement.collection == "buildings"){
-                        this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType);
-                    }
-                }
+                const newProgress = productionProgress + buildTime;
+                this.buildingProductionProgress.set(buildingId, newProgress);
+                console.log('set progress', buildingId, newProgress);
+                this.game.placementSystem.placeSquad(placement);                
+                this.createShop();
             }
         });       
     }
@@ -453,6 +487,22 @@ class ShopSystem extends engine.BaseSystem {
         return offsets;
     }
 
+    getBuildingPlacementId(buildingId) {
+        const state = this.game.state;
+        const mySide = state.mySide;
+        const placements = this.game.placementSystem.getPlacementsForSide(mySide);
+        if (!placements) return null;
+
+        for (const [placementIndex, placement] of Object.entries(placements)) {
+            for(const squadUnit of placement.squadUnits){
+                if (squadUnit.entityId === buildingId) {
+                    return placement.placementId;
+                }
+            }
+        }
+        return null;
+    }
+
     getBuildingGridPosition(placementId) {
         const placement = this.game.placementSystem.getPlacementById(placementId);
         console.log('got placement', placement);
@@ -472,70 +522,8 @@ class ShopSystem extends engine.BaseSystem {
                 this.game.state.playerGold -= upgrade.value;
                 this.applyUpgradeEffects(upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
-                this.createShop();
-            } else {
-                this.showNotification(`Could not purchase ${upgrade.title}!`, 'error');
             }
         });
-    }
-
-    isBuildingLocked(buildingId, building) {
-        if (building.requires) {
-            if (building.requires.townHallLevel && this.townHallLevel < building.requires.townHallLevel) {
-                return true;
-            }
-            if (building.requires.buildings) {
-                for (const reqBuilding of building.requires.buildings) {
-                    if (!this.ownedBuildings.has(reqBuilding)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    getLockReason(buildingId, building) {
-        if (building.requires) {
-            if (building.requires.townHallLevel && this.townHallLevel < building.requires.townHallLevel) {
-                return `Requires Town Hall Level ${building.requires.townHallLevel}`;
-            }
-            if (building.requires.buildings) {
-                const BuildingTypes = this.game.getCollections().buildings;
-                for (const reqBuilding of building.requires.buildings) {
-                    if (!this.ownedBuildings.has(reqBuilding)) {
-                        const reqBuildingData = BuildingTypes[reqBuilding];
-                        return `Requires ${reqBuildingData?.title || reqBuilding}`;
-                    }
-                }
-            }
-        }
-        return 'Locked';
-    }
-
-    meetsRequirements(requires) {
-        if (requires.buildings) {
-            for (const reqBuilding of requires.buildings) {
-                if (!this.ownedBuildings.has(reqBuilding)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    upgradeRequirementsMet(requires) {
-        const currentUpgrades = this.buildingUpgrades.get(this.game.state.selectedEntity.entityId) || new Set();
-        
-        if (requires.upgrades) {
-            for (const reqUpgrade of requires.upgrades) {
-                if (!currentUpgrades.has(reqUpgrade)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
     }
 
     applyBuildingEffects(building) {
@@ -572,6 +560,17 @@ class ShopSystem extends engine.BaseSystem {
             };
         }
         state.buildingBonuses[effectData.id] = 1;
+    }
+
+    onPlacementPhaseStart() {
+        console.log('onPlacementPhaseStart');
+        this.ownedBuildings.keys().forEach(buildingType => {
+            this.ownedBuildings.get(buildingType).forEach((buildingEntityId) => {
+                this.buildingProductionProgress.set(buildingEntityId, 0);
+                console.log('set progress', buildingEntityId, 0);
+            });
+        });
+        this.createShop();
     }
 
     createExperiencePanel() {
@@ -740,26 +739,5 @@ class ShopSystem extends engine.BaseSystem {
         this.clearSelectedEntity();
     }
 
-    saveState() {
-        return {
-            ownedBuildings: Array.from(this.ownedBuildings),
-            buildingUpgrades: Array.from(this.buildingUpgrades.entries()).map(([k, v]) => [k, Array.from(v)]),
-            townHallLevel: this.townHallLevel
-        };
-    }
-
-    loadState(savedState) {
-        if (savedState.ownedBuildings) {
-            this.ownedBuildings = new Set(savedState.ownedBuildings);
-        }
-        if (savedState.buildingUpgrades) {
-            this.buildingUpgrades = new Map(
-                savedState.buildingUpgrades.map(([k, v]) => [k, new Set(v)])
-            );
-        }
-        if (savedState.townHallLevel !== undefined) {
-            this.townHallLevel = savedState.townHallLevel;
-        }
-        this.createShop();
-    }
+  
 }

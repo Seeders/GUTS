@@ -51,5 +51,6 @@
   "placementGridWidth": 2,
   "placementGridHeight": 2,
   "height": 100,
-  "anchored": true
+  "anchored": true,
+  "size": 50
 }
