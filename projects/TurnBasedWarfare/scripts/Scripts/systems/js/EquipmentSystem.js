@@ -10,7 +10,7 @@ class EquipmentSystem extends engine.BaseSystem {
         this.equipmentInstances = new Map();
         
         this.scaleFactor = 32;
-        this.DEFAULT_CAPACITY = 512;
+        this.DEFAULT_CAPACITY = 128;
         this.bonePrefix = 'mixamorig';
         
         this.boneNameMappings = {
@@ -218,6 +218,7 @@ class EquipmentSystem extends engine.BaseSystem {
     }
    
     async equipItem(entityId, slotData, itemData) {
+        return false;
         const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
         const slotType = slotData.slot;
         if (!equipment) return false;

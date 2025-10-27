@@ -34,6 +34,8 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE * 4);
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
+        this.isVisibleAtCount = 0;
+        this.isExploredAtCount = 0;
     }
 
 
@@ -140,6 +142,15 @@ class FogOfWarSystem extends engine.BaseSystem {
                 pass: this.fogPass
             });
         }
+    }
+
+    update() {
+        console.log('isVisibleAt count:', this.isVisibleAtCount);
+        console.log('isExploredAtCount count:', this.isExploredAtCount);
+
+        
+        this.isVisibleAtCount = 0;
+        this.isExploredAtCount = 0;
     }
 
     createFogPass() {
@@ -408,6 +419,8 @@ class FogOfWarSystem extends engine.BaseSystem {
     updateVisibilityCache() {
         if (this.visibilityCacheValid) return;
         
+        console.log('updateVisibilityCache');
+
         this.game.renderer.readRenderTargetPixels(
             this.fogRenderTarget,
             0, 0,
@@ -434,6 +447,8 @@ class FogOfWarSystem extends engine.BaseSystem {
     }
 
     isVisibleAt(x, z) {
+        this.isVisibleAtCount += 1;
+ 
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
@@ -447,6 +462,8 @@ class FogOfWarSystem extends engine.BaseSystem {
     }
 
     isExploredAt(x, z) {
+        this.isExploredAtCount += 1;
+
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
