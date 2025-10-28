@@ -560,6 +560,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 
                 const ComponentTypes = this.game.componentManager.getComponentTypes();
                 const placementComponent = this.game.getComponent(entityId, ComponentTypes.PLACEMENT);
+                const renderComponent = this.game.getComponent(entityId, ComponentTypes.RENDERABLE);
+                
+                renderComponent.spawnType = 'underConstruction';
                 
                 if (placementComponent) {
                     placementComponent.isUnderConstruction = true;

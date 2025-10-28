@@ -10,7 +10,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.cooldown = 0;
         this.priority = 0;
         this.enabled = true;
-        this.buildRange = 25;
+        this.buildRange = 50;
     }
 
     canExecute(entityId) {
@@ -157,8 +157,10 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
         const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
+        const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
+        renderComponent.spawnType = buildingPlacement.unitType.id;
         console.log('Complete construction', buildState.targetBuildingEntityId, buildingPlacement);
-        
+        this.game.renderSystem?.removeInstance(buildState.targetBuildingEntityId);
         if (!buildingPlacement) {
             buildState.state = 'idle';
             return;

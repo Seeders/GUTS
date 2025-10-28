@@ -43,13 +43,6 @@ class UnitOrderSystem extends engine.BaseSystem {
         // Squad info panel
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
-        squadPanel.style.cssText = `
-            margin-top: 1.5rem;
-            padding: 15px;
-            background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
-            border: 2px solid #ffaa00;
-            border-radius: 8px;
-        `;
         
         const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
         const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
@@ -100,27 +93,14 @@ class UnitOrderSystem extends engine.BaseSystem {
     addBuildingOptions(actionPanel, selectedUnitIds) {
         const buildSection = document.createElement('div');
         buildSection.className = 'action-section';
-        buildSection.style.marginBottom = '15px';
 
         const buildHeader = document.createElement('div');
         buildHeader.className = 'action-section-header';
         buildHeader.textContent = 'BUILD STRUCTURES';
-        buildHeader.style.cssText = `
-            font-weight: 600;
-            color: var(--primary-gold);
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        `;
         buildSection.appendChild(buildHeader);
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
-        grid.style.cssText = `
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
-        `;
-
         const buildings = this.game.getCollections().buildings;
         
         Object.keys(buildings).forEach(buildingId => {
@@ -150,18 +130,7 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitIds) {
         const btn = document.createElement('button');
-        btn.className = 'action-button';
-        btn.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px;
-            background: linear-gradient(145deg, rgba(26, 20, 40, 0.9), rgba(40, 26, 40, 0.9));
-            border: 2px solid rgba(255, 170, 0, 0.3);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        `;
+        btn.className = 'action-btn';
         
         const locked = isLocked || !canAfford;
         if (locked) {

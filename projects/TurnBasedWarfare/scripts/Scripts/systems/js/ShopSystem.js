@@ -17,79 +17,8 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     createShop() {
-        this.renderBuildingList();
         this.renderActionPanel();
         this.createExperiencePanel();
-    }
-
-    renderBuildingList() {
-        const container = document.getElementById('buildingList');
-        if (!container) return;
-        
-        container.innerHTML = '';
-
-        // const BuildingTypes = this.game.getCollections().buildings;
-        
-        // this.ownedBuildings.forEach(buildingId => {
-        //     const building = BuildingTypes[buildingId];
-        //     if (!building) return;
-            
-        //     const item = document.createElement('div');
-        //     item.className = 'building-list-item';
-        //     if (this.game.state.selectedEntity.entityId === buildingId) {
-        //         item.classList.add('selected');
-        //     }
-            
-        //     const icon = document.createElement('div');
-        //     icon.className = 'building-list-icon';
-        //     icon.textContent = building.icon || '🏛️';
-        //     item.appendChild(icon);
-            
-        //     const info = document.createElement('div');
-        //     info.className = 'building-list-info';
-            
-        //     const title = document.createElement('div');
-        //     title.className = 'building-list-title';
-        //     title.textContent = building.title;
-        //     info.appendChild(title);
-            
-        //     const upgrades = this.buildingUpgrades.get(buildingId) || new Set();
-        //     const totalUpgrades = building.upgrades ? building.upgrades.length : 0;
-            
-        //     if (totalUpgrades > 0) {
-        //         const progress = document.createElement('div');
-        //         progress.className = 'building-list-progress';
-        //         progress.textContent = `${upgrades.size}/${totalUpgrades} upgrades`;
-        //         info.appendChild(progress);
-        //     }
-            
-        //     const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
-        //     if (productionProgress > 0) {
-        //         const prodInfo = document.createElement('div');
-        //         prodInfo.className = 'building-list-production';
-        //         prodInfo.style.fontSize = '0.85em';
-        //         prodInfo.style.color = '#ffa500';
-        //         prodInfo.textContent = `Building: ${(productionProgress * 100).toFixed(0)}%`;
-        //         info.appendChild(prodInfo);
-        //     }
-            
-        //     item.appendChild(info);
-            
-        //     item.addEventListener('click', () => {
-        //         this.game.state.selectedEntity.entityId = buildingId;
-        //         this.game.state.selectedEntity.type = "building";
-        //         this.createShop();
-        //     });
-            
-        //     container.appendChild(item);
-        // });
-        
-        // if (this.ownedBuildings.size === 0) {
-        //     const empty = document.createElement('div');
-        //     empty.className = 'building-list-empty';
-        //     empty.textContent = 'No buildings yet';
-        //     container.appendChild(empty);
-        // }
     }
 
     renderActionPanel() {
@@ -99,43 +28,7 @@ class ShopSystem extends engine.BaseSystem {
 
         if (this.game.state.selectedEntity.type == 'building') {
             this.renderBuildingActions(container);
-        } else {
-            //this.renderBuildOptions(container);
-        }
-    }
-
-    renderBuildOptions(container) {
-        const header = document.createElement('div');
-        header.className = 'action-panel-header';
-        header.textContent = 'BUILD';
-        container.appendChild(header);
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-
-        const BuildingTypes = this.game.getCollections().buildings;
-        let availableCount = 0;
-        Object.keys(BuildingTypes).forEach(buildingId => {
-            const building = BuildingTypes[buildingId];
-            const btn = this.createActionButton({
-                icon: building.icon || '🏛️',
-                title: building.title,
-                cost: building.value,
-                locked: this.isBuildingLocked(buildingId, building),
-                lockReason: this.getLockReason(buildingId, building),
-                onClick: () => this.activateBuildingPlacement(buildingId, building)
-            });
-            grid.appendChild(btn);
-            availableCount++;
-        });
-
-        container.appendChild(grid);
-
-        if(availableCount == 0){
-            container.style.display = 'none';
-        } else {
-            container.removeAttribute('style');
-        }
+        } 
     }
 
     clearSelectedEntity() {    
@@ -150,7 +43,6 @@ class ShopSystem extends engine.BaseSystem {
         container.innerHTML = '';
         if (!building) {
             this.clearSelectedEntity();
-         //   this.renderBuildOptions(container);
             return;
         }
 
