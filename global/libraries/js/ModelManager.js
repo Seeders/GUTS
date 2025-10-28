@@ -196,7 +196,7 @@ class ModelManager {
 
     // Add method for static meshes without skeletons:
     _buildStaticVATBundle(key, masterModel, mesh) {
-            
+            console.log('build static', key);
         const clips = [{ name: 'idle', startRow: 0, frames: 1 }];
         const clipIndexByName = { 'idle': 0 };
         
