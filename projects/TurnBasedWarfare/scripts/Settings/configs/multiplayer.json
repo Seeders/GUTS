@@ -1,6 +1,6 @@
 {
   "title": "Multiplayer",
-  "serverUrl": "http://18.220.126.12:3000",
+  "serverUrl": "http://localhost:3000",
   "maxReconnectAttempts": 5,
   "reconnectDelay": 3000,
   "enabled": true

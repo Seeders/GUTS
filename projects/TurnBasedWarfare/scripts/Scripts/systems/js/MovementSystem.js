@@ -76,11 +76,11 @@ class MovementSystem extends engine.BaseSystem {
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
-                const isAnchored =
-                    !!aiState &&
+                const isAnchored = vel.anchored ||
+                    (!!aiState &&
                     (aiState.state === 'attacking' || aiState.state === 'waiting') &&
                     aiState.aiBehavior &&
-                    !!aiState.target;
+                    !!aiState.target);
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
