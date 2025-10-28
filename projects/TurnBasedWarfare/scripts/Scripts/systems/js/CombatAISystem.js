@@ -123,6 +123,8 @@ class CombatAISystem extends engine.BaseSystem {
             this.componentTypes.HEALTH
         );
         
+        const visionRange = combat.visionRange;
+        
         return allUnits.filter(otherId => {
             if (otherId === entityId) return false;
             
@@ -136,7 +138,7 @@ class CombatAISystem extends engine.BaseSystem {
             if (otherDeathState && otherDeathState.isDying) return false;
             if (!otherPos) return false;
             
-            return this.isInAttackRange(entityId, otherId, combat, 5);                   
+            return this.isInVisionRange(entityId, otherId, visionRange);                   
         });
     }
 
@@ -496,6 +498,17 @@ class CombatAISystem extends engine.BaseSystem {
         return distances.attackerCenterToTargetEdge <= effectiveRange;
     }
 
+    isInVisionRange(viewerId, targetId, visionRange) {
+        const viewerPos = this.game.getComponent(viewerId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const viewerCollision = this.game.getComponent(viewerId, this.componentTypes.COLLISION);
+        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        if (!viewerPos || !targetPos) return false;
+
+        const distances = this.calculateDistances(viewerPos, targetPos, viewerCollision, targetCollision);
+        return distances.attackerCenterToTargetEdge <= visionRange;
+    }
+
     isWithinEdgeToEdgeRange(attackerId, targetId, maxRange) {
         const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
         const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
@@ -594,6 +607,24 @@ class CombatAISystem extends engine.BaseSystem {
         }
         
         return this.game.damageSystem.getStatusEffects(entityId);
+    }
+
+    setRetaliatoryTarget(entityId, attackerId) {
+        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        if (!aiState) return;
+        
+        if (aiState.target) return;
+        
+        const attackerHealth = this.game.getComponent(attackerId, this.componentTypes.HEALTH);
+        const attackerDeathState = this.game.getComponent(attackerId, this.componentTypes.DEATH_STATE);
+        if (!attackerHealth || attackerHealth.current <= 0) return;
+        if (attackerDeathState && attackerDeathState.isDying) return;
+        
+        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
+        const defenderTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+        if (attackerTeam && defenderTeam && attackerTeam.team === defenderTeam.team) return;
+        
+        aiState.target = attackerId;
     }
 
     debugStatusEffects() {

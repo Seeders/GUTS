@@ -183,9 +183,9 @@
   },
   "buyable": false,
   "squadWidth": 1,
-  "squadHeight": 3,
+  "squadHeight": 1,
   "placementGridWidth": 1,
-  "placementGridHeight": 3,
+  "placementGridHeight": 1,
   "abilities": [
     "SummonWolfAbility"
   ]

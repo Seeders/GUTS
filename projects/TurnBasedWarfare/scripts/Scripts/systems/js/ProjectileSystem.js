@@ -467,34 +467,27 @@ class ProjectileSystem extends engine.BaseSystem {
     }
 
     handleProjectileHit(projectileId, targetId, targetPos, projectile) {
-        // Use centralized damage system for projectile hits
         if (this.game.damageSystem) {
             const damage = projectile.damage;
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
             
-            // Apply elemental damage through the damage system
             this.game.damageSystem.applyDamage(projectile.source, targetId, damage, element, {
                 isProjectile: true,
                 projectileId: projectileId
             });
             
-          
-            // Create hit effect
             this.createHitEffect(projectileId, targetId, targetPos, element, false);
         }
         
         
-        // Destroy projectile
         this.destroyProjectile(projectileId);
     }
 
     triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-        // Create explosion effect at ground impact point
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
         
-        // Apply splash damage using centralized damage system
         if (this.game.damageSystem) {
-            const splashRadius = 80; // Reasonable explosion radius
+            const splashRadius = 80;
             const splashDamage = Math.floor(projectile.damage);
             const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
             
@@ -511,10 +504,15 @@ class ProjectileSystem extends engine.BaseSystem {
                 }
             );
             
-       
+            if (this.game.combatAISystems && projectile.source && results) {
+                for (const result of results) {
+                    if (result.targetId && result.actualDamage > 0) {
+                        this.game.combatAISystems.setRetaliatoryTarget(result.targetId, projectile.source);
+                    }
+                }
+            }
         }
         
-        // Destroy the projectile
         this.destroyProjectile(entityId);
     }
     

@@ -53,7 +53,8 @@ class ComponentManager {
                 fireResistance = 0,
                 coldResistance = 0,
                 lightningResistance = 0,
-                poisonResistance = 0
+                poisonResistance = 0,
+                visionRange = 300
             ) => ({
                 damage,
                 range,
@@ -65,7 +66,8 @@ class ComponentManager {
                 fireResistance,
                 coldResistance,
                 lightningResistance,
-                poisonResistance
+                poisonResistance,
+                visionRange
             }),
             Placement: (placement = null) => (placement),
             Team: (team = 'neutral') => ({ team }),

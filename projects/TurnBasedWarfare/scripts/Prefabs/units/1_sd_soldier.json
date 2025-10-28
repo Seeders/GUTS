@@ -3,7 +3,7 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 75,
+  "hp": 300,
   "speed": 45,
   "damage": 12,
   "attackSpeed": 0.8,
@@ -143,7 +143,6 @@
       }
     },
     "equipment": [
-
       {
         "slot": "mainHand",
         "item": "knightSword",
@@ -169,10 +168,10 @@
     "2_sd_hoplite",
     "2_sd_crossbowman"
   ],
-  "squadWidth": 2,
-  "squadHeight": 3,
-  "placementGridWidth": 2,
-  "placementGridHeight": 3,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
   "abilities": [
     "WindShieldAbility"
   ]

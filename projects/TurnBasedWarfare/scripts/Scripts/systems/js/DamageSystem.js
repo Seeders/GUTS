@@ -81,7 +81,8 @@ class DamageSystem extends engine.BaseSystem {
         if (targetHealth.current <= 0) {
             this.handleEntityDeath(targetId);
         }
- console.log('apply damage', sourceId, targetId, damageResult.finalDamage);
+ 
+        this.game.combatAISystems.setRetaliatoryTarget(targetId, sourceId);
            
         return {
             damage: damageResult.finalDamage,

@@ -3,7 +3,7 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 80,
+  "hp": 150,
   "speed": 45,
   "damage": 10,
   "attackSpeed": 0.9,
@@ -145,10 +145,10 @@
     "2_is_crusader",
     "2_is_oathBreaker"
   ],
-  "squadWidth": 2,
-  "squadHeight": 3,
-  "placementGridWidth": 2,
-  "placementGridHeight": 3,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
   "abilities": [
     "HealAbility"
   ]

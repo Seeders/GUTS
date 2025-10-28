@@ -163,10 +163,10 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 2,
-  "squadHeight": 4,
-  "placementGridWidth": 2,
-  "placementGridHeight": 4,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
   "abilities": [
     "ArenaPresenceAbility"
   ]

@@ -143,10 +143,10 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 2,
-  "squadHeight": 3,
-  "placementGridWidth": 2,
-  "placementGridHeight": 3,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
   "range": 200,
   "projectile": "bolt"
 }
