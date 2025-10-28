@@ -78,6 +78,7 @@ class AnimationSystem extends engine.BaseSystem {
     }
 
     updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
+    
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState) return;
 
@@ -107,7 +108,7 @@ class AnimationSystem extends engine.BaseSystem {
 
         // Determine desired animation based on game state
         const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, aiState);
-
+    
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
         

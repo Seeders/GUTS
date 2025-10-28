@@ -4,7 +4,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.id = 'build';
         this.name = 'Build';
         this.description = 'Construct buildings';
-        this.isPassive = false;
+        this.isPassive = true;
         this.autocast = false;
         this.castTime = 0;
         this.cooldown = 0;
@@ -80,10 +80,6 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             buildingPlacement.assignedBuilder = peasantEntityId;
             buildingPlacement.isUnderConstruction = true;
         }
-
-        if (this.game.animationSystem) {
-            this.game.animationSystem.changeAnimation(buildingEntityId, 'underConstruction', 1.0, 0);
-        }
     }
 
     walkToConstruction(buildState, pos, vel) {
@@ -124,7 +120,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             buildState.constructionStartTime = this.game.state.round;
         } else {
             const aiState = this.game.getComponent(buildState.entityId, ComponentTypes.AI_STATE);
-            console.log('walking to construction', dist, '>', this.buildRange);
+            console.log('walking to construction', aiState);
             if (aiState) {
                 aiState.state = 'chasing';
                 aiState.targetPosition = buildState.targetBuildingPosition;
@@ -145,7 +141,13 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
 
         const elapsed = this.game.state.round - buildState.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || 1;
-        
+        if (this.game.animationSystem) {
+            const animState = this.game.animationSystem.entityAnimationStates.get(buildState.entityId);
+            const finished = this.game.animationSystem.isAnimationFinished(buildState.entityId, animState.currentClip);
+            if(finished || animState.currentClip != 'attack'){
+                this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
+            }
+        }
         console.log('constructBuilding', elapsed, buildTime);
 
         if (elapsed >= buildTime) {            
