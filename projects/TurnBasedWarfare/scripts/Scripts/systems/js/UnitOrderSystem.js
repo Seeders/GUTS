@@ -25,56 +25,220 @@ class UnitOrderSystem extends engine.BaseSystem {
     init() {}
 
     showSquadActionPanel(placementId, squadName, squadData) {
-        
         const actionPanel = document.getElementById('actionPanel');
-        if (actionPanel) {
-            actionPanel.innerHTML = "";
-            
-            let squadPanel = document.createElement('div');
-            squadPanel.id = 'squadActionPanel';
-            squadPanel.style.cssText = `
-                margin-top: 1.5rem;
-                padding: 15px;
-                background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
-                border: 2px solid #ffaa00;
-                border-radius: 8px;
-            `;
+        if (!actionPanel) return;
         
-            actionPanel.appendChild(squadPanel);
-    
+        actionPanel.innerHTML = "";
         
-            const componentTypes = this.game.componentManager.getComponentTypes();
-            const aliveUnits = squadData.unitIds.filter(id => 
-                this.game.getComponent(id, componentTypes.HEALTH)
-            ).length;
-            
-            const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
-            const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
-            
-            squadPanel.innerHTML = `
-                <div class="panel-title">🛡️ SQUAD ACTIONS</div>
-                <div style="color: var(--primary-gold); font-weight: 600; margin-bottom: 10px;">
-                    ${squadName}${levelInfo}
-                </div>
-                <div style="color: var(--stone-gray); font-size: 0.85rem; margin-bottom: 10px;">
-                    <div>Units: ${aliveUnits}/${squadData.totalUnitsInSquad}</div>
-                    <div>XP: ${squadData.experience}/${squadData.experienceToNextLevel} (${expProgress}%)</div>
-                    ${squadData.canLevelUp ? '<div style="color: #4ade80;">✨ Ready to Level Up!</div>' : ''}
-                </div>
-                <button id="setTargetBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
-                    🎯 Set Target Position
-                </button>
-                <button id="deselectSquadBtn" class="btn btn-secondary" style="width: 100%;">
-                    Close
-                </button>
-            `;
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        const aliveUnits = squadData.unitIds.filter(id => 
+            this.game.getComponent(id, componentTypes.HEALTH)
+        ).length;
+        
+        // Check if this squad can build
+        const firstUnit = squadData.unitIds[0];
+        const unitType = firstUnit ? this.game.getComponent(firstUnit, componentTypes.UNIT_TYPE) : null;
+        const canBuild = unitType && unitType.abilities && unitType.abilities.includes('BuildAbility');
+        
+        // Squad info panel
+        let squadPanel = document.createElement('div');
+        squadPanel.id = 'squadActionPanel';
+        squadPanel.style.cssText = `
+            margin-top: 1.5rem;
+            padding: 15px;
+            background: linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8));
+            border: 2px solid #ffaa00;
+            border-radius: 8px;
+        `;
+        
+        const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
+        const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
+        
+        squadPanel.innerHTML = `
+            <div class="panel-title">${canBuild ? '⚒️ PEASANT ACTIONS' : '🛡️ SQUAD ACTIONS'}</div>
+            <div style="color: var(--primary-gold); font-weight: 600; margin-bottom: 10px;">
+                ${squadName}${levelInfo}
+            </div>
+            <div style="color: var(--stone-gray); font-size: 0.85rem; margin-bottom: 10px;">
+                <div>Units: ${aliveUnits}/${squadData.totalUnitsInSquad}</div>
+                <div>XP: ${squadData.experience}/${squadData.experienceToNextLevel} (${expProgress}%)</div>
+                ${squadData.canLevelUp ? '<div style="color: #4ade80;">✨ Ready to Level Up!</div>' : ''}
+            </div>
+        `;
+        
+        actionPanel.appendChild(squadPanel);
+        
+        // Add building options if this unit can build
+        if (canBuild) {
+            this.addBuildingOptions(actionPanel, squadData.unitIds);
         }
+        
+        // Standard squad actions
+        const actionsDiv = document.createElement('div');
+        actionsDiv.innerHTML = `
+            <button id="setTargetBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
+                🎯 Set Target Position
+            </button>
+            <button id="deselectSquadBtn" class="btn btn-secondary" style="width: 100%;">
+                Close
+            </button>
+        `;
+        squadPanel.appendChild(actionsDiv);
         
         document.getElementById('setTargetBtn').addEventListener('click', () => {
             document.body.style.cursor = 'crosshair';
             this.startTargeting();
         });
+        
+        document.getElementById('deselectSquadBtn').addEventListener('click', () => {
+            actionPanel.innerHTML = '';
+        });
     }
+
+    // ADD THIS NEW METHOD to UnitOrderSystem:
+
+    addBuildingOptions(actionPanel, selectedUnitIds) {
+        const buildSection = document.createElement('div');
+        buildSection.className = 'action-section';
+        buildSection.style.marginBottom = '15px';
+
+        const buildHeader = document.createElement('div');
+        buildHeader.className = 'action-section-header';
+        buildHeader.textContent = 'BUILD STRUCTURES';
+        buildHeader.style.cssText = `
+            font-weight: 600;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        `;
+        buildSection.appendChild(buildHeader);
+
+        const grid = document.createElement('div');
+        grid.className = 'action-grid';
+        grid.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+        `;
+
+        const buildings = this.game.getCollections().buildings;
+        
+        Object.keys(buildings).forEach(buildingId => {
+            if (buildingId === 'underConstruction') return;
+            
+            const building = buildings[buildingId];
+            if (!building.buildTime) building.buildTime = 1;
+            
+            building.id = buildingId;
+            const canAfford = this.game.state.playerGold >= (building.value || 0);
+            const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
+            const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
+            
+            const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitIds);
+            grid.appendChild(btn);
+        });
+
+        buildSection.appendChild(grid);
+        
+        const squadPanel = document.getElementById('squadActionPanel');
+        if (squadPanel) {
+            squadPanel.appendChild(buildSection);
+        }
+    }
+
+    // ADD THIS NEW METHOD to UnitOrderSystem:
+
+    createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitIds) {
+        const btn = document.createElement('button');
+        btn.className = 'action-button';
+        btn.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            background: linear-gradient(145deg, rgba(26, 20, 40, 0.9), rgba(40, 26, 40, 0.9));
+            border: 2px solid rgba(255, 170, 0, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        
+        const locked = isLocked || !canAfford;
+        if (locked) {
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+        
+        const icon = document.createElement('div');
+        icon.style.cssText = 'font-size: 2rem; margin-bottom: 4px;';
+        icon.textContent = building.icon || '🏛️';
+        btn.appendChild(icon);
+
+        const title = document.createElement('div');
+        title.style.cssText = 'font-size: 0.75rem; font-weight: 600; text-align: center; margin-bottom: 4px;';
+        title.textContent = building.title;
+        btn.appendChild(title);
+
+        if (building.buildTime) {
+            const buildTime = document.createElement('div');
+            buildTime.style.cssText = 'font-size: 0.7rem; color: #888;';
+            buildTime.textContent = `⏱️ ${building.buildTime}s`;
+            btn.appendChild(buildTime);
+        }
+
+        const cost = document.createElement('div');
+        cost.style.cssText = 'font-size: 0.75rem; margin-top: 4px;';
+        if (lockReason) {
+            cost.textContent = lockReason;
+            cost.style.color = '#f44336';
+        } else if (!canAfford) {
+            cost.textContent = "Can't afford";
+            cost.style.color = '#f44336';
+        } else {
+            cost.innerHTML = `💰 ${building.value || 0}`;
+            cost.style.color = 'var(--primary-gold)';
+        }
+        btn.appendChild(cost);
+
+        if (!locked) {
+            btn.addEventListener('click', () => {
+                this.activateBuildingPlacement(building, selectedUnitIds);
+            });
+            
+            btn.addEventListener('mouseenter', () => {
+                btn.style.border = '2px solid var(--primary-gold)';
+                btn.style.transform = 'translateY(-2px)';
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                btn.style.border = '2px solid rgba(255, 170, 0, 0.3)';
+                btn.style.transform = 'translateY(0)';
+            });
+        }
+
+        return btn;
+    }
+
+    // ADD THIS NEW METHOD to UnitOrderSystem:
+
+    activateBuildingPlacement(building, selectedUnitIds) {
+        console.log('activate building');
+        this.game.state.selectedUnitType = { 
+            id: building.id, 
+            collection: 'buildings', 
+            ...building 
+        };
+        
+        this.game.state.peasantBuildingPlacement = {
+            peasantIds: selectedUnitIds,
+            buildTime: building.buildTime
+        };
+        
+        if (this.game.placementSystem) {
+            this.game.placementSystem.handleUnitSelectionChange();
+        }
+    }
+
 
     /**
      * Begin a single-click targeting session.

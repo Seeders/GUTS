@@ -159,6 +159,7 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "MineGoldAbility"
+    "MineGoldAbility",
+    "BuildAbility"
   ]
 }

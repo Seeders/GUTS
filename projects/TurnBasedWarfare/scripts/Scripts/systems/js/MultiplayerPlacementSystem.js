@@ -118,6 +118,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         this.game.networkManager.submitPlacement(placement, (success, response) => {
                             if(success){
                                 this.placeSquad(placement);
+                                if(placement.unitType.collection == "buildings"){
+                                    this.game.shopSystem.addBuilding(placement.unitType.id, placement.squadUnits[0]);
+                                }
                             }
                         });            
                     }          
@@ -167,58 +170,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return sum + (placement.isSquad ? placement.squadUnits.length : 1);
         }, 0);
     }     
-    respawnSquads(placements, team) {
-        placements.forEach(placement => {
-            const newUnitIds = [];
-            
-            if (placement.squadUnits && placement.squadUnits.length > 0) {
-                placement.squadUnits.forEach(unit => {
-                    const entityId = this.unitCreator.create(
-                        unit.position.x,
-                        unit.position.y,
-                        unit.position.z,
-                        placement.targetPosition,
-                        placement,
-                        team
-                    );
-                    unit.entityId = entityId;
-                    newUnitIds.push(entityId);
-                    
-                    // Limit respawn effects for performance
-                    if (Math.random() < 0.3) { // Only 30% of units get effects
-                        this.createRespawnEffect(unit.position, team);
-                    }
-                    
-                    // IMPORTANT: Let RenderSystem handle instancing in its next update cycle
-                    // Don't call playDefaultAnimation here - it will be handled automatically
-                });
-            } else {
-                const entityId = this.unitCreator.create(
-                    placement.x,
-                    placement.y,
-                    placement.z,
-                    placement.targetPosition,
-                    placement,
-                    team
-                );
-                placement.entityId = entityId;
-                newUnitIds.push(entityId);
-                
-                this.createRespawnEffect({ x: placement.x, y: placement.y, z: placement.z }, team);
-                // Again, don't call playDefaultAnimation - let RenderSystem handle it
-            }
-            
-            // Re-initialize in experience system with restored level bonuses
-            if (this.game.squadExperienceSystem && placement.placementId) {
-                this.game.squadExperienceSystem.initializeSquad(
-                    placement.placementId, 
-                    placement.unitType,
-                    newUnitIds, 
-                    team
-                );
-            }
-        });
-    }
     
     createRespawnEffect(position, team) {
         if (!this.game.effectsSystem) return;
@@ -418,10 +369,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         gridHeight
                     );
                 }
-                squadUnits.push({
-                    entityId: entityId,
-                    position: { x: pos.x, y: unitY, z: pos.z }
-                });
+                squadUnits.push(entityId);
 
             
             });
@@ -540,9 +488,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     
     canPlayerPlaceSquad() {
-        const state = this.game.state;
-        const squadsPlaced = state.squadsPlacedThisRound || 0;
-        return squadsPlaced < this.config.maxSquadsPerRound;
+        return true;
     }
 
     placeSquad(placement) {
@@ -550,13 +496,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const team = this.game.state.mySide;
 
         // Early validation check
-        const squadUnits = [];
         const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
         const undoInfo = this.createUndoInfo(placement);
         
         // Batch unit creation for better performance
-        const createdUnits = this.createSquadUnits(placement, unitPositions, team, undoInfo);
-        squadUnits.push(...createdUnits);
+        const squadUnits = this.createSquadUnits(placement, unitPositions, team, undoInfo);
         placement.squadUnits = squadUnits;
         placement.isSquad = squadUnits.length > 1;
         this.updateGameStateForPlacement(placement, this.game.state.mySide);
@@ -564,15 +508,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gridSystem.occupyCells(placement.cells, placement.placementId);
         // Initialize squad in experience system
         if (this.game.squadExperienceSystem) {
-            const unitIds = createdUnits.map(unit => unit.entityId);
-            this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, unitIds, team);
+            this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, squadUnits, team);
         }
-
-        if(placement.collection == "buildings" && createdUnits.length > 0){
-            this.game.shopSystem.addBuilding(placement.unitType.id, placement.unitType, createdUnits[0].entityId);
-        }
+        
         // Batch effects creation
-        if (this.game.effectsSystem && createdUnits.length <= 8) {
+        if (this.game.effectsSystem && squadUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), team);
         }
         // Clear caches after placement
@@ -604,10 +544,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const unitY = terrainHeight !== null ? terrainHeight : 0;
         
             const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
-            createdUnits.push({
-                entityId: entityId,
-                position: { x: pos.x, y: unitY, z: pos.z }
-            });
+            createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
             
             
@@ -616,7 +553,35 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const gridHeight = placement.unitType.placementGridHeight || 2;
                 this.game.goldMineSystem.buildGoldMine(entityId, team, placement.gridPosition, gridWidth, gridHeight);
             }
-
+            if (placement.peasantInfo && placement.collection === 'buildings') {
+                const peasantInfo = placement.peasantInfo;
+                const peasantIds = peasantInfo.peasantIds || [];
+                const buildTime = peasantInfo.buildTime;
+                
+                const ComponentTypes = this.game.componentManager.getComponentTypes();
+                const placementComponent = this.game.getComponent(entityId, ComponentTypes.PLACEMENT);
+                
+                if (placementComponent) {
+                    placementComponent.isUnderConstruction = true;
+                    placementComponent.buildTime = buildTime;
+                    placementComponent.assignedBuilder = peasantIds[0] || null;
+                }
+                
+                // Get the build ability from the peasant's abilities
+                if (peasantIds.length > 0) {
+                    const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantIds[0]);
+                    if (peasantAbilities) {
+                        console.log("peasantAbilities", peasantAbilities);
+                        const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                        if (buildAbility) {
+                            buildAbility.assignToBuild(peasantIds[0], entityId);
+                        }
+                    }
+                }
+                
+                // Clear the flag (only once for first building entity)
+                this.game.state.peasantBuildingPlacement = null;
+            }
         });
         
         return createdUnits;
@@ -652,7 +617,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             team: team,
             targetPosition: this.game.state.targetPositions.get(placementId),
             roundPlaced: this.game.state.round,
-            timestamp: this.game.state.now
+            timestamp: this.game.state.now,
+            peasantInfo: this.game.state.peasantBuildingPlacement
         };
     }
 
@@ -662,7 +628,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.addToUndoStack(undoInfo);
             if(!placement.isStartingState){
                 this.game.state.playerGold -= (placement.unitType.value || 0);
-                this.game.state.squadsPlacedThisRound = (this.game.state.squadsPlacedThisRound || 0) + 1;
             }
             this.playerPlacements.push(placement);
         } else {
@@ -746,7 +711,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             });
             
             state.playerGold += undoInfo.cost;
-            state.squadsPlacedThisRound = Math.max(0, (state.squadsPlacedThisRound || 0) - 1);
             
             const placementIndex = this.playerPlacements.findIndex(p => p.placementId === undoInfo.placementId);
             if (placementIndex !== -1) {
@@ -1072,9 +1036,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 return false;
             }
 
-            const aliveUnits = placement.squadUnits.filter(unit => {
-                const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
-                const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
+            const aliveUnits = placement.squadUnits.filter(entityId => {
+                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
                 return health && health.current > 0 && (!deathState || !deathState.isDying);
             });
 
@@ -1109,16 +1073,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             placements.forEach(placement => {
                 if (!placement.squadUnits || placement.squadUnits.length === 0) return;
 
-                const aliveUnits = placement.squadUnits.filter(unit => {
-                    const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
-                    const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
+                const aliveUnits = placement.squadUnits.filter(entityId => {
+                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
                     return health && health.current > 0 && (!deathState || !deathState.isDying);
                 });
 
                 if (aliveUnits.length === 0) return;
 
-                const positions = aliveUnits.map(unit => {
-                    const pos = this.game.getComponent(unit.entityId, ComponentTypes.POSITION);
+                const positions = aliveUnits.map(entityId => {
+                    const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
                     return pos ? { x: pos.x, z: pos.z } : null;
                 }).filter(p => p !== null);
 
@@ -1156,10 +1120,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.clearUndoStack();
         this.game.gridSystem.clear();
         
-        // Reset squad counter
-        if (this.game.state) {
-            this.game.state.squadsPlacedThisRound = 0;
-        }
+ 
         
         // Clear caches
         this.cachedValidation = null;
@@ -1185,33 +1146,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.resetAllPlacements();
         
         console.log('MultiplayerPlacementSystem disposed');
-    }
-
-    getPlacementAtWorldPosition(worldPos) {
-        const clickRadius = 30;
-        let closestPlacementId = null;
-        let closestDistance = clickRadius;
-        
-        const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().TEAM
-        );
-        
-        entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-            const team = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().TEAM);
-            
-            const dx = pos.x - worldPos.x;
-            const dz = pos.z - worldPos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-            
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestPlacementId = team.placementId;
-            }
-        });
-        
-        return closestPlacementId;
     }
 
     getUnitAtWorldPosition(worldPos) {

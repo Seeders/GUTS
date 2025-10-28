@@ -236,7 +236,7 @@ class AbilitySystem extends engine.BaseSystem {
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
             abilities.forEach(ability => {
                 if (typeof ability.handleEndBattle === 'function') {
-                    ability.handleEndBattle();
+                    ability.handleEndBattle(entityId);
                 }
             });
         }

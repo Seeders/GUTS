@@ -325,9 +325,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         state.enemyPlacementComplete = false; // Actually opponent placement
         state.roundEnding = false;
         
-        // Reset squad counters for the new round
-        state.squadsPlacedThisRound = 0;
-        state.enemySquadsPlacedThisRound = 0;
         
         this.clearBattlefield();
         this.game.placementSystem.startNewPlacementPhase();
@@ -396,7 +393,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.updateGoldDisplay();
         this.updateRoundDisplay();
         this.updateSideDisplay();
-        this.updateSquadsPlacedDisplay();
     }
 
     handleRoundResult(roundResult) {
@@ -442,13 +438,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         const sideDisplay = document.getElementById('playerSide');
         if (sideDisplay) {
             sideDisplay.textContent = this.game.state.mySide || 0;
-        }
-    }
-    
-    updateSquadsPlacedDisplay() {
-        const sideDisplay = document.getElementById('playerSquadsPlaced');
-        if (sideDisplay) {
-            sideDisplay.textContent = `${this.game.state.squadsPlacedThisRound || 0} / ${this.config.maxSquadsPerRound}`;
         }
     }
    

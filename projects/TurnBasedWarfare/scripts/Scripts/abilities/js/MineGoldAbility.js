@@ -6,6 +6,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         this.description = 'Automatically mines gold from gold mines';
         this.isPassive = true;
         this.autocast = true;
+        this.enabled = true;
         this.castTime = 0;
         this.cooldown = 0;
         this.priority = 0;
@@ -19,8 +20,12 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     canExecute(entityId) {
+        if(!this.enabled){
+            return false;
+        }
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+        let aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
         
         if (!miningState) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
@@ -38,21 +43,27 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 entityId: entityId
             });
         }
+
+        if(aiState && aiState.currentAIController == null){
+            aiState.currentAIController = ComponentTypes.MINING_STATE;
+        }
         
-        return true;
+        return (aiState.currentAIController == ComponentTypes.MINING_STATE);
     }
 
     execute(entityId, targetData) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+        const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
         const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
         const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
         const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
         
         if (!miningState || !pos || !vel || !health || health.current <= 0) {
+            this.enabled = false;
             return null;
         }
-
+        aiState.currentAIController = ComponentTypes.MINING_STATE;
         this.updateMinerState(entityId, miningState, pos, vel);
         return null;
     }
@@ -268,8 +279,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;
             }
-            pos.x = miningState.targetTownHall.x;
-            pos.z = miningState.targetTownHall.z;
+            pos.x = miningState.targetTownHall.x - 5;
+            pos.z = miningState.targetTownHall.z - 5;
             vel.vx = 0;
             vel.vz = 0;
             miningState.state = 'depositing';

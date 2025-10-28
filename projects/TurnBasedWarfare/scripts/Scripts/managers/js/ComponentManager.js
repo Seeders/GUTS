@@ -67,9 +67,9 @@ class ComponentManager {
                 lightningResistance,
                 poisonResistance
             }),
-            
-            Team: (team = 'neutral', placementId = null) => ({ team, placementId }),
-            UnitType: (id = 'default', collection = 'units', title, value = 10) => ({ id, collection, title, value }),
+            Placement: (placement = null) => (placement),
+            Team: (team = 'neutral') => ({ team }),
+            UnitType: (unitType) => ({ ...unitType }),
             AIState: (state = 'idle', targetPosition = null, target = null, lastStateChange = 0) => 
                 ({ state, targetPosition, target, lastStateChange }),
             Animation: (scale = 1, rotation = 0, flash = 0) => ({ scale, rotation, flash }),
@@ -214,7 +214,12 @@ class ComponentManager {
             MiningState: (state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team) => ({
                 state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team
             }),
-
+            BuildingState: (state, targetBuildingEntityId, targetBuildingPosition, constructionStartTime) => ({
+                state, 
+                targetBuildingEntityId, 
+                targetBuildingPosition, 
+                constructionStartTime                
+            }),
             MindControlled: (originalTeam = 'neutral', controller = null, endTime = 0) => ({
                 originalTeam,
                 controller,
@@ -632,6 +637,7 @@ class ComponentManager {
             ENVIRONMENT_OBJECT: 'environmentObject',
             
             // Unit Components
+            PLACEMENT: 'placement',
             TEAM: 'team',
             UNIT_TYPE: 'unitType',
             AI_STATE: 'aiState',
@@ -693,6 +699,7 @@ class ComponentManager {
             VISUAL_EFFECT: 'visualEffect',
             AURA: 'aura',
             MINING_STATE: 'miningState',
+            BUILDING_STATE: 'buildingState',
             // AI and Targeting
             TARGETING_PREFERENCE: 'targetingPreference',
             THREAT: 'threat',

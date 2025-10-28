@@ -100,7 +100,7 @@ class ShopSystem extends engine.BaseSystem {
         if (this.game.state.selectedEntity.type == 'building') {
             this.renderBuildingActions(container);
         } else {
-            this.renderBuildOptions(container);
+            //this.renderBuildOptions(container);
         }
     }
 
@@ -123,7 +123,7 @@ class ShopSystem extends engine.BaseSystem {
                 cost: building.value,
                 locked: this.isBuildingLocked(buildingId, building),
                 lockReason: this.getLockReason(buildingId, building),
-                onClick: () => this.purchaseBuilding(buildingId, building)
+                onClick: () => this.activateBuildingPlacement(buildingId, building)
             });
             grid.appendChild(btn);
             availableCount++;
@@ -150,7 +150,7 @@ class ShopSystem extends engine.BaseSystem {
         container.innerHTML = '';
         if (!building) {
             this.clearSelectedEntity();
-            this.renderBuildOptions(container);
+         //   this.renderBuildOptions(container);
             return;
         }
 
@@ -167,25 +167,35 @@ class ShopSystem extends engine.BaseSystem {
             this.createShop();
         });
 
-        const hasUnits = building.units && building.units.length > 0;
-        const hasUpgrades = building.upgrades && building.upgrades.length > 0;
+       
+        const buildingId = this.game.state.selectedEntity.entityId;
 
-        if (hasUnits) {
-            const unitsSection = this.createUnitsSection(building);
-            container.appendChild(unitsSection);
-        }
+        if(this.buildingProductionProgress.has(buildingId)){
+            const hasUnits = building.units && building.units.length > 0;
+            const hasUpgrades = building.upgrades && building.upgrades.length > 0;
+            if (hasUnits) {
+                const unitsSection = this.createUnitsSection(building);
+                container.appendChild(unitsSection);
+            }
 
-        if (hasUpgrades) {
-            const upgradesSection = this.createUpgradesSection(building);
-            container.appendChild(upgradesSection);
-        }
+            if (hasUpgrades) {
+                const upgradesSection = this.createUpgradesSection(building);
+                container.appendChild(upgradesSection);
+            }
 
-        if (!hasUnits && !hasUpgrades) {
+            if (!hasUnits && !hasUpgrades) {
+                const empty = document.createElement('div');
+                empty.className = 'action-empty';
+                empty.textContent = 'No actions available';
+                container.appendChild(empty);
+            }
+        } else {
             const empty = document.createElement('div');
             empty.className = 'action-empty';
-            empty.textContent = 'No actions available';
+            empty.textContent = 'Under Construction';
             container.appendChild(empty);
         }
+        
         container.removeAttribute('style');
     }
 
@@ -203,7 +213,7 @@ class ShopSystem extends engine.BaseSystem {
         const UnitTypes = this.game.getCollections().units;
         
         const buildingId = this.game.state.selectedEntity.entityId;
-        const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
+        const productionProgress = this.buildingProductionProgress.get(buildingId);
         const remainingCapacity = 1 - productionProgress;
         
         building.units.forEach(unitId => {
@@ -353,7 +363,7 @@ class ShopSystem extends engine.BaseSystem {
         return true;
     }
 
-    purchaseBuilding(buildingId, building) {
+    activateBuildingPlacement(buildingId, building) {
         if (this.isBuildingLocked(buildingId, building)) {
             return;
         }
@@ -363,7 +373,7 @@ class ShopSystem extends engine.BaseSystem {
         }
     }
 
-    addBuilding(buildingId, building, entityId){
+    addBuilding(buildingId, entityId){
         if(!this.ownedBuildings.has(buildingId)){
             this.ownedBuildings.set(buildingId, [entityId]);
         } else {
@@ -373,7 +383,6 @@ class ShopSystem extends engine.BaseSystem {
         this.buildingProductionProgress.set(entityId, 0);
         console.log('set progress', buildingId, 0);
         this.buildingUpgrades.set(buildingId, new Set());
-        this.applyBuildingEffects(building);
         this.createShop();
         
     }
@@ -389,7 +398,7 @@ class ShopSystem extends engine.BaseSystem {
         }
 
         const buildTime = unit.buildTime || 1;
-        const productionProgress = this.buildingProductionProgress.get(buildingId) || 0;
+        const productionProgress = this.buildingProductionProgress.get(buildingId);
         const remainingCapacity = 1 - productionProgress;
         
         if (buildTime > remainingCapacity + 0.001) {
@@ -495,7 +504,7 @@ class ShopSystem extends engine.BaseSystem {
 
         for (const [placementIndex, placement] of Object.entries(placements)) {
             for(const squadUnit of placement.squadUnits){
-                if (squadUnit.entityId === buildingId) {
+                if (squadUnit === buildingId) {
                     return placement.placementId;
                 }
             }
@@ -524,18 +533,6 @@ class ShopSystem extends engine.BaseSystem {
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
             }
         });
-    }
-
-    applyBuildingEffects(building) {
-        if (building.effects) {
-            building.effects.forEach(effectId => {
-                const effect = this.game.getCollections().effects[effectId];
-                if (effect) {
-                    effect.id = effectId;
-                    this.applyEffect(effect);
-                }
-            });
-        }
     }
 
     applyUpgradeEffects(upgrade) {

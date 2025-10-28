@@ -135,9 +135,9 @@ class MovementSystem extends engine.BaseSystem {
                 this.handleGroundInteraction(pos, vel);
                 this.enforceBoundaries(pos, collision);
                     
-                const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-                if (team && team.placementId && this.game.gridSystem) {
-                    this.game.gridSystem.updateUnitPosition(team.placementId, pos.x, pos.z);
+                const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
+                if (placement && placement.placementId && this.game.gridSystem) {
+                    this.game.gridSystem.updateUnitPosition(placement.placementId, pos.x, pos.z);
                 }
             }
         });

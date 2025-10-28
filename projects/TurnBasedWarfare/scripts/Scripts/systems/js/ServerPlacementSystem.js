@@ -444,9 +444,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             playerPlacements = [placement];
         }
         this.playerPlacements.set(playerId, playerPlacements);
-        if(!placement.isStartingState){
-            player.stats.squadsPlacedThisRound++;
-        }
+
         if(player.stats.side == 'left'){
             this.leftPlacements = this.playerPlacements.get(playerId);
         } else {
@@ -457,8 +455,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
         if(result.success && result.squad){
             let squadUnits = [];
-            result.squad.squadUnits.forEach((unit) => {
-                squadUnits.push(unit.entityId);
+            result.squad.squadUnits.forEach((entityId) => {
+                squadUnits.push(entityId);
             })
             placement.squadUnits = squadUnits;
             if (this.game.squadExperienceSystem && placement.placementId) {
@@ -468,6 +466,35 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     placement.squadUnits, 
                     placement.team
                 );
+            }
+            if (placement.peasantInfo && placement.collection === 'buildings') {
+                const peasantInfo = placement.peasantInfo;
+                const peasantIds = peasantInfo.peasantIds || [];
+                const buildTime = peasantInfo.buildTime;
+                const entityId = placement.squadUnits[0];
+                const ComponentTypes = this.game.componentManager.getComponentTypes();
+                const placementComponent = this.game.getComponent(entityId, ComponentTypes.PLACEMENT);
+                
+                if (placementComponent) {
+                    placementComponent.isUnderConstruction = true;
+                    placementComponent.buildTime = buildTime;
+                    placementComponent.assignedBuilder = peasantIds[0] || null;
+                }
+                
+                // Get the build ability from the peasant's abilities
+                if (peasantIds.length > 0) {
+                    const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantIds[0]);
+                    if (peasantAbilities) {
+                        console.log("peasantAbilities", peasantAbilities);
+                        const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                        if (buildAbility) {
+                            buildAbility.assignToBuild(peasantIds[0], entityId);
+                        }
+                    }
+                }
+                
+                // Clear the flag (only once for first building entity)
+                this.game.state.peasantBuildingPlacement = null;
             }
         }
 
@@ -570,11 +597,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
 
     validatePlacement(placement, player) {
-        // Check squad count limit
-        if (player.stats.squadsPlacedThisRound >= this.maxSquadsPerRound) {
-            console.log(`Player ${player.id} exceeded squad limit: ${placements.length} > ${this.maxSquadsPerRound}`);
-            return false;
-        }
+       
 
         // Calculate cost of only NEW units
         const newUnitCost =  placement.unitType?.value;

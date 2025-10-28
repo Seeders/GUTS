@@ -173,10 +173,10 @@ class SelectedUnitSystem extends engine.BaseSystem {
 
         const currentUnit = selectedUnits[0];
         if(currentUnit){
-            const team = this.game.getComponent(currentUnit, this.componentTypes.TEAM );
+            const placement = this.game.getComponent(currentUnit, this.componentTypes.PLACEMENT);
             const unitType = this.game.getComponent(currentUnit, this.componentTypes.UNIT_TYPE );
-            if(team){
-                const placementId = team.placementId;
+            if(placement){
+                const placementId = placement.placementId;
                 if(unitType.collection == 'units'){
                     const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);                
                     if (squadData) {
@@ -324,12 +324,13 @@ class SelectedUnitSystem extends engine.BaseSystem {
     
         if (!worldPos) return;
     
-        const placementId = this.game.placementSystem.getPlacementAtWorldPosition(worldPos);
+        const placementId = this.getPlacementAtWorldPosition(worldPos);
     
         if (placementId) {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             if (placement && placement.team === this.game.state.mySide) {
-                let entityId = placement.squadUnits[0].entityId;
+                let entityId = placement.squadUnits[0];
+                console.log('selected', entityId);
                 // Check if shift is held for additive selection
                 if (event.shiftKey) {
                     if (this.selectedUnitIds.has(entityId)) {
@@ -356,6 +357,40 @@ class SelectedUnitSystem extends engine.BaseSystem {
         }
     }
     
+
+    getPlacementAtWorldPosition(worldPos) {
+        const clickRadius = 30;
+        let closestPlacementId = null;
+        let closestDistance = clickRadius;
+        
+        const entities = this.game.getEntitiesWith(
+            this.game.componentManager.getComponentTypes().POSITION,
+            this.game.componentManager.getComponentTypes().PLACEMENT
+        );
+        
+        entities.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+            const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            
+            const dx = pos.x - worldPos.x;
+            const dz = pos.z - worldPos.z;
+            let distance = Math.sqrt(dx * dx + dz * dz);
+            
+            if(unitType.size) {
+                distance -= unitType.size;
+            }
+                
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPlacementId = placement.placementId;
+            }
+        });
+        
+        return closestPlacementId;
+    }
+
     selectUnit(entityId, placementId) {
         if (!entityId) return;
         
@@ -596,8 +631,8 @@ class SelectedUnitSystem extends engine.BaseSystem {
         let placementIds = new Set();
         const CT = this.game.componentManager.getComponentTypes();
         Array.from(this.selectedUnitIds).forEach((unitId) => {
-            const team = this.game.getComponent(unitId, CT.TEAM);
-            placementIds.add(team.placementId);
+            const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
+            placementIds.add(placement.placementId);
         });
         return [...placementIds];
     }

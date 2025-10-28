@@ -189,19 +189,14 @@ class TeamHealthSystem extends engine.BaseSystem {
             
             for (const placement of allPlacements) {
                 if (placement.squadUnits) {
-                    const unitMatch = placement.squadUnits.find(unit => unit.entityId === unitId);
+                    const unitMatch = placement.squadUnits.find(entityId => entityId === unitId);
                     if (unitMatch) {
                         return {
                             placementId: placement.placementId,
                             unitType: placement.unitType
                         };
                     }
-                } else if (placement.entityId === unitId) {
-                    return {
-                        placementId: placement.placementId,
-                        unitType: placement.unitType
-                    };
-                }
+                } 
             }
         }
         

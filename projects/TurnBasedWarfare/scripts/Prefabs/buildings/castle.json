@@ -6,6 +6,9 @@
     "animations": {
       "idle": [
         {}
+      ],
+      "underConstruction": [
+        {}
       ]
     },
     "model": {

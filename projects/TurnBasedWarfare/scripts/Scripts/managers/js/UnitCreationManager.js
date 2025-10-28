@@ -81,7 +81,7 @@ class UnitCreationManager {
             this.addCombatComponents(entity, unitType);
             
             // Add AI and behavior components
-            this.addBehaviorComponents(entity, targetPosition, teamConfig);
+            this.addBehaviorComponents(entity, targetPosition, unitType);
             
             // Add visual and interaction components
             this.addVisualComponents(entity, unitType, teamConfig);
@@ -154,10 +154,7 @@ class UnitCreationManager {
                 if(unitType.collection == 'buildings'){
                     this.game.placementSystem.saveBuilding(entityId, team, gridPosition, unitType)
                 }
-                squadUnits.push({
-                    entityId: entityId,
-                    position: { x: pos.x, y: unitY, z: pos.z }
-                });
+                squadUnits.push(entityId);
             }
 
             // Occupy grid cells
@@ -167,8 +164,7 @@ class UnitCreationManager {
 
             // Initialize squad in experience system if available
             if (this.game.squadExperienceSystem) {
-                const unitIds = squadUnits.map(unit => unit.entityId);
-                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, unitIds, team);
+                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, squadUnits, team);
             }
 
             // const squadInfo = this.game.squadManager.getSquadInfo(unitType);
@@ -201,8 +197,8 @@ class UnitCreationManager {
             try {
                 // Destroy squad units
                 for (const unit of squad.squadUnits || []) {
-                    if (this.game.destroyEntity && unit.entityId) {
-                        this.game.destroyEntity(unit.entityId);
+                    if (this.game.destroyEntity && unit) {
+                        this.game.destroyEntity(unit);
                     }
                 }
 
@@ -297,15 +293,15 @@ class UnitCreationManager {
         
         // Team identification
         this.game.addComponent(entity, ComponentTypes.TEAM, 
-            Components.Team(team, placement.placementId));
+            Components.Team(team));
+        
+        this.game.addComponent(entity, ComponentTypes.PLACEMENT, 
+            Components.Placement(placement));
         
         // Unit type information
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, 
             Components.UnitType(
-                unitType.id || 'unknown', 
-                unitType.collection,
-                unitType.title || 'Unknown Unit', 
-                unitType.value || this.defaults.value
+                unitType
             ));
         
         // Facing direction
@@ -349,13 +345,10 @@ class UnitCreationManager {
     /**
      * Add AI and behavior components
      * @param {number} entity - Entity ID
-     * @param {Object} teamConfig - Team configuration
      */
-    addBehaviorComponents(entity, targetPosition) {
+    addBehaviorComponents(entity, targetPosition, unitType) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
-        
-        console.log('addBehaviorComponents', 'targetPosition', targetPosition);
         // AI state for behavior control
         this.game.addComponent(entity, ComponentTypes.AI_STATE, 
             Components.AIState('idle', targetPosition));

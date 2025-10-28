@@ -5,7 +5,24 @@
   "category": "attribute",
   "render": {
     "animations": {
-      "idle": []
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "url": "projects/TurnBasedWarfare/resources/models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
     },
     "model": {
       "shapes": {

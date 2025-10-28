@@ -245,12 +245,12 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
                 if (squad.squadUnits && this.game.componentManager) {
                     const ComponentTypes = this.game.componentManager.getComponentTypes();
                     
-                    for (const unit of squad.squadUnits) {
-                        const health = this.game.getComponent(unit.entityId, ComponentTypes.HEALTH);
-                        const deathState = this.game.getComponent(unit.entityId, ComponentTypes.DEATH_STATE);
+                    for (const entityId of squad.squadUnits) {
+                        const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                        const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
                   
                         if (health && health.current > 0 && (!deathState || !deathState.isDying)) {
-                            sideSurvivors.push(unit.entityId);
+                            sideSurvivors.push(entityId);
                             survivingCount++;
                         }
                     }

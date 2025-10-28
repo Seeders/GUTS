@@ -202,23 +202,6 @@ class MultiplayerNetworkManager {
         );
     }
 
-    purchaseBuilding(data, callback){
-        this.game.clientNetworkManager.call(
-            'PURCHASE_BUILDING',
-            { data },
-            'PURCHASED_BUILDING',
-            (data, error) => {           
-                if (data.error) {
-                    console.log('Purchase error:', data.error);
-                    callback(false, error);
-                } else {
-                    console.log('Purchase response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
     purchaseUpgrade(data, callback){
         this.game.clientNetworkManager.call(
             'PURCHASE_UPGRADE',
@@ -427,7 +410,6 @@ class MultiplayerNetworkManager {
         if (myPlayer) {
             // Sync squad count and side
             if (this.game.state) {
-                this.game.state.squadsPlacedThisRound = myPlayer.squadsPlaced || 0;
                 this.game.state.mySide = myPlayer.stats.side;
                 this.game.state.playerGold = myPlayer.stats.gold;
                 this.game.state.playerHealth = myPlayer.stats.health;
