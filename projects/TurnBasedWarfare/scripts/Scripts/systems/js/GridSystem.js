@@ -221,6 +221,13 @@ class GridSystem extends engine.BaseSystem {
         
     }
        
+    entityDestroyed(entityId) {
+        const CT = this.game.componentManager.getComponentTypes();
+        const placement = this.game.getComponent(entityId, CT.PLACEMENT);
+        if(placement){
+            this.freeCells(placement.placementId);
+        }
+    }
     clear() {
         this.state.clear();
     }
