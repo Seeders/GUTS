@@ -529,34 +529,36 @@ class ShopSystem extends engine.BaseSystem {
                 }
                 this.buildingUpgrades.get(this.game.state.selectedEntity.entityId).add(upgradeId);
                 this.game.state.playerGold -= upgrade.value;
-                this.applyUpgradeEffects(upgrade);
+                this.applyUpgradeEffects(this.game.state.mySide, upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
             }
         });
     }
 
-    applyUpgradeEffects(upgrade) {
+    applyUpgradeEffects(team, upgrade) {
         if (upgrade.effects) {
             upgrade.effects.forEach(effectId => {
                 const effect = this.game.getCollections().effects[effectId];
                 if (effect) {
                     effect.id = effectId;
-                    this.applyEffect(effect);
+                    this.applyEffect(team, effect);
                 }
             });
         }
     }
 
-    applyEffect(effectData) {
-        const state = this.game.state;
-        
-        if (!state.buildingBonuses) {
-            state.buildingBonuses = {
-                goldPerRound: 0,
-                unitStats: {}
-            };
+    applyEffect(team, effectData) {
+        console.log('apply effect', effectData);
+        if(!this.game.state.teams){
+            this.game.state.teams = {};
         }
-        state.buildingBonuses[effectData.id] = 1;
+        if(!this.game.state.teams[team]) {
+            this.game.state.teams[team] = {};
+        } 
+        if(!this.game.state.teams[team].effects) {
+            this.game.state.teams[team].effects = {};
+        }
+        this.game.state.teams[team].effects[effectData.id] = effectData;
     }
 
     onPlacementPhaseStart() {

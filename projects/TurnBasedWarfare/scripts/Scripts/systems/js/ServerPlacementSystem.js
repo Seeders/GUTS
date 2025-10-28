@@ -706,7 +706,20 @@ class ServerPlacementSystem extends engine.BaseSystem {
         const upgrade = this.game.getCollections().upgrades[data.upgradeId];
         if(upgrade?.value <= player.stats.gold){
             player.stats.gold -= upgrade.value;
-            player.stats.upgrades.push(data.upgradeId);
+            if(!this.game.state.teams){
+                this.game.state.teams = {};
+            }
+            if(!this.game.state.teams[player.stats.side]) {
+                this.game.state.teams[player.stats.side] = {};
+            } 
+            if(!this.game.state.teams[player.stats.side].effects) {
+                this.game.state.teams[player.stats.side].effects = {};
+            }
+            upgrade.effects.forEach((effectId) => {
+                const effect = this.game.getCollections().effects[effectId];
+                this.game.state.teams[player.stats.side].effects[effectId] = effect;
+            })
+            
             console.log(`SUCCESS`);
             console.log(`================================`);
             return { success: true };

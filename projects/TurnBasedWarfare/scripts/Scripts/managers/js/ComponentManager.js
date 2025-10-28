@@ -211,8 +211,8 @@ class ComponentManager {
             // =============================================
             // TACTICAL ABILITY COMPONENTS (from original)
             // =============================================
-            MiningState: (state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team) => ({
-                state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team
+            MiningState: (state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team, entityId) => ({
+                state, targetMine, targetTownHall, hasGold, miningStartTime, depositStartTime, team, entityId
             }),
             BuildingState: (state, targetBuildingEntityId, targetBuildingPosition, constructionStartTime) => ({
                 state, 

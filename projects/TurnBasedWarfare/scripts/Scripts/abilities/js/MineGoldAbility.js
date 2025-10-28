@@ -328,9 +328,22 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             // Release the mine when done mining
             if (miningState.targetMineEntityId) {
                 this.game.goldMineSystem.releaseMine(miningState.targetMineEntityId, miningState.entityId);
-            }
-            
+            }            
             miningState.hasGold = true;
+            miningState.goldAmt = 10;
+
+            if(this.game.state.teams){
+                let teamState = this.game.state.teams[miningState.team];
+                if(teamState && teamState.effects){
+                    let teamStateEffects = teamState.effects;
+                    if(teamStateEffects['goldPerTrip']){
+                        let goldPerTrip = teamStateEffects['goldPerTrip'];
+                        if(goldPerTrip && goldPerTrip.value){
+                            miningState.goldAmt += goldPerTrip.value;
+                        }
+                    }
+                }
+            }
             miningState.state = 'walking_to_hall';
             this.findTownHall(miningState);
         }
@@ -340,24 +353,24 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         const elapsed = this.game.state.now - miningState.depositStartTime;
         
         if (elapsed >= this.depositDuration) {
-            this.awardGold(miningState.team);
+            this.awardGold(miningState.team, miningState.goldAmt);
             miningState.hasGold = false;
             this.findMineTarget(miningState);
         }
     }
 
-    awardGold(team) {
+    awardGold(team, goldAmt) {
         if (this.game.isServer) {
             const room = this.game.room;
             for (const [playerId, player] of room.players) {
                 if(player.stats.side == team){
-                    player.stats.gold += this.goldPerTrip;
+                    player.stats.gold += goldAmt;
                     break;
                 }
             }
         } else {
             if (team === this.game.state.mySide) {
-                this.game.state.playerGold += this.goldPerTrip;
+                this.game.state.playerGold += goldAmt;
             }
         }
     }
