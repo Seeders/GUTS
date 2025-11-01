@@ -306,19 +306,39 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     height: 200px;
     rotate: -45deg;
     margin: 2em;
+    position: absolute;
+    left: 1em;
+    bottom: 1em;
+    background: rgba(20, 20, 30, 0.9);
+    border: 2px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.8rem;
 }
 
-#uiContainer {
+#actionPanel {
+    background: rgba(20, 20, 30, 0.9);
+    border: 2px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.8rem;
+    min-height: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    max-height: 200px;
     position: absolute;
-    right: 0;
-    bottom: 0;
+    right: 1em;
+    bottom: 1em;
+}
+
+#gameControls {
+    position: absolute;
+    bottom: 1em;
     left: 0;
-    height: 200px;
-    padding: 1rem;
-    display: flex;
-    align-items: flex-end;
-    gap: 1em;
-    justify-content: space-between;
+    right: 0;
+    width: 200px;
+    margin: auto;
+}
+#undoBtn { display: none;}
+#uiContainer {
     pointer-events: none;
 }
 #uiContainer > div {
@@ -389,27 +409,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 /* UI Components for Game */
-.resources {
-    background: 
-        linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(26, 13, 26, 0.4));
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--dark-bronze);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.resource-item {
+#resourcesContainer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.8rem;
-    font-size: 1rem;
+    gap: 1em;
+    position: absolute;
+    top: 1em;
+    right: 1em;
 }
-
-.resource-item:last-child {
-    margin-bottom: 0;
-}
-
 .resource-label {
     font-family: var(--font-title);
 }
@@ -2404,16 +2410,6 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     margin-top: 1rem;
 }
 
-.action-panel {
-    background: rgba(20, 20, 30, 0.9);
-    border: 2px solid rgba(255, 170, 0, 0.3);
-    border-radius: 8px;
-    padding: 0.8rem;
-    min-height: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    max-height: 200px;
-}
 
 .action-panel-header {
     display: flex;

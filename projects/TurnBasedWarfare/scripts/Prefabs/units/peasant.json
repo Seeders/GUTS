@@ -162,12 +162,6 @@
     "MineGoldAbility",
     "BuildAbility"
   ],
-  "buildings": [
-    "goldMine",
-    "townHall",
-    "barracks",
-    "fletchersHall",
-    "mageTower"
-  ],
-  "icon": "unit_peasant"
+  "icon": "unit_peasant",
+  "actionSet": "peasant_actions"
 }

@@ -111,21 +111,20 @@
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
-      
+        <div id="resourcesContainer" class="resources">
+            <div class="resource-item">
+                <span class="resource-label">💰</span>
+                <span class="resource-value" id="playerGold">--</span>
+            </div>
+            <div class="resource-item">
+                <span class="resource-label">🏆</span>
+                <span class="resource-value" id="currentRound">--</span>
+            </div>
+        </div>
         <div id="uiContainer">              
             <div id="miniMapContainer"></div>
-            <div id="resourcesContainer" class="resources">
-                <div class="resource-item">
-                    <span class="resource-label">💰</span>
-                    <span class="resource-value" id="playerGold">--</span>
-                </div>
-                <div class="resource-item">
-                    <span class="resource-label">🏆</span>
-                    <span class="resource-value" id="currentRound">--</span>
-                </div>
-            </div>
             <!-- Game controls -->
-            <div class="game-controls">
+            <div id="gameControls">
                 <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">🚪 RETREAT</button>
                 <button id="undoBtn" class="btn btn-secondary">🤦‍♂️ Undo</button>
                 <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>

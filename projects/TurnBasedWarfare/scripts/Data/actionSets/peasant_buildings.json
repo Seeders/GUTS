@@ -1,0 +1,10 @@
+{
+  "title": "Peasant Buildings",
+  "buildings": [
+    "goldMine",
+    "townHall",
+    "barracks",
+    "fletchersHall",
+    "mageTower"
+  ]
+}

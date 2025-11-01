@@ -38,7 +38,6 @@ class UnitOrderSystem extends engine.BaseSystem {
         // Check if this squad can build
         const firstUnit = squadData.unitIds[0];
         const unitType = firstUnit ? this.game.getComponent(firstUnit, componentTypes.UNIT_TYPE) : null;
-        const canBuild = unitType && unitType.abilities && unitType.abilities.includes('BuildAbility');
         
         // Squad info panel
         let squadPanel = document.createElement('div');
@@ -47,38 +46,22 @@ class UnitOrderSystem extends engine.BaseSystem {
         const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
         const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
         
-        squadPanel.innerHTML = ``;
         
         actionPanel.appendChild(squadPanel);
         
         // Add building options if this unit can build
-        if (canBuild) {
-            this.addBuildingOptions(actionPanel, firstUnit, unitType);
-        }
         
-        // Standard squad actions
-        const actionsDiv = document.createElement('div');
-        actionsDiv.innerHTML = `
-            <button id="setTargetBtn" class="btn" title="Set Target Position">🎯</button>
-            <button id="deselectSquadBtn" class="btn btn-secondary" title="Deselect">X</button>
-        `;
-        squadPanel.appendChild(actionsDiv);
-        
-        document.getElementById('setTargetBtn').addEventListener('click', () => {
-            document.body.style.cursor = 'crosshair';
-            this.startTargeting();
-        });
-        
-        document.getElementById('deselectSquadBtn').addEventListener('click', () => {
-            actionPanel.innerHTML = '';
-        });
+        this.displayActionSet(null, squadPanel, firstUnit, unitType);
+
+  
     }
 
     // ADD THIS NEW METHOD to UnitOrderSystem:
 
-    addBuildingOptions(actionPanel, selectedUnitId, unitType) {
-        const buildSection = document.createElement('div');
-        buildSection.className = 'action-section';
+    displayActionSet(actionSetId, panel, selectedUnitId, unitType) {
+        panel.innerHTML = ``;
+        const actionSection = document.createElement('div');
+        actionSection.className = 'action-section';
 
         // const buildHeader = document.createElement('div');
         // buildHeader.className = 'action-section-header';
@@ -87,32 +70,84 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
-        const buildings = this.game.getCollections().buildings;
         
-        unitType.buildings.forEach(buildingId => {
-            if (buildingId === 'underConstruction') return;
-            
-            const building = buildings[buildingId];            
-            if (!building.buildTime) building.buildTime = 1;
-            
-            building.id = buildingId;
-            const canAfford = this.game.state.playerGold >= (building.value || 0);
-            const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
-            const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
-            
-            const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId);
-            grid.appendChild(btn);
-        });
+        let actions = [];
 
-        buildSection.appendChild(grid);
-        
-        const squadPanel = document.getElementById('squadActionPanel');
-        if (squadPanel) {
-            squadPanel.appendChild(buildSection);
+        if(!unitType.actionSet){
+            if(unitType.collection == 'units'){
+                unitType.actionSet = 'defaultUnitActions';
+            } 
+        } 
+
+        if(actionSetId || unitType.actionSet){
+            if(!actionSetId) {
+                actionSetId = unitType.actionSet;
+            }
+            let currentActionSet = this.game.getCollections().actionSets[actionSetId];
+            if(currentActionSet.actions){
+                actions = currentActionSet.actions;
+                const actionsCollection = this.game.getCollections().actions;
+                actions.forEach((actionId) => {
+                    let action = actionsCollection[actionId];
+                    const btn = this.createActionButton(action, panel, selectedUnitId, unitType);
+                    grid.appendChild(btn);
+                });
+            } else if(currentActionSet.buildings){
+                const buildings = this.game.getCollections().buildings;
+                currentActionSet.buildings.forEach(buildingId => {
+                    if (buildingId === 'underConstruction') return;
+                    
+                    const building = buildings[buildingId];            
+                    if (!building.buildTime) building.buildTime = 1;
+                    
+                    building.id = buildingId;
+                    const canAfford = this.game.state.playerGold >= (building.value || 0);
+                    const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
+                    const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
+                    
+                    const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId);
+                    grid.appendChild(btn);
+                });
+            }
         }
+        actionSection.appendChild(grid);
+    
+        panel.appendChild(actionSection);
     }
 
-    // ADD THIS NEW METHOD to UnitOrderSystem:
+    createActionButton(action, panel, selectedUnitId, unitType) {
+        const btn = document.createElement('button');
+        btn.className = 'action-btn';
+        btn.title = `${action.title}`;
+
+        const iconEl = document.createElement('div');
+        iconEl.className = 'action-btn-icon';
+        if(action.icon){
+            const icon = this.game.getCollections().icons[action.icon];
+            if(icon && icon.filePath){
+                const img = document.createElement('img');
+                img.src = `./${icon.filePath}`;
+                iconEl.append(img);
+            } else {
+                iconEl.textContent =  '🏛️';
+            }
+        } else {
+            iconEl.textContent =  '🏛️';
+        }
+        btn.append(iconEl);
+
+        if(action.order){
+            btn.addEventListener('click', () => {
+                this[action.order]();
+            });
+        } else if(action.actionSet){
+            btn.addEventListener('click', () => {
+                this.displayActionSet(action.actionSet, panel, selectedUnitId, unitType);
+            });
+
+        }
+        return btn;
+    }
 
     createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId) {
         const btn = document.createElement('button');
@@ -185,8 +220,6 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         return btn;
     }
-
-    // ADD THIS NEW METHOD to UnitOrderSystem:
 
     activateBuildingPlacement(building, selectedUnitId) {
         console.log('activate building');
