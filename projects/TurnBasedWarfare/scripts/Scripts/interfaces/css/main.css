@@ -331,9 +331,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 #gameControls {
     position: absolute;
-    bottom: 1em;
-    left: 0;
-    right: 0;
+    bottom: calc(200px + 2em);
+    right: 1em;
     width: 200px;
     margin: auto;
 }
