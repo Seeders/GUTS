@@ -96,7 +96,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.groundMeshCache = this.findGroundMesh();
     }
 
-    startGame() {
+    onGameStarted() {
         this.getStartingState();
         this.startNewPlacementPhase();
     }
@@ -125,6 +125,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         });            
                     }          
                 });
+                const pos = response.camera.position;
+                const look = response.camera.lookAt;
+                console.log('starting camera', pos, look);
+                this.game.camera.position.set(pos.x, pos.y, pos.z);
+                
+                this.game.camera.lookAt(look.x, look.y, look.z);
+              //  this.game.worldSystem.controls.target.set(look.x, look.y, look.z);
+              //  this.game.worldSystem.controls.update();
             }
         });   
     }
@@ -555,7 +563,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
             if (placement.peasantInfo && placement.collection === 'buildings') {
                 const peasantInfo = placement.peasantInfo;
-                const peasantIds = peasantInfo.peasantIds || [];
+                const peasantId = peasantInfo.peasantId;
                 const buildTime = peasantInfo.buildTime;
                 
                 const ComponentTypes = this.game.componentManager.getComponentTypes();
@@ -567,20 +575,20 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 if (placementComponent) {
                     placementComponent.isUnderConstruction = true;
                     placementComponent.buildTime = buildTime;
-                    placementComponent.assignedBuilder = peasantIds[0] || null;
+                    placementComponent.assignedBuilder = peasantId || null;
                 }
                 
                 // Get the build ability from the peasant's abilities
-                if (peasantIds.length > 0) {
-                    const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantIds[0]);
-                    if (peasantAbilities) {
-                        console.log("peasantAbilities", peasantAbilities);
-                        const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                        if (buildAbility) {
-                            buildAbility.assignToBuild(peasantIds[0], entityId);
-                        }
+        
+                const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
+                if (peasantAbilities) {
+                    console.log("peasantAbilities", peasantAbilities);
+                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        buildAbility.assignToBuild(peasantId, entityId);
                     }
                 }
+            
                 
                 // Clear the flag (only once for first building entity)
                 this.game.state.peasantBuildingPlacement = null;

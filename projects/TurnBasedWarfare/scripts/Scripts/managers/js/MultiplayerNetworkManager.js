@@ -317,7 +317,7 @@ class MultiplayerNetworkManager {
     }
 
     handleGameStarted(data){
-        this.game.uiSystem.transitionToGame(data);
+        this.game.triggerEvent('onGameStarted', data);
     }
 
     handleReadyForBattleUpdate(data) {

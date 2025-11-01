@@ -53,7 +53,8 @@
         { "type": "PathfindingSystem" },    
         { "type": "FogOfWarSystem" },    
         { "type": "SelectedUnitSystem" },    
-        { "type": "UnitOrderSystem" }
+        { "type": "UnitOrderSystem" },    
+        { "type": "MiniMapSystem" }
       ],
       "classes": [
         {

@@ -46,18 +46,18 @@ class ShopSystem extends engine.BaseSystem {
             return;
         }
 
-        const header = document.createElement('div');
-        header.className = 'action-panel-header';
-        header.innerHTML = `
-            <button class="deselect-btn" id="deselectBtn">←</button>
-            <span>${building.icon || '🏛️'} ${building.title}</span>
-        `;
-        container.appendChild(header);
+        // const header = document.createElement('div');
+        // header.className = 'action-panel-header';
+        // header.innerHTML = `
+        //     <button class="deselect-btn" id="deselectBtn">←</button>
+        //     <span>${building.icon || '🏛️'} ${building.title}</span>
+        // `;
+        // container.appendChild(header);
 
-        document.getElementById('deselectBtn').addEventListener('click', () => {
-            this.clearSelectedEntity();
-            this.createShop();
-        });
+        // document.getElementById('deselectBtn').addEventListener('click', () => {
+        //     this.clearSelectedEntity();
+        //     this.createShop();
+        // });
 
        
         const buildingId = this.game.state.selectedEntity.entityId;
@@ -95,10 +95,10 @@ class ShopSystem extends engine.BaseSystem {
         const section = document.createElement('div');
         section.className = 'action-section';
 
-        const header = document.createElement('div');
-        header.className = 'action-section-header';
-        header.textContent = 'RECRUIT';
-        section.appendChild(header);
+        // const header = document.createElement('div');
+        // header.className = 'action-section-header';
+        // header.textContent = 'RECRUIT';
+        // section.appendChild(header);
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
@@ -123,7 +123,7 @@ class ShopSystem extends engine.BaseSystem {
             }
             
             const btn = this.createActionButton({
-                icon: unit.icon || '⚔️',
+                iconId: unit.icon,
                 title: unit.title,
                 cost: unit.value,
                 buildTime: buildTime,
@@ -178,7 +178,7 @@ class ShopSystem extends engine.BaseSystem {
 
     createActionButton(options) {
         const {
-            icon,
+            iconId,
             title,
             cost,
             buildTime,
@@ -189,39 +189,31 @@ class ShopSystem extends engine.BaseSystem {
 
         const btn = document.createElement('button');
         btn.className = 'action-btn';
-        
         if (locked) btn.classList.add('locked');
 
         const iconEl = document.createElement('div');
         iconEl.className = 'action-btn-icon';
-        iconEl.textContent = icon;
-        btn.appendChild(iconEl);
-
-        const titleEl = document.createElement('div');
-        titleEl.className = 'action-btn-title';
-        titleEl.textContent = title;
-        btn.appendChild(titleEl);
-
-        if (buildTime !== undefined) {
-            const buildTimeEl = document.createElement('div');
-            buildTimeEl.className = 'action-btn-buildtime';
-            buildTimeEl.style.fontSize = '0.8em';
-            buildTimeEl.style.color = '#888';
-            buildTimeEl.textContent = `⏱ ${buildTime.toFixed(1)} rounds`;
-            btn.appendChild(buildTimeEl);
-        }
-
-        const costEl = document.createElement('div');
-        costEl.className = 'action-btn-cost';
-        
-        if (lockReason) {
-            costEl.textContent = lockReason;
-            costEl.style.color = '#f44336';
+        if(iconId){
+            const icon = this.game.getCollections().icons[iconId];
+            if(icon && icon.filePath){
+                const img = document.createElement('img');
+                img.src = `./${icon.filePath}`;
+                iconEl.append(img);
+            } else {
+                iconEl.textContent =  '⚔️';
+            }
         } else {
-            costEl.innerHTML = `💰 ${cost}`;
+            iconEl.textContent =  '⚔️';
         }
+
         
-        btn.appendChild(costEl);
+        btn.appendChild(iconEl);
+        let costTxt = `💰 ${cost}`;
+        if (lockReason) {
+            costTxt = lockReason;
+        } 
+        btn.title = `${title} ${costTxt}`;
+        
 
         if (!locked) {
             btn.addEventListener('click', onClick);

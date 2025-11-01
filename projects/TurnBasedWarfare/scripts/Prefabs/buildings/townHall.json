@@ -66,5 +66,6 @@
     "peasant"
   ],
   "height": 100,
-  "size": 75
+  "size": 75,
+  "icon": "building_townHall"
 }

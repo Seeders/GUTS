@@ -69,5 +69,6 @@
   "placementGridHeight": 2,
   "height": 100,
   "anchored": true,
-  "size": 50
+  "size": 50,
+  "icon": "building_mageTower"
 }

@@ -85,12 +85,33 @@ class WorldSystem extends engine.BaseSystem {
 
         this.scene = new THREE.Scene();
         this.uiScene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(
-            75, 
-            window.innerWidth / window.innerHeight, 
-            0.1, 
-            5000
-        );
+        const currentLevel = this.game.state?.level || 'level1';
+        this.level = this.game.getCollections().levels?.[currentLevel];
+        this.world = this.game.getCollections().worlds[this.level.world];
+        this.cameraData = this.game.getCollections().cameras[this.world.camera]; 
+        const width = window.innerWidth;
+        const height = window.innerHeight; 
+        console.log('cameraDATA', this.cameraData);
+      // Camera setup
+        if(this.cameraData.fov){
+            this.camera = new THREE.PerspectiveCamera(
+                this.cameraData.fov,
+                width / height,
+                this.cameraData.near,
+                this.cameraData.far
+            );
+        } else if(this.cameraData.zoom){
+            this.camera = new THREE.OrthographicCamera(
+                width / - 2, 
+                width / 2, 
+                height / 2, 
+                height / - 2, 
+                this.cameraData.near,
+                this.cameraData.far
+            );
+            this.camera.zoom = this.cameraData.zoom;
+            this.camera.updateProjectionMatrix();
+        }
 
         this.renderer = new THREE.WebGLRenderer({ 
             canvas: gameCanvas,
@@ -316,10 +337,10 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         const cameraPos = JSON.parse(this.cameraSettings.position);
-        this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
+       // this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
         const lookAt = JSON.parse(this.cameraSettings.lookAt);
-        this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+       // this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
 
         if (this.cameraSettings.fov && this.camera.isPerspectiveCamera) {
             this.camera.fov = this.cameraSettings.fov;
@@ -328,7 +349,7 @@ class WorldSystem extends engine.BaseSystem {
             this.camera.updateProjectionMatrix();
         }
 
-        this.setupOrbitControls(lookAt);
+       // this.setupOrbitControls(lookAt);
 
      
     }
@@ -1272,8 +1293,8 @@ class WorldSystem extends engine.BaseSystem {
             this.controls.target.set(lookAt.x, lookAt.y, lookAt.z);
             this.controls.update();
         } else {
-            this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-            this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+         //   this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
+        //    this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
         }
 
     }

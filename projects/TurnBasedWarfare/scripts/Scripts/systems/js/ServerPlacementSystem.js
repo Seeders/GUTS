@@ -469,7 +469,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             }
             if (placement.peasantInfo && placement.collection === 'buildings') {
                 const peasantInfo = placement.peasantInfo;
-                const peasantIds = peasantInfo.peasantIds || [];
+                const peasantId = peasantInfo.peasantId;
                 const buildTime = peasantInfo.buildTime;
                 const entityId = placement.squadUnits[0];
                 const ComponentTypes = this.game.componentManager.getComponentTypes();
@@ -478,20 +478,20 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 if (placementComponent) {
                     placementComponent.isUnderConstruction = true;
                     placementComponent.buildTime = buildTime;
-                    placementComponent.assignedBuilder = peasantIds[0] || null;
+                    placementComponent.assignedBuilder = peasantId || null;
                 }
                 
                 // Get the build ability from the peasant's abilities
-                if (peasantIds.length > 0) {
-                    const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantIds[0]);
-                    if (peasantAbilities) {
-                        console.log("peasantAbilities", peasantAbilities);
-                        const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                        if (buildAbility) {
-                            buildAbility.assignToBuild(peasantIds[0], entityId);
-                        }
+    
+                const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
+                if (peasantAbilities) {
+                    console.log("peasantAbilities", peasantAbilities);
+                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        buildAbility.assignToBuild(peasantId, entityId);
                     }
                 }
+                
                 
                 // Clear the flag (only once for first building entity)
                 this.game.state.peasantBuildingPlacement = null;
@@ -844,9 +844,37 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 position: peasantPositions[3]
             }
         ];
+
+        const pitch = 35.264 * Math.PI / 180;
+        const yaw = 135 * Math.PI / 180;
+        const distance = 512;
+
+        const cdx = Math.sin(yaw) * Math.cos(pitch);
+        const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+        
+            
+        const worldPos = this.game.gridSystem.gridToWorld(startPosition.x, startPosition.z);
+
+        const cameraPosition = {
+            x: worldPos.x - cdx * distance,
+            y: 512,
+            z: worldPos.z - cdz * distance
+        };
+
+        const lookAt = {
+            x: worldPos.x,
+            y: 0, 
+            z: worldPos.z
+        };
+
         return {
-            success: true, 
-            startingUnits: startingUnits
-        }
+            success: true,
+            startingUnits,
+            camera: {
+                position: cameraPosition,
+                lookAt
+            }
+        };
     }
 }

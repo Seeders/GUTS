@@ -47,34 +47,20 @@ class UnitOrderSystem extends engine.BaseSystem {
         const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
         const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
         
-        squadPanel.innerHTML = `
-            <div class="panel-title">${canBuild ? '⚒️ PEASANT ACTIONS' : '🛡️ SQUAD ACTIONS'}</div>
-            <div style="color: var(--primary-gold); font-weight: 600; margin-bottom: 10px;">
-                ${squadName}${levelInfo}
-            </div>
-            <div style="color: var(--stone-gray); font-size: 0.85rem; margin-bottom: 10px;">
-                <div>Units: ${aliveUnits}/${squadData.totalUnitsInSquad}</div>
-                <div>XP: ${squadData.experience}/${squadData.experienceToNextLevel} (${expProgress}%)</div>
-                ${squadData.canLevelUp ? '<div style="color: #4ade80;">✨ Ready to Level Up!</div>' : ''}
-            </div>
-        `;
+        squadPanel.innerHTML = ``;
         
         actionPanel.appendChild(squadPanel);
         
         // Add building options if this unit can build
         if (canBuild) {
-            this.addBuildingOptions(actionPanel, squadData.unitIds);
+            this.addBuildingOptions(actionPanel, firstUnit, unitType);
         }
         
         // Standard squad actions
         const actionsDiv = document.createElement('div');
         actionsDiv.innerHTML = `
-            <button id="setTargetBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">
-                🎯 Set Target Position
-            </button>
-            <button id="deselectSquadBtn" class="btn btn-secondary" style="width: 100%;">
-                Close
-            </button>
+            <button id="setTargetBtn" class="btn" title="Set Target Position">🎯</button>
+            <button id="deselectSquadBtn" class="btn btn-secondary" title="Deselect">X</button>
         `;
         squadPanel.appendChild(actionsDiv);
         
@@ -90,23 +76,23 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     // ADD THIS NEW METHOD to UnitOrderSystem:
 
-    addBuildingOptions(actionPanel, selectedUnitIds) {
+    addBuildingOptions(actionPanel, selectedUnitId, unitType) {
         const buildSection = document.createElement('div');
         buildSection.className = 'action-section';
 
-        const buildHeader = document.createElement('div');
-        buildHeader.className = 'action-section-header';
-        buildHeader.textContent = 'BUILD STRUCTURES';
-        buildSection.appendChild(buildHeader);
+        // const buildHeader = document.createElement('div');
+        // buildHeader.className = 'action-section-header';
+        // buildHeader.textContent = 'BUILD STRUCTURES';
+        // buildSection.appendChild(buildHeader);
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
         const buildings = this.game.getCollections().buildings;
         
-        Object.keys(buildings).forEach(buildingId => {
+        unitType.buildings.forEach(buildingId => {
             if (buildingId === 'underConstruction') return;
             
-            const building = buildings[buildingId];
+            const building = buildings[buildingId];            
             if (!building.buildTime) building.buildTime = 1;
             
             building.id = buildingId;
@@ -114,7 +100,7 @@ class UnitOrderSystem extends engine.BaseSystem {
             const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
             const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
             
-            const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitIds);
+            const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId);
             grid.appendChild(btn);
         });
 
@@ -128,50 +114,62 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     // ADD THIS NEW METHOD to UnitOrderSystem:
 
-    createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitIds) {
+    createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId) {
         const btn = document.createElement('button');
         btn.className = 'action-btn';
-        
+        btn.title = `${building.title} 💰${building.value}`;
         const locked = isLocked || !canAfford;
         if (locked) {
             btn.style.opacity = '0.5';
             btn.style.cursor = 'not-allowed';
+            btn.title = `${building.title} ${lockReason}`;
         }
         
-        const icon = document.createElement('div');
-        icon.style.cssText = 'font-size: 2rem; margin-bottom: 4px;';
-        icon.textContent = building.icon || '🏛️';
-        btn.appendChild(icon);
-
-        const title = document.createElement('div');
-        title.style.cssText = 'font-size: 0.75rem; font-weight: 600; text-align: center; margin-bottom: 4px;';
-        title.textContent = building.title;
-        btn.appendChild(title);
-
-        if (building.buildTime) {
-            const buildTime = document.createElement('div');
-            buildTime.style.cssText = 'font-size: 0.7rem; color: #888;';
-            buildTime.textContent = `⏱️ ${building.buildTime}s`;
-            btn.appendChild(buildTime);
-        }
-
-        const cost = document.createElement('div');
-        cost.style.cssText = 'font-size: 0.75rem; margin-top: 4px;';
-        if (lockReason) {
-            cost.textContent = lockReason;
-            cost.style.color = '#f44336';
-        } else if (!canAfford) {
-            cost.textContent = "Can't afford";
-            cost.style.color = '#f44336';
+        const iconEl = document.createElement('div');
+        iconEl.className = 'action-btn-icon';
+        console.log('create building button');
+        if(building.icon){
+            const icon = this.game.getCollections().icons[building.icon];
+            if(icon && icon.filePath){
+                const img = document.createElement('img');
+                img.src = `./${icon.filePath}`;
+                iconEl.append(img);
+            } else {
+                iconEl.textContent =  '🏛️';
+            }
         } else {
-            cost.innerHTML = `💰 ${building.value || 0}`;
-            cost.style.color = 'var(--primary-gold)';
+            iconEl.textContent =  '🏛️';
         }
-        btn.appendChild(cost);
+        btn.append(iconEl);
+        // const title = document.createElement('div');
+        // title.style.cssText = 'font-size: 0.75rem; font-weight: 600; text-align: center; margin-bottom: 4px;';
+        // title.textContent = building.title;
+        // btn.appendChild(title);
+
+        // if (building.buildTime) {
+        //     const buildTime = document.createElement('div');
+        //     buildTime.style.cssText = 'font-size: 0.7rem; color: #888;';
+        //     buildTime.textContent = `⏱️ ${building.buildTime}s`;
+        //     btn.appendChild(buildTime);
+        // }
+
+        // const cost = document.createElement('div');
+        // cost.style.cssText = 'font-size: 0.75rem; margin-top: 4px;';
+        // if (lockReason) {
+        //     cost.textContent = lockReason;
+        //     cost.style.color = '#f44336';
+        // } else if (!canAfford) {
+        //     cost.textContent = "Can't afford";
+        //     cost.style.color = '#f44336';
+        // } else {
+        //     cost.innerHTML = `💰 ${building.value || 0}`;
+        //     cost.style.color = 'var(--primary-gold)';
+        // }
+        // btn.appendChild(cost);
 
         if (!locked) {
             btn.addEventListener('click', () => {
-                this.activateBuildingPlacement(building, selectedUnitIds);
+                this.activateBuildingPlacement(building, selectedUnitId);
             });
             
             btn.addEventListener('mouseenter', () => {
@@ -190,7 +188,7 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     // ADD THIS NEW METHOD to UnitOrderSystem:
 
-    activateBuildingPlacement(building, selectedUnitIds) {
+    activateBuildingPlacement(building, selectedUnitId) {
         console.log('activate building');
         this.game.state.selectedUnitType = { 
             id: building.id, 
@@ -199,7 +197,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         };
         
         this.game.state.peasantBuildingPlacement = {
-            peasantIds: selectedUnitIds,
+            peasantId: selectedUnitId,
             buildTime: building.buildTime
         };
         

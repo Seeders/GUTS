@@ -113,9 +113,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
             
         });
     }
-    startGame() {
-        this.game.networkManager.startGame();
-    }
     leaveRoom() {
         this.game.networkManager.leaveRoom();
         this.exitToMainMenu();
@@ -244,7 +241,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
         }
     }
 
-    transitionToGame(data) {
+    onGameStarted(data) {
 
         this.currentScreen = 'game';
         
@@ -255,7 +252,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         // Start the game
         this.game.gameManager.startSelectedMode();
         
-        this.game.placementSystem.startGame();
     }
 
     showNotification(message, type = 'info', duration = 4000) {

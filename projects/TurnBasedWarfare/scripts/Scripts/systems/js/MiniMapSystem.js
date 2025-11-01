@@ -1,0 +1,539 @@
+class MiniMapSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.miniMapSystem = this;
+        this.componentTypes = this.game.componentManager.getComponentTypes();
+        
+        this.MINIMAP_SIZE = 200;
+        this.MINIMAP_PADDING = 10;
+        
+        this.container = null;
+        this.canvas = null;
+        this.ctx = null;
+        
+        this.minimapCamera = null;
+        this.minimapScene = null;
+        this.minimapRenderTarget = null;
+        
+        this.iconGeometry = null;
+        this.friendlyIconMaterial = null;
+        this.friendlyInstancedMesh = null;
+        this.enemyIconMaterial = null;
+        this.enemyInstancedMesh = null;
+        this.goldIconMaterial = null;
+        this.goldInstancedMesh = null;
+        this.tempMatrix = null;
+        
+        this.isDragging = false;
+        this.minimapWorldSize = 0;
+        this.initialized = false;
+        this.MINIMAP_ROTATION = -45;
+    }
+
+    onGameStarted() {
+        // Get the container and its actual width
+        this.container = document.getElementById('miniMapContainer');
+        const rect = this.container.getBoundingClientRect();
+       // this.MINIMAP_SIZE = rect.width; // use actual displayed size
+
+        // Use that size for both the canvas and render target
+        this.minimapWorldSize = this.game.worldSystem.extendedSize;
+        
+        this.createMinimapCamera();
+        this.createIconMaterials();
+        this.createMinimapUI();
+        this.setupEventListeners();
+        this.initialized = true;
+    }
+
+
+    createMinimapCamera() {
+        const halfSize = this.minimapWorldSize / 2;
+        
+        this.minimapCamera = new THREE.OrthographicCamera(
+            -halfSize, halfSize,
+            halfSize, -halfSize,
+            0.1, 1000
+        );
+        this.minimapCamera.position.set(0, 500, 0);
+        this.minimapCamera.lookAt(0, 0, 0);
+        
+        this.minimapScene = new THREE.Scene();
+        
+        this.minimapRenderTarget = new THREE.WebGLRenderTarget(
+            this.MINIMAP_SIZE,
+            this.MINIMAP_SIZE,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBAFormat
+            }
+        );
+        
+        this.addFogBackground();
+    }
+
+    addFogBackground() {
+        const fogQuad = new THREE.Mesh(
+            new THREE.PlaneGeometry(this.minimapWorldSize, this.minimapWorldSize),
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    explorationTexture: { value: null },
+                    visibilityTexture: { value: null }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D explorationTexture;
+                    uniform sampler2D visibilityTexture;
+                    varying vec2 vUv;
+                    
+                    void main() {
+                        float explored = texture2D(explorationTexture, vUv).r;
+                        float visible = texture2D(visibilityTexture, vUv).r;
+                        
+                        vec3 color;
+                        if (visible > 0.0) {
+                            color = vec3(0.2);
+                        } else if (explored > 0.0) {
+                            color = vec3(0.08);
+                        } else {
+                            color = vec3(0.0);
+                        }
+                        
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `,
+                depthWrite: false,
+                depthTest: false
+            })
+        );
+        fogQuad.rotation.x = -Math.PI / 2;
+        fogQuad.position.y = -1;
+        fogQuad.renderOrder = -1000;
+        
+        this.minimapScene.add(fogQuad);
+        this.fogQuad = fogQuad;
+    }
+
+    createIconMaterials() {
+        this.iconGeometry = new THREE.CircleGeometry(15, 8);
+        
+        const MAX_UNITS = 1000;
+        
+        this.friendlyIconMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.friendlyInstancedMesh = new THREE.InstancedMesh(
+            this.iconGeometry,
+            this.friendlyIconMaterial,
+            MAX_UNITS
+        );
+        this.friendlyInstancedMesh.renderOrder = 100;
+        this.friendlyInstancedMesh.count = 0;
+        this.minimapScene.add(this.friendlyInstancedMesh);
+        
+        this.enemyIconMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.enemyInstancedMesh = new THREE.InstancedMesh(
+            this.iconGeometry,
+            this.enemyIconMaterial,
+            MAX_UNITS
+        );
+        this.enemyInstancedMesh.renderOrder = 100;
+        this.enemyInstancedMesh.count = 0;
+        this.minimapScene.add(this.enemyInstancedMesh);
+        
+        this.goldIconMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFFD700,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.goldInstancedMesh = new THREE.InstancedMesh(
+            this.iconGeometry,
+            this.goldIconMaterial,
+            100
+        );
+        this.goldInstancedMesh.renderOrder = 50;
+        this.goldInstancedMesh.count = 0;
+        this.minimapScene.add(this.goldInstancedMesh);
+        
+        this.tempMatrix = new THREE.Matrix4();
+        this.rotationMatrix = new THREE.Matrix4();
+        this.rotationMatrix.makeRotationX(-Math.PI / 2);
+    }
+
+    createMinimapUI() {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = this.MINIMAP_SIZE;
+        this.canvas.height = this.MINIMAP_SIZE;
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.display = 'block';
+        this.ctx = this.canvas.getContext('2d');
+
+        if (this.container) {
+            this.container.appendChild(this.canvas);
+        }
+
+        // Update render target to match
+        if (this.minimapRenderTarget) {
+            this.minimapRenderTarget.setSize(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
+        }
+    }
+
+
+    setupEventListeners() {
+        this.container.addEventListener('mousedown', (e) => {
+            this.isDragging = true;
+            this.handleMinimapClick(e);
+        });
+        
+        this.container.addEventListener('mousemove', (e) => {
+            if (this.isDragging) {
+                this.handleMinimapClick(e);
+            }
+        });
+        
+        this.container.addEventListener('mouseup', () => {
+            this.isDragging = false;
+        });
+        
+        this.container.addEventListener('mouseleave', () => {
+            this.isDragging = false;
+        });
+    }
+
+    handleMinimapClick(event) {
+        const rect = this.canvas.getBoundingClientRect();
+         const camera = this.game.camera;
+     
+        // Get click position relative to canvas center (in pixels)
+        const clickX = event.clientX - rect.left - rect.width / 2;
+        const clickY = event.clientY - rect.top - rect.height / 2;
+        
+        // Apply inverse rotation to compensate for CSS rotation
+        const angle = -this.MINIMAP_ROTATION * Math.PI / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        const rotatedX = clickX * cos - clickY * sin;
+        const rotatedY = clickX * sin + clickY * cos;
+        
+        // Convert back to normalized coordinates (0..1)
+        const nx = (rotatedX + rect.width / 2) / rect.width;
+        const ny = (rotatedY + rect.height / 2) / rect.height;
+        
+        let worldSize = this.game.worldSystem.terrainSize * 2;
+        // Map to world coordinates
+        const half = worldSize * 0.5;
+        const worldX = nx * worldSize - half;
+        const worldZ = ny * worldSize - half;
+
+        const pitch = 35.264 * Math.PI / 180;
+        const yaw = 135 * Math.PI / 180;
+        const distance = 512;
+
+        const cdx = Math.sin(yaw) * Math.cos(pitch);
+        const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+        const cameraPosition = {
+            x: worldX - cdx * distance,
+            y: 512,
+            z: worldZ - cdz * distance
+        };
+
+        const lookAt = { x: worldX, y: 0, z: worldZ };
+
+        this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        this.game.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+    }
+
+    update() {
+        if(!this.initialized) return;
+        this.updateFogTextures();
+        this.updateUnitIcons();
+        this.updateGoldIcons();
+        this.renderMinimap();
+    }
+
+    updateFogTextures() {
+        if (!this.game.fogOfWarSystem || !this.fogQuad) return;
+        
+        this.fogQuad.material.uniforms.explorationTexture.value = 
+            this.game.fogOfWarSystem.explorationRenderTarget.texture;
+        this.fogQuad.material.uniforms.visibilityTexture.value = 
+            this.game.fogOfWarSystem.fogRenderTarget.texture;
+    }
+
+    updateUnitIcons() {
+        const myTeam = this.game.state.mySide;
+        if (!myTeam) return;
+        
+        const units = this.game.getEntitiesWith(
+            this.componentTypes.POSITION,
+            this.componentTypes.TEAM
+        );
+        
+        let friendlyIndex = 0;
+        let enemyIndex = 0;
+        
+        for (const entityId of units) {
+            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
+            
+            if (!pos || !team || projectile) continue;
+            
+            const isMyUnit = team.team === myTeam;
+            const visible = this.game.fogOfWarSystem?.isVisibleAt(pos.x, pos.z);
+            
+            if (!isMyUnit && !visible) continue;
+            
+            this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
+            this.tempMatrix.multiply(this.rotationMatrix);
+            
+            if (isMyUnit) {
+                this.friendlyInstancedMesh.setMatrixAt(friendlyIndex, this.tempMatrix);
+                friendlyIndex++;
+            } else {
+                this.enemyInstancedMesh.setMatrixAt(enemyIndex, this.tempMatrix);
+                enemyIndex++;
+            }
+        }
+        
+        this.friendlyInstancedMesh.count = friendlyIndex;
+        this.enemyInstancedMesh.count = enemyIndex;
+        
+        if (friendlyIndex > 0) {
+            this.friendlyInstancedMesh.instanceMatrix.needsUpdate = true;
+        }
+        if (enemyIndex > 0) {
+            this.enemyInstancedMesh.instanceMatrix.needsUpdate = true;
+        }
+    }
+
+    updateGoldIcons() {
+        const goldMines = this.game.getEntitiesWith(
+            this.componentTypes.POSITION,
+            this.componentTypes.GOLD_MINE
+        );
+        
+        let goldIndex = 0;
+        
+        for (const entityId of goldMines) {
+            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            if (!pos) continue;
+            
+            const explored = this.game.fogOfWarSystem?.isExploredAt(pos.x, pos.z);
+            if (!explored) continue;
+            
+            this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
+            this.tempMatrix.multiply(this.rotationMatrix);
+            this.goldInstancedMesh.setMatrixAt(goldIndex, this.tempMatrix);
+            goldIndex++;
+        }
+        
+        this.goldInstancedMesh.count = goldIndex;
+        
+        if (goldIndex > 0) {
+            this.goldInstancedMesh.instanceMatrix.needsUpdate = true;
+        }
+    }
+
+    updateCameraView() {
+        if (!this.game.camera) return;
+        
+        const camera = this.game.camera;
+        const cameraPos = camera.position;
+        
+        if (!cameraPos || isNaN(cameraPos.x) || isNaN(cameraPos.y) || isNaN(cameraPos.z)) {
+            return;
+        }
+        
+        const fov = camera.fov * (Math.PI / 180);
+        const aspect = camera.aspect;
+        const distance = camera.position.y;
+        
+        if (isNaN(fov) || isNaN(aspect) || isNaN(distance) || distance <= 0) {
+            return;
+        }
+        
+        const viewHeight = 2 * Math.tan(fov / 2) * distance;
+        const viewWidth = viewHeight * aspect;
+        
+        const halfWidth = viewWidth / 2;
+        const halfHeight = viewHeight / 2;
+        
+        const points = [
+            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight),
+            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z - halfHeight),
+            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z + halfHeight),
+            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z + halfHeight),
+            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight)
+        ];
+        
+        if (this.cameraViewMesh) {
+            this.cameraViewMesh.geometry.setFromPoints(points);
+        } else {
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                linewidth: 3,
+                depthWrite: false,
+                depthTest: false
+            });
+            this.cameraViewMesh = new THREE.Line(geometry, material);
+            this.cameraViewMesh.renderOrder = 1000;
+            this.minimapScene.add(this.cameraViewMesh);
+        }
+    }
+
+    renderMinimap() {
+        this.game.renderer.setRenderTarget(this.minimapRenderTarget);
+        this.game.renderer.render(this.minimapScene, this.minimapCamera);
+        
+        const pixels = new Uint8Array(this.MINIMAP_SIZE * this.MINIMAP_SIZE * 4);
+        this.game.renderer.readRenderTargetPixels(
+            this.minimapRenderTarget,
+            0, 0,
+            this.MINIMAP_SIZE, this.MINIMAP_SIZE,
+            pixels
+        );
+        
+        this.game.renderer.setRenderTarget(null);
+        
+        const imageData = this.ctx.createImageData(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
+        
+        for (let y = 0; y < this.MINIMAP_SIZE; y++) {
+            for (let x = 0; x < this.MINIMAP_SIZE; x++) {
+                const srcIdx = (y * this.MINIMAP_SIZE + x) * 4;
+                const dstIdx = ((this.MINIMAP_SIZE - 1 - y) * this.MINIMAP_SIZE + x) * 4;
+                
+                imageData.data[dstIdx + 0] = pixels[srcIdx + 0];
+                imageData.data[dstIdx + 1] = pixels[srcIdx + 1];
+                imageData.data[dstIdx + 2] = pixels[srcIdx + 2];
+                imageData.data[dstIdx + 3] = pixels[srcIdx + 3];
+            }
+        }
+        
+        this.ctx.putImageData(imageData, 0, 0);
+        
+        this.drawCameraOutline();
+    }
+        
+    drawCameraOutline() {
+        const camera = this.game.camera;
+        if (!camera || !camera.isOrthographicCamera) return;
+
+        // Frustum corners in NDC (CCW)
+        const corners = [
+            { x: -1, y: -1 }, // left-bottom
+            { x:  1, y: -1 }, // right-bottom
+            { x:  1, y:  1 }, // right-top
+            { x: -1, y:  1 }, // left-top
+        ];
+
+        // Intersect each corner “ray” with the ground plane (y=0)
+        const hits = [];
+        for (const c of corners) {
+            const hit = this.orthoCornerToGround(camera, c.x, c.y);
+            if (!hit) return; // early out if any corner can't hit the ground
+            hits.push(hit);
+        }
+
+        // Convert to canvas space
+        const pts = hits.map(h => this.worldToCanvas(h.x, h.z));
+
+        // Draw polygon overlay
+        this.ctx.save();
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) this.ctx.lineTo(pts[i].x, pts[i].y);
+        this.ctx.closePath();
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+
+    orthoCornerToGround(camera, ndcX, ndcY) {
+        // Point on near plane in world space
+        const p = new THREE.Vector3(ndcX, ndcY, -1).unproject(camera);
+
+        // Camera forward (world)
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+
+        const EPS = 1e-6;
+        if (Math.abs(forward.y) < EPS) return null; // looking exactly parallel to ground
+
+        // Move along forward so y -> 0
+        const t = -p.y / forward.y;
+        if (t <= 0) return null;                    // corner ray goes upward/behind
+        return p.addScaledVector(forward, t);       // world-space hit (x, 0, z)
+    }
+    worldToCanvas(x, z) {
+        const half = this.minimapWorldSize / 2;
+        const nx = (x + half) / this.minimapWorldSize;
+        const nz = (z + half) / this.minimapWorldSize;
+        const cx = nx * this.MINIMAP_SIZE;
+        const cy = nz * this.MINIMAP_SIZE;
+        return { x: cx, y: cy };
+    }
+    dispose() {
+        if (this.container && this.container.parentNode) {
+            this.container.parentNode.removeChild(this.container);
+        }
+        
+        if (this.minimapRenderTarget) {
+            this.minimapRenderTarget.dispose();
+        }
+        
+        if (this.iconGeometry) {
+            this.iconGeometry.dispose();
+        }
+        
+        if (this.friendlyIconMaterial) {
+            this.friendlyIconMaterial.dispose();
+        }
+        
+        if (this.friendlyInstancedMesh) {
+            this.minimapScene.remove(this.friendlyInstancedMesh);
+            this.friendlyInstancedMesh.dispose();
+        }
+        
+        if (this.enemyIconMaterial) {
+            this.enemyIconMaterial.dispose();
+        }
+        
+        if (this.enemyInstancedMesh) {
+            this.minimapScene.remove(this.enemyInstancedMesh);
+            this.enemyInstancedMesh.dispose();
+        }
+        
+        if (this.goldIconMaterial) {
+            this.goldIconMaterial.dispose();
+        }
+        
+        if (this.goldInstancedMesh) {
+            this.minimapScene.remove(this.goldInstancedMesh);
+            this.goldInstancedMesh.dispose();
+        }
+    }
+}

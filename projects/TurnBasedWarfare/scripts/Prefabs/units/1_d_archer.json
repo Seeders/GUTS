@@ -187,5 +187,6 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": []
+  "abilities": [],
+  "icon": "unit_archer"
 }

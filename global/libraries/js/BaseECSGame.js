@@ -149,7 +149,14 @@ class BaseECSGame {
     init() {
         throw new Error('init() method must be implemented by subclass');
     }
-    
+
+    triggerEvent(eventName, data) {
+        this.systems.forEach(system => {
+            if (system[eventName]) {
+                system[eventName](data);
+            }
+        });
+    }
 
     gameOver() {
         this.state.gameOver = true;

@@ -174,5 +174,6 @@
   "placementGridHeight": 1,
   "abilities": [
     "WindShieldAbility"
-  ]
+  ],
+  "icon": "unit_soldier"
 }

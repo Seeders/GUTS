@@ -111,57 +111,28 @@
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
-        
-        <div id="uiContainer">
-            <div class="player-panel">
-                <div class="panel-title">🏰 COMMAND CENTER</div>
-                <div class="team-health-bar player-health">
-                    <div class="team-label">🛡️ YOUR ARMY</div>
-                    <div class="health-bar-container">
-                        <div class="health-bar">
-                            <div class="health-fill player-fill" id="playerHealthFill"></div>
-                        </div>
-                        <div class="health-text" id="playerHealthText">--</div>
-                    </div>
+      
+        <div id="uiContainer">              
+            <div id="miniMapContainer"></div>
+            <div id="resourcesContainer" class="resources">
+                <div class="resource-item">
+                    <span class="resource-label">💰</span>
+                    <span class="resource-value" id="playerGold">--</span>
                 </div>
-                <div class="team-health-bar opponent-health">
-                    <div class="team-label">⚔️ OPPONENT ARMY</div>
-                    <div class="health-bar-container">
-                        <div class="health-bar">
-                            <div class="health-fill opponent-fill" id="opponentHealthFill"></div>
-                        </div>
-                        <div class="health-text" id="opponentHealthText">--</div>
-                    </div>
-                </div>
-                <div class="resources">
-                    <div class="resource-item">
-                        <span class="resource-label">💰 Gold Coins</span>
-                        <span class="resource-value" id="playerGold">--</span>
-                    </div>
-                    <div class="resource-item">
-                        <span class="resource-label">🏰 Your Side</span>
-                        <span class="resource-value" id="playerSide">--</span>
-                    </div>
-                    <div class="resource-item">
-                        <span class="resource-label">🧙 Squads Placed</span>
-                        <span class="resource-value" id="playerSquadsPlaced">--</span>
-                    </div>
-                    <div class="resource-item">
-                        <span class="resource-label">🏆 Battle Round</span>
-                        <span class="resource-value" id="currentRound">--</span>
-                    </div>
-                </div>
-
-                <div id="unitPromotions"></div>            
-                <div class="action-panel" id="actionPanel"></div>
-                
-                <!-- Game controls -->
-                <div class="game-controls" style="margin-top: 1.5rem; display: flex; gap: 0.8rem;">
-                    <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">🚪 RETREAT</button>
-                    <button id="undoBtn" class="btn btn-secondary">🤦‍♂️ Undo</button>
-                    <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+                <div class="resource-item">
+                    <span class="resource-label">🏆</span>
+                    <span class="resource-value" id="currentRound">--</span>
                 </div>
             </div>
+            <!-- Game controls -->
+            <div class="game-controls">
+                <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">🚪 RETREAT</button>
+                <button id="undoBtn" class="btn btn-secondary">🤦‍♂️ Undo</button>
+                <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+            </div>
+            <div id="unitPromotions"></div>            
+            <div class="action-panel" id="actionPanel"></div>
+          
         </div>  
     </div>
 </div>

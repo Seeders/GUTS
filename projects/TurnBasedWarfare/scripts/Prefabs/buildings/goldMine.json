@@ -64,5 +64,6 @@
   "units": [],
   "placementGridWidth": 2,
   "placementGridHeight": 2,
-  "size": 50
+  "size": 50,
+  "icon": "building_goldMine"
 }
