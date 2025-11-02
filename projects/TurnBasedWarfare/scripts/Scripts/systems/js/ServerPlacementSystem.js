@@ -484,17 +484,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
             if (placement.peasantInfo && placement.collection === 'buildings') {
                 const peasantInfo = placement.peasantInfo;
                 const peasantId = peasantInfo.peasantId;
-                const buildTime = peasantInfo.buildTime;
                 const entityId = placement.squadUnits[0];
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
-                const placementComponent = this.game.getComponent(entityId, ComponentTypes.PLACEMENT);
-                
-                if (placementComponent) {
-                    placementComponent.isUnderConstruction = true;
-                    placementComponent.buildTime = buildTime;
-                    placementComponent.assignedBuilder = peasantId || null;
-                }
-                
+             
                 // Get the build ability from the peasant's abilities
     
                 const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
@@ -502,7 +493,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     //console.log("peasantAbilities", peasantAbilities);
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId);
+                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
                     }
                 }
                 

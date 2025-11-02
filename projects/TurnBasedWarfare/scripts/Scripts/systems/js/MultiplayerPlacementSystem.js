@@ -265,7 +265,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     let tempPosition = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
                     if(tempPosition){
                         targetPosition = tempPosition;
-                        console.log('temp targetPosition', entityId, JSON.stringify(tempPosition));
                         this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);                    
                     }
 
@@ -505,28 +504,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const gridHeight = placement.unitType.placementGridHeight || 2;
                 this.game.goldMineSystem.buildGoldMine(entityId, team, placement.gridPosition, gridWidth, gridHeight);
             }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
+            if (placement.peasantInfo && placement.collection === 'buildings') {           
                 const peasantInfo = placement.peasantInfo;
                 const peasantId = peasantInfo.peasantId;
-                const buildTime = peasantInfo.buildTime;
-                
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
-                const placementComponent = this.game.getComponent(entityId, ComponentTypes.PLACEMENT);
-                const renderComponent = this.game.getComponent(entityId, ComponentTypes.RENDERABLE);
-                
-                renderComponent.spawnType = 'underConstruction';
-                
-                if (placementComponent) {
-                    placementComponent.isUnderConstruction = true;
-                    placementComponent.buildTime = buildTime;
-                    placementComponent.assignedBuilder = peasantId || null;
-                }
-                
                 const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
                 if (peasantAbilities) {
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId);
+                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
                     }
                 }
                 

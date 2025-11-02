@@ -327,12 +327,9 @@ class FogOfWarSystem extends engine.BaseSystem {
 
         const myUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
-            this.componentTypes.TEAM
-        ).filter(id => {
-            const team = this.game.getComponent(id, this.componentTypes.TEAM);
-            const projectile = this.game.getComponent(id, this.componentTypes.PROJECTILE);
-            return team?.team === myTeam && !projectile;
-        });
+            this.componentTypes.TEAM,
+            this.componentTypes.HEALTH
+        );
 
         // Hide all circles first
         this.circlePool.forEach(circle => circle.visible = false);

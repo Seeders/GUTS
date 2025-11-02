@@ -33,9 +33,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const buildState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
         const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
         const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
-        const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
         
-        if (!buildState || !pos || !vel || !health || health.current <= 0) {
+        if (!buildState || !pos || !vel) {
             return null;
         }
 
@@ -58,15 +57,29 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         }
     }
 
-    assignToBuild(peasantEntityId, buildingEntityId) {
+    assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
         const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
-        const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
         
         if (!buildingPos) return;
+
+        const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
+        const renderComponent = this.game.getComponent(buildingEntityId, ComponentTypes.RENDERABLE);
+        renderComponent.spawnType = 'underConstruction';
         
+        this.game.removeComponent(buildingEntityId, ComponentTypes.HEALTH);
+
+        const peasantId = peasantInfo.peasantId;
+        const buildTime = peasantInfo.buildTime;       
+        
+        if (buildingPlacement) {
+            buildingPlacement.isUnderConstruction = true;
+            buildingPlacement.buildTime = buildTime;
+            buildingPlacement.assignedBuilder = peasantId || null;
+        }
+
         this.peasantId = peasantEntityId;
         this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
         
@@ -88,9 +101,9 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         }
 
         const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const buildingHealth = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH);
+        const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
         
-        if (!buildingHealth) {
+        if (!buildingPosition) {
             buildState.targetBuildingEntityId = null;
             buildState.targetBuildingPosition = null;
             buildState.state = 'idle';
@@ -127,21 +140,21 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
     constructBuilding(buildState) {
 
         const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
         const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
-        const buildingHealth = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH);
+        const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
+        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, Components.Health(unitType.hp));
         
-        if (!buildingPlacement || !buildingHealth) {
-            buildState.state = 'idle';
-            return;
-        }
 
         const elapsed = this.game.state.round - buildState.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || 1;
         if (this.game.animationSystem) {
             const animState = this.game.animationSystem.entityAnimationStates.get(buildState.entityId);
-            const finished = this.game.animationSystem.isAnimationFinished(buildState.entityId, animState.currentClip);
-            if(finished || animState.currentClip != 'attack'){
-                this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
+            if(animState){
+                const finished = this.game.animationSystem.isAnimationFinished(buildState.entityId, animState.currentClip);
+                if(finished || animState.currentClip != 'attack'){
+                    this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
+                }
             }
         }
 
@@ -180,7 +193,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
     }
     
-    onBattleEnd(entityId) {
+    onPlacementPhaseStart(entityId) {
         if(this.canExecute(entityId)){
             this.execute(entityId);
         }

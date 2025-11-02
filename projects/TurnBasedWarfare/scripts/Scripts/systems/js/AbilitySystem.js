@@ -227,9 +227,16 @@ class AbilitySystem extends engine.BaseSystem {
         keysToRemove.forEach(key => this.abilityCooldowns.delete(key));
         
     }
-            
+    onPlacementPhaseStart() {
+        for (const [entityId, abilities] of this.entityAbilities.entries()) {
+            abilities.forEach(ability => {
+                if (typeof ability.onPlacementPhaseStart === 'function') {
+                    ability.onPlacementPhaseStart(entityId);
+                }
+            });
+        }            
+    }     
     onBattleEnd() {
-        console.log('[AbilitySystem] Cleaning up abilities for end of battle');
         
         // Call onBattleEnd on all ability instances
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
@@ -246,7 +253,6 @@ class AbilitySystem extends engine.BaseSystem {
         this.abilityCooldowns.clear();
         this.abilityActionCounter = 0;
         
-        console.log('[AbilitySystem] Ability cleanup complete');
     }
 
     destroy() {

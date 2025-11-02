@@ -265,7 +265,6 @@ class ShopSystem extends engine.BaseSystem {
         }
 
         this.buildingProductionProgress.set(entityId, 0);
-        console.log('set progress', buildingId, 0);
         this.buildingUpgrades.set(buildingId, new Set());
         this.createShop();
         
@@ -304,7 +303,6 @@ class ShopSystem extends engine.BaseSystem {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.buildingProductionProgress.set(buildingId, newProgress);
-                console.log('set progress', buildingId, newProgress);
                 this.game.placementSystem.placeSquad(placement);                
                 this.createShop();
             }
@@ -432,7 +430,6 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     applyEffect(team, effectData) {
-        console.log('apply effect', effectData);
         if(!this.game.state.teams){
             this.game.state.teams = {};
         }
@@ -446,11 +443,9 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     onPlacementPhaseStart() {
-        console.log('onPlacementPhaseStart');
         this.ownedBuildings.keys().forEach(buildingType => {
             this.ownedBuildings.get(buildingType).forEach((buildingEntityId) => {
                 this.buildingProductionProgress.set(buildingEntityId, 0);
-                console.log('set progress', buildingEntityId, 0);
             });
         });
         this.createShop();
