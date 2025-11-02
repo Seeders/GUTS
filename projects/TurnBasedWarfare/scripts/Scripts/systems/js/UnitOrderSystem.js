@@ -15,7 +15,7 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
-        
+        this.temporaryOpponentMoveOrders = new Map();
         this.targetingPreview = new GUTS.PlacementPreview(this.game);
         this.targetingPreview.updateConfig({
             cellOpacity: 0.3,
@@ -374,12 +374,15 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     applySquadTargetPosition(placementId, targetPosition) {   
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
         const placement = this.game.placementSystem.getPlacementById(placementId);
+        if(!placement){
+            this.temporaryOpponentMoveOrders.set(placementId, targetPosition);
+            return;
+        }
+        placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
-            if (this.game.effectsSystem && targetPosition) {
-                this.game.effectsSystem.createParticleEffect(targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
-            }
             if(aiState && targetPosition){
                 aiState.targetPosition = targetPosition;
                 aiState.currentAIController = "OrderSystemMove";

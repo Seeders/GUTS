@@ -260,8 +260,17 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
-                    const targetPosition = aiState.targetPosition;
+                    let targetPosition = aiState.targetPosition;
+                    if(!targetPosition){
+                        let tempPosition = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
+                        if(tempPosition) {
+                            targetPosition = tempPosition;
+                            this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);
+                        }
+                    }
+
                     if(targetPosition){
+                        console.log('found targetPosition', entityId, targetPosition);
                         if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
