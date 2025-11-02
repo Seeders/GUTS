@@ -104,12 +104,14 @@ class BaseECSGame {
     }
     
     removeComponent(entityId, componentType) {
+        let component = this.getComponent(entityId, componentType);
         if (this.components.has(componentType)) {
             this.components.get(componentType).delete(entityId);
         }
         if (this.entities.has(entityId)) {
             this.entities.get(entityId).delete(componentType);
         }
+        return component;
     }
     
     getComponent(entityId, componentType) {
