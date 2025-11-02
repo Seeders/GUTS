@@ -397,11 +397,9 @@ class UnitCreationManager {
      * @param {Object} unitType - Unit type definition
      */
     schedulePostCreationSetup(entityId, unitType) {
-        // Use setTimeout to avoid blocking unit creation
-        setTimeout(() => {
-            this.setupEquipment(entityId, unitType);
-            this.setupAbilities(entityId, unitType);
-        }, 50); // Small delay to ensure entity is fully initialized
+
+        this.setupEquipment(entityId, unitType);
+        this.setupAbilities(entityId, unitType);
     }
     
     /**

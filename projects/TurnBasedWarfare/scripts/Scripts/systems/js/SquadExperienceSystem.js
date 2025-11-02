@@ -681,27 +681,23 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * Clean up experience data for squads with dead/missing units
      * MODIFIED: Never remove experience data, just update unit lists
      */
-    cleanupInvalidSquads() {
+    onPlacementPhaseStart() {
+        
+        this.saveSquadExperience();
+        
         const componentTypes = this.game.componentManager.getComponentTypes();
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
-            // Check if any units in the squad still exist and are alive
             const validUnits = squadData.unitIds.filter(entityId => {
                 const health = this.game.getComponent(entityId, componentTypes.HEALTH);
                 return health && health.current > 0;
             });
             
-            if (validUnits.length < squadData.unitIds.length) {
-                // Update the unit list to remove dead units, but KEEP experience data
-             
+            if (validUnits.length < squadData.unitIds.length) {             
                 squadData.unitIds = validUnits;
                 squadData.squadSize = validUnits.length;
-                
-                // DO NOT remove the squad data - experience is permanent!
             }
         }
-        
-        // No longer remove squads entirely - experience persists even if all units die
     }
     
     /**

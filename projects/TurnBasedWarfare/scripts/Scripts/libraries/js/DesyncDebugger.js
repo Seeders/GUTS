@@ -6,21 +6,30 @@ class DesyncDebugger {
         this.lastDisplayTime = 0;
         this.logInterval = 0; // Log every 1 sec
         this.detailedLogging = true;
+        this.enabled = false;
     }
     displaySync(detailed) {    
-        const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().COMBAT
-        );
-        // Create deterministic state snapshot
-        const stateData = this.createStateSnapshot(entities);
-        const hash = this.hash(stateData);
-        
-        this.frameHashes.push({
-            hash: hash,
-            entityCount: entities.length,
-            time: this.game.state.now
-        });                       
+        if(this.enabled){
+            const entities = this.game.getEntitiesWith(
+                this.game.componentManager.getComponentTypes().POSITION,
+                this.game.componentManager.getComponentTypes().COMBAT
+            );
+            // Create deterministic state snapshot
+            const stateData = this.createStateSnapshot(entities);
+            const hash = this.hash(stateData);
+            
+            this.frameHashes.push({
+                hash: hash,
+                entityCount: entities.length,
+                stateData: stateData,
+                time: this.game.state.now
+            });   
+            if(this.game.isServer){
+                console.log(this.game.state.now, hash);                    
+            } else {
+                console.log(this.game.state.now, hash, stateData);                    
+            }
+        }
     }
 
     createStateSnapshot(entities) {
@@ -50,20 +59,22 @@ class DesyncDebugger {
                     vy: parseFloat(vel.vy.toFixed(3)),
                     vz: parseFloat(vel.vz.toFixed(3))
                 } : null)} ${vel?.vx || 0}, ${vel?.vy || 0}, ${vel?.vz || 0}`,
-                health: this.hash(health ? {
+                healthHash: this.hash(health ? {
                     current: health.current,
                     max: health.max
                 } : null),
-                combat: this.hash(combat ? {
+                combatHash: this.hash(combat ? {
                     lastAttack: parseFloat(combat.lastAttack.toFixed(6)),
                     damage: combat.damage,
                     attackSpeed: combat.attackSpeed
                 } : null),
-                aiState: this.hash(aiState ? {
+                aiStateHash: this.hash(aiState ? {
                     state: aiState.state,
+                    controller: aiState.currentAIController,
                     targetPosition: aiState.targetPosition || 'null',
                     target: aiState.target || 'null'
-                } : null)
+                } : null),
+                aiState: JSON.stringify(aiState)
             };
 
             snapshot.entities.push(entityData);

@@ -93,11 +93,6 @@ class MultiplayerNetworkManager {
                 this.handleBattleEnd(data);
             }),
 
-            nm.listen('NEXT_ROUND', (data) => {
-                this.syncWithServerState(data);   
-                this.handleNextRound(data);
-            }),
-
             nm.listen('GAME_END', (data) => {
                 this.syncWithServerState(data);        
                 this.handleGameEnd(data);
@@ -325,28 +320,24 @@ class MultiplayerNetworkManager {
     }
 
     handleBattleEnd(data) {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        let winningSide = this.game.state.mySide;
-        if (data.result.winner === myPlayerId) {
-            this.game.uiSystem.showNotification('Victory! You won this round!', 'success');
-        } else {
-            winningSide = winningSide == "left" ? "right" : "left";
-            this.game.uiSystem.showNotification('Defeat! Better luck next round!', 'warning');
-        }
-        console.log('battle result', data);
-
-        if(data.result?.survivingUnits){
-            let winningUnits = data.result.survivingUnits[data.result.winner];                
-            this.game.teamHealthSystem?.applyRoundDamage(winningSide, winningUnits);                        
-
-            if(winningUnits && winningUnits.length > 0 ){
-                this.game.uiSystem.startVictoryCelebration(winningUnits);
-            }
-        }
-
+        
         if (data.entitySync) {
             this.resyncEntities(data.entitySync);
         }
+        this.game.triggerEvent('onBattleEnd');        
+        console.log('battle result', data);
+        this.game.desyncDebugger.displaySync(true); 
+        this.game.desyncDebugger.enabled = false;
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        data.gameState?.players?.forEach((player) => {
+            if(player.id == myPlayerId) {
+                this.game.state.playerGold = player.stats.gold;
+            }
+        })
+        this.game.state.round += 1;
+        // Transition back to placement phase
+        this.game.state.phase = 'placement';
+        this.game.triggerEvent('onPlacementPhaseStart');   
     }
 
     resyncEntities(entitySync) {
@@ -362,17 +353,6 @@ class MultiplayerNetworkManager {
             }
         }
         
-    }
-
-    handleNextRound(data) {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        this.gameState = data.gameState;
-        data.gameState?.players?.forEach((player) => {
-            if(player.id == myPlayerId) {
-                this.game.state.playerGold = player.stats.gold;
-            }
-        })
-        this.game.uiSystem.startPlacementPhase();
     }
 
     handleGameEnd(data) {

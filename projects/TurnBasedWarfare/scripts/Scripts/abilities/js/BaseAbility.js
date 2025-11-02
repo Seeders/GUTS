@@ -132,7 +132,7 @@ class BaseAbility {
         
         return bestPos;
     }
-    handleEndBattle() {
+    onBattleEnd() {
     }
     canExecute(casterEntity) { return true; }
     execute(casterEntity, targetData = null) { console.log(`${this.name} executed by entity ${casterEntity}`); }

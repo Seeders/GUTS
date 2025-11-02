@@ -14,7 +14,6 @@ class AbilitySystem extends engine.BaseSystem {
         if (!Array.isArray(abilityIds)) {
             abilityIds = [abilityIds];
         }
-        
         const unitAbilities = [];
         
         abilityIds.forEach(abilityId => {
@@ -229,14 +228,14 @@ class AbilitySystem extends engine.BaseSystem {
         
     }
             
-    handleEndBattle() {
+    onBattleEnd() {
         console.log('[AbilitySystem] Cleaning up abilities for end of battle');
         
-        // Call handleEndBattle on all ability instances
+        // Call onBattleEnd on all ability instances
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
             abilities.forEach(ability => {
-                if (typeof ability.handleEndBattle === 'function') {
-                    ability.handleEndBattle(entityId);
+                if (typeof ability.onBattleEnd === 'function') {
+                    ability.onBattleEnd(entityId);
                 }
             });
         }

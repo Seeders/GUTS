@@ -54,7 +54,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
     execute(entityId, targetData) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
-        const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
         const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
         const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
         const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
@@ -63,7 +62,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             this.enabled = false;
             return null;
         }
-        aiState.currentAIController = ComponentTypes.MINING_STATE;
         this.updateMinerState(entityId, miningState, pos, vel);
         return null;
     }

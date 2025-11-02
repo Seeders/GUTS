@@ -90,7 +90,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     onGameStarted() {
         this.getStartingState();
-        this.startNewPlacementPhase();
+        this.onPlacementPhaseStart();
     }
 
     getStartingState() {
@@ -133,7 +133,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    startNewPlacementPhase() { 
+    onPlacementPhaseStart() { 
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
            
@@ -228,6 +228,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.state.phase = 'battle';
             this.game.resetCurrentTime();
             this.resetAI();
+            this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
             if (this.elements.readyButton) {
                 this.elements.readyButton.disabled = true;
@@ -261,22 +262,19 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
                     let targetPosition = aiState.targetPosition;
-                    if(!targetPosition){
-                        let tempPosition = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
-                        if(tempPosition) {
-                            targetPosition = tempPosition;
-                            this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);
-                        }
+                    let tempPosition = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
+                    if(tempPosition){
+                        targetPosition = tempPosition;
+                        console.log('temp targetPosition', entityId, JSON.stringify(tempPosition));
+                        this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);                    
                     }
 
                     if(targetPosition){
-                        console.log('found targetPosition', entityId, targetPosition);
                         if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
                             const distSq = dx * dx + dz * dz;
                             const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
-                            
                             if (distSq <= threshold * threshold) {
                                 aiState.currentAIController = null;
                                 aiState.targetPosition = null;
@@ -313,15 +311,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             if(this.game.placementSystem.opponentPlacements.find(p => p.placementId === placement.placementId)) {
                 return;
             }
-            this.createEnemyFromOpponentPlacement(placement);
-            if(this.game.squadExperienceSystem){
-                this.game.squadExperienceSystem.initializeSquad(
-                    placement.placementId, 
-                    placement.unitType, 
-                    placement.experience?.unitIds || [], 
-                    this.game.state.mySide == 'right' ? 'left' : 'right'
-                );
-            }
+            this.placeSquad(placement);         
         });
 
         if (this.game.state) {
@@ -465,24 +455,22 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     placeSquad(placement) {
-        const team = this.game.state.mySide;
-
         const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
         const undoInfo = this.createUndoInfo(placement);
         
-        const squadUnits = this.createSquadUnits(placement, unitPositions, team, undoInfo);
+        const squadUnits = this.createSquadUnits(placement, unitPositions, placement.team, undoInfo);
         placement.squadUnits = squadUnits;
         placement.isSquad = squadUnits.length > 1;
-        this.updateGameStateForPlacement(placement, this.game.state.mySide);
+        this.updateGameStateForPlacement(placement, undoInfo);
         
         this.game.gridSystem.occupyCells(placement.cells, placement.placementId);
         
         if (this.game.squadExperienceSystem) {
-            this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, squadUnits, team);
+            this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, squadUnits, placement.team);
         }
         
         if (this.game.effectsSystem && squadUnits.length <= 8) {
-            this.createPlacementEffects(unitPositions.slice(0, 8), team);
+            this.createPlacementEffects(unitPositions.slice(0, 8), placement.team);
         }
         
         this.cachedValidation = null;
@@ -584,8 +572,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         };
     }
 
-    updateGameStateForPlacement(placement, team, undoInfo) {                
-        if (this.isMyTeam(team)) {
+    updateGameStateForPlacement(placement, undoInfo) {                
+        if (this.isMyTeam(placement.team)) {
             this.addToUndoStack(undoInfo);
             if(!placement.isStartingState){
                 this.game.state.playerGold -= (placement.unitType.value || 0);
@@ -1002,7 +990,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    handleBattleEnd() {        
+    onBattleEnd() {        
         this.removeDeadSquadsAfterRound();
     }
         

@@ -340,7 +340,7 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     
-    handleEndBattle() {
+    onBattleEnd() {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const entities = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         

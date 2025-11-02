@@ -140,11 +140,7 @@ export default class ServerGameRoom extends GameRoom {
                 // Remove from room
                 room.removePlayer(playerId);
                 this.serverNetworkManager.leaveRoom(playerId, roomId);
-                
-                // Reset game if it was in progress
-                if (room.game && room.game.state.phase !== 'waiting' && room.game.state.phase !== 'lobby') {
-                    this.resetGameState(room);
-                }
+
                 
                 // Clean up empty rooms
                 if (room.players.size === 0) {
@@ -358,34 +354,7 @@ export default class ServerGameRoom extends GameRoom {
         this.currentRoomIds.push(id.toString());
         return id.toString();
     }
-        // NEW METHOD: Reset game state when players disconnect mid-game
-    resetGameState(room) {
-        console.log(`Resetting game state for room ${room.id} due to player disconnect`);
-        
-        try {
-            // Reset game phase
-            room.game.state.phase = 'lobby';
-            
-            // Clear battlefield
-            if (room.game.battlePhaseSystem) {
-                room.game.battlePhaseSystem.clearBattlefield();
-                room.game.battlePhaseSystem.cleanup();
-            }
-            
-            // Clear all placements
-            if (room.game.placementSystem) {
-                room.game.placementSystem.clearAllPlacements();
-            }
-            
-            // Reset round counter
-            if (room.game.battlePhaseSystem) {
-                room.game.battlePhaseSystem.currentRound = 1;
-            }
-            
-        } catch (error) {
-            console.error('Error resetting game state:', error);
-        }
-    }
+
 
     // NEW METHOD: Reset all remaining players for next game
     resetPlayersForNextGame(room) {

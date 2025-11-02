@@ -361,6 +361,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
             this.game.resetCurrentTime();
             this.applyTargetPositions();
+            this.game.desyncDebugger.enabled = true;    
             this.game.desyncDebugger.displaySync(true);
             this.resetAI();
             this.game.serverBattlePhaseSystem.startBattle(room);
@@ -386,7 +387,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     }
 
     applyTargetPositions() {
-        console.log('APPLY TARGET POSITIONS');
+     //   console.log('APPLY TARGET POSITIONS');
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach((placement) => {     
@@ -397,7 +398,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     if (aiState && position) {
                         
                         if(targetPosition){
-                            console.log('found targetPosition', entityId, targetPosition);
+                           // console.log('found targetPosition', entityId, targetPosition);
                             if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
@@ -427,11 +428,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
 
     submitPlayerPlacement(playerId, player, placement) {
-        console.log(`=== SUBMIT PLACEMENT DEBUG ===`);
-        console.log(`Player ID: ${playerId}`);
-        console.log(`Room ID: ${this.game.room?.id || 'NO ROOM'}`);
-        console.log(`Game phase: ${this.game.state.phase}`);
-        console.log(`================================`);
+        // console.log(`=== SUBMIT PLACEMENT DEBUG ===`);
+        // console.log(`Player ID: ${playerId}`);
+        // console.log(`Room ID: ${this.game.room?.id || 'NO ROOM'}`);
+        // console.log(`Game phase: ${this.game.state.phase}`);
+        // console.log(`================================`);
     
         if (this.game.state.phase !== 'placement') {
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
@@ -498,7 +499,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     
                 const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
                 if (peasantAbilities) {
-                    console.log("peasantAbilities", peasantAbilities);
+                    //console.log("peasantAbilities", peasantAbilities);
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
                         buildAbility.assignToBuild(peasantId, entityId);
@@ -516,9 +517,12 @@ class ServerPlacementSystem extends engine.BaseSystem {
     }
 
 
-    handleBattleEnd() {        
+    onBattleEnd() {        
         this.removeDeadSquadsAfterRound();
        // this.updateGridPositionsAfterRound();
+       
+        this.game.desyncDebugger.displaySync(true);
+        this.game.desyncDebugger.enabled = false;
     }
     
     removeDeadSquadsAfterRound() {
@@ -561,7 +565,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             this.game.squadExperienceSystem.removeSquad(placement.placementId);
         }
 
-        console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
+       // console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
     }
 
     updateGridPositionsAfterRound() {

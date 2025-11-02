@@ -58,6 +58,8 @@ class BaseECSGame {
     }
 
     postUpdate() {
+       // this.desyncDebugger?.displaySync(false); 
+       
         this.lastTime = this.currentTime;
     
         this.entitiesToAdd.forEach((entity) => this.addEntity(entity));        

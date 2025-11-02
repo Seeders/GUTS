@@ -187,11 +187,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
     endBattle(room, winner = null, reason = 'unknown') {
 
-        this.game.systems.forEach(system => {
-            if (system.handleEndBattle) {
-                system.handleEndBattle();
-            }
-        });
+        this.game.triggerEvent('onBattleEnd');        
         const playerStats = this.getPlayerStats(room);
         let battleResult = {
             winner: winner,
@@ -212,9 +208,18 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         if (this.shouldEndGame(room)) {
             this.endGame(room);
         } else {
-            this.prepareNextRound(room);
+            this.game.state.round += 1;
+            // Transition back to placement phase
+            this.game.state.phase = 'placement';
+            // Reset placement ready states
+            for (const [playerId, player] of room.players) {
+                player.placementReady = false;
+            }
+            this.game.triggerEvent('onPlacementPhaseStart');
         }
     }
+
+
     serializeAllEntities() {
         const serialized = {};
         
@@ -279,25 +284,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         return alivePlayers.length <= 1;
     }
 
-    prepareNextRound(room) {
-        this.clearBattlefield();
-        this.game.state.round += 1;
-        
-        // Transition back to placement phase
-        this.game.state.phase = 'placement';
-        // Reset placement ready states
-        for (const [playerId, player] of room.players) {
-            player.placementReady = false;
-        }
-        if (this.game.shopSystem) {
-            this.game.shopSystem.onPlacementPhaseStart();
-        }
-        this.serverNetworkManager.broadcastToRoom(room.id, 'NEXT_ROUND', {
-            round: this.game.state.round,
-            gameState: room.getGameState()
-        });
-    }
-
+  
     addGoldForTeam(goldAmt, team){
         for (const [playerId, player] of room.players) {
             if(player.side == team){
@@ -339,7 +326,7 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         }, 10000);
     }
 
-    clearBattlefield() {
+    onBattleEnd() {
 
         if (!this.game.componentManager) return;
         
@@ -371,13 +358,4 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         this.createdSquads.clear();
     }
 
-    // Cleanup method
-    cleanup() {
-
-        
-        this.clearBattlefield();
-        this.battleResults.clear();
-        this.createdSquads.clear();
-        
-    }
 }

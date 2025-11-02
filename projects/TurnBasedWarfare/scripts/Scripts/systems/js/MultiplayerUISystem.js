@@ -313,33 +313,18 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.networkUnsubscribers = [];
         
     }
-    startPlacementPhase() {
+    onPlacementPhaseStart() {
         const state = this.game.state;
         state.phase = 'placement';
         state.phaseTimeLeft = null; // No timer in multiplayer
         state.playerReady = false;
         state.enemyPlacementComplete = false; // Actually opponent placement
-        state.roundEnding = false;
-        
-        
-        this.clearBattlefield();
-        this.game.placementSystem.startNewPlacementPhase();
-  
-        this.game.shopSystem.onPlacementPhaseStart();
-        
+        state.roundEnding = false;          
     }
-    clearBattlefield() {
+    
+    onBattleEnd() {
 
-        this.game.systems.forEach(system => {
-            if (system.handleEndBattle) {
-                system.handleEndBattle();
-            }
-        });
-        // Save player squad experience BEFORE clearing
-        if (this.game.squadExperienceSystem) {
-            this.game.squadExperienceSystem.saveSquadExperience();
-        }
-        
+            
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const entitiesToDestroy = new Set();
         
@@ -361,11 +346,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
  
         if (this.game.projectileSystem?.clearAllProjectiles) {
             this.game.projectileSystem.clearAllProjectiles();
-        }
-        
-        // Clean up experience data but keep earned experience
-        if (this.game.squadExperienceSystem) {
-            this.game.squadExperienceSystem.cleanupInvalidSquads();
         }
         
     }

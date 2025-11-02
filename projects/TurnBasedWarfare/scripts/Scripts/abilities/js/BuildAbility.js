@@ -180,7 +180,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
     }
     
-    handleEndBattle(entityId) {
+    onBattleEnd(entityId) {
         if(this.canExecute(entityId)){
             this.execute(entityId);
         }
