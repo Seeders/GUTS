@@ -14,11 +14,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.maxUndoSteps = 10;
         
         this.game.state.targetPositions = new Map();
-        // Track placement state
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
         
-        // Performance optimizations
         this.lastMouseMoveTime = 0;
         this.lastValidationTime = 0;
         this.cachedValidation = null;
@@ -34,7 +32,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.elements = {};
     }
 
-    // GUTS Manager Interface
     init(params) {
         this.params = params || {};
         this.initializeSubsystems();
@@ -50,13 +47,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.elements.undoButton.addEventListener('click', () => {
             this.undoLastPlacement();
 
-            // Visual feedback
             this.elements.undoButton.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 this.elements.undoButton.style.transform = 'scale(1)';
             }, 150);
             
-            // Show feedback message
             this.game.uiSystem.showNotification('↶ Last deployment undone', 'info', 2000);
          
         });
@@ -76,8 +71,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.elements.undoButton.style.boxShadow = 'none';
             }
         });
-        
-    
     }
 
     initializeSubsystems() {
@@ -89,10 +82,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.unitCreator = this.game.unitCreationManager;
          
         if (this.config.enablePreview) {
-            this.placementPreview = new GUTS.PlacementPreview(this.game );
+            this.placementPreview = new GUTS.PlacementPreview(this.game);
         }
         
-        // Cache ground mesh on initialization
         this.groundMeshCache = this.findGroundMesh();
     }
 
@@ -127,12 +119,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 });
                 const pos = response.camera.position;
                 const look = response.camera.lookAt;
-                console.log('starting camera', pos, look);
                 this.game.camera.position.set(pos.x, pos.y, pos.z);
-                
                 this.game.camera.lookAt(look.x, look.y, look.z);
-              //  this.game.worldSystem.controls.target.set(look.x, look.y, look.z);
-              //  this.game.worldSystem.controls.update();
             }
         });   
     }
@@ -146,9 +134,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     startNewPlacementPhase() { 
- 
-        
-                // Reset placement state for new round
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
            
@@ -161,16 +146,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if(this.game.effectsSystem){
             this.game.effectsSystem.clearAllEffects();
         }
-        // Enable placement UI
+        
         this.enablePlacementUI();
-        
         this.elements.readyButton.textContent = 'Ready for Battle';
-        
     }
     
     respawnEnemyUnits() {
         this.respawnSquads(this.opponentPlacements, this.game.state.mySide == 'left' ? 'right' : 'left');
-
     }
           
     getTotalUnitCount(placements) {
@@ -188,7 +170,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             position.y,
             position.z,
             effectType,
-            { count: 3, speedMultiplier: 0.6 } // Reduced particle count
+            { count: 3, speedMultiplier: 0.6 }
         );
     }
         
@@ -202,9 +184,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.elements.undoButton.disabled = true;        
     }
 
-
     updatePlacementUI() {
-          
         if (this.elements.undoButton) {
             this.elements.undoButton.disabled = this.undoStack.length === 0;
             this.elements.undoButton.style.opacity = this.undoStack.length === 0 ? '0.5' : '1';
@@ -227,7 +207,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 }
             }
         });
-
     }
 
     handleReadyForBattleUpdate(data) {
@@ -237,15 +216,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.updatePlacementUI();
         } 
         
-        if (data.allReady) {  
-            console.log('All players ready!', data);  
+        if (data.allReady) {
             let opponentPlacements = null;
             data.gameState.players.forEach((player) => {
                 if(player.id != myPlayerId){
                     opponentPlacements = player.placements;
                 }
             });
-            console.log('applying opponent placements', opponentPlacements);
             this.applyOpponentPlacements(opponentPlacements);
             this.applyTargetPositions();
             this.game.state.phase = 'battle';
@@ -257,7 +234,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.elements.readyButton.textContent = 'Battling!';
             }
         } else {
-            // Show opponent status
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
             if (opponentReady) {
                 this.game.uiSystem?.showNotification('Opponent is ready for battle!', 'info');
@@ -274,42 +250,37 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
-
     }
 
     applyTargetPositions(){
-        for (const [placementId, targetPosition] of this.game.state.targetPositions.entries()) {
-            const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
-            const placement = this.game.placementSystem.getPlacementById(placementId);
-            if (!squadData) continue;
-            
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            
-            squadData.unitIds.forEach(entityId => {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
+        allPlacements.forEach((placement) => {
+            placement.squadUnits.forEach(entityId => {
                 const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
-                    const dx = position.x - targetPosition.x;
-                    const dz = position.z - targetPosition.z;
-                    const distSq = dx * dx + dz * dz;
-                    const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
-                    if(entityId == 'peasant_-1176_-1368_left_1'){
-                        console.log(Math.sqrt(distSq));
-                    }
-                    if (distSq <= threshold * threshold) {
-                        aiState.currentAIController = null;
-                        aiState.targetPosition = null;
-                        placement.targetPosition = null;
-                        if(this.game.state.targetPositions){
-                            this.game.state.targetPositions.delete(placement.placementId);
+                    const targetPosition = aiState.targetPosition;
+                    if(targetPosition){
+                        if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
+                            const dx = position.x - targetPosition.x;
+                            const dz = position.z - targetPosition.z;
+                            const distSq = dx * dx + dz * dz;
+                            const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                            
+                            if (distSq <= threshold * threshold) {
+                                aiState.currentAIController = null;
+                                aiState.targetPosition = null;
+                                placement.targetPosition = null;
+                            } else {
+                                aiState.targetPosition = { ...targetPosition };      
+                                aiState.currentAIController = "OrderSystemMove";
+                            }
                         }
-                    } else {
-                        aiState.targetPosition = { ...targetPosition };      
-                        aiState.currentAIController = "moveOrder";
                     }
                 }
             });
-        }
+        });
     }
 
     update() {
@@ -321,17 +292,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         }
         
-        
         if (this.game.state.now - this.lastValidationTime > this.config.validationThrottle) {
             this.updateCursorState();
             this.updatePlacementUI();
             this.lastValidationTime = this.game.state.now;
         }
     }
-    // Apply opponent placements received from multiplayer server
+
     applyOpponentPlacements(opponentData) {
-      
-        // Create enemy units from opponent data
         opponentData.forEach(placement => {
             if(this.game.placementSystem.opponentPlacements.find(p => p.placementId === placement.placementId)) {
                 return;
@@ -347,18 +315,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
         });
 
-        // Mark opponent as having completed placement
         if (this.game.state) {
             this.game.state.enemyPlacementComplete = true;
         }
     }
 
     createEnemyFromOpponentPlacement(opponentPlacement) {
-      
         if(this.game.squadExperienceSystem){
             this.game.squadExperienceSystem.setSquadInfo(opponentPlacement.placementId, opponentPlacement.experience);
         }
-
 
         if (this.game.squadManager && this.game.unitCreationManager) {
             const unitPositions = this.game.squadManager.calculateUnitPositions(
@@ -394,13 +359,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     );
                 }
                 squadUnits.push(entityId);
-
-            
             });
             opponentPlacement.squadUnits = squadUnits;
         }
 
-        // Occupy the provided cells exactly as given
         if (this.game.gridSystem?.occupyCells && opponentPlacement.cells?.length) {
             this.game.gridSystem.occupyCells(opponentPlacement.cells, opponentPlacement.placementId);
         }
@@ -433,13 +395,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         document.body.style.cursor = 'default';
     }
 
-    // Handle canvas clicks for unit placement
-    
     handleCanvasClick(event) {
         const state = this.game.state;
         
         if (this.settingTargetPosition) {
-          //  this.setSquadTargetPosition(event);
             return;
         }
         
@@ -447,7 +406,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         }
         if(!state.selectedUnitType) {
-        //    this.game.selectedUnitSystem.checkUnitSelectionClick(event);
             return;
         }
         
@@ -463,32 +421,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             return;
         }
         
-        let isValidPlacement = false;
-        let gridPos = null;
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+        let gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
         
-        if (worldPosition) {
-            gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
-            
-            if (state.selectedUnitType.collection === 'buildings' && state.selectedUnitType.id === 'goldMine') {
-                const gridWidth = state.selectedUnitType.placementGridWidth || 2;
-                const gridHeight = state.selectedUnitType.placementGridHeight || 2;
-                
-                const validation = this.game.goldMineSystem.isValidGoldMinePlacement(gridPos, gridWidth, gridHeight);
-                if (!validation.valid) {
-                    this.game.uiSystem?.showNotification('Must be placed on a gold vein!', 'error');
-                    return;
-                }
-                isValidPlacement = true;
-            } else {
-                isValidPlacement = this.isValidGridPlacement(worldPosition);
-            }
-        }
-        
-        if (!isValidPlacement || !gridPos) {
+        let isValidPlacement = this.isValidGridPlacement(worldPosition);
+       
+        if (!isValidPlacement) {
             return;
         }
     
@@ -510,36 +451,31 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         });        
     }
 
-    
     canPlayerPlaceSquad() {
         return true;
     }
 
     placeSquad(placement) {
-        // Double-check squad limits before placing
         const team = this.game.state.mySide;
 
-        // Early validation check
         const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
         const undoInfo = this.createUndoInfo(placement);
         
-        // Batch unit creation for better performance
         const squadUnits = this.createSquadUnits(placement, unitPositions, team, undoInfo);
         placement.squadUnits = squadUnits;
         placement.isSquad = squadUnits.length > 1;
         this.updateGameStateForPlacement(placement, this.game.state.mySide);
         
         this.game.gridSystem.occupyCells(placement.cells, placement.placementId);
-        // Initialize squad in experience system
+        
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.initializeSquad(placement.placementId, placement.unitType, squadUnits, team);
         }
         
-        // Batch effects creation
         if (this.game.effectsSystem && squadUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), team);
         }
-        // Clear caches after placement
+        
         this.cachedValidation = null;
         this.cachedGridPos = null;
         
@@ -550,16 +486,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.state.selectedUnitType = null;
         this.handleUnitSelectionChange();
         
-        
         return placement;
-            
-
     }
 
     createSquadUnits(placement, unitPositions, team, undoInfo) {
         const createdUnits = [];
         
-        // Limit unit creation for very large formations
         const maxUnits = Math.min(unitPositions.length, 16);
         const positions = unitPositions.slice(0, maxUnits);
         
@@ -570,7 +502,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
             createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
-            
             
             if(placement.unitType.id == 'goldMine'){
                 const gridWidth = placement.unitType.placementGridWidth || 2;
@@ -594,19 +525,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     placementComponent.assignedBuilder = peasantId || null;
                 }
                 
-                // Get the build ability from the peasant's abilities
-        
                 const peasantAbilities = this.game.abilitySystem.entityAbilities.get(peasantId);
                 if (peasantAbilities) {
-                    console.log("peasantAbilities", peasantAbilities);
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
                         buildAbility.assignToBuild(peasantId, entityId);
                     }
                 }
-            
                 
-                // Clear the flag (only once for first building entity)
                 this.game.state.peasantBuildingPlacement = null;
             }
         });
@@ -651,7 +577,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updateGameStateForPlacement(placement, team, undoInfo) {                
         if (this.isMyTeam(team)) {
-        
             this.addToUndoStack(undoInfo);
             if(!placement.isStartingState){
                 this.game.state.playerGold -= (placement.unitType.value || 0);
@@ -678,9 +603,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 }
             });            
         }
-        
     }
-    
 
     isMyTeam(team){
         return team == this.game.state.mySide;
@@ -706,25 +629,21 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             );
         }
     }
-    // Undo functionality for multiplayer
+
     undoLastPlacement() {
         if (!this.config.enableUndo) return;
         
         const state = this.game.state;
         
         if (state.phase !== 'placement') {
-          
             return;
         }
         
-        // Don't allow undo if already ready
         if (this.isPlayerReady) {
-       
             return;
         }
         
         if (this.undoStack.length === 0) {
-     
             return;
         }
         
@@ -744,7 +663,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.playerPlacements.splice(placementIndex, 1);
             }
             
-            // Remove from experience system
             if (this.game.squadExperienceSystem) {
                 this.game.squadExperienceSystem.removeSquad(undoInfo.placementId);
             }
@@ -752,20 +670,17 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.gridSystem.freeCells(undoInfo.placementId);
             this.createUndoEffects(undoInfo);
             
-            // Clear caches after undo
             this.cachedValidation = null;
             this.cachedGridPos = null;
             
         } catch (error) {
             console.error('Undo failed:', error);
-          
         }
     }
 
     createUndoEffects(undoInfo) {
         if (!this.game.effectsSystem) return;
         
-        // Limit undo effects
         const maxEffects = Math.min(undoInfo.cells.length, 4);
         
         for (let i = 0; i < maxEffects; i++) {
@@ -781,23 +696,20 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-
     getPlacementById(placementId) {
-        // Search in player placements first
         const playerPlacement = this.playerPlacements.find(placement => placement.placementId === placementId);
         if (playerPlacement) {
             return playerPlacement;
         }
         
-        // Search in opponent placements
         const opponentPlacement = this.opponentPlacements.find(placement => placement.placementId === placementId);
         if (opponentPlacement) {
             return opponentPlacement;
         }
         
-        // Return null if no matching placement is found
         return null;
     }
+
     collectPlayerPlacements() {
         return this.playerPlacements;
     }
@@ -816,7 +728,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         if (this.config.enablePreview && this.placementPreview) {
-            
             let animationFrameId = null;
             let pendingMouseEvent = null;
             
@@ -827,9 +738,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 pendingMouseEvent = event;
                 
                 animationFrameId = requestAnimationFrame(() => {
-                    
                     if (this.game.state.now - this.lastUpdateTime < .08) {
-                        
                         return;
                     }
                     
@@ -865,6 +774,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
+        
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -896,21 +806,33 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         const gridPos = this.game.gridSystem.worldToGrid(worldPosition.x, worldPosition.z);
-        
-        let isValid = false;
         const state = this.game.state;
         
-        if (state.selectedUnitType?.collection === 'buildings' && state.selectedUnitType.id === 'goldMine') {
-            const gridWidth = state.selectedUnitType.placementGridWidth || 2;
-            const gridHeight = state.selectedUnitType.placementGridHeight || 2;
-            const validation = this.game.goldMineSystem.isValidGoldMinePlacement(gridPos, gridWidth, gridHeight);
-            isValid = validation.valid;
+        let cells = [];
+        let isValid = this.isValidGridPlacement(worldPosition);
+        let unitPositions = null;
+
+        if (state.selectedUnitType.collection === 'buildings') {
+            cells = this.calculateBuildingCells(gridPos, state.selectedUnitType);            
         } else {
-            isValid = this.isValidGridPlacement(worldPosition);
+            const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
+            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+            if (this.game.squadManager.getSquadSize(squadData) > 1) {
+                unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
+            }
         }
-        
+
+        const worldPositions = cells.map(cell => 
+            this.game.gridSystem.gridToWorld(cell.x, cell.z)
+        );
+
+        if (unitPositions && unitPositions.length > 0) {
+            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid);
+        } else {
+            this.placementPreview.showAtWorldPositions(worldPositions, isValid);
+        }
+
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
-        this.placementPreview.update(gridPos, this.game.state.selectedUnitType, this.game.state.mySide);
     }
 
     getWorldPositionFromMouse(event, mouseX, mouseY) {
@@ -933,23 +855,18 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         this.raycaster.setFromCamera(this.mouse, this.game.camera);
         
-        // Mathematical intersection with plane at y = 0
         const ray = this.raycaster.ray;
         
-        // Check if ray is pointing downward (or upward if camera is below ground)
         if (Math.abs(ray.direction.y) < 0.0001) {
-            return null; // Ray is parallel to ground plane
+            return null;
         }
         
-        // Calculate distance to intersection point
         const distance = (0 - ray.origin.y) / ray.direction.y;
         
-        // Only return intersection if it's in front of the camera
         if (distance < 0) {
             return null;
         }
         
-        // Calculate intersection point
         const intersectionPoint = ray.origin.clone().add(
             ray.direction.clone().multiplyScalar(distance)
         );
@@ -974,32 +891,47 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return this.findGroundMesh();
     }
 
-    isValidGridPlacement(worldPos, selectedUnitType = null) {
-        if (!worldPos) return false;
+    isValidGridPlacement(worldPos, unitDef) {
+        const selectedUnitType = unitDef || this.game.state.selectedUnitType;
+        
+        let gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
+        let cells = [];
+        let isValid = false;
+        let gridValid = false;
 
-        const gridPos = this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
-        if (!this.game.gridSystem.isValidPosition(gridPos)) return false;
+        if (selectedUnitType.collection === 'buildings') {
+            cells = this.calculateBuildingCells(gridPos, selectedUnitType);
+            
+            if (selectedUnitType.id === 'goldMine') {
+                const gridWidth = selectedUnitType.placementGridWidth || 2;
+                const gridHeight = selectedUnitType.placementGridHeight || 2;
+                const validation = this.game.goldMineSystem.isValidGoldMinePlacement(gridPos, gridWidth, gridHeight);
+                isValid = validation.valid;
+            } else {
+                gridValid = this.game.gridSystem.isValidPlacement(cells, this.game.state.mySide);
+                
+                let terrainValid = true;
+                cells.forEach((cell) => {
+                    const terrainTypeId = this.game.terrainSystem.getTerrainTypeAtGridPosition(cell.x, cell.z);
+                    if(!terrainTypeId) {
+                        terrainValid = false;
+                        return;
+                    }
+                    const terrainType = this.game.worldSystem.tileMap.terrainTypes[terrainTypeId];
+                    
+                    terrainValid = terrainValid && terrainType.buildable;
+                });
+                
 
-        const selectedUnit = selectedUnitType || this.game.state.selectedUnitType;
-        if (!selectedUnit) return false;
-
-        // Build cells for the squad
-        let cells = [gridPos];
-        if (this.game.squadManager) {
-            const squadData = this.game.squadManager.getSquadData(selectedUnit);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
-            if (!validation.valid) return false;
+                isValid = gridValid && terrainValid;
+            }
+        } else {
+            const squadData = this.game.squadManager.getSquadData(selectedUnitType);
             cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+            gridValid = this.game.gridSystem.isValidPlacement(cells, this.game.state.mySide);
+            isValid = gridValid;
         }
-
-        // Use grid system's validation which now includes side checking
-        return this.game.gridSystem.isValidPlacement(cells, this.game.state.mySide);
-    }
-
-    getTotalUnitCount(placements) {
-        return placements.reduce((sum, placement) => {
-            return sum + (placement.isSquad ? placement.squadUnits.length : 1);
-        }, 0);
+        return isValid;
     }
 
     addToUndoStack(undoInfo) {
@@ -1026,18 +958,36 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     setTeamSides(sides) {
-        // sides = { player: 'left'|'right', enemy: 'left'|'right' }
         this.teamSides = {
             player: sides?.player || 'left',
             enemy: sides?.enemy || 'right'
         };
     }
 
-    updateCursorState() {
+    calculateBuildingCells(gridPos, building) {
+        const cells = [];
+        const gridWidth = building.placementGridWidth || 1;
+        const gridHeight = building.placementGridHeight || 1;
+        const startX = gridPos.x - Math.floor(gridWidth / 2);
+        const startZ = gridPos.z - Math.floor(gridHeight / 2);
+
+        for (let z = 0; z < gridHeight; z++) {
+            for (let x = 0; x < gridWidth; x++) {
+                cells.push({
+                    x: startX + x,
+                    z: startZ + z
+                });
+            }
+        }
+
+        return cells;
+    }
+
+    updateCursorState(isValid) {
         if (this.isPlayerReady) {
             document.body.style.cursor = 'not-allowed';
-        } else if (this.game.state.selectedUnitType && this.cachedValidation) {
-            document.body.style.cursor = this.cachedValidation.isValid ? 'crosshair' : 'not-allowed';
+        } else if (this.game.state.selectedUnitType) {
+            document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
         } else {
             document.body.style.cursor = 'default';
         }
@@ -1045,7 +995,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     handleBattleEnd() {        
         this.removeDeadSquadsAfterRound();
-      //  this.updateGridPositionsAfterRound();
     }
         
     removeDeadSquadsAfterRound() {
@@ -1087,7 +1036,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.game.squadExperienceSystem && placement.placementId) {
             this.game.squadExperienceSystem.removeSquad(placement.placementId);
         }
-
     }
 
     updateGridPositionsAfterRound() {
@@ -1135,7 +1083,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     resetAllPlacements() {
-        // Clean up experience system first
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.reset();
         }
@@ -1147,9 +1094,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.clearUndoStack();
         this.game.gridSystem.clear();
         
- 
-        
-        // Clear caches
         this.cachedValidation = null;
         this.cachedGridPos = null;
         this.groundMeshCache = null;
@@ -1158,7 +1102,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
-        
     }
 
     dispose() {
@@ -1171,8 +1114,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
                 
         this.resetAllPlacements();
-        
-        console.log('MultiplayerPlacementSystem disposed');
     }
 
     getUnitAtWorldPosition(worldPos) {
@@ -1201,7 +1142,4 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         return closestEntityId;
     }
-
-
-
 }

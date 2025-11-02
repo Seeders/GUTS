@@ -1,24 +1,15 @@
 class PlacementPreview {
     constructor(game) {
         this.game = game;
-        
         this.game.placementPreview = this;
-        // Preview state
-        this.isActive = false;
-        this.gridPosition = null;
-        this.unitType = null;
-        this.cells = [];
-        this.isValid = false;
-        this.team = null;
         
-        // Three.js objects - reuse instead of recreating
+        this.isActive = false;
+        
         this.previewGroup = new THREE.Group();
         this.previewGroup.name = 'PlacementPreview';
         this.previewGroup.visible = false;
         this.game.uiScene.add(this.previewGroup);
         
-        
-        // Visual configuration
         this.config = {
             cellOpacity: 0.4,
             borderOpacity: 0.8,
@@ -26,28 +17,22 @@ class PlacementPreview {
             unitIndicatorSegments: 8,
             elevationOffset: 20,
             unitElevationOffset: 20,
-            indicatorElevationOffset: 15,
             cellSizeMultiplier: 0.9,
-            maxCells: 25,
+            maxCells: 50,
             updateThrottle: 16
         };
         
-        // Geometry pools for reuse
         this.geometryPool = this.createGeometryPool();
-        // Materials (created once for performance)
         this.materials = this.createMaterials();
         
-        // Object pools for reuse
         this.cellMeshPool = [];
         this.borderMeshPool = [];
         this.unitMeshPool = [];
         this.activeMeshes = [];
         
-        // Animation state
         this.animationId = null;
         this.lastUpdateTime = 0;
         
-        // Initialize object pools
         this.initializeObjectPools();
     }
     
@@ -59,10 +44,7 @@ class PlacementPreview {
             unitCircle: new THREE.CircleGeometry(
                 this.config.unitIndicatorRadius, 
                 this.config.unitIndicatorSegments
-            ),
-            unitPillar: new THREE.CylinderGeometry(1, 1, 2, 6),
-            indicatorCone: new THREE.ConeGeometry(5, 10, 4),
-            indicatorRing: new THREE.RingGeometry(6, 8, 8)
+            )
         };
     }
     
@@ -99,16 +81,6 @@ class PlacementPreview {
                 color: 0xaa0000,
                 transparent: true,
                 opacity: 0.6
-            }),
-            validIndicator: new THREE.MeshBasicMaterial({
-                color: 0x00ff00,
-                transparent: true,
-                opacity: 0.8
-            }),
-            invalidIndicator: new THREE.MeshBasicMaterial({
-                color: 0xff0000,
-                transparent: true,
-                opacity: 0.8
             })
         };
     }
@@ -138,136 +110,100 @@ class PlacementPreview {
         }
     }
     
-    update(gridPos, unitType, team) {
+    showAtWorldPositions(worldPositions, isValid = true) {
         const now = performance.now();
-        
         if (now - this.lastUpdateTime < this.config.updateThrottle) {
             return;
         }
         this.lastUpdateTime = now;
         
-        if (!gridPos || !unitType || !this.game.gridSystem.isValidPosition(gridPos)) {
+        if (!worldPositions || worldPositions.length === 0) {
             this.hide();
             return;
         }
         
-        let cells = [];
-        let isValid = false;
-        
-        if (unitType.collection === 'buildings') {
-            cells = this.calculateBuildingCells(gridPos, unitType);
-            
-            if (unitType.id === 'goldMine') {
-                const validation = this.game.goldMineSystem?.isValidGoldMinePlacement(
-                    gridPos, 
-                    unitType.placementGridWidth || 2, 
-                    unitType.placementGridHeight || 2
-                );
-                isValid = validation?.valid || false;
-            } else {
-                isValid = this.game.gridSystem.isValidPlacement(cells, team);
-            }
-        } else {
-            const squadData = this.game.squadManager.getSquadData(unitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            isValid = this.game.gridSystem.isValidPlacement(cells, team);
-        }
-        
-        const hasChanged = !this.isActive ||
-                          this.gridPosition?.x !== gridPos.x ||
-                          this.gridPosition?.z !== gridPos.z ||
-                          this.isValid !== isValid ||
-                          this.unitType?.id !== unitType.id ||
-                          this.team !== team;
-        
-        if (hasChanged) {
-            this.isActive = true;
-            this.gridPosition = { ...gridPos };
-            this.unitType = unitType;
-            this.cells = cells.slice(0, this.config.maxCells);
-            this.isValid = isValid;
-            this.team = team;
-            
-            this.show();
-        }
-    }
-    
-    calculateBuildingCells(gridPos, building) {
-        const cells = [];
-        const gridWidth = building.placementGridWidth || 1;
-        const gridHeight = building.placementGridHeight || 1;
-        const startX = gridPos.x - Math.floor(gridWidth / 2);
-        const startZ = gridPos.z - Math.floor(gridHeight / 2);
-
-        for (let z = 0; z < gridHeight; z++) {
-            for (let x = 0; x < gridWidth; x++) {
-                cells.push({
-                    x: startX + x,
-                    z: startZ + z
-                });
-            }
-        }
-
-        return cells;
-    }
-    
-    show() {
-        if (!this.isActive) return;
-        
+        this.isActive = true;
         this.hideAllMeshes();
         
-        const cellMaterial = this.isValid ? this.materials.validCell : this.materials.invalidCell;
-        const borderMaterial = this.isValid ? this.materials.validBorder : this.materials.invalidBorder;
+        const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
+        const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
         
-        this.cells.forEach((cell, index) => {
+        worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= this.cellMeshPool.length) return;
-            
-            const worldPos = this.game.gridSystem.gridToWorld(cell.x, cell.z);
             
             const cellMesh = this.cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
+            cellMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
             
             const borderMesh = this.borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
+            borderMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });
         
-        if (this.unitType.collection !== 'buildings') {
-            const squadData = this.game.squadManager.getSquadData(this.unitType);
-            if (this.game.squadManager.getSquadSize(squadData) > 1) {
-                this.addFormationPreview();
-            }
-        }
-        
         this.previewGroup.visible = true;
-        
         this.startAnimation();
     }
     
-    addFormationPreview() {
-        if (!this.gridPosition) return;
-        
-        const unitPositions = this.game.squadManager.calculateUnitPositions(
-            this.gridPosition, 
-            this.unitType
+    showAtGridPositions(gridPositions, isValid = true) {
+        const worldPositions = gridPositions.map(gridPos => 
+            this.game.gridSystem.gridToWorld(gridPos.x, gridPos.z)
         );
+        this.showAtWorldPositions(worldPositions, isValid);
+    }
+    
+    showWithUnitMarkers(worldPositions, unitPositions, isValid = true) {
+        const now = performance.now();
+        if (now - this.lastUpdateTime < this.config.updateThrottle) {
+            return;
+        }
+        this.lastUpdateTime = now;
         
-        const unitMaterial = this.isValid ? this.materials.validUnit : this.materials.invalidUnit;
+        if (!worldPositions || worldPositions.length === 0) {
+            this.hide();
+            return;
+        }
         
-        unitPositions.forEach((pos, index) => {
-            if (index >= this.unitMeshPool.length) return;
+        this.isActive = true;
+        this.hideAllMeshes();
+        
+        const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
+        const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
+        const unitMaterial = isValid ? this.materials.validUnit : this.materials.invalidUnit;
+        
+        worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
+            if (index >= this.cellMeshPool.length) return;
             
-            const unitMesh = this.unitMeshPool[index];
-            unitMesh.material = unitMaterial;
-            unitMesh.position.set(pos.x, this.config.unitElevationOffset, pos.z);
-            unitMesh.visible = true;
-            this.activeMeshes.push(unitMesh);
+            const cellMesh = this.cellMeshPool[index];
+            cellMesh.material = cellMaterial;
+            cellMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            cellMesh.visible = true;
+            this.activeMeshes.push(cellMesh);
+            
+            const borderMesh = this.borderMeshPool[index];
+            borderMesh.material = borderMaterial;
+            borderMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            borderMesh.visible = true;
+            this.activeMeshes.push(borderMesh);
         });
+        
+        if (unitPositions && unitPositions.length > 0) {
+            unitPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
+                if (index >= this.unitMeshPool.length) return;
+                
+                const unitMesh = this.unitMeshPool[index];
+                unitMesh.material = unitMaterial;
+                unitMesh.position.set(pos.x, this.config.unitElevationOffset, pos.z);
+                unitMesh.visible = true;
+                this.activeMeshes.push(unitMesh);
+            });
+        }
+        
+        this.previewGroup.visible = true;
+        this.startAnimation();
     }
     
     hideAllMeshes() {
@@ -291,8 +227,8 @@ class PlacementPreview {
             }
             
             const elapsed = (performance.now() - startTime) / 1000;
-            
             const scale = 1 + Math.sin(elapsed * 2) * 0.05;
+            
             this.activeMeshes.forEach(mesh => {
                 if (mesh.visible) {
                     mesh.scale.setScalar(scale);
@@ -315,53 +251,9 @@ class PlacementPreview {
         }
     }
     
-    clear(clearData = true) {
+    clear() {
         this.hide();
-        
-        if (clearData) {
-            this.isActive = false;
-            this.gridPosition = null;
-            this.unitType = null;
-            this.cells = [];
-            this.isValid = false;
-            this.team = null;
-        }
-    }
-    
-    getPreviewInfo() {
-        if (!this.isActive) {
-            return { active: false };
-        }
-        
-        if (this.unitType.collection === 'buildings') {
-            return {
-                active: true,
-                isValid: this.isValid,
-                gridPosition: this.gridPosition,
-                unitType: this.unitType.title || this.unitType.id,
-                team: this.team,
-                cellCount: this.cells.length,
-                cost: this.unitType.value || 0,
-                canPlace: this.isValid && this.isActive
-            };
-        }
-        
-        const squadData = this.game.squadManager.getSquadData(this.unitType);
-        const squadInfo = this.game.squadManager.getSquadInfo(this.unitType);
-        
-        return {
-            active: true,
-            isValid: this.isValid,
-            gridPosition: this.gridPosition,
-            unitType: this.unitType.title || this.unitType.id,
-            team: this.team,
-            squadSize: squadInfo.squadSize,
-            formationType: squadInfo.formationType,
-            cellCount: this.cells.length,
-            cost: this.unitType.value || 0,
-            totalValue: squadInfo.totalValue,
-            canPlace: this.isValid && this.isActive
-        };
+        this.isActive = false;
     }
     
     updateConfig(newConfig) {
@@ -376,20 +268,6 @@ class PlacementPreview {
             this.materials.validBorder.opacity = newConfig.borderOpacity;
             this.materials.invalidBorder.opacity = newConfig.borderOpacity;
         }
-    }
-    
-    containsWorldPosition(worldX, worldZ) {
-        if (!this.isActive) return false;
-        
-        const gridPos = this.game.gridSystem.worldToGrid(worldX, worldZ);
-        return this.cells.some(cell => cell.x === gridPos.x && cell.z === gridPos.z);
-    }
-    
-    getCellAtWorldPosition(worldX, worldZ) {
-        if (!this.containsWorldPosition(worldX, worldZ)) return null;
-        
-        const gridPos = this.game.gridSystem.worldToGrid(worldX, worldZ);
-        return this.cells.find(cell => cell.x === gridPos.x && cell.z === gridPos.z);
     }
     
     dispose() {

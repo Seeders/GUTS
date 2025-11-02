@@ -257,6 +257,22 @@ class TerrainSystem extends engine.BaseSystem {
         return terrainMap[terrainZ][terrainX];
     }
 
+    getTerrainTypeAtGridPosition(gridX, gridZ) {
+        if (!this.tileMap?.terrainMap) {
+            return null;
+        }
+
+        const terrainMap = this.tileMap.terrainMap;
+        
+        if(terrainMap.length <= gridZ) {
+            return null;
+        }
+        if(terrainMap[gridZ].length <= gridX) {
+            return null;
+        }
+        
+        return terrainMap[gridZ][gridX];
+    }
     /**
      * Check if a position is within terrain bounds
      * @param {number} worldX - World X coordinate

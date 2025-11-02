@@ -386,35 +386,36 @@ class ServerPlacementSystem extends engine.BaseSystem {
     }
 
     applyTargetPositions() {
+        console.log('APPLY TARGET POSITIONS');
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         for (const [playerId, placements] of this.playerPlacements) {
-            placements.forEach(placement => {
-                const targetPosition = placement.targetPosition;
-                if (!targetPosition) return;
-                if (placement.squadUnits.length > 0) {
-                    placement.squadUnits.forEach(entityId => {                        
-                        const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                        const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                        if (aiState && position) {
-                            const dx = position.x - targetPosition.x;
-                            const dz = position.z - targetPosition.z;
-                            const distSq = dx * dx + dz * dz;
-                            const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
-                            
-                            if (distSq <= threshold * threshold) {
-                                aiState.currentAIController = null;
-                                aiState.targetPosition = null;
-                                placement.targetPosition = null;
-                                if(this.game.state.targetPositions){
-                                    this.game.state.targetPositions.delete(placement.placementId);
+            placements.forEach((placement) => {     
+                const targetPosition = placement.targetPosition;         
+                placement.squadUnits.forEach(entityId => {
+                    const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+                    const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                    if (aiState && position) {
+                        
+                        if(targetPosition){
+                            console.log('found targetPosition', entityId, targetPosition);
+                            if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
+                                const dx = position.x - targetPosition.x;
+                                const dz = position.z - targetPosition.z;
+                                const distSq = dx * dx + dz * dz;
+                                const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                                
+                                if (distSq <= threshold * threshold) {
+                                    aiState.currentAIController = null;
+                                    aiState.targetPosition = null;
+                                    placement.targetPosition = null;
+                                } else {
+                                    aiState.targetPosition = { ...targetPosition };      
+                                    aiState.currentAIController = "OrderSystemMove";
                                 }
-                            } else {
-                                aiState.targetPosition = { ...targetPosition };      
-                                aiState.currentAIController = "moveOrder";
                             }
                         }
-                    });
-                }
+                    }
+                });
             });
         }
     }

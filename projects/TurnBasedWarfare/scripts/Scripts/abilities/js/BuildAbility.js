@@ -59,7 +59,6 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     assignToBuild(peasantEntityId, buildingEntityId) {
-        console.log('assignToBuild', peasantEntityId, buildingEntityId);
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
@@ -83,7 +82,6 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     walkToConstruction(buildState, pos, vel) {
-        console.log('walkToConstruction Start');
         if (!buildState.targetBuildingPosition || !buildState.targetBuildingEntityId) {
             buildState.state = 'idle';
             return;
@@ -115,12 +113,10 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             pos.z = buildState.targetBuildingPosition.z;
             vel.vx = 0;
             vel.vz = 0;
-            console.log('constructing', buildState);
             buildState.state = 'constructing';
             buildState.constructionStartTime = this.game.state.round;
         } else {
             const aiState = this.game.getComponent(buildState.entityId, ComponentTypes.AI_STATE);
-            console.log('walking to construction', aiState);
             if (aiState) {
                 aiState.state = 'chasing';
                 aiState.targetPosition = buildState.targetBuildingPosition;
@@ -148,7 +144,6 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
                 this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
             }
         }
-        console.log('constructBuilding', elapsed, buildTime);
 
         if (elapsed >= buildTime) {            
             this.completeConstruction(buildState);
@@ -161,7 +156,6 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
         const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
         renderComponent.spawnType = buildingPlacement.unitType.id;
-        console.log('Complete construction', buildState.targetBuildingEntityId, buildingPlacement);
         this.game.renderSystem?.removeInstance(buildState.targetBuildingEntityId);
         if (!buildingPlacement) {
             buildState.state = 'idle';

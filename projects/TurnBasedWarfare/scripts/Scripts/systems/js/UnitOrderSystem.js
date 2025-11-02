@@ -1,8 +1,4 @@
 class UnitOrderSystem extends engine.BaseSystem {
-    /**
-     * Centralized handler for player-issued unit orders (move/target-position).
-     * Uses callback-style networking (no async/await).
-     */
     constructor(game) {
         super(game);
         this.game = game;
@@ -10,16 +6,21 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         this.componentTypes = this.game.componentManager.getComponentTypes();
 
-        // Targeting session state
         this.isTargeting = false;
         this.pendingCallbacks = 0;
 
         this._onCanvasClick = this._onCanvasClick.bind(this);
         this._onCancelKey = this._onCancelKey.bind(this);
+        this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
 
-        // UX
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
+        
+        this.targetingPreview = new GUTS.PlacementPreview(this.game);
+        this.targetingPreview.updateConfig({
+            cellOpacity: 0.3,
+            borderOpacity: 0.6
+        });
     }
 
     init() {}
@@ -35,38 +36,24 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.game.getComponent(id, componentTypes.HEALTH)
         ).length;
         
-        // Check if this squad can build
         const firstUnit = squadData.unitIds[0];
         const unitType = firstUnit ? this.game.getComponent(firstUnit, componentTypes.UNIT_TYPE) : null;
         
-        // Squad info panel
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
         
         const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
         const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
         
-        
         actionPanel.appendChild(squadPanel);
         
-        // Add building options if this unit can build
-        
         this.displayActionSet(null, squadPanel, firstUnit, unitType);
-
-  
     }
-
-    // ADD THIS NEW METHOD to UnitOrderSystem:
 
     displayActionSet(actionSetId, panel, selectedUnitId, unitType) {
         panel.innerHTML = ``;
         const actionSection = document.createElement('div');
         actionSection.className = 'action-section';
-
-        // const buildHeader = document.createElement('div');
-        // buildHeader.className = 'action-section-header';
-        // buildHeader.textContent = 'BUILD STRUCTURES';
-        // buildSection.appendChild(buildHeader);
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
@@ -144,7 +131,6 @@ class UnitOrderSystem extends engine.BaseSystem {
             btn.addEventListener('click', () => {
                 this.displayActionSet(action.actionSet, panel, selectedUnitId, unitType);
             });
-
         }
         return btn;
     }
@@ -162,7 +148,6 @@ class UnitOrderSystem extends engine.BaseSystem {
         
         const iconEl = document.createElement('div');
         iconEl.className = 'action-btn-icon';
-        console.log('create building button');
         if(building.icon){
             const icon = this.game.getCollections().icons[building.icon];
             if(icon && icon.filePath){
@@ -176,31 +161,6 @@ class UnitOrderSystem extends engine.BaseSystem {
             iconEl.textContent =  '🏛️';
         }
         btn.append(iconEl);
-        // const title = document.createElement('div');
-        // title.style.cssText = 'font-size: 0.75rem; font-weight: 600; text-align: center; margin-bottom: 4px;';
-        // title.textContent = building.title;
-        // btn.appendChild(title);
-
-        // if (building.buildTime) {
-        //     const buildTime = document.createElement('div');
-        //     buildTime.style.cssText = 'font-size: 0.7rem; color: #888;';
-        //     buildTime.textContent = `⏱️ ${building.buildTime}s`;
-        //     btn.appendChild(buildTime);
-        // }
-
-        // const cost = document.createElement('div');
-        // cost.style.cssText = 'font-size: 0.75rem; margin-top: 4px;';
-        // if (lockReason) {
-        //     cost.textContent = lockReason;
-        //     cost.style.color = '#f44336';
-        // } else if (!canAfford) {
-        //     cost.textContent = "Can't afford";
-        //     cost.style.color = '#f44336';
-        // } else {
-        //     cost.innerHTML = `💰 ${building.value || 0}`;
-        //     cost.style.color = 'var(--primary-gold)';
-        // }
-        // btn.appendChild(cost);
 
         if (!locked) {
             btn.addEventListener('click', () => {
@@ -222,7 +182,6 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
-        console.log('activate building');
         this.game.state.selectedUnitType = { 
             id: building.id, 
             collection: 'buildings', 
@@ -239,27 +198,19 @@ class UnitOrderSystem extends engine.BaseSystem {
         }
     }
 
-
-    /**
-     * Begin a single-click targeting session.
-     * @param {{placementIds?: string[], cursor?: string}} opts
-     */
     startTargeting() {
-        // Reset any previous session first
         this.stopTargeting();
 
         this.isTargeting = true;
         this.pendingCallbacks = 0;
 
-        // Input hooks
         const canvas = this.game.canvas;
         if (canvas) {
-            // one-shot: we remove it ourselves, but { once:true } avoids double-fires
             canvas.addEventListener('click', this._onCanvasClick, { once: true });
+            canvas.addEventListener('mousemove', this._onCanvasMouseMove);
         }
         document.addEventListener('keydown', this._onCancelKey);
 
-        // Cursor
         document.body.style.cursor = this.cursorWhenTargeting;
 
         this.game.uiSystem?.showNotification('🎯 Click the ground to set a target for selected units', 'info', 1200);
@@ -271,11 +222,40 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         const canvas = this.game.canvas;
         if (canvas) {
-            // Remove any residual listener in case we canceled via ESC
             canvas.removeEventListener('click', this._onCanvasClick, { once: true });
+            canvas.removeEventListener('mousemove', this._onCanvasMouseMove);
         }
         document.removeEventListener('keydown', this._onCancelKey);
         document.body.style.cursor = 'default';
+        
+        this.targetingPreview.clear();
+    }
+
+    holdPosition() {
+        this.stopTargeting();
+        
+        let placementIds = this.game.selectedUnitSystem.getSelectedSquads() || [];
+        
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        placementIds.forEach((placementId) => {
+            const placement = this.game.placementSystem.getPlacementById(placementId);
+            placement.squadUnits.forEach((unitId) => {
+                const position = this.game.getComponent(unitId, ComponentTypes.POSITION);
+                const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+                if (this.game.effectsSystem && position) {
+                    this.game.effectsSystem.createParticleEffect(position.x, 0, position.z, 'magic', { ...this.pingEffect });
+                }
+                if(aiState){
+                    aiState.targetPosition = position; 
+                    aiState.currentAIController = "OrderSystemHold";
+                }
+            });
+        });
+        
     }
 
     _onCancelKey(e) {
@@ -283,6 +263,34 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.game.uiSystem?.showNotification('❌ Targeting canceled', 'warning', 800);
             this.stopTargeting();
         }
+    }
+
+    _onCanvasMouseMove(event) {
+        if (!this.isTargeting) return;
+
+        const canvas = this.game.canvas;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
+        if (!worldPos) {
+            this.targetingPreview.clear();
+            return;
+        }
+
+        const placementIds = this.game.selectedUnitSystem?.getSelectedSquads() || [];
+        if (placementIds.length === 0) {
+            this.targetingPreview.clear();
+            return;
+        }
+
+        const targetPosition = { x: worldPos.x, z: worldPos.z };
+        const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
+
+        this.targetingPreview.showAtWorldPositions(targetPositions, true);
     }
 
     _onCanvasClick(event) {
@@ -294,12 +302,10 @@ class UnitOrderSystem extends engine.BaseSystem {
             return;
         }
 
-        // Screen → NDC
         const rect = canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-        // Prefer any helper you already have (same as your placement system)
         const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
@@ -307,7 +313,6 @@ class UnitOrderSystem extends engine.BaseSystem {
             return;
         }
 
-        // Which squads receive the order?
         let placementIds = this.game.selectedUnitSystem.getSelectedSquads() || [];
         
         if (!placementIds || placementIds.length === 0) {
@@ -318,55 +323,82 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
 
-        // One visual ping at the clicked spot
         if (this.game.effectsSystem) {
             this.game.effectsSystem.createParticleEffect(worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
         }
 
-        // Fire one request per squad (callback style), and only stop targeting after all have returned
         this.issueMoveOrders(placementIds, targetPosition);
     }
 
     issueMoveOrders(placementIds, targetPosition) {
-        let targetPositions = [];
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        const unitPadding =  0.5;
-
-        for(let i = 0; i < placementIds.length; i++){
-            targetPositions.push({
-                x: targetPosition.x,
-                z: i % 2 == 0 ? targetPosition.z + i * gridSize * unitPadding : targetPosition.z - i * gridSize * unitPadding
-            })
-        }
-
+        const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         this.game.networkManager.setSquadTargets(
             { placementIds, targetPositions },
-            (success /*, response */) => {
-                if (success) {         
+            (success) => {
+                if (success) { 
+                    const ComponentTypes = this.game.componentManager.getComponentTypes();        
                     for(let i = 0; i < placementIds.length; i++){
-                        this.game.state.targetPositions.set(placementIds[i], targetPositions[i]);            
+                        let placementId = placementIds[i];
+                        const targetPosition = targetPositions[i];
+                        const placement = this.game.placementSystem.getPlacementById(placementId);
+                        placement.squadUnits.forEach((unitId) => {
+                            const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+                            if (this.game.effectsSystem && targetPosition) {
+                                this.game.effectsSystem.createParticleEffect(targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
+                            }
+                            if(aiState && targetPosition){
+                                aiState.targetPosition = targetPosition;
+                                aiState.currentAIController = "OrderSystemMove";
+                            }
+                        });
+                                
                     }      
                     this.stopTargeting();                
                 }                
             }
         );
-        
     }
 
-    applySquadTargetPosition(placementId, targetPosition) {       
-        this.game.state.targetPositions.set(placementId, targetPosition);  
+    getFormationTargetPositions(targetPosition, placementIds){
+        let targetPositions = [];
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const unitPadding = 1;
+
+        for(let i = 0; i < placementIds.length; i++){
+            targetPositions.push({
+                x: targetPosition.x,
+                z: i % 2 == 0 ? targetPosition.z + i * gridSize * unitPadding : targetPosition.z - i * gridSize * unitPadding
+            });
+        }
+        return targetPositions;
+    }
+
+    applySquadTargetPosition(placementId, targetPosition) {   
+        const placement = this.game.placementSystem.getPlacementById(placementId);
+        placement.squadUnits.forEach((unitId) => {
+            const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+            if (this.game.effectsSystem && targetPosition) {
+                this.game.effectsSystem.createParticleEffect(targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
+            }
+            if(aiState && targetPosition){
+                aiState.targetPosition = targetPosition;
+                aiState.currentAIController = "OrderSystemMove";
+            }
+        });            
     }
 
     applySquadsTargetPositions(placementIds, targetPositions) {     
         for(let i = 0; i < placementIds.length; i++){  
             let placementId = placementIds[i];
             let targetPosition = targetPositions[i];
-            this.game.state.targetPositions.set(placementId, targetPosition);  
+            this.applySquadTargetPosition(placementId, targetPosition);
         }
     }
 
     destroy() {
         this.stopTargeting();
+        if (this.targetingPreview) {
+            this.targetingPreview.dispose();
+        }
     }
 }
-
