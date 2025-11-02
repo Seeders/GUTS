@@ -387,19 +387,31 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     applyTargetPositions() {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
-        console.log('APPLY TARGET POSITIONS');
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach(placement => {
                 const targetPosition = placement.targetPosition;
                 if (!targetPosition) return;
-                console.log(placement);
                 if (placement.squadUnits.length > 0) {
                     placement.squadUnits.forEach(entityId => {                        
                         const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                        if (aiState) {
-                            aiState.targetPosition = { ...targetPosition };            
-                           
-                console.log('aiState targetPosition', entityId, aiState.targetPosition);
+                        const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                        if (aiState && position) {
+                            const dx = position.x - targetPosition.x;
+                            const dz = position.z - targetPosition.z;
+                            const distSq = dx * dx + dz * dz;
+                            const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                            
+                            if (distSq <= threshold * threshold) {
+                                aiState.currentAIController = null;
+                                aiState.targetPosition = null;
+                                placement.targetPosition = null;
+                                if(this.game.state.targetPositions){
+                                    this.game.state.targetPositions.delete(placement.placementId);
+                                }
+                            } else {
+                                aiState.targetPosition = { ...targetPosition };      
+                                aiState.currentAIController = "moveOrder";
+                            }
                         }
                     });
                 }

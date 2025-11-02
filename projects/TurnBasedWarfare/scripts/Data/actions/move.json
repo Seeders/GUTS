@@ -1,5 +1,5 @@
 {
   "title": "Move",
-  "icon": "unit_peasant",
+  "icon": "order_move",
   "order": "startTargeting"
 }

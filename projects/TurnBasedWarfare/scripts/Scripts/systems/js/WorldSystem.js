@@ -167,7 +167,6 @@ class WorldSystem extends engine.BaseSystem {
 
         // Calculate world dimensions
         this.terrainSize = this.tileMap.size * collections.configs.game.gridSize;
-        console.log('set terrain size', this.tileMap.size, collections.configs.game.gridSize, this.terrainSize);
         this.extensionSize = this.world.extensionSize || 0;
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);
@@ -228,12 +227,15 @@ class WorldSystem extends engine.BaseSystem {
             this.lightingSettings.directionalColor,
             this.lightingSettings.directionalIntensity
         );
-        
-        this.directionalLight.position.set(
-            this.extendedSize, 
-            this.extendedSize, 
-            this.extendedSize
-        );
+        if(this.lightingSettings.direction){
+            this.lightingSettings.direction = JSON.parse(this.lightingSettings.direction);
+            this.directionalLight.position.set(
+                -this.lightingSettings.direction.x * this.extendedSize,  
+                -this.lightingSettings.direction.y * this.extendedSize, 
+                -this.lightingSettings.direction.z * this.extendedSize
+            );
+        }
+        console.log(this.directionalLight.position, this.lightingSettings.direction);
         this.directionalLight.castShadow = this.shadowSettings?.enabled || false;
 
         if (this.shadowSettings?.enabled) {
@@ -252,9 +254,9 @@ class WorldSystem extends engine.BaseSystem {
             this.directionalLight.shadow.camera.bottom = -d;
 
             this.directionalLight.target.position.set(
-                -this.extendedSize, 
-                -this.extendedSize, 
-                -this.extendedSize
+                0, 
+                0, 
+                0
             );
             this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();

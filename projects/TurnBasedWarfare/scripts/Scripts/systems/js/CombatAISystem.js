@@ -20,7 +20,7 @@ class CombatAISystem extends engine.BaseSystem {
 
         this.DAMAGE_TIMING_RATIO = 0.5;
         
-        this.TARGET_POSITION_THRESHOLD = 20;
+        this.TARGET_POSITION_THRESHOLD = this.game.getCollections().configs.game.gridSize * 0.5;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 

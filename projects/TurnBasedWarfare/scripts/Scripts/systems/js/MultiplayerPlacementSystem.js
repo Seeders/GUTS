@@ -280,17 +280,33 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     applyTargetPositions(){
         for (const [placementId, targetPosition] of this.game.state.targetPositions.entries()) {
             const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
+            const placement = this.game.placementSystem.getPlacementById(placementId);
             if (!squadData) continue;
             
-            const componentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.componentManager.getComponentTypes();
             
             squadData.unitIds.forEach(entityId => {
-                const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
-                if (aiState) {
-                    if (!aiState.aiBehavior) {
-                        aiState.aiBehavior = {};
+                const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+                const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                if (aiState && position) {
+                    const dx = position.x - targetPosition.x;
+                    const dz = position.z - targetPosition.z;
+                    const distSq = dx * dx + dz * dz;
+                    const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                    if(entityId == 'peasant_-1176_-1368_left_1'){
+                        console.log(Math.sqrt(distSq));
                     }
-                    aiState.targetPosition = { ...targetPosition };
+                    if (distSq <= threshold * threshold) {
+                        aiState.currentAIController = null;
+                        aiState.targetPosition = null;
+                        placement.targetPosition = null;
+                        if(this.game.state.targetPositions){
+                            this.game.state.targetPositions.delete(placement.placementId);
+                        }
+                    } else {
+                        aiState.targetPosition = { ...targetPosition };      
+                        aiState.currentAIController = "moveOrder";
+                    }
                 }
             });
         }
