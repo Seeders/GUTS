@@ -329,6 +329,24 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     bottom: 1em;
 }
 
+
+#unitPortrait {
+    background: rgba(20, 20, 30, 0.9);
+    border: 2px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    min-height: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    max-height: 200px;
+    position: absolute;
+    right: calc(200px + 2em);
+    bottom: 1em;
+}
+
+#unitPortrait > img {
+    width: 100%;
+    display: block;
+}
 #gameControls {
     position: absolute;
     bottom: calc(200px + 2em);

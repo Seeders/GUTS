@@ -406,7 +406,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
             } else {
                 this.game.shopSystem.renderBuildingActions(placement);
             }
-            this.game.selectedUnitSystem.highlightUnits(squadData.unitIds);
+            this.highlightUnits(squadData.unitIds);
         }
     }
 
@@ -452,10 +452,27 @@ class SelectedUnitSystem extends engine.BaseSystem {
             }
         }
         
+        this.createPortrait(unitIds[0]);
         // Update tracked set
         this.highlightedUnits = newHighlightSet;
         
         console.log(`[SelectedUnitSystem] Highlighting ${unitIds.length} units`);
+    }
+
+    createPortrait(entityId){
+        if(document) {
+            console.log('createPortrait');
+            const container = document.getElementById('unitPortrait');
+            container.innerHTML = ``;
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const icon = this.game.getCollections().icons[unitType.icon];
+
+            if(icon){
+                const img = document.createElement('img');
+                img.src = `./${icon.filePath}`;
+                container.append(img);
+            }
+        }
     }
     
     clearAllHighlights() {

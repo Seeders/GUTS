@@ -1,6 +1,7 @@
 {
   "title": "Default Unit Actions",
   "actions": [
-    "move"
+    "move",
+    "hold"
   ]
 }

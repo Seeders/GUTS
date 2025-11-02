@@ -2,6 +2,7 @@
   "title": "Peasant Actions",
   "actions": [
     "move",
+    "hold",
     "build",
     "mineGold"
   ]
