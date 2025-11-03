@@ -84,7 +84,28 @@ class CameraControlSystem extends engine.BaseSystem {
     if (this.fwd.lengthSq() > 0) this.fwd.normalize();
   }
 
-  update() {
+  lookAt(worldX, worldZ){
+    const pitch = 35.264 * Math.PI / 180;
+    const yaw = 135 * Math.PI / 180;
+    const distance = 512;
+
+    const cdx = Math.sin(yaw) * Math.cos(pitch);
+    const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+    const cameraPosition = {
+        x: worldX - cdx * distance,
+        y: 512,
+        z: worldZ - cdz * distance
+    };
+
+    const lookAt = { x: worldX, y: 0, z: worldZ };
+
+    this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    this.game.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+  }
+
+
+  moveCamera() {
     const cam = this.game.camera;
     if (!cam) return;
 

@@ -245,24 +245,9 @@ class MiniMapSystem extends engine.BaseSystem {
         const half = worldSize * 0.5;
         const worldX = nx * worldSize - half;
         const worldZ = ny * worldSize - half;
-
-        const pitch = 35.264 * Math.PI / 180;
-        const yaw = 135 * Math.PI / 180;
-        const distance = 512;
-
-        const cdx = Math.sin(yaw) * Math.cos(pitch);
-        const cdz = Math.cos(yaw) * Math.cos(pitch);
-
-        const cameraPosition = {
-            x: worldX - cdx * distance,
-            y: 512,
-            z: worldZ - cdz * distance
-        };
-
-        const lookAt = { x: worldX, y: 0, z: worldZ };
-
-        this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        this.game.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+        if(this.game.cameraControlSystem){
+            this.game.cameraControlSystem.lookAt(worldX, worldZ);
+        }
     }
 
     update() {

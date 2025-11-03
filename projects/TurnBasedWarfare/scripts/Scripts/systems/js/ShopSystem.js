@@ -7,7 +7,7 @@ class ShopSystem extends engine.BaseSystem {
         this.buildingUpgrades = new Map();
         this.buildingProductionProgress = new Map();
         this.game.state.selectedEntity = {
-            "type": null,
+            "collection": null,
             "entityId": null
         };
         this.townHallLevel = 0;
@@ -26,14 +26,14 @@ class ShopSystem extends engine.BaseSystem {
         if (!container) return;
         container.innerHTML = '';
 
-        if (this.game.state.selectedEntity.type == 'building') {
+        if (this.game.state.selectedEntity.collection == 'buildings') {
             this.renderBuildingActions(container);
         } 
     }
 
     clearSelectedEntity() {    
         this.game.state.selectedEntity.entityId = null;
-        this.game.state.selectedEntity.type = null;
+        this.game.state.selectedEntity.collection = null;
     }
 
     renderBuildingActions(placement) {
@@ -61,7 +61,7 @@ class ShopSystem extends engine.BaseSystem {
 
        
         const buildingId = this.game.state.selectedEntity.entityId;
-
+console.log('selected entity', this.game.state.selectedEntity);
         if(this.buildingProductionProgress.has(buildingId)){
             const hasUnits = building.units && building.units.length > 0;
             const hasUpgrades = building.upgrades && building.upgrades.length > 0;

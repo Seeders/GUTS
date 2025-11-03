@@ -54,7 +54,8 @@
         { "type": "FogOfWarSystem" },    
         { "type": "SelectedUnitSystem" },    
         { "type": "UnitOrderSystem" },    
-        { "type": "MiniMapSystem" }
+        { "type": "MiniMapSystem" },    
+        { "type": "CameraControlSystem" }
       ],
       "classes": [
         {
