@@ -17,9 +17,15 @@ class BaseECSGame {
         this.currentTime = 0;
         this.deltaTime = 0;
 
-        this.isServer = false;
+        this.isServer = false;        
     }
-
+    init() {
+        if(document){
+            document.addEventListener('keydown', (e) => {                
+                this.triggerEvent('onKeyDown', e.key);
+            });
+        }
+    }
     getEntityId() {
         return this.nextEntityId++;
     }
@@ -149,10 +155,6 @@ class BaseECSGame {
         this.app.appClasses[classId] = classRef;
     }
 
-    // Abstract methods - must be implemented by subclasses
-    init() {
-        throw new Error('init() method must be implemented by subclass');
-    }
 
     triggerEvent(eventName, data) {
         this.systems.forEach(system => {

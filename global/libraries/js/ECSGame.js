@@ -14,7 +14,8 @@ class ECSGame extends BaseECSGame {
         this.desyncDebugger = new DesyncDebugger(this);
     }
 
-    init() {       
+    init() {    
+        super.init();   
         this.imageManager.dispose();
     }
 }
