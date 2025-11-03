@@ -145,12 +145,13 @@
     "2_s_gladiator",
     "2_s_warlord"
   ],
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
   "abilities": [],
   "range": 5,
   "projectile": "arrow",
-  "icon": "unit_barbarian"
+  "icon": "unit_barbarian",
+  "visionRange": 500
 }

@@ -1,0 +1,73 @@
+{
+  "title": "Sentry Tower",
+  "info": "A structure that fires arrows.",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "url": "projects/TurnBasedWarfare/resources/models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "projects/TurnBasedWarfare/resources/models/mage_tower/mage_tower.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "units": [],
+  "placementGridWidth": 2,
+  "placementGridHeight": 2,
+  "height": 100,
+  "size": 50,
+  "icon": "unit_archer",
+  "damage": 20,
+  "attackSpeed": 1,
+  "range": 300,
+  "projectile": "arrow",
+  "element": "physical",
+  "hp": 300
+}

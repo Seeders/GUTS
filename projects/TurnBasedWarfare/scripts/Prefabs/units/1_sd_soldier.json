@@ -175,5 +175,6 @@
   "abilities": [
     "WindShieldAbility"
   ],
-  "icon": "unit_soldier"
+  "icon": "unit_soldier",
+  "visionRange": 500
 }

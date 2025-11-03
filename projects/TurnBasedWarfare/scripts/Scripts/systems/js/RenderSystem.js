@@ -335,7 +335,14 @@ class RenderSystem extends engine.BaseSystem {
         const quaternion = new THREE.Quaternion();
         const facingAngle = this.calculateFacingAngle(velocity, facing);
         if (facingAngle !== null) {
-            quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -facingAngle + Math.PI / 2);
+            const isProjectile = !facing || facing.angle === undefined;
+			if(isProjectile) {
+                const direction = new THREE.Vector3(velocity.vx, velocity.vy, velocity.vz).normalize();
+                const defaultForward = new THREE.Vector3(0, 1, 0);
+                quaternion.setFromUnitVectors(defaultForward, direction);
+            } else {
+				quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -facingAngle + Math.PI / 2);
+			}
         }
 
         const scale = new THREE.Vector3(

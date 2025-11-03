@@ -174,5 +174,6 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "icon": "unit_rogue"
+  "icon": "unit_rogue",
+  "visionRange": 800
 }

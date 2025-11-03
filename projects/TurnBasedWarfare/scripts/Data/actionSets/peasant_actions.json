@@ -3,7 +3,6 @@
   "actions": [
     "move",
     "hold",
-    "build",
-    "mineGold"
+    "build"
   ]
 }

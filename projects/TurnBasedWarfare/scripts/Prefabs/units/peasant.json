@@ -163,5 +163,6 @@
     "BuildAbility"
   ],
   "icon": "unit_peasant",
-  "actionSet": "peasant_actions"
+  "actionSet": "peasant_actions",
+  "visionRange": 400
 }

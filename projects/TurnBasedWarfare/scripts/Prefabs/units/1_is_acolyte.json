@@ -152,5 +152,6 @@
   "abilities": [
     "HealAbility"
   ],
-  "icon": "unit_acolyte"
+  "icon": "unit_acolyte",
+  "visionRange": 500
 }

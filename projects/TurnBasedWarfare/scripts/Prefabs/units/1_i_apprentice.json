@@ -172,5 +172,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [],
-  "icon": "unit_apprentice"
+  "icon": "unit_apprentice",
+  "visionRange": 500
 }
