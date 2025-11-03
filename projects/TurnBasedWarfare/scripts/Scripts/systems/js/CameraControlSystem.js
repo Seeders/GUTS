@@ -32,6 +32,17 @@ class CameraControlSystem extends engine.BaseSystem {
     window.addEventListener('mouseenter', this.onEnter);
     window.addEventListener('mouseleave', this.onLeave);
     window.addEventListener('blur',      this.onBlur);
+    window.addEventListener('wheel', (e) => {
+      let dy = e.deltaY;
+      if(dy > 0){
+        //scrolling down
+        this.game.camera.zoom = this.game.camera.zoom * 0.9;
+      } else {
+        this.game.camera.zoom = this.game.camera.zoom * 1.1;
+      }
+      this.game.camera.zoom = Math.min(2, this.game.camera.zoom);
+      this.game.camera.updateProjectionMatrix();
+    });
   }
 
   dispose() {
@@ -87,14 +98,14 @@ class CameraControlSystem extends engine.BaseSystem {
   lookAt(worldX, worldZ){
     const pitch = 35.264 * Math.PI / 180;
     const yaw = 135 * Math.PI / 180;
-    const distance = 512;
+    const distance = 10240;
 
     const cdx = Math.sin(yaw) * Math.cos(pitch);
     const cdz = Math.cos(yaw) * Math.cos(pitch);
 
     const cameraPosition = {
         x: worldX - cdx * distance,
-        y: 512,
+        y: distance,
         z: worldZ - cdz * distance
     };
 

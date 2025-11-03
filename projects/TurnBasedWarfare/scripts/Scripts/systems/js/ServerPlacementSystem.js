@@ -882,7 +882,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
         const pitch = 35.264 * Math.PI / 180;
         const yaw = 135 * Math.PI / 180;
-        const distance = 512;
+        const distance = 10240;
 
         const cdx = Math.sin(yaw) * Math.cos(pitch);
         const cdz = Math.cos(yaw) * Math.cos(pitch);
@@ -893,7 +893,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
         const cameraPosition = {
             x: worldPos.x - cdx * distance,
-            y: 512,
+            y: distance,
             z: worldPos.z - cdz * distance
         };
 
