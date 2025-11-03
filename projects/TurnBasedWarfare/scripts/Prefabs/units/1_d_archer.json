@@ -188,5 +188,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [],
-  "icon": "unit_archer"
+  "icon": "unit_archer",
+  "visionRange": 800
 }

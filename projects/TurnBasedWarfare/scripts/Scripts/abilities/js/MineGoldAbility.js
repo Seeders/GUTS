@@ -192,11 +192,10 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
 
         const mine = this.game.goldMineSystem.claimedGoldMines.get(miningState.targetMineEntityId);
         if (!mine || mine.team !== miningState.team) {
-            if (miningState.targetMineEntityId) {
-                this.game.goldMineSystem.removeFromQueue(miningState.targetMineEntityId, miningState.entityId);
-            }
+            // Mine no longer exists or changed teams - reset to idle
             miningState.targetMineEntityId = null;
             miningState.targetMinePosition = null;
+            miningState.waitingPosition = null;
             miningState.state = 'idle';
             return;
         }
@@ -214,14 +213,9 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             const currentOccupant = this.game.goldMineSystem.getCurrentMiner(mineEntityId);
             
             if (isOccupied && currentOccupant !== miningState.entityId) {
+                // Mine is occupied, need to wait
                 const queuePosition = this.game.goldMineSystem.getQueuePosition(mineEntityId, miningState.entityId);
-                
-                if (queuePosition === -1) {
-                    this.game.goldMineSystem.addToQueue(mineEntityId, miningState.entityId);
-                }
-                
-                const newQueuePosition = this.game.goldMineSystem.getQueuePosition(mineEntityId, miningState.entityId);
-                const waitPos = this.getWaitingPosition(miningState.targetMinePosition, newQueuePosition);
+                const waitPos = this.getWaitingPosition(miningState.targetMinePosition, queuePosition);
                 
                 miningState.waitingPosition = waitPos;
                 miningState.state = 'waiting_at_mine';
@@ -231,8 +225,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                     aiState.targetPosition = waitPos;
                 }
             } else if (!isOccupied) {
-                this.game.goldMineSystem.claimMine(mineEntityId, miningState.entityId);
-                
+                // Mine is free, start mining
                 if (aiState) {
                     aiState.state = 'idle';
                     aiState.targetPosition = null;
@@ -293,19 +286,48 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             }
         }
     }
+
     waitAtMine(miningState, pos, vel) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
 
-        if (miningState.waitingPosition && aiState && aiState.state !== 'idle') {
-            aiState.state = 'idle';
-            aiState.targetPosition = null;
-            pos.x = miningState.waitingPosition.x;
-            pos.z = miningState.waitingPosition.z;
+        // Check if we're next in queue
+        const isNextInQueue = this.game.goldMineSystem.isNextInQueue(
+            miningState.targetMineEntityId, 
+            miningState.entityId
+        );
+        
+        const isMineOccupied = this.game.goldMineSystem.isMineOccupied(miningState.targetMineEntityId);
+        
+        // If we're next and the mine is free, start mining
+        if (isNextInQueue && !isMineOccupied) {
+            // The goldMineSystem.processNextInQueue will be called from mineGold when mining completes
+            // But we can also transition directly here if we detect we're next
+            if (aiState) {
+                aiState.state = 'idle';
+                aiState.targetPosition = null;
+            }
+            pos.x = miningState.targetMinePosition.x;
+            pos.z = miningState.targetMinePosition.z;
             vel.vx = 0;
             vel.vz = 0;
+            
+            miningState.state = 'mining';
+            miningState.miningStartTime = this.game.state.now;
+            miningState.waitingPosition = null;
+        } else {
+            // Otherwise stay at waiting position
+            if (miningState.waitingPosition && aiState && aiState.state !== 'idle') {
+                aiState.state = 'idle';
+                aiState.targetPosition = null;
+                pos.x = miningState.waitingPosition.x;
+                pos.z = miningState.waitingPosition.z;
+                vel.vx = 0;
+                vel.vz = 0;
+            }
         }
     }
+
     getWaitingPosition(minePosition, queuePosition) {
         // Line up miners in a row next to each other
         // Each miner stands 10 units apart
@@ -323,10 +345,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         const elapsed = this.game.state.now - miningState.miningStartTime;
         
         if (elapsed >= this.miningDuration) {
-            // Release the mine when done mining
-            if (miningState.targetMineEntityId) {
-                this.game.goldMineSystem.releaseMine(miningState.targetMineEntityId, miningState.entityId);
-            }            
             miningState.hasGold = true;
             miningState.goldAmt = 10;
 
@@ -342,7 +360,15 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                     }
                 }
             }
+            
+            // Change state first, then process queue
             miningState.state = 'walking_to_hall';
+            
+            // Process next miner in queue now that this mine is free
+            if (miningState.targetMineEntityId) {
+                this.game.goldMineSystem.processNextInQueue(miningState.targetMineEntityId);
+            }
+            
             this.findTownHall(miningState);
         }
     }

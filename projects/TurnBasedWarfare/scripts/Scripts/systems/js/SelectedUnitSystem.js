@@ -400,13 +400,14 @@ class SelectedUnitSystem extends engine.BaseSystem {
         
         if (squadData) {
             const placement = this.game.placementSystem.getPlacementById(placementId);
+            squadData.unitIds = placement.squadUnits;
             if(placement.collection == "units"){
                 const displayName = this.game.squadExperienceSystem.getSquadDisplayName(placementId);
                 this.game.unitOrderSystem.showSquadActionPanel(placementId, displayName, squadData);
             } else {
                 this.game.shopSystem.renderBuildingActions(placement);
             }
-            this.highlightUnits(squadData.unitIds);
+            this.highlightUnits(placement.squadUnits);
         }
     }
 

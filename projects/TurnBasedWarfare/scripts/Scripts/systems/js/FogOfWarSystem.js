@@ -87,7 +87,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.circleTexture = this.createGradientCircleTexture();
         
         // Create shared geometry and material
-        this.circleGeometry = new THREE.CircleGeometry(this.VISION_RADIUS, 32);
+        this.circleGeometry = new THREE.CircleGeometry(1, 32);
         this.circleMaterial = new THREE.MeshBasicMaterial({
             map: this.circleTexture,
             transparent: true,
@@ -329,7 +329,10 @@ class FogOfWarSystem extends engine.BaseSystem {
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
             this.componentTypes.HEALTH
-        );
+        ).filter(id => {
+            const team = this.game.getComponent(id, this.componentTypes.TEAM);
+            return team?.team === myTeam;
+        });
 
         // Hide all circles first
         this.circlePool.forEach(circle => circle.visible = false);
@@ -337,6 +340,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         // Position visible circles for each unit
         myUnits.forEach((entityId, index) => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             if (!pos) return;
 
             // Reuse or create circle
@@ -350,7 +354,8 @@ class FogOfWarSystem extends engine.BaseSystem {
                 this.circlePool.push(circle);
                 this.fogScene.add(circle);
             }
-            
+            let visionRadius = unitType.visionRange || this.VISION_RADIUS;
+            circle.scale.set(visionRadius, visionRadius, visionRadius);
             circle.position.set(pos.x, 0, pos.z);
         });
 

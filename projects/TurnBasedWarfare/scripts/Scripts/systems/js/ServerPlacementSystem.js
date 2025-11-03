@@ -531,6 +531,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 const aliveUnits = placement.experience.unitIds.filter(entityId => {
                     const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
                     const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+                    const buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+                    if(buildingState) return true;
                     return health && health.current > 0 && (!deathState || !deathState.isDying);
                 });
 

@@ -82,6 +82,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
 
         this.peasantId = peasantEntityId;
         this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
+        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
         
         if (aiState) {
             aiState.targetPosition = buildingPos;
@@ -102,6 +103,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
 
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
+        const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.BUILDING_STATE);
         
         if (!buildingPosition) {
             buildState.targetBuildingEntityId = null;
@@ -128,6 +130,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             vel.vz = 0;
             buildState.state = 'constructing';
             buildState.constructionStartTime = this.game.state.round;
+            buildingBuildState.state = 'under_construction';
+            buildingBuildState.constructionStartTime = this.game.state.round;
         } else {
             const aiState = this.game.getComponent(buildState.entityId, ComponentTypes.AI_STATE);
             if (aiState) {
