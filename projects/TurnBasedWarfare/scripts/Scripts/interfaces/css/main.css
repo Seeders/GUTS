@@ -329,15 +329,41 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     bottom: 1em;
 }
 
+#selectedUnits {
+  position: absolute;
+  bottom: 1em;
+  left: 300px;
+  height: 200px;
+  max-height: 200px;
+  display: flex;
+  gap: .5em;
+  align-items: flex-end;
+  pointer-events: none !important;
+}
+
+#selectedUnits > div {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    pointer-events: all;
+}
+
+#selectedUnits > div > img {
+    width: 100%;
+    display: block;
+}
+
+#selectedUnits > div.selected {
+    border: 2px solid  rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+}
 
 #unitPortrait {
     background: rgba(20, 20, 30, 0.9);
     border: 2px solid rgba(255, 170, 0, 0.3);
     border-radius: 8px;
-    min-height: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    max-height: 200px;
+    height: 128px;
+    width: 128px;
     position: absolute;
     right: calc(200px + 2em);
     bottom: 1em;

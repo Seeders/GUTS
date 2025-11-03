@@ -32,6 +32,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
         // Selection mode tracking
         this.selectedUnitIds = new Set(); // Track multiple selected squads
         
+        this.currentSelectedIndex = 0;
         // Initialize flag
         this.initialized = false;
     }
@@ -170,8 +171,8 @@ class SelectedUnitSystem extends engine.BaseSystem {
         selectedUnits.forEach((unitId) => {
             this.selectedUnitIds.add(unitId);
         });
-
-        const currentUnit = selectedUnits[0];
+        this.currentSelectedIndex = 0;
+        const currentUnit = selectedUnits[this.currentSelectedIndex];
         if(currentUnit){
             const placement = this.game.getComponent(currentUnit, this.componentTypes.PLACEMENT);
             const unitType = this.game.getComponent(currentUnit, this.componentTypes.UNIT_TYPE );
@@ -268,17 +269,18 @@ class SelectedUnitSystem extends engine.BaseSystem {
     }
     updateMultipleSquadSelection() {
         // Highlight all units
-        this.highlightUnits(Array.from(this.selectedUnitIds));
         
         // Update UI to show multi-selection
         if (this.selectedUnitIds.size === 1) {
             // Single squad selected - show normal panel
-            const unitId = Array.from(this.selectedUnitIds)[0];
+            this.currentSelectedIndex = 0;
+            const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
             this.selectUnit(unitId);
         } else if (this.selectedUnitIds.size > 1) {
             // Multiple squads selected - show multi-selection panel
             this.showMultiSelectionPanel();
         }
+        this.highlightUnits(Array.from(this.selectedUnitIds));
     }
     
     showMultiSelectionPanel() {
@@ -330,7 +332,6 @@ class SelectedUnitSystem extends engine.BaseSystem {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             if (placement && placement.team === this.game.state.mySide) {
                 let entityId = placement.squadUnits[0];
-                console.log('selected', entityId);
                 // Check if shift is held for additive selection
                 if (event.shiftKey) {
                     if (this.selectedUnitIds.has(entityId)) {
@@ -343,6 +344,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
                     this.updateMultipleSquadSelection();
                 } else {
                     // Single selection (clear others)
+                    this.clearAllHighlights();
                     this.selectedUnitIds.clear();
                     this.selectedUnitIds.add(entityId);
                     this.selectUnit(entityId, placementId);
@@ -453,27 +455,65 @@ class SelectedUnitSystem extends engine.BaseSystem {
             }
         }
         
-        this.createPortrait(unitIds[0]);
+        if(document){
+            const container = document.getElementById('unitPortrait');
+            container.innerHTML = ``;
+            const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
+            if(portrait){
+                container.append(portrait);
+            }
+            const selectedUnitsContainer = document.getElementById('selectedUnits');
+            selectedUnitsContainer.innerHTML = ``;
+            
+            unitIds.forEach((unitId, index) => {
+                const selectedPortrait = this.createPortrait(unitId);
+                if(selectedPortrait){
+                    const selectedUnitIconContainer = document.createElement('div');
+                    if(index == this.currentSelectedIndex){                        
+                        selectedUnitIconContainer.classList.add('selected');
+                    }
+                    selectedUnitIconContainer.append(selectedPortrait);
+                    selectedUnitsContainer.append(selectedUnitIconContainer);
+                    selectedUnitIconContainer.addEventListener('click', () => {
+                        const selectedPortraits = selectedUnitsContainer.querySelectorAll('.selected');
+                        selectedPortraits.forEach((p) => {
+                            p.classList.remove('selected');
+                        });
+                        const CT = this.game.componentManager.getComponentTypes();
+                        const placement = this.game.getComponent(unitId, CT.PLACEMENT);
+                        const placementId = placement.placementId;
+                        if(placement.collection == "units"){
+                            const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);        
+                            const displayName = this.game.squadExperienceSystem.getSquadDisplayName(placementId);
+                            this.game.unitOrderSystem.showSquadActionPanel(placementId, displayName, squadData);
+                        } else {
+                            this.game.shopSystem.renderBuildingActions(placement);
+                        }
+
+                        this.currentSelectedIndex = index;
+                        this.highlightUnits(unitIds);
+
+                    });
+                }            
+            });            
+        }
         // Update tracked set
         this.highlightedUnits = newHighlightSet;
         
-        console.log(`[SelectedUnitSystem] Highlighting ${unitIds.length} units`);
     }
 
     createPortrait(entityId){
         if(document) {
-            console.log('createPortrait');
-            const container = document.getElementById('unitPortrait');
-            container.innerHTML = ``;
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const icon = this.game.getCollections().icons[unitType.icon];
 
             if(icon){
                 const img = document.createElement('img');
                 img.src = `./${icon.filePath}`;
-                container.append(img);
+                return img;
             }
         }
+        return null;
     }
     
     clearAllHighlights() {
@@ -482,8 +522,8 @@ class SelectedUnitSystem extends engine.BaseSystem {
             this.removeSelectionCircle(entityId);
         }
         
+        this.currentSelectedIndex = 0;
         this.highlightedUnits.clear();
-        console.log('[SelectedUnitSystem] Cleared all highlights');
     }
     
     createSelectionCircle(entityId) {
