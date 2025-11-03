@@ -61,7 +61,6 @@ class ShopSystem extends engine.BaseSystem {
 
        
         const buildingId = this.game.state.selectedEntity.entityId;
-console.log('selected entity', this.game.state.selectedEntity);
         if(this.buildingProductionProgress.has(buildingId)){
             const hasUnits = building.units && building.units.length > 0;
             const hasUpgrades = building.upgrades && building.upgrades.length > 0;
@@ -245,16 +244,6 @@ console.log('selected entity', this.game.state.selectedEntity);
             }
         }
         return true;
-    }
-
-    activateBuildingPlacement(buildingId, building) {
-        if (this.isBuildingLocked(buildingId, building)) {
-            return;
-        }
-        this.game.state.selectedUnitType = { id: buildingId, collection: 'buildings', ...building };
-        if (this.game.placementSystem) {
-            this.game.placementSystem.handleUnitSelectionChange();
-        }
     }
 
     addBuilding(buildingId, entityId){

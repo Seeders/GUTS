@@ -10,7 +10,6 @@ class UnitOrderSystem extends engine.BaseSystem {
         this.pendingCallbacks = 0;
 
         this._onCanvasClick = this._onCanvasClick.bind(this);
-        this._onCancelKey = this._onCancelKey.bind(this);
         this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
 
         this.cursorWhenTargeting = 'crosshair';
@@ -25,25 +24,23 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     init() {}
 
-    showSquadActionPanel(placementId, squadName, squadData) {
+    showSquadActionPanel(placementId) {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;
+
+        
+        const placement = this.game.placementSystem.getPlacementById(placementId);
         
         actionPanel.innerHTML = "";
         
         const componentTypes = this.game.componentManager.getComponentTypes();
-        const aliveUnits = squadData.unitIds.filter(id => 
-            this.game.getComponent(id, componentTypes.HEALTH)
-        ).length;
+  
         
-        const firstUnit = squadData.unitIds[0];
+        const firstUnit = placement.squadUnits[0];
         const unitType = firstUnit ? this.game.getComponent(firstUnit, componentTypes.UNIT_TYPE) : null;
         
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
-        
-        const levelInfo = squadData.level > 1 ? ` (Lvl ${squadData.level})` : '';
-        const expProgress = (squadData.experience / squadData.experienceToNextLevel * 100).toFixed(0);
         
         actionPanel.appendChild(squadPanel);
         
@@ -193,9 +190,9 @@ class UnitOrderSystem extends engine.BaseSystem {
             buildTime: building.buildTime
         };
         
-        if (this.game.placementSystem) {
-            this.game.placementSystem.handleUnitSelectionChange();
-        }
+        this.stopTargeting();
+        
+        this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
     }
 
     startTargeting() {
@@ -206,10 +203,9 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         const canvas = this.game.canvas;
         if (canvas) {
-            canvas.addEventListener('click', this._onCanvasClick, { once: true });
+            canvas.addEventListener('contextmenu', this._onCanvasClick, { once: true });
             canvas.addEventListener('mousemove', this._onCanvasMouseMove);
         }
-        document.addEventListener('keydown', this._onCancelKey);
 
         document.body.style.cursor = this.cursorWhenTargeting;
 
@@ -222,10 +218,9 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         const canvas = this.game.canvas;
         if (canvas) {
-            canvas.removeEventListener('click', this._onCanvasClick, { once: true });
+            canvas.removeEventListener('contextmenu', this._onCanvasClick, { once: true });
             canvas.removeEventListener('mousemove', this._onCanvasMouseMove);
         }
-        document.removeEventListener('keydown', this._onCancelKey);
         document.body.style.cursor = 'default';
         
         this.targetingPreview.clear();
@@ -258,8 +253,8 @@ class UnitOrderSystem extends engine.BaseSystem {
         
     }
 
-    _onCancelKey(e) {
-        if (e.key === 'Escape') {
+    onKeyDown(key) {
+        if (key === 'Escape' && this.isTargeting) {
             this.game.uiSystem?.showNotification('❌ Targeting canceled', 'warning', 800);
             this.stopTargeting();
         }
@@ -396,6 +391,10 @@ class UnitOrderSystem extends engine.BaseSystem {
             let targetPosition = targetPositions[i];
             this.applySquadTargetPosition(placementId, targetPosition);
         }
+    }
+
+    onDeSelectAll() {        
+        this.targetingPreview.clear();
     }
 
     destroy() {

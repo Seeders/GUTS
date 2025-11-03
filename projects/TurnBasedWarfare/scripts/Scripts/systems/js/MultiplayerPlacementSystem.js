@@ -393,6 +393,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         document.body.style.cursor = 'default';
     }
 
+    onActivateBuildingPlacement(){
+        this.handleUnitSelectionChange();
+    }
+
     handleCanvasClick(event) {
         const state = this.game.state;
         

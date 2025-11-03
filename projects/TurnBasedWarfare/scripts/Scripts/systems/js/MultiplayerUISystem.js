@@ -129,6 +129,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 this.leaveRoom();
             }
         });
+
     }
 
     showLobby(gameState, roomId) {
