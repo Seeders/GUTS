@@ -303,12 +303,10 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 #miniMapContainer {
     min-width: 200px;
+    width: 200px;
     height: 200px;
     rotate: -45deg;
     margin: 2em;
-    position: absolute;
-    left: 1em;
-    bottom: 1em;
     background: rgba(20, 20, 30, 0.9);
     border: 2px solid rgba(255, 170, 0, 0.3);
     border-radius: 8px;
@@ -324,21 +322,15 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     min-width: 200px;
     max-width: 200px;
     max-height: 200px;
-    position: absolute;
-    right: 1em;
-    bottom: 1em;
 }
 
 #selectedUnits {
-  position: absolute;
-  bottom: 1em;
-  left: 300px;
-  height: 200px;
   max-height: 200px;
+  width: 100%;
   display: flex;
   gap: .5em;
-  align-items: flex-end;
   pointer-events: none !important;
+  flex-wrap: wrap;
 }
 
 #selectedUnits > div {
@@ -364,9 +356,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     border-radius: 8px;
     height: 128px;
     width: 128px;
-    position: absolute;
-    right: calc(200px + 2em);
-    bottom: 1em;
+    min-width: 128px;
+    max-width: 128px;
 }
 
 #unitPortrait > img {
@@ -383,6 +374,14 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 #undoBtn { display: none;}
 #uiContainer {
     pointer-events: none;
+    display: flex;
+    position: absolute;
+    bottom: 1em;
+    left: 1em;
+    right: 1em;
+    align-items: flex-end;
+    gap: 1em;
+    justify-content: space-between;
 }
 #uiContainer > div {
     pointer-events: all;

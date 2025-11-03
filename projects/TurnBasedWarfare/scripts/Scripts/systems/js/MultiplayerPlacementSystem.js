@@ -226,6 +226,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.applyOpponentPlacements(opponentPlacements);
             this.applyTargetPositions();
             this.game.state.phase = 'battle';
+            this.game.triggerEvent("onBattleStart");
             this.game.resetCurrentTime();
             this.resetAI();
             this.game.desyncDebugger.enabled = true;
@@ -269,6 +270,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     }
 
                     if(targetPosition){
+                            console.log('found targetPosition', entityId, targetPosition, aiState);
                         if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
@@ -283,6 +285,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                                 aiState.currentAIController = "OrderSystemMove";
                             }
                         }
+                    } else {
+                        console.log('did not find target position', aiState);
                     }
                 }
             });

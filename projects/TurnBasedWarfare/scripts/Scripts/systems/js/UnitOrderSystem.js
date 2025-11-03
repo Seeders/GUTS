@@ -197,7 +197,7 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     startTargeting() {
         this.stopTargeting();
-
+        if(this.game.state.phase != 'placement') return;
         this.isTargeting = true;
         this.pendingCallbacks = 0;
 
@@ -326,6 +326,9 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     issueMoveOrders(placementIds, targetPosition) {
+        if(this.game.state.phase != "placement") {
+            return;
+        };
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         this.game.networkManager.setSquadTargets(
             { placementIds, targetPositions },
@@ -392,7 +395,9 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.applySquadTargetPosition(placementId, targetPosition);
         }
     }
-
+    onBattleStart() {
+        this.stopTargeting();
+    }
     onDeSelectAll() {        
         this.targetingPreview.clear();
     }

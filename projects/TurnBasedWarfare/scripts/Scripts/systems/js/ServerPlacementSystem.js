@@ -202,7 +202,12 @@ class ServerPlacementSystem extends engine.BaseSystem {
         try {
             const { playerId, data } = eventData;
             const { placementId, targetPosition } = data;
-            
+            if(this.game.state.phase != "placement") {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                    success: false
+                });
+                return;
+            };
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
@@ -233,6 +238,15 @@ class ServerPlacementSystem extends engine.BaseSystem {
             
             // Store target position in placement data
             placement.targetPosition = targetPosition;
+            placement.squadUnits.forEach((unitId) => {
+                const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
+                if(aiState && targetPosition){
+                    aiState.targetPosition = targetPosition;
+                    aiState.currentAIController = "OrderSystemMove";
+                }
+            });
+                    
+               
             
             // Send success response to requesting player
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
@@ -265,7 +279,12 @@ class ServerPlacementSystem extends engine.BaseSystem {
         try {
             const { playerId, data } = eventData;
             const { placementIds, targetPositions } = data;
-            
+            if(this.game.state.phase != "placement") {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                    success: false
+                });
+                return;
+            };
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
@@ -300,7 +319,14 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 
                 // Store target position in placement data
                 placement.targetPosition = targetPosition;
-                
+                placement.squadUnits.forEach((unitId) => {
+                    const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
+                    if(aiState && targetPosition){
+                        aiState.targetPosition = targetPosition;
+                        aiState.currentAIController = "OrderSystemMove";
+                    }
+                });
+                        
 
                 
                 console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
@@ -398,7 +424,6 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     if (aiState && position) {
                         
                         if(targetPosition){
-                           // console.log('found targetPosition', entityId, targetPosition);
                             if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;

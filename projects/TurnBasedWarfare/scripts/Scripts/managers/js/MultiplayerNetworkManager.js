@@ -181,6 +181,9 @@ class MultiplayerNetworkManager {
     }
 
     submitPlacement(placement, callback){
+        if(this.game.state.phase != "placement") {
+            callback(false, 'Not in placement phase.');
+        };
         this.game.clientNetworkManager.call(
             'SUBMIT_PLACEMENT',
             { placement },
@@ -198,6 +201,9 @@ class MultiplayerNetworkManager {
     }
 
     purchaseUpgrade(data, callback){
+        if(this.game.state.phase != "placement") {
+            callback(false, 'Not in placement phase.');
+        };
         this.game.clientNetworkManager.call(
             'PURCHASE_UPGRADE',
             { data },
@@ -215,6 +221,9 @@ class MultiplayerNetworkManager {
     }
 
     setSquadTarget(data, callback) {
+        if(this.game.state.phase != "placement") {
+            callback(false, 'Not in placement phase.');
+        };
         this.game.clientNetworkManager.call(
             'SET_SQUAD_TARGET',
             data,
@@ -232,6 +241,9 @@ class MultiplayerNetworkManager {
     }
 
     setSquadTargets(data, callback) {
+        if(this.game.state.phase != "placement") {
+            callback(false, 'Not in placement phase.');
+        };
         this.game.clientNetworkManager.call(
             'SET_SQUAD_TARGETS',
             data,
@@ -249,6 +261,9 @@ class MultiplayerNetworkManager {
     }
 
     toggleReadyForBattle(callback) {
+        if(this.game.state.phase != "placement") {
+            callback(false, 'Not in placement phase.');
+        };
         this.game.clientNetworkManager.call(
             'READY_FOR_BATTLE',
             {},

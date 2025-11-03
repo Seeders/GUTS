@@ -712,6 +712,9 @@ class SelectedUnitSystem extends engine.BaseSystem {
     }
 
     
+    onBattleStart() {
+        this.deselectAll();
+    }
     onKeyDown(key) {
         if (key === 'Escape') {
             this.deselectAll();
