@@ -9,15 +9,11 @@ class CompilerModule {
     }
 
     init() {
-        // Create compiler instance
         this.compiler = new GUTS.Compiler(this.app);
-        
-        // Add to editor interface if needed
         this.setupUI();
     }
 
     setupUI() {
-        // Create compiler button in editor toolbar
         const toolbar = document.querySelector('.sidebar-actions');
         if (!toolbar) return;
 
@@ -29,9 +25,8 @@ class CompilerModule {
     }
 
     openCompilerDialog() {
-        // Create modal dialog
         document.getElementById('modal-compilerModal')?.classList.add('show');
-        window.compilerModule = this; // Temporary reference for onclick handlers
+        window.compilerModule = this;
     }
 
     async compile() {
@@ -39,6 +34,7 @@ class CompilerModule {
         const outputName = document.getElementById('compileOutputName').value;
         const includeMetadata = document.getElementById('compileIncludeMetadata').checked;
         const generateHTML = document.getElementById('compileGenerateHTML').checked;
+        const includeEngine = document.getElementById('compileIncludeEngine')?.checked ?? true;
 
         const output = document.getElementById('compilationOutput');
         const log = document.getElementById('compilationLog');
@@ -47,17 +43,32 @@ class CompilerModule {
         log.textContent = 'Starting compilation...\n';
 
         try {
-            // Compile
             log.textContent += 'Loading project configuration...\n';
-            const result = await this.compiler.compile(projectName, this.app.getCollections());
+            
+            const enginePaths = includeEngine ? {
+                moduleManager: './../../engine/ModuleManager.js',
+                baseEngine: './../../engine/BaseEngine.js',
+                engine: './../../engine/Engine.js'
+            } : null;
+            
+            const result = await this.compiler.compile(
+                projectName, 
+                this.app.getCollections(),
+                enginePaths
+            );
             
             log.textContent += `✓ Compiled ${result.classRegistry.systems.length} systems\n`;
             log.textContent += `✓ Compiled ${result.classRegistry.managers.length} managers\n`;
             log.textContent += `✓ Compiled ${result.classRegistry.components.length} components\n`;
             log.textContent += `✓ Compiled ${result.classRegistry.functions.length} functions\n`;
-            log.textContent += `✓ Bundle size: ${Math.round(result.code.length / 1024)} KB\n\n`;
+            log.textContent += `✓ Game bundle: ${Math.round(result.code.length / 1024)} KB\n`;
+            
+            if (result.engineCode) {
+                log.textContent += `✓ Engine bundle: ${Math.round(result.engineCode.length / 1024)} KB\n`;
+            }
+            
+            log.textContent += '\n';
 
-            // Create download links
             this.createDownloads(result, outputName, includeMetadata, generateHTML);
             
             log.textContent += '✓ Compilation complete!\n';
@@ -74,7 +85,6 @@ class CompilerModule {
     createDownloads(result, outputName, includeMetadata, generateHTML) {
         const modal = document.querySelector('#modal-compilerModal .modal-body');
         
-        // Remove old downloads section if exists
         const oldSection = modal.querySelector('.downloads-section');
         if (oldSection) oldSection.remove();
 
@@ -82,7 +92,7 @@ class CompilerModule {
         downloads.className = 'downloads-section';
         downloads.innerHTML = '<h3>Download Files:</h3>';
 
-        // Bundle download
+        // Game bundle
         const bundleBlob = new Blob([result.code], { type: 'application/javascript' });
         const bundleUrl = URL.createObjectURL(bundleBlob);
         const bundleLink = document.createElement('a');
@@ -93,7 +103,20 @@ class CompilerModule {
         downloads.appendChild(bundleLink);
         downloads.appendChild(document.createElement('br'));
 
-        // Metadata download
+        // Engine bundle (if compiled)
+        if (result.engineCode) {
+            const engineBlob = new Blob([result.engineCode], { type: 'application/javascript' });
+            const engineUrl = URL.createObjectURL(engineBlob);
+            const engineLink = document.createElement('a');
+            engineLink.href = engineUrl;
+            engineLink.download = 'compiled-engine.js';
+            engineLink.textContent = `⚙️ compiled-engine.js`;
+            engineLink.className = 'download-link';
+            downloads.appendChild(engineLink);
+            downloads.appendChild(document.createElement('br'));
+        }
+
+        // Metadata
         if (includeMetadata) {
             const metadata = {
                 projectName: result.projectName,
@@ -112,7 +135,7 @@ class CompilerModule {
             downloads.appendChild(document.createElement('br'));
         }
 
-        // HTML download
+        // HTML
         if (generateHTML) {
             const html = this.compiler.generateCompiledHTML(result.projectName, outputName);
             const htmlBlob = new Blob([html], { type: 'text/html' });
@@ -128,7 +151,6 @@ class CompilerModule {
         modal.insertBefore(downloads, document.getElementById('compilationOutput'));
     }
 
-    // Quick compile shortcut
     async quickCompile() {
         if (!this.app.currentProject) {
             alert('No project loaded');
@@ -137,9 +159,11 @@ class CompilerModule {
 
         try {
             console.log('Quick compiling...');
-            const result = await this.compiler.compile(this.app.currentProject);
+            const result = await this.compiler.compile(
+                this.app.currentProject,
+                this.app.getCollections()
+            );
             
-            // Auto-download
             const blob = new Blob([result.code], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -158,11 +182,9 @@ class CompilerModule {
 }
 
 if(typeof CompilerModule != 'undefined'){
-    // Export for use
     if (typeof window !== 'undefined') {
         window.CompilerModule = CompilerModule;    
     }
-
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = { CompilerModule, compilerModuleDefinition, compilerCSS };
     }
