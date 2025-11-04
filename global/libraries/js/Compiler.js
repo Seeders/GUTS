@@ -3,6 +3,7 @@ class Compiler {
         this.engine = engine;
         this.collections = null;
         this.compiledBundle = null;
+        this.compiledEngine = null;
         this.classRegistry = {
             systems: new Map(),
             managers: new Map(),
@@ -16,12 +17,13 @@ class Compiler {
     /**
      * Main compile method - orchestrates the entire compilation process
      * @param {string} projectName - Name of the project to compile
+     * @param {Object} collections - Project collections
+     * @param {Object} engineFilePaths - Optional paths to engine files
      * @returns {Object} - Compilation result with bundle code and metadata
      */
-    async compile(projectName, collections) {
+    async compile(projectName, collections, engineFilePaths) {
         console.log(`Starting compilation for project: ${projectName}`);
         
-        // Load project collections
         this.collections = collections;
         if (!this.collections) {
             throw new Error("Failed to load game configuration");
@@ -33,7 +35,8 @@ class Compiler {
             sections: [],
             code: '',
             classRegistry: {},
-            dependencies: []
+            dependencies: [],
+            engineCode: null
         };
         
         // Build the bundle in order
@@ -45,6 +48,17 @@ class Compiler {
 
         // Combine all sections
         result.code = result.sections.join('\n\n');
+        
+        // Compile engine if paths provided
+        if (engineFilePaths) {
+            try {
+                result.engineCode = await this.compileEngine(engineFilePaths);
+                this.compiledEngine = result.engineCode;
+                console.log('✅ Engine bundle compiled');
+            } catch (error) {
+                console.warn('Could not compile engine bundle:', error.message);
+            }
+        }
         
         this.compiledBundle = result;
         return result;
@@ -123,11 +137,11 @@ window.COMPILED_GAME_LOADED = true;`;
                     // Create a placeholder that will be filled at runtime
                     if (libraryDef.windowContext) {
                         librariesSection.push(`
-    if (!window["${libraryDef.windowContext}"]) {
-        window["${libraryDef.windowContext}"] = {};
-    }
-    window["${libraryDef.windowContext}"]["${libName}"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
+if (!window["${libraryDef.windowContext}"]) {
+    window["${libraryDef.windowContext}"] = {};
+}
+window["${libraryDef.windowContext}"]["${libName}"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
                         `.trim());
                     } else {
                         librariesSection.push(`window["${libName}"] = null; // Will be loaded at runtime`);
@@ -174,10 +188,10 @@ window.COMPILED_GAME_LOADED = true;`;
                 librariesSection.push(`\n// Library: ${libraryName} (external script)`);
                 if (libraryDef.windowContext) {
                     librariesSection.push(`
-    if (!window["${libraryDef.windowContext}"]) {
-        window["${libraryDef.windowContext}"] = {};
-    }
-    window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded at runtime
+if (!window["${libraryDef.windowContext}"]) {
+    window["${libraryDef.windowContext}"] = {};
+}
+window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded at runtime
                     `.trim());
                 } else {
                     librariesSection.push(`window["${libraryKey}"] = null; // Will be loaded at runtime`);
@@ -213,18 +227,18 @@ window.COMPILED_GAME_LOADED = true;`;
             librariesSection.push(`\n// ========== IMPORT MAP ==========`);
             librariesSection.push(`window.COMPILED_GAME.importMap = ${JSON.stringify(importMap, null, 2)};`);
             librariesSection.push(`
-    // Create and inject import map
-    (function() {
-        if (!document.querySelector('script[type="importmap"]')) {
-            const importMapScript = document.createElement('script');
-            importMapScript.setAttribute('type', 'importmap');
-            importMapScript.textContent = JSON.stringify({ 
-                imports: window.COMPILED_GAME.importMap 
-            }, null, 2);
-            document.head.prepend(importMapScript);
-            console.log('📍 Import map created');
-        }
-    })();
+// Create and inject import map
+(function() {
+    if (!document.querySelector('script[type="importmap"]')) {
+        const importMapScript = document.createElement('script');
+        importMapScript.setAttribute('type', 'importmap');
+        importMapScript.textContent = JSON.stringify({ 
+            imports: window.COMPILED_GAME.importMap 
+        }, null, 2);
+        document.head.prepend(importMapScript);
+        console.log('📍 Import map created');
+    }
+})();
             `.trim());
         }
 
@@ -234,46 +248,46 @@ window.COMPILED_GAME_LOADED = true;`;
             librariesSection.push(`window.COMPILED_GAME.externalLibraries = ${JSON.stringify(externalLibraries, null, 2)};`);
             
             librariesSection.push(`
-    // Load external libraries at bundle initialization
-    (async function() {
-        const loadPromises = [];
-        
-        for (const lib of window.COMPILED_GAME.externalLibraries) {
-            if (lib.isModule) {
-                // Import as ES module
-                const loadPromise = import(lib.url).then((module) => {
-                    const libName = lib.requireName || lib.name;
-                    const loadedModule = module[libName] || module.default || module;
-                    
-                    const libraryKey = libName.replace(/-/g, "__").replace(/\\./g, "_");
-                    
-                    if (lib.windowContext) {
-                        if (!window[lib.windowContext]) {
-                            window[lib.windowContext] = {};
-                        }
-                        window[lib.windowContext][libName] = loadedModule;
-                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    } else {
-                        window[libName] = loadedModule;
-                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    }
-                    
-                    console.log(\`📦 Loaded external module: \${lib.name}\`);
-                }).catch(error => {
-                    console.error(\`Failed to load external module \${lib.name}:\`, error);
-                });
+// Load external libraries at bundle initialization
+(async function() {
+    const loadPromises = [];
+    
+    for (const lib of window.COMPILED_GAME.externalLibraries) {
+        if (lib.isModule) {
+            // Import as ES module
+            const loadPromise = import(lib.url).then((module) => {
+                const libName = lib.requireName || lib.name;
+                const loadedModule = module[libName] || module.default || module;
                 
-                loadPromises.push(loadPromise);
-            }
+                const libraryKey = libName.replace(/-/g, "__").replace(/\\./g, "_");
+                
+                if (lib.windowContext) {
+                    if (!window[lib.windowContext]) {
+                        window[lib.windowContext] = {};
+                    }
+                    window[lib.windowContext][libName] = loadedModule;
+                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                } else {
+                    window[libName] = loadedModule;
+                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                }
+                
+                console.log(\`📦 Loaded external module: \${lib.name}\`);
+            }).catch(error => {
+                console.error(\`Failed to load external module \${lib.name}:\`, error);
+            });
+            
+            loadPromises.push(loadPromise);
         }
-        
-        // Wait for all external modules to load
-        await Promise.all(loadPromises);
-        console.log('✅ All external libraries loaded');
-        
-        // Dispatch event when libraries are ready
-        window.dispatchEvent(new CustomEvent('compiled-libraries-ready'));
-    })();
+    }
+    
+    // Wait for all external modules to load
+    await Promise.all(loadPromises);
+    console.log('✅ All external libraries loaded');
+    
+    // Dispatch event when libraries are ready
+    window.dispatchEvent(new CustomEvent('compiled-libraries-ready'));
+})();
             `.trim());
         }
 
@@ -588,6 +602,55 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
     }
 
     /**
+     * Compile the engine core files into a single bundle
+     */
+    async compileEngine(engineFilePaths) {
+        console.log('Compiling engine core files...');
+        
+        const engineSections = [];
+        
+        engineSections.push(`/**
+ * Compiled Engine Bundle
+ * Generated: ${new Date().toISOString()}
+ * 
+ * Contains: ModuleManager.js, BaseEngine.js, Engine.js
+ */
+`);
+
+        const defaultPaths = {
+            moduleManager: './../../engine/ModuleManager.js',
+            baseEngine: './../../engine/BaseEngine.js',
+            engine: './../../engine/Engine.js'
+        };
+        
+        const paths = engineFilePaths || defaultPaths;
+        
+        try {
+            engineSections.push('\n// ========== MODULE MANAGER ==========');
+            const moduleManagerResponse = await fetch(paths.moduleManager);
+            const moduleManagerCode = await moduleManagerResponse.text();
+            engineSections.push(moduleManagerCode);
+            
+            engineSections.push('\n// ========== BASE ENGINE ==========');
+            const baseEngineResponse = await fetch(paths.baseEngine);
+            const baseEngineCode = await baseEngineResponse.text();
+            engineSections.push(baseEngineCode);
+            
+            engineSections.push('\n// ========== ENGINE ==========');
+            const engineResponse = await fetch(paths.engine);
+            const engineCode = await engineResponse.text();
+            engineSections.push(engineCode);
+            
+            console.log('✅ Engine files compiled successfully');
+        } catch (error) {
+            console.error('Error compiling engine files:', error);
+            throw error;
+        }
+        
+        return engineSections.join('\n\n');
+    }
+
+    /**
      * Save the compiled bundle to a file
      */
     async saveBundle(outputPath) {
@@ -599,7 +662,6 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
         await fs.writeFile(outputPath, this.compiledBundle.code, 'utf8');
         console.log(`Compiled bundle saved to: ${outputPath}`);
         
-        // Also save metadata
         const metadataPath = outputPath.replace('.js', '.meta.json');
         const metadata = {
             projectName: this.compiledBundle.projectName,
@@ -627,13 +689,11 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${projectName} - Compiled</title>
     
-    <!-- CRITICAL: Load compiled bundle BEFORE engine files -->
-    <script src="${bundlePath}"></script>
+    <!-- Load compiled engine -->
+    <script src="compiled-engine.js"></script>
     
-    <!-- Load engine core files -->
-    <script src="./../../engine/ModuleManager.js"></script>
-    <script src="./../../engine/BaseEngine.js"></script>
-    <script src="./../../engine/Engine.js"></script>
+    <!-- Load compiled game bundle -->
+    <script src="${bundlePath}"></script>
 </head>
 <body style="background-color: black;">
 <div id="appContainer" style="display: none;"></div>
@@ -642,13 +702,9 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
     const engine = new Engine("appContainer");
     
     async function main() {
-        // Wait for compiled libraries to be ready
         await window.COMPILED_GAME.ready;
-        
-        // Now init the engine
         await engine.init("${projectName}");
         
-        // Finalize initialization with compiled classes
         if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
             window.COMPILED_GAME.init(engine);
         }
@@ -664,12 +720,9 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
 }
 
 if (typeof Compiler != 'undefined') {
-    // Make available in browser
     if (typeof window !== 'undefined') {
         window.Compiler = Compiler;
     }
-
-    // Make available as Node.js module
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = Compiler;
     }

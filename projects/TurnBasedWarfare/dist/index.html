@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
-    <script src="./compiled-game.js"></script>
-    <script src="./../../../engine/ModuleManager.js"></script>
-    <script src="./../../../engine/BaseEngine.js"></script>
-    <script src="./../../../engine/Engine.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurnBasedWarfare - Compiled</title>
+    
+    <!-- Load compiled engine -->
+    <script src="compiled-engine.js"></script>
+    
+    <!-- Load compiled game bundle -->
+    <script src="compiled-game.js"></script>
 </head>
 <body style="background-color: black;">
-<div id="appContainer" style="display: none;">
-    
-</div>
-<script>    
+<div id="appContainer" style="display: none;"></div>
+
+<script>
     const engine = new Engine("appContainer");
     
     async function main() {
-        // Wait for compiled libraries to be ready
         await window.COMPILED_GAME.ready;
-        
-        // Now init the engine
         await engine.init("TurnBasedWarfare");
         
         if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
@@ -31,8 +30,5 @@
     
     window.onload = main;
 </script>
-	
-	
 </body>
-
 </html>

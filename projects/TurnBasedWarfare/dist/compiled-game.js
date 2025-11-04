@@ -1,7 +1,7 @@
 /**
  * Compiled Game Bundle
  * Project: TurnBasedWarfare
- * Generated: 2025-11-04T23:14:17.984Z
+ * Generated: 2025-11-04T23:36:02.144Z
  */
 
 window.engine = {};
@@ -9,7 +9,7 @@ window.engine = {};
 // Global bundle namespace
 window.COMPILED_GAME = {
     projectName: "TurnBasedWarfare",
-    version: "2025-11-04T23:14:17.984Z",
+    version: "2025-11-04T23:36:02.144Z",
     classRegistry: {},
     libraryClasses: {},
     compiled: true,
@@ -6958,50 +6958,50 @@ window.COMPILED_GAME.libraryClasses.THREE = null; // Placeholder
 // Library: three_SkeletonUtils (external module)
 // Loaded from: /global/libraries/js/three_SkeletonUtils.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["SkeletonUtils"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.SkeletonUtils = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["SkeletonUtils"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.SkeletonUtils = null; // Placeholder
 
 // Library: three_OrbitControls (external module)
 // Loaded from: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["OrbitControls"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.OrbitControls = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["OrbitControls"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.OrbitControls = null; // Placeholder
 
 // Library: GLTFLoader (external module)
 // Loaded from: /global/libraries/js/GLTFLoader.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["GLTFLoader"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.GLTFLoader = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["GLTFLoader"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.GLTFLoader = null; // Placeholder
 
 // Library: three_EffectComposer (external module)
 // Loaded from: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/EffectComposer.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["EffectComposer"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.EffectComposer = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["EffectComposer"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.EffectComposer = null; // Placeholder
 
 // Library: three_RenderPixelatedPass (external module)
 // Loaded from: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/RenderPixelatedPass.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["RenderPixelatedPass"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.RenderPixelatedPass = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["RenderPixelatedPass"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.RenderPixelatedPass = null; // Placeholder
 
 // Library: three_OutputPass (external module)
 // Loaded from: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js
 if (!window["THREE_"]) {
-        window["THREE_"] = {};
-    }
-    window["THREE_"]["OutputPass"] = null; // Will be loaded at runtime
-    window.COMPILED_GAME.libraryClasses.OutputPass = null; // Placeholder
+    window["THREE_"] = {};
+}
+window["THREE_"]["OutputPass"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.OutputPass = null; // Placeholder
 
 // Library: socket.io.min.js (external module)
 // Loaded from: https://cdn.socket.io/4.7.2/socket.io.min.js
@@ -7025,17 +7025,17 @@ window.COMPILED_GAME.importMap = {
   "OutputPass": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js"
 };
 // Create and inject import map
-    (function() {
-        if (!document.querySelector('script[type="importmap"]')) {
-            const importMapScript = document.createElement('script');
-            importMapScript.setAttribute('type', 'importmap');
-            importMapScript.textContent = JSON.stringify({ 
-                imports: window.COMPILED_GAME.importMap 
-            }, null, 2);
-            document.head.prepend(importMapScript);
-            console.log('📍 Import map created');
-        }
-    })();
+(function() {
+    if (!document.querySelector('script[type="importmap"]')) {
+        const importMapScript = document.createElement('script');
+        importMapScript.setAttribute('type', 'importmap');
+        importMapScript.textContent = JSON.stringify({ 
+            imports: window.COMPILED_GAME.importMap 
+        }, null, 2);
+        document.head.prepend(importMapScript);
+        console.log('📍 Import map created');
+    }
+})();
 
 // ========== EXTERNAL LIBRARY LOADER ==========
 window.COMPILED_GAME.externalLibraries = [
@@ -7101,91 +7101,49 @@ window.COMPILED_GAME.externalLibraries = [
   }
 ];
 // Load external libraries at bundle initialization
-    (async function() {
-        const loadPromises = [];
-        
-        for (const lib of window.COMPILED_GAME.externalLibraries) {
-            if (lib.isModule) {
-                // Import as ES module
-                const loadPromise = import(lib.url).then((module) => {
-                    const libName = lib.requireName || lib.name;
-                    const loadedModule = module[libName] || module.default || module;
-                    
-                    const libraryKey = libName.replace(/-/g, "__").replace(/\./g, "_");
-                    
-                    if (lib.windowContext) {
-                        if (!window[lib.windowContext]) {
-                            window[lib.windowContext] = {};
-                        }
-                        window[lib.windowContext][libName] = loadedModule;
-                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    } else {
-                        window[libName] = loadedModule;
-                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    }
-                    
-                    console.log(`📦 Loaded external module: ${lib.name}`);
-                }).catch(error => {
-                    console.error(`Failed to load external module ${lib.name}:`, error);
-                });
+(async function() {
+    const loadPromises = [];
+    
+    for (const lib of window.COMPILED_GAME.externalLibraries) {
+        if (lib.isModule) {
+            // Import as ES module
+            const loadPromise = import(lib.url).then((module) => {
+                const libName = lib.requireName || lib.name;
+                const loadedModule = module[libName] || module.default || module;
                 
-                loadPromises.push(loadPromise);
-            }
+                const libraryKey = libName.replace(/-/g, "__").replace(/\./g, "_");
+                
+                if (lib.windowContext) {
+                    if (!window[lib.windowContext]) {
+                        window[lib.windowContext] = {};
+                    }
+                    window[lib.windowContext][libName] = loadedModule;
+                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                } else {
+                    window[libName] = loadedModule;
+                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                }
+                
+                console.log(`📦 Loaded external module: ${lib.name}`);
+            }).catch(error => {
+                console.error(`Failed to load external module ${lib.name}:`, error);
+            });
+            
+            loadPromises.push(loadPromise);
         }
-        
-        // Wait for all external modules to load
-        await Promise.all(loadPromises);
-        console.log('✅ All external libraries loaded');
-        
-        // Dispatch event when libraries are ready
-        window.dispatchEvent(new CustomEvent('compiled-libraries-ready'));
-    })();
+    }
+    
+    // Wait for all external modules to load
+    await Promise.all(loadPromises);
+    console.log('✅ All external libraries loaded');
+    
+    // Dispatch event when libraries are ready
+    window.dispatchEvent(new CustomEvent('compiled-libraries-ready'));
+})();
 
 // ========== GAME CLASSES ==========
 
 // ========== FUNCTIONS ==========
-
-// Function: calculateStats
-window.COMPILED_GAME.classRegistry.functions = window.COMPILED_GAME.classRegistry.functions || {};
-window.COMPILED_GAME.classRegistry.functions['calculateStats'] = function calculateStats(stats, calcArray) {
-
-    if( calcArray && calcArray.length > 0 ) {
-        let additiveStats = {};
-        let multiplicitiveStats = {};
-        for(let key in stats) {
-            additiveStats[key] = [];
-            multiplicitiveStats[key] = [];
-        }
-        for(let effect of calcArray) {
-            effect.apply(stats, additiveStats, multiplicitiveStats);
-        }
-        let addedEffects = {};
-        for(let key in additiveStats){
-            for(let val of additiveStats[key]){ 
-                if(addedEffects[key]){
-                    addedEffects[key] += val - 1;
-                } else {
-                    addedEffects[key] = val - 1;
-                }
-            }
-        }
-
-        for(let key in addedEffects) {
-            if( stats[key] ) {
-                stats[key] *= ( 1 + addedEffects[key] );
-            }
-        }
-
-        let multipliedUpgrades = {};        
-        for(let key in multiplicitiveStats){
-            for(let val of multiplicitiveStats[key]){ 
-                if(stats[key]){
-                    stats[key] *= val;
-                }
-            }
-        }
-    }
-};
 
 // Function: calculateDamage
 window.COMPILED_GAME.classRegistry.functions = window.COMPILED_GAME.classRegistry.functions || {};
@@ -7307,6 +7265,48 @@ window.COMPILED_GAME.classRegistry.functions['calculateDamage'] = function calcu
     return result;
   }
 ;
+
+// Function: calculateStats
+window.COMPILED_GAME.classRegistry.functions = window.COMPILED_GAME.classRegistry.functions || {};
+window.COMPILED_GAME.classRegistry.functions['calculateStats'] = function calculateStats(stats, calcArray) {
+
+    if( calcArray && calcArray.length > 0 ) {
+        let additiveStats = {};
+        let multiplicitiveStats = {};
+        for(let key in stats) {
+            additiveStats[key] = [];
+            multiplicitiveStats[key] = [];
+        }
+        for(let effect of calcArray) {
+            effect.apply(stats, additiveStats, multiplicitiveStats);
+        }
+        let addedEffects = {};
+        for(let key in additiveStats){
+            for(let val of additiveStats[key]){ 
+                if(addedEffects[key]){
+                    addedEffects[key] += val - 1;
+                } else {
+                    addedEffects[key] = val - 1;
+                }
+            }
+        }
+
+        for(let key in addedEffects) {
+            if( stats[key] ) {
+                stats[key] *= ( 1 + addedEffects[key] );
+            }
+        }
+
+        let multipliedUpgrades = {};        
+        for(let key in multiplicitiveStats){
+            for(let val of multiplicitiveStats[key]){ 
+                if(stats[key]){
+                    stats[key] *= val;
+                }
+            }
+        }
+    }
+};
 
 // ========== SYSTEMS ==========
 
