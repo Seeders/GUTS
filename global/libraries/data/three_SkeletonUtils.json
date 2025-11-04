@@ -1,0 +1,8 @@
+{
+  "title": "THREE SkeletonUtils",  
+  "isModule": true,
+  "windowContext": "THREE_",
+  "requireName": "SkeletonUtils",
+  "importName": "SkeletonUtils",
+  "fileName": "three_SkeletonUtils"
+}

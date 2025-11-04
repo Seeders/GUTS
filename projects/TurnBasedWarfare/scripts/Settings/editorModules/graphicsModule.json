@@ -3,7 +3,7 @@
   "container": "graphics-editor-container",
   "libraries": [
     "threejs",
-    "three.OrbitControls",
+    "three_OrbitControls",
     "GLTFLoader",
     "ShapeFactory",
     "ModelManager",

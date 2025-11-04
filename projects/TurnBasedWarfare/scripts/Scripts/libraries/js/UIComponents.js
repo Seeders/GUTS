@@ -120,6 +120,6 @@ class UIComponents {
 // Initialize CSS when the script loads
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
-        UIComponents.addProgressBarCSS();
+        window.engine.UIComponents.addProgressBarCSS();
     });
 }

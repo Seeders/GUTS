@@ -12,18 +12,19 @@ class ServerECSGame extends global.GUTS.BaseECSGame {
 
 }
       
+if(typeof ServerECSGame != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ServerECSGame = ServerECSGame;
+    }
 
-if (typeof window !== 'undefined') {
-    window.ServerECSGame = ServerECSGame;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ServerECSGame;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ServerECSGame;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = ServerECSGame;
-    exports.ServerECSGame = ServerECSGame;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ServerECSGame;
+        exports.ServerECSGame = ServerECSGame;
+    }
 }

@@ -178,7 +178,8 @@ class PerformanceProfiler {
         console.log('Debug commands loaded. Available: debug.profileSystem(), debug.listSystems(), debug.compareRuns()');
     }
 }
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PerformanceProfiler;
+if(typeof PerformanceProfiler != 'undefined'){
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = PerformanceProfiler;
+    }
 }

@@ -151,19 +151,20 @@ class DesyncDebugger {
     }
 }
 
+if(typeof DesyncDebugger != 'undefined'){
 
+    if (typeof window !== 'undefined') {
+        window.DesyncDebugger = DesyncDebugger;
+    }
 
-if (typeof window !== 'undefined') {
-    window.DesyncDebugger = DesyncDebugger;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = DesyncDebugger;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DesyncDebugger;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = DesyncDebugger;
-    exports.DesyncDebugger = DesyncDebugger;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = DesyncDebugger;
+        exports.DesyncDebugger = DesyncDebugger;
+    }
 }

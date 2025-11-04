@@ -3,8 +3,8 @@
   "container": "graphics-editor-container",
   "libraries": [
     "threejs",
-    "three.OrbitControls",
-    "three.SkeletonUtils",
+    "three_OrbitControls",
+    "three_SkeletonUtils",
     "GLTFLoader",
     "ShapeFactory",
     "GE_AnimationManager",

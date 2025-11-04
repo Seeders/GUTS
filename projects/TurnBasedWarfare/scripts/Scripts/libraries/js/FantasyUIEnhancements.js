@@ -547,10 +547,12 @@ class FantasyUIEnhancements {
     }
 }
 
-
-// Export for use in your game systems
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FantasyUIEnhancements;
-} else if (typeof window !== 'undefined') {
-    window.FantasyUIEnhancements = FantasyUIEnhancements;
+if(typeof FantasyUIEnhancements != 'undefined'){
+        
+    // Export for use in your game systems
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = FantasyUIEnhancements;
+    } else if (typeof window !== 'undefined') {
+        window.FantasyUIEnhancements = FantasyUIEnhancements;
+    }
 }

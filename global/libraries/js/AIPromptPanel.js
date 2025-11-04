@@ -1,7 +1,6 @@
 class AIPromptPanel {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
-      console.log(this.gameEditor);
         const aiConfig = this.gameEditor.getCollections().configs.ai;
         this.elements = {
             launchBtn: null,

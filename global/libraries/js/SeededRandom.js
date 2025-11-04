@@ -18,18 +18,19 @@ class SeededRandom {
     }
 }
 
+if(typeof SeededRandom != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.SeededRandom = SeededRandom;
+    }
 
-if (typeof window !== 'undefined') {
-    window.SeededRandom = SeededRandom;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = SeededRandom;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SeededRandom;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = SeededRandom;
-    exports.SeededRandom = SeededRandom;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = SeededRandom;
+        exports.SeededRandom = SeededRandom;
+    }
 }

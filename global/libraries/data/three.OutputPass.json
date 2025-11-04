@@ -1,9 +1,0 @@
-{
-  "title": "THREE.OutputPass",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js",
-  "isModule": true,
-  "windowContext": "THREE_",
-  "requireName": "OutputPass",
-  "importName": "OutputPass",
-  "fileName": "three.OutputPass"
-}

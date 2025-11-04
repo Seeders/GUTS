@@ -13,7 +13,7 @@ class ShopSystem extends engine.BaseSystem {
         this.townHallLevel = 0;
         
         this.lastExperienceUpdate = 0;
-        this.uiEnhancements = new FantasyUIEnhancements(game);
+        this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
     }
 
     createShop() {

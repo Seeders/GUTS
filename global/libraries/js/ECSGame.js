@@ -1,4 +1,4 @@
-class ECSGame extends BaseECSGame {
+class ECSGame extends window.engine.BaseECSGame {
     constructor(app){
         super(app);   
         this.imageManager = new GUTS.ImageManager(this, 
@@ -11,7 +11,7 @@ class ECSGame extends BaseECSGame {
         this.state = new GUTS.GameState(this.getCollections());  
         this.sceneManager = new GUTS.SceneManager(this); 
         this.moduleManager = app.moduleManager;
-        this.desyncDebugger = new DesyncDebugger(this);
+        this.desyncDebugger = new GUTS.DesyncDebugger(this);
     }
 
     init() {    

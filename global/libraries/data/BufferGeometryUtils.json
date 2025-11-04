@@ -1,0 +1,7 @@
+{
+  "title": "THREE.BufferGeometryUtils",
+  "isModule": true,
+  "windowContext": "THREE_",
+  "requireName": "BufferGeometryUtils",
+  "importName": "BufferGeometryUtils"
+}

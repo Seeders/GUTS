@@ -54,18 +54,20 @@ class MinHeap {
     }
 }
 
+if(typeof MinHeap != 'undefined'){
+        
+    if (typeof window !== 'undefined') {
+        window.MinHeap = MinHeap;
+    }
 
-if (typeof window !== 'undefined') {
-    window.MinHeap = MinHeap;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = MinHeap;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MinHeap;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = MinHeap;
-    exports.MinHeap = MinHeap;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = MinHeap;
+        exports.MinHeap = MinHeap;
+    }
 }

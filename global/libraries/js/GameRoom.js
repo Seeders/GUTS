@@ -194,18 +194,19 @@ class GameRoom {
     }
 }
 
+if(typeof GameRoom != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.GameRoom = GameRoom;
+    }
 
-if (typeof window !== 'undefined') {
-    window.GameRoom = GameRoom;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = GameRoom;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GameRoom;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = GameRoom;
-    exports.GameRoom = GameRoom;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = GameRoom;
+        exports.GameRoom = GameRoom;
+    }
 }

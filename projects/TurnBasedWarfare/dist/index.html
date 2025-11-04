@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+    <script src="./compiled-game.js"></script>
+    <script src="./../../../engine/ModuleManager.js"></script>
+    <script src="./../../../engine/BaseEngine.js"></script>
+    <script src="./../../../engine/Engine.js"></script>
+</head>
+<body style="background-color: black;">
+<div id="appContainer" style="display: none;">
+    
+</div>
+<script>    
+    const engine = new Engine("appContainer");
+    
+    async function main() {
+        // Wait for compiled libraries to be ready
+        await window.COMPILED_GAME.ready;
+        
+        // Now init the engine
+        await engine.init("TurnBasedWarfare");
+        
+        if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
+            window.COMPILED_GAME.init(engine);
+        }
+        
+        window.game = engine.gameInstance;
+    }
+    
+    window.onload = main;
+</script>
+	
+	
+</body>
+
+</html>
