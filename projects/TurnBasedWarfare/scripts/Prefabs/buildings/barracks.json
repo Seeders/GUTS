@@ -69,8 +69,8 @@
     "1_s_barbarian",
     "1_sd_soldier"
   ],
-  "placementGridWidth": 3,
-  "placementGridHeight": 2,
+  "placementGridWidth": 2,
+  "placementGridHeight": 3,
   "height": 100,
   "size": 75,
   "icon": "building_barracks"

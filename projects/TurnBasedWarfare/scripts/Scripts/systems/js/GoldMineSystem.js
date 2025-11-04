@@ -62,8 +62,8 @@ class GoldMineSystem extends engine.BaseSystem {
 
     calculateGoldVeinCells(gridPos, gridWidth, gridHeight) {
         const cells = [];
-        const startX = gridPos.x - Math.floor(gridWidth / 2);
-        const startZ = gridPos.z - Math.floor(gridHeight / 2);
+        const startX = gridPos.x - Math.round(gridWidth / 2);
+        const startZ = gridPos.z - Math.round(gridHeight / 2);
 
         for (let z = 0; z < gridHeight; z++) {
             for (let x = 0; x < gridWidth; x++) {

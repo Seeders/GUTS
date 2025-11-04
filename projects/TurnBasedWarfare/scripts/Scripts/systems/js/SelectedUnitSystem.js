@@ -289,13 +289,10 @@ class SelectedUnitSystem extends engine.BaseSystem {
     }
     updateMultipleSquadSelection() {        
         this.currentSelectedIndex = 0;
-        if (this.selectedUnitIds.size === 1) {
-            const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-            this.setSelectedEntity(unitId);
-            this.highlightUnits([unitId]);
-        } else if (this.selectedUnitIds.size > 1) {           
-            this.highlightUnits(Array.from(this.selectedUnitIds));
-        }      
+        const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
+    
+        this.setSelectedEntity(unitId);         
+        this.highlightUnits(Array.from(this.selectedUnitIds)); 
         
         this.game.unitOrderSystem.stopTargeting();
         if(this.selectedUnitIds.size > 0){

@@ -1,5 +1,5 @@
 {
-  "title": "Server Main Scene",
+  "title": "server",
   "type": "ECS",
   "sceneData": [
     {
