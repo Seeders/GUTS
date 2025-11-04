@@ -15,13 +15,19 @@ class MiniMapSystem extends engine.BaseSystem {
         this.minimapScene = null;
         this.minimapRenderTarget = null;
         
-        this.iconGeometry = null;
+        this.unitIconGeometry = null;
+        this.buildingIconGeometry = null;
+        this.goldVeinIconGeometry = null;
         this.friendlyIconMaterial = null;
         this.friendlyInstancedMesh = null;
         this.enemyIconMaterial = null;
         this.enemyInstancedMesh = null;
-        this.goldIconMaterial = null;
-        this.goldInstancedMesh = null;
+        this.friendlyBuildingMaterial = null;
+        this.friendlyBuildingMesh = null;
+        this.enemyBuildingMaterial = null;
+        this.enemyBuildingMesh = null;
+        this.goldVeinMaterial = null;
+        this.goldVeinMesh = null;
         this.tempMatrix = null;
         
         this.isDragging = false;
@@ -117,24 +123,34 @@ class MiniMapSystem extends engine.BaseSystem {
                         gl_FragColor = vec4(color, alpha);
                     }
                 `,
-                transparent: true,  // Add this
+                transparent: true,
                 depthWrite: false,
                 depthTest: false
             })
         );
         fogQuad.rotation.x = -Math.PI / 2;
         fogQuad.position.y = -1;
-        fogQuad.renderOrder = 100; // Change to positive so it renders AFTER terrain
+        fogQuad.renderOrder = 100;
         
         this.minimapScene.add(fogQuad);
         this.fogQuad = fogQuad;
     }
 
     createIconMaterials() {
-        this.iconGeometry = new THREE.CircleGeometry(15, 8);
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        // Unit icons - slightly bigger
+        this.unitIconGeometry = new THREE.CircleGeometry(gridSize, 4);
+        
+        // Building icons - much bigger
+        this.buildingIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
+        
+        // Gold vein icons - medium size
+        this.goldVeinIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
         
         const MAX_UNITS = 1000;
+        const MAX_BUILDINGS = 200;
         
+        // Friendly units
         this.friendlyIconMaterial = new THREE.MeshBasicMaterial({
             color: 0x00ff00,
             side: THREE.DoubleSide,
@@ -143,7 +159,7 @@ class MiniMapSystem extends engine.BaseSystem {
         });
         
         this.friendlyInstancedMesh = new THREE.InstancedMesh(
-            this.iconGeometry,
+            this.unitIconGeometry,
             this.friendlyIconMaterial,
             MAX_UNITS
         );
@@ -151,6 +167,7 @@ class MiniMapSystem extends engine.BaseSystem {
         this.friendlyInstancedMesh.count = 0;
         this.minimapScene.add(this.friendlyInstancedMesh);
         
+        // Enemy units
         this.enemyIconMaterial = new THREE.MeshBasicMaterial({
             color: 0xff0000,
             side: THREE.DoubleSide,
@@ -159,7 +176,7 @@ class MiniMapSystem extends engine.BaseSystem {
         });
         
         this.enemyInstancedMesh = new THREE.InstancedMesh(
-            this.iconGeometry,
+            this.unitIconGeometry,
             this.enemyIconMaterial,
             MAX_UNITS
         );
@@ -167,21 +184,56 @@ class MiniMapSystem extends engine.BaseSystem {
         this.enemyInstancedMesh.count = 0;
         this.minimapScene.add(this.enemyInstancedMesh);
         
-        this.goldIconMaterial = new THREE.MeshBasicMaterial({
+        // Friendly buildings
+        this.friendlyBuildingMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.friendlyBuildingMesh = new THREE.InstancedMesh(
+            this.buildingIconGeometry,
+            this.friendlyBuildingMaterial,
+            MAX_BUILDINGS
+        );
+        this.friendlyBuildingMesh.renderOrder = 100;
+        this.friendlyBuildingMesh.count = 0;
+        this.minimapScene.add(this.friendlyBuildingMesh);
+        
+        // Enemy buildings
+        this.enemyBuildingMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.enemyBuildingMesh = new THREE.InstancedMesh(
+            this.buildingIconGeometry,
+            this.enemyBuildingMaterial,
+            MAX_BUILDINGS
+        );
+        this.enemyBuildingMesh.renderOrder = 100;
+        this.enemyBuildingMesh.count = 0;
+        this.minimapScene.add(this.enemyBuildingMesh);
+        
+        // Gold veins (yellow)
+        this.goldVeinMaterial = new THREE.MeshBasicMaterial({
             color: 0xFFD700,
             side: THREE.DoubleSide,
             depthWrite: false,
             depthTest: false
         });
         
-        this.goldInstancedMesh = new THREE.InstancedMesh(
-            this.iconGeometry,
-            this.goldIconMaterial,
+        this.goldVeinMesh = new THREE.InstancedMesh(
+            this.goldVeinIconGeometry,
+            this.goldVeinMaterial,
             100
         );
-        this.goldInstancedMesh.renderOrder = 50;
-        this.goldInstancedMesh.count = 0;
-        this.minimapScene.add(this.goldInstancedMesh);
+        this.goldVeinMesh.renderOrder = 50;
+        this.goldVeinMesh.count = 0;
+        this.minimapScene.add(this.goldVeinMesh);
         
         this.tempMatrix = new THREE.Matrix4();
         this.rotationMatrix = new THREE.Matrix4();
@@ -263,7 +315,7 @@ class MiniMapSystem extends engine.BaseSystem {
         if(!this.initialized) return;
         this.updateFogTextures();
         this.updateUnitIcons();
-        this.updateGoldIcons();
+        this.updateGoldVeinIcons();
         this.renderMinimap();
     }
 
@@ -285,18 +337,21 @@ class MiniMapSystem extends engine.BaseSystem {
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
         
-        const units = this.game.getEntitiesWith(
+        const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM
         );
         
-        let friendlyIndex = 0;
-        let enemyIndex = 0;
+        let friendlyUnitIndex = 0;
+        let enemyUnitIndex = 0;
+        let friendlyBuildingIndex = 0;
+        let enemyBuildingIndex = 0;
         
-        for (const entityId of units) {
+        for (const entityId of entities) {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             
             if (!pos || !team || projectile) continue;
             
@@ -308,51 +363,71 @@ class MiniMapSystem extends engine.BaseSystem {
             this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
             this.tempMatrix.multiply(this.rotationMatrix);
             
-            if (isMyUnit) {
-                this.friendlyInstancedMesh.setMatrixAt(friendlyIndex, this.tempMatrix);
-                friendlyIndex++;
+            if (unitType.collection == 'buildings') {
+                // It's a building
+                if (isMyUnit) {
+                    this.friendlyBuildingMesh.setMatrixAt(friendlyBuildingIndex, this.tempMatrix);
+                    friendlyBuildingIndex++;
+                } else {
+                    this.enemyBuildingMesh.setMatrixAt(enemyBuildingIndex, this.tempMatrix);
+                    enemyBuildingIndex++;
+                }
             } else {
-                this.enemyInstancedMesh.setMatrixAt(enemyIndex, this.tempMatrix);
-                enemyIndex++;
+                // It's a unit
+                if (isMyUnit) {
+                    this.friendlyInstancedMesh.setMatrixAt(friendlyUnitIndex, this.tempMatrix);
+                    friendlyUnitIndex++;
+                } else {
+                    this.enemyInstancedMesh.setMatrixAt(enemyUnitIndex, this.tempMatrix);
+                    enemyUnitIndex++;
+                }
             }
         }
         
-        this.friendlyInstancedMesh.count = friendlyIndex;
-        this.enemyInstancedMesh.count = enemyIndex;
+        this.friendlyInstancedMesh.count = friendlyUnitIndex;
+        this.enemyInstancedMesh.count = enemyUnitIndex;
+        this.friendlyBuildingMesh.count = friendlyBuildingIndex;
+        this.enemyBuildingMesh.count = enemyBuildingIndex;
         
-        if (friendlyIndex > 0) {
+        if (friendlyUnitIndex > 0) {
             this.friendlyInstancedMesh.instanceMatrix.needsUpdate = true;
         }
-        if (enemyIndex > 0) {
+        if (enemyUnitIndex > 0) {
             this.enemyInstancedMesh.instanceMatrix.needsUpdate = true;
+        }
+        if (friendlyBuildingIndex > 0) {
+            this.friendlyBuildingMesh.instanceMatrix.needsUpdate = true;
+        }
+        if (enemyBuildingIndex > 0) {
+            this.enemyBuildingMesh.instanceMatrix.needsUpdate = true;
         }
     }
 
-    updateGoldIcons() {
-        const goldMines = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.GOLD_MINE
-        );
+    updateGoldVeinIcons() {
+        if (!this.game.goldMineSystem?.goldVeinLocations) {
+            return;
+        }
         
+        const goldVeins = this.game.goldMineSystem.goldVeinLocations;
         let goldIndex = 0;
         
-        for (const entityId of goldMines) {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            if (!pos) continue;
+        for (const vein of goldVeins) {
+            // Skip if claimed (has a gold mine built on it)
+            if (vein.claimed) continue;
             
-            const explored = this.game.fogOfWarSystem?.isExploredAt(pos.x, pos.z);
+            const explored = this.game.fogOfWarSystem?.isExploredAt(vein.worldX, vein.worldZ);
             if (!explored) continue;
             
-            this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
+            this.tempMatrix.makeTranslation(vein.worldX, 0, vein.worldZ);
             this.tempMatrix.multiply(this.rotationMatrix);
-            this.goldInstancedMesh.setMatrixAt(goldIndex, this.tempMatrix);
+            this.goldVeinMesh.setMatrixAt(goldIndex, this.tempMatrix);
             goldIndex++;
         }
         
-        this.goldInstancedMesh.count = goldIndex;
+        this.goldVeinMesh.count = goldIndex;
         
         if (goldIndex > 0) {
-            this.goldInstancedMesh.instanceMatrix.needsUpdate = true;
+            this.goldVeinMesh.instanceMatrix.needsUpdate = true;
         }
     }
 
@@ -472,7 +547,7 @@ class MiniMapSystem extends engine.BaseSystem {
             { x: -1, y:  1 }, // left-top
         ];
 
-        // Intersect each corner “ray” with the ground plane (y=0)
+        // Intersect each corner "ray" with the ground plane (y=0)
         const hits = [];
         for (const c of corners) {
             const hit = this.orthoCornerToGround(camera, c.x, c.y);
@@ -510,6 +585,7 @@ class MiniMapSystem extends engine.BaseSystem {
         if (t <= 0) return null;                    // corner ray goes upward/behind
         return p.addScaledVector(forward, t);       // world-space hit (x, 0, z)
     }
+    
     worldToCanvas(x, z) {
         const half = this.minimapWorldSize / 2;
         const nx = (x + half) / this.minimapWorldSize;
@@ -518,6 +594,7 @@ class MiniMapSystem extends engine.BaseSystem {
         const cy = nz * this.MINIMAP_SIZE;
         return { x: cx, y: cy };
     }
+    
     dispose() {
         if (this.container && this.container.parentNode) {
             this.container.parentNode.removeChild(this.container);
@@ -527,8 +604,16 @@ class MiniMapSystem extends engine.BaseSystem {
             this.minimapRenderTarget.dispose();
         }
         
-        if (this.iconGeometry) {
-            this.iconGeometry.dispose();
+        if (this.unitIconGeometry) {
+            this.unitIconGeometry.dispose();
+        }
+        
+        if (this.buildingIconGeometry) {
+            this.buildingIconGeometry.dispose();
+        }
+        
+        if (this.goldVeinIconGeometry) {
+            this.goldVeinIconGeometry.dispose();
         }
         
         if (this.friendlyIconMaterial) {
@@ -549,14 +634,33 @@ class MiniMapSystem extends engine.BaseSystem {
             this.enemyInstancedMesh.dispose();
         }
         
-        if (this.goldIconMaterial) {
-            this.goldIconMaterial.dispose();
+        if (this.friendlyBuildingMaterial) {
+            this.friendlyBuildingMaterial.dispose();
         }
         
-        if (this.goldInstancedMesh) {
-            this.minimapScene.remove(this.goldInstancedMesh);
-            this.goldInstancedMesh.dispose();
+        if (this.friendlyBuildingMesh) {
+            this.minimapScene.remove(this.friendlyBuildingMesh);
+            this.friendlyBuildingMesh.dispose();
         }
+        
+        if (this.enemyBuildingMaterial) {
+            this.enemyBuildingMaterial.dispose();
+        }
+        
+        if (this.enemyBuildingMesh) {
+            this.minimapScene.remove(this.enemyBuildingMesh);
+            this.enemyBuildingMesh.dispose();
+        }
+        
+        if (this.goldVeinMaterial) {
+            this.goldVeinMaterial.dispose();
+        }
+        
+        if (this.goldVeinMesh) {
+            this.minimapScene.remove(this.goldVeinMesh);
+            this.goldVeinMesh.dispose();
+        }
+        
         if (this.terrainQuad) {
             this.minimapScene.remove(this.terrainQuad);
             this.terrainQuad.geometry.dispose();
