@@ -178,17 +178,19 @@ class BaseECSGame {
     }
 }
 
-if (typeof window !== 'undefined') {
-    window.BaseECSGame = BaseECSGame;
-}
+if(typeof BaseECSGame != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.BaseECSGame = BaseECSGame;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BaseECSGame;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = BaseECSGame;
+    }
 
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = BaseECSGame;
-    exports.BaseECSGame = BaseECSGame;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = BaseECSGame;
+        exports.BaseECSGame = BaseECSGame;
+    }
 }

@@ -5,5 +5,5 @@
   "windowContext": "THREE_",
   "requireName": "OrbitControls",
   "importName": "OrbitControls",
-  "fileName": "three.OrbitControls"
+  "fileName": "three_OrbitControls"
 }

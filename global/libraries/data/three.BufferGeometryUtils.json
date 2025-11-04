@@ -1,9 +1,0 @@
-{
-  "title": "THREE.BufferGeometryUtils",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/utils/BufferGeometryUtils.js",
-  "isModule": true,
-  "windowContext": "THREE_",
-  "requireName": "BufferGeometryUtils",
-  "importName": "BufferGeometryUtils",
-  "fileName": "three.BufferGeometryUtils"
-}

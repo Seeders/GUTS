@@ -1,8 +1,9 @@
 {
   "title": "THREE",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.js",
+  "filePath": "/node_modules/three/build/three.module.js",
   "requireName": "THREE",
   "importName": "three",
   "fileName": "threejs",
+  "windowName": "THREE",
   "isModule": true
 }

@@ -47,7 +47,8 @@ class ModuleManager {
         log: (...args) => console.log('[Script]', ...args),
         error: (...args) => console.error('[Script]', ...args)
       },
-      ...this.registeredLibraries
+      ...this.registeredLibraries,
+      ...this.libraryClasses
     };
     return this.scriptContext;
   }
@@ -95,8 +96,12 @@ class ModuleManager {
     }
   }
   async loadModules(modules) {
+    
     if (!modules) return;
-
+    let compiledLibraries = await this.checkCompiledScripts(modules);
+    if(compiledLibraries != false){
+        return compiledLibraries;
+    }
     // if(this.isServer){
     //     return this.loadServerModules(modules);
     // }
@@ -114,8 +119,8 @@ class ModuleManager {
     // Function to instantiate a library once its script is loaded
     const instantiateModuleFromLibrary = (library, moduleConfig) => {
         let libraryKey = library.replace(/-/g, "__");
-        let libraryClass = eval(libraryKey);
         try {
+            let libraryClass = eval(libraryKey);
             
             if (!libraryClass) {
                 throw new Error(`Library class ${libraryKey} not found in global scope`);
@@ -136,65 +141,65 @@ class ModuleManager {
             this.atLeastOneModuleAdded = true;
 
             if (!document.getElementById(`${library}-script`)) {
-                let scriptTag = document.createElement("script");
-                scriptTag.setAttribute('id', `${library}-script`);
-                let scriptUrl = "";
-                if (libraryDef.isModule) {
-                    scriptTag.setAttribute("type", "module");
-                }
-                if (libraryDef.script) {
-                    if (libraryDef.filePath) {
-                        scriptTag.src = libraryDef.filePath;
-                        if(libraryDef.script.startsWith('export ')){
-                            scriptTag.type = 'module';
+                if (libraryDef.isModule && (libraryDef.filePath || libraryDef.href)) {
+                    let path = libraryDef.filePath || libraryDef.href;
+                    import(path).then((module) => {
+                        let libName = libraryDef.requireName || library;
+                        if (libraryDef.windowContext) {
+                            if (!window[libraryDef.windowContext]) {
+                                window[libraryDef.windowContext] = {};
+                            }
+                            window[libraryDef.windowContext][libName] = module[libName] || module;
+                            this.registeredLibraries[libName] =  module[libName];
+                            resolve();
+                        } else {
+                            window[libName] = module[libName] || module;
+                            this.registeredLibraries[libName] =  module[libName];
+                            resolve();
                         }
+                    });
+                } else {
+                    let scriptTag = document.createElement("script");
+                    scriptTag.setAttribute('id', `${library}-script`);
+                    let scriptUrl = "";
+                    if (libraryDef.script) {      
+                        if (libraryDef.filePath) {
+                            scriptTag.src = libraryDef.filePath;
+                            scriptTag.onload = () => {
+                                console.log('loaded', library);
+                                instantiateModuleFromLibrary(library, moduleConfig);
+                                resolve();
+                            };
+                        } else {
+                            const scriptContent = `window.loadingLibraries.${library.replace(/-/g, "__")} = ${libraryDef.script};`;
+                            const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                            scriptUrl = URL.createObjectURL(blob);
+                            scriptTag.src = scriptUrl;
+                            scriptTag.onload = () => {
+                                URL.revokeObjectURL(scriptUrl);
+                                instantiateModuleFromLibrary(library, moduleConfig);
+                                resolve();
+                            };
+                        }
+                        
+                    } else if (libraryDef.href) {          
+                        scriptTag.src = libraryDef.href;
                         scriptTag.onload = () => {
-                            console.log('loaded', library);
-                            instantiateModuleFromLibrary(library, moduleConfig);
                             resolve();
                         };
                     } else {
-                        const scriptContent = `window.loadingLibraries.${library.replace(/-/g, "__")} = ${libraryDef.script};`;
-                        const blob = new Blob([scriptContent], { type: 'application/javascript' });
-                        scriptUrl = URL.createObjectURL(blob);
-                        scriptTag.src = scriptUrl;
-                        scriptTag.onload = () => {
-                            URL.revokeObjectURL(scriptUrl);
-                            instantiateModuleFromLibrary(library, moduleConfig);
-                            resolve();
-                        };
-                    }
-                } else if (libraryDef.href) {
-                    if (libraryDef.requireName && libraryDef.isModule) {
-                        import(libraryDef.href).then((module) => {
-                            if (libraryDef.windowContext) {
-                                if (!window[libraryDef.windowContext]) {
-                                    window[libraryDef.windowContext] = {};
-                                }
-                                window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName] || module;
-                                resolve();
-                            } else {
-                                window[libraryDef.requireName] = module;
-                                resolve();
-                            }
-                        });
-                    } 
-                    scriptTag.src = libraryDef.href;
-                    scriptTag.onload = () => {
                         resolve();
+                    }
+                    document.head.appendChild(scriptTag);
+
+                    scriptTag.onerror = (error) => {
+                        scriptUrl ? URL.revokeObjectURL(scriptUrl) : 0;
+                        console.error(`Error loading script for module ${library}:`, error);
+                        pendingLibraries.delete(library);
+                        reject(error);
                     };
-                } else {
-                    resolve();
                 }
 
-                scriptTag.onerror = (error) => {
-                    scriptUrl ? URL.revokeObjectURL(scriptUrl) : 0;
-                    console.error(`Error loading script for module ${library}:`, error);
-                    pendingLibraries.delete(library);
-                    reject(error);
-                };
-
-                document.head.appendChild(scriptTag);
             } else {
                 resolve();
             }
@@ -206,8 +211,9 @@ class ModuleManager {
         const libraries = (moduleConfig?.library ? [moduleConfig?.library] : moduleConfig?.libraries) || [moduleId];
         libraries.forEach((library) => {
             let libraryDef = this.collections.libraries[library];
-            if (libraryDef && libraryDef.importName && libraryDef.href && libraryDef.isModule) {
-                this.importMap[libraryDef.importName] = libraryDef.href;
+
+            if (libraryDef && libraryDef.importName && (libraryDef.href || libraryDef.filePath) && libraryDef.isModule) {
+                this.importMap[libraryDef.importName] = libraryDef.href || libraryDef.filePath;
             }
         });
     });
@@ -279,6 +285,45 @@ class ModuleManager {
         console.error("Error during sequential library loading:", error);
     });
   }
+
+  async checkCompiledScripts(modules) {
+     if (window.COMPILED_GAME_LOADED) {
+        console.log('📦 Compiled bundle detected - skipping library loading');
+        
+        // Still set up UI elements (needed for editor modules)
+        const collections = this.core.getCollections();
+        Object.entries(modules).forEach(([moduleId, module]) => {
+            let ui = collections.interfaces[module.interface];
+            if (ui) {
+                if (ui.html) {
+                    this.mainContentContainer.innerHTML += ui.html;
+                }
+                if (ui.css) {
+                    let styleTag = document.createElement('style');
+                    styleTag.innerHTML = ui.css;
+                    document.head.append(styleTag);
+                }
+                if (ui.modals) {
+                    ui.modals.forEach((modalId) => {
+                        let modal = document.createElement('div');
+                        modal.setAttribute('id', `modal-${modalId}`);
+                        let modalContent = document.createElement('div');
+                        modal.classList.add('modal');
+                        modalContent.classList.add('modal-content');
+                        modal.append(modalContent);
+                        modalContent.innerHTML = collections.modals[modalId].html;
+                        this.modalContainer.append(modal);
+                    });
+                }
+            }
+        });
+        
+        // Return compiled library classes immediately
+        return Promise.resolve(window.COMPILED_GAME.libraryClasses);
+    }
+    return false;
+  }
+
 
   async loadServerModules(modules){
 

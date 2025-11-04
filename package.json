@@ -1,7 +1,7 @@
 {
   "name": "towerdefense",
   "version": "1.0.0",
-  "description": "td game and editor",  
+  "description": "td game and editor",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,6 +16,7 @@
     "multer": "^1.4.5-lts.2",
     "puppeteer": "^24.9.0",
     "socket.io": "^4.8.1",
+    "three": "^0.181.0",
     "three-nebula": "^10.0.3",
     "whatwg-fetch": "^3.6.20"
   }

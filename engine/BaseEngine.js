@@ -46,18 +46,19 @@ class BaseEngine {
         return Date.now();
     }
 }
+if(typeof BaseEngine != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.BaseEngine = BaseEngine;
+    }
 
-if (typeof window !== 'undefined') {
-    window.BaseEngine = BaseEngine;
-}
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = BaseEngine;
+    }
 
-// Make available as ES module export (new for server)  
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BaseEngine;
-}
-
-// Make available as ES6 export (also new for server)
-if (typeof exports !== 'undefined') {
-    exports.default = BaseEngine;
-    exports.BaseEngine = BaseEngine;
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = BaseEngine;
+        exports.BaseEngine = BaseEngine;
+    }
 }

@@ -1,7 +1,7 @@
-class MultiplayerECSGame extends ECSGame {
+class MultiplayerECSGame extends engine.ECSGame {
     constructor(app) {
         super(app);
-        this.networkManager = new ClientNetworkManager(this);
+        this.networkManager = new GUTS.ClientNetworkManager(this);
         this.isMultiplayer = true;
         this.isConnected = false;
         this.isServer = false;
