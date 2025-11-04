@@ -40,6 +40,7 @@ class MiniMapSystem extends engine.BaseSystem {
         this.minimapWorldSize = this.game.worldSystem.extendedSize;
         
         this.createMinimapCamera();
+        this.addTerrainBackground(); 
         this.createIconMaterials();
         this.createMinimapUI();
         this.setupEventListeners();
@@ -98,24 +99,32 @@ class MiniMapSystem extends engine.BaseSystem {
                         float visible = texture2D(visibilityTexture, vUv).r;
                         
                         vec3 color;
+                        float alpha;
                         if (visible > 0.0) {
-                            color = vec3(0.2);
-                        } else if (explored > 0.0) {
-                            color = vec3(0.08);
-                        } else {
+                            // Fully visible - make it transparent so terrain shows through
                             color = vec3(0.0);
+                            alpha = 0.0;
+                        } else if (explored > 0.0) {
+                            // Explored but not visible - dark overlay
+                            color = vec3(0.0);
+                            alpha = 0.6;
+                        } else {
+                            // Unexplored - black
+                            color = vec3(0.0);
+                            alpha = 1.0;
                         }
                         
-                        gl_FragColor = vec4(color, 1.0);
+                        gl_FragColor = vec4(color, alpha);
                     }
                 `,
+                transparent: true,  // Add this
                 depthWrite: false,
                 depthTest: false
             })
         );
         fogQuad.rotation.x = -Math.PI / 2;
         fogQuad.position.y = -1;
-        fogQuad.renderOrder = -1000;
+        fogQuad.renderOrder = 100; // Change to positive so it renders AFTER terrain
         
         this.minimapScene.add(fogQuad);
         this.fogQuad = fogQuad;
@@ -265,6 +274,11 @@ class MiniMapSystem extends engine.BaseSystem {
             this.game.fogOfWarSystem.explorationRenderTarget.texture;
         this.fogQuad.material.uniforms.visibilityTexture.value = 
             this.game.fogOfWarSystem.fogRenderTarget.texture;
+
+        if (this.terrainQuad && this.game.worldSystem?.groundTexture) {
+            this.terrainQuad.material.map = this.game.worldSystem.groundTexture;
+            this.terrainQuad.material.needsUpdate = true;
+        }
     }
 
     updateUnitIcons() {
@@ -388,6 +402,29 @@ class MiniMapSystem extends engine.BaseSystem {
             this.cameraViewMesh.renderOrder = 1000;
             this.minimapScene.add(this.cameraViewMesh);
         }
+    }
+
+    addTerrainBackground() {
+        // Get the ground texture from the world system
+        if (!this.game.worldSystem || !this.game.worldSystem.groundTexture) {
+            console.warn('MiniMapSystem: Ground texture not available');
+            return;
+        }
+        
+        const terrainQuad = new THREE.Mesh(
+            new THREE.PlaneGeometry(this.minimapWorldSize, this.minimapWorldSize),
+            new THREE.MeshBasicMaterial({
+                map: this.game.worldSystem.groundTexture,
+                depthWrite: false,
+                depthTest: false
+            })
+        );
+        terrainQuad.rotation.x = -Math.PI / 2;
+        terrainQuad.position.y = -2; // Below fog
+        terrainQuad.renderOrder = -2000;
+        
+        this.minimapScene.add(terrainQuad);
+        this.terrainQuad = terrainQuad;
     }
 
     renderMinimap() {
@@ -519,6 +556,11 @@ class MiniMapSystem extends engine.BaseSystem {
         if (this.goldInstancedMesh) {
             this.minimapScene.remove(this.goldInstancedMesh);
             this.goldInstancedMesh.dispose();
+        }
+        if (this.terrainQuad) {
+            this.minimapScene.remove(this.terrainQuad);
+            this.terrainQuad.geometry.dispose();
+            this.terrainQuad.material.dispose();
         }
     }
 }
