@@ -1,16 +1,21 @@
 class ShapeFactory {
-    constructor(palette, textures, libraryClasses, gltfModelScale = 32) {
+    constructor(resourcesPath, palette, textures, libraryClasses, gltfModelScale = 32) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE_.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
         this.skeleUtils = THREE_.SkeletonUtils;   
         this.urlRoot = "/";
+        this.resourcesPath = resourcesPath;
         this.gltfModelScale = gltfModelScale; // Add GLTF scale parameter
     }
     
     setURLRoot(root){
         this.urlRoot = root;
+    }
+
+    getResourcesPath(shapeUrl){
+        return `${this.urlRoot}${this.resourcesPath}${shapeUrl}`;
     }
     
     setGLTFScale(scale) {
@@ -179,7 +184,7 @@ class ShapeFactory {
             } else if (shape.url && location.hostname !== "") {
                 await new Promise((resolve, reject) => {
                     this.gltfLoader.load(
-                        `${this.urlRoot}${shape.url}`,
+                        this.getResourcesPath(shape.url),
                         async (gltf) => {
                             const clonedScene = this.skeleUtils.clone(gltf.scene);
                             this.gltfCache.set(shape.url, gltf);

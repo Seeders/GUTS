@@ -32,7 +32,7 @@ class SceneEditor {
         } 
         this.componentsToUpdate = [];
         this.gameEditor.palette = this.gameEditor.getPalette();
-        this.shapeFactory = new ShapeFactory(this.gameEditor.palette, this.gameEditor.getCollections().textures, null);
+        this.shapeFactory = new ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.palette, this.gameEditor.getCollections().textures, null);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }   

@@ -21,7 +21,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/item_sword_knight/item_sword_knight.glb",
+            "url": "models/item_sword_knight/item_sword_knight.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

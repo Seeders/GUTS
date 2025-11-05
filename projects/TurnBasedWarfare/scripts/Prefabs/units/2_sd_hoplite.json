@@ -19,7 +19,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "url": "animations/idle.glb",
                 "id": 0
               }
             ]
@@ -31,7 +31,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/walk_with_shield.glb",
+                "url": "animations/walk_with_shield.glb",
                 "id": 0
               }
             ]
@@ -43,7 +43,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "url": "animations/sword_slash.glb",
                 "id": 0
               }
             ]
@@ -55,7 +55,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
+                "url": "animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -67,7 +67,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_gangnamstyle.glb",
+                "url": "animations/dance_gangnamstyle.glb",
                 "id": 0
               }
             ]
@@ -77,7 +77,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
+                "url": "animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -105,7 +105,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/hoplite/hoplite.glb",
+            "url": "models/hoplite/hoplite.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

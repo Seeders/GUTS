@@ -13,7 +13,8 @@ class Engine extends BaseEngine {
     }
 
     async init(projectName) {
-        this.collections = await this.loadCollections(projectName);
+        this.currentProjectName = projectName;
+        this.collections = await this.loadCollections();
         if (!this.collections) {
             console.error("Failed to load game configuration");
             return;
@@ -38,14 +39,25 @@ class Engine extends BaseEngine {
         this.start();
     }
 
-    async loadCollections(projectName) {
-        let currentProject = projectName;
+    getCurrentProject(){ 
+        return this.currentProjectName;
+    }
+
+    getResourcesPath(){ 
+        if(window){
+            let path = window.location.pathname.replace('index.html', 'resources/');
+            return path.slice(1, path.length);
+        }
+        return "resources/";
+    }
+
+    async loadCollections() {        ;
         let project = {};
 
-        project = JSON.parse(localStorage.getItem(currentProject));
+        project = JSON.parse(localStorage.getItem(this.currentProjectName));
         
         if (!project) {
-            const response = await window.fetch(`config/${currentProject.toUpperCase().replace(/ /g, '_')}.json`);
+            const response = await window.fetch(`config/${this.currentProjectName.toUpperCase().replace(/ /g, '_')}.json`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             } else {

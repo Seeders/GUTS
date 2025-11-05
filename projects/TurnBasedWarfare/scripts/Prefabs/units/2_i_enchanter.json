@@ -22,7 +22,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "url": "animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -39,7 +39,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
+                "url": "animations/walk_steady_right_hand.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -56,7 +56,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/2h_spell_summon.glb",
+                "url": "animations/2h_spell_summon.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -73,7 +73,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
+                "url": "animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -85,7 +85,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_gangnamstyle.glb",
+                "url": "animations/dance_gangnamstyle.glb",
                 "id": 0
               }
             ]
@@ -95,7 +95,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
+                "url": "animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -123,7 +123,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/evil_sorcerer/evil_sorcerer.glb",
+            "url": "models/evil_sorcerer/evil_sorcerer.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

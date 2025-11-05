@@ -20,7 +20,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/item_axe_1h/item_axe_1h.glb",
+            "url": "models/item_axe_1h/item_axe_1h.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

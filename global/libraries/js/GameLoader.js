@@ -64,7 +64,7 @@ class GameLoader {
         for(let objectType in this.collections) {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }  
-        this.game.modelManager = new GUTS.ModelManager(this, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});
+        this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});
         
         for(let objectType in this.collections) {
             await this.game.modelManager.loadModels(objectType, this.collections[objectType]);

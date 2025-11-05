@@ -77,7 +77,7 @@ body {
 
 #mainMenu, #gameModeSelect, #multiplayerLobby {
     background-color: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
-    background-image: url('/projects/TurnBasedWarfare/resources/images/background.png');
+    background-image: url('resources/images/background.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -86,20 +86,20 @@ body {
 }
 
 body.bg2 #mainMenu, body.bg2 #gameModeSelect, body.bg2 #multiplayerLobby {
-    background-image: url('/projects/TurnBasedWarfare/resources/images/background2.png');
+    background-image: url('resources/images/background2.png');
 }
 
 body.bg3 #mainMenu, body.bg3 #gameModeSelect, body.bg3 #multiplayerLobby {
-    background-image: url('/projects/TurnBasedWarfare/resources/images/background3.png');
+    background-image: url('resources/images/background3.png');
 }
 
 
 body.bg4 #mainMenu, body.bg4 #gameModeSelect, body.bg4 #multiplayerLobby {
-    background-image: url('/projects/TurnBasedWarfare/resources/images/background4.png');
+    background-image: url('resources/images/background4.png');
 }
 
 body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
-    background-image: url('/projects/TurnBasedWarfare/resources/images/background5.png');
+    background-image: url('resources/images/background5.png');
 }
 
 .game-title {

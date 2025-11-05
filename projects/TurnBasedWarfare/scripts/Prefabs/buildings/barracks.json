@@ -23,7 +23,7 @@
                 "z": 0,
                 "scaleX": 1,
                 "name": "foundation",
-                "url": "projects/TurnBasedWarfare/resources/models/underConstruction/underConstruction.glb",
+                "url": "models/underConstruction/underConstruction.glb",
                 "id": 0
               }
             ]
@@ -45,7 +45,7 @@
             "z": 0,
             "scaleX": 1,
             "name": "foundation",
-            "url": "projects/TurnBasedWarfare/resources/models/barracks/barracks.glb"
+            "url": "models/barracks/barracks.glb"
           }
         ],
         "position": {

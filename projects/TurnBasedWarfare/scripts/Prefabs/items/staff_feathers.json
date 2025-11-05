@@ -20,7 +20,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/item_staff_feathers/item_staff_feathers.glb",
+            "url": "models/item_staff_feathers/item_staff_feathers.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

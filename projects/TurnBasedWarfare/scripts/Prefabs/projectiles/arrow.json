@@ -19,7 +19,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/projectile_arrow/projectile_arrow.glb",
+            "url": "models/projectile_arrow/projectile_arrow.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

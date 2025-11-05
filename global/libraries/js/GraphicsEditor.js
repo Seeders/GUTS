@@ -19,7 +19,7 @@ class GraphicsEditor {
     constructor(gameEditor, config, {}) {
         this.gameEditor = gameEditor;
         this.config = config;
-        this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }

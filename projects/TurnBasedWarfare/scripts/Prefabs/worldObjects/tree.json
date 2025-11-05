@@ -13,7 +13,7 @@
             "type": "gltf",
             "metalness": 0,
             "roughness": 1,
-            "url": "projects/TurnBasedWarfare/resources/models/new_fir/new_fir.glb"
+            "url": "models/new_fir/new_fir.glb"
           }
         ],
         "position": {

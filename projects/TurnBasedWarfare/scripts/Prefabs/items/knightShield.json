@@ -19,7 +19,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/item_shield_knight/item_shield_knight.glb",
+            "url": "models/item_shield_knight/item_shield_knight.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

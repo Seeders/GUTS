@@ -20,7 +20,7 @@
             "shapes": [
               {
                 "type": "gltf",
-                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "url": "animations/idle.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
@@ -45,7 +45,7 @@
             "shapes": [
               {
                 "type": "gltf",
-                "url": "projects/TurnBasedWarfare/resources/animations/walk_bow.glb",
+                "url": "animations/walk_bow.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
@@ -70,7 +70,7 @@
             "shapes": [
               {
                 "type": "gltf",
-                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "url": "animations/sword_slash.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
@@ -94,7 +94,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
+                "url": "animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -106,7 +106,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_gangnamstyle.glb",
+                "url": "animations/dance_gangnamstyle.glb",
                 "id": 0
               }
             ]
@@ -116,7 +116,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
+                "url": "animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -144,7 +144,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/trickster/trickster.glb",
+            "url": "models/trickster/trickster.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

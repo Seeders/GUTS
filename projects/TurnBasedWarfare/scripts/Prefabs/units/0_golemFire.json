@@ -20,7 +20,7 @@
             "shapes": [
               {
                 "type": "gltf",
-                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "url": "animations/idle.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
@@ -44,7 +44,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/mutant_walk.glb",
+                "url": "animations/mutant_walk.glb",
                 "id": 0
               }
             ]
@@ -56,7 +56,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/mutant_swipe.glb",
+                "url": "animations/mutant_swipe.glb",
                 "id": 0
               }
             ]
@@ -68,7 +68,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
+                "url": "animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -80,7 +80,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_gangnamstyle.glb",
+                "url": "animations/dance_gangnamstyle.glb",
                 "id": 0
               }
             ]
@@ -90,7 +90,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
+                "url": "animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -117,7 +117,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/golem_fire/golem_fire.glb",
+            "url": "models/golem_fire/golem_fire.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
