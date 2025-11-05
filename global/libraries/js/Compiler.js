@@ -63,6 +63,7 @@ class Compiler {
         this.compiledBundle = result;
         return result;
     }
+
     async createZipBundle(result, outputName) {
         if (typeof JSZip === 'undefined') {
             throw new Error('JSZip library not loaded. Include jszip.min.js before using this feature.');
@@ -78,6 +79,28 @@ class Compiler {
             zip.file('compiled-engine.js', result.engineCode);
         }
         
+        // Add local module files
+        if (result.localModuleFiles && result.localModuleFiles.length > 0) {
+            console.log(`Bundling ${result.localModuleFiles.length} local module files...`);
+            
+            const modulesFolder = zip.folder('modules');
+            
+            for (const moduleInfo of result.localModuleFiles) {
+                if (moduleInfo.libraryDef.isModule) {
+                    try {
+                        const response = await fetch(moduleInfo.path);
+                        const content = await response.text();
+                        const filename = moduleInfo.path.split('/').pop();
+                        
+                        modulesFolder.file(filename, content);
+                        console.log(`✓ Bundled module: ${filename}`);
+                    } catch (error) {
+                        console.error(`Failed to bundle module ${moduleInfo.name}:`, error);
+                    }
+                }
+            }
+        }
+        
         // Add metadata
         const metadata = {
             projectName: result.projectName,
@@ -90,14 +113,15 @@ class Compiler {
         // Add HTML file
         const html = this.generateCompiledHTML(result.projectName, outputName);
         zip.file('index.html', html);
-        
-        
+                
         // Generate zip blob
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         
         console.log('✅ Zip bundle created');
         return zipBlob;
     }
+
+    
     /**
      * Build the header section with metadata and utility functions
      */
@@ -125,142 +149,236 @@ window.COMPILED_GAME_LOADED = true;`;
         result.sections.push(header);
     }
 
-    /**
-     * Build the libraries section - includes all required libraries from game config
-     */
-    async buildLibraries(result) {
-        const projectConfig = this.collections.configs.game;
-        if (!projectConfig.libraries) {
-            console.warn("No libraries defined in game config");
-            return;
+async buildLibraries(result) {
+    const projectConfig = this.collections.configs.game;
+    if (!projectConfig.libraries) {
+        console.warn("No libraries defined in game config");
+        return;
+    }
+
+    const librariesSection = ['// ========== LIBRARIES =========='];
+    const externalLibraries = [];
+    const importMap = {};
+    const localModuleFiles = [];
+
+    for (const libraryName of projectConfig.libraries) {
+        const libraryDef = this.collections.libraries[libraryName];
+        if (!libraryDef) {
+            console.warn(`Library ${libraryName} not found in collections`);
+            continue;
         }
-
-        const librariesSection = ['// ========== LIBRARIES =========='];
-        const externalLibraries = [];
-        const importPromises = [];
-        const importMap = {};
-
-        for (const libraryName of projectConfig.libraries) {
-            const libraryDef = this.collections.libraries[libraryName];
-            if (!libraryDef) {
-                console.warn(`Library ${libraryName} not found in collections`);
-                continue;
-            }
+        
+        let libraryKey = libraryDef.requireName || libraryName.replace(/-/g, "__").replace(/\./g, "_");
+        
+        // Handle local files with filePath
+        if (libraryDef.filePath && !libraryDef.href) {
+            const path = libraryDef.filePath;
             
-            let libraryKey = libraryDef.requireName || libraryName.replace(/-/g, "__").replace(/\./g, "_");
+            // Store local module info for bundling into zip
+            localModuleFiles.push({
+                name: libraryName,
+                path: path,
+                libraryDef: libraryDef,
+                libraryKey: libraryKey
+            });
             
-            // Build import map entry if needed
-            if (libraryDef.importName && (libraryDef.href || libraryDef.filePath) && libraryDef.isModule) {
-                importMap[libraryDef.importName] = libraryDef.href || libraryDef.filePath;
-            }
-            
-            // Handle ES modules (external imports)
-            if (libraryDef.isModule && (libraryDef.filePath || libraryDef.href)) {
-                const path = libraryDef.filePath || libraryDef.href;
+            // For modules, create runtime loader that references bundled file
+            if (libraryDef.isModule) {
+                const bundledPath = `./modules/${path.split('/').pop()}`;
                 
-                console.log(`Loading external module: ${libraryName} from ${path}`);
+                if (libraryDef.importName) {
+                    importMap[libraryDef.importName] = bundledPath;
+                }
                 
-                // Import the module during compilation to validate it
-                const importPromise = import(path).then((module) => {
-                    let libName = libraryDef.requireName || libraryName;
-                    
-                    // Store in compiled game
-                    librariesSection.push(`\n// Library: ${libraryName} (external module)`);
-                    librariesSection.push(`// Loaded from: ${path}`);
-                    
-                    // Create a placeholder that will be filled at runtime
-                    if (libraryDef.windowContext) {
-                        librariesSection.push(`
-if (!window["${libraryDef.windowContext}"]) {
-    window["${libraryDef.windowContext}"] = {};
-}
-window["${libraryDef.windowContext}"]["${libName}"] = null; // Will be loaded at runtime
-window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
-                        `.trim());
-                    } else {
-                        librariesSection.push(`window["${libName}"] = null; // Will be loaded at runtime`);
-                        librariesSection.push(`window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder`);
-                    }
-                    
-                    externalLibraries.push({
-                        name: libraryName,
-                        url: path,
-                        isModule: true,
-                        requireName: libraryDef.requireName || libraryName,
-                        windowContext: libraryDef.windowContext
-                    });
-                    
-                    result.dependencies.push({
-                        name: libraryName,
-                        type: 'external-module',
-                        url: path,
-                        isModule: true,
-                        requireName: libraryDef.requireName || libraryName
-                    });
-                }).catch(error => {
-                    console.error(`Failed to import module ${libraryName}:`, error);
-                });
+                librariesSection.push(`\n// Library: ${libraryName} (local module - bundled)`);
+                librariesSection.push(`// Original path: ${path}`);
+                librariesSection.push(`// Bundled path: ${bundledPath}`);
                 
-                importPromises.push(importPromise);
-            }
-            // Handle inline scripts (non-module)
-            else if (libraryDef.script && !libraryDef.isModule) {
-                librariesSection.push(`\n// Library: ${libraryName}`);
-                librariesSection.push(`window.COMPILED_GAME.libraryClasses.${libraryKey} = ${libraryDef.script};`);
-                librariesSection.push(`window.engine.${libraryKey} = window.COMPILED_GAME.libraryClasses.${libraryKey};`);
-                
-                result.dependencies.push({
-                    name: libraryName,
-                    type: 'inline',
-                    key: libraryKey
-                });
-            }
-            // Handle external scripts (non-module with URL)
-            else if (libraryDef.href || libraryDef.filePath) {
-                const url = libraryDef.filePath || libraryDef.href;
-                
-                librariesSection.push(`\n// Library: ${libraryName} (external script)`);
+                // Create a placeholder that will be filled at runtime
                 if (libraryDef.windowContext) {
                     librariesSection.push(`
 if (!window["${libraryDef.windowContext}"]) {
     window["${libraryDef.windowContext}"] = {};
 }
 window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
                     `.trim());
                 } else {
                     librariesSection.push(`window["${libraryKey}"] = null; // Will be loaded at runtime`);
+                    librariesSection.push(`window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder`);
                 }
-                librariesSection.push(`window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder`);
                 
                 externalLibraries.push({
                     name: libraryName,
-                    url: url,
-                    isModule: false,
-                    requireName: libraryDef.requireName,
-                    windowContext: libraryDef.windowContext
+                    url: bundledPath,
+                    isModule: true,
+                    requireName: libraryDef.requireName || libraryName,
+                    windowContext: libraryDef.windowContext,
+                    isLocalModule: true
                 });
                 
                 result.dependencies.push({
                     name: libraryName,
-                    type: 'external',
-                    url: url,
-                    isModule: false
+                    type: 'local-module',
+                    originalPath: path,
+                    bundledPath: bundledPath,
+                    isModule: true,
+                    requireName: libraryDef.requireName || libraryName
                 });
+            } else {
+                // For non-modules, fetch and include inline
+                try {
+                    const response = await fetch(path);
+                    let fileContent = await response.text();
+                    
+                    librariesSection.push(`\n// Library: ${libraryName} (non-module - inline)`);
+                    librariesSection.push(`// Original path: ${path}`);
+                    
+                    // Extract class names from the file
+                    const classMatches = fileContent.match(/class\s+(\w+)/g);
+                    const className = libraryDef.requireName || libraryDef.fileName;
+                    
+                    // Execute the code and explicitly export classes to global scope
+                    librariesSection.push(`
+// Execute and register library code
+(function() {
+    try {
+        // Execute the library code
+        ${fileContent}
+        
+        // Explicitly register classes to window
+        var className = "${className}";
+        if (typeof eval(className) !== 'undefined') {
+            window[className] = eval(className);
+            console.log("set ", className);
+        }
+        
+    } catch (error) {
+        console.error("Error executing ${libraryName}:", error);
+    }
+})();
+
+// Register library in COMPILED_GAME
+(function() {
+    var foundLibrary = null;
+    var libraryKey = "${libraryKey}";
+    var className = "${className}";
+    
+    // Check for classes defined in the file
+
+    if (window[className]) {
+        foundLibrary = window[className];
+        
+        // Register this class by its actual name
+        window.COMPILED_GAME.libraryClasses[className] = window[className];
+        window.engine[className] = window[className];
+    }
+    
+    
+    if (foundLibrary) {
+        window.COMPILED_GAME.libraryClasses.${libraryKey} = foundLibrary;
+        window.engine.${libraryKey} = foundLibrary;
+        ${libraryDef.windowContext ? `
+        if (!window["${libraryDef.windowContext}"]) {
+            window["${libraryDef.windowContext}"] = {};
+        }
+        window["${libraryDef.windowContext}"]["${libraryKey}"] = foundLibrary;
+        ` : ''}
+    } else {
+        console.warn("Could not find ${libraryName} after loading");
+    }
+})();
+                    `.trim());
+                    
+                    result.dependencies.push({
+                        name: libraryName,
+                        type: 'inline-file',
+                        path: path,
+                        key: libraryKey,
+                        classes: [className]
+                    });
+                } catch (error) {
+                    console.error(`Failed to load local file ${libraryName}:`, error);
+                }
             }
         }
-
-        // Wait for all module imports to complete during compilation
-        if (importPromises.length > 0) {
-            console.log(`Waiting for ${importPromises.length} module imports...`);
-            await Promise.all(importPromises);
-            console.log('All module imports validated');
+        // Handle external URLs with href - keep as runtime import
+        else if (libraryDef.href) {
+            const path = libraryDef.href;
+            
+            // Build import map entry if needed
+            if (libraryDef.importName && libraryDef.isModule) {
+                importMap[libraryDef.importName] = path;
+            }
+            
+            librariesSection.push(`\n// Library: ${libraryName} (external module - loaded at runtime)`);
+            librariesSection.push(`// Loaded from: ${path}`);
+            
+            // Create a placeholder that will be filled at runtime
+            if (libraryDef.windowContext) {
+                librariesSection.push(`
+if (!window["${libraryDef.windowContext}"]) {
+    window["${libraryDef.windowContext}"] = {};
+}
+window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded at runtime
+window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
+                `.trim());
+            } else {
+                librariesSection.push(`window["${libraryKey}"] = null; // Will be loaded at runtime`);
+                librariesSection.push(`window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder`);
+            }
+            
+            externalLibraries.push({
+                name: libraryName,
+                url: path,
+                isModule: true,
+                requireName: libraryDef.requireName || libraryName,
+                windowContext: libraryDef.windowContext,
+                isLocalModule: false
+            });
+            
+            result.dependencies.push({
+                name: libraryName,
+                type: 'external-module',
+                url: path,
+                isModule: true,
+                requireName: libraryDef.requireName || libraryName
+            });
         }
+        // Handle inline scripts (script property)
+        else if (libraryDef.script) {
+            librariesSection.push(`\n// Library: ${libraryName} (inline script)`);
+            
+            // Evaluate the script and register it
+            librariesSection.push(`(function() {`);
+            librariesSection.push(`  var libraryClass = ${libraryDef.script};`);
+            librariesSection.push(`  window.COMPILED_GAME.libraryClasses.${libraryKey} = libraryClass;`);
+            librariesSection.push(`  window.engine.${libraryKey} = libraryClass;`);
+            
+            if (libraryDef.windowContext) {
+                librariesSection.push(`  if (!window["${libraryDef.windowContext}"]) {`);
+                librariesSection.push(`    window["${libraryDef.windowContext}"] = {};`);
+                librariesSection.push(`  }`);
+                librariesSection.push(`  window["${libraryDef.windowContext}"]["${libraryKey}"] = libraryClass;`);
+            } else {
+                librariesSection.push(`  window["${libraryKey}"] = libraryClass;`);
+            }
+            
+            librariesSection.push(`})();`);
+            
+            result.dependencies.push({
+                name: libraryName,
+                type: 'inline',
+                key: libraryKey
+            });
+        }
+    }
 
-        // Add import map if needed
-        if (Object.keys(importMap).length > 0) {
-            librariesSection.push(`\n// ========== IMPORT MAP ==========`);
-            librariesSection.push(`window.COMPILED_GAME.importMap = ${JSON.stringify(importMap, null, 2)};`);
-            librariesSection.push(`
+    // Add import map if needed
+    if (Object.keys(importMap).length > 0) {
+        librariesSection.push(`\n// ========== IMPORT MAP ==========`);
+        librariesSection.push(`window.COMPILED_GAME.importMap = ${JSON.stringify(importMap, null, 2)};`);
+        librariesSection.push(`
 // Create and inject import map
 (function() {
     if (!document.querySelector('script[type="importmap"]')) {
@@ -270,18 +388,17 @@ window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded
             imports: window.COMPILED_GAME.importMap 
         }, null, 2);
         document.head.prepend(importMapScript);
-        console.log('📍 Import map created');
     }
 })();
-            `.trim());
-        }
+        `.trim());
+    }
 
-        // Add external library loader code that runs at bundle load time
-        if (externalLibraries.length > 0) {
-            librariesSection.push(`\n// ========== EXTERNAL LIBRARY LOADER ==========`);
-            librariesSection.push(`window.COMPILED_GAME.externalLibraries = ${JSON.stringify(externalLibraries, null, 2)};`);
-            
-            librariesSection.push(`
+    // Add external library loader code that runs at bundle load time
+    if (externalLibraries.length > 0) {
+        librariesSection.push(`\n// ========== EXTERNAL LIBRARY LOADER ==========`);
+        librariesSection.push(`window.COMPILED_GAME.externalLibraries = ${JSON.stringify(externalLibraries, null, 2)};`);
+        
+        librariesSection.push(`
 // Load external libraries at bundle initialization
 (async function() {
     const loadPromises = [];
@@ -301,14 +418,16 @@ window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded
                     }
                     window[lib.windowContext][libName] = loadedModule;
                     window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                    window.engine[libraryKey] = loadedModule;
                 } else {
                     window[libName] = loadedModule;
                     window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                    window.engine[libraryKey] = loadedModule;
                 }
                 
-                console.log(\`📦 Loaded external module: \${lib.name}\`);
+                console.log(\`Loaded \${lib.isLocalModule ? 'bundled' : 'external'} module: \${lib.name}\`);
             }).catch(error => {
-                console.error(\`Failed to load external module \${lib.name}:\`, error);
+                console.error(\`Failed to load module \${lib.name}:\`, error);
             });
             
             loadPromises.push(loadPromise);
@@ -317,17 +436,19 @@ window["${libraryDef.windowContext}"]["${libraryKey}"] = null; // Will be loaded
     
     // Wait for all external modules to load
     await Promise.all(loadPromises);
-    console.log('✅ All external libraries loaded');
+    console.log('All libraries loaded');
     
     // Dispatch event when libraries are ready
     window.dispatchEvent(new CustomEvent('compiled-libraries-ready'));
 })();
-            `.trim());
-        }
-
-        result.sections.push(librariesSection.join('\n'));
+        `.trim());
     }
 
+    // Store local module files for zip bundling
+    result.localModuleFiles = localModuleFiles;
+    
+    result.sections.push(librariesSection.join('\n'));
+}
     /**
      * Build game classes section - compile all systems, managers, components, etc.
      */
