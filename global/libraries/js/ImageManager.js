@@ -21,7 +21,7 @@ class ImageManager {
         const frustumSize = cameraDistance + 16;
         const aspect = 1;
 
-        this.shapeFactory = new GUTS.ShapeFactory(palette, textures);
+        this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }

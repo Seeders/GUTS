@@ -1,7 +1,7 @@
 class ECSGame extends engine.BaseECSGame {
     constructor(app){
         super(app);   
-        this.imageManager = new GUTS.ImageManager(this, 
+        this.imageManager = new GUTS.ImageManager(app, 
             { 
                 imageSize: this.getCollections().configs.game.imageSize, 
                 palette: this.getCollections().configs.game.palette, 

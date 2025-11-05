@@ -2,7 +2,7 @@ class ModelManager {
     constructor(app, config, { ShapeFactory, palette, textures }) {
         this.app = app;
         this.config = config;
-        this.shapeFactory = new ShapeFactory(palette, textures, null, 1);
+        this.shapeFactory = new ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 1);
 
         if (location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");

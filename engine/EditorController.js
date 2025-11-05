@@ -319,6 +319,10 @@ class EditorController {
         return this.model.state.currentProject;
     }
 
+    getResourcesPath(){ 
+        return `projects/${this.getCurrentProject()}/resources/`;
+    }
+
     getDefaultRender() {
         return this.model.CONFIG.DEFAULT_RENDER;
     }
