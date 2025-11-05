@@ -64,7 +64,7 @@ class Compiler {
         return result;
     }
 
-    async createZipBundle(result, outputName) {
+    async createZipBundle(result) {
         if (typeof JSZip === 'undefined') {
             throw new Error('JSZip library not loaded. Include jszip.min.js before using this feature.');
         }
@@ -72,11 +72,11 @@ class Compiler {
         const zip = new JSZip();
         
         // Add game bundle
-        zip.file(outputName, result.code);
+        zip.file("game.js", result.code);
         
         // Add engine bundle if available
         if (result.engineCode) {
-            zip.file('compiled-engine.js', result.engineCode);
+            zip.file('engine.js', result.engineCode);
         }
         
         // Add local module files
@@ -100,21 +100,8 @@ class Compiler {
                 }
             }
         }
-        
-        // Add metadata
-        const metadata = {
-            projectName: result.projectName,
-            timestamp: result.timestamp,
-            classRegistry: result.classRegistry,
-            dependencies: result.dependencies
-        };
-        zip.file(outputName.replace('.js', '.meta.json'), JSON.stringify(metadata, null, 2));
-        
-        // Add HTML file
-        const html = this.generateCompiledHTML(result.projectName, outputName);
-        zip.file('index.html', html);
-                
-        // Generate zip blob
+ 
+         // Generate zip blob
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         
         console.log('✅ Zip bundle created');
@@ -833,45 +820,6 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
         };
     }
 
-    /**
-     * Generate an HTML file that uses the compiled bundle
-     */
-    generateCompiledHTML(projectName, bundlePath) {
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${projectName} - Compiled</title>
-    
-    <!-- Load compiled engine -->
-    <script src="compiled-engine.js"></script>
-    
-    <!-- Load compiled game bundle -->
-    <script src="${bundlePath}"></script>
-</head>
-<body style="background-color: black;">
-<div id="appContainer" style="display: none;"></div>
-
-<script>
-    (() => {        
-        const engine = new Engine("appContainer");        
-        async function main() {
-            await window.COMPILED_GAME.ready;
-            await engine.init("${projectName}");
-            
-            if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
-                window.COMPILED_GAME.init(engine);
-            }
-            
-            window.game = engine.gameInstance;
-        }        
-        window.onload = main;    
-    })();
-</script>
-</body>
-</html>`;
-    }
 }
 
 if (typeof Compiler != 'undefined') {
