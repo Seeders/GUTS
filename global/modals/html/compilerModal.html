@@ -1,42 +1,30 @@
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Compile Game</h2>
-                    <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Output Filename:</label>
-                        <input type="text" id="compileOutputName" value="compiled-game.js" />
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="compileIncludeMetadata" checked />
-                            Include metadata file
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="compileGenerateHTML" checked />
-                            Generate HTML file
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="compileCreateZip" checked />
-                            Download as zip file
-                        </label>
-                    </div>
-                    <div class="compilation-output" id="compilationOutput" style="display: none;">
-                        <h3>Output:</h3>
-                        <pre id="compilationLog"></pre>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="window.compilerModule.compile()">
-                        Compile
-                    </button>
-                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
-                        Cancel
-                    </button>
-                </div>
-            </div>
+
+<div class="modal-header">
+    <h2>Compile Game</h2>
+</div>
+<div class="modal-body">
+    <div class="form-group">
+        <label>
+            <input type="checkbox" id="compileIncludeMetadata" />
+            Include metadata file
+        </label>
+    </div>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" id="compileCreateZip" />
+            Download as zip file
+        </label>
+    </div>
+    <div class="compilation-output" id="compilationOutput" style="display: none;">
+        <h3>Output:</h3>
+        <pre id="compilationLog"></pre>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" onclick="window.compilerModule.compile()">
+        Compile
+    </button>
+    <button class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">
+        Cancel
+    </button>
+</div>

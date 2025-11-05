@@ -31,9 +31,7 @@ class CompilerModule {
 
     async compile() {
         const projectName = this.app.model.state.currentProject;
-        const outputName = document.getElementById('compileOutputName').value;
         const includeMetadata = document.getElementById('compileIncludeMetadata').checked;
-        const generateHTML = document.getElementById('compileGenerateHTML').checked;
         const includeEngine = document.getElementById('compileIncludeEngine')?.checked ?? true;
         const createZip = document.getElementById('compileCreateZip')?.checked ?? true; // NEW
 
@@ -72,10 +70,10 @@ class CompilerModule {
 
             // Create downloads (individual files or zip)
             if (createZip) {
-                await this.createZipDownload(result, outputName);
+                await this.createZipDownload(result);
                 log.textContent += '✓ Created zip bundle!\n';
             } else {
-                this.createDownloads(result, outputName, includeMetadata, generateHTML);
+                this.createDownloads(result, includeMetadata);
             }
             
             log.textContent += '✓ Compilation complete!\n';
@@ -89,7 +87,7 @@ class CompilerModule {
         }
     }
 
-    async createZipDownload(result, outputName) {
+    async createZipDownload(result) {
         const modal = document.querySelector('#modal-compilerModal .modal-body');
         
         const oldSection = modal.querySelector('.downloads-section');
@@ -101,7 +99,7 @@ class CompilerModule {
 
         try {
             // Create zip bundle
-            const zipBlob = await this.compiler.createZipBundle(result, outputName);
+            const zipBlob = await this.compiler.createZipBundle(result);
             
             // Create download link
             const zipUrl = URL.createObjectURL(zipBlob);
@@ -119,9 +117,9 @@ class CompilerModule {
         modal.insertBefore(downloads, document.getElementById('compilationOutput'));
     }
 
-    createDownloads(result, outputName, includeMetadata, generateHTML) {
+    createDownloads(result, includeMetadata) {
         const modal = document.querySelector('#modal-compilerModal .modal-body');
-        
+        const outputName = "game.js";
         const oldSection = modal.querySelector('.downloads-section');
         if (oldSection) oldSection.remove();
 
@@ -130,7 +128,7 @@ class CompilerModule {
         downloads.innerHTML = '<h3>Download Files:</h3>';
 
         // Game bundle
-        const bundleBlob = new Blob([result.code], { type: 'application/javascript' });
+        const bundleBlob = new Blob([result.engineCode + "\n\n" + result.code], { type: 'application/javascript' });
         const bundleUrl = URL.createObjectURL(bundleBlob);
         const bundleLink = document.createElement('a');
         bundleLink.href = bundleUrl;
@@ -140,18 +138,18 @@ class CompilerModule {
         downloads.appendChild(bundleLink);
         downloads.appendChild(document.createElement('br'));
 
-        // Engine bundle
-        if (result.engineCode) {
-            const engineBlob = new Blob([result.engineCode], { type: 'application/javascript' });
-            const engineUrl = URL.createObjectURL(engineBlob);
-            const engineLink = document.createElement('a');
-            engineLink.href = engineUrl;
-            engineLink.download = 'compiled-engine.js';
-            engineLink.textContent = `⚙️ compiled-engine.js`;
-            engineLink.className = 'download-link';
-            downloads.appendChild(engineLink);
-            downloads.appendChild(document.createElement('br'));
-        }
+        // // Engine bundle
+        // if (result.engineCode) {
+        //     const engineBlob = new Blob([result.engineCode], { type: 'application/javascript' });
+        //     const engineUrl = URL.createObjectURL(engineBlob);
+        //     const engineLink = document.createElement('a');
+        //     engineLink.href = engineUrl;
+        //     engineLink.download = 'engine.js';
+        //     engineLink.textContent = `⚙️ engine.js`;
+        //     engineLink.className = 'download-link';
+        //     downloads.appendChild(engineLink);
+        //     downloads.appendChild(document.createElement('br'));
+        // }
 
         // Metadata
         if (includeMetadata) {
@@ -170,19 +168,6 @@ class CompilerModule {
             metaLink.className = 'download-link';
             downloads.appendChild(metaLink);
             downloads.appendChild(document.createElement('br'));
-        }
-
-        // HTML
-        if (generateHTML) {
-            const html = this.compiler.generateCompiledHTML(result.projectName, outputName);
-            const htmlBlob = new Blob([html], { type: 'text/html' });
-            const htmlUrl = URL.createObjectURL(htmlBlob);
-            const htmlLink = document.createElement('a');
-            htmlLink.href = htmlUrl;
-            htmlLink.download = outputName.replace('.js', '.html');
-            htmlLink.textContent = `🌐 ${outputName.replace('.js', '.html')}`;
-            htmlLink.className = 'download-link';
-            downloads.appendChild(htmlLink);
         }
 
         modal.insertBefore(downloads, document.getElementById('compilationOutput'));
