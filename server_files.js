@@ -10,8 +10,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 // CLI Arguments
-const projectName = process.argv[2];
-const port = process.argv[3] || 443;
+const port = process.argv[2] || 443;
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
