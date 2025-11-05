@@ -63,7 +63,41 @@ class Compiler {
         this.compiledBundle = result;
         return result;
     }
+    async createZipBundle(result, outputName) {
+        if (typeof JSZip === 'undefined') {
+            throw new Error('JSZip library not loaded. Include jszip.min.js before using this feature.');
+        }
 
+        const zip = new JSZip();
+        
+        // Add game bundle
+        zip.file(outputName, result.code);
+        
+        // Add engine bundle if available
+        if (result.engineCode) {
+            zip.file('compiled-engine.js', result.engineCode);
+        }
+        
+        // Add metadata
+        const metadata = {
+            projectName: result.projectName,
+            timestamp: result.timestamp,
+            classRegistry: result.classRegistry,
+            dependencies: result.dependencies
+        };
+        zip.file(outputName.replace('.js', '.meta.json'), JSON.stringify(metadata, null, 2));
+        
+        // Add HTML file
+        const html = this.generateCompiledHTML(result.projectName, outputName);
+        zip.file('index.html', html);
+        
+        
+        // Generate zip blob
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        
+        console.log('✅ Zip bundle created');
+        return zipBlob;
+    }
     /**
      * Build the header section with metadata and utility functions
      */
