@@ -2,27 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
-    <script src="./../../engine/ModuleManager.js"></script>
-    <script src="./../../engine/BaseEngine.js"></script>
-    <script src="./../../engine/Engine.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">       
 </head>
 <body style="background-color: black;">
 <div id="appContainer" style="display: none;">
     
 </div>
-<script>    
-(() => {
-    const engine = new Engine("appContainer");  
-    async function main() {  
-        await engine.init("TurnBasedWarfare");
-        window.game = engine.gameInstance;
-    }
-    window.onload = main;
-})();
-</script>
-	
-	
+<script src="./../../engine/ModuleManager.js"></script>
+<script src="./../../engine/BaseEngine.js"></script>
+<script src="./../../engine/Engine.js"></script>
+<script src="./index.js"></script>
 </body>
 
 </html>
