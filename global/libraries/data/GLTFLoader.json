@@ -4,5 +4,6 @@
   "windowContext": "THREE_",
   "requireName": "GLTFLoader",
   "importName": "GLTFLoader",
-  "fileName": "GLTFLoader"
+  "fileName": "GLTFLoader",
+  "filePath": "/global/libraries/js/GLTFLoader.js"
 }

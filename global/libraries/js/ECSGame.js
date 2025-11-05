@@ -1,4 +1,4 @@
-class ECSGame extends window.engine.BaseECSGame {
+class ECSGame extends engine.BaseECSGame {
     constructor(app){
         super(app);   
         this.imageManager = new GUTS.ImageManager(this, 
@@ -17,5 +17,22 @@ class ECSGame extends window.engine.BaseECSGame {
     init() {    
         super.init();   
         this.imageManager.dispose();
+    }
+}
+
+if(typeof ECSGame != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ECSGame = ECSGame;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ECSGame;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ECSGame;
+        exports.ECSGame = ECSGame;
     }
 }
