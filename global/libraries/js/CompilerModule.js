@@ -35,6 +35,7 @@ class CompilerModule {
         const includeMetadata = document.getElementById('compileIncludeMetadata').checked;
         const generateHTML = document.getElementById('compileGenerateHTML').checked;
         const includeEngine = document.getElementById('compileIncludeEngine')?.checked ?? true;
+        const createZip = document.getElementById('compileCreateZip')?.checked ?? true; // NEW
 
         const output = document.getElementById('compilationOutput');
         const log = document.getElementById('compilationLog');
@@ -69,7 +70,13 @@ class CompilerModule {
             
             log.textContent += '\n';
 
-            this.createDownloads(result, outputName, includeMetadata, generateHTML);
+            // Create downloads (individual files or zip)
+            if (createZip) {
+                await this.createZipDownload(result, outputName);
+                log.textContent += '✓ Created zip bundle!\n';
+            } else {
+                this.createDownloads(result, outputName, includeMetadata, generateHTML);
+            }
             
             log.textContent += '✓ Compilation complete!\n';
             log.textContent += 'Download links created above.\n';
@@ -80,6 +87,36 @@ class CompilerModule {
             log.textContent += `\n✗ Error: ${error.message}\n`;
             console.error(error);
         }
+    }
+
+    async createZipDownload(result, outputName) {
+        const modal = document.querySelector('#modal-compilerModal .modal-body');
+        
+        const oldSection = modal.querySelector('.downloads-section');
+        if (oldSection) oldSection.remove();
+
+        const downloads = document.createElement('div');
+        downloads.className = 'downloads-section';
+        downloads.innerHTML = '<h3>Download Files:</h3>';
+
+        try {
+            // Create zip bundle
+            const zipBlob = await this.compiler.createZipBundle(result, outputName);
+            
+            // Create download link
+            const zipUrl = URL.createObjectURL(zipBlob);
+            const zipLink = document.createElement('a');
+            zipLink.href = zipUrl;
+            zipLink.download = `${result.projectName.toLowerCase().replace(/\s+/g, '-')}-compiled.zip`;
+            zipLink.textContent = `📦 ${result.projectName}-compiled.zip (${Math.round(zipBlob.size / 1024)} KB)`;
+            zipLink.className = 'download-link';
+            downloads.appendChild(zipLink);
+            
+        } catch (error) {
+            downloads.innerHTML += `<p style="color: red;">Error creating zip: ${error.message}</p>`;
+        }
+
+        modal.insertBefore(downloads, document.getElementById('compilationOutput'));
     }
 
     createDownloads(result, outputName, includeMetadata, generateHTML) {
@@ -103,7 +140,7 @@ class CompilerModule {
         downloads.appendChild(bundleLink);
         downloads.appendChild(document.createElement('br'));
 
-        // Engine bundle (if compiled)
+        // Engine bundle
         if (result.engineCode) {
             const engineBlob = new Blob([result.engineCode], { type: 'application/javascript' });
             const engineUrl = URL.createObjectURL(engineBlob);

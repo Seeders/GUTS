@@ -1,0 +1,11 @@
+{
+  "title": "Game Compiler",
+  "library": "CompilerModule",
+  "propertyName": "compiler",
+  "libraries": [
+    "jszip.min.js",
+    "Compiler",
+    "CompilerModule"
+  ],
+  "interface": "compilerInterface"
+}
