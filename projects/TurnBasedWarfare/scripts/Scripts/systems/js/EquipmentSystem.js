@@ -219,82 +219,82 @@ class EquipmentSystem extends engine.BaseSystem {
    
     async equipItem(entityId, slotData, itemData) {
         return false;
-        const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
-        const slotType = slotData.slot;
-        if (!equipment) return false;
+        // const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
+        // const slotType = slotData.slot;
+        // if (!equipment) return false;
         
-        if (equipment.slots[slotType]) {
-            await this.unequipItem(entityId, slotType);
-        }
+        // if (equipment.slots[slotType]) {
+        //     await this.unequipItem(entityId, slotType);
+        // }
         
-        const spawnType = slotData.item;
-        const equipmentModel = await this.loadEquipmentModel(spawnType);
-        if (!equipmentModel) return false;
+        // const spawnType = slotData.item;
+        // const equipmentModel = await this.loadEquipmentModel(spawnType);
+        // if (!equipmentModel) return false;
         
-        const batchKey = `equipment_${spawnType}`;
-        let batch = this.equipmentBatches.get(batchKey);
+        // const batchKey = `equipment_${spawnType}`;
+        // let batch = this.equipmentBatches.get(batchKey);
         
-        if (!batch) {
-            batch = this.createEquipmentBatch(batchKey, equipmentModel);
-            if (!batch) return false;
-        }
+        // if (!batch) {
+        //     batch = this.createEquipmentBatch(batchKey, equipmentModel);
+        //     if (!batch) return false;
+        // }
         
-        const unitInstance = this.game.renderSystem?.entityToInstance?.get(entityId);
-        if (!unitInstance) return false;
+        // const unitInstance = this.game.renderSystem?.entityToInstance?.get(entityId);
+        // if (!unitInstance) return false;
         
-        const unitBatch = this.game.renderSystem?.vatBatches?.get(unitInstance.batchKey);
-        if (!unitBatch?.meta?.attachmentBones) {
-            console.error('[Equipment] Unit has no attachment bone data');
-            return false;
-        }
+        // const unitBatch = this.game.renderSystem?.vatBatches?.get(unitInstance.batchKey);
+        // if (!unitBatch?.meta?.attachmentBones) {
+        //     console.error('[Equipment] Unit has no attachment bone data');
+        //     return false;
+        // }
         
-        const boneNames = this.boneNameMappings.default[slotType];
-        let attachmentBoneIndex = -1;
+        // const boneNames = this.boneNameMappings.default[slotType];
+        // let attachmentBoneIndex = -1;
         
-        for (const boneName of boneNames) {
-            attachmentBoneIndex = this.findAttachmentBoneIndex(unitBatch.meta.attachmentBones, boneName);
-            if (attachmentBoneIndex >= 0) break;
-        }
+        // for (const boneName of boneNames) {
+        //     attachmentBoneIndex = this.findAttachmentBoneIndex(unitBatch.meta.attachmentBones, boneName);
+        //     if (attachmentBoneIndex >= 0) break;
+        // }
         
-        if (attachmentBoneIndex < 0) {
-            console.error(`[Equipment] No valid attachment bone found for slot ${slotType}`);
-            return false;
-        }
+        // if (attachmentBoneIndex < 0) {
+        //     console.error(`[Equipment] No valid attachment bone found for slot ${slotType}`);
+        //     return false;
+        // }
         
-        const instanceIndex = this.allocateEquipmentInstance(batch);
-        if (instanceIndex === null) return false;
+        // const instanceIndex = this.allocateEquipmentInstance(batch);
+        // if (instanceIndex === null) return false;
         
-        const equipInstance = {
-            batchKey,
-            instanceIndex,
-            slotType,
-            attachmentBoneIndex,
-            attachmentData: slotData.attachmentData
-        };
+        // const equipInstance = {
+        //     batchKey,
+        //     instanceIndex,
+        //     slotType,
+        //     attachmentBoneIndex,
+        //     attachmentData: slotData.attachmentData
+        // };
         
-        if (!this.equipmentInstances.has(entityId)) {
-            this.equipmentInstances.set(entityId, new Map());
-        }
-        this.equipmentInstances.get(entityId).set(slotType, equipInstance);
+        // if (!this.equipmentInstances.has(entityId)) {
+        //     this.equipmentInstances.set(entityId, new Map());
+        // }
+        // this.equipmentInstances.get(entityId).set(slotType, equipInstance);
         
-        if (!this.entityEquipment.has(entityId)) {
-            this.entityEquipment.set(entityId, new Map());
-        }
+        // if (!this.entityEquipment.has(entityId)) {
+        //     this.entityEquipment.set(entityId, new Map());
+        // }
         
-        this.entityEquipment.get(entityId).set(slotType, {
-            itemData,
-            spawnType,
-            instanceIndex,
-            batchKey
-        });
+        // this.entityEquipment.get(entityId).set(slotType, {
+        //     itemData,
+        //     spawnType,
+        //     instanceIndex,
+        //     batchKey
+        // });
         
-        equipment.slots[slotType] = {
-            itemData,
-            equippedItem: itemData
-        };
+        // equipment.slots[slotType] = {
+        //     itemData,
+        //     equippedItem: itemData
+        // };
         
-        console.log(`[Equipment] Equipped ${spawnType} to entity ${entityId} slot ${slotType} attachment bone ${attachmentBoneIndex}`);
-        return true;
+        // console.log(`[Equipment] Equipped ${spawnType} to entity ${entityId} slot ${slotType} attachment bone ${attachmentBoneIndex}`);
+        // return true;
     }
     
     createEquipmentBatch(batchKey, equipmentModel) {

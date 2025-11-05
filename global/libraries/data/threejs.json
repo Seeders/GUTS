@@ -1,6 +1,6 @@
 {
   "title": "THREE",
-  "filePath": "/node_modules/three/build/three.module.js",
+  "filePath": "/node_modules/three/build/three.module.min.js",
   "requireName": "THREE",
   "importName": "three",
   "fileName": "threejs",
