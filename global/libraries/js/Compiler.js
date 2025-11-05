@@ -854,20 +854,20 @@ window.COMPILED_GAME.ready = new Promise((resolve) => {
 <div id="appContainer" style="display: none;"></div>
 
 <script>
-    const engine = new Engine("appContainer");
-    
-    async function main() {
-        await window.COMPILED_GAME.ready;
-        await engine.init("${projectName}");
-        
-        if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
-            window.COMPILED_GAME.init(engine);
-        }
-        
-        window.game = engine.gameInstance;
-    }
-    
-    window.onload = main;
+    (() => {        
+        const engine = new Engine("appContainer");        
+        async function main() {
+            await window.COMPILED_GAME.ready;
+            await engine.init("${projectName}");
+            
+            if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
+                window.COMPILED_GAME.init(engine);
+            }
+            
+            window.game = engine.gameInstance;
+        }        
+        window.onload = main;    
+    })();
 </script>
 </body>
 </html>`;
