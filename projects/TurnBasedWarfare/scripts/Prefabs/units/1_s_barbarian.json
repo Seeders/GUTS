@@ -145,9 +145,9 @@
     "2_s_gladiator",
     "2_s_warlord"
   ],
-  "squadWidth": 2,
+  "squadWidth": 1,
   "squadHeight": 1,
-  "placementGridWidth": 2,
+  "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [],
   "range": 5,
