@@ -4,13 +4,13 @@ class UnitOrderSystem extends engine.BaseSystem {
         this.game = game;
         this.game.unitOrderSystem = this;
 
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.CT = this.game.componentManager.getComponentTypes();
 
         this.isTargeting = false;
         this.pendingCallbacks = 0;
 
         this._onCanvasClick = this._onCanvasClick.bind(this);
-        this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
+       // this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
 
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
@@ -32,12 +32,10 @@ class UnitOrderSystem extends engine.BaseSystem {
         const placement = this.game.placementSystem.getPlacementById(placementId);
         
         actionPanel.innerHTML = "";
-        
-        const componentTypes = this.game.componentManager.getComponentTypes();
-  
+          
         
         const firstUnit = placement.squadUnits[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, componentTypes.UNIT_TYPE) : null;
+        const unitType = firstUnit ? this.game.getComponent(firstUnit, this.CT.UNIT_TYPE) : null;
         
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -204,12 +202,9 @@ class UnitOrderSystem extends engine.BaseSystem {
         const canvas = this.game.canvas;
         if (canvas) {
             canvas.addEventListener('contextmenu', this._onCanvasClick, { once: true });
-            canvas.addEventListener('mousemove', this._onCanvasMouseMove);
+           // canvas.addEventListener('mousemove', this._onCanvasMouseMove);
         }
 
-        document.body.style.cursor = this.cursorWhenTargeting;
-
-        this.game.uiSystem?.showNotification('🎯 Click the ground to set a target for selected units', 'info', 1200);
     }
 
     stopTargeting() {
@@ -219,9 +214,8 @@ class UnitOrderSystem extends engine.BaseSystem {
         const canvas = this.game.canvas;
         if (canvas) {
             canvas.removeEventListener('contextmenu', this._onCanvasClick, { once: true });
-            canvas.removeEventListener('mousemove', this._onCanvasMouseMove);
+       //     canvas.removeEventListener('mousemove', this._onCanvasMouseMove);
         }
-        document.body.style.cursor = 'default';
         
         this.targetingPreview.clear();
     }
@@ -235,12 +229,11 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
         }
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
         placementIds.forEach((placementId) => {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             placement.squadUnits.forEach((unitId) => {
-                const position = this.game.getComponent(unitId, ComponentTypes.POSITION);
-                const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+                const position = this.game.getComponent(unitId, this.CT.POSITION);
+                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
                 if (this.game.effectsSystem && position) {
                     this.game.effectsSystem.createParticleEffect(position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
@@ -259,34 +252,70 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.stopTargeting();
         }
     }
-
-    _onCanvasMouseMove(event) {
-        if (!this.isTargeting) return;
-
-        const canvas = this.game.canvas;
-        if (!canvas) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
-        if (!worldPos) {
-            this.targetingPreview.clear();
-            return;
+    onUnitSelected(entityId){
+        const unitType = this.game.getComponent(entityId, this.CT.UNIT_TYPE);
+        if(unitType.collection == "units") {
+            const placement = this.game.getComponent(entityId, this.CT.PLACEMENT);        
+            const placementId = placement.placementId;
+            this.showSquadActionPanel(placementId);   
+            this.startTargeting();     
+        } else {
+            this.stopTargeting();
         }
-
-        const placementIds = this.game.selectedUnitSystem?.getSelectedSquads() || [];
-        if (placementIds.length === 0) {
-            this.targetingPreview.clear();
-            return;
-        }
-
-        const targetPosition = { x: worldPos.x, z: worldPos.z };
-        const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
+        this.showMoveTargets();
+    }
+    showMoveTargets() {
+        this.targetingPreview.clear();
+        const placementIds = this.game.selectedUnitSystem.getSelectedSquads() || [];
+        const targetPositions = [];
+        placementIds.forEach((placementId) => {
+            const placement = this.game.placementSystem.getPlacementById(placementId);
+            placement.squadUnits.forEach((entityId) => {                
+                const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
+                if(aiState.targetPosition && aiState.currentAIController == "OrderSystemMove"){
+                    targetPositions.push(aiState.targetPosition);
+                }
+            });            
+        });
 
         this.targetingPreview.showAtWorldPositions(targetPositions, true);
     }
+    // _onCanvasMouseMove(event) {
+    //     if (!this.isTargeting) return;
+
+    //     const canvas = this.game.canvas;
+    //     if (!canvas) {
+    //         this.stopTargeting();
+    //         this.targetingPreview.clear();
+    //         return;
+    //     }
+
+    //     const rect = canvas.getBoundingClientRect();
+    //     const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    //     const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    //     const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
+    //     if (!worldPos) {
+    //         this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
+    //         this.targetingPreview.clear();
+    //         this.stopTargeting();
+    //         return;
+    //     }
+    //     const placementIds = this.game.selectedUnitSystem.getSelectedSquads() || [];
+    //     let isBuilding = false;
+    //     placementIds.forEach((placementId) => {
+    //         const placement = this.game.placementSystem.getPlacementById(placementId);
+    //         if(placement.unitType.collection == "buildings"){
+    //             isBuilding = true;
+    //         }
+    //         targetPositions.push(placement.targetPosition);
+    //     });
+    //     if(isBuilding){
+    //         const targetPosition = { x: worldPos.x, z: worldPos.z };
+    //         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
+    //         this.targetingPreview.showAtWorldPositions(targetPositions, true);
+    //     }
+    // }
 
     _onCanvasClick(event) {
         if (!this.isTargeting) return;
@@ -333,14 +362,13 @@ class UnitOrderSystem extends engine.BaseSystem {
         this.game.networkManager.setSquadTargets(
             { placementIds, targetPositions },
             (success) => {
-                if (success) { 
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();        
+                if (success) {       
                     for(let i = 0; i < placementIds.length; i++){
                         let placementId = placementIds[i];
                         const targetPosition = targetPositions[i];
                         const placement = this.game.placementSystem.getPlacementById(placementId);
                         placement.squadUnits.forEach((unitId) => {
-                            const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+                            const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
                             if (this.game.effectsSystem && targetPosition) {
                                 this.game.effectsSystem.createParticleEffect(targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
@@ -350,8 +378,9 @@ class UnitOrderSystem extends engine.BaseSystem {
                             }
                         });
                                 
-                    }      
-                    this.stopTargeting();                
+                    }       
+                    this.startTargeting();   
+                    this.showMoveTargets();           
                 }                
             }
         );
@@ -372,7 +401,6 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     applySquadTargetPosition(placementId, targetPosition) {   
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
         const placement = this.game.placementSystem.getPlacementById(placementId);
         if(!placement){
             this.temporaryOpponentMoveOrders.set(placementId, targetPosition);
@@ -380,7 +408,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         }
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
-            const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
             if(aiState && targetPosition){
                 aiState.targetPosition = targetPosition;
                 aiState.currentAIController = "OrderSystemMove";

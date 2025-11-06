@@ -188,21 +188,6 @@ class SelectedUnitSystem extends engine.BaseSystem {
             this.selectedUnitIds.add(unitId);
         });
         this.currentSelectedIndex = 0;
-        const currentUnit = selectedUnits[this.currentSelectedIndex];
-        if(currentUnit){
-            const placement = this.game.getComponent(currentUnit, this.componentTypes.PLACEMENT);
-            const unitType = this.game.getComponent(currentUnit, this.componentTypes.UNIT_TYPE );
-            if(placement){
-                const placementId = placement.placementId;
-                if(unitType.collection == 'units'){                    
-                    this.game.unitOrderSystem.showSquadActionPanel(placementId);                    
-                } else {
-                    const placement = this.game.placementSystem.getPlacementById(placementId);
-                    this.game.shopSystem.renderBuildingActions(placement);
-                }
-            }
-        }
-        // Update the UI and highlights for all selected squads
         if (this.selectedUnitIds.size > 0) {
             this.updateMultipleSquadSelection();
         } else {            
@@ -293,14 +278,10 @@ class SelectedUnitSystem extends engine.BaseSystem {
     
         this.setSelectedEntity(unitId);         
         this.highlightUnits(Array.from(this.selectedUnitIds)); 
-        
-        this.game.unitOrderSystem.stopTargeting();
+        this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
         if(this.selectedUnitIds.size > 0){
             let unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-            const unitType = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().UNIT_TYPE);
-            if(unitType.collection == "units") {
-                this.game.unitOrderSystem.startTargeting();     
-            }
+            this.game.triggerEvent("onUnitSelected", unitId);
         }
     }
     
@@ -415,26 +396,16 @@ class SelectedUnitSystem extends engine.BaseSystem {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             squadData.unitIds = placement.squadUnits;
             this.setSelectedEntity(entityId);
-            this.highlightUnits(placement.squadUnits);  
-            if(placement.collection == 'units'){           
-                this.game.unitOrderSystem.startTargeting();     
-            } else {                
-                this.game.unitOrderSystem.stopTargeting()
-            }
+            this.highlightUnits(placement.squadUnits);              
+            this.game.triggerEvent("onUnitSelected", entityId)
         }
     }
 
     setSelectedEntity(entityId){         
         const CT = this.game.componentManager.getComponentTypes();
-        const placement = this.game.getComponent(entityId, CT.PLACEMENT);
-        const placementId = placement.placementId;
+        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);     
         this.game.state.selectedEntity.entityId = entityId;
-        this.game.state.selectedEntity.collection = placement.collection;
-        if(placement.collection == "units"){
-            this.game.unitOrderSystem.showSquadActionPanel(placementId);         
-        } else {
-            this.game.shopSystem.renderBuildingActions(placement);
-        }
+        this.game.state.selectedEntity.collection = unitType.collection;      
     }
 
     update() {

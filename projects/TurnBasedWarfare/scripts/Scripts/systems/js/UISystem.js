@@ -13,7 +13,6 @@ class UISystem extends engine.BaseSystem {
     }
     
     start() {
-        this.game.shopSystem.createShop();
         this.game.particleSystem.initialize(); 
         this.game.effectsSystem.initialize();                  
         // Welcome messages

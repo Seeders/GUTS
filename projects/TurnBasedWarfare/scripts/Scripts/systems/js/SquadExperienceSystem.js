@@ -322,10 +322,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         
         // Update squad value based on new unit type
         squadData.squadValue = this.calculateSquadValue(placement.unitType);
-            // Refresh shop
-        if (this.game.shopSystem) {
-            this.game.shopSystem.createShop();
-        }
+
         return true;
     }
     

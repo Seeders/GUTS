@@ -16,26 +16,25 @@ class ShopSystem extends engine.BaseSystem {
         this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
     }
 
-    createShop() {
-        this.renderActionPanel();
-        this.createExperiencePanel();
-    }
 
-    renderActionPanel() {
+    clearActionPanel() {
         const container = document.getElementById('actionPanel');
         if (!container) return;
         container.innerHTML = '';
-
-        if (this.game.state.selectedEntity.collection == 'buildings') {
-            this.renderBuildingActions(container);
-        } 
     }
 
     clearSelectedEntity() {    
         this.game.state.selectedEntity.entityId = null;
         this.game.state.selectedEntity.collection = null;
     }
-
+    onUnitSelected(entityId){
+        const CT = this.game.componentManager.getComponentTypes();
+        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+        if(unitType.collection == "buildings") {
+            const placement = this.game.getComponent(entityId, CT.PLACEMENT);        
+            this.renderBuildingActions(placement);
+        }
+    }
     renderBuildingActions(placement) {
         const building = placement.unitType;
         const container = document.getElementById('actionPanel');  
@@ -45,20 +44,6 @@ class ShopSystem extends engine.BaseSystem {
             this.clearSelectedEntity();
             return;
         }
-
-        // const header = document.createElement('div');
-        // header.className = 'action-panel-header';
-        // header.innerHTML = `
-        //     <button class="deselect-btn" id="deselectBtn">←</button>
-        //     <span>${building.icon || '🏛️'} ${building.title}</span>
-        // `;
-        // container.appendChild(header);
-
-        // document.getElementById('deselectBtn').addEventListener('click', () => {
-        //     this.clearSelectedEntity();
-        //     this.createShop();
-        // });
-
        
         const buildingId = this.game.state.selectedEntity.entityId;
         if(this.buildingProductionProgress.has(buildingId)){
@@ -93,11 +78,6 @@ class ShopSystem extends engine.BaseSystem {
     createUnitsSection(building) {
         const section = document.createElement('div');
         section.className = 'action-section';
-
-        // const header = document.createElement('div');
-        // header.className = 'action-section-header';
-        // header.textContent = 'RECRUIT';
-        // section.appendChild(header);
 
         const grid = document.createElement('div');
         grid.className = 'action-grid';
@@ -254,9 +234,7 @@ class ShopSystem extends engine.BaseSystem {
         }
 
         this.buildingProductionProgress.set(entityId, 0);
-        this.buildingUpgrades.set(buildingId, new Set());
-        this.createShop();
-        
+        this.buildingUpgrades.set(buildingId, new Set());        
     }
 
     purchaseUnit(unitId, unit) {
@@ -292,8 +270,7 @@ class ShopSystem extends engine.BaseSystem {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.buildingProductionProgress.set(buildingId, newProgress);
-                this.game.placementSystem.placeSquad(placement);                
-                this.createShop();
+                this.game.placementSystem.placeSquad(placement);  
             }
         });       
     }
@@ -437,7 +414,6 @@ class ShopSystem extends engine.BaseSystem {
                 this.buildingProductionProgress.set(buildingEntityId, 0);
             });
         });
-        this.createShop();
     }
 
     createExperiencePanel() {

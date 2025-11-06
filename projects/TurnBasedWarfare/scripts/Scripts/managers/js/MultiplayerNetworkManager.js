@@ -438,7 +438,6 @@ class MultiplayerNetworkManager {
             // Update UI to reflect synced experience data
             if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
                 this.game.shopSystem.updateGoldDisplay();
-                this.game.shopSystem.createShop(); // Refresh experience panels
             }
             
         }
