@@ -263,15 +263,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
                     let targetPosition = aiState.targetPosition;
-                    let tempPosition = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
-                    if(tempPosition){
-                        targetPosition = tempPosition;
+                    let meta = aiState.meta;
+                    let tempMoveOrders = this.game.unitOrderSystem.temporaryOpponentMoveOrders.get(placement.placementId);
+                    if(tempMoveOrders){
+                        targetPosition = tempMoveOrders.targetPosition;
+                        meta = tempMoveOrders.meta;
                         this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);                    
                     }
 
                     if(targetPosition){
-                            console.log('found targetPosition', entityId, targetPosition, aiState);
-                        if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
+                        if(!aiState.currentAIController || aiState.currentAIController == "UnitOrderSystem"){
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
                             const distSq = dx * dx + dz * dz;
@@ -279,15 +280,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                             if (distSq <= threshold * threshold) {
                                 aiState.currentAIController = null;
                                 aiState.targetPosition = null;
+                                aiState.meta = {};
                                 placement.targetPosition = null;
                             } else {
-                                aiState.targetPosition = { ...targetPosition };      
-                                aiState.currentAIController = "OrderSystemMove";
+                                aiState.targetPosition = { ...targetPosition };   
+                                aiState.meta = { ...meta };
+                                aiState.currentAIController = "UnitOrderSystem";
                             }
                         }
-                    } else {
-                        console.log('did not find target position', aiState);
-                    }
+                    } 
                 }
             });
         });

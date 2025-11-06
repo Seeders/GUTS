@@ -67,5 +67,6 @@
   ],
   "height": 100,
   "size": 75,
-  "icon": "building_townHall"
+  "icon": "building_townHall",
+  "hp": 2500
 }

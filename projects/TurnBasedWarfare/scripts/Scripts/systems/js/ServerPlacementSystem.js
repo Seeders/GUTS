@@ -201,7 +201,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     handleSetSquadTarget(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementId, targetPosition } = data;
+            const { placementId, targetPosition, meta } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
                     success: false
@@ -242,7 +242,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
                 if(aiState && targetPosition){
                     aiState.targetPosition = targetPosition;
-                    aiState.currentAIController = "OrderSystemMove";
+                    aiState.meta = meta;
+                    aiState.currentAIController = "UnitOrderSystem";
                 }
             });
                     
@@ -252,7 +253,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
                 success: true,
                 placementId,
-                targetPosition
+                targetPosition,
+                meta
             });
             
             // Broadcast to other players in the room
@@ -260,7 +262,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
                         placementId,
-                        targetPosition
+                        targetPosition,
+                        meta
                     });
                 }
             }
@@ -278,7 +281,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     handleSetSquadTargets(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementIds, targetPositions } = data;
+            const { placementIds, targetPositions, meta } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
                     success: false
@@ -323,7 +326,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
                     if(aiState && targetPosition){
                         aiState.targetPosition = targetPosition;
-                        aiState.currentAIController = "OrderSystemMove";
+                        aiState.meta = meta;
+                        aiState.currentAIController = "UnitOrderSystem";
                     }
                 });
                         
@@ -342,7 +346,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
                         placementIds,
-                        targetPositions
+                        targetPositions,
+                        meta
                     });
                 }
             }
@@ -424,7 +429,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     if (aiState && position) {
                         
                         if(targetPosition){
-                            if(!aiState.currentAIController || aiState.currentAIController == "OrderSystemMove"){
+                            if(!aiState.currentAIController || aiState.currentAIController == "UnitOrderSystem"){
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
                                 const distSq = dx * dx + dz * dz;
@@ -436,7 +441,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                     placement.targetPosition = null;
                                 } else {
                                     aiState.targetPosition = { ...targetPosition };      
-                                    aiState.currentAIController = "OrderSystemMove";
+                                    aiState.currentAIController = "UnitOrderSystem";
                                 }
                             }
                         }

@@ -66,5 +66,6 @@
   "placementGridHeight": 2,
   "height": 100,
   "size": 50,
-  "icon": "building_fletchersHall"
+  "icon": "building_fletchersHall",
+  "hp": 1500
 }

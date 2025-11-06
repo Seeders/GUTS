@@ -1,5 +1,5 @@
 {
-  "title": "Move",
+  "title": "Force Move",
   "icon": "order_move",
-  "order": "startTargeting"
+  "order": "moveOrderAction"
 }

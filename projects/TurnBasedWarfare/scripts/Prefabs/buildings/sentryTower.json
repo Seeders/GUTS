@@ -69,5 +69,5 @@
   "range": 300,
   "projectile": "arrow",
   "element": "physical",
-  "hp": 300
+  "hp": 500
 }

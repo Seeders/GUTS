@@ -58,6 +58,10 @@ class CombatAISystem extends engine.BaseSystem {
             if (!pos || !vel || !combat || !team || !aiState){
                  continue;
             }
+            
+            // DEBUG: Log combat range and position
+            const preventEnemiesInRangeCheck = aiState.meta ? aiState.meta.preventEnemiesInRangeCheck : false; 
+
             if (!aiState.aiBehavior) {
                 aiState.aiBehavior = {
                     lastDecisionTime: 0,
@@ -68,9 +72,7 @@ class CombatAISystem extends engine.BaseSystem {
             }
             const aiBehavior = aiState.aiBehavior;
 
-            // DEBUG: Log combat range and position
-
-            const enemiesInRange = this.getAllEnemiesInRange(entityId, team, combat) || [];
+            const enemiesInRange = preventEnemiesInRangeCheck ? [] : (this.getAllEnemiesInRange(entityId, team, combat) || []);
             
             // DEBUG: Log enemies found
             if (aiState.target) {
@@ -162,7 +164,6 @@ class CombatAISystem extends engine.BaseSystem {
 
     makeAIDecision(entityId, pos, combat, team, aiState, enemiesInRange, collision) {
         const aiBehavior = aiState.aiBehavior;
-        
         // CHANGED: Always try to find the best target from ALL enemies
         let targetEnemy = this.findBestTarget(entityId, pos, combat.range, enemiesInRange, aiState);
         

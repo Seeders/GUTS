@@ -385,13 +385,13 @@ class MultiplayerNetworkManager {
     }
 
     handleOpponentSquadTarget(data) {
-        const { placementId, targetPosition } = data;
-        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition);        
+        const { placementId, targetPosition, meta } = data;
+        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta);        
     }
 
     handleOpponentSquadTargets(data) {
-        const { placementIds, targetPositions } = data;
-        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions);        
+        const { placementIds, targetPositions, meta } = data;
+        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta);        
     }
 
     syncWithServerState(data) {

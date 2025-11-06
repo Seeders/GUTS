@@ -7,6 +7,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         this.CT = this.game.componentManager.getComponentTypes();
 
         this.isTargeting = false;
+        this.isForceMove = false;
         this.pendingCallbacks = 0;
 
         this._onCanvasClick = this._onCanvasClick.bind(this);
@@ -192,11 +193,15 @@ class UnitOrderSystem extends engine.BaseSystem {
         
         this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
     }
+    moveOrderAction() {
+        this.startTargeting({preventEnemiesInRangeCheck: true});
+    }
 
-    startTargeting() {
+    startTargeting(meta = {}) {
         this.stopTargeting();
         if(this.game.state.phase != 'placement') return;
         this.isTargeting = true;
+        this.orderMeta = meta;
         this.pendingCallbacks = 0;
 
         const canvas = this.game.canvas;
@@ -272,7 +277,7 @@ class UnitOrderSystem extends engine.BaseSystem {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             placement.squadUnits.forEach((entityId) => {                
                 const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
-                if(aiState.targetPosition && aiState.currentAIController == "OrderSystemMove"){
+                if(aiState.targetPosition && aiState.currentAIController == "UnitOrderSystem"){
                     targetPositions.push(aiState.targetPosition);
                 }
             });            
@@ -358,9 +363,11 @@ class UnitOrderSystem extends engine.BaseSystem {
         if(this.game.state.phase != "placement") {
             return;
         };
+        const meta = { ...this.orderMeta };        
+        this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         this.game.networkManager.setSquadTargets(
-            { placementIds, targetPositions },
+            { placementIds, targetPositions, meta },
             (success) => {
                 if (success) {       
                     for(let i = 0; i < placementIds.length; i++){
@@ -374,7 +381,8 @@ class UnitOrderSystem extends engine.BaseSystem {
                             }
                             if(aiState && targetPosition){
                                 aiState.targetPosition = targetPosition;
-                                aiState.currentAIController = "OrderSystemMove";
+                                aiState.meta = meta;
+                                aiState.currentAIController = "UnitOrderSystem";
                             }
                         });
                                 
@@ -400,10 +408,10 @@ class UnitOrderSystem extends engine.BaseSystem {
         return targetPositions;
     }
 
-    applySquadTargetPosition(placementId, targetPosition) {   
+    applySquadTargetPosition(placementId, targetPosition, meta) {   
         const placement = this.game.placementSystem.getPlacementById(placementId);
         if(!placement){
-            this.temporaryOpponentMoveOrders.set(placementId, targetPosition);
+            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta });
             return;
         }
         placement.targetPosition = targetPosition;
@@ -411,16 +419,17 @@ class UnitOrderSystem extends engine.BaseSystem {
             const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
             if(aiState && targetPosition){
                 aiState.targetPosition = targetPosition;
-                aiState.currentAIController = "OrderSystemMove";
+                aiState.meta = meta;
+                aiState.currentAIController = "UnitOrderSystem";
             }
         });            
     }
 
-    applySquadsTargetPositions(placementIds, targetPositions) {     
+    applySquadsTargetPositions(placementIds, targetPositions, meta) {     
         for(let i = 0; i < placementIds.length; i++){  
             let placementId = placementIds[i];
             let targetPosition = targetPositions[i];
-            this.applySquadTargetPosition(placementId, targetPosition);
+            this.applySquadTargetPosition(placementId, targetPosition, meta);
         }
     }
     onBattleStart() {

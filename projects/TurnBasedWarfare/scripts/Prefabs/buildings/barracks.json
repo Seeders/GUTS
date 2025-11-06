@@ -73,5 +73,6 @@
   "placementGridHeight": 3,
   "height": 100,
   "size": 75,
-  "icon": "building_barracks"
+  "icon": "building_barracks",
+  "hp": 1500
 }

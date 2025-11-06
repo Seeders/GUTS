@@ -4,7 +4,7 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'heal',
             name: 'Heal',
             description: 'Restores health to the most injured ally',
-            cooldown: 4.0,
+            cooldown: 30,
             range: 200,
             manaCost: 40,
             targetType: 'ally',
