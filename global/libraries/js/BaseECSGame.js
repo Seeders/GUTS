@@ -18,6 +18,8 @@ class BaseECSGame {
         this.deltaTime = 0;
 
         this.isServer = false;        
+
+        this.componentTypes = null;
     }
     init() {
         if(document){
