@@ -59,7 +59,6 @@ class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `An arctic blizzard engulfs the battlefield!`, true);
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout
         this.game.schedulingSystem.scheduleAction(() => {
             this.createBlizzard(casterEntity);
         }, this.castTime, casterEntity);

@@ -2,7 +2,6 @@ class DeathSystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
         this.game.deathSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
     }
     
     update() {
@@ -34,7 +33,7 @@ class DeathSystem extends engine.BaseSystem {
                 if (animationCompleted || timerExpired) {
                     console.log(entityId, "DIED");
                     if(unitType && unitType.collection == "buildings"){
-                        this.destroyBuilding(entityId, unitType);
+                        this.destroyBuilding(entityId);
                     } else {
                         this.convertToCorpse(entityId);
                     }
@@ -45,16 +44,8 @@ class DeathSystem extends engine.BaseSystem {
 
 
 
-    destroyBuilding(entityId, unitType) {
-        console.log(`=== Destroy Building DEBUG ===`);     
-        console.log(`Data received:`, entityId, unitType);        
-
-        if (unitType.id === 'goldMine') {
-            const result = this.game.goldMineSystem.destroyGoldMine(entityId);
-            if (!result.success) {
-                return result;
-            }
-        } 
+    destroyBuilding(entityId) {
+        this.game.triggerEvent('onDestroyBuilding', entityId);
         this.game.destroyEntity(entityId);  
         return { success: true };
     }
@@ -93,6 +84,7 @@ class DeathSystem extends engine.BaseSystem {
         // Remove death state
         this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        
         
+        this.game.triggerEvent('onUnitKilled', entityId);
         // Add corpse component
         this.game.addComponent(entityId, this.componentTypes.CORPSE, Components.Corpse(
             { ...unitType }, 

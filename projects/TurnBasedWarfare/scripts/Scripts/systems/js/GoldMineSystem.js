@@ -345,16 +345,21 @@ class GoldMineSystem extends engine.BaseSystem {
 
     
     onBattleEnd() {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const entities = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const entities = this.game.getEntitiesWith(this.game.componentTypes.MINING_STATE);        
         entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(entityId, this.game.componentTypes.MINING_STATE);
             if (miningState) {
                 miningState.miningStartTime = 0;
                 miningState.depositStartTime = 0;
             }
         });
+    }
+
+    onDestroyBuilding(entityId){
+        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        if (unitType.id === 'goldMine') {
+            this.game.goldMineSystem.destroyGoldMine(entityId);
+        } 
     }
 
     reset() {

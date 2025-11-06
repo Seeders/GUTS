@@ -58,7 +58,6 @@ class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `Protective winds swirl around allies!`);
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout
         this.game.schedulingSystem.scheduleAction(() => {
             this.createWindShields(casterEntity);
         }, this.castTime, casterEntity);

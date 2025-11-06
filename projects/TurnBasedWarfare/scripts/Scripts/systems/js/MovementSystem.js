@@ -113,6 +113,7 @@ class MovementSystem extends engine.BaseSystem {
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
+            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             
             const isAffectedByGravity = vel.affectedByGravity;
             
@@ -137,7 +138,10 @@ class MovementSystem extends engine.BaseSystem {
                     
                 const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
                 if (placement && placement.placementId && this.game.gridSystem) {
-                    this.game.gridSystem.updateUnitPosition(placement.placementId, pos.x, pos.z);
+                    const squadData = this.game.squadManager.getSquadData(unitType);
+                    const gridPosition = this.game.gridSystem.worldToGrid(pos.x, pos.z);
+                    const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
+                    this.game.gridSystem.updateUnitPosition(placement.placementId, cells);
                 }
             }
         });

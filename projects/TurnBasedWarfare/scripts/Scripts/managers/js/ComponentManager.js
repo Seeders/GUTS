@@ -2,8 +2,8 @@ class ComponentManager {
     constructor(game) {
         this.game = game;
         this.game.componentManager = this;
-        this.models = this.game.getCollections().models;
-
+        this.models = this.game.getCollections().models;        
+        this.game.componentTypes = this.getComponentTypes();
         //this.models.position == { x: 0, y: 0, z: 0 };
     }
 

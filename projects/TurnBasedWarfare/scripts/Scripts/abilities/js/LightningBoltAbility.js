@@ -68,7 +68,6 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `Lightning crackles with divine fury!`, true);
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout
         this.game.schedulingSystem.scheduleAction(() => {
             this.strikeLightning(casterEntity, target, targetPos);
         }, this.castTime, casterEntity);

@@ -62,7 +62,6 @@ class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `Crystalline ice shards pierce the air!`);
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout
         // Schedule all shards with staggered timing
         for (let i = 0; i < this.shardCount; i++) {
             const shardDelay = this.castTime + (i * 0.2); // 0.2 second stagger between shards

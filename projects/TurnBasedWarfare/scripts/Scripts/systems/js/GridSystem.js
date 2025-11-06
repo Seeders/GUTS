@@ -187,10 +187,9 @@ class GridSystem extends engine.BaseSystem {
         
         return true;
     }
-    updateUnitPosition(placementId, worldX, worldZ) {
-        this.freeCells(placementId);
-        const gridPos = this.worldToGrid(worldX, worldZ);        
-        this.occupyCells([gridPos], placementId);
+    updateUnitPosition(placementId, cells) {
+        this.freeCells(placementId);        
+        this.occupyCells(cells, placementId);
     }
     occupyCells(cells, placementId) {        
         const updates = cells.map(cell => ({
@@ -220,14 +219,7 @@ class GridSystem extends engine.BaseSystem {
         });
         
     }
-       
-    entityDestroyed(entityId) {
-        const CT = this.game.componentManager.getComponentTypes();
-        const placement = this.game.getComponent(entityId, CT.PLACEMENT);
-        if(placement){
-            this.freeCells(placement.placementId);
-        }
-    }
+
     clear() {
         this.state.clear();
     }
@@ -282,6 +274,21 @@ class GridSystem extends engine.BaseSystem {
         }
         return false;
     }
+
+    onDestroyBuilding(entityId){        
+        const placement = this.game.getComponent(entityId, this.game.componentTypes.PLACEMENT);
+        if(placement){
+            this.freeCells(placement.placementId);
+        }
+    }
+
+    onUnitKilled(entityId){        
+        const placement = this.game.getComponent(entityId, this.game.componentTypes.PLACEMENT);
+        if(placement){
+            this.freeCells(placement.placementId);
+        }
+    }
+
     
     // OPTIMIZED: Fast world bounds check
     isInWorldBounds(worldX, worldZ) {

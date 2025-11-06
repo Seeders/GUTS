@@ -60,12 +60,9 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
         // Cast effect
         this.createVisualEffect(casterPos, 'cast');
         
-        // Apply curses
-        setTimeout(() => {
+        this.game.schedulingSystem.scheduleAction(() => {
             this.applyCurses(casterEntity, enemies);
-        }, this.castTime * 1000);
-        
-        this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
+        }, this.castTime, casterEntity);
     }
     
     applyCurses(casterEntity, enemies) {
@@ -100,13 +97,13 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                         this.duration * 1000
                     );
                 }
-                
-                // Remove curse after duration
-                setTimeout(() => {
+                        
+                this.game.schedulingSystem.scheduleAction(() => {
                     if (this.game.getComponent(enemyId, this.componentTypes.COMBAT)) {
                         enemyCombat.damage = originalDamage;
                     }
-                }, this.duration * 1000);
+                }, this.duration, enemyId);
+
             }
         });
     }

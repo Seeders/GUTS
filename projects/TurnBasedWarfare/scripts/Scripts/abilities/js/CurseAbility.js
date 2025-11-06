@@ -62,7 +62,6 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'cast');
         this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
         
-        // DESYNC SAFE: Use scheduling system instead of setTimeout
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyCurses(casterEntity, enemies);
         }, this.castTime, casterEntity);
