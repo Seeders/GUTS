@@ -334,7 +334,9 @@ class UnitCreationManager {
                 unitType.armor,
                 unitType.fireResistance,
                 unitType.coldResistance,
-                unitType.lightningResistance
+                unitType.lightningResistance, 
+                0,
+                unitType.visionRange
             ));
         
         // Collision component for physical interactions

@@ -16,7 +16,7 @@ class PathfindingSystem extends engine.BaseSystem {
         this.CACHE_EXPIRY_TIME = 5000;
         
         this.pathRequests = [];
-        this.MAX_PATHS_PER_FRAME = 10;
+        this.MAX_PATHS_PER_FRAME = 100;
         
         this.initialized = false;
     }

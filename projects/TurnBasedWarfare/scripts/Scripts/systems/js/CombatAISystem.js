@@ -80,7 +80,7 @@ class CombatAISystem extends engine.BaseSystem {
                 const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
                     aiState.target = null;                                    
-                    this.onTargetDied(entityId);  
+                    this.onLostTarget(entityId);  
                 }
             }
             if(aiState.targetPosition){
@@ -103,7 +103,7 @@ class CombatAISystem extends engine.BaseSystem {
                             
                             let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
                             if(currentAI == "CombatAISystem"){
-                                this.onTargetDied(entityId);
+                                this.onLostTarget(entityId);
                             }
                             this.changeAIState(aiState, 'idle');
                         }
@@ -173,7 +173,7 @@ class CombatAISystem extends engine.BaseSystem {
         
         if (!targetEnemy) {
             aiState.target = null;
-            this.onTargetDied(entityId);
+            this.onLostTarget(entityId);
             return;
         }
         
@@ -186,16 +186,27 @@ class CombatAISystem extends engine.BaseSystem {
         
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
+
+        let enemyGridPos = this.game.gridSystem.worldToGrid(enemyPos.x, enemyPos.z);
         
         let currentCombatAi = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
-        // Set the target        
-        currentCombatAi.target = targetEnemy;        
-        if(!currentCombatAi.targetPosition || Math.floor(currentCombatAi.targetPosition.x) != Math.floor(enemyPos.x) || Math.floor(currentCombatAi.targetPosition.z) != Math.floor(enemyPos.z)){
-            currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
-            currentCombatAi.meta = {};
-            aiState.path = [];
+        let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
+        let combatAIGridTargetPos = null;
+        if(currentCombatAi.targetPosition){
+            combatAIGridTargetPos = this.game.gridSystem.worldToGrid(currentCombatAi.targetPosition.x, currentCombatAi.targetPosition.z);
         }
-        this.game.aiSystem.setCurrentAIController(entityId, "CombatAISystem", currentCombatAi);
+
+        // Set the target        
+        currentCombatAi.target = targetEnemy; 
+        aiState.target = targetEnemy;     
+        if(!currentCombatAi.targetPosition || combatAIGridTargetPos.x != enemyGridPos.x || combatAIGridTargetPos.z != enemyGridPos.z){
+            currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
+            aiState.targetPosition = currentCombatAi.targetPosition;
+            aiState.path = [];            
+        }
+        if(currentAI != "CombatAISystem"){
+            this.game.aiSystem.setCurrentAIController(entityId, "CombatAISystem", currentCombatAi);
+        }
         //aiState.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
@@ -291,7 +302,7 @@ class CombatAISystem extends engine.BaseSystem {
         return score;
     }
 
-    onTargetDied(entityId) {
+    onLostTarget(entityId) {
         let currentCombatAI = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
         currentCombatAI.target = null; 
         if(this.game.aiSystem.hasAIControllerData(entityId, "UnitOrderSystem")){
@@ -316,7 +327,7 @@ class CombatAISystem extends engine.BaseSystem {
         
         if (!targetPos || !targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiState.target = null;
-            this.onTargetDied(entityId);       
+            this.onLostTarget(entityId);       
             return;
         }
         
