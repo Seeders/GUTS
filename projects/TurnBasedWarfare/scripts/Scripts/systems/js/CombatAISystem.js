@@ -79,7 +79,7 @@ class CombatAISystem extends engine.BaseSystem {
                 const targetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
                 const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
-                    aiState.target = null;                                      
+                    aiState.target = null;                                    
                     this.onTargetDied(entityId);  
                 }
             }
@@ -174,7 +174,6 @@ class CombatAISystem extends engine.BaseSystem {
         if (!targetEnemy) {
             aiState.target = null;
             this.onTargetDied(entityId);
-            //console.log('set current target null 4');
             return;
         }
         
@@ -182,7 +181,6 @@ class CombatAISystem extends engine.BaseSystem {
         const targetDeathState = this.game.getComponent(targetEnemy, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiState.target = null;
-            console.log('set current target null 5');
             return;
         }
         
@@ -192,8 +190,8 @@ class CombatAISystem extends engine.BaseSystem {
         let currentCombatAi = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
         // Set the target        
         currentCombatAi.target = targetEnemy;        
-        if(currentCombatAi.targetPosition != enemyPos){
-            currentCombatAi.targetPosition = enemyPos;
+        if(!currentCombatAi.targetPosition || Math.floor(currentCombatAi.targetPosition.x) != Math.floor(enemyPos.x) || Math.floor(currentCombatAi.targetPosition.z) != Math.floor(enemyPos.z)){
+            currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
             currentCombatAi.meta = {};
             aiState.path = [];
         }
@@ -295,7 +293,7 @@ class CombatAISystem extends engine.BaseSystem {
 
     onTargetDied(entityId) {
         let currentCombatAI = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
-        currentCombatAI.target = null;  
+        currentCombatAI.target = null; 
         if(this.game.aiSystem.hasAIControllerData(entityId, "UnitOrderSystem")){
             let currentOrderAI = this.game.aiSystem.getAIControllerData(entityId, "UnitOrderSystem");
             let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
@@ -309,7 +307,6 @@ class CombatAISystem extends engine.BaseSystem {
         const aiBehavior = aiState.aiBehavior;
         if (!aiState.target || aiState.state !== 'attacking'){
            // console.log('no target or not attacking', aiState); 
-            this.onTargetDied(entityId);
             return;
         }
         
@@ -338,6 +335,12 @@ class CombatAISystem extends engine.BaseSystem {
                 aiBehavior.lastAttackStart = this.game.state.now;
             }
         }           
+    }
+
+    log(){
+        if(arguments[0].indexOf("barbarian") >= 0){
+            console.log(...arguments)
+        }
     }
     
     initiateAttack(attackerId, targetId, combat) {

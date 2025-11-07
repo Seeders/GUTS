@@ -10,6 +10,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.cooldown = 0;
         this.priority = 0;
         this.enabled = true;
+        this.meta = { preventEnemiesInRangeCheck: true };
         this.buildRange = 50;
     }
 
@@ -83,10 +84,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
         
         let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
-        currentBuildingStateAI.targetPosition = buildingPos;        
-        currentBuildingStateAI.path = [];     
-                  
-        currentBuildingStateAI.meta = {};
+        currentBuildingStateAI.targetPosition = buildingPos;                          
+        currentBuildingStateAI.meta = this.meta;
         this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);    
 
         if (buildingPlacement) {
@@ -120,9 +119,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         if (dist < this.buildRange) {
             let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);            
             currentBuildingStateAI.targetPosition = null;  
-            currentBuildingStateAI.state = 'idle';     
-            currentBuildingStateAI.path = [];                         
-            currentBuildingStateAI.meta = {};            
+            currentBuildingStateAI.state = 'idle';                                    
+            currentBuildingStateAI.meta = this.meta;            
             this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
 
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
@@ -138,7 +136,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
                 currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;  
                 currentBuildingStateAI.state = 'chasing';                          
-                currentBuildingStateAI.meta = {};
+                currentBuildingStateAI.meta = this.meta;
                 this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
             }
         }
