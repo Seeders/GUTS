@@ -176,7 +176,8 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
   
             enemyAI.target = casterEntity;
             enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
+            enemyAI.path = [];
+            enemyAI.meta = {};
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {

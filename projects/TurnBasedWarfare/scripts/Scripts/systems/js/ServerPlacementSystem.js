@@ -239,12 +239,13 @@ class ServerPlacementSystem extends engine.BaseSystem {
             // Store target position in placement data
             placement.targetPosition = targetPosition;
             placement.squadUnits.forEach((unitId) => {
-                const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
-                if(aiState && targetPosition){
-                    aiState.targetPosition = targetPosition;
-                    aiState.meta = meta;
-                    aiState.currentAIController = "UnitOrderSystem";
-                }
+                if(targetPosition){
+                    let currentOrderAI = this.game.aiSystem.getAIControllerData(unitId, "UnitOrderSystem");
+                    currentOrderAI.targetPosition = targetPosition;    
+                    currentOrderAI.path = [];                         
+                    currentOrderAI.meta = meta;   
+                    this.game.aiSystem.setCurrentAIController(unitId, "UnitOrderSystem", currentOrderAI);   
+                } 
             });
                     
                
@@ -323,12 +324,13 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Store target position in placement data
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, this.game.componentManager.getComponentTypes().AI_STATE);
-                    if(aiState && targetPosition){
-                        aiState.targetPosition = targetPosition;
-                        aiState.meta = meta;
-                        aiState.currentAIController = "UnitOrderSystem";
-                    }
+                    if(targetPosition){
+                        let currentOrderAI = this.game.aiSystem.getAIControllerData(unitId, "UnitOrderSystem");
+                        currentOrderAI.targetPosition = targetPosition;    
+                        currentOrderAI.path = [];                         
+                        currentOrderAI.meta = meta;   
+                        this.game.aiSystem.setCurrentAIController(unitId, "UnitOrderSystem", currentOrderAI);   
+                    } 
                 });
                         
 
@@ -429,19 +431,22 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     if (aiState && position) {
                         
                         if(targetPosition){
-                            if(!aiState.currentAIController || aiState.currentAIController == "UnitOrderSystem"){
+                            const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
+                            
+                            if(!currentAIController || currentAIController == "UnitOrderSystem"){
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
                                 const distSq = dx * dx + dz * dz;
                                 const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
                                 
                                 if (distSq <= threshold * threshold) {
-                                    aiState.currentAIController = null;
-                                    aiState.targetPosition = null;
+                                    this.game.aiSystem.removeCurrentAIController(entityId);
                                     placement.targetPosition = null;
                                 } else {
-                                    aiState.targetPosition = { ...targetPosition };      
-                                    aiState.currentAIController = "UnitOrderSystem";
+                                    let currentOrderAI = this.game.aiSystem.getAIControllerData(entityId, "UnitOrderSystem");
+                                    currentOrderAI.targetPosition = targetPosition;    
+                                    currentOrderAI.path = [];                 
+                                    this.game.aiSystem.setCurrentAIController(entityId, "UnitOrderSystem", currentOrderAI);                                 
                                 }
                             }
                         }

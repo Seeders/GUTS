@@ -28,6 +28,7 @@
         { "type": "WorldSystem" },
         { "type": "PostProcessingSystem" },
         { "type": "RenderSystem" },
+        { "type": "AISystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
         { "type": "ProjectileSystem" },

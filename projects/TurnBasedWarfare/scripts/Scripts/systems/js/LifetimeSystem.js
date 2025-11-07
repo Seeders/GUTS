@@ -184,6 +184,8 @@ class LifetimeSystem extends engine.BaseSystem {
             if (targetAI && targetAI.aiBehavior) {
                 targetAI.target = null;
                 targetAI.targetPosition = null;
+                targetAI.path = [];
+                targetAI.meta = {};
             }
             
             // Visual effect

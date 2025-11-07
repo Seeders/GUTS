@@ -19,14 +19,12 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         }
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         let buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-        let aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
         
         if (!buildingState) {
             return false;
         }
 
-        
-        return (aiState.currentAIController == ComponentTypes.BUILDING_STATE);
+        return this.game.aiSystem.getCurrentAIControllerId(entityId) == ComponentTypes.BUILDING_STATE;
     }
     execute(entityId, targetData) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
@@ -84,10 +82,12 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
         this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
         
-        if (aiState) {
-            aiState.targetPosition = buildingPos;
-            aiState.currentAIController = ComponentTypes.BUILDING_STATE;
-        }
+        let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
+        currentBuildingStateAI.targetPosition = buildingPos;        
+        currentBuildingStateAI.path = [];     
+                  
+        currentBuildingStateAI.meta = {};
+        this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);    
 
         if (buildingPlacement) {
             buildingPlacement.assignedBuilder = peasantEntityId;
@@ -96,6 +96,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     walkToConstruction(buildState, pos, vel) {
+        
         if (!buildState.targetBuildingPosition || !buildState.targetBuildingEntityId) {
             buildState.state = 'idle';
             return;
@@ -117,13 +118,13 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.buildRange) {
-            const aiState = this.game.getComponent(buildState.entityId, ComponentTypes.AI_STATE);
-            
-            if (aiState) {
-                aiState.state = 'idle';
-                aiState.targetPosition = null;
-            }
-            
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);            
+            currentBuildingStateAI.targetPosition = null;  
+            currentBuildingStateAI.state = 'idle';     
+            currentBuildingStateAI.path = [];                         
+            currentBuildingStateAI.meta = {};            
+            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
+
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
             pos.z = buildState.targetBuildingPosition.z;
             vel.vx = 0;
@@ -132,11 +133,13 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
             buildState.constructionStartTime = this.game.state.round;
             buildingBuildState.state = 'under_construction';
             buildingBuildState.constructionStartTime = this.game.state.round;
-        } else {
-            const aiState = this.game.getComponent(buildState.entityId, ComponentTypes.AI_STATE);
-            if (aiState) {
-                aiState.state = 'chasing';
-                aiState.targetPosition = buildState.targetBuildingPosition;
+        } else {     
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+            if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
+                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;  
+                currentBuildingStateAI.state = 'chasing';                          
+                currentBuildingStateAI.meta = {};
+                this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
             }
         }
     }
@@ -192,7 +195,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         buildState.targetBuildingEntityId = null;
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
-        aiState.currentAIController = null;
+        
+        this.game.aiSystem.removeCurrentAIController(this.peasantId);
         
         this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
     }

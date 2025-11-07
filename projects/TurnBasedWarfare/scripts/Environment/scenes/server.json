@@ -15,6 +15,7 @@
       ],
       "systems": [
         {"type": "TerrainSystem" },
+        { "type": "AISystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
         { "type": "ProjectileSystem" },

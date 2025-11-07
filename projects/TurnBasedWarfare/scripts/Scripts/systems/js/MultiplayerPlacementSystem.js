@@ -270,25 +270,30 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         meta = tempMoveOrders.meta;
                         this.game.unitOrderSystem.temporaryOpponentMoveOrders.delete(placement.placementId);                    
                     }
-
                     if(targetPosition){
-                        if(!aiState.currentAIController || aiState.currentAIController == "UnitOrderSystem"){
+                        const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
+                        
+                        if(!currentAIController || currentAIController == "UnitOrderSystem"){
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
                             const distSq = dx * dx + dz * dz;
                             const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                            
                             if (distSq <= threshold * threshold) {
-                                aiState.currentAIController = null;
-                                aiState.targetPosition = null;
-                                aiState.meta = {};
+                                this.game.aiSystem.removeCurrentAIController(entityId);
                                 placement.targetPosition = null;
                             } else {
-                                aiState.targetPosition = { ...targetPosition };   
-                                aiState.meta = { ...meta };
-                                aiState.currentAIController = "UnitOrderSystem";
+                                let currentOrderAI = this.game.aiSystem.getAIControllerData(entityId, "UnitOrderSystem");
+                                currentOrderAI.targetPosition = targetPosition;    
+                                currentOrderAI.path = [];   
+                                  if(entityId == "peasant_1224_1368_right_1"){
+                                    console.log("applyTargetPositions");
+                                }         
+                                currentOrderAI.meta = { ...meta };           
+                                this.game.aiSystem.setCurrentAIController(entityId, "UnitOrderSystem", currentOrderAI);                                 
                             }
                         }
-                    } 
+                    }                    
                 }
             });
         });

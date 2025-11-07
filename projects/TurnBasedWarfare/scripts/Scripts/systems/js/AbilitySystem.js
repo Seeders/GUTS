@@ -107,9 +107,8 @@ class AbilitySystem extends engine.BaseSystem {
                 this.game.combatAISystems.changeAIState(aiState, 'attacking');
                 
                 // Re-enable movement decisions by resetting decision time
-                if (aiState.aiBehavior) {
-                    aiState.aiBehavior.lastDecisionTime = 0;
-                }
+                aiState.aiBehavior.lastDecisionTime = 0;
+                
             }
         }
         

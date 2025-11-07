@@ -353,7 +353,6 @@ class UnitCreationManager {
         this.game.addComponent(entity, ComponentTypes.AI_STATE, 
             Components.AIState('idle', targetPosition));
         
-        console.log(this.game.getComponent(entity, ComponentTypes.AI_STATE));
         // Animation state
         this.game.addComponent(entity, ComponentTypes.ANIMATION, 
             Components.Animation());

@@ -242,10 +242,13 @@ class UnitOrderSystem extends engine.BaseSystem {
                 if (this.game.effectsSystem && position) {
                     this.game.effectsSystem.createParticleEffect(position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
-                if(aiState){
-                    aiState.targetPosition = position; 
-                    aiState.currentAIController = "OrderSystemHold";
-                }
+                let currentOrderAI = this.game.aiSystem.getAIControllerData(unitId, "UnitOrderSystem");
+                currentOrderAI.targetPosition = position;    
+                currentOrderAI.path = [];                         
+                currentOrderAI.meta = {
+                    allowMovement: false
+                };      
+                this.game.aiSystem.setCurrentAIController(unitId, "UnitOrderSystem", currentOrderAI);   
             });
         });
         
@@ -277,7 +280,7 @@ class UnitOrderSystem extends engine.BaseSystem {
             const placement = this.game.placementSystem.getPlacementById(placementId);
             placement.squadUnits.forEach((entityId) => {                
                 const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
-                if(aiState.targetPosition && aiState.currentAIController == "UnitOrderSystem"){
+                if(aiState.targetPosition && aiState.aiControllerId == "UnitOrderSystem"){
                     targetPositions.push(aiState.targetPosition);
                 }
             });            
@@ -375,14 +378,18 @@ class UnitOrderSystem extends engine.BaseSystem {
                         const targetPosition = targetPositions[i];
                         const placement = this.game.placementSystem.getPlacementById(placementId);
                         placement.squadUnits.forEach((unitId) => {
-                            const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
                             if (this.game.effectsSystem && targetPosition) {
                                 this.game.effectsSystem.createParticleEffect(targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
-                            }
-                            if(aiState && targetPosition){
-                                aiState.targetPosition = targetPosition;
-                                aiState.meta = meta;
-                                aiState.currentAIController = "UnitOrderSystem";
+                            }  
+                            if(targetPosition){
+                                let currentOrderAI = this.game.aiSystem.getAIControllerData(unitId, "UnitOrderSystem");
+                                currentOrderAI.targetPosition = targetPosition;    
+                                currentOrderAI.path = [];    
+                                if(unitId == "peasant_1224_1368_right_1"){
+                                    console.log("issueMoveOrders");
+                                }                       
+                                currentOrderAI.meta = meta;   
+                                this.game.aiSystem.setCurrentAIController(unitId, "UnitOrderSystem", currentOrderAI);   
                             }
                         });
                                 
@@ -416,12 +423,16 @@ class UnitOrderSystem extends engine.BaseSystem {
         }
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
-            const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
-            if(aiState && targetPosition){
-                aiState.targetPosition = targetPosition;
-                aiState.meta = meta;
-                aiState.currentAIController = "UnitOrderSystem";
-            }
+            if(targetPosition){
+                let currentOrderAI = this.game.aiSystem.getAIControllerData(unitId, "UnitOrderSystem");
+                currentOrderAI.targetPosition = targetPosition;    
+                currentOrderAI.path = []; 
+                if(unitId == "peasant_1224_1368_right_1"){
+                    console.log("applySquadTargetPosition");
+                }                        
+                currentOrderAI.meta = meta;   
+                this.game.aiSystem.setCurrentAIController(unitId, "UnitOrderSystem", currentOrderAI);   
+            }            
         });            
     }
 

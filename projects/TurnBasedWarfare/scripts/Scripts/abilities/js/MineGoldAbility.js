@@ -25,8 +25,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
-        let aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-        
         if (!miningState) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
             
@@ -43,12 +41,14 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 entityId: entityId
             });
         }
+        const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
 
-        if(aiState && aiState.currentAIController == null){
-            aiState.currentAIController = ComponentTypes.MINING_STATE;
+        if(currentAIController == null){
+            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
+            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI); 
         }
         
-        return (aiState.currentAIController == ComponentTypes.MINING_STATE);
+        return (currentAIController == ComponentTypes.MINING_STATE);
     }
 
     execute(entityId, targetData) {
@@ -68,7 +68,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
 
     updateMinerState(entityId, miningState, pos, vel) {
         miningState.entityId = entityId;
-        
         switch (miningState.state) {
             case 'idle':
                 this.findMineTarget(miningState);
@@ -138,8 +137,13 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         };
         miningState.state = 'walking_to_mine';
         
-        if (aiState) {
-            aiState.targetPosition = miningState.targetMinePosition;
+        if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
+            aiState.targetPosition = miningState.targetMinePosition;             
+            aiState.path = [];                         
+            aiState.meta = {};
+               if(miningState.entityId == "peasant_1224_1368_right_1"){
+                    console.log("findMineTarget");
+                } 
         }
     }
 
@@ -176,7 +180,12 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         if (closestTownHall) {
             miningState.targetTownHall = closestTownHall;
             if (aiState) {
-                aiState.targetPosition = miningState.targetTownHall;
+                aiState.targetPosition = miningState.targetTownHall;          
+                aiState.path = [];      
+                  if(miningState.entityId == "peasant_1224_1368_right_1"){
+                    console.log("findTownHall");
+                }                    
+                aiState.meta = {};
             }
         }
     }
@@ -204,6 +213,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         const dz = miningState.targetMinePosition.z - pos.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
 
+
         if (dist < this.miningRange) {
             const ComponentTypes = this.game.componentManager.getComponentTypes();
             const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
@@ -211,7 +221,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             const mineEntityId = miningState.targetMineEntityId;
             const isOccupied = this.game.goldMineSystem.isMineOccupied(mineEntityId);
             const currentOccupant = this.game.goldMineSystem.getCurrentMiner(mineEntityId);
-            
+
             if (isOccupied && currentOccupant !== miningState.entityId) {
                 // Mine is occupied, need to wait
                 const queuePosition = this.game.goldMineSystem.getQueuePosition(mineEntityId, miningState.entityId);
@@ -219,7 +229,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 
                 miningState.waitingPosition = waitPos;
                 miningState.state = 'waiting_at_mine';
-                
+
                 if (aiState) {
                     aiState.state = 'chasing';
                     aiState.targetPosition = waitPos;
@@ -232,7 +242,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 }
                 pos.x = miningState.targetMinePosition.x;
                 pos.z = miningState.targetMinePosition.z;
-
                 vel.vx = 0;
                 vel.vz = 0;
                 miningState.state = 'mining';
@@ -242,9 +251,11 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             const ComponentTypes = this.game.componentManager.getComponentTypes();
             const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
             
-            if (aiState) {
+            if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
                 aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetMinePosition;
+                aiState.targetPosition = miningState.targetMinePosition;        
+                aiState.path = [];                        
+                aiState.meta = {};
             }
         }
     }
@@ -280,9 +291,14 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             const ComponentTypes = this.game.componentManager.getComponentTypes();
             const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
             
-            if (aiState) {
+            if (aiState && aiState.targetPosition != miningState.targetTownHall) {
                 aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetTownHall;
+                aiState.targetPosition = miningState.targetTownHall;  
+                aiState.path = [];   
+                  if(miningState.entityId == "peasant_1224_1368_right_1"){
+                    console.log("walkToTownHall");
+                }                       
+                aiState.meta = {};
             }
         }
     }
