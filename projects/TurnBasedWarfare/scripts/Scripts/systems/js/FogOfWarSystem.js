@@ -6,12 +6,12 @@ class FogOfWarSystem extends engine.BaseSystem {
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = this.game.worldSystem.extendedSize;
-        this.FOG_TEXTURE_SIZE = 64;
+        this.FOG_TEXTURE_SIZE = 128;
 
         // Line of sight settings (optimized)
         this.LOS_ENABLED = true; // Start disabled for testing
         this.LOS_RAYS_PER_UNIT = 32; // Reduced from 64
-        this.LOS_SAMPLE_DISTANCE = 25; // Increased from 25 (fewer samples)
+        this.LOS_SAMPLE_DISTANCE = 12; // Increased from 25 (fewer samples)
         this.LOS_UNIT_BLOCKING_ENABLED = true;
         this.LOS_UNIT_HEIGHT = 25;
         this.LOS_UNIT_BLOCK_RADIUS = 25;
@@ -259,7 +259,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         const distance = Math.sqrt(distanceSq);
         const gridSize = this.game.getCollections().configs.game.gridSize;
         
-        if (distance < gridSize) return true;
+        if (distance < gridSize*2) return true;
         
         this.frameStats.losChecks++;
         
@@ -281,7 +281,9 @@ class FogOfWarSystem extends engine.BaseSystem {
         if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight)) {
             return false;
         }
-        
+        if(fromTerrainHeight > toTerrainHeight){
+            return true;
+        }
         // Get nearby units for blocking check
         let nearbyUnits = [];
         if (this.LOS_UNIT_BLOCKING_ENABLED) {
@@ -326,7 +328,10 @@ class FogOfWarSystem extends engine.BaseSystem {
      * Check LOS using tile-based terrain with Bresenham's line algorithm
      * Much faster than raycasting terrain heights!
      */
-    checkTileBasedLOS(from, to, fromEyeHeight, toEyeHeight) {
+    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight) {
+        if(fromEyeHeight < toTerrainHeight){
+            return false;
+        }
         const terrainSystem = this.game.terrainSystem;
         const gridSize = this.game.getCollections().configs.game.gridSize;
         
@@ -347,7 +352,7 @@ class FogOfWarSystem extends engine.BaseSystem {
             const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
             
             // ✅ Ray height (interpolated)
-            const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
+            const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
             
             // ✅ REAL terrain height at WORLD position
             const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
