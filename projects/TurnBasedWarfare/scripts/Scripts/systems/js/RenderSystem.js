@@ -59,7 +59,9 @@ class RenderSystem extends engine.BaseSystem {
 
             if (!unitType) return;
 
-            if (unitType.collection != "worldObjects" && !this.isVisibleForPlayer(pos)) {
+            const fow = this.game.fogOfWarSystem;            
+            const isVisible = fow ? fow.isVisibleAt(pos.x, pos.z) : true;
+            if (unitType.collection != "worldObjects" && !isVisible) {
                 if (this.entityToInstance.has(entityId)) {
                     this.hideEntityInstance(entityId);
                 }
@@ -624,11 +626,6 @@ class RenderSystem extends engine.BaseSystem {
         return teamComp.team !== myTeam && teamComp.team !== "neutral";
     }
 
-    isVisibleForPlayer(pos) {
-        const fow = this.game?.fogOfWarSystem;
-        if (!fow || !pos) return true;
-        return fow.isVisibleAt(pos.x, pos.z);
-    }
 
     hideEntityInstance(entityId) {
         const instance = this.entityToInstance.get(entityId);

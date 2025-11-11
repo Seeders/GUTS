@@ -47,7 +47,6 @@ class MovementSystem extends engine.BaseSystem {
         this.OSCILLATION_THRESHOLD = Math.PI / 6;
         
         this.unitStates = new Map();
-        this.spatialGrid = new Map();
         this.frameCounter = 0;
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
@@ -59,9 +58,7 @@ class MovementSystem extends engine.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
-        
-        this.buildSpatialGrid(entities);
+        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);        
         
         const unitData = new Map();
         
@@ -137,14 +134,8 @@ class MovementSystem extends engine.BaseSystem {
                 if(!vel.anchored){
                     this.enforceBoundaries(pos, collision);
                 }
-                    
-                const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
-                if (placement && placement.placementId && this.game.gridSystem) {
-                    const squadData = this.game.squadManager.getSquadData(unitType);
-                    const gridPosition = this.game.gridSystem.worldToGrid(pos.x, pos.z);
-                    const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
-                    this.game.gridSystem.updateUnitPosition(placement.placementId, cells);
-                }
+                 
+                this.game.triggerEvent("onEntityPositionUpdated", entityId);
             }
         });
     }
@@ -197,55 +188,6 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         return directionChanges >= 2;
-    }
-    
-    buildSpatialGrid(entities) {
-        this.spatialGrid.clear();
-        
-        entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
-            
-            if (!projectile && pos) {
-                const gridX = Math.floor(Math.round(pos.x * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
-                const gridZ = Math.floor(Math.round(pos.z * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
-                const gridKey = `${gridX},${gridZ}`;
-                
-                if (!this.spatialGrid.has(gridKey)) {
-                    this.spatialGrid.set(gridKey, []);
-                }
-                this.spatialGrid.get(gridKey).push(entityId);
-            }
-        });
-        
-        for (const [gridKey, entityList] of this.spatialGrid.entries()) {
-            entityList.sort((a, b) => String(a).localeCompare(String(b)));
-        }
-    }
-    
-    getNearbyUnits(pos, radius) {
-        const nearbyUnits = [];
-        const gridRadius = Math.ceil(Math.round(radius * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
-        const centerGridX = Math.floor(Math.round(pos.x * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
-        const centerGridZ = Math.floor(Math.round(pos.z * 1000) / 1000 / this.SPATIAL_GRID_SIZE);
-        
-        const gridCells = [];
-        for (let gridX = centerGridX - gridRadius; gridX <= centerGridX + gridRadius; gridX++) {
-            for (let gridZ = centerGridZ - gridRadius; gridZ <= centerGridZ + gridRadius; gridZ++) {
-                gridCells.push(`${gridX},${gridZ}`);
-            }
-        }
-        
-        gridCells.sort();
-        
-        for (const gridKey of gridCells) {
-            const cellUnits = this.spatialGrid.get(gridKey);
-            if (cellUnits) {
-                nearbyUnits.push(...cellUnits);
-            }
-        }
-        
-        return nearbyUnits.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
     updatePathfindingStaggered(unitData) {
@@ -321,7 +263,7 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         const separationRadius = unitRadius * this.SEPARATION_RADIUS_MULTIPLIER;
-        const nearbyUnits = this.getNearbyUnits(pos, separationRadius);
+        const nearbyUnits = this.game.gameManager.call('getNearbyUnits', pos, separationRadius, entityId);
         
         let separationForceX = 0;
         let separationForceZ = 0;
@@ -329,7 +271,6 @@ class MovementSystem extends engine.BaseSystem {
         let checksPerformed = 0;
         
         for (const otherEntityId of nearbyUnits) {
-            if (entityId === otherEntityId) continue;
             if (checksPerformed >= this.MAX_SEPARATION_CHECKS) break;
             
             checksPerformed++;
@@ -456,7 +397,7 @@ class MovementSystem extends engine.BaseSystem {
         const lookaheadDistance = this.PATHFINDING_LOOKAHEAD;
         const checkRadius = unitRadius * 1.5;
         
-        const nearbyUnits = this.getNearbyUnits(pos, lookaheadDistance + checkRadius);
+        const nearbyUnits = this.game.gameManager.call('getNearbyUnits', pos, lookaheadDistance + checkRadius, entityId);
         
         let closestObstacle = null;
         let closestDistance = Infinity;
@@ -470,7 +411,6 @@ class MovementSystem extends engine.BaseSystem {
             };
             
             for (const otherEntityId of nearbyUnits) {
-                if (entityId === otherEntityId) continue;
                 if (targetEntityId && otherEntityId === targetEntityId) continue;
                 if (checksPerformed >= this.MAX_PATHFINDING_CHECKS) break;
                 
@@ -817,9 +757,6 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     entityDestroyed(entityId) {
-        if (this.spatialGrid) {
-            this.spatialGrid.delete(entityId);
-        }
         
         if (this.unitStates) {
             this.unitStates.delete(entityId);

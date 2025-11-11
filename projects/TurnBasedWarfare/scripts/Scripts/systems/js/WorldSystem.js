@@ -61,19 +61,9 @@ class WorldSystem extends engine.BaseSystem {
     init() {
         if (this.initialized) return;
 
-        // Initialize Three.js core components
         this.initializeThreeJS();
         
-        // Load world data
         this.loadWorldData();
-        
-        // Initialize terrain canvas
-        this.initializeTerrainCanvas();
-        
-        // Set up world rendering
-        this.setupWorld();
-        
-        this.initialized = true;
     }
 
     initializeThreeJS() {
@@ -173,7 +163,9 @@ class WorldSystem extends engine.BaseSystem {
         this.renderer.shadowMap.enabled = this.shadowSettings?.enabled;
     }
 
-    setupWorld() {
+    onGameStarted() {      
+        this.initializeTerrainCanvas();
+
         if (this.world?.backgroundColor) {
             this.scene.background = new THREE.Color(this.world.backgroundColor);
         }
@@ -183,15 +175,15 @@ class WorldSystem extends engine.BaseSystem {
         this.setupCamera();
         this.setupGround();
         
-        // Add extension planes after ground is set up
         this.createExtensionPlanes();
         
-        // Always render terrain during setup to ensure ground appears
         if (this.tileMap?.terrainMap) {
             this.renderTerrain();
         } else {
             console.warn('WorldRenderSystem: No terrain map available during setup');
         }
+        
+        this.initialized = true;  
     }
 
     setupFog() {
@@ -614,11 +606,7 @@ class WorldSystem extends engine.BaseSystem {
         // Add Position component
         this.game.addComponent(entityId, ComponentTypes.POSITION, 
             Components.Position(worldX, height, worldZ));
-        
-        // Add Velocity component (anchored = true, so it doesn't move)
-        this.game.addComponent(entityId, ComponentTypes.VELOCITY, 
-            Components.Velocity(0, 0, 0, 0, false, true));
-        
+                
         // Add Renderable component
         this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
             Components.Renderable('worldObjects', envObj.type));
@@ -641,6 +629,9 @@ class WorldSystem extends engine.BaseSystem {
         // Add Team component (neutral for environment objects)
         this.game.addComponent(entityId, ComponentTypes.TEAM, 
             Components.Team('neutral'));
+
+        console.log('created tree');
+        this.game.triggerEvent('onEntityPositionUpdated', entityId);
     }
 
     onWindowResize() {
@@ -671,11 +662,6 @@ class WorldSystem extends engine.BaseSystem {
             if (this.uniforms[key].time) {
                 this.uniforms[key].time.value = this.timer;
             }
-        }
-
-        // Ensure terrain is rendered at least once
-        if (!this.terrainRendered && this.tileMap?.terrainMap) {
-            this.renderTerrain();
         }
 
         this.render();

@@ -383,18 +383,9 @@ export default class ServerGameRoom extends GameRoom {
     cleanupRoom(room) {
         try {
             // Clear all game systems
-            if (room.game) {
-                if (room.game.battlePhaseSystem) {
-                    room.game.battlePhaseSystem.cleanup();
-                }
-                if (room.game.multiplayerPlacementSystem) {
-                    room.game.multiplayerPlacementSystem.cleanup();
-                }
-                if (room.game.gridSystem) {
-                    room.game.gridSystem.clear();
-                }
+            if (room.game) {                
+                room.game.triggerEvent('dispose');
             }
-            
             // Remove room ID from tracking
             const roomIndex = this.currentRoomIds.indexOf(room.id);
             if (roomIndex > -1) {

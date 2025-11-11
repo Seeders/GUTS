@@ -54,6 +54,7 @@ class CombatAISystem extends engine.BaseSystem {
             const aiState = this.game.getComponent(entityId, CT.AI_STATE);
             const vel = this.game.getComponent(entityId, CT.VELOCITY);
             const collision = this.game.getComponent(entityId, CT.COLLISION);
+            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
 
             if (!pos || !vel || !combat || !team || !aiState){
                  continue;
@@ -72,7 +73,7 @@ class CombatAISystem extends engine.BaseSystem {
             }
             const aiBehavior = aiState.aiBehavior;
 
-            const enemiesInVisionRange = preventEnemiesInRangeCheck ? [] : (this.getAllEnemiesInVision(entityId, team, combat) || []);
+            const enemiesInVisionRange = preventEnemiesInRangeCheck ? [] : (this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || []);
             
             // DEBUG: Log enemies found
             if (aiState.target) {
@@ -123,7 +124,7 @@ class CombatAISystem extends engine.BaseSystem {
         }
     }
 
-    getAllEnemiesInVision(entityId, team, combat) {
+    getAllEnemiesInVision(entityId, pos, unitType, team, combat) {
         const allUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
@@ -145,7 +146,7 @@ class CombatAISystem extends engine.BaseSystem {
             if (otherDeathState && otherDeathState.isDying) return false;
             if (!otherPos) return false;
             
-            return this.isInVisionRange(entityId, otherId, visionRange);                   
+            return this.isInVisionRange(entityId, otherId, visionRange) && this.game.gameManager.call('hasLineOfSight', pos, otherPos, unitType, entityId);                   
         });
     }
 

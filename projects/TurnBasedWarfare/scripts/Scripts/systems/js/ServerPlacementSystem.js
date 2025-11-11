@@ -545,7 +545,6 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     onBattleEnd() {        
         this.removeDeadSquadsAfterRound();
-       // this.updateGridPositionsAfterRound();
        
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
@@ -594,50 +593,6 @@ class ServerPlacementSystem extends engine.BaseSystem {
         }
 
        // console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
-    }
-
-    updateGridPositionsAfterRound() {
-        if (!this.game.gridSystem || !this.game.componentManager) return;
-
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        this.game.gridSystem.clear();
-
-        this.playerPlacements.forEach((placements, playerId) => {
-            placements.forEach(placement => {
-                if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) return;
-
-                const aliveUnits = placement.experience.unitIds.filter(entityId => {
-                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                    return health && health.current > 0 && (!deathState || !deathState.isDying);
-                });
-
-                if (aliveUnits.length === 0) return;
-
-                const positions = aliveUnits.map(entityId => {
-                    const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                    return pos ? { x: pos.x, z: pos.z } : null;
-                }).filter(p => p !== null);
-
-                if (positions.length === 0) return;
-
-                const avgX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
-                const avgZ = positions.reduce((sum, p) => sum + p.z, 0) / positions.length;
-                const newGridPos = this.game.gridSystem.worldToGrid(avgX, avgZ);
-
-                if (this.game.gridSystem.isValidPosition(newGridPos)) {
-                    placement.gridPosition = newGridPos;
-                    placement.experience.unitIds = aliveUnits;
-
-                    const squadData = this.game.squadManager?.getSquadData(placement.unitType);
-                    if (squadData) {
-                        const cells = this.game.squadManager.getSquadCells(newGridPos, squadData);
-                        placement.cells = cells;
-                        this.game.gridSystem.occupyCells(cells, placement.placementId);
-                    }
-                }
-            });
-        });
     }
 
 

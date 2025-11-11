@@ -34,5 +34,8 @@
       }
     }
   },
-  "height": 75
+  "height": 75,
+  "size": 25,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }

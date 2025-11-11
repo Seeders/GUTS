@@ -9,16 +9,12 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.FOG_TEXTURE_SIZE = 64;
 
         // Line of sight settings (optimized)
-        this.LOS_ENABLED = true; // Start disabled for testing
-        this.LOS_RAYS_PER_UNIT = 32; // Reduced from 64
-        this.LOS_SAMPLE_DISTANCE = 12; // Increased from 25 (fewer samples)
+        this.LOS_ENABLED = true;
+        this.LOS_RAYS_PER_UNIT = 16;
+        this.LOS_SAMPLE_DISTANCE = 12;
         this.LOS_UNIT_BLOCKING_ENABLED = true;
         this.LOS_UNIT_HEIGHT = 25;
         this.LOS_UNIT_BLOCK_RADIUS = 25;
-
-        // Spatial grid for fast unit queries
-        this.spatialGridSize = 100;
-        this.spatialGrid = new Map();
 
         this.fogRenderTarget = null;
         this.explorationRenderTarget = null;
@@ -27,11 +23,6 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.fogCamera = null;
         this.fogPass = null;
 
-        // Reusable pools
-        this.circlePool = [];
-        this.circleGeometry = null;
-        this.circleMaterial = null;
-        
         // LOS mesh pool with geometry reuse
         this.losGeometryPool = [];
         this.losMeshPool = [];
@@ -46,26 +37,20 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
-        this.isVisibleAtCount = 0;
-        this.isExploredAtCount = 0;
         
         // Pre-allocate reusable arrays
         this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
         for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
             this.tempVisiblePoints[i] = { x: 0, z: 0 };
         }
-        
-        // Performance tracking
-        this.frameStats = {
-            losChecks: 0,
-            terrainSamples: 0,
-            unitChecks: 0
-        };
+       
     }
 
     init(params = {}) {
-        this.params = params;
-        
+        this.params = params;        
+        this.initRendering();   
+    }
+    initRendering(){
         this.fogRenderTarget = new THREE.WebGLRenderTarget(
             this.FOG_TEXTURE_SIZE,
             this.FOG_TEXTURE_SIZE,
@@ -106,17 +91,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.fogCamera.lookAt(0, 0, 0);
         this.fogScene = new THREE.Scene();
         this.fogScene.background = new THREE.Color(0x000000);
-        
-        this.circleTexture = this.createGradientCircleTexture();
-        
-        this.circleGeometry = new THREE.CircleGeometry(1, 32);
-        this.circleMaterial = new THREE.MeshBasicMaterial({
-            map: this.circleTexture,
-            transparent: true,
-            side: THREE.DoubleSide,
-            depthWrite: false
-        });
-        
+                
         this.losMaterial = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             transparent: true,
@@ -172,244 +147,10 @@ class FogOfWarSystem extends engine.BaseSystem {
         }
     }
 
-    update() {
-        this.isVisibleAtCount = 0;
-        this.isExploredAtCount = 0;
-        
-        // Reset frame stats
-        this.frameStats.losChecks = 0;
-        this.frameStats.terrainSamples = 0;
-        this.frameStats.unitChecks = 0;
-        
-        // Update spatial grid for unit blocking
-        if (this.LOS_UNIT_BLOCKING_ENABLED) {
-            this.updateSpatialGrid();
-        }
-    }
 
-    /**
-     * Build spatial grid for fast unit proximity queries
-     */
-    updateSpatialGrid() {
-        this.spatialGrid.clear();
-        
-        // Get all units (with HEALTH component)
-        const allUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.UNIT_TYPE
-        );
-        
-        allUnits.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            if (!pos) return;
-            
-            const gridX = Math.floor(pos.x / this.spatialGridSize);
-            const gridZ = Math.floor(pos.z / this.spatialGridSize);
-            const key = `${gridX},${gridZ}`;
-            
-            if (!this.spatialGrid.has(key)) {
-                this.spatialGrid.set(key, []);
-            }
-            
-            this.spatialGrid.get(key).push({
-                x: pos.x,
-                z: pos.z,
-                y: pos.y,
-                id: entityId,
-                ...unitType
-            });
-        });
-        
-        
-
-    }
-
-    /**
-     * Get nearby units using spatial grid (much faster than checking all units)
-     */
-    getNearbyUnits(x, z, radius) {
-        const nearbyUnits = [];
-        const gridRadius = Math.ceil(radius / this.spatialGridSize);
-        const centerGridX = Math.floor(x / this.spatialGridSize);
-        const centerGridZ = Math.floor(z / this.spatialGridSize);
-        
-        for (let gz = -gridRadius; gz <= gridRadius; gz++) {
-            for (let gx = -gridRadius; gx <= gridRadius; gx++) {
-                const key = `${centerGridX + gx},${centerGridZ + gz}`;
-                const units = this.spatialGrid.get(key);
-                if (units) {
-                    nearbyUnits.push(...units);
-                }
-            }
-        }
-        
-        return nearbyUnits;
-    }
-
-    /**
-     * Optimized LOS check using tile-based terrain checking
-     */
-    hasLineOfSight(from, to, unitType, viewerEntityId = null) {
-        if (!this.LOS_ENABLED) return true;
-        
-        const dx = to.x - from.x;
-        const dz = to.z - from.z;
-        const distanceSq = dx * dx + dz * dz;
-        const distance = Math.sqrt(distanceSq);
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        
-        if (distance < gridSize*2) return true;
-        
-        this.frameStats.losChecks++;
-        
-        const terrainSystem = this.game.terrainSystem;
-        if (!terrainSystem) {
-            console.warn('[FogOfWar] No terrain system found!');
-            return true;
-        }
-        
-        // Get terrain heights at endpoints
-        const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
-        const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
-        
-        // Eye level heights
-        const fromEyeHeight = fromTerrainHeight + unitType.height;
-        const toEyeHeight = toTerrainHeight + unitType.height;
-        
-        // Check tile-based terrain blocking using Bresenham's algorithm
-        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight)) {
-            return false;
-        }
-        if(fromTerrainHeight > toTerrainHeight){
-            return true;
-        }
-        // Get nearby units for blocking check
-        let nearbyUnits = [];
-        if (this.LOS_UNIT_BLOCKING_ENABLED) {
-            const midX = (from.x + to.x) / 2;
-            const midZ = (from.z + to.z) / 2;
-            nearbyUnits = this.getNearbyUnits(midX, midZ, distance / 2 + unitType.size);
-            nearbyUnits = nearbyUnits.filter(u => u.id !== viewerEntityId);
-        }
-        
-        // Check unit/tree blocking (still use ray sampling for this)
-        if (this.LOS_UNIT_BLOCKING_ENABLED && nearbyUnits.length > 0) {
-            const numSamples = Math.max(2, Math.ceil(distance / this.LOS_SAMPLE_DISTANCE));
-            const stepX = dx / numSamples;
-            const stepZ = dz / numSamples;
-            
-            for (let i = 1; i < numSamples; i++) {
-                const t = i / numSamples;
-                const sampleX = from.x + stepX * i;
-                const sampleZ = from.z + stepZ * i;
-                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
-                
-                for (const unit of nearbyUnits) {
-                    this.frameStats.unitChecks++;
-                    
-                    const dx = sampleX - unit.x;
-                    const dz = sampleZ - unit.z;
-                    const distSq = dx * dx + dz * dz;
-                    
-                    if (distSq < this.LOS_UNIT_BLOCK_RADIUS * this.LOS_UNIT_BLOCK_RADIUS) {            
-                        if (rayHeight < unit.y+unit.height) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return true;
-    }
-
-    /**
-     * Check LOS using tile-based terrain with Bresenham's line algorithm
-     * Much faster than raycasting terrain heights!
-     */
-    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight) {
-        if(fromEyeHeight < toTerrainHeight){
-            return false;
-        }
-        const terrainSystem = this.game.terrainSystem;
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        
-        // Convert WORLD to GRID
-        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
-        
-        const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
-        
-        for (let i = 1; i < tiles.length - 1; i++) {
-            const tile = tiles[i];
-            const t = i / (tiles.length - 1);
-            
-            // ✅ CONVERT GRID BACK TO WORLD (center of tile)
-            const worldX = tile.x * gridSize - terrainSystem.terrainSize / 2;
-            const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
-            
-            // ✅ Ray height (interpolated)
-            const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            
-            // ✅ REAL terrain height at WORLD position
-            const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
-            
-            this.frameStats.terrainSamples++;
-            
-            // ✅ Block if ray below terrain
-            if (rayHeight <= terrainHeight) {  
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    /**
-     * Bresenham's line algorithm - returns all grid tiles along a line
-     */
-    bresenhamLine(x0, z0, x1, z1) {
-        const tiles = [];
-        
-        const dx = Math.abs(x1 - x0);
-        const dz = Math.abs(z1 - z0);
-        const sx = x0 < x1 ? 1 : -1;
-        const sz = z0 < z1 ? 1 : -1;
-        let err = dx - dz;
-        
-        let x = x0;
-        let z = z0;
-        
-        while (true) {
-            tiles.push({ x, z });
-            
-            if (x === x1 && z === z1) break;
-            
-            const e2 = 2 * err;
-            if (e2 > -dz) {
-                err -= dz;
-                x += sx;
-            }
-            if (e2 < dx) {
-                err += dx;
-                z += sz;
-            }
-        }
-        
-        return tiles;
-    }
-
-    /**
-     * Generate visibility shape with optimizations
-     */
     generateLOSVisibilityShape(unitPos, visionRadius, unitType, entityId) {
         const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
         
-        // Get terrain height once
-
         for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
             const angle = i * angleStep;
             const dirX = Math.cos(angle);
@@ -423,8 +164,7 @@ class FogOfWarSystem extends engine.BaseSystem {
             // First check max distance
             const maxX = unitPos.x + dirX * visionRadius;
             const maxZ = unitPos.z + dirZ * visionRadius;
-            
-            if (!this.hasLineOfSight(
+            if (!this.game.gameManager.call('hasLineOfSight',
                 { x: unitPos.x, z: unitPos.z },
                 { x: maxX, z: maxZ },
                 unitType,
@@ -435,8 +175,7 @@ class FogOfWarSystem extends engine.BaseSystem {
                     const midDist = (minDist + maxDist) / 2;
                     const midX = unitPos.x + dirX * midDist;
                     const midZ = unitPos.z + dirZ * midDist;
-                    
-                    if (this.hasLineOfSight(
+                    if (this.game.gameManager.call('hasLineOfSight',
                         { x: unitPos.x, z: unitPos.z },
                         { x: midX, z: midZ },
                         unitType,
@@ -458,9 +197,6 @@ class FogOfWarSystem extends engine.BaseSystem {
         return this.tempVisiblePoints;
     }
 
-    /**
-     * Create/update mesh from visibility points with geometry reuse
-     */
     updateVisibilityMesh(points, meshIndex) {
         if (points.length < 3) return null;
         
@@ -713,11 +449,9 @@ class FogOfWarSystem extends engine.BaseSystem {
         });
 
         // Hide all meshes
-        this.circlePool.forEach(circle => circle.visible = false);
         this.losMeshPool.forEach(mesh => mesh.visible = false);
 
         let meshIndex = 0;
-        let debugCount = 0;
 
         myUnits.forEach((entityId) => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
@@ -726,32 +460,17 @@ class FogOfWarSystem extends engine.BaseSystem {
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
 
-            if (this.LOS_ENABLED) {
-                const visiblePoints = this.generateLOSVisibilityShape(
-                    { x: pos.x, z: pos.z },
-                    visionRadius,
-                    unitType,
-                    entityId
-                );
-                
-                this.updateVisibilityMesh(visiblePoints, meshIndex);
-      
-                meshIndex++;
-            } else {
-                let circle;
-                if (meshIndex < this.circlePool.length) {
-                    circle = this.circlePool[meshIndex];
-                    circle.visible = true;
-                } else {
-                    circle = new THREE.Mesh(this.circleGeometry, this.circleMaterial);
-                    circle.rotation.x = -Math.PI / 2;
-                    this.circlePool.push(circle);
-                    this.fogScene.add(circle);
-                }
-                circle.scale.set(visionRadius, visionRadius, visionRadius);
-                circle.position.set(pos.x, 0, pos.z);
-                meshIndex++;
-            }
+            const visiblePoints = this.generateLOSVisibilityShape(
+                { x: pos.x, z: pos.z },
+                visionRadius,
+                unitType,
+                entityId
+            );
+            
+            this.updateVisibilityMesh(visiblePoints, meshIndex);
+    
+            meshIndex++;
+            
         });
 
         // Render visibility
@@ -775,57 +494,6 @@ class FogOfWarSystem extends engine.BaseSystem {
         
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
-        
-   
-    }
-
-    createGradientCircleTexture() {
-        const size = 128;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        
-        const centerX = size / 2;
-        const centerY = size / 2;
-        const radius = size / 2;
-        
-        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1.0)');
-        gradient.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
-        
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, size, size);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        return texture;
-    }
-
-    setVisionRadius(radius) {
-        this.VISION_RADIUS = radius;
-    }
-
-    setLOSEnabled(enabled) {
-        this.LOS_ENABLED = enabled;
-        console.log(`[FogOfWarSystem] LOS ${enabled ? 'enabled' : 'disabled'}`);
-    }
-
-    setLOSUnitBlocking(enabled) {
-        this.LOS_UNIT_BLOCKING_ENABLED = enabled;
-    }
-
-
-    /**
-     * Debug method to adjust LOS parameters at runtime
-     */
-    setLOSParams(params) {
-        if (params.rays !== undefined) this.LOS_RAYS_PER_UNIT = params.rays;
-        if (params.sampleDistance !== undefined) this.LOS_SAMPLE_DISTANCE = params.sampleDistance;
-        if (params.unitHeight !== undefined) this.LOS_UNIT_HEIGHT = params.unitHeight;
-        if (params.unitBlockRadius !== undefined) this.LOS_UNIT_BLOCK_RADIUS = params.unitBlockRadius;
-
     }
 
     updateVisibilityCache() {
@@ -856,8 +524,8 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.explorationCacheValid = true;
     }
 
+    //only available on CLIENT
     isVisibleAt(x, z) {
-        this.isVisibleAtCount += 1;
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
@@ -870,8 +538,8 @@ class FogOfWarSystem extends engine.BaseSystem {
         return this.cachedVisibilityBuffer[index] > 0;
     }
 
+    //only available on CLIENT
     isExploredAt(x, z) {
-        this.isExploredAtCount += 1;
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
         
@@ -910,17 +578,12 @@ class FogOfWarSystem extends engine.BaseSystem {
         if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
         if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
         if (this.game.postProcessingSystem) this.game.postProcessingSystem.removePass('fog');
-        if (this.circleGeometry) this.circleGeometry.dispose();
-        if (this.circleMaterial) this.circleMaterial.dispose();
-        if (this.circleTexture) this.circleTexture.dispose();
         if (this.accumulationMaterial) this.accumulationMaterial.dispose();
         if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
         if (this.losMaterial) this.losMaterial.dispose();
         
         this.losGeometryPool.forEach(geom => geom.dispose());
-        this.circlePool = [];
         this.losMeshPool = [];
         this.losGeometryPool = [];
-        this.spatialGrid.clear();
     }
 }

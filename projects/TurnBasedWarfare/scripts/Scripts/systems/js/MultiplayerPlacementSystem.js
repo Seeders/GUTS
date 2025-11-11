@@ -1035,50 +1035,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    updateGridPositionsAfterRound() {
-        if (!this.game.gridSystem || !this.game.componentManager) return;
-
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        this.game.gridSystem.clear();
-
-        [this.playerPlacements, this.opponentPlacements].forEach(placements => {
-            placements.forEach(placement => {
-                if (!placement.squadUnits || placement.squadUnits.length === 0) return;
-
-                const aliveUnits = placement.squadUnits.filter(entityId => {
-                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                    return health && health.current > 0 && (!deathState || !deathState.isDying);
-                });
-
-                if (aliveUnits.length === 0) return;
-
-                const positions = aliveUnits.map(entityId => {
-                    const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                    return pos ? { x: pos.x, z: pos.z } : null;
-                }).filter(p => p !== null);
-
-                if (positions.length === 0) return;
-
-                const avgX = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
-                const avgZ = positions.reduce((sum, p) => sum + p.z, 0) / positions.length;
-                const newGridPos = this.game.gridSystem.worldToGrid(avgX, avgZ);
-
-                if (this.game.gridSystem.isValidPosition(newGridPos)) {
-                    placement.gridPosition = newGridPos;
-                    placement.squadUnits = aliveUnits;
-
-                    const squadData = this.game.squadManager?.getSquadData(placement.unitType);
-                    if (squadData) {
-                        const cells = this.game.squadManager.getSquadCells(newGridPos, squadData);
-                        placement.cells = cells;
-                        this.game.gridSystem.occupyCells(cells, placement.placementId);
-                    }
-                }
-            });
-        });
-    }
-
     resetAllPlacements() {
         if (this.game.squadExperienceSystem) {
             this.game.squadExperienceSystem.reset();
@@ -1089,7 +1045,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
         this.clearUndoStack();
-        this.game.gridSystem.clear();
         
         this.cachedValidation = null;
         this.cachedGridPos = null;

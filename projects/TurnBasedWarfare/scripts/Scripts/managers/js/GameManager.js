@@ -1,8 +1,8 @@
 class GameManager {
-    constructor(app) {
-        this.game = app;
+    constructor(game) {
+        this.game = game;
         this.game.gameManager = this;
-        this.gameInstance = null;
+        this.services = new Map();
     }
 
     startSelectedMode() {
@@ -30,25 +30,9 @@ class GameManager {
 
     initializeGame() {
         this.game.eventManager.startGame();
-        this.game.screenManager.showGameScreen();
-        
-        // Apply game mode configuration
-        const mode = this.game.gameModeManager.getSelectedMode();
-        if (mode && this.gameInstance) {
-            this.applyModeConfiguration(mode);
-        }
+        this.game.screenManager.showGameScreen();        
         this.game.state.isPaused = false;
         this.game.uiSystem.start();
-    }
-
-    applyModeConfiguration(mode) {
-        if (this.gameInstance && this.gameInstance.state) {
-            this.gameInstance.state.playerGold = mode.startingGold;
-            console.log('set player gold 2', this.gameInstance.state.playerGold);
-            this.gameInstance.state.gameMode = mode.id;
-            this.gameInstance.state.maxRounds = mode.maxRounds;
-            this.gameInstance.state.goldMultiplier = mode.goldMultiplier;
-        }
     }
 
     pauseGame() {
@@ -99,6 +83,31 @@ class GameManager {
         this.initializeGame();
     }
 
+    // Systems call this in constructor or init()
+    register(key, method) {
+        if (this.services.has(key)) {
+            console.warn(`Service ${key} already registered! Overwriting.`);
+        }
+        this.services.set(key, method);
+    }
 
+    // Public API
+    call(key, ...args) {
+        const method = this.services.get(key);
+        if (!method) {
+            throw new Error(`Service not found: ${key}`);
+        }
+        return method(...args);
+    }
+
+    // Optional: async version
+    async callAsync(key, ...args) {
+        return this.call(key, ...args);
+    }
+
+    // Debug
+    listServices() {
+        return Array.from(this.services.keys());
+    }
 
 }

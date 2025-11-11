@@ -12,6 +12,7 @@ class GridSystem extends engine.BaseSystem {
     }
     
     init() {
+        this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
 
         const collections = this.game.getCollections();
         
@@ -187,40 +188,117 @@ class GridSystem extends engine.BaseSystem {
         
         return true;
     }
-    updateUnitPosition(placementId, cells) {
-        this.freeCells(placementId);        
-        this.occupyCells(cells, placementId);
-    }
-    occupyCells(cells, placementId) {        
-        const updates = cells.map(cell => ({
-            key: `${cell.x},${cell.z}`,
-            value: {
-                occupied: true,
-                placementId: placementId
-            }
-        }));
-        updates.forEach(({ key, value }) => {
-            this.state.set(key, value);
-        });
-        
-    }
 
-    freeCells(placementId) {
-        const keysToDelete = [];
-        
-        for (const [key, value] of this.state.entries()) {
-            if (value.placementId === placementId) {
-                keysToDelete.push(key);
+    getUnitCells(entityId) {
+
+        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
+
+        if(!unitType) return null;
+        const cells = [];       
+        let { placementGridWidth, placementGridHeight } = unitType;        
+        if(!placementGridHeight) placementGridHeight = 1;
+        if(!placementGridWidth) placementGridWidth = 1;
+        const gridPos = this.worldToGrid(pos.x, pos.z);
+        // Calculate starting position to center the formation
+        const startX = gridPos.x - Math.floor(placementGridWidth / 2);
+        const startZ = gridPos.z - Math.floor(placementGridHeight / 2);
+        for (let x = 0; x < placementGridWidth; x++) {
+            for (let z = 0; z < placementGridHeight; z++) {
+                cells.push({
+                    x: startX + x,
+                    z: startZ + z
+                });
             }
         }
         
-        keysToDelete.forEach(key => {
-            this.state.delete(key);
-        });
+        return cells;
+    }
+
+    getNearbyUnits(pos, radius, excludeEntityId = null) {
+        const gridPos = this.worldToGrid(pos.x, pos.z);
+        const cellRadius = Math.ceil(radius / this.cellSize);
         
+        const nearbyUnits = [];
+        const radiusSq = radius * radius;
+        const seen = new Set(); // Prevent duplicates
+
+        for (let gz = gridPos.z - cellRadius; gz <= gridPos.z + cellRadius; gz++) {
+            for (let gx = gridPos.x - cellRadius; gx <= gridPos.x + cellRadius; gx++) {
+                if (!this.isValidPosition({ x: gx, z: gz })) continue;
+                
+                const cellState = this.getCellState(gx, gz);
+                if (!cellState?.entities?.length) continue;
+
+                for (const entityId of cellState.entities) {
+                    if (entityId === excludeEntityId || seen.has(entityId)) continue;
+
+                    const entityPos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
+                    const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+                    
+                    if (!entityPos || !unitType) continue;
+
+                    const dx = entityPos.x - pos.x;
+                    const dz = entityPos.z - pos.z;
+                    const distSq = dx * dx + dz * dz;
+                    
+                    if (distSq <= radiusSq) {
+                        seen.add(entityId);
+                        nearbyUnits.push({
+                            x: entityPos.x,
+                            z: entityPos.z,
+                            y: entityPos.y,
+                            id: entityId,
+                            ...unitType
+                        });
+                    }
+                }
+            }
+        }
+        return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
+    }
+
+    onEntityPositionUpdated(entityId) {        
+        const cells = this.getUnitCells(entityId);
+        this.freeCells(entityId);        
+        this.occupyCells(cells, entityId);
+    }
+
+    occupyCells(cells, entityId) {       
+        for (const cell of cells) {
+            const key = `${cell.x},${cell.z}`;
+            let cellState = this.state.get(key);
+
+            if (!cellState) {
+                cellState = { occupied: true, entities: [] };
+                this.state.set(key, cellState);
+            }
+
+            // Add entity if not already present
+            if (!cellState.entities.includes(entityId)) {
+                cellState.entities.push(entityId);
+            }
+            cellState.entities.sort((a, b) => a.localeCompare(b));     
+        }           
+    }
+        
+    freeCells(entityId) {
+        for (const [key, cellState] of this.state.entries()) {
+            if (cellState.entities.includes(entityId)) {
+                cellState.entities = cellState.entities.filter(id => id !== entityId);
+                
+                // Clean up empty cell
+                if (cellState.entities.length === 0) {
+                    this.state.delete(key);
+                } else {                    
+                    cellState.entities.sort((a, b) => a.localeCompare(b));
+                }
+            }
+        }
     }
 
     clear() {
+        console.log('grid system cleared');
         this.state.clear();
     }
     
@@ -239,12 +317,11 @@ class GridSystem extends engine.BaseSystem {
         // Keep API compatibility; these references are updated by setTeamSides()
         return team === 'right' ? this.rightBounds : this.leftBounds;
     }
-    
+        
     getCellState(gridX, gridZ) {
-        const key = `${gridX},${gridZ}`;
-        return this.state.get(key);
+        return this.state.get(`${gridX},${gridZ}`);
     }
-    
+
     getOccupiedCells() {
         return Array.from(this.state.entries()).map(([key, value]) => {
             const [x, z] = key.split(',').map(Number);
@@ -275,18 +352,12 @@ class GridSystem extends engine.BaseSystem {
         return false;
     }
 
-    onDestroyBuilding(entityId){        
-        const placement = this.game.getComponent(entityId, this.game.componentTypes.PLACEMENT);
-        if(placement){
-            this.freeCells(placement.placementId);
-        }
+    onDestroyBuilding(entityId){ 
+        this.freeCells(entityId);
     }
 
-    onUnitKilled(entityId){        
-        const placement = this.game.getComponent(entityId, this.game.componentTypes.PLACEMENT);
-        if(placement){
-            this.freeCells(placement.placementId);
-        }
+    onUnitKilled(entityId){  
+        this.freeCells(entityId);
     }
 
     
