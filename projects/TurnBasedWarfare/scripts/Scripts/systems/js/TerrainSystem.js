@@ -264,10 +264,10 @@ class TerrainSystem extends engine.BaseSystem {
 
         const terrainMap = this.tileMap.terrainMap;
         
-        if(terrainMap.indexOf(gridZ) == -1) {
+        if(terrainMap.length <= gridZ || gridZ < 0) {
             return null;
         }
-        if(terrainMap[gridZ].indexOf(gridX) == -1) {
+        if(terrainMap[gridZ].length <= gridX || gridX < 0) {
             return null;
         }
         

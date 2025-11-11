@@ -918,7 +918,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     terrainValid = terrainValid && terrainType.buildable;
                 });
                 
-
                 isValid = gridValid && terrainValid;
             }
         } else {
