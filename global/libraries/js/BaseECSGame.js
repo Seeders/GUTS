@@ -35,7 +35,7 @@ class BaseECSGame {
         return this.app.getCollections();
     }
 
-    update(deltaTime) {
+    async update(deltaTime) {
   
         if (!this.state.isPaused) {
             this.currentTime = this.currentTime + deltaTime;
@@ -52,12 +52,12 @@ class BaseECSGame {
             this.state.deltaTime = deltaTime;
             this.deltaTime = deltaTime;        
 
-            this.systems.forEach(system => {
+            this.systems.forEach(async system => {
                 if (system.update) {
-                    system.update();
+                    await system.update();
                 }
                 if(system.render && !this.isServer){
-                    system.render();
+                    await system.render();
                 }
             });
             

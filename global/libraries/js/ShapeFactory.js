@@ -258,28 +258,28 @@ class ShapeFactory {
             // Create material with specified color
             material = new THREE.MeshStandardMaterial({ color: colorToUse });
         }
-
+        const shapeSize = shape.size / 32;
         switch (shape.type) {
             case 'sphere':
-                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);
+                geometry = new THREE.SphereGeometry(shapeSize / 2, 32, 32);
                 break;
             case 'cube':
-                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);
+                geometry = new THREE.BoxGeometry(shapeSize, shapeSize, shapeSize);
                 break;
             case 'box':
                 geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);
                 break;
             case 'cylinder':
-                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);
+                geometry = new THREE.CylinderGeometry(shapeSize / 2, shapeSize / 2, shape.height, 32);
                 break;
             case 'cone':
-                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);
+                geometry = new THREE.ConeGeometry(shapeSize / 2, shape.height, 32);
                 break;
             case 'torus':
-                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);
+                geometry = new THREE.TorusGeometry(shapeSize / 2, shape.tubeSize || shapeSize / 6, 16, 100);
                 break;
             case 'tetrahedron':
-                geometry = new THREE.TetrahedronGeometry(shape.size / 2);
+                geometry = new THREE.TetrahedronGeometry(shapeSize / 2);
                 break;
             default:
                 return;
