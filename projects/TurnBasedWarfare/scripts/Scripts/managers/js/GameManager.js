@@ -86,6 +86,7 @@ class GameManager {
     // Systems call this in constructor or init()
     register(key, method) {
         if (this.services.has(key)) {
+            debugger;
             console.warn(`Service ${key} already registered! Overwriting.`);
         }
         this.services.set(key, method);

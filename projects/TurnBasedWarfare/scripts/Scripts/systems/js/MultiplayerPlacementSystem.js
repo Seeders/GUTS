@@ -74,10 +74,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     initializeSubsystems() {
-        const terrainSize = this.game.worldSystem?.terrainSize || 768;
-        
-        this.gridSystem = this.game.gridSystem;
-        this.gridSystem.init({terrainSize});
+       
         this.squadManager = this.game.squadManager;
         this.unitCreator = this.game.unitCreationManager;
          
