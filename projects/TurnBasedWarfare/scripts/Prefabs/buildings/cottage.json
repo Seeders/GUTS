@@ -1,0 +1,63 @@
+{
+  "title": "Cottage",
+  "info": "A structure that fires arrows.",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "url": "models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/cottage/cottage.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "units": [],
+  "placementGridWidth": 2,
+  "placementGridHeight": 2,
+  "height": 100,
+  "size": 50,
+  "icon": "building_cottage",
+  "hp": 500
+}

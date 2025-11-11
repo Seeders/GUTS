@@ -6,7 +6,7 @@ class FogOfWarSystem extends engine.BaseSystem {
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = this.game.worldSystem.extendedSize;
-        this.FOG_TEXTURE_SIZE = 128;
+        this.FOG_TEXTURE_SIZE = 64;
 
         // Line of sight settings (optimized)
         this.LOS_ENABLED = true; // Start disabled for testing
@@ -42,8 +42,8 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.accumulationScene = null;
         this.accumulationCamera = null;
         
-        this.cachedVisibilityBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE * 4);
-        this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE * 4);
+        this.cachedVisibilityBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
+        this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
         this.isVisibleAtCount = 0;
@@ -72,7 +72,7 @@ class FogOfWarSystem extends engine.BaseSystem {
             {
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat
+                format: THREE.RedFormat
             }
         );
         
@@ -82,7 +82,7 @@ class FogOfWarSystem extends engine.BaseSystem {
             {
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat
+                format: THREE.RedFormat
             }
         );
         
@@ -92,7 +92,7 @@ class FogOfWarSystem extends engine.BaseSystem {
             {
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat
+                format: THREE.RedFormat
             }
         );
         
@@ -643,7 +643,7 @@ class FogOfWarSystem extends engine.BaseSystem {
                     float visibleGradient = fogSample.r;
                     
                     vec4 explorationSample = texture2D(explorationTexture, fogUV);
-                    float explorationGradient = explorationSample.g;
+                    float explorationGradient = explorationSample.r;
                     
                     vec3 exploredColor = sceneColor.rgb * exploredIntensity;
                     vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
@@ -865,7 +865,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         
         const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
         const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
-        const index = (py * this.FOG_TEXTURE_SIZE + px) * 4;
+        const index = (py * this.FOG_TEXTURE_SIZE + px);
         
         return this.cachedVisibilityBuffer[index] > 0;
     }
@@ -879,7 +879,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         
         const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
         const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
-        const index = (py * this.FOG_TEXTURE_SIZE + px) * 4;
+        const index = (py * this.FOG_TEXTURE_SIZE + px);
         
         return this.cachedExplorationBuffer[index] > 0;
     }

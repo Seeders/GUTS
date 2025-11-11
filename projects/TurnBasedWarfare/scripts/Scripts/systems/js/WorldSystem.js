@@ -91,7 +91,6 @@ class WorldSystem extends engine.BaseSystem {
         this.cameraData = this.game.getCollections().cameras[this.world.camera]; 
         const width = window.innerWidth;
         const height = window.innerHeight; 
-        console.log('cameraDATA', this.cameraData);
       // Camera setup
         if(this.cameraData.fov){
             this.camera = new THREE.PerspectiveCamera(
@@ -235,7 +234,7 @@ class WorldSystem extends engine.BaseSystem {
                 -this.lightingSettings.direction.z * this.extendedSize
             );
         }
-        console.log(this.directionalLight.position, this.lightingSettings.direction);
+
         this.directionalLight.castShadow = this.shadowSettings?.enabled || false;
 
         if (this.shadowSettings?.enabled) {
@@ -278,54 +277,54 @@ class WorldSystem extends engine.BaseSystem {
         
         this.setupPostProcessing();
     }
-        setupPostProcessing() {
-            const gameConfig = this.game.getCollections()?.configs?.game;
-            if (!gameConfig) return;
-            
-            const pixelSize = gameConfig.pixelSize || 1;
-            this.game.postProcessingSystem.registerPass('render', {
-                enabled: true,
-                create: () => {
-                    return {
-                        enabled: true,
-                        needsSwap: true,
-                        clear: true,
-                        renderToScreen: false,
-                        
-                        render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
-                            renderer.setRenderTarget(writeBuffer);
-                            renderer.clear(true, true, true); // Clear color, depth, and stencil
-                            renderer.render(this.scene, this.camera);
-                        },
-                        
-                        setSize: (width, height) => {
-                            // No-op
-                        }
-                    };
-                }
-            });
-            // Register pixel pass
-            this.game.postProcessingSystem.registerPass('pixel', {
-                enabled: pixelSize !== 1,
-                create: () => {
-                    const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
-                    pixelPass.enabled = pixelSize !== 1;
-                    pixelPass.normalEdgeStrength = 0;
-                    return pixelPass;
-                }
-            });
-            
-            // Register output pass (always last)
-            this.game.postProcessingSystem.registerPass('output', {
-                enabled: true,
-                create: () => {
-                    return new THREE_.OutputPass();
-                }
-            });
-            
-            console.log('[WorldSystem] Registered post-processing passes');
-        }
-    
+
+    setupPostProcessing() {
+        const gameConfig = this.game.getCollections()?.configs?.game;
+        if (!gameConfig) return;
+        
+        const pixelSize = gameConfig.pixelSize || 1;
+        this.game.postProcessingSystem.registerPass('render', {
+            enabled: true,
+            create: () => {
+                return {
+                    enabled: true,
+                    needsSwap: true,
+                    clear: true,
+                    renderToScreen: false,
+                    
+                    render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
+                        renderer.setRenderTarget(writeBuffer);
+                        renderer.clear(true, true, true); // Clear color, depth, and stencil
+                        renderer.render(this.scene, this.camera);
+                    },
+                    
+                    setSize: (width, height) => {
+                        // No-op
+                    }
+                };
+            }
+        });
+        // Register pixel pass
+        this.game.postProcessingSystem.registerPass('pixel', {
+            enabled: pixelSize !== 1,
+            create: () => {
+                const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
+                pixelPass.enabled = pixelSize !== 1;
+                pixelPass.normalEdgeStrength = 0;
+                return pixelPass;
+            }
+        });
+        
+        // Register output pass (always last)
+        this.game.postProcessingSystem.registerPass('output', {
+            enabled: true,
+            create: () => {
+                return new THREE_.OutputPass();
+            }
+        });
+        
+        console.log('[WorldSystem] Registered post-processing passes');
+    }
 
     setupCamera() {
         if (!this.cameraSettings) {

@@ -65,14 +65,12 @@
       }
     }
   },
-  "units": [
-    "1_s_barbarian",
-    "1_sd_soldier"
-  ],
+  "units": [],
   "placementGridWidth": 2,
   "placementGridHeight": 3,
   "height": 100,
   "size": 75,
   "icon": "building_barracks",
-  "hp": 1500
+  "hp": 1500,
+  "supplies": 7
 }
