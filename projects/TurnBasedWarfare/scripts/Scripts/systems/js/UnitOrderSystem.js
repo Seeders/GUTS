@@ -84,6 +84,7 @@ class UnitOrderSystem extends engine.BaseSystem {
                     if (!building.buildTime) building.buildTime = 1;
                     
                     building.id = buildingId;
+                    building.collection = "buildings";
                     const canAfford = this.game.state.playerGold >= (building.value || 0);
                     const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
                     const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
@@ -178,11 +179,7 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
-        this.game.state.selectedUnitType = { 
-            id: building.id, 
-            collection: 'buildings', 
-            ...building 
-        };
+        this.game.state.selectedUnitType = {...building};
         
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,

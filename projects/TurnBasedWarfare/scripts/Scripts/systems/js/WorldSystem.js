@@ -580,105 +580,68 @@ class WorldSystem extends engine.BaseSystem {
         this.renderEnvironmentObjects();
     }
 
+
     renderEnvironmentObjects() {
         if (!this.scene || !this.tileMap.environmentObjects || this.tileMap.environmentObjects.length === 0) {
             return;
         }
 
-        // Group environment objects by type
-        const objectsByType = {};
+        // Create entities for each environment object
         this.tileMap.environmentObjects.forEach(obj => {
-            if (!objectsByType[obj.type]) {
-                objectsByType[obj.type] = [];
-            }
-            objectsByType[obj.type].push(obj);
+            this.createEnvironmentEntity(obj);
         });
+    }
 
-        // Process each type separately
-        Object.entries(objectsByType).forEach(([type, objects]) => {
-            const referenceModel = this.game.modelManager?.getModel("worldObjects", type);
-            if (!referenceModel) {
-                console.warn(`WorldRenderSystem: Model not found for type: ${type}`);
-                return;
-            }
+    createEnvironmentEntity(envObj) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
 
-            const meshData = [];
-            referenceModel.updateMatrixWorld(true);
-
-            referenceModel.traverse(node => {
-                if (node.isMesh) {
-                    const parent = node.parent;
-                    const parentWorldMatrix = parent.matrixWorld.clone();
-                    const localMatrix = node.matrix.clone();
-
-                    const relativeMatrix = new THREE.Matrix4();
-                    relativeMatrix.copy(parentWorldMatrix);
-                    relativeMatrix.multiply(localMatrix);
-                    meshData.push({
-                        mesh: node,
-                        relativeMatrix: relativeMatrix
-                    });
-                }
-            });
-            
-            if (meshData.length === 0) return;
-
-            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {
-                const instancedMesh = new THREE.InstancedMesh(
-                    mesh.geometry,
-                    mesh.material,
-                    objects.length
-                );
-                instancedMesh.userData.relativeMatrix = relativeMatrix;
-                instancedMesh.userData.objectType = type;
-                instancedMesh.castShadow = true;   
-                instancedMesh.receiveShadow = true;
-                if(instancedMesh.material.map){
-                    instancedMesh.material.map.wrapS = THREE.MirroredRepeatWrapping;
-                    instancedMesh.material.side = THREE.DoubleSide; // Set side to double for better visibility                                
-                    instancedMesh.material.alphaTest = 0.1;
-                }
-                instancedMesh.material.transparent = true;
-                instancedMesh.material.needsUpdate = true; // Force material update
-           
-                return instancedMesh;
-            });
-
-            const matrix = new THREE.Matrix4();
-            const dummy = new THREE.Object3D();
-
-            objects.forEach((obj, index) => {
-                                const worldX = (obj.x + this.extensionSize) - this.extendedSize / 2;
-                const worldZ = (obj.y + this.extensionSize) - this.extendedSize / 2;
-
-                let height = 0;
-                if (this.heightMapSettings?.enabled) {
-                    height = this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
-                }
-
-                // Original positioning but with proper centering
-                // The terrain canvas is drawn at position (extensionSize, extensionSize) on the ground canvas
-                // So we need to account for that offset
-
-                dummy.position.set(worldX, height, worldZ);
-                dummy.rotation.y = Math.random() * Math.PI * 2;
-                const scale = (0.8 + Math.random() * 0.4) * ( type == 'rock' ? 1 : 50);
-                dummy.scale.set(scale, scale, scale);
-                dummy.updateMatrix();
+        const unitType = this.game.getCollections().worldObjects[envObj.type];
+        unitType.collection = "worldObjects";
+        unitType.id = envObj.type;
+        // Calculate world position (matching your existing offset logic)
+        const worldX = (envObj.x + this.extensionSize) - this.extendedSize / 2;
+        const worldZ = (envObj.y + this.extensionSize) - this.extendedSize / 2;
         
-                instancedMeshes.forEach(instancedMesh => {
-                    matrix.copy(dummy.matrix);
-                    matrix.multiply(instancedMesh.userData.relativeMatrix);
-                    instancedMesh.setMatrixAt(index, matrix);
-                });
-            });
-
-            instancedMeshes.forEach(instancedMesh => {
-                instancedMesh.instanceMatrix.needsUpdate = true;
-                this.scene.add(instancedMesh);
-            });
-        });
-
+        // Get terrain height
+        let height = 0;
+        if (this.heightMapSettings?.enabled) {
+            height = this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
+        }
+        
+        // Create entity with unique ID
+        const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
+        
+        // Add Position component
+        this.game.addComponent(entityId, ComponentTypes.POSITION, 
+            Components.Position(worldX, height, worldZ));
+        
+        // Add Velocity component (anchored = true, so it doesn't move)
+        this.game.addComponent(entityId, ComponentTypes.VELOCITY, 
+            Components.Velocity(0, 0, 0, 0, false, true));
+        
+        // Add Renderable component
+        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
+            Components.Renderable('worldObjects', envObj.type));
+        
+        // Add Animation component for rotation and scale
+        const rotation = Math.random() * Math.PI * 2;
+        const scale = (0.8 + Math.random() * 0.4) * (envObj.type === 'rock' ? 1 : 50);
+        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
+            Components.Animation(scale, rotation, 0));
+        
+        // Add Facing component for rotation
+        this.game.addComponent(entityId, ComponentTypes.FACING, 
+            Components.Facing(rotation));
+        
+         this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
+            Components.UnitType(
+                unitType
+            ));
+        
+        // Add Team component (neutral for environment objects)
+        this.game.addComponent(entityId, ComponentTypes.TEAM, 
+            Components.Team('neutral'));
     }
 
     onWindowResize() {

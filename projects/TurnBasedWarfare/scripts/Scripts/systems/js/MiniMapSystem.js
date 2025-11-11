@@ -339,8 +339,12 @@ class MiniMapSystem extends engine.BaseSystem {
         
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
-            this.componentTypes.TEAM
-        );
+            this.componentTypes.TEAM,
+            this.componentTypes.UNIT_TYPE
+        ).filter(id => {
+            const unitType = this.game.getComponent(id, this.componentTypes.UNIT_TYPE);
+            return unitType.collection == "units" || unitType.collection == "buildings"
+        });
         
         let friendlyUnitIndex = 0;
         let enemyUnitIndex = 0;
@@ -372,7 +376,7 @@ class MiniMapSystem extends engine.BaseSystem {
                     this.enemyBuildingMesh.setMatrixAt(enemyBuildingIndex, this.tempMatrix);
                     enemyBuildingIndex++;
                 }
-            } else {
+            } else if(unitType.collection == 'units') {
                 // It's a unit
                 if (isMyUnit) {
                     this.friendlyInstancedMesh.setMatrixAt(friendlyUnitIndex, this.tempMatrix);

@@ -134,7 +134,9 @@ class MovementSystem extends engine.BaseSystem {
       
             if(!projectile){
                 this.handleGroundInteraction(pos, vel);
-                this.enforceBoundaries(pos, collision);
+                if(!vel.anchored){
+                    this.enforceBoundaries(pos, collision);
+                }
                     
                 const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
                 if (placement && placement.placementId && this.game.gridSystem) {

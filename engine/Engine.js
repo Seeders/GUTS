@@ -75,7 +75,7 @@ class Engine extends BaseEngine {
         });
     }
 
-    gameLoop() {
+    async gameLoop() {
         if (!this.running) return;
         
         const now = this.getCurrentTime();
@@ -84,7 +84,7 @@ class Engine extends BaseEngine {
         
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
-            this.tick();
+            await this.tick();
             this.accumulator -= this.tickRate;
         }
         
@@ -92,10 +92,10 @@ class Engine extends BaseEngine {
         requestAnimationFrame(() => this.gameLoop());
     }
 
-    tick() {
+    async tick() {
         // Update all active game rooms
         if (this.gameInstance && this.gameInstance.update) {
-            this.gameInstance.update(this.tickRate);        
+            await this.gameInstance.update(this.tickRate);        
         }
         
     }

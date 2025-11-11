@@ -37,30 +37,29 @@ class RenderSystem extends engine.BaseSystem {
         }
     }
 
-    update() {
+    async update() {
         if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
 
         this._frame++;
-        this.updateEntities();
+        await this.updateEntities();
         this.updateAnimations();
         this.finalizeUpdates();
     }
 
-    updateEntities() {
+    async updateEntities() {
         const CT = this.componentTypes;
         const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
         this._stats.entitiesProcessed = entities.length;
-
-        entities.forEach(entityId => {
+        entities.forEach(async (entityId) => {
             const pos = this.game.getComponent(entityId, CT.POSITION);
             const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
             const velocity = this.game.getComponent(entityId, CT.VELOCITY);
             const facing = this.game.getComponent(entityId, CT.FACING);
-            const team = this.game.getComponent(entityId, CT.TEAM);
+            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
 
-            if (!pos || !renderable) return;
+            if (!unitType) return;
 
-            if (this.isEnemy(team) && !this.isVisibleForPlayer(pos)) {
+            if (unitType.collection != "worldObjects" && !this.isVisibleForPlayer(pos)) {
                 if (this.entityToInstance.has(entityId)) {
                     this.hideEntityInstance(entityId);
                 }
@@ -82,7 +81,7 @@ class RenderSystem extends engine.BaseSystem {
 
             let instance = this.entityToInstance.get(entityId);
             if (!instance) {
-                this.createInstance(entityId, renderable.objectType, renderable.spawnType);
+                await this.createInstance(entityId, renderable.objectType, renderable.spawnType);
                 instance = this.entityToInstance.get(entityId);
             }
 
@@ -101,7 +100,7 @@ class RenderSystem extends engine.BaseSystem {
         }
 
         const batchKey = `${objectType}_${spawnType}`;
-        
+        const capacity = objectType == "worldObjects" ? 1024 : this.DEFAULT_CAPACITY;
         let batch = this.vatBatches.get(batchKey);
         if (!batch) {
             if (this.batchCreationPromises.has(batchKey)) {
@@ -111,7 +110,7 @@ class RenderSystem extends engine.BaseSystem {
                     return null;
                 }
             } else {
-                const creationPromise = this.createVATBatch(batchKey, objectType, spawnType);
+                const creationPromise = this.createVATBatch(batchKey, objectType, spawnType, capacity);
                 this.batchCreationPromises.set(batchKey, creationPromise);
                 
                 try {
@@ -167,7 +166,7 @@ class RenderSystem extends engine.BaseSystem {
         return instance;
     }
 
-    async createVATBatch(batchKey, objectType, spawnType) {
+    async createVATBatch(batchKey, objectType, spawnType, capacity) {
         const collections = this.game.getCollections?.();
         let objectDef = null;
         
@@ -234,7 +233,6 @@ class RenderSystem extends engine.BaseSystem {
 
         const geometry = bundle.geometry.clone();
         const material = bundle.material;
-        const capacity = this.DEFAULT_CAPACITY;
 
         material.uuid = THREE.MathUtils.generateUUID();
         material.needsUpdate = true;
@@ -259,7 +257,7 @@ class RenderSystem extends engine.BaseSystem {
         const size = this.modelScale * 2;
         boundingBox.setFromCenterAndSize(new THREE.Vector3(0, 0, 0), new THREE.Vector3(size, size, size));
         geometry.boundingBox = boundingBox;
-        geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), size * 0.5);
+        geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), this.modelScale);
 
         if (!material.side || material.side === THREE.FrontSide) {
             material.side = THREE.DoubleSide;
@@ -623,7 +621,7 @@ class RenderSystem extends engine.BaseSystem {
     isEnemy(teamComp) {
         const myTeam = this.game?.state?.mySide;
         if (!teamComp || myTeam == null) return false;
-        return teamComp.team !== myTeam;
+        return teamComp.team !== myTeam && teamComp.team !== "neutral";
     }
 
     isVisibleForPlayer(pos) {
