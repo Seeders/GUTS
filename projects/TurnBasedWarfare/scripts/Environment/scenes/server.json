@@ -8,7 +8,6 @@
       "spawnType": "multiplayer",
       "managers": [
         { "type": "ComponentManager" },
-        { "type": "EventManager" },
         { "type": "GameManager" },
         { "type": "UnitCreationManager" },
         { "type": "SquadManager" }

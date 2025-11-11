@@ -5,8 +5,8 @@ class GameManager {
         this.services = new Map();
     }
 
-    startSelectedMode() {
-        if (!this.game.eventManager.selectedGameMode) {
+    initializeGame(){
+        if (!this.game.screenManager.selectedGameMode) {
             alert('Please select a game mode first!');
             return;
         }
@@ -21,22 +21,19 @@ class GameManager {
                 loadingTip.textContent = `Mode: ${mode.title} - ${mode.description}`;
             }
         }
-        
-        // Start loading process
-        this.game.loadingManager.showLoadingWithProgress(() => {
-            this.initializeGame();
-        });
-    }
 
-    initializeGame() {
-        this.game.eventManager.startGame();
-        this.game.screenManager.showGameScreen();        
-        this.game.state.isPaused = false;
-        this.game.uiSystem.start();
+        this.game.triggerEvent('onGameStarted');
+
+        setTimeout(() => {   
+            this.game.state.isPaused = false;
+            this.game.uiSystem.start();
+            this.game.screenManager.showGameScreen();  
+        }, 2000);
+        
     }
 
     pauseGame() {
-        this.game.eventManager.pause();
+        this.game.screenManager.pause();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'flex';
@@ -44,7 +41,7 @@ class GameManager {
     }
 
     resumeGame() {
-        this.game.eventManager.resume();
+        this.game.screenManager.resume();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'none';
@@ -52,13 +49,11 @@ class GameManager {
     }
 
     restartGame() {
-        const confirmRestart = this.game.eventManager.currentScreen === 'gameScreen' 
+        const confirmRestart = this.game.screenManager.currentScreen === 'gameScreen' 
             ? confirm('Are you sure you want to restart? Your current progress will be lost.')
             : true;
 
         if (confirmRestart) {
-            this.game.eventManager.reset();
-            this.game.eventManager.setGameMode(this.game.eventManager.selectedGameMode); // Restore selected mode
             this.initializeGame();
         }
         
@@ -73,13 +68,12 @@ class GameManager {
         if (confirm('Are you sure you want to exit to the main menu? Your progress will be lost.')) {
             this.game.phaseSystem.reset();
             this.game.screenManager.showMainMenu();
-            this.game.eventManager.reset();
         }
     }
 
     continueGame() {
         // Continue to next round/level
-        this.game.eventManager.stats.round++;
+        this.game.screenManager.stats.round++;
         this.initializeGame();
     }
 

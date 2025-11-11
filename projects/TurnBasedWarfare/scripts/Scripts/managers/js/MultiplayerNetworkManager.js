@@ -327,7 +327,7 @@ class MultiplayerNetworkManager {
     }
 
     handleGameStarted(data){
-        this.game.triggerEvent('onGameStarted', data);
+        this.game.gameManager.initializeGame(data);
     }
 
     handleReadyForBattleUpdate(data) {

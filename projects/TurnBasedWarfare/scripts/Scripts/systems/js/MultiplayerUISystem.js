@@ -250,8 +250,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
         document.getElementById('multiplayerLobby')?.classList.remove('active');
         document.getElementById('gameScreen')?.classList.add('active');
         
-        // Start the game
-        this.game.gameManager.startSelectedMode();
         
     }
 

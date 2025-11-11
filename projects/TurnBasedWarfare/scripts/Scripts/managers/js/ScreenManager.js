@@ -2,14 +2,9 @@ class ScreenManager {
     constructor(app) {
         this.game = app;
         this.game.screenManager = this;
-        this.setupEventListeners();
     }
 
-    setupEventListeners() {
-        this.game.eventManager.on('screenChanged', (screenId) => {
-            this.showScreen(screenId);
-        });
-    }
+    
 
     showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(screen => {
@@ -23,31 +18,75 @@ class ScreenManager {
     }
 
     showMainMenu() {
-        this.game.eventManager.setScreen('mainMenu');
+        this.setScreen('mainMenu');
     }
 
     showGameModeSelect() {
-        this.game.eventManager.setScreen('gameModeSelect');
+        this.setScreen('gameModeSelect');
         // Reset selection
         document.querySelectorAll('.mode-card').forEach(card => {
             card.classList.remove('selected');
         });
-        this.game.eventManager.selectedGameMode = null;
+        this.selectedGameMode = null;
     }
 
     showLoadingScreen() {
-        this.game.eventManager.setScreen('loadingScreen');
+        this.setScreen('loadingScreen');
     }
 
     showGameScreen() {
-        this.game.eventManager.setScreen('gameScreen');
+        this.setScreen('gameScreen');
     }
 
     showVictoryScreen() {
-        this.game.eventManager.setScreen('victoryScreen');
+        this.setScreen('victoryScreen');
     }
 
     showDefeatScreen() {
-        this.game.eventManager.setScreen('defeatScreen');
+        this.setScreen('defeatScreen');
+    }
+
+
+    
+    reset() {
+        this.currentScreen = 'mainMenu';
+        this.selectedGameMode = null;
+        this.gameStartTime = null;
+        this.isPaused = false;
+        this.stats = {
+            round: 1,
+            goldEarned: 0,
+            unitsDeployed: 0,
+            unitsLost: 0,
+            totalPlayTime: 0
+        };
+    }
+
+    setScreen(screenId) {
+        this.currentScreen = screenId;
+        this.showScreen(screenId);
+    }
+
+    setGameMode(mode) {
+        this.selectedGameMode = mode;
+    }
+
+    onGameStarted() {
+        this.gameStartTime = Date.now();
+    }
+
+    endGame(result, finalStats = {}) {
+        if (this.gameStartTime) {
+            this.stats.totalPlayTime = Date.now() - this.gameStartTime;
+        }
+        Object.assign(this.stats, finalStats);
+    }
+
+    pause() {
+        this.isPaused = true;
+    }
+
+    resume() {
+        this.isPaused = false;
     }
 }

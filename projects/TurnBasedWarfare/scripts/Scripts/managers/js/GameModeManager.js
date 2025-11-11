@@ -108,14 +108,14 @@ class GameModeManager {
         const selectedCard = document.querySelector(`[data-mode="${modeId}"]`);
         if (selectedCard) {
             selectedCard.classList.add('selected');
-            this.game.eventManager.setGameMode(modeId);
+            this.game.screenManager.setGameMode(modeId);
             const modeConfig = this.getModeConfig(modeId);
             modeConfig.onStart(modeConfig);
         }
     }
 
     getSelectedMode() {
-        return this.modes[this.game.eventManager.selectedGameMode];
+        return this.modes[this.game.screenManager.selectedGameMode];
     }
 
     getModeConfig(modeId) {

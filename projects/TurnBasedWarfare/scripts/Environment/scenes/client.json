@@ -10,7 +10,6 @@
       "children": [],
       "managers": [
         { "type": "ComponentManager" },
-        { "type": "EventManager" },
         { "type": "GameManager" },
         { "type": "GameModeManager" },
         { "type": "KeyboardManager" },
