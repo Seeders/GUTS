@@ -65,7 +65,10 @@
       }
     }
   },
-  "units": [],
+  "units": [
+    "1_sd_soldier",
+    "1_s_barbarian"
+  ],
   "placementGridWidth": 2,
   "placementGridHeight": 3,
   "height": 100,

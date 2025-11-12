@@ -911,8 +911,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         return;
                     }
                     const terrainType = this.game.worldSystem.tileMap.terrainTypes[terrainTypeId];
-                    
-                    terrainValid = terrainValid && terrainType.buildable;
+                    const isPositionWalkable = this.game.gameManager.call('isGridPositionWalkable', cell);
+                    terrainValid = terrainValid && terrainType.buildable && isPositionWalkable;
                 });
                 
                 isValid = gridValid && terrainValid;

@@ -24,6 +24,9 @@ class PathfindingSystem extends engine.BaseSystem {
     init() {
         if (this.initialized) return;
         
+        this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
+        this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
+        
         const collections = this.game.getCollections();
         if (!collections) {
             console.warn('PathfindingSystem: Collections not available');
@@ -85,6 +88,7 @@ class PathfindingSystem extends engine.BaseSystem {
         
         const halfTerrain = terrainSize / 2;
         
+        // First pass: populate the navmesh with terrain types
         for (let z = 0; z < this.navGridHeight; z++) {
             for (let x = 0; x < this.navGridWidth; x++) {
                 const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
@@ -97,7 +101,58 @@ class PathfindingSystem extends engine.BaseSystem {
             }
         }
         
-        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight}`);
+        // Second pass: mark cells adjacent to impassable terrain as impassable
+        // Create a copy to read from while we modify
+        const originalNavMesh = new Uint8Array(this.navMesh);
+        
+        for (let z = 0; z < this.navGridHeight; z++) {
+            for (let x = 0; x < this.navGridWidth; x++) {
+                const idx = z * this.navGridWidth + x;
+                const currentTerrain = originalNavMesh[idx];
+                
+                // Check if this cell is walkable
+                if (this.isTerrainWalkable(currentTerrain)) {
+                    // Check all 8 neighbors
+                    const neighbors = [
+                        {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
+                        {dx: 0, dz: 1}, {dx: 0, dz: -1},
+                        {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
+                        {dx: 1, dz: -1}, {dx: -1, dz: -1}
+                    ];
+                    
+                    for (const {dx, dz} of neighbors) {
+                        const nx = x + dx;
+                        const nz = z + dz;
+                        
+                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                            const neighborIdx = nz * this.navGridWidth + nx;
+                            const neighborTerrain = originalNavMesh[neighborIdx];
+                            
+                            // If neighbor is impassable or we can't walk to it
+                            if (!this.isTerrainWalkable(neighborTerrain) || 
+                                !this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
+                                // Mark this cell as impassable (use 255 as a special marker)
+                                this.navMesh[idx] = 255;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
+    }
+    
+    isTerrainWalkable(terrainIndex) {
+        if (terrainIndex === null || terrainIndex === 255) return false;
+        
+        // A terrain is walkable if it has at least one walkable neighbor defined
+        const terrainType = this.terrainTypes[terrainIndex];
+        if (!terrainType) return false;
+        
+        const walkableNeighbors = terrainType.walkableNeighbors || [];
+        return walkableNeighbors.length > 0;
     }
 
     worldToNavGrid(worldX, worldZ) {
@@ -172,6 +227,10 @@ class PathfindingSystem extends engine.BaseSystem {
         let iterations = 0;
         const maxIterations = this.navGridWidth * this.navGridHeight;
         
+        // Track the closest point we've found to the destination
+        let closestNode = { key: startKey, x: startGrid.x, z: startGrid.z };
+        let closestDistance = this.heuristic(startGrid, endGrid);
+        
         while (!openSet.isEmpty() && iterations < maxIterations) {
             iterations++;
             
@@ -190,6 +249,13 @@ class PathfindingSystem extends engine.BaseSystem {
             
             closedSet.add(currentKey);
             
+            // Check if this is closer to the destination than previous closest
+            const distToEnd = this.heuristic({ x: current.x, z: current.z }, endGrid);
+            if (distToEnd < closestDistance) {
+                closestDistance = distToEnd;
+                closestNode = current;
+            }
+            
             const currentTerrain = this.getTerrainAtNavGrid(current.x, current.z);
             
             for (const dir of directions) {
@@ -200,13 +266,31 @@ class PathfindingSystem extends engine.BaseSystem {
                 if (closedSet.has(neighborKey)) continue;
                 
                 const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
-                if (neighborTerrain === null) continue;
+                if (neighborTerrain === null || neighborTerrain === 255) continue;
                 
                 if (!this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
                     continue;
                 }
                 
                 const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
+                
+                // For diagonal moves, check both adjacent cells to prevent corner cutting
+                if (isDiagonal) {
+                    const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
+                    const terrainZ = this.getTerrainAtNavGrid(current.x, current.z + dir.dz);
+                    
+                    // Both adjacent cells must exist and be walkable
+                    if (terrainX === null || terrainX === 255 || 
+                        terrainZ === null || terrainZ === 255) {
+                        continue;
+                    }
+                    
+                    if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
+                        !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+                        continue;
+                    }
+                }
+                
                 const moveCost = isDiagonal ? 1.414 : 1;
                 const tentativeGScore = gScore.get(currentKey) + moveCost;
                 
@@ -221,6 +305,19 @@ class PathfindingSystem extends engine.BaseSystem {
                     openSet.push({ key: neighborKey, x: neighborX, z: neighborZ, f });
                 }
             }
+        }
+        
+        // No path found to exact destination - return path to closest reachable point
+        if (closestNode.key !== startKey) {
+            const closestWorld = this.navGridToWorld(closestNode.x, closestNode.z);
+            const path = this.reconstructPath(cameFrom, closestNode.key, closestWorld.x, closestWorld.z);
+            
+            if (cacheKey) {
+                this.addToCache(cacheKey, path);
+            }
+            
+            console.log(`PathfindingSystem: No path to destination, returning path to closest point (distance: ${closestDistance.toFixed(1)})`);
+            return path;
         }
         
         return null;
@@ -290,20 +387,41 @@ class PathfindingSystem extends engine.BaseSystem {
             if (x === toGrid.x && z === toGrid.z) return true;
             
             const currentTerrain = this.getTerrainAtNavGrid(x, z);
-            if (currentTerrain === null) return false;
+            if (currentTerrain === null || currentTerrain === 255) return false;
             
             if (!this.canWalkBetweenTerrains(lastTerrain, currentTerrain)) {
                 return false;
             }
             
+            const e2 = 2 * err;
+            const willMoveX = e2 > -dz;
+            const willMoveZ = e2 < dx;
+            
+            // Check for diagonal movement (corner cutting)
+            if (willMoveX && willMoveZ) {
+                // We're moving diagonally - check both adjacent cells to prevent corner cutting
+                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
+                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
+                
+                // Both adjacent cells must be valid and walkable from current position
+                if (terrainX === null || terrainX === 255 || 
+                    terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+                
+                if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
+                    !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+                    return false;
+                }
+            }
+            
             lastTerrain = currentTerrain;
             
-            const e2 = 2 * err;
-            if (e2 > -dz) {
+            if (willMoveX) {
                 err -= dz;
                 x += sx;
             }
-            if (e2 < dx) {
+            if (willMoveZ) {
                 err += dx;
                 z += sz;
             }
@@ -395,8 +513,25 @@ class PathfindingSystem extends engine.BaseSystem {
         }
     }
 
+    isGridPositionWalkable(gridPos) {
+        const worldPos = this.game.gameManager.call('gridToWorld', gridPos.x, gridPos.z);
+        return this.isPositionWalkable(worldPos);
+    }
+
+    isPositionWalkable(pos) {
+        const grid = this.worldToNavGrid(pos.x, pos.z);
+        
+        // Check bounds
+        if (grid.x < 0 || grid.x >= this.navGridWidth || 
+            grid.z < 0 || grid.z >= this.navGridHeight) {
+            return false;
+        }
+        
+        const terrain = this.getTerrainAtNavGrid(grid.x, grid.z);
+        return this.isTerrainWalkable(terrain);
+    }
+
     ping() {
         console.log('pong');
     }
 }
-
