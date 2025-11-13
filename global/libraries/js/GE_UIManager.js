@@ -217,7 +217,13 @@ class GE_UIManager {
                      });
 
                      const result = await response.json();
-                     this.graphicsEditor.getFrameShape().url = result.filePath;
+                     // Strip project resources path - only keep path from models directory onwards
+                     let shapePath = result.filePath;
+                     const resourcesIndex = shapePath.indexOf('resources/');
+                     if (resourcesIndex !== -1) {
+                         shapePath = shapePath.substring(resourcesIndex + 'resources/'.length);
+                     }
+                     this.graphicsEditor.getFrameShape().url = shapePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
