@@ -256,23 +256,28 @@
     margin-top: 20px;
   }
   
+  .inspector {
+    padding: 16px;
+  }
+
   .form-row {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
-  
+
   .form-row label {
     width: 90px;
     font-size: 12px;
+    flex-shrink: 0;
   }
-  
-  .form-row input, 
+
+  .form-row input,
   .form-row select {
     flex: 1;
     padding: 8px;
-    border-radius: 0;
+    border-radius: 4px;
     font-size: 12px;
   }
   
