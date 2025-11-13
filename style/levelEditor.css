@@ -246,7 +246,7 @@
 	margin-top: 16px;
   }
 
-  #level-editor-container .terrain-item {
+  #level-editor-container .terrain-editor__terrain-item {
 	display: flex;
 	align-items: center;
 	gap: 12px;
@@ -259,12 +259,12 @@
 	transition: all 0.2s ease;
   }
 
-  #level-editor-container .terrain-item:hover {
+  #level-editor-container .terrain-editor__terrain-item:hover {
 	background-color: rgba(255, 255, 255, 0.05);
 	transform: translateY(-2px);
   }
 
-  #level-editor-container .color-option {
+  #level-editor-container .terrain-editor__color-option {
 	width: 36px;
 	height: 36px;
 	border-radius: var(--border-radius);
@@ -273,7 +273,7 @@
 	flex-shrink: 0;
   }
 
-  #level-editor-container .color-option.active {
+  #level-editor-container .terrain-editor__color-option.active {
 	border-color: var(--primary);
 	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
   }
@@ -386,7 +386,7 @@
 	transform: rotate(180deg);
   }
   
-  #level-editor-container .environment-items {
+  #level-editor-container .terrain-editor__environment-items {
 	padding: 10px;
 	display: flex;
 	flex-wrap: wrap;
@@ -394,7 +394,7 @@
 	background-color: #1f2937;
   }
   
-  #level-editor-container .environment-item {
+  #level-editor-container .terrain-editor__environment-item {
 	width: 128px;
 	height: 128px;
 	border: 2px solid #4b5563;
@@ -409,24 +409,24 @@
 	position: relative;
   }
   
-  #level-editor-container .environment-item:hover {
+  #level-editor-container .terrain-editor__environment-item:hover {
 	border-color: #9ca3af;
 	transform: translateY(-2px);
   }
   
-  #level-editor-container .environment-item.active {
+  #level-editor-container .terrain-editor__environment-item.active {
 	border-color: #3b82f6;
 	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
   }
   
-  #level-editor-container .environment-item canvas {
+  #level-editor-container .terrain-editor__environment-item canvas {
 	max-width: 100%;
 	max-height: 100%;
 	object-fit: contain;
   }
   
   /* Tooltip for environment items */
-  #level-editor-container .environment-item::before {
+  #level-editor-container .terrain-editor__environment-item::before {
 	content: attr(data-name);
 	position: absolute;
 	bottom: calc(100% + 5px);
@@ -447,7 +447,7 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
   
-  #level-editor-container .environment-item:hover::before {
+  #level-editor-container .terrain-editor__environment-item:hover::before {
 	visibility: visible;
 	opacity: 1;
   }
@@ -509,7 +509,7 @@
   }
   
   /* Empty state for environment types */
-  #level-editor-container .environment-items.empty {
+  #level-editor-container .terrain-editor__environment-items.empty {
 	padding: 20px;
 	text-align: center;
 	color: #9ca3af;
@@ -570,11 +570,11 @@
 }
   /* Responsive adjustments */
   @media (max-width: 768px) {
-	#level-editor-container .environment-items {
+	#level-editor-container .terrain-editor__environment-items {
 	  justify-content: center;
 	}
 	
-	#level-editor-container .environment-item {
+	#level-editor-container .terrain-editor__environment-item {
 	  width: 56px;
 	  height: 56px;
 	}

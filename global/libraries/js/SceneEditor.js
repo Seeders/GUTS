@@ -510,9 +510,9 @@ class SceneEditor {
 
     renderEntityInHierarchy(entity, parentElement, level = 0) {
         const itemEl = document.createElement('div');
-        itemEl.className = 'hierarchy-item';
+        itemEl.className = 'scene-editor__hierarchy-item';
         itemEl.dataset.entityId = entity.id;
-        
+
         if (this.state.selectedEntity === entity) {
             itemEl.classList.add('selected');
         }    
@@ -537,7 +537,7 @@ class SceneEditor {
 
     selectEntity(entity) {
         // Clear previous selection
-        const prevSelected = document.querySelector('.hierarchy-item.selected');
+        const prevSelected = document.querySelector('.scene-editor__hierarchy-item.selected');
         if (prevSelected) {
             prevSelected.classList.remove('selected');
         }
@@ -746,13 +746,15 @@ class SceneEditor {
     }
 
     updateGizmoToolbarUI(activeButtonId) {
-        // Remove active class from all buttons
-        document.querySelectorAll('.gizmo-btn').forEach(btn => {
-            btn.classList.remove('active');
+        // Remove active class from all gizmo tool buttons
+        ['scene-translate-tool', 'scene-rotate-tool', 'scene-scale-tool'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.remove('active');
         });
-        
+
         // Add active class to the clicked button
-        document.getElementById(activeButtonId).classList.add('active');
+        const activeBtn = document.getElementById(activeButtonId);
+        if (activeBtn) activeBtn.classList.add('active');
     }
     
     setGizmoMode(mode) {
