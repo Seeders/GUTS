@@ -58,11 +58,14 @@ class TextureEditor {
         // Set initial UI state
         document.getElementById('noTextureMessage').style.display = 'block';
         this.canvas.style.display = 'none';
-                
-        // Add zoom controls to the UI
-        this.addZoomControls(container);
+
         // Create a container for the canvas if it doesn't exist
         let canvasContainer = this.canvas.parentElement;
+
+        // Add zoom controls to the canvas area
+        if (canvasContainer) {
+            this.addZoomControls(canvasContainer);
+        }
 
         if (canvasContainer) {
             
@@ -75,41 +78,45 @@ class TextureEditor {
     addZoomControls(container) {
         // Create zoom controls container
         const zoomControlsContainer = document.createElement('div');
-        zoomControlsContainer.className = 'zoom-controls';
+        zoomControlsContainer.className = 'texture-editor__zoom-controls editor-module__status-bar';
         zoomControlsContainer.style.display = 'flex';
         zoomControlsContainer.style.alignItems = 'center';
-        zoomControlsContainer.style.marginTop = '10px';
+        zoomControlsContainer.style.gap = '12px';
+        zoomControlsContainer.style.position = 'absolute';
+        zoomControlsContainer.style.bottom = '0';
+        zoomControlsContainer.style.left = '0';
+        zoomControlsContainer.style.right = '0';
         
         // Zoom out button
         const zoomOutBtn = document.createElement('button');
         zoomOutBtn.id = 'zoom-out-btn';
         zoomOutBtn.innerText = '-';
-        zoomOutBtn.className = 'zoom-btn';
-        
+        zoomOutBtn.className = 'editor-module__btn editor-module__btn--small';
+        zoomOutBtn.title = 'Zoom Out';
+
         // Zoom display
         const zoomDisplay = document.createElement('span');
         zoomDisplay.id = 'zoom-display';
         zoomDisplay.innerText = '100%';
-        zoomDisplay.style.margin = '0 10px';
-        
+
         // Zoom in button
         const zoomInBtn = document.createElement('button');
         zoomInBtn.id = 'zoom-in-btn';
         zoomInBtn.innerText = '+';
-        zoomInBtn.className = 'zoom-btn';
-        
+        zoomInBtn.className = 'editor-module__btn editor-module__btn--small';
+        zoomInBtn.title = 'Zoom In';
+
         // Reset zoom button
         const resetZoomBtn = document.createElement('button');
         resetZoomBtn.id = 'reset-zoom-btn';
-        resetZoomBtn.innerText = 'Reset Zoom';
-        resetZoomBtn.className = 'zoom-btn';
-        resetZoomBtn.style.marginLeft = '10px';
-        
+        resetZoomBtn.innerText = 'Reset';
+        resetZoomBtn.className = 'editor-module__btn editor-module__btn--small';
+        resetZoomBtn.title = 'Reset Zoom to 100%';
+
         // Dimensions display
         const dimensionsDisplay = document.createElement('span');
         dimensionsDisplay.id = 'dimensions-display';
         dimensionsDisplay.innerText = 'Dimensions: 0 x 0';
-        dimensionsDisplay.style.marginLeft = '15px';
         
         // Add all controls to container
         zoomControlsContainer.appendChild(zoomOutBtn);
