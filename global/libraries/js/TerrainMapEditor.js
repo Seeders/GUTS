@@ -407,9 +407,12 @@ class TerrainMapEditor {
         
         // Get mouse position relative to canvas
         const rect = this.canvasEl.getBoundingClientRect();
-        let mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
+        // Account for CSS scaling of the canvas
+        const scaleX = this.canvasEl.width / rect.width;
+        const scaleY = this.canvasEl.height / rect.height;
+        let mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+
         if (!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
         }
@@ -717,9 +720,12 @@ class TerrainMapEditor {
         // Get mouse position and convert to game coordinates
         let offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;//48*4;
         const rect = this.canvasEl.getBoundingClientRect();
-        let mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top - offsetY;
-        
+        // Account for CSS scaling of the canvas
+        const scaleX = this.canvasEl.width / rect.width;
+        const scaleY = this.canvasEl.height / rect.height;
+        let mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY - offsetY;
+
         if(!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
         }
@@ -1181,10 +1187,13 @@ class TerrainMapEditor {
         // Get mouse position relative to canvas
         const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
         const rect = this.canvasEl.getBoundingClientRect();
-        let mouseX = event.clientX - rect.left;
-        let mouseY = event.clientY - rect.top;
-        
-        
+        // Account for CSS scaling of the canvas
+        const scaleX = this.canvasEl.width / rect.width;
+        const scaleY = this.canvasEl.height / rect.height;
+        let mouseX = (event.clientX - rect.left) * scaleX;
+        let mouseY = (event.clientY - rect.top) * scaleY;
+
+
         if(!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
             mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
