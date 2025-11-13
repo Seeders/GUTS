@@ -1,50 +1,56 @@
-<div id="texture-editor-container" class="texture-editor-wrapper"> 
-    <div class="texture-editor-tools">
-        <div class="tool-section">
-            <h3>Tools</h3>
-            <button id="brush-tool" class="tool-btn active">Brush</button>
-            <button id="eraser-tool" class="tool-btn">Eraser</button>
-            <button id="fill-tool" class="tool-btn">Fill</button>
-            <button id="eyedropper-tool" class="tool-btn">Eyedropper</button>
-        </div>
-        
-        <div class="tool-section">
-            <h3>Brush Size</h3>
-            <input type="range" id="brush-size" min="1" max="10" value="1">
-            <span id="brush-size-display">1px</span>
-        </div>
-        
-        <div class="tool-section">
-            <h3>Colors</h3>
-            <div id="color-palette" class="color-palette"></div>
-            <div class="custom-color">
-                <input type="color" id="custom-color-picker" value="#000000">
-                <label for="custom-color-picker">Custom Color</label>
+<div id="texture-editor-container" class="editor-module">
+    <div class="editor-module__sidebar editor-module__sidebar--left">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Tools</h3>
+            <div class="editor-module__toolbar editor-module__toolbar--vertical">
+                <button id="brush-tool" class="editor-module__btn editor-module__btn--active">Brush</button>
+                <button id="eraser-tool" class="editor-module__btn">Eraser</button>
+                <button id="fill-tool" class="editor-module__btn">Fill</button>
+                <button id="eyedropper-tool" class="editor-module__btn">Eyedropper</button>
             </div>
-            <div class="transparency-controls">
-                <label for="transparency-slider">Opacity: </label>
-                <input type="range" id="transparency-slider" min="0" max="255">
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Brush Size</h3>
+            <div class="editor-module__form-row">
+                <input type="range" id="brush-size" class="editor-module__range" min="1" max="10" value="1">
+                <span id="brush-size-display">1px</span>
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Colors</h3>
+            <div id="color-palette" class="texture-editor__color-palette"></div>
+            <div class="editor-module__form-row">
+                <input type="color" id="custom-color-picker" class="editor-module__color-picker" value="#000000">
+                <label for="custom-color-picker" class="editor-module__label">Custom Color</label>
+            </div>
+            <div class="editor-module__form-row">
+                <label for="transparency-slider" class="editor-module__label">Opacity:</label>
+                <input type="range" id="transparency-slider" class="editor-module__range" min="0" max="255">
                 <span id="transparency-display">100%</span>
             </div>
         </div>
-        
-        <div class="tool-section">
-            <h3>Actions</h3>
-            <button id="new-btn">New</button>
-            <button id="undo-btn" disabled>Undo</button>
-            <button id="redo-btn" disabled>Redo</button>
-            <button id="clear-btn">Clear</button>
-            <button class="export-btn">Save</button>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Actions</h3>
+            <div class="editor-module__toolbar editor-module__toolbar--vertical">
+                <button id="new-btn" class="editor-module__btn">New</button>
+                <button id="undo-btn" class="editor-module__btn" disabled>Undo</button>
+                <button id="redo-btn" class="editor-module__btn" disabled>Redo</button>
+                <button id="clear-btn" class="editor-module__btn editor-module__btn--danger">Clear</button>
+                <button class="export-btn editor-module__btn editor-module__btn--primary">Save</button>
+            </div>
         </div>
-        
-        <div class="tool-section">
-            <h3>Import</h3>
-            <input type="file" accept="image/*">
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Import</h3>
+            <input type="file" class="editor-module__input" accept="image/*">
         </div>
     </div>
-    
-    <div class="texture-editor-canvas-container">
-        <canvas id="texture-canvas"></canvas>
-        <div id="noTextureMessage">No texture loaded</div>
+
+    <div class="editor-module__canvas-area editor-module__grid-background">
+        <canvas id="texture-canvas" class="editor-module__canvas"></canvas>
+        <div id="noTextureMessage" class="texture-editor__no-texture-message">No texture loaded</div>
     </div>
 </div>

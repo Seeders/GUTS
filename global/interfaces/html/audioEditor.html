@@ -1,178 +1,151 @@
-<div id="audio-editor-container">       
-     <div id="status-container">
-        <span id="status-message">Ready</span>
+<div id="audio-editor-container" class="editor-module">
+    <div class="editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y">
+        <div id="status-container" class="editor-module__status-bar">
+            <span id="status-message">Ready</span>
+        </div>
+
+        <div class="editor-module__section">
+            <div class="editor-module__toolbar editor-module__toolbar--vertical">
+                <button id="playBtn" class="editor-module__btn editor-module__btn--primary">Play</button>
+                <button id="exportBtn" class="editor-module__btn editor-module__btn--success">Save</button>
+                <button id="randomSoundBtn" class="editor-module__btn editor-module__btn--secondary">🎲 Randomize Sound</button>
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Basic Parameters</h3>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Waveform:</label>
+                <select id="waveform" class="editor-module__select">
+                    <option value="sine">Sine</option>
+                    <option value="square">Square</option>
+                    <option value="sawtooth">Sawtooth</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="noise">Noise</option>
+                </select>
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Frequency: <span class="audio-editor__value-display">440 Hz</span></label>
+                <input type="range" id="frequency" class="editor-module__range" min="20" max="2000" value="440" step="1">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Duration: <span class="audio-editor__value-display">1.00 s</span></label>
+                <input type="range" id="duration" class="editor-module__range" min="0.1" max="5" value="1" step="0.1">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Volume: <span class="audio-editor__value-display">70%</span></label>
+                <input type="range" id="volume" class="editor-module__range" min="0" max="1" value="0.7" step="0.01">
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Noise Generator</h3>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Noise Type:</label>
+                <select id="noiseType" class="editor-module__select">
+                    <option value="white">White</option>
+                    <option value="pink">Pink</option>
+                    <option value="brown">Brown</option>
+                </select>
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Noise Amount: <span class="audio-editor__value-display">0%</span></label>
+                <input type="range" id="noiseAmount" class="editor-module__range" min="0" max="1" value="0" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Noise Filter:</label>
+                <select id="noiseFilterType" class="editor-module__select">
+                    <option value="none">None</option>
+                    <option value="lowpass">Low Pass</option>
+                    <option value="highpass">High Pass</option>
+                    <option value="bandpass">Band Pass</option>
+                </select>
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Noise Filter Freq: <span class="audio-editor__value-display">2000 Hz</span></label>
+                <input type="range" id="noiseFilterFreq" class="editor-module__range" min="20" max="20000" value="2000" step="1">
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Envelope (ADSR)</h3>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Attack: <span class="audio-editor__value-display">0.010 s</span></label>
+                <input type="range" id="attack" class="editor-module__range" min="0.001" max="2" value="0.01" step="0.001">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Decay: <span class="audio-editor__value-display">0.10 s</span></label>
+                <input type="range" id="decay" class="editor-module__range" min="0" max="2" value="0.1" step="0.001">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Sustain: <span class="audio-editor__value-display">70%</span></label>
+                <input type="range" id="sustain" class="editor-module__range" min="0" max="1" value="0.7" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Release: <span class="audio-editor__value-display">0.30 s</span></label>
+                <input type="range" id="release" class="editor-module__range" min="0.001" max="5" value="0.3" step="0.001">
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Pitch Envelope</h3>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Start: <span class="audio-editor__value-display">1.00x</span></label>
+                <input type="range" id="pitchEnvStart" class="editor-module__range" min="0.1" max="4" value="1" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">End: <span class="audio-editor__value-display">1.00x</span></label>
+                <input type="range" id="pitchEnvEnd" class="editor-module__range" min="0.1" max="4" value="1" step="0.01">
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Effects</h3>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Filter Type:</label>
+                <select id="filterType" class="editor-module__select">
+                    <option value="lowpass">Low Pass</option>
+                    <option value="highpass">High Pass</option>
+                    <option value="bandpass">Band Pass</option>
+                    <option value="notch">Notch</option>
+                </select>
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Filter Frequency: <span class="audio-editor__value-display">1000 Hz</span></label>
+                <input type="range" id="filterFreq" class="editor-module__range" min="20" max="20000" value="1000" step="1">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Filter Q: <span class="audio-editor__value-display">Q: 1.0</span></label>
+                <input type="range" id="filterQ" class="editor-module__range" min="0.1" max="20" value="1" step="0.1">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Distortion: <span class="audio-editor__value-display">0%</span></label>
+                <input type="range" id="distortion" class="editor-module__range" min="0" max="100" value="0" step="1">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Delay Time: <span class="audio-editor__value-display">0.30 s</span></label>
+                <input type="range" id="delayTime" class="editor-module__range" min="0" max="2" value="0.3" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Delay Feedback: <span class="audio-editor__value-display">0%</span></label>
+                <input type="range" id="delayFeedback" class="editor-module__range" min="0" max="0.9" value="0" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Reverb: <span class="audio-editor__value-display">0%</span></label>
+                <input type="range" id="reverbAmount" class="editor-module__range" min="0" max="1" value="0" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Bitcrusher: <span class="audio-editor__value-display">0%</span></label>
+                <input type="range" id="bitcrusher" class="editor-module__range" min="0" max="1" value="0" step="0.01">
+            </div>
+            <div class="editor-module__form-group">
+                <label class="editor-module__label">Panning: <span class="audio-editor__value-display">Center</span></label>
+                <input type="range" id="panning" class="editor-module__range" min="-1" max="1" value="0" step="0.01">
+            </div>
+        </div>
     </div>
 
-    <div class="main-flex-container">
-        <!-- Status Message Area -->
-
-        <!-- Basic Parameters -->
-        <div class="parameters-container">
-            <!-- Playback Controls -->
-            <div class="control-buttons">
-                <button id="playBtn" class="primary-button">Play</button>
-                <button id="exportBtn">Save</button>
-                <button id="randomSoundBtn">🎲 Randomize Sound</button>
-            </div>
-            <h3>Basic Parameters</h3>
-            <div class="parameter-group">
-                <label>
-                    Waveform:
-                    <select id="waveform">
-                        <option value="sine">Sine</option>
-                        <option value="square">Square</option>
-                        <option value="sawtooth">Sawtooth</option>
-                        <option value="triangle">Triangle</option>
-                        <option value="noise">Noise</option>
-                    </select>
-                </label>
-                <label>
-                    Frequency:
-                    <input type="range" id="frequency" min="20" max="2000" value="440" step="1">
-                    <span class="value-display">440 Hz</span>
-                </label>
-                <label>
-                    Duration:
-                    <input type="range" id="duration" min="0.1" max="5" value="1" step="0.1">
-                    <span class="value-display">1.00 s</span>
-                </label>
-                <label>
-                    Volume:
-                    <input type="range" id="volume" min="0" max="1" value="0.7" step="0.01">
-                    <span class="value-display">70%</span>
-                </label>
-            </div>
-        </div>
-        <div class="parameters-container">
-            <h3>Noise Generator</h3>
-            <div class="parameter-group">
-                <label >
-                    Noise Type:
-                    <select id="noiseType">
-                        <option value="white">White</option>
-                        <option value="pink">Pink</option>
-                        <option value="brown">Brown</option>
-                    </select>
-                </label>
-                <label>
-                    Noise Amount:
-                    <input type="range" id="noiseAmount" min="0" max="1" value="0" step="0.01">
-                    <span class="value-display">0%</span>
-                </label>
-                <label >
-                    Noise Filter:
-                    <select id="noiseFilterType">
-                        <option value="none">None</option>
-                        <option value="lowpass">Low Pass</option>
-                        <option value="highpass">High Pass</option>
-                        <option value="bandpass">Band Pass</option>
-                    </select>
-                </label>
-                <label>
-                    Noise Filter Freq:
-                    <input type="range" id="noiseFilterFreq" min="20" max="20000" value="2000" step="1">
-                    <span class="value-display">2000 Hz</span>
-                </label>
-            </div>
-            <!-- ADSR Envelope -->
-            <div class="parameters-container">
-                <h3>Envelope (ADSR)</h3>
-                <div class="parameter-group">
-                    <label>
-                        Attack:
-                        <input type="range" id="attack" min="0.001" max="2" value="0.01" step="0.001">
-                        <span class="value-display">0.010 s</span>
-                    </label>
-                    <label>
-                        Decay:
-                        <input type="range" id="decay" min="0" max="2" value="0.1" step="0.001">
-                        <span class="value-display">0.10 s</span>
-                    </label>
-                    <label>
-                        Sustain:
-                        <input type="range" id="sustain" min="0" max="1" value="0.7" step="0.01">
-                        <span class="value-display">70%</span>
-                    </label>
-                    <label>
-                        Release:
-                        <input type="range" id="release" min="0.001" max="5" value="0.3" step="0.001">
-                        <span class="value-display">0.30 s</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pitch Envelope -->
-        <div class="parameters-container">
-            <h3>Pitch Envelope</h3>
-            <div class="parameter-group">
-                <label>
-                    Start:
-                    <input type="range" id="pitchEnvStart" min="0.1" max="4" value="1" step="0.01">
-                    <span class="value-display">1.00x</span>
-                </label>
-                <label>
-                    End:
-                    <input type="range" id="pitchEnvEnd" min="0.1" max="4" value="1" step="0.01">
-                    <span class="value-display">1.00x</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Effects -->
-        <div class="parameters-container">
-            <h3>Effects</h3>
-            <div class="parameter-group">
-                <label>
-                    Filter Type:
-                    <select id="filterType">
-                        <option value="lowpass">Low Pass</option>
-                        <option value="highpass">High Pass</option>
-                        <option value="bandpass">Band Pass</option>
-                        <option value="notch">Notch</option>
-                    </select>
-                </label>
-                <label>
-                    Filter Frequency:
-                    <input type="range" id="filterFreq" min="20" max="20000" value="1000" step="1">
-                    <span class="value-display">1000 Hz</span>
-                </label>
-                <label>
-                    Filter Q:
-                    <input type="range" id="filterQ" min="0.1" max="20" value="1" step="0.1">
-                    <span class="value-display">Q: 1.0</span>
-                </label>
-                <label>
-                    Distortion:
-                    <input type="range" id="distortion" min="0" max="100" value="0" step="1">
-                    <span class="value-display">0%</span>
-                </label>
-                <label>
-                    Delay Time:
-                    <input type="range" id="delayTime" min="0" max="2" value="0.3" step="0.01">
-                    <span class="value-display">0.30 s</span>
-                </label>
-                <label>
-                    Delay Feedback:
-                    <input type="range" id="delayFeedback" min="0" max="0.9" value="0" step="0.01">
-                    <span class="value-display">0%</span>
-                </label>
-                <label>
-                    Reverb:
-                    <input type="range" id="reverbAmount" min="0" max="1" value="0" step="0.01">
-                    <span class="value-display">0%</span>
-                </label>
-                <label>
-                    Bitcrusher:
-                    <input type="range" id="bitcrusher" min="0" max="1" value="0" step="0.01">
-                    <span class="value-display">0%</span>
-                </label>
-                <label>
-                    Panning:
-                    <input type="range" id="panning" min="-1" max="1" value="0" step="0.01">
-                    <span class="value-display">Center</span>
-                </label>
-            </div>
-        </div>
+    <div class="editor-module__canvas-area audio-editor__waveform-display">
+        <!-- Waveform visualization will go here -->
     </div>
 </div>

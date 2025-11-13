@@ -1,12 +1,14 @@
-            <div id="script-editor-container" class="main-content-container">
-                <div id="script-editor-sidebar" class="content-sidebar">                    
-                    <h3>Script Editor</h3>
-                    <button id="save-script-btn">Save Script</button>
-                </div>
-                <div class="grid-background">
-                    <div>
-                        <textarea id="script-editor" class="script-editor" placeholder="Enter your script here..."></textarea>                    
-                        <div class="handle"></div>
-                    </div>
-                </div>
-            </div>
+<div id="script-editor-container" class="editor-module">
+    <div id="script-editor-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Script Editor</h3>
+            <button id="save-script-btn" class="editor-module__btn editor-module__btn--primary">Save Script</button>
+        </div>
+    </div>
+    <div class="editor-module__canvas-area editor-module__grid-background">
+        <div class="script-editor__code-container">
+            <textarea id="script-editor" class="editor-module__textarea editor-module__input script-editor__code" placeholder="Enter your script here..."></textarea>
+            <div class="handle"></div>
+        </div>
+    </div>
+</div>

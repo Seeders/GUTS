@@ -1,55 +1,47 @@
-<div id="scene-editor-container" class="editor">
-   <div id="scene-sidebar" class="sidebar">
-      <h2 class="sidebar-header">Hierarchy</h2>
-      <div id="scene-hierarchy" class="hierarchy">
+<div id="scene-editor-container" class="editor-module">
+   <div id="scene-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
+      <h2 class="editor-module__panel-title">Hierarchy</h2>
+      <div id="scene-hierarchy" class="editor-module__list editor-module__scroll-y">
         <!-- Entities will be populated here -->
       </div>
-      <div class="toolbar">
-        <div>
-          <button class="btn danger remove-prefab-btn" id="scene-removePrefabBtn">Remove Selected Prefab</button>
-        </div>
-        <div>
-          <select id="scene-addPrefabSelect"></select>
-        </div>
-        <div>
-          <button class="btn add-prefab-btn" id="scene-addPrefabBtn">+ Add Prefab</button>
-        </div>
+      <div class="editor-module__toolbar editor-module__toolbar--vertical">
+        <select id="scene-addPrefabSelect" class="editor-module__select"></select>
+        <button class="editor-module__btn editor-module__btn--secondary" id="scene-addPrefabBtn">+ Add Prefab</button>
+        <button class="editor-module__btn editor-module__btn--danger" id="scene-removePrefabBtn">Remove Selected Prefab</button>
       </div>
    </div>
-      
-   <div class="main-content">
-      <div class="gizmo-toolbar">
-        <button id="scene-translate-tool" class="gizmo-btn active" title="Translate (G)">
+
+   <div class="editor-module__canvas-area">
+      <div class="editor-module__toolbar">
+        <button id="scene-translate-tool" class="editor-module__btn editor-module__btn--active" title="Translate (G)">
             <span>Move</span>
         </button>
-        <button id="scene-rotate-tool" class="gizmo-btn" title="Rotate (R)">
+        <button id="scene-rotate-tool" class="editor-module__btn" title="Rotate (R)">
             <span>Rotate</span>
         </button>
-        <button id="scene-scale-tool" class="gizmo-btn" title="Scale (S)">
+        <button id="scene-scale-tool" class="editor-module__btn" title="Scale (S)">
             <span>Scale</span>
         </button>
       </div>
-      <div id="scene-view" class="scene-view">      
-         <div id="scene-canvas-container" class="grid-background">
-            <canvas id="scene-editor-canvas"></canvas>
+      <div id="scene-view" class="scene-editor__scene-view">
+         <div id="scene-canvas-container" class="editor-module__grid-background">
+            <canvas id="scene-editor-canvas" class="editor-module__canvas"></canvas>
          </div>
       </div>
    </div>
- 
-   <div id="scene-inspector" class="inspector">
-      <h2 class="sidebar-header">Inspector</h2>
-      <div class="no-selection" id="scene-noSelection">
-        No entity selected
-      </div>
-      <div id="scene-entityInspector" style="display: none;">        
-        <!-- Components will be added here dynamically -->
-        <div id="scene-components">
-          <!-- Example component (will be created dynamically) -->
+
+   <div id="scene-inspector" class="editor-module__sidebar editor-module__sidebar--right">
+      <h2 class="editor-module__panel-title">Inspector</h2>
+      <div class="editor-module__scroll-y">
+        <div class="scene-editor__no-selection" id="scene-noSelection">
+          No entity selected
         </div>
-        
-        <div class="toolbar">
-          <button class="btn add-component-btn" id="addComponentBtn">+ Add Component</button>
+        <div id="scene-entityInspector" class="editor-module__hidden">
+          <div id="scene-components">
+            <!-- Components will be added here dynamically -->
+          </div>
+          <button class="editor-module__btn editor-module__btn--secondary" id="addComponentBtn">+ Add Component</button>
         </div>
       </div>
    </div>
-   
+</div>
