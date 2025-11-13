@@ -195,49 +195,6 @@
 	min-height: min-content;
   }
 
-  #level-editor-container .translation-controls {
-	position: absolute;
-	right: 20px;
-	bottom: 20px;
-	display: grid;
-	grid-template-columns: repeat(3, 40px);
-	grid-template-rows: repeat(3, 40px);
-	gap: 4px;
-	z-index: 10;
-  }
-
-  #level-editor-container .translation-controls button {
-	width: 40px;
-	height: 40px;
-	background-color: rgba(15, 23, 42, 0.8);
-	color: var(--light);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	font-size: 18px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-  }
-
-  #level-editor-container #translate-up {
-	grid-column: 2;
-	grid-row: 1;
-  }
-
-  #level-editor-container #translate-left {
-	grid-column: 1;
-	grid-row: 2;
-  }
-
-  #level-editor-container #translate-right {
-	grid-column: 3;
-	grid-row: 2;
-  }
-
-  #level-editor-container #translate-down {
-	grid-column: 2;
-	grid-row: 3;
-  }
-
   /* Terrain item styling */
   #level-editor-container .terrain-types-container {
 	display: flex;
