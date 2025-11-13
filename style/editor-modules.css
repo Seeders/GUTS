@@ -321,6 +321,10 @@
   margin-bottom: var(--editor-spacing-md);
 }
 
+.editor-module__form-row--compact {
+  gap: var(--editor-spacing-sm);
+}
+
 .editor-module__form-group {
   display: flex;
   flex-direction: column;
@@ -333,6 +337,13 @@
   font-weight: 500;
   color: var(--editor-text-secondary);
   min-width: 80px;
+  flex-shrink: 0;
+}
+
+.editor-module__label--compact {
+  min-width: auto;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .editor-module__input {
@@ -507,6 +518,7 @@
 .editor-module__scroll-y {
   overflow-y: auto;
   overflow-x: hidden;
+  padding: var(--editor-spacing-lg);
 }
 
 .editor-module__no-select {
