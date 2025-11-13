@@ -594,7 +594,7 @@ class MovementSystem extends engine.BaseSystem {
             }
 
             if ((!aiState.path || aiState.path.length == 0) && targetPos) {
-                aiState.path = this.game.gameManager.call('requestPath'(
+                aiState.path = this.game.gameManager.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
@@ -752,7 +752,7 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     handleGroundInteraction(pos, vel) {
-        const terrainHeight = this.getTerrainHeightAtPosition(pos.x, pos.z);
+        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
         
         if (terrainHeight !== null) {
             const targetHeight = terrainHeight;   
@@ -769,12 +769,6 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
-    getTerrainHeightAtPosition(worldX, worldZ) {
-        if (this.game.terrainSystem && this.game.gameManager.call('getTerrainHeightAtPosition') {
-            return this.game.gameManager.call('getTerrainHeightAtPosition'(worldX, worldZ);
-        }
-        return this.GROUND_LEVEL;
-    }
     
     enforceBoundaries(pos, collision) {
         const collections = this.game.getCollections();

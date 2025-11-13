@@ -341,8 +341,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
             }
         });
         
- 
-        this.game.gameManager.call('clearAllProjectiles');
         
     }
        

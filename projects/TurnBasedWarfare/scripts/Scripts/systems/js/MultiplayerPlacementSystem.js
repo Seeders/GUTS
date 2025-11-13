@@ -858,21 +858,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     findGroundMesh() {
-        const ground = this.game.gameManager.call('getGround');
-        if (ground) {
-            return ground;
-        }
-
         for (let child of this.game.scene.children) {
             if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
                 return child;
             }
         }
         return null;
-    }
-
-    getGroundMesh() {
-        return this.findGroundMesh();
     }
 
     isValidGridPlacement(worldPos, unitDef) {

@@ -95,7 +95,7 @@ class PathfindingSystem extends engine.BaseSystem {
                 const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 
-                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition'(worldX, worldZ);
+                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition', worldX, worldZ);
                 
                 const idx = z * this.navGridWidth + x;
                 this.navMesh[idx] = terrainType !== null ? terrainType : 0;

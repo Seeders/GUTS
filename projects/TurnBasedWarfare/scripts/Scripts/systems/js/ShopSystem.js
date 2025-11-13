@@ -356,7 +356,7 @@ class ShopSystem extends engine.BaseSystem {
     getBuildingPlacementId(buildingId) {
         const state = this.game.state;
         const mySide = state.mySide;
-        const placements = this.game.gameManager.call('getPlacementsForSide'(mySide);
+        const placements = this.game.gameManager.call('getPlacementsForSide', mySide);
         if (!placements) return null;
 
         for (const [placementIndex, placement] of Object.entries(placements)) {
@@ -370,7 +370,7 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     getBuildingGridPosition(placementId) {
-        const placement = this.game.gameManager.call('getPlacementById'(placementId);
+        const placement = this.game.gameManager.call('getPlacementById', placementId);
         console.log('got placement', placement);
         return placement.gridPosition;
     }

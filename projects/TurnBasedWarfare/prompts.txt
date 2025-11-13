@@ -13,28 +13,3 @@ GameLoader in this instance, among other things, tells SceneManager to load the 
 The main scene is a json object that has a list of managers, systems, and classes the scene requires to run. 
 
 
-I am creating a fantasy themed auto battle game with a design similar to mechabellum.
-
-units spawn in squads of 1-8 units
-
-The units are designed around an attribute wheel with 6 base classes, each with 3 specializations.
-
-The base classes are based on their attributes: Strength, Dexterity, Intelligence, and three hybrid classes: str/dex, str/int, dex/int
-
-strength: Barbarian (8 units)
-specializations: Berserker, Gladiator, Warlord
-
-strength/dexterity: Soldier (6 units)
-specializations: Crossbowman, Hoplite, Knight
-
-dexterity: Archer (3 units)
-specializations: BeastMaster, Ranger, Trapper
-
-dexterity/intelligence: Rogue (1 unit)
-specializations: Assassin, Saboteur, Trickster
-
-intelligence: Apprentice (3 units)
-specializations: Mage, Enchanter, Necromancer
-
-intelligence/strength: Acolyte (6 units)
-specializations: Paladin, Oathbreaker, Templar

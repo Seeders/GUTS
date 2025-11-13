@@ -14,6 +14,7 @@ class PostProcessingSystem extends engine.BaseSystem {
         this.game.gameManager.register('registerPostProcessingPass', this.registerPass.bind(this));
         this.game.gameManager.register('removePostProcessingPass', this.removePass.bind(this));
         this.game.gameManager.register('renderPostProcessing', this.render.bind(this));
+        this.game.gameManager.register('getPostProcessingComposer', this.getPostProcessingComposer.bind(this));
     }
 
     postAllInit() {
@@ -48,6 +49,10 @@ class PostProcessingSystem extends engine.BaseSystem {
             this.rebuildComposer();
         }
         
+    }
+
+    getPostProcessingComposer() {
+        return this.composer;
     }
 
     registerPass(name, passConfig) {

@@ -292,18 +292,6 @@ class DamageSystem extends engine.BaseSystem {
             defenses.lightningResistance = combatComponent.lightningResistance || 0;
         }
 
-        // Add equipment bonuses if equipment system exists
-        const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
-        if (equipment) {
-            const equipmentStats = this.game.gameManager.call('calculateTotalStats', entityId);
-            if (equipmentStats) {
-                defenses.armor += equipmentStats.armor || 0;
-                defenses.fireResistance += equipmentStats.fireResistance || 0;
-                defenses.coldResistance += equipmentStats.coldResistance || 0;
-                defenses.lightningResistance += equipmentStats.lightningResistance || 0;
-            }
-        }
-
         // Add temporary resistance bonuses from status effects
         defenses.armor *= defenderMods.armorMultiplier; // Apply armor multiplier from buffs
         defenses.fireResistance = defenses.fireResistance + defenderMods.additionalFireResistance + defenderMods.additionalElementalResistance;

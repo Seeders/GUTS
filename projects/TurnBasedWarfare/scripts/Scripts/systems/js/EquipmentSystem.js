@@ -35,7 +35,6 @@ class EquipmentSystem extends engine.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('calculateTotalStats', this.calculateTotalStats.bind(this));
         this.game.gameManager.register('getItemData', this.getItemData.bind(this));
     }
 

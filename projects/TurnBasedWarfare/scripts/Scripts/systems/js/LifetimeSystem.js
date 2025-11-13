@@ -26,7 +26,6 @@ class LifetimeSystem extends engine.BaseSystem {
         // Register methods with GameManager
         this.game.gameManager.register('addLifetime', this.addLifetime.bind(this));
         this.game.gameManager.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
-        this.game.gameManager.register('removeLifetime', this.removeLifetime.bind(this));
         this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
     }
 
@@ -90,10 +89,9 @@ class LifetimeSystem extends engine.BaseSystem {
     handleSpecialEntityTypes(entityId, lifetime) {
         // Handle projectiles
         if (this.game.hasComponent(entityId, this.componentTypes.PROJECTILE)) {
-            // Clean up projectile-specific data
-            if (this.game.projectileSystem) {
-                this.game.gameManager.call('deleteProjectileTrail', entityId);
-            }
+            // Clean up projectile-specific data 
+            this.game.gameManager.call('deleteProjectileTrail', entityId);
+            
         }
         
         // Handle summons

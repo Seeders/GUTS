@@ -682,7 +682,7 @@ class WorldSystem extends engine.BaseSystem {
             return;
         }
 
-        const composer = this.game.gameManager.call('getComposer');
+        const composer = this.game.gameManager.call('getPostProcessingComposer');
         if (composer) {
             this.game.gameManager.call('renderPostProcessing');
         } else {

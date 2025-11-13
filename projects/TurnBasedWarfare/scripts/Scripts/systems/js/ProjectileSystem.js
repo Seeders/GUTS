@@ -31,7 +31,6 @@ class ProjectileSystem extends engine.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('clearAllProjectiles', this.clearAllProjectiles.bind(this));
         this.game.gameManager.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
     }
 
@@ -610,14 +609,9 @@ class ProjectileSystem extends engine.BaseSystem {
     }
         
     destroyProjectile(projectileId) {
-        // Use LifetimeSystem for destruction if available
-        if (this.game.gameManager) {
-            this.game.gameManager.call('destroyEntityImmediately', projectileId, true);
-        } else {
-            // Fallback cleanup
-            this.cleanupProjectileData(projectileId);
-            this.game.destroyEntity(projectileId);
-        }
+        this.game.gameManager.call('destroyEntityImmediately', projectileId, true);    
+        this.game.destroyEntity(projectileId);
+        this.cleanupProjectileData(projectileId);
     }
     
     getUnitRadius(unitType) {

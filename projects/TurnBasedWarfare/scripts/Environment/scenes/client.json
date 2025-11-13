@@ -36,6 +36,7 @@
         { "type": "EffectsSystem" },
         { "type": "GridSystem" },
         { "type": "MultiplayerPlacementSystem" },
+        { "type": "MultiplayerUISystem" },
         { "type": "ShopSystem" },
         { "type": "TeamHealthSystem" },
         { "type": "HealthBarSystem" },
