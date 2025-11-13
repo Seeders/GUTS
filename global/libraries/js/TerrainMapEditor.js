@@ -459,7 +459,7 @@ class TerrainMapEditor {
         this.terrainTypesContainer.appendChild(addNewBtn);
         this.tileMap.terrainTypes.forEach((terrain, index) => {
             const terrainItem = document.createElement('div');
-            terrainItem.className = 'terrain-item';
+            terrainItem.className = 'terrain-editor__terrain-item';
             terrainItem.draggable = true;
             terrainItem.dataset.index = index;
     
@@ -471,7 +471,7 @@ class TerrainMapEditor {
             terrainItem.addEventListener('dragleave', this.handleDragLeave.bind(this));
     
             const option = document.createElement('div');
-            option.className = 'color-option';
+            option.className = 'terrain-editor__color-option';
             option.dataset.index = index;
             option.dataset.type = terrain.type;
             option.style.backgroundColor = terrain.color;
@@ -481,7 +481,7 @@ class TerrainMapEditor {
             }
     
             option.addEventListener('click', () => {
-                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                document.querySelectorAll('.terrain-editor__color-option').forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
                 this.currentTerrainId = parseInt(option.dataset.index);
             });
@@ -597,53 +597,53 @@ class TerrainMapEditor {
         // Create environment object selector
         if (this.worldObjects) {
             const container = document.createElement('div');
-            container.className = 'environment-objects-container';
-            
+            container.className = 'terrain-editor__environment-objects-container';
+
             // Add header
             const header = document.createElement('h3');
             header.textContent = 'Environment Objects';
             container.appendChild(header);
-            
+
             // Create object type list
             for (const type in this.worldObjects) {
                 const typeContainer = document.createElement('div');
-                typeContainer.className = 'environment-type';
+                typeContainer.className = 'terrain-editor__environment-type';
                 
                 // Count objects of this type
                 const objectCount = (this.tileMap.environmentObjects || [])
                     .filter(obj => obj.type === type).length;
                 
                 const typeHeader = document.createElement('div');
-                typeHeader.className = 'environment-type-header';
+                typeHeader.className = 'terrain-editor__environment-type-header';
                 typeHeader.textContent = type;
-                
+
                 // Add count badge
                 const countBadgeContainer = document.createElement('span');
-                countBadgeContainer.className = 'object-count-container';
+                countBadgeContainer.className = 'terrain-editor__object-count-container';
                 const countBadge = document.createElement('span');
-                countBadge.className = 'object-count';
+                countBadge.className = 'terrain-editor__object-count';
                 countBadge.textContent = objectCount;
                 countBadgeContainer.appendChild(countBadge);
                 typeHeader.appendChild(countBadgeContainer);
-                
+
                 typeHeader.addEventListener('click', () => {
-                    const content = typeContainer.querySelector('.environment-items');
+                    const content = typeContainer.querySelector('.terrain-editor__environment-items');
                     const isOpen = content.style.display !== 'none';
                     content.style.display = isOpen ? 'none' : 'flex';
                     typeHeader.classList.toggle('open', !isOpen);
                 });
                 typeContainer.appendChild(typeHeader);
-                
+
                 const itemsContainer = document.createElement('div');
-                itemsContainer.className = 'environment-items';
+                itemsContainer.className = 'terrain-editor__environment-items';
                 itemsContainer.style.display = 'none';
-                
+
                 // Get images for this type
                 const images = this.imageManager.getImages("environment", type);
                 if (images && images.idle && images.idle[0] && images.idle[0].length > 0) {
                     images.idle[0].forEach((image, imageIndex) => {
                         const item = document.createElement('div');
-                        item.className = 'environment-item';
+                        item.className = 'terrain-editor__environment-item';
                         item.dataset.name = `${type} ${imageIndex + 1}`;
                         
                         const preview = document.createElement('canvas');
@@ -665,7 +665,7 @@ class TerrainMapEditor {
                         
                         item.addEventListener('click', () => {
                             // Deselect any previously selected items
-                            document.querySelectorAll('.environment-item').forEach(i => i.classList.remove('active'));
+                            document.querySelectorAll('.terrain-editor__environment-item').forEach(i => i.classList.remove('active'));
                             
                             // Select this item
                             item.classList.add('active');
@@ -783,14 +783,14 @@ class TerrainMapEditor {
         for (const type in this.worldObjects) {
             const objectCount = (this.tileMap.environmentObjects || [])
                 .filter(obj => obj.type === type).length;
-            
+
             // Find all headers first
-            const headers = document.querySelectorAll('.environment-type-header');
+            const headers = document.querySelectorAll('.terrain-editor__environment-type-header');
             // Find the specific header containing the type name
             for (const header of headers) {
                 if (header.textContent.includes(type)) {
                     // Get the count badge within this header
-                    const countBadge = header.querySelector('.object-count');
+                    const countBadge = header.querySelector('.terrain-editor__object-count');
                     if (countBadge) {
                         countBadge.textContent = objectCount;
                     }
@@ -814,8 +814,8 @@ class TerrainMapEditor {
         const dropTarget = e.currentTarget;
         dropTarget.classList.remove('drag-over');
     
-        if (this.draggedItem !== dropTarget && dropTarget.classList.contains('terrain-item')) {
-            const allItems = Array.from(this.terrainTypesContainer.querySelectorAll('.terrain-item'));
+        if (this.draggedItem !== dropTarget && dropTarget.classList.contains('terrain-editor__terrain-item')) {
+            const allItems = Array.from(this.terrainTypesContainer.querySelectorAll('.terrain-editor__terrain-item'));
             const draggedIndex = allItems.indexOf(this.draggedItem);
             const dropIndex = allItems.indexOf(dropTarget);
     
@@ -904,7 +904,7 @@ class TerrainMapEditor {
     handleDragEnd(e) {
         // Clean up all drag-related classes
         this.draggedItem.classList.remove('dragging');
-        document.querySelectorAll('.terrain-item').forEach(item => {
+        document.querySelectorAll('.terrain-editor__terrain-item').forEach(item => {
             item.classList.remove('drag-over');
         });
         this.draggedItem = null;
@@ -1077,12 +1077,12 @@ class TerrainMapEditor {
     
         let css = '';
         this.tileMap.terrainTypes.forEach((terrain, index) => {
-            css += `#level-editor-container .color-option[data-index="${index}"] { background-color: ${terrain.color}; }\n`;
+            css += `#level-editor-container .terrain-editor__color-option[data-index="${index}"] { background-color: ${terrain.color}; }\n`;
         });
     
         css += `
-            .terrain-item.dragging { opacity: 0.4; }
-            .terrain-item.drag-over { border: 2px dashed #666; background-color: rgba(0,0,0,0.1); }
+            .terrain-editor__terrain-item.dragging { opacity: 0.4; }
+            .terrain-editor__terrain-item.drag-over { border: 2px dashed #666; background-color: rgba(0,0,0,0.1); }
         `;
     
         styleElem.textContent = css;
