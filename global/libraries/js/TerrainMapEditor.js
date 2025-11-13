@@ -195,12 +195,6 @@ class TerrainMapEditor {
             }
         });
 
-        // Add translation event listeners
-        document.getElementById('translate-left').addEventListener('click', () => this.translateMap(-1, 0));
-        document.getElementById('translate-right').addEventListener('click', () => this.translateMap(1, 0));
-        document.getElementById('translate-up').addEventListener('click', () => this.translateMap(0, -1));
-        document.getElementById('translate-down').addEventListener('click', () => this.translateMap(0, 1));
-
         // Handle editTileMap event
         document.body.addEventListener('editTileMap', async (event) => {
             this.config = event.detail.config;
@@ -1107,44 +1101,6 @@ class TerrainMapEditor {
         `;
     
         styleElem.textContent = css;
-    }
-
-    translateMap(deltaX, deltaY) {
-        const gridSize = this.tileMap.size;
-        
-        // Create a new map to hold the translated terrain
-        const newTerrainMap = [];
-        for (let i = 0; i < gridSize; i++) {
-            newTerrainMap.push(new Array(gridSize));
-        }
-        
-        // Fill the new map
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j < gridSize; j++) {
-                // Calculate source coordinates in old map
-                const oldI = i - deltaY;
-                const oldJ = j - deltaX;
-                
-                // Check if source coordinates are within map boundaries
-                if (oldI >= 0 && oldI < gridSize && oldJ >= 0 && oldJ < gridSize) {
-                    // Copy existing terrain
-                    newTerrainMap[i][j] = this.tileMap.terrainMap[oldI][oldJ];
-                } else {
-                    // For areas that would be outside the original map,
-                    // use the nearest edge value (wrap around)
-                    const clampedI = Math.max(0, Math.min(gridSize - 1, oldI));
-                    const clampedJ = Math.max(0, Math.min(gridSize - 1, oldJ));
-                    newTerrainMap[i][j] = this.tileMap.terrainMap[clampedI][clampedJ];
-                }
-            }
-        }
-        
-        // Update tileMap with new terrain
-        this.tileMap.terrainMap = newTerrainMap;
-        
-        // Update UI and export
-        this.updateCanvasWithData();
-        this.exportMap();
     }
 
     async initGridCanvas() {

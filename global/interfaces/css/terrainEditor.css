@@ -14,50 +14,6 @@
     font-weight: 600;
 }
 
-/* Translation controls grid */
-.terrain-editor__translation-controls {
-    position: absolute;
-    right: var(--editor-spacing-xl);
-    bottom: calc(var(--editor-spacing-xl) + 32px);
-    display: grid;
-    grid-template-columns: repeat(3, 40px);
-    grid-template-rows: repeat(3, 40px);
-    gap: var(--editor-spacing-xs);
-    z-index: 10;
-}
-
-.terrain-editor__translation-controls button {
-    width: 40px;
-    height: 40px;
-    background-color: rgba(15, 23, 42, 0.8);
-    border: 1px solid var(--editor-border-color);
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-}
-
-#translate-up {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-#translate-left {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-#translate-right {
-    grid-column: 3;
-    grid-row: 2;
-}
-
-#translate-down {
-    grid-column: 2;
-    grid-row: 3;
-}
-
 /* Terrain list */
 .terrain-editor__terrain-list {
     display: flex;
