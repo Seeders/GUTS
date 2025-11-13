@@ -1,0 +1,561 @@
+/* =============================================================================
+   EDITOR MODULES - SHARED STYLES
+   Consistent styling for all editor modules (Texture, Graphics, Script, etc.)
+   ============================================================================= */
+
+/* CSS Variables for consistent theming */
+:root {
+  /* Color Palette */
+  --editor-primary: #6366f1;
+  --editor-primary-hover: #4f46e5;
+  --editor-secondary: #10b981;
+  --editor-secondary-hover: #059669;
+  --editor-danger: #ef4444;
+  --editor-danger-hover: #dc2626;
+  --editor-success: #22c55e;
+  --editor-warning: #f59e0b;
+
+  /* Neutral Colors */
+  --editor-bg-dark: #0f172a;
+  --editor-bg-medium: #1e293b;
+  --editor-bg-light: #334155;
+  --editor-bg-lighter: #475569;
+
+  /* Text Colors */
+  --editor-text-primary: #f8fafc;
+  --editor-text-secondary: #cbd5e1;
+  --editor-text-muted: #94a3b8;
+
+  /* Border Colors */
+  --editor-border-color: rgba(255, 255, 255, 0.1);
+  --editor-border-color-hover: rgba(255, 255, 255, 0.2);
+
+  /* Dimensions */
+  --editor-sidebar-width: 320px;
+  --editor-border-radius: 8px;
+  --editor-border-radius-sm: 4px;
+  --editor-spacing-xs: 4px;
+  --editor-spacing-sm: 8px;
+  --editor-spacing-md: 12px;
+  --editor-spacing-lg: 16px;
+  --editor-spacing-xl: 24px;
+
+  /* Transitions */
+  --editor-transition: all 0.2s ease;
+
+  /* Shadows */
+  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* =============================================================================
+   BASE MODULE LAYOUT
+   ============================================================================= */
+
+.editor-module {
+  display: flex;
+  gap: var(--editor-spacing-xl);
+  width: 100%;
+  height: 100%;
+  background-color: var(--editor-bg-dark);
+  color: var(--editor-text-primary);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.editor-module__sidebar {
+  width: var(--editor-sidebar-width);
+  min-width: var(--editor-sidebar-width);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--editor-bg-medium);
+  border-radius: var(--editor-border-radius);
+  box-shadow: var(--editor-shadow-md);
+  overflow: hidden;
+}
+
+.editor-module__sidebar--left {
+  order: 1;
+}
+
+.editor-module__sidebar--right {
+  order: 3;
+}
+
+/* Canvas/Content Area */
+.editor-module__canvas-area {
+  flex: 1;
+  position: relative;
+  background-color: var(--editor-bg-medium);
+  border-radius: var(--editor-border-radius);
+  overflow: hidden;
+  order: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-module__canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Grid Background Pattern */
+.editor-module__grid-background {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* =============================================================================
+   TOOLBAR
+   ============================================================================= */
+
+.editor-module__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--editor-spacing-sm);
+  padding: var(--editor-spacing-lg);
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--editor-border-color);
+}
+
+.editor-module__toolbar--vertical {
+  flex-direction: column;
+}
+
+.editor-module__toolbar-group {
+  display: flex;
+  gap: var(--editor-spacing-sm);
+  align-items: center;
+}
+
+/* =============================================================================
+   SECTIONS & PANELS
+   ============================================================================= */
+
+.editor-module__section {
+  padding: var(--editor-spacing-lg);
+  border-bottom: 1px solid var(--editor-border-color);
+}
+
+.editor-module__section:last-child {
+  border-bottom: none;
+}
+
+.editor-module__section-title {
+  margin: 0 0 var(--editor-spacing-md) 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--editor-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editor-module__panel {
+  padding: var(--editor-spacing-lg);
+  background-color: var(--editor-bg-light);
+  border-radius: var(--editor-border-radius);
+  margin-bottom: var(--editor-spacing-md);
+}
+
+.editor-module__panel-title {
+  margin: 0 0 var(--editor-spacing-md) 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--editor-text-primary);
+}
+
+/* =============================================================================
+   LISTS
+   ============================================================================= */
+
+.editor-module__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-spacing-sm);
+  overflow-y: auto;
+  padding: var(--editor-spacing-md);
+}
+
+.editor-module__item {
+  padding: var(--editor-spacing-md);
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  cursor: pointer;
+  transition: var(--editor-transition);
+  user-select: none;
+}
+
+.editor-module__item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--editor-border-color-hover);
+  transform: translateY(-1px);
+}
+
+.editor-module__item--active,
+.editor-module__item--selected {
+  background-color: var(--editor-primary);
+  border-color: var(--editor-primary-hover);
+  color: white;
+}
+
+.editor-module__item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+.editor-module__btn {
+  padding: var(--editor-spacing-sm) var(--editor-spacing-lg);
+  border: 1px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  background-color: var(--editor-bg-light);
+  color: var(--editor-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--editor-transition);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-module__btn:hover {
+  background-color: var(--editor-bg-lighter);
+  border-color: var(--editor-border-color-hover);
+  transform: translateY(-1px);
+}
+
+.editor-module__btn:active {
+  transform: translateY(0);
+}
+
+.editor-module__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button Variants */
+.editor-module__btn--primary {
+  background-color: var(--editor-primary);
+  border-color: var(--editor-primary);
+  color: white;
+}
+
+.editor-module__btn--primary:hover {
+  background-color: var(--editor-primary-hover);
+  border-color: var(--editor-primary-hover);
+}
+
+.editor-module__btn--secondary {
+  background-color: var(--editor-secondary);
+  border-color: var(--editor-secondary);
+  color: white;
+}
+
+.editor-module__btn--secondary:hover {
+  background-color: var(--editor-secondary-hover);
+  border-color: var(--editor-secondary-hover);
+}
+
+.editor-module__btn--danger {
+  background-color: var(--editor-danger);
+  border-color: var(--editor-danger);
+  color: white;
+}
+
+.editor-module__btn--danger:hover {
+  background-color: var(--editor-danger-hover);
+  border-color: var(--editor-danger-hover);
+}
+
+.editor-module__btn--success {
+  background-color: var(--editor-success);
+  border-color: var(--editor-success);
+  color: white;
+}
+
+.editor-module__btn--warning {
+  background-color: var(--editor-warning);
+  border-color: var(--editor-warning);
+  color: white;
+}
+
+.editor-module__btn--small {
+  padding: var(--editor-spacing-xs) var(--editor-spacing-sm);
+  font-size: 12px;
+}
+
+.editor-module__btn--icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-module__btn--active {
+  background-color: var(--editor-primary);
+  border-color: var(--editor-primary);
+  color: white;
+}
+
+/* =============================================================================
+   FORMS
+   ============================================================================= */
+
+.editor-module__form-row {
+  display: flex;
+  align-items: center;
+  gap: var(--editor-spacing-md);
+  margin-bottom: var(--editor-spacing-md);
+}
+
+.editor-module__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-spacing-sm);
+  margin-bottom: var(--editor-spacing-md);
+}
+
+.editor-module__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--editor-text-secondary);
+  min-width: 80px;
+}
+
+.editor-module__input {
+  padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+  background-color: var(--editor-bg-dark);
+  border: 1px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  color: var(--editor-text-primary);
+  font-size: 13px;
+  transition: var(--editor-transition);
+  flex: 1;
+}
+
+.editor-module__input:focus {
+  outline: none;
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.editor-module__input--full-width {
+  width: 100%;
+}
+
+.editor-module__textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: 'Courier New', monospace;
+}
+
+.editor-module__select {
+  padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+  background-color: var(--editor-bg-dark);
+  border: 1px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  color: var(--editor-text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.editor-module__select:focus {
+  outline: none;
+  border-color: var(--editor-primary);
+}
+
+/* Range/Slider */
+.editor-module__range {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--editor-bg-light);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.editor-module__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--editor-primary);
+  cursor: pointer;
+}
+
+.editor-module__range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--editor-primary);
+  cursor: pointer;
+  border: none;
+}
+
+/* Color Picker */
+.editor-module__color-picker {
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  cursor: pointer;
+  background: transparent;
+}
+
+/* =============================================================================
+   STATUS & INFO
+   ============================================================================= */
+
+.editor-module__status-bar {
+  padding: var(--editor-spacing-sm) var(--editor-spacing-lg);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid var(--editor-border-color);
+  font-size: 12px;
+  color: var(--editor-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--editor-spacing-lg);
+}
+
+.editor-module__info {
+  position: absolute;
+  bottom: var(--editor-spacing-lg);
+  left: var(--editor-spacing-lg);
+  padding: var(--editor-spacing-md);
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: var(--editor-border-radius-sm);
+  font-size: 12px;
+  color: var(--editor-text-secondary);
+  backdrop-filter: blur(4px);
+}
+
+.editor-module__message {
+  padding: var(--editor-spacing-md);
+  border-radius: var(--editor-border-radius-sm);
+  margin-bottom: var(--editor-spacing-md);
+}
+
+.editor-module__message--success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid var(--editor-success);
+  color: var(--editor-success);
+}
+
+.editor-module__message--error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--editor-danger);
+  color: var(--editor-danger);
+}
+
+.editor-module__message--warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--editor-warning);
+  color: var(--editor-warning);
+}
+
+/* =============================================================================
+   UTILITIES
+   ============================================================================= */
+
+.editor-module__hidden {
+  display: none !important;
+}
+
+.editor-module__flex {
+  display: flex;
+}
+
+.editor-module__flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-module__flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-module__gap-sm {
+  gap: var(--editor-spacing-sm);
+}
+
+.editor-module__gap-md {
+  gap: var(--editor-spacing-md);
+}
+
+.editor-module__gap-lg {
+  gap: var(--editor-spacing-lg);
+}
+
+.editor-module__scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.editor-module__no-select {
+  user-select: none;
+}
+
+/* =============================================================================
+   SCROLLBAR STYLING
+   ============================================================================= */
+
+.editor-module__scroll-y::-webkit-scrollbar {
+  width: 8px;
+  display: block !important;
+}
+
+.editor-module__scroll-y::-webkit-scrollbar-track {
+  background: var(--editor-bg-dark);
+}
+
+.editor-module__scroll-y::-webkit-scrollbar-thumb {
+  background: var(--editor-bg-light);
+  border-radius: 4px;
+}
+
+.editor-module__scroll-y::-webkit-scrollbar-thumb:hover {
+  background: var(--editor-bg-lighter);
+}
+
+/* =============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================= */
+
+@media (max-width: 1200px) {
+  :root {
+    --editor-sidebar-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --editor-sidebar-width: 240px;
+  }
+
+  .editor-module {
+    flex-direction: column;
+  }
+
+  .editor-module__sidebar {
+    width: 100%;
+    max-height: 300px;
+  }
+}

@@ -1,88 +1,53 @@
-#texture-editor-wrapper {
-    display: flex;
-    gap: 20px;
-    padding: 10px;
-    border-radius: 5px;
-}
+/* =============================================================================
+   TEXTURE EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
 
-.texture-editor-tools {
-    width: 200px;
-    flex-shrink: 0;
-}
-
-.texture-editor-canvas-container {
-    flex-grow: 1;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-}
-
+/* Canvas specific styling */
 #texture-canvas {
     background-color: transparent;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     image-rendering: pixelated;
-    border: 1px solid #000;
-}
-
-#noTextureMessage {
+    border: 1px solid var(--editor-border-color);
+    box-shadow: var(--editor-shadow-md);
     position: absolute;
-    color: #666;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.tool-section {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-}
-
-.tool-section h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
+/* No texture message */
+.texture-editor__no-texture-message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--editor-text-muted);
     font-size: 14px;
+    pointer-events: none;
 }
 
-.tool-btn {
-    margin-right: 5px;
-    margin-bottom: 5px;
-    padding: 5px 10px;
+/* Color palette grid */
+.texture-editor__color-palette {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--editor-spacing-sm);
+    margin-bottom: var(--editor-spacing-md);
+}
+
+.texture-editor__color-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
     cursor: pointer;
+    transition: var(--editor-transition);
 }
 
-.tool-btn.active {
-    background-color: #007bff;
-    color: white;
+.texture-editor__color-btn:hover {
+    border-color: var(--editor-border-color-hover);
+    transform: scale(1.1);
 }
 
-.color-palette {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-}
-
-.color-btn {
-    width: 25px;
-    height: 25px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-.color-btn.active {
-    border: 2px solid #000;
-}
-
-.custom-color {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#custom-color-picker {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: none;
-    cursor: pointer;
+.texture-editor__color-btn--active {
+    border-color: var(--editor-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }

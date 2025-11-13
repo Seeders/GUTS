@@ -1,69 +1,69 @@
-<div id="graphics-editor-container" class="main-content-container">
-   <div id="graphics-sidebar" class="content-sidebar">
-      
+<div id="graphics-editor-container" class="editor-module">
+   <div id="graphics-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
+
       <!-- Standard Graphics Editor Toolbar -->
-      <div id="toolbar" class="toolbar">
-         <div id="graphics-toolbar">    
-            <div>
-               <button id="add-animation" class="btn btn-add" title="Add Animation">+A</button>                        
-               <button id="delete-animation" class="btn btn-danger" title="Delete Animation">-A</button>                        
-            </div>                   
-            <div>
-               <button id="add-frame" class="btn btn-add" title="Add Frame">+F</button>                        
-               <button id="delete-frame" class="btn btn-danger" title="Delete Frame">-F</button>                        
+      <div id="toolbar" class="editor-module__toolbar">
+         <div id="graphics-toolbar" class="editor-module__toolbar-group editor-module__flex-col editor-module__gap-sm">
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="add-animation" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Animation">+A</button>
+               <button id="delete-animation" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Animation">-A</button>
             </div>
-            <div>
-               <button id="create-group" class="btn btn-add" title="Create Group">+G</button>
-               <button id="delete-group" class="btn btn-danger" title="Delete Group">-G</button>
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="add-frame" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Frame">+F</button>
+               <button id="delete-frame" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Frame">-F</button>
             </div>
-            <div>                    
-               <button id="add-shape" class="btn btn-add" title="Add Shape">+S</button>                        
-               <button id="delete-shape" class="btn btn-danger" title="Delete Shape">-S</button>           
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="create-group" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Create Group">+G</button>
+               <button id="delete-group" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Group">-G</button>
             </div>
-         </div>  
-         <div id="graphics-toolbar-right">
-            <div>
-               <button id="preview-animation" class="btn btn-primary" title="Preview Animation">▶</button> 
-               <button id="generate-isometric" class="btn btn-primary" title="Generate Isometric Sprites">Iso</button>                    
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="add-shape" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Shape">+S</button>
+               <button id="delete-shape" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Shape">-S</button>
             </div>
          </div>
-         
-         <!-- Equipment Toolbar (hidden by default) -->
-         <div id="equipment-toolbar">
-            <div>
-               <button id="equipment-add-btn" class="btn btn-add" title="Add Equipment">+E</button>
-               <button id="equipment-remove-btn" class="btn btn-danger" title="Remove Equipment">-E</button>
-               <button id="equipment-reset-btn" class="btn btn-primary" title="Reset Position">↻</button>
+         <div id="graphics-toolbar-right" class="editor-module__toolbar-group">
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="preview-animation" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Preview Animation">▶</button>
+               <button id="generate-isometric" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Generate Isometric Sprites">Iso</button>
             </div>
-            <div>
-               <button id="equipment-mode-toggle" class="btn btn-primary" title="Toggle Equipment Mode">⚔</button>
-               <button id="equipment-save-btn" class="btn btn-primary" title="Save Equipment">💾</button>
+         </div>
+
+         <!-- Equipment Toolbar (hidden by default) -->
+         <div id="equipment-toolbar" class="editor-module__toolbar-group editor-module__hidden">
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="equipment-add-btn" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Equipment">+E</button>
+               <button id="equipment-remove-btn" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Remove Equipment">-E</button>
+               <button id="equipment-reset-btn" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Reset Position">↻</button>
+            </div>
+            <div class="editor-module__flex editor-module__gap-sm">
+               <button id="equipment-mode-toggle" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Toggle Equipment Mode">⚔</button>
+               <button id="equipment-save-btn" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Save Equipment">💾</button>
             </div>
          </div>
       </div>
 
       <!-- Standard Graphics Editor Lists -->
-      <div id="graphics-lists">
-         <div id="frame-list"></div>
-         <div id="group-list"></div>
-         <div id="shape-list"></div>
+      <div id="graphics-lists" class="editor-module__scroll-y">
+         <div id="frame-list" class="editor-module__list"></div>
+         <div id="group-list" class="editor-module__list"></div>
+         <div id="shape-list" class="editor-module__list"></div>
       </div>
 
       <!-- Equipment Controls (hidden by default) -->
-      <div id="equipment-controls">
-         
+      <div id="equipment-controls" class="editor-module__hidden">
+
          <!-- Add Equipment Section -->
-         <div style="background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-            <h4 style="margin: 0 0 8px 0; color: #3498db; font-size: 0.9em;">Add Equipment</h4>
-            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Item:</label>
-               <select id="equipment-item-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+         <div class="editor-module__panel">
+            <h4 class="editor-module__panel-title">Add Equipment</h4>
+            <div class="editor-module__form-row">
+               <label class="editor-module__label">Item:</label>
+               <select id="equipment-item-selector" class="editor-module__select">
                   <option value="">Select Item...</option>
                </select>
             </div>
-            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Slot:</label>
-               <select id="equipment-slot-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+            <div class="editor-module__form-row">
+               <label class="editor-module__label">Slot:</label>
+               <select id="equipment-slot-selector" class="editor-module__select">
                   <option value="">Select Slot...</option>
                   <option value="mainHand">Main Hand</option>
                   <option value="offHand">Off Hand</option>
@@ -77,14 +77,10 @@
          </div>
 
          <!-- Equipment List -->
-         <div style="background: #2c3e50; border: 1px solid #34495e; border-radius: 4px; margin-bottom: 10px;">
-            <div style="background: #34495e; padding: 8px; border-bottom: 1px solid #3498db;">
-               <h4 style="margin: 0; color: #3498db; font-size: 0.9em;">Equipment List</h4>
-            </div>
-            <div id="equipment-list" style="max-height: 150px; overflow-y: auto;">
-               <div class="no-equipment" style="text-align: center; padding: 20px; color: #95a5a6; font-style: italic; font-size: 0.8em;">
-                  No equipment loaded
-               </div>
+         <div class="editor-module__panel">
+            <h4 class="editor-module__panel-title">Equipment List</h4>
+            <div id="equipment-list" class="graphics-editor__equipment-list editor-module__scroll-y">
+               <div class="graphics-editor__no-equipment">No equipment loaded</div>
             </div>
          </div>
 
@@ -92,9 +88,9 @@
    </div>
 
    <!-- Canvas Container -->
-   <div id="canvas-container" class="grid-background">
-      <canvas id="graphics-editor-canvas"></canvas>
-      <div class="scene-info">
+   <div id="canvas-container" class="editor-module__canvas-area editor-module__grid-background">
+      <canvas id="graphics-editor-canvas" class="editor-module__canvas"></canvas>
+      <div class="editor-module__info">
          <div>Shapes: <span id="shape-count">0</span></div>
          <div>Selected: <span id="selected-shape">None</span></div>
          <div id="equipment-info">Equipment: <span id="equipment-count">0</span></div>
@@ -104,62 +100,60 @@
    </div>
 
    <!-- Right Sidebar -->
-   <div id="graphics-rightbar">
-      
+   <div id="graphics-rightbar" class="editor-module__sidebar editor-module__sidebar--right">
+
       <!-- Standard Inspector -->
-      <div id="inspector"></div>
-      
+      <div id="inspector" class="editor-module__scroll-y"></div>
+
       <!-- Equipment Inspector (hidden by default) -->
-      <div id="equipment-inspector">
-         <div style="background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-            <h4 style="margin: 0 0 10px 0; color: #3498db; font-size: 0.9em;">Equipment Attachment</h4>
-            
-            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Bone:</label>
-               <select id="equipment-bone-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+      <div id="equipment-inspector" class="editor-module__hidden">
+         <div class="editor-module__panel">
+            <h4 class="editor-module__panel-title">Equipment Attachment</h4>
+
+            <div class="editor-module__form-row">
+               <label class="editor-module__label">Bone:</label>
+               <select id="equipment-bone-selector" class="editor-module__select">
                   <option value="">Auto-detect</option>
                </select>
             </div>
 
-            <h5 style="margin: 10px 0 5px 0; color: #3498db; font-size: 0.8em;">Position Offset</h5>
-            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">X:</label>
-               <input type="number" id="equipment-offset-x" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Y:</label>
-               <input type="number" id="equipment-offset-y" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Z:</label>
-               <input type="number" id="equipment-offset-z" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+            <h5 class="editor-module__section-title">Position Offset</h5>
+            <div class="editor-module__form-row">
+               <label class="editor-module__label">X:</label>
+               <input type="number" id="equipment-offset-x" class="editor-module__input" step="0.01" value="0">
+               <label class="editor-module__label">Y:</label>
+               <input type="number" id="equipment-offset-y" class="editor-module__input" step="0.01" value="0">
+               <label class="editor-module__label">Z:</label>
+               <input type="number" id="equipment-offset-z" class="editor-module__input" step="0.01" value="0">
             </div>
 
-            <h5 style="margin: 10px 0 5px 0; color: #3498db; font-size: 0.8em;">Rotation (degrees)</h5>
-            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">X:</label>
-               <input type="number" id="equipment-rotation-x" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Y:</label>
-               <input type="number" id="equipment-rotation-y" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
-               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Z:</label>
-               <input type="number" id="equipment-rotation-z" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+            <h5 class="editor-module__section-title">Rotation (degrees)</h5>
+            <div class="editor-module__form-row">
+               <label class="editor-module__label">X:</label>
+               <input type="number" id="equipment-rotation-x" class="editor-module__input" step="1" value="0">
+               <label class="editor-module__label">Y:</label>
+               <input type="number" id="equipment-rotation-y" class="editor-module__input" step="1" value="0">
+               <label class="editor-module__label">Z:</label>
+               <input type="number" id="equipment-rotation-z" class="editor-module__input" step="1" value="0">
             </div>
 
-            <div style="font-size: 0.7em; color: #95a5a6; margin-top: 10px; line-height: 1.3;">
+            <div class="editor-module__message editor-module__message--warning">
                Select equipment to adjust positioning. Changes apply in real-time.
             </div>
          </div>
 
          <!-- Equipment Properties -->
-         <div style="background: #34495e; padding: 10px; border-radius: 4px;">
-            <h4 style="margin: 0 0 10px 0; color: #3498db; font-size: 0.9em;">Equipment Properties</h4>
+         <div class="editor-module__panel">
+            <h4 class="editor-module__panel-title">Equipment Properties</h4>
             <div id="equipment-property-list">
-               <div style="font-size: 0.8em; color: #95a5a6; text-align: center; padding: 20px;">
-                  Select equipment to view properties
-               </div>
+               <div class="graphics-editor__no-equipment">Select equipment to view properties</div>
             </div>
          </div>
       </div>
-      
+
       <!-- JSON Editor -->
-      <div id="json-editor" style="display: none">                        
-        <textarea id="json-content" placeholder="Edit JSON here..."></textarea>                    
+      <div id="json-editor" class="editor-module__hidden">
+        <textarea id="json-content" class="editor-module__textarea editor-module__input" placeholder="Edit JSON here..."></textarea>
       </div>
    </div>
 </div>
