@@ -130,10 +130,15 @@ button {
   text-transform: none;
   letter-spacing: 0.02em;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+  color: var(--editor-text-primary) !important;
 }
 
 button:hover {
   transform: translateY(-1px);
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
 }
 
 button:active {
@@ -247,6 +252,16 @@ button.danger:hover {
 
 .editor-module__btn--small:hover {
   background-color: rgba(15, 23, 42, 0.7) !important;
+}
+
+.editor-module__btn--icon {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+}
+
+.editor-module__btn--icon:hover {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
 }
 
 /* Form inputs with aurora accent - soft glow on focus */
