@@ -259,14 +259,15 @@ class TerrainMapEditor {
                 }
             }
             
-            // Update grid size if it's different
-            if (this.tileMap.size && this.tileMap.size !== this.mapSize) {
+            // Update grid size from tilemap data
+            if (this.tileMap.size) {
                 this.mapSize = this.tileMap.size;
-                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
             } else {
                 this.mapSize = this.defaultMapSize;
-                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
             }
+
+            // Always recreate translator with current map size
+            this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
             
             document.getElementById('terrainMapSize').value = this.mapSize;
             
