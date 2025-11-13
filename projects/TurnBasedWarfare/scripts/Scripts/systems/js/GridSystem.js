@@ -15,7 +15,7 @@ class GridSystem extends engine.BaseSystem {
         this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
         this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
         this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
-        this.game.gameManager.register('isValidGridPlacement', this.isValidPlacement.bind(this));
+        this.game.gameManager.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
         this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
         this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
@@ -170,18 +170,8 @@ class GridSystem extends engine.BaseSystem {
                gridPos.z >= 0 && gridPos.z < this.dimensions.height;
     }
 
-    isValidPlacement(cells, team) {
+    isValidGridPlacement(cells, team) {
         if (!cells || cells.length === 0) return false;
-                
-        // IMPORTANT: use dynamic bounds based on current side assignment
-        const bounds = (team === 'right') ? this.rightBounds : this.leftBounds;
-        
-        for (const cell of cells) {
-            if (cell.x < bounds.minX || cell.x > bounds.maxX ||
-                cell.z < bounds.minZ || cell.z > bounds.maxZ) {
-                return false;
-            }
-        }
         
         for (const cell of cells) {
             const key = `${cell.x},${cell.z}`;

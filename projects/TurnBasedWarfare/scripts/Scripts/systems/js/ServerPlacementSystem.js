@@ -617,6 +617,14 @@ class ServerPlacementSystem extends engine.BaseSystem {
         const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
         if(!this.game.gameManager.call('isValidGridPlacement', cells, player.stats.side)){
             console.log('Invalid Placement', placement);
+            for (const cell of cells) {
+                const key = `${cell.x},${cell.z}`;
+                const cellState = this.game.gridSystem.state.get(key);
+                if (cellState && cellState.occupied) {
+                    console.log('occupied:', cell, cellState);
+                }
+            }
+
             return false;
         }
     

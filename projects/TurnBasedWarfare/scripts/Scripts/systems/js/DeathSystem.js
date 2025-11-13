@@ -24,13 +24,9 @@ class DeathSystem extends engine.BaseSystem {
                     this.game.removeComponent(entityId, this.componentTypes.VELOCITY);
                 }
                 
-                // NEW: Check if animation system says death animation is complete
-                const animationCompleted = this.isDeathAnimationCompleted(entityId);
+                const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration * 0.975;
                 
-                // Convert to corpse when EITHER timer expires OR animation completes (whichever comes first)
-                const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration;
-                
-                if (animationCompleted || timerExpired) {
+                if (timerExpired) {
                     console.log(entityId, "DIED");
                     if(unitType && unitType.collection == "buildings"){
                         this.destroyBuilding(entityId);
@@ -48,21 +44,6 @@ class DeathSystem extends engine.BaseSystem {
         this.game.triggerEvent('onDestroyBuilding', entityId);
         this.game.destroyEntity(entityId);  
         return { success: true };
-    }
-    
-    // NEW: Check if death animation is completed via AnimationSystem
-    isDeathAnimationCompleted(entityId) {
-        //this may cause desync with server ending death animations early and making corpses before clients do.
-        if(!this.game.gameManager.has('getEntityAnimationState')) return true;
-        const animState = this.game.gameManager.call('getEntityAnimationState', entityId);
-        if (!animState) return false;
-
-        // Only check if entity is currently dying and playing death animation
-        if (!animState.isDying) return false;
-        if (animState.currentClip !== 'death' && animState.currentClip !== 'die') return false;
-
-        // Check if the animation system considers the death animation finished
-        return this.game.gameManager.call('isAnimationFinished', entityId, animState.currentClip);
     }
     
     convertToCorpse(entityId) {

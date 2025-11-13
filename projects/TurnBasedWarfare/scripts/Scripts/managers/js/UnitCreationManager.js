@@ -155,10 +155,10 @@ class UnitCreationManager {
                     this.game.placementSystem.saveBuilding(entityId, team, gridPosition, unitType)
                 }
                 squadUnits.push(entityId);
+                this.game.gameManager.call('reserveGridCells', cells, entityId);
             }
 
             // Occupy grid cells
-            this.game.gridSystem.occupyCells(cells, placementId);
             // Update squad creation statistics
             this.stats.squadsCreated++;
 

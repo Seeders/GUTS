@@ -348,8 +348,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
                 if (opponentPlacement.unitType.id === 'goldMine') {
-                    const gridWidth = opponentPlacement.unitType.placementGridWidth || 2;
-                    const gridHeight = opponentPlacement.unitType.placementGridHeight || 2;
+                    const gridWidth = opponentPlacement.unitType.placementGridWidth || 1;
+                    const gridHeight = opponentPlacement.unitType.placementGridHeight || 1;
 
                     const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
 
@@ -360,15 +360,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         gridWidth,
                         gridHeight
                     );
-                }
+                }                
+                this.game.gameManager.call('reserveGridCells', opponentPlacement.cells, entityId);
                 squadUnits.push(entityId);
             });
             opponentPlacement.squadUnits = squadUnits;
         }
 
-        if (opponentPlacement.cells?.length) {
-            this.game.gameManager.call('reserveGridCells', opponentPlacement.cells, opponentPlacement.placementId);
-        }
+  
 
         this.opponentPlacements.push(opponentPlacement);
     }
@@ -471,8 +470,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         placement.isSquad = squadUnits.length > 1;
         this.updateGameStateForPlacement(placement, undoInfo);
 
-        this.game.gameManager.call('reserveGridCells', placement.cells, placement.placementId);
-
         this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
 
         if (squadUnits.length <= 8) {
@@ -505,6 +502,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
             createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
+
+            this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
             if(placement.unitType.id == 'goldMine'){
                 const gridWidth = placement.unitType.placementGridWidth || 2;
