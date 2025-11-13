@@ -120,16 +120,29 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
 
     setupEventListeners() {
-        // Set up lobby event handlers (these elements created by showLobby)
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'player1ReadyBtn') {
-                this.toggleReady();
-            }
-            if (e.target.id === 'leaveLobbyBtn') {
-                this.leaveRoom();
-            }
-        });
+        // Store bound handlers to enable proper cleanup
+        if (!this.boundHandlers) {
+            this.boundHandlers = {
+                readyClick: this.toggleReady.bind(this),
+                leaveClick: this.leaveRoom.bind(this)
+            };
+        }
 
+        // Clean up any existing listeners
+        const readyBtn = document.getElementById('player1ReadyBtn');
+        const leaveBtn = document.getElementById('leaveLobbyBtn');
+
+        if (readyBtn) {
+            // Remove old listener if it exists
+            readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
+            // Add new listener
+            readyBtn.addEventListener('click', this.boundHandlers.readyClick);
+        }
+
+        if (leaveBtn) {
+            leaveBtn.removeEventListener('click', this.boundHandlers.leaveClick);
+            leaveBtn.addEventListener('click', this.boundHandlers.leaveClick);
+        }
     }
 
     showLobby(gameState, roomId) {
@@ -240,6 +253,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 }
             }
         }
+
+        // Set up event listeners after DOM is updated
+        this.setupEventListeners();
     }
 
     onGameStarted(data) {
