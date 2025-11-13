@@ -98,7 +98,9 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
         }
         await fs.rename(gltfPath, finalGltfPath);
 
-        const relativePath = path.relative(BASE_DIR, finalGltfPath).replace(/\\/g, '/');
+        // Return path relative to resources directory (e.g., models/modelName/file.gltf)
+        const resourcesDir = path.join(PROJS_DIR, projectName, "resources");
+        const relativePath = path.relative(resourcesDir, finalGltfPath).replace(/\\/g, '/');
         const gameData = {
             filePath:  relativePath,
             fileName: req.file.originalname,
