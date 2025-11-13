@@ -141,94 +141,112 @@ button:active {
 }
 
 button.primary {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--editor-text-primary);
-  box-shadow: none;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: none !important;
 }
 
 button.primary:hover {
-  background: rgba(16, 185, 129, 0.18);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12);
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;
 }
 
 button.danger {
-  background: rgba(244, 63, 94, 0.08);
-  border-color: rgba(244, 63, 94, 0.3);
-  color: rgba(244, 63, 94, 0.75);
+  background-color: rgba(244, 63, 94, 0.08) !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+  color: rgba(244, 63, 94, 0.75) !important;
 }
 
 button.danger:hover {
-  background: rgba(244, 63, 94, 0.12);
-  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12);
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;
 }
 
-/* Editor module buttons - much darker */
+/* Editor module buttons - much darker with !important to override base styles */
+.editor-module__btn {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+}
+
+.editor-module__btn:hover {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
+
 .editor-module__btn--primary {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: var(--editor-text-primary);
-  box-shadow: none;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: none !important;
 }
 
 .editor-module__btn--primary:hover {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12);
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;
 }
 
 .editor-module__btn--secondary {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: var(--editor-text-primary);
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: var(--editor-text-primary) !important;
 }
 
 .editor-module__btn--secondary:hover {
-  background: rgba(59, 130, 246, 0.18);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12);
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;
 }
 
 .editor-module__btn--active {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: var(--editor-text-primary);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;
 }
 
 .editor-module__btn--danger {
-  background: rgba(244, 63, 94, 0.12);
-  border-color: rgba(244, 63, 94, 0.35);
-  color: rgba(244, 63, 94, 0.85);
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  color: rgba(244, 63, 94, 0.85) !important;
 }
 
 .editor-module__btn--danger:hover {
-  background: rgba(244, 63, 94, 0.18);
-  border-color: rgba(244, 63, 94, 0.45);
-  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12);
+  background-color: rgba(244, 63, 94, 0.18) !important;
+  border-color: rgba(244, 63, 94, 0.45) !important;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;
 }
 
 .editor-module__btn--success {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: var(--editor-text-primary);
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: var(--editor-text-primary) !important;
 }
 
 .editor-module__btn--success:hover {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12);
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;
 }
 
 .editor-module__btn--warning {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.35);
-  color: rgba(245, 158, 11, 0.9);
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: rgba(245, 158, 11, 0.9) !important;
 }
 
 .editor-module__btn--warning:hover {
-  background: rgba(245, 158, 11, 0.18);
-  border-color: rgba(245, 158, 11, 0.45);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12);
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;
+}
+
+.editor-module__btn--small {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+.editor-module__btn--small:hover {
+  background-color: rgba(15, 23, 42, 0.7) !important;
 }
 
 /* Form inputs with aurora accent - soft glow on focus */
