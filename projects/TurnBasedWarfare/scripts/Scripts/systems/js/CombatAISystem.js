@@ -19,8 +19,11 @@ class CombatAISystem extends engine.BaseSystem {
         this.STATE_CHANGE_COOLDOWN = 0.1;
 
         this.DAMAGE_TIMING_RATIO = 0.5;
-        
+
         this.TARGET_POSITION_THRESHOLD = this.game.getCollections().configs.game.gridSize * 0.5;
+        // Only recalculate path if target moves beyond this distance (in world units)
+        // This prevents stuttering when chasing moving targets
+        this.PATH_RECALC_DISTANCE_THRESHOLD = this.game.getCollections().configs.game.gridSize * 2.5;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
@@ -188,22 +191,38 @@ class CombatAISystem extends engine.BaseSystem {
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
 
-        let enemyGridPos = this.game.gridSystem.worldToGrid(enemyPos.x, enemyPos.z);
-        
         let currentCombatAi = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
         let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
-        let combatAIGridTargetPos = null;
-        if(currentCombatAi.targetPosition){
-            combatAIGridTargetPos = this.game.gridSystem.worldToGrid(currentCombatAi.targetPosition.x, currentCombatAi.targetPosition.z);
+
+        // Set the target
+        currentCombatAi.target = targetEnemy;
+        aiState.target = targetEnemy;
+
+        // Only recalculate path if target has moved significantly
+        // This prevents stuttering when chasing moving targets
+        let shouldRecalculatePath = false;
+        if (!currentCombatAi.targetPosition) {
+            // No previous target position - need to calculate path
+            shouldRecalculatePath = true;
+        } else {
+            // Check if target has moved beyond threshold distance
+            const dx = enemyPos.x - currentCombatAi.targetPosition.x;
+            const dz = enemyPos.z - currentCombatAi.targetPosition.z;
+            const distanceMoved = Math.sqrt(dx * dx + dz * dz);
+
+            if (distanceMoved > this.PATH_RECALC_DISTANCE_THRESHOLD) {
+                shouldRecalculatePath = true;
+            }
         }
 
-        // Set the target        
-        currentCombatAi.target = targetEnemy; 
-        aiState.target = targetEnemy;     
-        if(!currentCombatAi.targetPosition || combatAIGridTargetPos.x != enemyGridPos.x || combatAIGridTargetPos.z != enemyGridPos.z){
+        if (shouldRecalculatePath) {
             currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
             aiState.targetPosition = currentCombatAi.targetPosition;
-            aiState.path = [];            
+            aiState.path = [];
+        } else {
+            // Keep existing targetPosition for pathfinding, but update aiState.target
+            // so the unit knows which entity it's tracking
+            aiState.targetPosition = currentCombatAi.targetPosition;
         }
         if(currentAI != "CombatAISystem"){
             this.game.aiSystem.setCurrentAIController(entityId, "CombatAISystem", currentCombatAi);
