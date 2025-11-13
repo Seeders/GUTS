@@ -14,6 +14,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
     // GUTS Manager Interface
     init(params) {
+        console.log('[MultiplayerUISystem] init() called');
         this.params = params || {};
         this.initializeUI();
         this.setupEventListeners();
@@ -102,16 +103,19 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
 
     toggleReady() {
+        console.log('[MultiplayerUISystem] toggleReady() called - START');
+        console.trace('[MultiplayerUISystem] toggleReady() call stack');
         // Disable button while updating
         const btn = document.getElementById('player1ReadyBtn');
         if (btn) {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        
+
         this.game.networkManager.toggleReady(() => {
-            
+            console.log('[MultiplayerUISystem] toggleReady() callback executed');
         });
+        console.log('[MultiplayerUISystem] toggleReady() called - END');
     }
     leaveRoom() {
         this.game.networkManager.leaveRoom();
@@ -120,12 +124,14 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
 
     setupEventListeners() {
+        console.log('[MultiplayerUISystem] setupEventListeners() called');
         // Store bound handlers to enable proper cleanup
         if (!this.boundHandlers) {
             this.boundHandlers = {
                 readyClick: this.toggleReady.bind(this),
                 leaveClick: this.leaveRoom.bind(this)
             };
+            console.log('[MultiplayerUISystem] Created new bound handlers');
         }
 
         // Clean up any existing listeners
@@ -133,10 +139,13 @@ class MultiplayerUISystem extends engine.BaseSystem {
         const leaveBtn = document.getElementById('leaveLobbyBtn');
 
         if (readyBtn) {
+            console.log('[MultiplayerUISystem] Setting up player1ReadyBtn listener');
             // Remove old listener if it exists
             readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
             // Add new listener
             readyBtn.addEventListener('click', this.boundHandlers.readyClick);
+        } else {
+            console.log('[MultiplayerUISystem] player1ReadyBtn not found in DOM');
         }
 
         if (leaveBtn) {
