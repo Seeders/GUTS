@@ -65,8 +65,9 @@
   "units": [
     "peasant"
   ],
-  "height": 100,
+  "height": 1000,
   "size": 75,
   "icon": "building_townHall",
-  "hp": 2500
+  "hp": 2500,
+  "visionRange": 2000
 }

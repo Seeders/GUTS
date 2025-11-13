@@ -1,0 +1,40 @@
+{
+  "title": "Atom Two",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "name": "main",
+            "url": "projects/TurnBasedWarfare/resources/models/atom_two/atom_two.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

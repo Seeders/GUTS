@@ -15,7 +15,7 @@ class ShapeFactory {
     }
 
     getResourcesPath(shapeUrl){
-        return `${this.urlRoot}${this.resourcesPath}${shapeUrl}`;
+        return `${this.urlRoot}${this.resourcesPath}${shapeUrl.replace(this.resourcesPath,'')}`;
     }
     
     setGLTFScale(scale) {

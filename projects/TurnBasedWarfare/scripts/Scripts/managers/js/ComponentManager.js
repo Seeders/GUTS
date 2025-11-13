@@ -36,7 +36,7 @@ class ComponentManager {
             Position: (x = 0, y = 0, z = 0) => ({ x, y, z }),
             Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100, affectedByGravity = true, anchored = false) => ({ vx, vy, vz, maxSpeed, affectedByGravity, anchored}),
             Facing: (angle) => ({ angle: angle || 0 }),
-            Renderable: (objectType, spawnType) => ({ objectType, spawnType }),
+            Renderable: (objectType, spawnType, capacity = 128) => ({ objectType, spawnType, capacity }),
             Collision: (radius = 1, height = 50) => ({ radius, height }),
             Health: (max = 100) => ({ max, current: max }),
             Building: (type) => ( { type }),

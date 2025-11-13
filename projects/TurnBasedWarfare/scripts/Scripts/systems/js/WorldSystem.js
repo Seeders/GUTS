@@ -609,7 +609,7 @@ class WorldSystem extends engine.BaseSystem {
                 
         // Add Renderable component
         this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
-            Components.Renderable('worldObjects', envObj.type));
+            Components.Renderable('worldObjects', envObj.type, 1024));
         
         // Add Animation component for rotation and scale
         const rotation = Math.random() * Math.PI * 2;
@@ -826,6 +826,7 @@ class WorldSystem extends engine.BaseSystem {
         const segments = this.heightMapResolution;
         const verticesPerRow = segments + 1;
 
+        // First pass: Update vertex heights
         for (let z = 0; z < verticesPerRow; z++) {
             for (let x = 0; x < verticesPerRow; x++) {
                 const vertexIndex = (z * verticesPerRow + x);
@@ -846,6 +847,231 @@ class WorldSystem extends engine.BaseSystem {
 
         this.groundVertices.needsUpdate = true;
         geometry.computeVertexNormals();
+        
+        // Second pass: Generate cliff entities using TileMap analysis
+        this.generateCliffEntities();
+    }
+
+    generateCliffEntities() {
+        if (!this.heightMapData || !this.tileMap?.terrainMap || !this.game.terrainTileMapper) return;
+
+        const terrainMap = this.tileMap.terrainMap;
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const rows = terrainMap.length;
+        const cols = terrainMap[0].length;
+
+        // Use TileMap's analysis for each tile
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                // Reuse the analyzeTile method from TileMap
+                const tileAnalysis = this.game.terrainTileMapper.analyzeTile(x, z);
+                
+                // Only create cliffs where there are lower neighbors
+                if (tileAnalysis.neighborLowerCount > 0 || tileAnalysis.cornerLowerCount > 0) {
+                    this.placeCliffMoleculeFromAnalysis(x, z, tileAnalysis, gridSize);
+                }
+            }
+        }
+    }
+
+    placeCliffMoleculeFromAnalysis(x, z, tileAnalysis, gridSize) {
+        // Convert grid coordinates to world coordinates
+        const worldX = (x * gridSize + this.extensionSize) - this.extendedSize / 2;
+        const worldZ = (z * gridSize + this.extensionSize) - this.extendedSize / 2;
+
+
+        // Get the molecule type (same as terrain rendering logic)
+        const molecule = this.game.terrainTileMapper.getMoleculeByTileAnalysis(tileAnalysis);
+        
+        // Place cliff atoms to form the molecule
+        this.placeCliffMolecule(worldX, worldZ, molecule, tileAnalysis, gridSize);
+    }
+
+    placeCliffMolecule(worldX, worldZ, molecule, tileAnalysis, gridSize) {
+        const halfGrid = gridSize / 2;
+        
+        // Map of molecule types to their cliff atom compositions
+        // Each position represents a quadrant: [topLeft, topRight, bottomLeft, bottomRight]
+        const moleculeCompositions = {
+            [this.game.terrainTileMapper.TileCliffMolecules.Full]: [
+               // { type: 'atom_four', rotation: 0, x: -halfGrid/2, z: -halfGrid/2 },
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.FullVariation]: [
+               // { type: 'atom_four', rotation: 0, x: -halfGrid/2, z: -halfGrid/2 },
+            ],
+            // Single corners
+            [this.game.terrainTileMapper.TileCliffMolecules.CornerTL]: [
+                { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.CornerTR]: [
+                { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.CornerBL]: [
+                { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.CornerBR]: [
+                { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            // Edges
+            [this.game.terrainTileMapper.TileCliffMolecules.EdgeT]: [
+                { type: 'atom_two', rotation: Math.PI, x: 0, z: -halfGrid / 2 },
+                { type: 'atom_two', rotation: Math.PI, x: halfGrid, z: -halfGrid / 2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.EdgeL]: [
+                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: 0},
+                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid}
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.EdgeR]: [
+                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: 0 },
+                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: halfGrid}
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.EdgeB]: [
+                { type: 'atom_two', rotation: 0, x: 0, z: gridSize + halfGrid/2 },
+                { type: 'atom_two', rotation: 0, x: halfGrid, z: gridSize + halfGrid/2 }
+            ],
+            // Tunnels
+            [this.game.terrainTileMapper.TileCliffMolecules.TunnelH]: [
+              //  { type: 'atom_two', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_two', rotation: 0, x: -halfGrid/2, z: halfGrid/2 },
+             //  { type: 'atom_two', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.TunnelV]: [
+              //  { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
+            //    { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            // Two sides (protruding corners)
+            [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTL]: [
+                { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: -halfGrid/2 },
+                { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
+                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTR]: [
+                { type: 'atom_two', rotation: Math.PI, x: gridSize -halfGrid/2, z: -halfGrid/2 },
+                { type: 'atom_one', rotation: Math.PI, x: gridSize + halfGrid/2, z: -halfGrid/2 },
+                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBL]: [
+                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: gridSize -halfGrid/2 },
+                { type: 'atom_one', rotation: 0, x: -halfGrid/2, z: gridSize + halfGrid/2 },
+                { type: 'atom_two', rotation: 0, x: halfGrid/2, z: gridSize + halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBR]: [
+                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: gridSize -halfGrid/2 },
+                { type: 'atom_two', rotation: 0, x: gridSize -halfGrid/2, z: gridSize + halfGrid/2 },
+                { type: 'atom_one', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: gridSize + halfGrid/2 }
+            ],
+            // Peninsulas
+            [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaT]: [
+             //   { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
+             //   { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaL]: [
+              //  { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
+              //  { type: 'atom_two', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaR]: [
+              //  { type: 'atom_two', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_two', rotation: 0, x: -halfGrid/2, z: halfGrid/2 },
+              //  { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaB]: [
+              //  { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: -halfGrid/2 },
+            //    { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
+              //  { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ],
+            // Island
+            [this.game.terrainTileMapper.TileCliffMolecules.Island]: [
+              //  { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
+              //  { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
+             //   { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
+            //    { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+            ]
+        };
+
+        const composition = moleculeCompositions[molecule];
+        if (!composition) {
+            console.warn(`No cliff composition found for molecule type ${molecule}`);
+            return;
+        }
+
+        // Place each atom that makes up this molecule
+        composition.forEach((atom, index) => {
+            let atomPos = {
+                x: atom.x + worldX,
+                z: atom.z + worldZ
+            }
+            // Get the base height for this tile
+            const terrainHeight = this.getTerrainHeightAtPosition(atomPos.x, atomPos.z);
+            this.createCliffEntity(
+                atom.type, 
+                atomPos.x, 
+                terrainHeight,
+                atomPos.z, 
+                atom.rotation, 
+            );
+        });
+    }
+
+    destroyAllCliffs() {
+        const cliffs = this.game.getEntitiesWith('cliff');
+        cliffs.forEach((cliff) => {
+            this.game.destroyEntity(cliff);
+        });
+    }
+
+    createCliffEntity(type, worldX, worldY, worldZ, rotation) {
+        const cliffsType = "cliffs";
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+
+        const unitType = this.game.getCollections()[cliffsType]?.[type];
+        if (!unitType) {
+            console.warn(`Cliff type ${type} not found in cliffs collection`);
+            return;
+        }
+
+        unitType.collection = cliffsType;
+        unitType.id = type;        
+
+        // Create entity with unique ID
+        const entityId = this.game.createEntity(`${cliffsType}_${type}_${Math.round(worldX)}_${Math.round(worldZ)}_${Math.random()}`);
+
+        // Add Position component
+        this.game.addComponent(entityId, ComponentTypes.POSITION, 
+            Components.Position(worldX, worldY, worldZ));
+
+        // Add Renderable component
+        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
+            Components.Renderable(cliffsType, type, 1024));
+
+        // Add Animation component for rotation and scale
+        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
+            Components.Animation(1, rotation, 0));
+
+        // Add Facing component for rotation
+        this.game.addComponent(entityId, ComponentTypes.FACING, 
+            Components.Facing(rotation));
+
+        // Add UnitType component
+        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
+            Components.UnitType(unitType));
+
+        // Add Team component (neutral for cliffs)
+        this.game.addComponent(entityId, ComponentTypes.TEAM, 
+            Components.Team('cliff'));
+
+        this.game.addComponent(entityId, "cliff", { type });
+
+        this.game.triggerEvent('onEntityPositionUpdated', entityId);
     }
 
     generateLiquidSurfaceMesh(terrainType) {

@@ -61,7 +61,7 @@ class RenderSystem extends engine.BaseSystem {
 
             const fow = this.game.fogOfWarSystem;            
             const isVisible = fow ? fow.isVisibleAt(pos.x, pos.z) : true;
-            if (unitType.collection != "worldObjects" && !isVisible) {
+            if (unitType.collection != "worldObjects" && unitType.collection != "cliffs" && !isVisible) {
                 if (this.entityToInstance.has(entityId)) {
                     this.hideEntityInstance(entityId);
                 }
@@ -83,7 +83,7 @@ class RenderSystem extends engine.BaseSystem {
 
             let instance = this.entityToInstance.get(entityId);
             if (!instance) {
-                await this.createInstance(entityId, renderable.objectType, renderable.spawnType);
+                await this.createInstance(entityId, renderable.objectType, renderable.spawnType, renderable.capacity);
                 instance = this.entityToInstance.get(entityId);
             }
 
@@ -95,14 +95,13 @@ class RenderSystem extends engine.BaseSystem {
         this.cleanupRemovedEntities(new Set(entities));
     }
 
-    async createInstance(entityId, objectType, spawnType) {
+    async createInstance(entityId, objectType, spawnType, capacity = this.DEFAULT_CAPACITY) {
         if (typeof spawnType !== 'string') {
             console.error(`[RenderSystem] CRITICAL: spawnType should be string but got ${typeof spawnType}:`, spawnType);
             return null;
         }
 
         const batchKey = `${objectType}_${spawnType}`;
-        const capacity = objectType == "worldObjects" ? 1024 : this.DEFAULT_CAPACITY;
         let batch = this.vatBatches.get(batchKey);
         if (!batch) {
             if (this.batchCreationPromises.has(batchKey)) {
