@@ -10,7 +10,13 @@ class SchedulingSystem extends engine.BaseSystem {
         // Entity tracking for cleanup
         this.entityActions = new Map(); // entityId -> Set of actionIds
     }
-    
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('scheduleAction', this.scheduleAction.bind(this));
+        this.game.gameManager.register('cancelScheduledAction', this.cancelAction.bind(this));
+    }
+
     update() {
         this.processScheduledActions();
     }

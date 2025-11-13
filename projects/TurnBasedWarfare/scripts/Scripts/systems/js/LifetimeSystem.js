@@ -21,7 +21,15 @@ class LifetimeSystem extends engine.BaseSystem {
             entitiesFaded: 0
         };
     }
-    
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('addLifetime', this.addLifetime.bind(this));
+        this.game.gameManager.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
+        this.game.gameManager.register('removeLifetime', this.removeLifetime.bind(this));
+        this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
+    }
+
     update() {        
         // Only check periodically for performance
         if (this.game.state.now - this.lastCheck < this.CHECK_INTERVAL) return;
@@ -83,8 +91,8 @@ class LifetimeSystem extends engine.BaseSystem {
         // Handle projectiles
         if (this.game.hasComponent(entityId, this.componentTypes.PROJECTILE)) {
             // Clean up projectile-specific data
-            if (this.game.projectileSystem && this.game.projectileSystem.projectileTrails) {
-                this.game.projectileSystem.projectileTrails.delete(entityId);
+            if (this.game.projectileSystem) {
+                this.game.gameManager.call('deleteProjectileTrail', entityId);
             }
         }
         
@@ -121,24 +129,24 @@ class LifetimeSystem extends engine.BaseSystem {
     
     handleSummonExpiration(entityId) {
         const summonPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (summonPos && this.game.effectsSystem) {
+        if (summonPos) {
             // Create disappearing effect
-            this.game.effectsSystem.createParticleEffect(
-                summonPos.x, summonPos.y, summonPos.z, 
-                'magic', 
+            this.game.gameManager.call('createParticleEffect',
+                summonPos.x, summonPos.y, summonPos.z,
+                'magic',
                 { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
             );
         }
-   
+
     }
     
     handleMirrorImageExpiration(entityId) {
         const imagePos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (imagePos && this.game.effectsSystem) {
+        if (imagePos) {
             // Create shimmering dissolution effect
-            this.game.effectsSystem.createParticleEffect(
-                imagePos.x, imagePos.y, imagePos.z, 
-                'magic', 
+            this.game.gameManager.call('createParticleEffect',
+                imagePos.x, imagePos.y, imagePos.z,
+                'magic',
                 { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
             );
         }
@@ -146,25 +154,25 @@ class LifetimeSystem extends engine.BaseSystem {
     
     handleTrapExpiration(entityId) {
         const trapPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (trapPos && this.game.effectsSystem) {
+        if (trapPos) {
             // Create fizzling effect for expired trap
-            this.game.effectsSystem.createParticleEffect(
-                trapPos.x, trapPos.y, trapPos.z, 
-                'magic', 
+            this.game.gameManager.call('createParticleEffect',
+                trapPos.x, trapPos.y, trapPos.z,
+                'magic',
                 { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
             );
         }
-        
-       
+
+
     }
     
     handleTemporaryEffectExpiration(entityId) {
         // For visual effect entities, just let them fade naturally
         const effectPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (effectPos && this.game.effectsSystem) {
-            this.game.effectsSystem.createParticleEffect(
-                effectPos.x, effectPos.y, effectPos.z, 
-                'magic', 
+        if (effectPos) {
+            this.game.gameManager.call('createParticleEffect',
+                effectPos.x, effectPos.y, effectPos.z,
+                'magic',
                 { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
             );
         }
@@ -189,10 +197,10 @@ class LifetimeSystem extends engine.BaseSystem {
             }
             
             // Visual effect
-            if (targetPos && this.game.effectsSystem) {
-                this.game.effectsSystem.createParticleEffect(
-                    targetPos.x, targetPos.y, targetPos.z, 
-                    'magic', 
+            if (targetPos) {
+                this.game.gameManager.call('createParticleEffect',
+                    targetPos.x, targetPos.y, targetPos.z,
+                    'magic',
                     { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
                 );
             }
@@ -211,14 +219,14 @@ class LifetimeSystem extends engine.BaseSystem {
     
     createDestructionEffects(entityId, lifetime) {
         if (!lifetime.destructionEffect) return;
-        
+
         const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (!pos || !this.game.effectsSystem) return;
-        
+        if (!pos) return;
+
         const effectConfig = lifetime.destructionEffect;
-        
+
         // Create particle effect
-        this.game.effectsSystem.createParticleEffect(
+        this.game.gameManager.call('createParticleEffect',
             pos.x, pos.y, pos.z,
             effectConfig.type || 'magic',
             {
@@ -228,17 +236,17 @@ class LifetimeSystem extends engine.BaseSystem {
                 speedMultiplier: effectConfig.speedMultiplier || 1.0
             }
         );
-        
+
         // Screen effects if specified
         if (effectConfig.screenShake) {
-            this.game.effectsSystem.playScreenShake(
+            this.game.gameManager.call('playScreenShake',
                 effectConfig.screenShake.duration || 0.2,
                 effectConfig.screenShake.intensity || 1
             );
         }
-        
+
         if (effectConfig.screenFlash) {
-            this.game.effectsSystem.playScreenFlash(
+            this.game.gameManager.call('playScreenFlash',
                 effectConfig.screenFlash.color || '#FFFFFF',
                 effectConfig.screenFlash.duration || 0.2
             );

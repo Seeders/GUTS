@@ -36,7 +36,11 @@ class SelectedUnitSystem extends engine.BaseSystem {
         // Initialize flag
         this.initialized = false;
     }
-    
+
+    init() {
+        this.game.gameManager.register('getSelectedSquads', this.getSelectedSquads.bind(this));
+    }
+
     initialize() {
         if (this.initialized || !this.game.scene) return;
         
@@ -50,7 +54,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
                 if(this.game.state.selectedEntity.entityId){
                     const pos = this.game.getComponent(this.game.state.selectedEntity.entityId, this.game.componentManager.getComponentTypes().POSITION);
                     if(pos){
-                        this.game.cameraControlSystem.lookAt(pos.x, pos.z);
+                        this.game.gameManager.call('cameraLookAt'(pos.x, pos.z);
                     }
                 }
             }
@@ -295,14 +299,14 @@ class SelectedUnitSystem extends engine.BaseSystem {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPos = this.game.placementSystem.getWorldPositionFromMouse(event, mouseX, mouseY);
+        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse'(event, mouseX, mouseY);
     
         if (!worldPos) return;
     
         const placementId = this.getPlacementAtWorldPosition(worldPos);
     
         if (placementId) {
-            const placement = this.game.placementSystem.getPlacementById(placementId);
+            const placement = this.game.gameManager.call('getPlacementById'(placementId);
             if (placement && placement.team === this.game.state.mySide) {
                 let entityId = placement.squadUnits[0];
                 // Check if shift is held for additive selection
@@ -390,10 +394,10 @@ class SelectedUnitSystem extends engine.BaseSystem {
     selectUnit(entityId, placementId) {
         if (!entityId) return;
         
-        const squadData = this.game.squadExperienceSystem?.getSquadInfo(placementId);
+        const squadData = this.game.gameManager.call('getSquadInfo'(placementId);
         
         if (squadData) {
-            const placement = this.game.placementSystem.getPlacementById(placementId);
+            const placement = this.game.gameManager.call('getPlacementById'(placementId);
             squadData.unitIds = placement.squadUnits;
             this.setSelectedEntity(entityId);
             this.highlightUnits(placement.squadUnits);              

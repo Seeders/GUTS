@@ -10,6 +10,11 @@ class GoldMineSystem extends engine.BaseSystem {
 
     init(params) {
         this.params = params || {};
+
+        this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
+        this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
+        this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
+
         this.findGoldVeinLocations();
         console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
     }
@@ -30,7 +35,7 @@ class GoldMineSystem extends engine.BaseSystem {
                 const worldX = (obj.x + extensionSize) - extendedSize / 2;
                 const worldZ = (obj.y + extensionSize) - extendedSize / 2;
                 
-                const gridPos = this.game.gridSystem.worldToGrid(worldX, worldZ);
+                const gridPos = this.game.gameManager.call('worldToGrid'(worldX, worldZ);
                 
                 const gridWidth = obj.placementGridWidth || 2;
                 const gridHeight = obj.placementGridHeight || 2;
@@ -106,13 +111,13 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     mapGoldVeinInstances() {
-        if (!this.game.worldSystem?.scene) {
+        if (!this.game.gameManager.call('getScene')) {
             console.warn('[GoldMineSystem] No scene available for mapping instances');
             return;
         }
 
         const goldVeinInstancedMeshes = [];
-        this.game.worldSystem.scene.traverse(child => {
+        this.game.gameManager.call('getScene').traverse(child => {
             if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
                 goldVeinInstancedMeshes.push(child);
             }

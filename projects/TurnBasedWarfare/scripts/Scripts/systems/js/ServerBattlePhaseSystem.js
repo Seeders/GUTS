@@ -18,6 +18,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
 
     init(params) {
         this.params = params || {};
+
+        this.game.gameManager.register('startBattle', this.startBattle.bind(this));
+        this.game.gameManager.register('spawnSquadFromPlacement', this.spawnSquadFromPlacement.bind(this));
     }
 
     startBattle(room) {

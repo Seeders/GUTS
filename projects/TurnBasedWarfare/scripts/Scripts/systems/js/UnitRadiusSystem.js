@@ -84,11 +84,12 @@ class UnitRadiusSystem extends engine.BaseSystem {
     }
     
     createDebugCircles(entityId) {
-        if (!this.game.worldSystem || !this.game.worldSystem.scene) {
-            console.error('No scene found! worldSystem:', this.game.worldSystem);
+        const scene = this.game.gameManager.call('getScene');
+        if (!scene) {
+            console.error('No scene found!');
             return { sizeCircle: null, attackCircle: null };
         }
-        
+
         // Create size circle (unit radius)
         const sizeGeometry = new THREE.RingGeometry(48, 50, 32); // Thin ring
         const sizeMaterial = new THREE.MeshBasicMaterial({
@@ -99,7 +100,7 @@ class UnitRadiusSystem extends engine.BaseSystem {
         });
         const sizeCircle = new THREE.Mesh(sizeGeometry, sizeMaterial);
         sizeCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
-        
+
         // Create attack range circle
         const attackGeometry = new THREE.RingGeometry(48, 50, 32); // Thin ring
         const attackMaterial = new THREE.MeshBasicMaterial({
@@ -110,11 +111,11 @@ class UnitRadiusSystem extends engine.BaseSystem {
         });
         const attackCircle = new THREE.Mesh(attackGeometry, attackMaterial);
         attackCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
-        
+
         // Add to scene
-        this.game.worldSystem.scene.add(sizeCircle);
-        this.game.worldSystem.scene.add(attackCircle);
-        
+        scene.add(sizeCircle);
+        scene.add(attackCircle);
+
         return { sizeCircle, attackCircle };
     }
     
@@ -138,21 +139,22 @@ class UnitRadiusSystem extends engine.BaseSystem {
     
     cleanupDestroyedEntities(activeEntities) {
         const activeIds = new Set(activeEntities);
-        
+        const scene = this.game.gameManager.call('getScene');
+
         for (const [entityId, circles] of this.debugCircles) {
             if (!activeIds.has(entityId)) {
                 // Remove from scene
-                if (circles.sizeCircle && this.game.worldSystem.scene) {
-                    this.game.worldSystem.scene.remove(circles.sizeCircle);
+                if (circles.sizeCircle && scene) {
+                    scene.remove(circles.sizeCircle);
                     circles.sizeCircle.geometry.dispose();
                     circles.sizeCircle.material.dispose();
                 }
-                if (circles.attackCircle && this.game.worldSystem.scene) {
-                    this.game.worldSystem.scene.remove(circles.attackCircle);
+                if (circles.attackCircle && scene) {
+                    scene.remove(circles.attackCircle);
                     circles.attackCircle.geometry.dispose();
                     circles.attackCircle.material.dispose();
                 }
-                
+
                 // Remove from map
                 this.debugCircles.delete(entityId);
             }

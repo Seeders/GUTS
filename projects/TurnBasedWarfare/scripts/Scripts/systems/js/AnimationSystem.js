@@ -19,6 +19,17 @@ class AnimationSystem extends engine.BaseSystem {
 
     }
 
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
+        this.game.gameManager.register('isAnimationFinished', this.isAnimationFinished.bind(this));
+        this.game.gameManager.register('setCorpseAnimation', this.setCorpseAnimation.bind(this));
+        this.game.gameManager.register('startCelebration', this.startCelebration.bind(this));
+        this.game.gameManager.register('stopCelebration', this.stopCelebration.bind(this));
+        this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
+        this.game.gameManager.register('getEntityAnimations', () => this.entityAnimationStates);
+    }
+
     update() {
         if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
         this.updateEntityAnimations();

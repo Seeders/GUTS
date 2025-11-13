@@ -169,37 +169,32 @@ class TeamHealthSystem extends engine.BaseSystem {
      */
     findSquadForUnit(unitId) {
         // Check with experience system first (most reliable)
-        if (this.game.squadExperienceSystem) {
-            const squadData = this.game.squadExperienceSystem.findSquadByUnitId(unitId);
-            if (squadData) {
-                const unitType = this.getCurrentUnitTypeForSquad(squadData.placementId);
-                return {
-                    placementId: squadData.placementId,
-                    unitType: unitType || { value: squadData.squadValue, title: 'Unknown', id: 'unknown' }
-                };
-            }
+        const squadData = this.game.gameManager.call('findSquadByUnitId', unitId);
+        if (squadData) {
+            const unitType = this.getCurrentUnitTypeForSquad(squadData.placementId);
+            return {
+                placementId: squadData.placementId,
+                unitType: unitType || { value: squadData.squadValue, title: 'Unknown', id: 'unknown' }
+            };
         }
-        
+
         // Fallback: search placement system
-        if (this.game.placementSystem) {
-            const allPlacements = [
-                ...this.game.placementSystem.playerPlacements,
-                ...this.game.placementSystem.opponentPlacements
-            ];
-            
-            for (const placement of allPlacements) {
-                if (placement.squadUnits) {
-                    const unitMatch = placement.squadUnits.find(entityId => entityId === unitId);
-                    if (unitMatch) {
-                        return {
-                            placementId: placement.placementId,
-                            unitType: placement.unitType
-                        };
-                    }
-                } 
+        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const allPlacements = [...playerPlacements, ...opponentPlacements];
+
+        for (const placement of allPlacements) {
+            if (placement.squadUnits) {
+                const unitMatch = placement.squadUnits.find(entityId => entityId === unitId);
+                if (unitMatch) {
+                    return {
+                        placementId: placement.placementId,
+                        unitType: placement.unitType
+                    };
+                }
             }
         }
-        
+
         // Last resort: use unit type component directly
         const unitTypeComponent = this.game.getComponent(unitId, this.componentTypes.UNIT_TYPE);
         if (unitTypeComponent) {
@@ -212,7 +207,7 @@ class TeamHealthSystem extends engine.BaseSystem {
                 }
             };
         }
-        
+
         return null;
     }
     
@@ -222,18 +217,17 @@ class TeamHealthSystem extends engine.BaseSystem {
      * @returns {Object|null} Current unit type
      */
     getCurrentUnitTypeForSquad(placementId) {
-        if (this.game.squadExperienceSystem && this.game.squadExperienceSystem.getCurrentUnitType) {
-            return this.game.squadExperienceSystem.getCurrentUnitType(placementId);
+        const unitType = this.game.gameManager.call('getCurrentUnitTypeForSquad', placementId);
+        if (unitType) {
+            return unitType;
         }
-        
+
         // Fallback to placement system
-        if (this.game.placementSystem) {
-            const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
-                             this.game.placementSystem.opponentPlacements.find(p => p.placementId === placementId);
-            return placement ? placement.unitType : null;
-        }
-        
-        return null;
+        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const placement = playerPlacements.find(p => p.placementId === placementId) ||
+                         opponentPlacements.find(p => p.placementId === placementId);
+        return placement ? placement.unitType : null;
     }
     
     /**
@@ -243,22 +237,20 @@ class TeamHealthSystem extends engine.BaseSystem {
      */
     getOriginalSquadSize(placementId) {
         // Check experience system first
-        if (this.game.squadExperienceSystem) {
-            const squadData = this.game.squadExperienceSystem.squadExperience.get(placementId);
-            if (squadData) {
-                return squadData.totalUnitsInSquad || squadData.squadSize;
-            }
+        const squadData = this.game.gameManager.call('getSquadExperienceData', placementId);
+        if (squadData) {
+            return squadData.totalUnitsInSquad || squadData.squadSize;
         }
-        
+
         // Fallback to placement system
-        if (this.game.placementSystem) {
-            const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId) ||
-                             this.game.placementSystem.opponentPlacements.find(p => p.placementId === placementId);
-            if (placement) {
-                return placement.squadUnits ? placement.squadUnits.length : 1;
-            }
+        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const placement = playerPlacements.find(p => p.placementId === placementId) ||
+                         opponentPlacements.find(p => p.placementId === placementId);
+        if (placement) {
+            return placement.squadUnits ? placement.squadUnits.length : 1;
         }
-        
+
         return 1; // Default fallback
     }
     

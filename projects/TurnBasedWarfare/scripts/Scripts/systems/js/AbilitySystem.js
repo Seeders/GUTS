@@ -8,8 +8,13 @@ class AbilitySystem extends engine.BaseSystem {
         this.abilityCooldowns = new Map();
         this.abilityQueue = new Map();
         this.abilityActions = new Map();
-    }    
-    
+    }
+
+    init() {
+        this.game.gameManager.register('getEntityAbilities', this.getEntityAbilities.bind(this));
+        this.game.gameManager.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
+    }
+
     addAbilitiesToUnit(entityId, abilityIds) {
         if (!Array.isArray(abilityIds)) {
             abilityIds = [abilityIds];
@@ -133,8 +138,8 @@ class AbilitySystem extends engine.BaseSystem {
         if (!ability.canExecute(entityId, targetData)) {
             return false;
         }
-        
-        if (this.game.animationSystem && !ability.isPassive) {
+
+        if (!ability.isPassive) {
             this.startAbilityAnimation(entityId, ability);
         }
         this.abilityQueue.set(entityId, {
@@ -150,24 +155,22 @@ class AbilitySystem extends engine.BaseSystem {
     }
     
     startAbilityAnimation(entityId, ability) {
-        if (!this.game.animationSystem?.triggerSinglePlayAnimation) return;
-        
         const animationsToTry = ['attack', 'idle'];
-        
+
         for (const anim of animationsToTry) {
-    
+
             // For abilities, use normal speed unless it's an attack-based ability
             let animationSpeed = 1.0;
-            let minAnimationTime = 1.5;                
-                    
-            if (ability && this.game.combatAISystems) {
-                animationSpeed = this.game.combatAISystems.calculateAnimationSpeed(entityId, ability.castTime);
+            let minAnimationTime = 1.5;
+
+            if (ability) {
+                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, ability.castTime);
                 minAnimationTime = 1 / ability.castTime;
             }
-            
-            this.game.animationSystem.triggerSinglePlayAnimation(entityId, anim, animationSpeed, minAnimationTime);
+
+            this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
             break;
-            
+
         }
     }
     

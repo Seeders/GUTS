@@ -33,7 +33,18 @@ class EquipmentSystem extends engine.BaseSystem {
         
         console.log('[Equipment] System initialized with bone attachment texture');
     }
-    
+
+    init() {
+        this.game.gameManager.register('calculateTotalStats', this.calculateTotalStats.bind(this));
+        this.game.gameManager.register('getItemData', this.getItemData.bind(this));
+    }
+
+    getItemData(itemId) {
+        if (!itemId) return null;
+        const collections = this.game.getCollections();
+        return collections.items?.[itemId] || null;
+    }
+
     update() {
         const entities = this.game.getEntitiesWith(
             this.componentTypes.EQUIPMENT,

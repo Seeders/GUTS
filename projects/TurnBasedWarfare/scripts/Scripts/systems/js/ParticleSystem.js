@@ -26,6 +26,13 @@ class ParticleSystem extends engine.BaseSystem {
     this.UPDATE_STRIDE = 2;
   }
 
+  init() {
+    // Register methods with GameManager
+    this.game.gameManager.register('createParticles', this.createParticles.bind(this));
+    this.game.gameManager.register('clearAllParticles', this.clearAllParticles.bind(this));
+    this.game.gameManager.register('initializeParticleSystem', this.initialize.bind(this));
+  }
+
   initialize() {
     if (this.initialized || !this.game.scene) return;
 

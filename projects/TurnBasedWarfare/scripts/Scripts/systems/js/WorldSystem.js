@@ -61,9 +61,18 @@ class WorldSystem extends engine.BaseSystem {
     init() {
         if (this.initialized) return;
 
+        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
+        this.game.gameManager.register('getScene', this.getScene.bind(this));
+        this.game.gameManager.register('getWorldExtendedSize', () => this.extendedSize);
+        this.game.gameManager.register('getGroundTexture', () => this.groundTexture);
+
         this.initializeThreeJS();
-        
+
         this.loadWorldData();
+    }
+
+    getScene() {
+        return this.scene;
     }
 
     initializeThreeJS() {
@@ -273,9 +282,9 @@ class WorldSystem extends engine.BaseSystem {
     setupPostProcessing() {
         const gameConfig = this.game.getCollections()?.configs?.game;
         if (!gameConfig) return;
-        
+
         const pixelSize = gameConfig.pixelSize || 1;
-        this.game.postProcessingSystem.registerPass('render', {
+        this.game.gameManager.call('registerPass', 'render', {
             enabled: true,
             create: () => {
                 return {
@@ -297,7 +306,7 @@ class WorldSystem extends engine.BaseSystem {
             }
         });
         // Register pixel pass
-        this.game.postProcessingSystem.registerPass('pixel', {
+        this.game.gameManager.call('registerPass', 'pixel', {
             enabled: pixelSize !== 1,
             create: () => {
                 const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
@@ -306,9 +315,9 @@ class WorldSystem extends engine.BaseSystem {
                 return pixelPass;
             }
         });
-        
+
         // Register output pass (always last)
-        this.game.postProcessingSystem.registerPass('output', {
+        this.game.gameManager.call('registerPass', 'output', {
             enabled: true,
             create: () => {
                 return new THREE_.OutputPass();
@@ -597,9 +606,9 @@ class WorldSystem extends engine.BaseSystem {
         // Get terrain height
         let height = 0;
         if (this.heightMapSettings?.enabled) {
-            height = this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
+            height = this.game.gameManager.call('getTerrainHeightAtPosition', worldX, worldZ);
         }
-        
+
         // Create entity with unique ID
         const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
         
@@ -673,8 +682,9 @@ class WorldSystem extends engine.BaseSystem {
             return;
         }
 
-        if (this.game.postProcessingSystem?.composer) {
-            this.game.postProcessingSystem.render();
+        const composer = this.game.gameManager.call('getComposer');
+        if (composer) {
+            this.game.gameManager.call('renderPostProcessing');
         } else {
             this.renderer.render(this.scene, this.camera);
         }

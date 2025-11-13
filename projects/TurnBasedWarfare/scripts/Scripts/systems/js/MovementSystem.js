@@ -594,7 +594,7 @@ class MovementSystem extends engine.BaseSystem {
             }
 
             if ((!aiState.path || aiState.path.length == 0) && targetPos) {
-                aiState.path = this.game.pathfindingSystem.requestPath(
+                aiState.path = this.game.gameManager.call('requestPath'(
                     entityId,
                     pos.x,
                     pos.z,
@@ -770,8 +770,8 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     getTerrainHeightAtPosition(worldX, worldZ) {
-        if (this.game.terrainSystem && this.game.terrainSystem.getTerrainHeightAtPosition) {
-            return this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
+        if (this.game.terrainSystem && this.game.gameManager.call('getTerrainHeightAtPosition') {
+            return this.game.gameManager.call('getTerrainHeightAtPosition'(worldX, worldZ);
         }
         return this.GROUND_LEVEL;
     }

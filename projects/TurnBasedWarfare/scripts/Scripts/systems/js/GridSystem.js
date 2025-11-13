@@ -14,6 +14,11 @@ class GridSystem extends engine.BaseSystem {
     init() {
         this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
         this.game.gameManager.register('gridToWorld', this.gridToWorld.bind(this));
+        this.game.gameManager.register('worldToGrid', this.worldToGrid.bind(this));
+        this.game.gameManager.register('isValidPlacement', this.isValidPlacement.bind(this));
+        this.game.gameManager.register('occupyCells', this.occupyCells.bind(this));
+        this.game.gameManager.register('freeCells', this.freeCells.bind(this));
+        this.game.gameManager.register('getUnitCells', this.getUnitCells.bind(this));
 
         const collections = this.game.getCollections();
         

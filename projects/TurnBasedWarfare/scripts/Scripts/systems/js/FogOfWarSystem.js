@@ -5,7 +5,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
 
         this.VISION_RADIUS = 500;
-        this.WORLD_SIZE = this.game.worldSystem.extendedSize;
+        this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
         this.FOG_TEXTURE_SIZE = 64;
 
         // Line of sight settings (optimized)
@@ -47,8 +47,20 @@ class FogOfWarSystem extends engine.BaseSystem {
     }
 
     init(params = {}) {
-        this.params = params;        
-        this.initRendering();   
+        this.params = params;
+        this.initRendering();
+
+        // Register getter methods
+        this.game.gameManager.register('getExplorationTexture', this.getExplorationTexture.bind(this));
+        this.game.gameManager.register('getFogTexture', this.getFogTexture.bind(this));
+    }
+
+    getExplorationTexture() {
+        return this.explorationRenderTarget?.texture || null;
+    }
+
+    getFogTexture() {
+        return this.fogRenderTarget?.texture || null;
     }
     initRendering(){
         this.fogRenderTarget = new THREE.WebGLRenderTarget(
@@ -140,7 +152,7 @@ class FogOfWarSystem extends engine.BaseSystem {
     postAllInit() {
         if (this.game.postProcessingSystem) {
             this.createFogPass();
-            this.game.postProcessingSystem.registerPass('fog', {
+            this.game.gameManager.call('registerPass', 'fog', {
                 enabled: true,
                 pass: this.fogPass
             });
@@ -577,11 +589,11 @@ class FogOfWarSystem extends engine.BaseSystem {
         if (this.fogRenderTarget) this.fogRenderTarget.dispose();
         if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
         if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
-        if (this.game.postProcessingSystem) this.game.postProcessingSystem.removePass('fog');
+        if (this.game.postProcessingSystem) this.game.gameManager.call('removePass', 'fog');
         if (this.accumulationMaterial) this.accumulationMaterial.dispose();
         if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
         if (this.losMaterial) this.losMaterial.dispose();
-        
+
         this.losGeometryPool.forEach(geom => geom.dispose());
         this.losMeshPool = [];
         this.losGeometryPool = [];

@@ -33,6 +33,17 @@ class DamageSystem extends engine.BaseSystem {
         this.MIN_DAMAGE = 1; // Minimum damage that can be dealt
     }
 
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('applyDamage', this.applyDamage.bind(this));
+        this.game.gameManager.register('applySplashDamage', this.applySplashDamage.bind(this));
+        this.game.gameManager.register('getDamageElementTypes', () => this.ELEMENT_TYPES);
+        this.game.gameManager.register('scheduleDamage', this.scheduleDamage.bind(this));
+        this.game.gameManager.register('curePoison', this.curePoison.bind(this));
+        this.game.gameManager.register('getPoisonStacks', this.getPoisonStacks.bind(this));
+        this.game.gameManager.register('clearAllDamageEffects', this.clearAll.bind(this));
+    }
+
     // =============================================
     // CORE DAMAGE APPLICATION METHODS
     // =============================================
@@ -81,8 +92,8 @@ class DamageSystem extends engine.BaseSystem {
         if (targetHealth.current <= 0) {
             this.handleEntityDeath(targetId);
         }
- 
-        this.game.combatAISystems.setRetaliatoryTarget(targetId, sourceId);
+
+        this.game.gameManager.call('setRetaliatoryTarget', targetId, sourceId);
            
         return {
             damage: damageResult.finalDamage,
@@ -283,8 +294,8 @@ class DamageSystem extends engine.BaseSystem {
 
         // Add equipment bonuses if equipment system exists
         const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
-        if (equipment && this.game.equipmentSystem && this.game.equipmentSystem.calculateTotalStats) {
-            const equipmentStats = this.game.equipmentSystem.calculateTotalStats(entityId);
+        if (equipment) {
+            const equipmentStats = this.game.gameManager.call('calculateTotalStats', entityId);
             if (equipmentStats) {
                 defenses.armor += equipmentStats.armor || 0;
                 defenses.fireResistance += equipmentStats.fireResistance || 0;
@@ -519,14 +530,9 @@ class DamageSystem extends engine.BaseSystem {
 
 
     handleEntityDeath(entityId) {
-        
         // Notify other systems about death
-        if (this.game.combatAISystems) {
-            this.game.combatAISystems.startDeathProcess(entityId);
-        }
-        if (this.game.phaseSystem) {
-            this.game.phaseSystem.checkForRoundEnd();
-        }
+        this.game.gameManager.call('startDeathProcess', entityId);
+        this.game.gameManager.call('checkForRoundEnd');
     }
 
     entityDestroyed(entityId) {

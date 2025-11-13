@@ -25,7 +25,12 @@ class CombatAISystem extends engine.BaseSystem {
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
     }
-            
+
+    init() {
+        this.game.gameManager.register('setRetaliatoryTarget', this.setRetaliatoryTarget.bind(this));
+        this.game.gameManager.register('startDeathProcess', this.startDeathProcess.bind(this));
+    }
+
     update() {
         const CT = this.componentTypes;
         if (this.game.state.phase !== 'battle'){
@@ -102,7 +107,7 @@ class CombatAISystem extends engine.BaseSystem {
                     } else {
                         if (aiState.state !== 'idle') {
                             
-                            let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
+                            let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
                             if(currentAI == "CombatAISystem"){
                                 this.onLostTarget(entityId);
                             }
@@ -188,8 +193,8 @@ class CombatAISystem extends engine.BaseSystem {
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
 
-        let currentCombatAi = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
-        let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
+        let currentCombatAi = this.game.gameManager.call('getAIControllerData', entityId, "CombatAISystem");
+        let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
 
         // Set the target
         currentCombatAi.target = targetEnemy;
@@ -216,7 +221,7 @@ class CombatAISystem extends engine.BaseSystem {
         }
 
         if(currentAI != "CombatAISystem"){
-            this.game.aiSystem.setCurrentAIController(entityId, "CombatAISystem", currentCombatAi);
+            this.game.gameManager.call('setCurrentAIController', entityId, "CombatAISystem", currentCombatAi);
         }
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
@@ -313,14 +318,14 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     onLostTarget(entityId) {
-        let currentCombatAI = this.game.aiSystem.getAIControllerData(entityId, "CombatAISystem");
-        currentCombatAI.target = null; 
-        if(this.game.aiSystem.hasAIControllerData(entityId, "UnitOrderSystem")){
-            let currentOrderAI = this.game.aiSystem.getAIControllerData(entityId, "UnitOrderSystem");
-            let currentAI = this.game.aiSystem.getCurrentAIControllerId(entityId);
-            if(currentAI == "CombatAISystem"){                         
-                this.game.aiSystem.setCurrentAIController(entityId, "UnitOrderSystem", currentOrderAI);   
-            }    
+        let currentCombatAI = this.game.gameManager.call('getAIControllerData', entityId, "CombatAISystem");
+        currentCombatAI.target = null;
+        if(this.game.gameManager.call('hasAIControllerData', entityId, "UnitOrderSystem")){
+            let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
+            let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
+            if(currentAI == "CombatAISystem"){
+                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+            }
         }
     }
 
@@ -372,7 +377,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (this.game.animationSystem) {
             const animationSpeed = this.calculateAnimationSpeed(attackerId, combat.attackSpeed);
             const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
-            this.game.animationSystem.triggerSinglePlayAnimation(attackerId, 'attack', animationSpeed, minAnimationTime);
+            this.game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
         }
         
         if (combat.projectile && this.game.projectileSystem) {
@@ -419,8 +424,9 @@ class CombatAISystem extends engine.BaseSystem {
             
             // OLD SYSTEM COMPATIBILITY (remove this once VAT is working):
             // Keep this as fallback in case you need it temporarily
-            if (this.game.animationSystem.entityAnimations) {
-                const animationActions = this.game.animationSystem.entityAnimations.get(attackerId);
+            const entityAnimations = this.game.gameManager.call('getEntityAnimations');
+            if (entityAnimations) {
+                const animationActions = entityAnimations.get(attackerId);
                 if (animationActions && animationActions.attack) {
                     const attackAction = animationActions.attack;
                     if (attackAction.getClip) {
@@ -448,11 +454,11 @@ class CombatAISystem extends engine.BaseSystem {
     
         const element = this.getDamageElement(attackerId, combat);
         
-        this.game.damageSystem.scheduleDamage(
-            attackerId, 
-            targetId, 
-            combat.damage, 
-            element, 
+        this.game.gameManager.call('scheduleDamage',
+            attackerId,
+            targetId,
+            combat.damage,
+            element,
             damageDelay,
             {
                 isMelee: true,
@@ -466,7 +472,7 @@ class CombatAISystem extends engine.BaseSystem {
         const launchDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
         
         // Clean generic scheduling
-        this.game.schedulingSystem.scheduleAction(() => {
+        this.game.gameManager.call('scheduleAction', () => {
             this.fireProjectileAttack(attackerId, targetId, combat.projectile);
         }, launchDelay, attackerId);
     }
@@ -475,7 +481,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (!this.game.projectileSystem) return;
         const projectileData = this.game.getCollections().projectiles[projectileTypeId];
         if (!projectileData) return;
-        this.game.projectileSystem.fireProjectile(attackerId, targetId, {
+        this.game.gameManager.call('fireProjectile', attackerId, targetId, {
             id: projectileTypeId,
             ...projectileData
         });
@@ -502,15 +508,15 @@ class CombatAISystem extends engine.BaseSystem {
         
         const mainHandItem = equipment.slots.mainHand;
         if (mainHandItem) {
-            const itemData = this.game.equipmentSystem.getItemData(mainHandItem);
+            const itemData = this.game.gameManager.call('getItemData', mainHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }
         }
-        
+
         const offHandItem = equipment.slots.offHand;
         if (offHandItem) {
-            const itemData = this.game.equipmentSystem.getItemData(offHandItem);
+            const itemData = this.game.gameManager.call('getItemData', offHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }
@@ -584,7 +590,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (existingDeathState && existingDeathState.isDying) return;
         
         if (this.game.damageSystem) {
-            this.game.damageSystem.clearAllStatusEffects(entityId);
+            this.game.gameManager.call('clearAllStatusEffects', entityId);
         }
         
         this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, Components.DeathState(true, this.game.state.now, 2.0));
@@ -598,11 +604,11 @@ class CombatAISystem extends engine.BaseSystem {
             this.game.removeComponent(entityId, ComponentTypes.COMBAT);
         }
         
-        if (this.game.animationSystem && this.game.animationSystem.playDeathAnimation) {
-            this.game.animationSystem.playDeathAnimation(entityId);
+        if (this.game.animationSystem) {
+            this.game.gameManager.call('playDeathAnimation', entityId);
         }
         if(this.game.abilitySystem){
-            this.game.abilitySystem.removeEntityAbilities(entityId);
+            this.game.gameManager.call('removeEntityAbilities', entityId);
         }
     }
     
@@ -612,7 +618,7 @@ class CombatAISystem extends engine.BaseSystem {
             return { damage: 0, prevented: true, reason: 'no_damage_system' };
         }
                 
-        return this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, options);
+        return this.game.gameManager.call('applyDamage', sourceId, targetId, damage, element, options);
     }
 
     applySplashDamage(sourceId, centerPos, damage, element, radius, options = {}) {
@@ -621,7 +627,7 @@ class CombatAISystem extends engine.BaseSystem {
             return [];
         }
         
-        return this.game.damageSystem.applySplashDamage(sourceId, centerPos, damage, element, radius, options);
+        return this.game.gameManager.call('applySplashDamage', sourceId, centerPos, damage, element, radius, options);
     }
 
     curePoison(targetId, stacksToRemove = null) {
@@ -629,25 +635,25 @@ class CombatAISystem extends engine.BaseSystem {
             console.warn('DamageSystem not found, cannot cure poison');
             return false;
         }
-        
-        return this.game.damageSystem.curePoison(targetId, stacksToRemove);
+
+        return this.game.gameManager.call('curePoison', targetId, stacksToRemove);
     }
 
     getPoisonStacks(entityId) {
         if (!this.game.damageSystem) {
             return 0;
         }
-        
-        return this.game.damageSystem.getPoisonStacks(entityId);
+
+        return this.game.gameManager.call('getPoisonStacks', entityId);
     }
 
     getEffectiveAttackSpeed(entityId, baseAttackSpeed) {
         // Get attack speed modifiers from buffs
-        if (!this.game.damageSystem || !this.game.damageSystem.getAttackerModifiers) {
+        if (!this.game.damageSystem || !this.game.gameManager.has('getAttackerModifiers')) {
             return baseAttackSpeed;
         }
-        
-        const attackerMods = this.game.damageSystem.getAttackerModifiers(entityId);
+
+        const attackerMods = this.game.gameManager.call('getAttackerModifiers', entityId);
         return baseAttackSpeed * (attackerMods.attackSpeedMultiplier || 1.0);
     }
 
@@ -655,8 +661,8 @@ class CombatAISystem extends engine.BaseSystem {
         if (!this.game.damageSystem) {
             return { poison: [] };
         }
-        
-        return this.game.damageSystem.getStatusEffects(entityId);
+
+        return this.game.gameManager.call('getStatusEffects', entityId);
     }
 
     setRetaliatoryTarget(entityId, attackerId) {
@@ -681,7 +687,7 @@ class CombatAISystem extends engine.BaseSystem {
         if (!this.game.damageSystem) {
             return;
         }
-        
-        this.game.damageSystem.debugStatusEffects();
+
+        this.game.gameManager.call('debugStatusEffects');
     }
 }

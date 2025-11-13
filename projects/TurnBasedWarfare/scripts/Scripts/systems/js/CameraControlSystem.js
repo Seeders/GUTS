@@ -23,6 +23,8 @@ class CameraControlSystem extends engine.BaseSystem {
   }
 
   init() {
+    this.game.gameManager.register('cameraLookAt', this.lookAt.bind(this));
+
     this.onMove  = (e)=>this.onMouseMove(e);
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
     this.onLeave = ()=>this.onMouseLeave();
@@ -77,7 +79,8 @@ class CameraControlSystem extends engine.BaseSystem {
   }
 
   clampCamera(camera, padding = 0) {
-    const half = this.game.worldSystem?.extendedSize ? this.game.worldSystem.extendedSize * 0.5 : 1000;
+    const extendedSize = this.game.gameManager.call('getWorldExtendedSize');
+    const half = extendedSize ? extendedSize * 0.5 : 1000;
     camera.position.x = Math.max(-half + padding, Math.min(half - padding, camera.position.x));
     camera.position.z = Math.max(-half + padding, Math.min(half - padding, camera.position.z));
 

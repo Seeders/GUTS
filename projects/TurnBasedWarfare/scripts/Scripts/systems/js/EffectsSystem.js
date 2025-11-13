@@ -31,7 +31,20 @@ class EffectsSystem extends engine.BaseSystem {
             pooledObjects: 0
         };
     }
-    
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('createParticleEffect', this.createParticleEffect.bind(this));
+        this.game.gameManager.register('clearAllEffects', this.clearAllEffects.bind(this));
+        this.game.gameManager.register('showNotification', this.showNotification.bind(this));
+        this.game.gameManager.register('createLineEffect', this.createLineEffect.bind(this));
+        this.game.gameManager.register('createLightningBolt', this.createLightningBolt.bind(this));
+        this.game.gameManager.register('createEnergyBeam', this.createEnergyBeam.bind(this));
+        this.game.gameManager.register('playScreenShake', this.playScreenShake.bind(this));
+        this.game.gameManager.register('playScreenFlash', this.playScreenFlash.bind(this));
+        this.game.gameManager.register('initializeEffectsSystem', this.initialize.bind(this));
+    }
+
     initialize() {
         this.addEffectsCSS();
         console.log('EffectsSystem initialized');
@@ -693,26 +706,23 @@ class EffectsSystem extends engine.BaseSystem {
     
     // Particle effects - delegate to particle system
     createParticleEffect(x, y, z, type, options = {}) {
-        // Use existing particle system if available
-        if (this.game.particleSystem) {
-            // Convert to the config format that ParticleSystem.createParticles expects
-            const config = {
-                position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-                count: options.count || 3,
-                shape: options.shape || 'circle',
-                color: options.color || 0xffffff,
-                colorRange: options.colorRange || null,
-                lifetime: options.lifetime || 1.5,
-                velocity: options.velocity || { speed: 5, spread: 1, pattern: 'burst' },
-                scale: (options.scaleMultiplier || 1) * 1.0,
-                scaleVariation: options.scaleVariation || 0.5,
-                physics: options.physics || { gravity: 0.5, drag: 0.98 },
-                rotation: options.rotation || { enabled: false, speed: 0 },
-                visual: options.visual || { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            };
-            
-            this.game.particleSystem.createParticles(config);
-        }
+        // Convert to the config format that ParticleSystem.createParticles expects
+        const config = {
+            position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
+            count: options.count || 3,
+            shape: options.shape || 'circle',
+            color: options.color || 0xffffff,
+            colorRange: options.colorRange || null,
+            lifetime: options.lifetime || 1.5,
+            velocity: options.velocity || { speed: 5, spread: 1, pattern: 'burst' },
+            scale: (options.scaleMultiplier || 1) * 1.0,
+            scaleVariation: options.scaleVariation || 0.5,
+            physics: options.physics || { gravity: 0.5, drag: 0.98 },
+            rotation: options.rotation || { enabled: false, speed: 0 },
+            visual: options.visual || { fadeOut: true, scaleOverTime: true, blending: 'additive' }
+        };
+
+        this.game.gameManager.call('createParticles', config);
     }
     
     showDamageNumber(x, y, z, damage, type = 'damage') {
@@ -876,25 +886,23 @@ class EffectsSystem extends engine.BaseSystem {
     showDamageNumber(x, y, z, damage, type = 'damage') {
         // Use floating text for damage numbers
         this.showFloatingText(damage.toString(), { x, y: y + 50 }, type);
-        
+
         // Also create particle effect for visual emphasis
-        if (this.game.particleSystem) {
-            const config = {
-                position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-                count: 3,
-                shape: 'circle',
-                color: this.getDamageColor(type),
-                lifetime: 1.0,
-                velocity: { speed: 15, spread: 0.3, pattern: 'burst' },
-                scale: 0.8,
-                scaleVariation: 0.2,
-                physics: { gravity: -0.5, drag: 0.95 },
-                rotation: { enabled: false },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            };
-            
-            this.game.particleSystem.createParticles(config);
-        }
+        const config = {
+            position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
+            count: 3,
+            shape: 'circle',
+            color: this.getDamageColor(type),
+            lifetime: 1.0,
+            velocity: { speed: 15, spread: 0.3, pattern: 'burst' },
+            scale: 0.8,
+            scaleVariation: 0.2,
+            physics: { gravity: -0.5, drag: 0.95 },
+            rotation: { enabled: false },
+            visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
+        };
+
+        this.game.gameManager.call('createParticles', config);
     }
     
     getDamageColor(type) {
@@ -922,12 +930,10 @@ class EffectsSystem extends engine.BaseSystem {
         if (this.activeAuras) {
             this.activeAuras.clear();
         }
-        
+
         // Clear particle effects
-        if (this.game.particleSystem) {
-            this.game.particleSystem.clearAllParticles();
-        }
-        
+        this.game.gameManager.call('clearAllParticles');
+
         // Clear notifications
         this.notifications.forEach(notification => {
             this.removeNotification(notification);
@@ -1079,14 +1085,12 @@ class EffectsSystem extends engine.BaseSystem {
         }
     }
     createAuraParticles(auraData) {
-        if (!this.game.particleSystem) return;
-        
         const particleConfig = {
             position: auraData.position,
             ...auraData.config
         };
-        
-        this.game.particleSystem.createParticles(particleConfig);
+
+        this.game.gameManager.call('createParticles', particleConfig);
     }
     destroy() {
         this.forceCleanup();

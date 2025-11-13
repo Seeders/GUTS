@@ -277,11 +277,9 @@ class ArmyDisplaySystem extends engine.BaseSystem {
                 ` : ''}
             </div>
         `;
-        
+
         // Use the input handler to show modal
-        if (this.game.uiSystem.input) {
-            this.game.uiSystem.input.showModal(`${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
-        }
+        this.game.gameManager.call('showModal', `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
     }
     
     highlightUnit(unitId) {

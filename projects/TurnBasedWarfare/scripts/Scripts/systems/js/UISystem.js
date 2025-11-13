@@ -3,18 +3,22 @@ class UISystem extends engine.BaseSystem {
         super(game);
         this.game.uiSystem = this;        
         // Initialize subsystems
-        GUTS.NotificationSystem.initialize();       
+        GUTS.NotificationSystem.initialize();
         this.setupEventListeners();
     }
-    
+
+    init() {
+        this.game.gameManager.register('showNotification', this.showNotification.bind(this));
+    }
+
     setupEventListeners() {
         // Delegate to input handler
         this.game.inputManager.setup();
     }
     
     start() {
-        this.game.particleSystem.initialize(); 
-        this.game.effectsSystem.initialize();                  
+        this.game.gameManager.call('initializeParticleSystem');
+        this.game.gameManager.call('initializeEffectsSystem');
         // Welcome messages
     }
     

@@ -1,10 +1,22 @@
 class AISystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.aiSystem = this;        
+        this.game.aiSystem = this;
         this.entityAIControllers = new Map();
-    }    
-    
+    }
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('getAIControllerData', this.getAIControllerData.bind(this));
+        this.game.gameManager.register('setAIControllerData', this.setAIControllerData.bind(this));
+        this.game.gameManager.register('setCurrentAIController', this.setCurrentAIController.bind(this));
+        this.game.gameManager.register('getCurrentAIController', this.getCurrentAIController.bind(this));
+        this.game.gameManager.register('getCurrentAIControllerId', this.getCurrentAIControllerId.bind(this));
+        this.game.gameManager.register('removeAIController', this.removeAIController.bind(this));
+        this.game.gameManager.register('removeCurrentAIController', this.removeCurrentAIController.bind(this));
+        this.game.gameManager.register('hasAIControllerData', this.hasAIControllerData.bind(this));
+    }
+
     setAIControllerData(entityId, aiControllerId, data, overwriteControllerId = true) {
         let entityControllersMap = this.getEntityAIControllers(entityId);
         if(overwriteControllerId) {

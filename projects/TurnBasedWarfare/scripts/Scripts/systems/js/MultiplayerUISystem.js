@@ -284,8 +284,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
     
     start() {
-        this.game.particleSystem.initialize(); 
-        this.game.effectsSystem.initialize();          
+        this.game.gameManager.call('initializeParticleSystem');
+        this.game.gameManager.call('initializeEffectsSystem');
     }
 
     exitToMainMenu() {
@@ -342,23 +342,19 @@ class MultiplayerUISystem extends engine.BaseSystem {
         });
         
  
-        if (this.game.projectileSystem?.clearAllProjectiles) {
-            this.game.projectileSystem.clearAllProjectiles();
-        }
+        this.game.gameManager.call('clearAllProjectiles');
         
     }
        
     startVictoryCelebration(victoriousUnits) {
-        if (!this.game.animationSystem) return;
-        
         // Determine which team won
         const firstUnit = victoriousUnits[0];
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
         const teamType = team?.team || 'player';
-        
+
         victoriousUnits.forEach(entityId => {
-            this.game.animationSystem.startCelebration(entityId, teamType);
+            this.game.gameManager.call('startCelebration', entityId, teamType);
         });
     }
 

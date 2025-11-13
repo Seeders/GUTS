@@ -34,9 +34,24 @@ class SquadExperienceSystem extends engine.BaseSystem {
         // UI update throttling
         this.lastUIUpdate = 0;
         this.UI_UPDATE_INTERVAL = 500; // Update UI every 500ms
-        
+
     }
-    
+
+    init() {
+        this.game.gameManager.register('canAffordLevelUp', this.canAffordLevelUp.bind(this));
+        this.game.gameManager.register('applySpecialization', this.applySpecialization.bind(this));
+        this.game.gameManager.register('levelUpSquad', this.levelUpSquad.bind(this));
+        this.game.gameManager.register('getLevelUpCost', this.getLevelUpCost.bind(this));
+        this.game.gameManager.register('initializeSquad', this.initializeSquad.bind(this));
+        this.game.gameManager.register('removeSquad', this.removeSquad.bind(this));
+        this.game.gameManager.register('getSquadsReadyToLevelUp', this.getSquadsReadyToLevelUp.bind(this));
+        this.game.gameManager.register('showSpecializationSelection', this.showSpecializationSelection.bind(this));
+        this.game.gameManager.register('findSquadByUnitId', this.findSquadByUnitId.bind(this));
+        this.game.gameManager.register('getCurrentUnitType', this.getCurrentUnitType.bind(this));
+        this.game.gameManager.register('getSquadInfo', this.getSquadInfo.bind(this));
+        this.game.gameManager.register('resetSquadExperience', this.reset.bind(this));
+    }
+
     /**
      * Initialize experience tracking for a new squad
      * @param {string} placementId - Unique placement identifier
@@ -232,19 +247,17 @@ class SquadExperienceSystem extends engine.BaseSystem {
             
         console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
-        if (this.game.effectsSystem) {
-            squadData.unitIds.forEach(entityId => {
-                const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-                if (pos) {
-                    const effectType = specializationId ? 'magic' : 'heal';
-                    this.game.effectsSystem.createParticleEffect(
-                        pos.x, pos.y + 20, pos.z,
-                        effectType,
-                        { count: 3, speedMultiplier: specializationId ? 1.5 : 1.2 }
-                    );
-                }
-            });
-        }
+        squadData.unitIds.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+            if (pos) {
+                const effectType = specializationId ? 'magic' : 'heal';
+                this.game.gameManager.call('createParticleEffect',
+                    pos.x, pos.y + 20, pos.z,
+                    effectType,
+                    { count: 3, speedMultiplier: specializationId ? 1.5 : 1.2 }
+                );
+            }
+        });
         return true;
     }
     
@@ -268,12 +281,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
         const specializationUnitType = collections.units[specializationId];
         
         // Find the placement in PlacementSystem to update the unit type
-        if (!this.game.placementSystem) {
-            console.error('PlacementSystem not found');
-            return false;
-        }
-        
-        const placement = this.game.placementSystem.getPlacementById(placementId);
+        const placement = this.game.gameManager.call('getPlacementById', placementId);
         if (!placement) {
             console.error(`Placement ${placementId} not found`);
             return false;
@@ -430,8 +438,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
      * @returns {Object|null} Unit type or null if not found
      */
     getCurrentUnitType(placementId, side) {
-        if (!this.game.placementSystem) return null;
-        const placements = this.game.placementSystem.getPlacementsForSide(side);
+        const placements = this.game.gameManager.call('getPlacementsForSide', side);
         if(placements){
             const placement = placements.find(p => p.placementId === placementId);
             return placement ? placement.unitType : null;
@@ -546,20 +553,22 @@ class SquadExperienceSystem extends engine.BaseSystem {
      */
     getSquadDisplayName(placementId) {
         // Try to get the name from placement system
-        if (this.game.placementSystem) {
-            const playerPlacements = this.game.placementSystem.getPlacementsForSide(this.game.state.mySide);
+        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide);
+        if (playerPlacements) {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.unitType) {
                 return placement.unitType.title || placement.unitType.id || 'Squad';
             }
-            
-            const enemyPlacements = this.game.placementSystem.enemyPlacements;
+        }
+
+        const enemyPlacements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide === 'left' ? 'right' : 'left');
+        if (enemyPlacements) {
             const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
             if (enemyPlacement && enemyPlacement.unitType) {
                 return enemyPlacement.unitType.title || enemyPlacement.unitType.id || 'Enemy Squad';
             }
         }
-        
+
         return `Squad ${placementId.slice(-4)}`;
     }
     
@@ -578,9 +587,7 @@ class SquadExperienceSystem extends engine.BaseSystem {
     updateSquadUI() {
         // This method could update a dedicated squad experience panel
         // For now, we'll just ensure the shop system can access this data
-        if (this.game.shopSystem && this.game.shopSystem.updateSquadExperience) {
-            this.game.shopSystem.updateSquadExperience();
-        }
+        this.game.gameManager.call('updateSquadExperience');
     }
     
     /**

@@ -26,6 +26,12 @@ class RenderSystem extends engine.BaseSystem {
         this.hiddenEntities = new Set();
     }
 
+    init() {
+        this.game.gameManager.register('setInstanceClip', this.setInstanceClip.bind(this));
+        this.game.gameManager.register('setInstanceSpeed', this.setInstanceSpeed.bind(this));
+        this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
+    }
+
     _bindDebugHelpers() {
         if (typeof window !== "undefined") {
             window.VATRenderDebug = {

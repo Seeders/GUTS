@@ -28,12 +28,16 @@ class TerrainSystem extends engine.BaseSystem {
     init() {
         if (this.initialized) return;
 
+        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
+        this.game.gameManager.register('getTerrainSize', () => this.terrainSize);
+        this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
+
         // Load world data
         this.loadWorldData();
-        
+
         // Initialize height map processing
         this.initializeHeightMapProcessing();
-        
+
         this.initialized = true;
     }
 

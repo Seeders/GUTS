@@ -16,6 +16,15 @@ class ShopSystem extends engine.BaseSystem {
         this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
     }
 
+    init() {
+        this.game.gameManager.register('addBuilding', this.addBuilding.bind(this));
+        this.game.gameManager.register('reset', this.reset.bind(this));
+        this.game.gameManager.register('updateSquadExperience', this.updateSquadExperience.bind(this));
+    }
+
+    updateSquadExperience() {
+        this.createExperiencePanel();
+    }
 
     clearActionPanel() {
         const container = document.getElementById('actionPanel');
@@ -264,20 +273,20 @@ class ShopSystem extends engine.BaseSystem {
             this.showNotification('No valid placement near building!', 'error');
             return;
         }
-        const placement = this.game.placementSystem.createPlacementData(placementPos, unit, this.game.state.mySide);
-        
+        const placement = this.game.gameManager.call('createPlacementData', placementPos, unit, this.game.state.mySide);
+
         this.game.networkManager.submitPlacement(placement, (success, response) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.buildingProductionProgress.set(buildingId, newProgress);
-                this.game.placementSystem.placeSquad(placement);  
+                this.game.gameManager.call('placeSquad', placement);
             }
         });       
     }
 
     findBuildingPlacementPosition(placementId, unitDef) {
         const buildingGridPos = this.getBuildingGridPosition(placementId);
-        const placement = this.game.placementSystem.getPlacementById(placementId);
+        const placement = this.game.gameManager.call('getPlacementById', placementId);
         if (!buildingGridPos) return null;
 
         const gridSystem = this.game.gridSystem;
@@ -347,7 +356,7 @@ class ShopSystem extends engine.BaseSystem {
     getBuildingPlacementId(buildingId) {
         const state = this.game.state;
         const mySide = state.mySide;
-        const placements = this.game.placementSystem.getPlacementsForSide(mySide);
+        const placements = this.game.gameManager.call('getPlacementsForSide'(mySide);
         if (!placements) return null;
 
         for (const [placementIndex, placement] of Object.entries(placements)) {
@@ -361,7 +370,7 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     getBuildingGridPosition(placementId) {
-        const placement = this.game.placementSystem.getPlacementById(placementId);
+        const placement = this.game.gameManager.call('getPlacementById'(placementId);
         console.log('got placement', placement);
         return placement.gridPosition;
     }
@@ -417,14 +426,12 @@ class ShopSystem extends engine.BaseSystem {
     }
 
     createExperiencePanel() {
-        if (!this.game.squadExperienceSystem) return;
-        
         const container = document.getElementById('unitPromotions');
         if (!container) return;
-        
+
         container.innerHTML = '';
 
-        const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
+        const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
         
         if (squadsReadyToLevelUp.length === 0) return;
 
@@ -508,13 +515,11 @@ class ShopSystem extends engine.BaseSystem {
             specBtn.className = 'btn btn-primary experience-btn';
             specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             specBtn.onclick = () => {
-                if (this.game.squadExperienceSystem) {
-                    this.game.squadExperienceSystem.showSpecializationSelection(
-                        squad.placementId, 
-                        squad, 
-                        squad.levelUpCost
-                    );
-                }
+                this.game.gameManager.call('showSpecializationSelection',
+                    squad.placementId,
+                    squad,
+                    squad.levelUpCost
+                );
             };
             buttonContainer.appendChild(specBtn);
         } else {
@@ -522,9 +527,7 @@ class ShopSystem extends engine.BaseSystem {
             levelUpBtn.className = 'btn btn-primary experience-btn';
             levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             levelUpBtn.onclick = () => {
-                if (this.game.squadExperienceSystem) {
-                    this.game.squadExperienceSystem.levelUpSquad(squad.placementId, squad.team);
-                }
+                this.game.gameManager.call('levelUpSquad', squad.placementId, squad.team);
             };
             buttonContainer.appendChild(levelUpBtn);
         }
@@ -562,17 +565,17 @@ class ShopSystem extends engine.BaseSystem {
     update() {
         const state = this.game.state;
         const inPlacementPhase = state.phase === 'placement';
-        
-        if (inPlacementPhase && this.game.squadExperienceSystem) {
+
+        if (inPlacementPhase) {
             if (this.game.state.now - this.lastExperienceUpdate > 2) {
-                const squadsReadyToLevelUp = this.game.squadExperienceSystem.getSquadsReadyToLevelUp();
-                const hasReadySquads = squadsReadyToLevelUp.length > 0;
+                const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
+                const hasReadySquads = squadsReadyToLevelUp && squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
-                
+
                 if (hasReadySquads !== hasExperiencePanel) {
                     this.createExperiencePanel();
                 }
-                
+
                 this.lastExperienceUpdate = this.game.state.now;
             }
         }

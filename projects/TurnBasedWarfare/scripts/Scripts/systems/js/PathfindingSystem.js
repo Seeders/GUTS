@@ -23,10 +23,11 @@ class PathfindingSystem extends engine.BaseSystem {
 
     init() {
         if (this.initialized) return;
-        
+
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        
+        this.game.gameManager.register('requestPath', this.requestPath.bind(this));
+
         const collections = this.game.getCollections();
         if (!collections) {
             console.warn('PathfindingSystem: Collections not available');
@@ -79,7 +80,7 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     bakeNavMesh() {
-        const terrainSize = this.game.terrainSystem.terrainSize;
+        const terrainSize = this.game.gameManager.call('getTerrainSize');
         
         this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
         this.navGridHeight = Math.ceil(terrainSize / this.navGridSize);
@@ -94,7 +95,7 @@ class PathfindingSystem extends engine.BaseSystem {
                 const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 
-                const terrainType = this.game.terrainSystem.getTerrainTypeAtPosition(worldX, worldZ);
+                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition'(worldX, worldZ);
                 
                 const idx = z * this.navGridWidth + x;
                 this.navMesh[idx] = terrainType !== null ? terrainType : 0;
@@ -156,14 +157,14 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     worldToNavGrid(worldX, worldZ) {
-        const halfTerrain = this.game.terrainSystem.terrainSize / 2;
+        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
         const gridX = Math.floor((worldX + halfTerrain) / this.navGridSize);
         const gridZ = Math.floor((worldZ + halfTerrain) / this.navGridSize);
         return { x: gridX, z: gridZ };
     }
 
     navGridToWorld(gridX, gridZ) {
-        const halfTerrain = this.game.terrainSystem.terrainSize / 2;
+        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
         const worldX = (gridX * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         const worldZ = (gridZ * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         return { x: worldX, z: worldZ };

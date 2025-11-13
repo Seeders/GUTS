@@ -52,17 +52,15 @@ class DeathSystem extends engine.BaseSystem {
     
     // NEW: Check if death animation is completed via AnimationSystem
     isDeathAnimationCompleted(entityId) {
-        if (!this.game.animationSystem) return false;
-        
-        const animState = this.game.animationSystem.entityAnimationStates?.get(entityId);
+        const animState = this.game.gameManager.call('getEntityAnimationState', entityId);
         if (!animState) return false;
-        
+
         // Only check if entity is currently dying and playing death animation
         if (!animState.isDying) return false;
         if (animState.currentClip !== 'death' && animState.currentClip !== 'die') return false;
-        
+
         // Check if the animation system considers the death animation finished
-        return this.game.animationSystem.isAnimationFinished(entityId, animState.currentClip);
+        return this.game.gameManager.call('isAnimationFinished', entityId, animState.currentClip);
     }
     
     convertToCorpse(entityId) {
@@ -75,12 +73,10 @@ class DeathSystem extends engine.BaseSystem {
         const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
         
         if (!position || !unitType || !team) return;
-        
+
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
-        if (this.game.animationSystem && this.game.animationSystem.setCorpseAnimation) {
-            this.game.animationSystem.setCorpseAnimation(entityId);
-        }
-        
+        this.game.gameManager.call('setCorpseAnimation', entityId);
+
         // Remove death state
         this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        
         
