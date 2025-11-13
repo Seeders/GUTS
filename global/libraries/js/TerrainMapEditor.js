@@ -47,6 +47,10 @@ class TerrainMapEditor {
         this.canvasEl.width = this.config.canvasWidth;
         this.canvasEl.height = this.config.canvasHeight;
 
+        // Clear any inline styles to ensure CSS controls the display size
+        this.canvasEl.style.width = '';
+        this.canvasEl.style.height = '';
+
         // Preview elements for cursor
         this.previewCanvas = null;
         this.currentPreviewImage = null;
@@ -212,7 +216,12 @@ class TerrainMapEditor {
                 });
             }
             this.canvasEl.width = this.config.canvasWidth;
-            this.canvasEl.height = this.config.canvasHeight;            
+            this.canvasEl.height = this.config.canvasHeight;
+
+            // Clear any inline styles to ensure CSS controls the display size
+            this.canvasEl.style.width = '';
+            this.canvasEl.style.height = '';
+
             //this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b"); 
             if(this.tileMap.extensionTerrainType){
                 this.canvasEl.backgroundColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;
@@ -1051,27 +1060,32 @@ class TerrainMapEditor {
     updateCanvasSize() {
         const isIsometric = this.gameEditor.getCollections().configs.game.isIsometric;
         const gridSize = this.config.gridSize;
-        
+
         if (isIsometric) {
             // For isometric: width needs to accommodate the diamond shape
             // Height is roughly half the width for isometric projection
             const requiredWidth = (this.mapSize * gridSize) + gridSize;
             const requiredHeight = (this.mapSize * gridSize * 0.5) + (gridSize * 0.5);
-            
+
             // Add some padding
             this.config.canvasWidth = Math.max(1536, requiredWidth + 200);
             this.config.canvasHeight = Math.max(768, requiredHeight + 200);
         } else {
             // For non-isometric: simple square grid
             const requiredSize = this.mapSize * gridSize;
-            
+
             // Add padding for centering
             this.config.canvasWidth = Math.max(1536, requiredSize + 400);
             this.config.canvasHeight = Math.max(768, requiredSize + 400);
         }
-        
+
+        // Set canvas internal resolution (bitmap size)
         this.canvasEl.width = this.config.canvasWidth;
         this.canvasEl.height = this.config.canvasHeight;
+
+        // Clear any inline styles to ensure CSS controls the display size
+        this.canvasEl.style.width = '';
+        this.canvasEl.style.height = '';
     }
     updateTerrainStyles() {
         let styleElem = document.getElementById('terrainStyles');
