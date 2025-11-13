@@ -376,7 +376,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
           
         const player = room.getPlayer(playerId);
         // Update ready state
-        player.placementReady = true;
+        player.ready = true;
         this.placementReadyStates.set(playerId, true);
         
         this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { success: true });
