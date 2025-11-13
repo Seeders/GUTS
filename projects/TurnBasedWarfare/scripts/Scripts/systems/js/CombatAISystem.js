@@ -21,9 +21,6 @@ class CombatAISystem extends engine.BaseSystem {
         this.DAMAGE_TIMING_RATIO = 0.5;
 
         this.TARGET_POSITION_THRESHOLD = this.game.getCollections().configs.game.gridSize * 0.5;
-        // Only recalculate path if target moves beyond this distance (in world units)
-        // This prevents stuttering when chasing moving targets
-        this.PATH_RECALC_DISTANCE_THRESHOLD = this.game.getCollections().configs.game.gridSize * 2.5;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
@@ -198,36 +195,29 @@ class CombatAISystem extends engine.BaseSystem {
         currentCombatAi.target = targetEnemy;
         aiState.target = targetEnemy;
 
-        // Only recalculate path if target has moved significantly
-        // This prevents stuttering when chasing moving targets
-        let shouldRecalculatePath = false;
-        if (!currentCombatAi.targetPosition) {
-            // No previous target position - need to calculate path
-            shouldRecalculatePath = true;
+        // Check if we have direct line of sight to the target
+        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const hasLOS = this.game.gameManager.call('hasLineOfSight', pos, enemyPos, unitType, entityId);
+
+        // Update target position
+        currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
+        aiState.targetPosition = currentCombatAi.targetPosition;
+
+        if (hasLOS) {
+            // Direct line of sight - use direct movement (steering behaviors only)
+            // Clear any existing path and set flag for direct movement
+            aiState.path = null;
+            aiState.useDirectMovement = true;
         } else {
-            // Check if target has moved beyond threshold distance
-            const dx = enemyPos.x - currentCombatAi.targetPosition.x;
-            const dz = enemyPos.z - currentCombatAi.targetPosition.z;
-            const distanceMoved = Math.sqrt(dx * dx + dz * dz);
-
-            if (distanceMoved > this.PATH_RECALC_DISTANCE_THRESHOLD) {
-                shouldRecalculatePath = true;
-            }
-        }
-
-        if (shouldRecalculatePath) {
-            currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
-            aiState.targetPosition = currentCombatAi.targetPosition;
+            // No line of sight - need pathfinding
+            // Clear the direct movement flag and request a path
+            aiState.useDirectMovement = false;
             aiState.path = [];
-        } else {
-            // Keep existing targetPosition for pathfinding, but update aiState.target
-            // so the unit knows which entity it's tracking
-            aiState.targetPosition = currentCombatAi.targetPosition;
         }
+
         if(currentAI != "CombatAISystem"){
             this.game.aiSystem.setCurrentAIController(entityId, "CombatAISystem", currentCombatAi);
         }
-        //aiState.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available
    

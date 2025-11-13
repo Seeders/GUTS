@@ -517,14 +517,21 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         if (aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
-            this.requestPathIfNeeded(entityId, data);
-            
-            if (aiState.path && aiState.path.length > 0) {
-                this.followPath(entityId, data);
+            // Check if we should use direct movement (line of sight to target)
+            if (aiState.useDirectMovement) {
+                // Move directly toward target using steering behaviors
+                this.moveDirectlyToTarget(entityId, data);
             } else {
-                data.desiredVelocity.vx = 0;
-                data.desiredVelocity.vy = 0;
-                data.desiredVelocity.vz = 0;
+                // Use pathfinding for navigation
+                this.requestPathIfNeeded(entityId, data);
+
+                if (aiState.path && aiState.path.length > 0) {
+                    this.followPath(entityId, data);
+                } else {
+                    data.desiredVelocity.vx = 0;
+                    data.desiredVelocity.vy = 0;
+                    data.desiredVelocity.vz = 0;
+                }
             }
         } else if (aiState.state === 'attacking') {
             data.desiredVelocity.vx = 0;
@@ -537,6 +544,41 @@ class MovementSystem extends engine.BaseSystem {
         }
     }
     
+    moveDirectlyToTarget(entityId, data) {
+        const { pos, vel, aiState } = data;
+
+        let targetPos = aiState.targetPosition;
+        if (aiState.target) {
+            const currentTargetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+            if (currentTargetPos) {
+                targetPos = currentTargetPos;
+            }
+        }
+
+        if (!targetPos) {
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vz = 0;
+            data.desiredVelocity.vy = 0;
+            return;
+        }
+
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        const distToTarget = Math.sqrt(dx * dx + dz * dz);
+
+        if (distToTarget < 0.1) {
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vz = 0;
+            data.desiredVelocity.vy = 0;
+            return;
+        }
+
+        const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+        data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
+        data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
+        data.desiredVelocity.vy = 0;
+    }
+
     requestPathIfNeeded(entityId, data) {
         const { pos, aiState } = data;
         const now = this.game.state.now;
@@ -545,12 +587,12 @@ class MovementSystem extends engine.BaseSystem {
         }
         if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
             aiState.aiBehavior.lastPathRequest = now;
-            
+
             let targetPos = aiState.targetPosition;
             if (aiState.target) {
                 targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
             }
-            
+
             if ((!aiState.path || aiState.path.length == 0) && targetPos) {
                 aiState.path = this.game.pathfindingSystem.requestPath(
                     entityId,
@@ -560,7 +602,7 @@ class MovementSystem extends engine.BaseSystem {
                     targetPos.z,
                     1
                 );
-            } 
+            }
         }
     }
     
