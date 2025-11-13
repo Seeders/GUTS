@@ -38,7 +38,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
         this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
-        this.game.gameManager.register('placeSquad', this.placeSquad.bind(this));
+        this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
         this.game.gameManager.register('getWorldPositionFromMouse', this.getWorldPositionFromMouse.bind(this));
 
@@ -142,7 +142,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
 
-        this.game.gameManager.call('resetShopSystem');
+        this.game.gameManager.call('resetShop');
         this.game.gameManager.call('clearAllDamageEffects');
         this.game.gameManager.call('clearAllEffects');
 
@@ -367,7 +367,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
 
         if (opponentPlacement.cells?.length) {
-            this.game.gameManager.call('occupyCells', opponentPlacement.cells, opponentPlacement.placementId);
+            this.game.gameManager.call('reserveGridCells', opponentPlacement.cells, opponentPlacement.placementId);
         }
 
         this.opponentPlacements.push(opponentPlacement);
@@ -432,7 +432,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-        let gridPos = this.game.gameManager.call('worldToGrid', worldPosition.x, worldPosition.z);
+        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x, worldPosition.z);
 
         let isValidPlacement = this.isValidGridPlacement(worldPosition);
        
@@ -471,7 +471,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         placement.isSquad = squadUnits.length > 1;
         this.updateGameStateForPlacement(placement, undoInfo);
 
-        this.game.gameManager.call('occupyCells', placement.cells, placement.placementId);
+        this.game.gameManager.call('reserveGridCells', placement.cells, placement.placementId);
 
         this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
 
@@ -652,7 +652,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
             this.game.gameManager.call('removeSquad', undoInfo.placementId);
 
-            this.game.gameManager.call('freeCells', undoInfo.placementId);
+            this.game.gameManager.call('releaseGridCells', undoInfo.placementId);
             this.createUndoEffects(undoInfo);
 
             this.cachedValidation = null;
@@ -668,7 +668,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
         for (let i = 0; i < maxEffects; i++) {
             const cell = undoInfo.cells[i];
-            const worldPos = this.game.gameManager.call('gridToWorld', cell.x, cell.z);
+            const worldPos = this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z);
             this.game.gameManager.call('createParticleEffect',
                 worldPos.x,
                 0,
@@ -787,8 +787,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-        
-        const gridPos = this.game.gameManager.call('worldToGrid', worldPosition.x, worldPosition.z);
+
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x, worldPosition.z);
         const state = this.game.state;
         
         let cells = [];
@@ -805,8 +805,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
         }
 
-        const worldPositions = cells.map(cell => 
-            this.game.gameManager.call('gridToWorld'(cell.x, cell.z)
+        const worldPositions = cells.map(cell =>
+            this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
         );
 
         if (unitPositions && unitPositions.length > 0) {
@@ -878,7 +878,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     isValidGridPlacement(worldPos, unitDef) {
         const selectedUnitType = unitDef || this.game.state.selectedUnitType;
 
-        let gridPos = this.game.gameManager.call('worldToGrid', worldPos.x, worldPos.z);
+        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
         let cells = [];
         let isValid = false;
         let gridValid = false;
@@ -892,7 +892,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 const validation = this.game.gameManager.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
                 isValid = validation.valid;
             } else {
-                gridValid = this.game.gameManager.call('isValidPlacement', cells, this.game.state.mySide);
+                gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
 
                 let terrainValid = true;
                 cells.forEach((cell) => {
@@ -911,7 +911,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         } else {
             const squadData = this.game.squadManager.getSquadData(selectedUnitType);
             cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            gridValid = this.game.gameManager.call('isValidPlacement', cells, this.game.state.mySide);
+            gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
             isValid = gridValid;
         }
         return isValid;
@@ -1015,7 +1015,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     cleanupDeadSquad(placement) {
         if (placement.placementId) {
-            this.game.gameManager.call('freeCells', placement.placementId);
+            this.game.gameManager.call('releaseGridCells', placement.placementId);
             this.game.gameManager.call('removeSquad', placement.placementId);
         }
     }

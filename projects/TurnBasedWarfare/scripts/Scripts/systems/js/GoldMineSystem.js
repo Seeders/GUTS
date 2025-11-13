@@ -34,8 +34,8 @@ class GoldMineSystem extends engine.BaseSystem {
             .map(obj => {
                 const worldX = (obj.x + extensionSize) - extendedSize / 2;
                 const worldZ = (obj.y + extensionSize) - extendedSize / 2;
-                
-                const gridPos = this.game.gameManager.call('worldToGrid'(worldX, worldZ);
+
+                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
                 
                 const gridWidth = obj.placementGridWidth || 2;
                 const gridHeight = obj.placementGridHeight || 2;
@@ -111,13 +111,13 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     mapGoldVeinInstances() {
-        if (!this.game.gameManager.call('getScene')) {
+        if (!this.game.gameManager.call('getWorldScene')) {
             console.warn('[GoldMineSystem] No scene available for mapping instances');
             return;
         }
 
         const goldVeinInstancedMeshes = [];
-        this.game.gameManager.call('getScene').traverse(child => {
+        this.game.gameManager.call('getWorldScene').traverse(child => {
             if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
                 goldVeinInstancedMeshes.push(child);
             }

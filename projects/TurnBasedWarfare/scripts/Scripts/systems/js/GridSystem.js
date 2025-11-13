@@ -13,12 +13,12 @@ class GridSystem extends engine.BaseSystem {
     
     init() {
         this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
-        this.game.gameManager.register('gridToWorld', this.gridToWorld.bind(this));
-        this.game.gameManager.register('worldToGrid', this.worldToGrid.bind(this));
-        this.game.gameManager.register('isValidPlacement', this.isValidPlacement.bind(this));
-        this.game.gameManager.register('occupyCells', this.occupyCells.bind(this));
-        this.game.gameManager.register('freeCells', this.freeCells.bind(this));
-        this.game.gameManager.register('getUnitCells', this.getUnitCells.bind(this));
+        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
+        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
+        this.game.gameManager.register('isValidGridPlacement', this.isValidPlacement.bind(this));
+        this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
+        this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
+        this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
 
         const collections = this.game.getCollections();
         
@@ -264,9 +264,9 @@ class GridSystem extends engine.BaseSystem {
         return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
     }
 
-    onEntityPositionUpdated(entityId) {        
+    onEntityPositionUpdated(entityId) {
         const cells = this.getUnitCells(entityId);
-        this.freeCells(entityId);        
+        this.freeCells(entityId);
         this.occupyCells(cells, entityId);
     }
 

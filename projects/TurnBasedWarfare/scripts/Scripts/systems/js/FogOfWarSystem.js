@@ -152,7 +152,7 @@ class FogOfWarSystem extends engine.BaseSystem {
     postAllInit() {
         if (this.game.postProcessingSystem) {
             this.createFogPass();
-            this.game.gameManager.call('registerPass', 'fog', {
+            this.game.gameManager.call('registerPostProcessingPass', 'fog', {
                 enabled: true,
                 pass: this.fogPass
             });
@@ -589,7 +589,7 @@ class FogOfWarSystem extends engine.BaseSystem {
         if (this.fogRenderTarget) this.fogRenderTarget.dispose();
         if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
         if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
-        if (this.game.postProcessingSystem) this.game.gameManager.call('removePass', 'fog');
+        if (this.game.postProcessingSystem) this.game.gameManager.call('removePostProcessingPass', 'fog');
         if (this.accumulationMaterial) this.accumulationMaterial.dispose();
         if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
         if (this.losMaterial) this.losMaterial.dispose();

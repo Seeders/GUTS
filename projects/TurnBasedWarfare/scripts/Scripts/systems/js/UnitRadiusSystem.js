@@ -84,7 +84,7 @@ class UnitRadiusSystem extends engine.BaseSystem {
     }
     
     createDebugCircles(entityId) {
-        const scene = this.game.gameManager.call('getScene');
+        const scene = this.game.gameManager.call('getWorldScene');
         if (!scene) {
             console.error('No scene found!');
             return { sizeCircle: null, attackCircle: null };
@@ -139,7 +139,7 @@ class UnitRadiusSystem extends engine.BaseSystem {
     
     cleanupDestroyedEntities(activeEntities) {
         const activeIds = new Set(activeEntities);
-        const scene = this.game.gameManager.call('getScene');
+        const scene = this.game.gameManager.call('getWorldScene');
 
         for (const [entityId, circles] of this.debugCircles) {
             if (!activeIds.has(entityId)) {

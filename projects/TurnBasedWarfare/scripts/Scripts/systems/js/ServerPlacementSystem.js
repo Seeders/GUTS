@@ -585,7 +585,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     cleanupDeadSquad(placement) {
         if (placement.placementId) {
-            gameManager.call('freeCells', placement.placementId);
+            gameManager.call('releaseGridCells', placement.placementId);
             gameManager.call('removeSquad', placement.placementId);
         }
 
@@ -615,7 +615,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
         // Validate side placement - no mirroring, direct side enforcement
         const squadData = this.game.squadManager.getSquadData(placement.unitType);
         const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-        if(!gameManager.call('isValidPlacement', cells, player.stats.side)){
+        if(!gameManager.call('isValidGridPlacement', cells, player.stats.side)){
             console.log('Invalid Placement', placement);
             return false;
         }
@@ -655,7 +655,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
                 // Free grid cells
                 if (placement.placementId) {
-                    gameManager.call('freeCells', placement.placementId);
+                    gameManager.call('releaseGridCells', placement.placementId);
                 }
             });
             
@@ -852,7 +852,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
 
 
-        const worldPos = gameManager.call('gridToWorld', startPosition.x, startPosition.z);
+        const worldPos = gameManager.call('convertGridToWorldPosition', startPosition.x, startPosition.z);
 
         const cameraPosition = {
             x: worldPos.x - cdx * distance,

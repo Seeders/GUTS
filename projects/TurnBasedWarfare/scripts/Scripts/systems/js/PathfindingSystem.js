@@ -515,7 +515,7 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     isGridPositionWalkable(gridPos) {
-        const worldPos = this.game.gameManager.call('gridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z);
         return this.isPositionWalkable(worldPos);
     }
 

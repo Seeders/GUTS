@@ -62,7 +62,7 @@ class WorldSystem extends engine.BaseSystem {
         if (this.initialized) return;
 
         this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
-        this.game.gameManager.register('getScene', this.getScene.bind(this));
+        this.game.gameManager.register('getWorldScene', this.getScene.bind(this));
         this.game.gameManager.register('getWorldExtendedSize', () => this.extendedSize);
         this.game.gameManager.register('getGroundTexture', () => this.groundTexture);
 
@@ -284,7 +284,7 @@ class WorldSystem extends engine.BaseSystem {
         if (!gameConfig) return;
 
         const pixelSize = gameConfig.pixelSize || 1;
-        this.game.gameManager.call('registerPass', 'render', {
+        this.game.gameManager.call('registerPostProcessingPass', 'render', {
             enabled: true,
             create: () => {
                 return {
@@ -306,7 +306,7 @@ class WorldSystem extends engine.BaseSystem {
             }
         });
         // Register pixel pass
-        this.game.gameManager.call('registerPass', 'pixel', {
+        this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
             enabled: pixelSize !== 1,
             create: () => {
                 const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
@@ -317,7 +317,7 @@ class WorldSystem extends engine.BaseSystem {
         });
 
         // Register output pass (always last)
-        this.game.gameManager.call('registerPass', 'output', {
+        this.game.gameManager.call('registerPostProcessingPass', 'output', {
             enabled: true,
             create: () => {
                 return new THREE_.OutputPass();

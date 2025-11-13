@@ -18,7 +18,7 @@ class ShopSystem extends engine.BaseSystem {
 
     init() {
         this.game.gameManager.register('addBuilding', this.addBuilding.bind(this));
-        this.game.gameManager.register('reset', this.reset.bind(this));
+        this.game.gameManager.register('resetShop', this.reset.bind(this));
         this.game.gameManager.register('updateSquadExperience', this.updateSquadExperience.bind(this));
     }
 
@@ -279,7 +279,7 @@ class ShopSystem extends engine.BaseSystem {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.buildingProductionProgress.set(buildingId, newProgress);
-                this.game.gameManager.call('placeSquad', placement);
+                this.game.gameManager.call('placeSquadOnBattlefield', placement);
             }
         });       
     }

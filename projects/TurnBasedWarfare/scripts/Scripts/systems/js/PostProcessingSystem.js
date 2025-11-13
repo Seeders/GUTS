@@ -11,9 +11,9 @@ class PostProcessingSystem extends engine.BaseSystem {
     init(params = {}) {
         this.params = params;
 
-        this.game.gameManager.register('registerPass', this.registerPass.bind(this));
-        this.game.gameManager.register('removePass', this.removePass.bind(this));
-        this.game.gameManager.register('render', this.render.bind(this));
+        this.game.gameManager.register('registerPostProcessingPass', this.registerPass.bind(this));
+        this.game.gameManager.register('removePostProcessingPass', this.removePass.bind(this));
+        this.game.gameManager.register('renderPostProcessing', this.render.bind(this));
     }
 
     postAllInit() {
