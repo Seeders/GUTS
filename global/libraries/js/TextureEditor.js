@@ -45,7 +45,7 @@ class TextureEditor {
         const paletteEl = container.querySelector('#color-palette');
         this.colorPalette.forEach(color => {
             const colorBtn = document.createElement('div');
-            colorBtn.className = 'color-btn';
+            colorBtn.className = 'texture-editor__color-btn';
             colorBtn.style.backgroundColor = this.hexToRgbaString(color);
             colorBtn.dataset.color = color;
             paletteEl.appendChild(colorBtn);
@@ -132,9 +132,9 @@ class TextureEditor {
         });
 
         // Tool selection
-        container.querySelectorAll('.tool-btn').forEach(btn => {
+        container.querySelectorAll('.editor-module__btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                container.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                container.querySelectorAll('.editor-module__btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.setActiveTool(e.target.id);
             });
@@ -149,9 +149,9 @@ class TextureEditor {
         });
 
         // Color palette
-        container.querySelectorAll('.color-btn').forEach(btn => {
+        container.querySelectorAll('.texture-editor__color-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                container.querySelectorAll('.texture-editor__color-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentColor = e.target.dataset.color;
                 // Update both color and transparency inputs
@@ -174,7 +174,7 @@ class TextureEditor {
             // Preserve alpha when changing color
             const alpha = this.currentColor.substring(7, 9) || 'FF';
             this.currentColor = e.target.value + alpha;
-            container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            container.querySelectorAll('.texture-editor__color-btn').forEach(b => b.classList.remove('active'));
         });
         
         // Transparency slider
@@ -709,7 +709,7 @@ class TextureEditor {
         }
         
         // Deselect any color in the palette
-        document.querySelectorAll('.color-btn').forEach(btn => {
+        document.querySelectorAll('.texture-editor__color-btn').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.color === hexColor) {
                 btn.classList.add('active');
