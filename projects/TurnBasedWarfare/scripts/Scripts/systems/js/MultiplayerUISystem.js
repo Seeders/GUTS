@@ -107,9 +107,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        console.log('click');
         this.game.networkManager.toggleReady(() => {
-            
         });
     }
     leaveRoom() {
@@ -136,7 +134,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
             // Add new listener
             readyBtn.addEventListener('click', this.boundHandlers.readyClick);
-        }
+        } 
 
         if (leaveBtn) {
             leaveBtn.removeEventListener('click', this.boundHandlers.leaveClick);
