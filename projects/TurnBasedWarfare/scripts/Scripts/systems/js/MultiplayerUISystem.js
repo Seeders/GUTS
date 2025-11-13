@@ -16,7 +16,6 @@ class MultiplayerUISystem extends engine.BaseSystem {
     init(params) {
         this.params = params || {};
         this.initializeUI();
-        this.setupEventListeners();
     }
 
     initializeUI() {
@@ -108,7 +107,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        
+        console.log('click');
         this.game.networkManager.toggleReady(() => {
             
         });

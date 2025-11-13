@@ -308,7 +308,7 @@ class MultiplayerNetworkManager {
     handlePlayerReadyUpdate(data){
 
         this.game.uiSystem.updateLobby(data.gameState);
-        
+        console.log('handlePlayerReadyUpdate', data);
         // Show notification for ready state changes
         const myPlayerId = this.game.clientNetworkManager.playerId;
         if (data.playerId === myPlayerId) {

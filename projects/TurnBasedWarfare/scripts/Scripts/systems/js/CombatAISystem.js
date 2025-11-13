@@ -29,6 +29,7 @@ class CombatAISystem extends engine.BaseSystem {
     init() {
         this.game.gameManager.register('setRetaliatoryTarget', this.setRetaliatoryTarget.bind(this));
         this.game.gameManager.register('startDeathProcess', this.startDeathProcess.bind(this));
+        this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
     }
 
     update() {
@@ -374,13 +375,13 @@ class CombatAISystem extends engine.BaseSystem {
         const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) return;
         
-        if (this.game.animationSystem) {
+        if(this.game.gameManager.has('triggerSinglePlayAnimation')){
             const animationSpeed = this.calculateAnimationSpeed(attackerId, combat.attackSpeed);
             const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
             this.game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
         }
         
-        if (combat.projectile && this.game.projectileSystem) {
+        if (combat.projectile) {
             this.scheduleProjectileLaunch(attackerId, targetId, combat);
         } else {
             this.scheduleMeleeDamage(attackerId, targetId, combat);
@@ -393,7 +394,7 @@ class CombatAISystem extends engine.BaseSystem {
         // Default fallback duration
         let baseAnimationDuration = 0.8;
         
-        if (this.game.animationSystem) {
+        if (this.game.gameManager.has('getEntityAnimations')) {
             // NEW: Get duration from VAT bundle instead of mixer actions
             const CT = this.componentTypes;
             const renderable = this.game.getComponent(attackerId, CT.RENDERABLE);
@@ -648,11 +649,6 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     getEffectiveAttackSpeed(entityId, baseAttackSpeed) {
-        // Get attack speed modifiers from buffs
-        if (!this.game.damageSystem || !this.game.gameManager.has('getAttackerModifiers')) {
-            return baseAttackSpeed;
-        }
-
         const attackerMods = this.game.gameManager.call('getAttackerModifiers', entityId);
         return baseAttackSpeed * (attackerMods.attackSpeedMultiplier || 1.0);
     }

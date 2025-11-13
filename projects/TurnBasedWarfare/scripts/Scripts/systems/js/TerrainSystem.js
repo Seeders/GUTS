@@ -31,6 +31,8 @@ class TerrainSystem extends engine.BaseSystem {
         this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
         this.game.gameManager.register('getTerrainSize', () => this.terrainSize);
         this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
+        this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
+        this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
 
         // Load world data
         this.loadWorldData();
@@ -155,6 +157,12 @@ class TerrainSystem extends engine.BaseSystem {
         this.processHeightMapFromData();
     }
 
+    getTileMapTerrainType(terrainTypeId){
+        if(this.tileMap.terrainTypes.length > terrainTypeId && terrainTypeId >= 0){
+            return this.tileMap.terrainTypes[terrainTypeId];
+        }
+        return null;
+    }
     /**
      * Get terrain height at world position
      * @param {number} worldX - World X coordinate  

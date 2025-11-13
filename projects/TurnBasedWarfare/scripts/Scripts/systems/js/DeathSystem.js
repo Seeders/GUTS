@@ -52,6 +52,8 @@ class DeathSystem extends engine.BaseSystem {
     
     // NEW: Check if death animation is completed via AnimationSystem
     isDeathAnimationCompleted(entityId) {
+        //this may cause desync with server ending death animations early and making corpses before clients do.
+        if(!this.game.gameManager.has('getEntityAnimationState')) return true;
         const animState = this.game.gameManager.call('getEntityAnimationState', entityId);
         if (!animState) return false;
 
@@ -75,7 +77,9 @@ class DeathSystem extends engine.BaseSystem {
         if (!position || !unitType || !team) return;
 
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
-        this.game.gameManager.call('setCorpseAnimation', entityId);
+        if(this.game.gameManager.has('setCorpseAnimation')){
+            this.game.gameManager.call('setCorpseAnimation', entityId);
+        }
 
         // Remove death state
         this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        

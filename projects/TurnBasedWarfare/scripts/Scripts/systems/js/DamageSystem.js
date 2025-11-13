@@ -41,7 +41,9 @@ class DamageSystem extends engine.BaseSystem {
         this.game.gameManager.register('scheduleDamage', this.scheduleDamage.bind(this));
         this.game.gameManager.register('curePoison', this.curePoison.bind(this));
         this.game.gameManager.register('getPoisonStacks', this.getPoisonStacks.bind(this));
-        this.game.gameManager.register('clearAllDamageEffects', this.clearAll.bind(this));
+        this.game.gameManager.register('clearAllDamageEffects', this.clearAllDamageEffects.bind(this));
+        this.game.gameManager.register('clearAllStatusEffects', this.clearAllStatusEffects.bind(this));
+        this.game.gameManager.register('getAttackerModifiers', this.getAttackerModifiers.bind(this));
     }
 
     // =============================================
@@ -520,7 +522,6 @@ class DamageSystem extends engine.BaseSystem {
     handleEntityDeath(entityId) {
         // Notify other systems about death
         this.game.gameManager.call('startDeathProcess', entityId);
-        this.game.gameManager.call('checkForRoundEnd');
     }
 
     entityDestroyed(entityId) {
@@ -546,7 +547,7 @@ class DamageSystem extends engine.BaseSystem {
         this.activeStatusEffects.delete(entityId);
     }
 
-    clearAll() {        
+    clearAllDamageEffects() {        
         this.activeStatusEffects.clear();  
         this.pendingDamageEvents.clear();
     }

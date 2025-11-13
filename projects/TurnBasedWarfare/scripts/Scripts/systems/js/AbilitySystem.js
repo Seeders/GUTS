@@ -167,8 +167,9 @@ class AbilitySystem extends engine.BaseSystem {
                 animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, ability.castTime);
                 minAnimationTime = 1 / ability.castTime;
             }
-
-            this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
+            if(this.game.gameManager.has('triggerSinglePlayAnimation')){
+                this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
+            }
             break;
 
         }

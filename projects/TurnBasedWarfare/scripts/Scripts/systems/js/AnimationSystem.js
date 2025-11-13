@@ -390,7 +390,7 @@ class AnimationSystem extends engine.BaseSystem {
             return false; // Continuous animations never finish
         }
 
-        const animationState = this.game.renderSystem?.getInstanceAnimationState(entityId);
+        const animationState = this.game.gameManager.call('getEntityAnimationState', entityId);
         if (!animationState) {
             return true;
         }

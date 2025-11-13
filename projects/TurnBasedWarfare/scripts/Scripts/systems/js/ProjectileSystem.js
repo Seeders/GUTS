@@ -32,6 +32,7 @@ class ProjectileSystem extends engine.BaseSystem {
 
     init() {
         this.game.gameManager.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
+        this.game.gameManager.register('fireProjectile', this.fireProjectile.bind(this));
     }
 
     deleteProjectileTrail(entityId) {
@@ -487,8 +488,12 @@ class ProjectileSystem extends engine.BaseSystem {
                 isProjectile: true,
                 projectileId: projectileId
             });
-
-            this.createHitEffect(projectileId, targetId, targetPos, element, false);
+            if(!this.game.isServer){
+                this.game.gameManager.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
+                    color: this.getElementalEffectColor(element),
+                    count: 3
+                });
+            }
         }
 
 
@@ -529,15 +534,7 @@ class ProjectileSystem extends engine.BaseSystem {
         this.destroyProjectile(entityId);
     }
     
-    createHitEffect(projectileId, targetId, targetPos, element, isBallistic = false) {
-        if(this.game.gameManager){
-            this.game.gameManager.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
-                color: this.getElementalEffectColor(element),
-                count: 3
-            });
-        }
-
-    }
+ 
 
     createGroundExplosion(projectileId, pos, projectile, groundLevel) {
 

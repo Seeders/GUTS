@@ -30,6 +30,7 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('setInstanceClip', this.setInstanceClip.bind(this));
         this.game.gameManager.register('setInstanceSpeed', this.setInstanceSpeed.bind(this));
         this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
+        this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
     }
 
     _bindDebugHelpers() {
@@ -497,7 +498,7 @@ class RenderSystem extends engine.BaseSystem {
         return true;
     }
 
-    getInstanceAnimationState(entityId) {
+    getEntityAnimationState(entityId) {
         const instance = this.entityToInstance.get(entityId);
         if (!instance) return null;
 
@@ -610,7 +611,7 @@ class RenderSystem extends engine.BaseSystem {
     dumpInstances() {
         const instances = [];
         for (const [entityId, instance] of this.entityToInstance) {
-            const state = this.getInstanceAnimationState(entityId);
+            const state = this.getEntityAnimationState(entityId);
             instances.push({
                 entityId,
                 batchKey: instance.batchKey,

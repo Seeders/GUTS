@@ -111,7 +111,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     playerGold = player.stats.gold;
                     console.log('got player gold', playerGold);
             
-                    if (!gameManager.call('canAffordLevelUp', placementId, playerGold)) {
+                    if (!this.game.gameManager.call('canAffordLevelUp', placementId, playerGold)) {
                         console.log("not enough gold to level up");
                         this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
                             playerId: playerId,
@@ -120,12 +120,12 @@ class ServerPlacementSystem extends engine.BaseSystem {
                         });
                         return false;
                     }
-                    const success1 = specializationId ? gameManager.call('applySpecialization', placementId, specializationId, playerId) : true;
+                    const success1 = specializationId ? this.game.gameManager.call('applySpecialization', placementId, specializationId, playerId) : true;
 
-                    await gameManager.call('levelUpSquad', placementId, null, playerId, (success) => {
+                    await this.game.gameManager.call('levelUpSquad', placementId, null, playerId, (success) => {
                         console.log('success?: ', success1, success);
                         if(success1 && success){
-                            const levelUpCost = gameManager.call('getLevelUpCost', placementId);        
+                            const levelUpCost = this.game.gameManager.call('getLevelUpCost', placementId);        
                             
                             player.stats.gold -= levelUpCost;
                             console.log('leveled, new gold amt:', player.stats.gold);
@@ -240,11 +240,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
             placement.targetPosition = targetPosition;
             placement.squadUnits.forEach((unitId) => {
                 if(targetPosition){
-                    let currentOrderAI = gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
+                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
                     currentOrderAI.targetPosition = targetPosition;
                     currentOrderAI.path = [];
                     currentOrderAI.meta = meta;
-                    gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
+                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
                 }
             });
                     
@@ -325,11 +325,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
                     if(targetPosition){
-                        let currentOrderAI = gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
+                        let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
                         currentOrderAI.targetPosition = targetPosition;
                         currentOrderAI.path = [];
                         currentOrderAI.meta = meta;
-                        gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
+                        this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
                     }
                 });
                         
@@ -397,7 +397,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
             this.resetAI();
-            gameManager.call('startBattle', room);
+            this.game.gameManager.call('startBattle', room);
         } else {
             const gameState = room.getGameState();
             this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {                       
@@ -431,7 +431,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     if (aiState && position) {
                         
                         if(targetPosition){
-                            const currentAIController = gameManager.call('getCurrentAIControllerId', entityId);
+                            const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
 
                             if(!currentAIController || currentAIController == "UnitOrderSystem"){
                                 const dx = position.x - targetPosition.x;
@@ -440,13 +440,13 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                 const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
 
                                 if (distSq <= threshold * threshold) {
-                                    gameManager.call('removeCurrentAIController', entityId);
+                                    this.game.gameManager.call('removeCurrentAIController', entityId);
                                     placement.targetPosition = null;
                                 } else {
-                                    let currentOrderAI = gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
+                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
                                     currentOrderAI.targetPosition = targetPosition;
                                     currentOrderAI.path = [];
-                                    gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+                                    this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
                                 }
                             }
                         }
@@ -500,7 +500,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
 
-        const result = gameManager.call('spawnSquadFromPlacement', playerId, placement);
+        const result = this.game.gameManager.call('spawnSquadFromPlacement', playerId, placement);
 
         if(result.success && result.squad){
             let squadUnits = [];
@@ -509,7 +509,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             })
             placement.squadUnits = squadUnits;
             if (placement.placementId) {
-                gameManager.call('initializeSquad',
+                this.game.gameManager.call('initializeSquad',
                     placement.placementId,
                     placement.unitType,
                     placement.squadUnits,
@@ -523,7 +523,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
                 // Get the build ability from the peasant's abilities
 
-                const peasantAbilities = gameManager.call('getEntityAbilities', peasantId);
+                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
                 if (peasantAbilities) {
                     //console.log("peasantAbilities", peasantAbilities);
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
@@ -585,8 +585,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     cleanupDeadSquad(placement) {
         if (placement.placementId) {
-            gameManager.call('releaseGridCells', placement.placementId);
-            gameManager.call('removeSquad', placement.placementId);
+            this.game.gameManager.call('releaseGridCells', placement.placementId);
+            this.game.gameManager.call('removeSquad', placement.placementId);
         }
 
        // console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
@@ -615,7 +615,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
         // Validate side placement - no mirroring, direct side enforcement
         const squadData = this.game.squadManager.getSquadData(placement.unitType);
         const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-        if(!gameManager.call('isValidGridPlacement', cells, player.stats.side)){
+        if(!this.game.gameManager.call('isValidGridPlacement', cells, player.stats.side)){
             console.log('Invalid Placement', placement);
             return false;
         }
@@ -655,7 +655,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
                 // Free grid cells
                 if (placement.placementId) {
-                    gameManager.call('releaseGridCells', placement.placementId);
+                    this.game.gameManager.call('releaseGridCells', placement.placementId);
                 }
             });
             
@@ -682,7 +682,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             const gridWidth = unitType.placementGridWidth || 2;
             const gridHeight = unitType.placementGridHeight || 2;
 
-            const result = gameManager.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
+            const result = this.game.gameManager.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
             if (!result.success) {
                 return result;
             }
@@ -739,7 +739,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
-        const goldVeinLocations = gameManager.call('getGoldVeinLocations');
+        const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
         if (goldVeinLocations) {
             goldVeinLocations.forEach(vein => {
                 // Skip if already claimed
@@ -852,7 +852,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
 
 
-        const worldPos = gameManager.call('convertGridToWorldPosition', startPosition.x, startPosition.z);
+        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', startPosition.x, startPosition.z);
 
         const cameraPosition = {
             x: worldPos.x - cdx * distance,
