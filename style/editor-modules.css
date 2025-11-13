@@ -526,6 +526,53 @@
 }
 
 /* =============================================================================
+   ACTIVE/SELECTED STATE STYLING
+   Used for selectable items in lists (terrain types, tools, etc.)
+   ============================================================================= */
+
+/* Base active state for selectable items */
+.editor-module__selectable-item.active,
+.editor-module__selectable-item--active {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+}
+
+/* Terrain editor specific - active terrain item container */
+.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),
+.terrain-editor__terrain-item:has(.terrain-editor__color-option--active) {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+}
+
+/* Terrain editor - active terrain label */
+.terrain-editor__terrain-item:has(.terrain-editor__color-option.active) .terrain-editor__terrain-label,
+.terrain-editor__terrain-item:has(.terrain-editor__color-option--active) .terrain-editor__terrain-label {
+  color: var(--editor-primary);
+  font-weight: 600;
+}
+
+/* Terrain editor - active color swatch */
+.terrain-editor__color-option.active,
+.terrain-editor__color-option--active {
+  border-color: var(--editor-primary);
+  border-width: 3px;
+  box-shadow: 0 0 0 2px var(--editor-primary), 0 0 12px rgba(99, 102, 241, 0.5);
+  transform: scale(1.15);
+  position: relative;
+  z-index: 1;
+}
+
+/* Environment editor - active environment item */
+.terrain-editor__environment-item.active,
+.terrain-editor__environment-item--active {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+}
+
+/* =============================================================================
    SCROLLBAR STYLING
    ============================================================================= */
 

@@ -456,28 +456,21 @@ select:focus,
   box-shadow: var(--aurora-glow);
 }
 
-/* Terrain editor - make active/selected state very visible */
+/* Active/selected state - Aurora theme colors (teal/green glow) */
 .terrain-editor__terrain-item:has(.terrain-editor__color-option.active),
-.terrain-editor__terrain-item:has(.terrain-editor__color-option--active) {
+.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),
+.terrain-editor__environment-item.active,
+.terrain-editor__environment-item--active,
+.editor-module__selectable-item.active,
+.editor-module__selectable-item--active {
   background-color: rgba(16, 185, 129, 0.12) !important;
   border-color: rgba(16, 185, 129, 0.4) !important;
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2);
-}
-
-.terrain-editor__terrain-item:has(.terrain-editor__color-option.active) .terrain-editor__terrain-label,
-.terrain-editor__terrain-item:has(.terrain-editor__color-option--active) .terrain-editor__terrain-label {
-  color: var(--editor-primary) !important;
-  font-weight: 600 !important;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;
 }
 
 .terrain-editor__color-option.active,
 .terrain-editor__color-option--active {
-  border-color: var(--editor-primary) !important;
-  border-width: 3px !important;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;
-  transform: scale(1.15);
-  position: relative;
-  z-index: 1;
 }
 
 /* Audio editor value displays */
