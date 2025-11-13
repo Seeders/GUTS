@@ -157,7 +157,7 @@ class GE_UIManager {
         console.log('create group inspector', group);
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
-        inspector.className = 'inspector';
+        inspector.className = 'inspector editor-module__scroll-y';
 
         
         this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale?.x || 1, { min: 0.1, step: 0.1 });
@@ -178,7 +178,7 @@ class GE_UIManager {
     createInspector(shape) {
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
-        inspector.className = 'inspector';
+        inspector.className = 'inspector editor-module__scroll-y';
 
         this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || "");
         
