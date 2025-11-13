@@ -350,10 +350,13 @@ class TextureEditor {
     resetZoom() {
         // Reset zoom level
         this.zoomLevel = 1;
-        
+
         // Update display
         this.updateZoomDisplay();
         this.renderCanvas();
+
+        // Update canvas display size to match zoom
+        this.updateCanvasDisplaySize();
     }
     
     updateZoomDisplay() {
