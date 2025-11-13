@@ -544,7 +544,7 @@ class TerrainMapEditor {
             const panel = document.createElement('div');
             panel.id = 'environmentPanel';
             panel.style.display = 'none'; // Hidden by default
-            document.querySelector('.tools').appendChild(panel);
+            document.querySelector('.editor-module__scroll-y').appendChild(panel);
         } else {
             // Clear existing content
             environmentPanel.innerHTML = '';
@@ -591,7 +591,7 @@ class TerrainMapEditor {
         indicator.className = 'placement-mode-indicator';
         indicator.style.opacity = '0';
         indicator.textContent = 'Placement Mode: Terrain';
-        document.querySelector('.grid-container').appendChild(indicator);
+        document.querySelector('.editor-module__canvas-area').appendChild(indicator);
         this.placementModeIndicator = indicator;
     
         // Create environment object selector
