@@ -245,8 +245,8 @@ export default class ServerGameRoom extends GameRoom {
 
     togglePlayerReady(playerId) {
         const player = this.players.get(playerId);
-        if (!player || this.game.state.phase !== 'lobby') {
-            console.log("no player or not lobby phase", this.game.state.phase);
+        if (!player || (this.game.state.phase !== 'lobby' && this.game.state.phase !== 'waiting')) {
+            console.log("no player or not in lobby/waiting phase", this.game.state.phase);
             return false;
         }
         
