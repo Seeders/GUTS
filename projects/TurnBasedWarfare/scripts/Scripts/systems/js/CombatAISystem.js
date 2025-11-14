@@ -319,7 +319,7 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     onLostTarget(entityId) {
-        let aiState = game.getComponent(entityId, this.game.componentTypes.AI_STATE);
+        let aiState = this.game.getComponent(entityId, this.game.componentTypes.AI_STATE);
         aiState.useDirectMovement = false;
         let currentCombatAI = this.game.gameManager.call('getAIControllerData', entityId, "CombatAISystem");
         currentCombatAI.target = null;
