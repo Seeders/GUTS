@@ -17,7 +17,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "main",
-            "url": "projects/TurnBasedWarfare/resources/models/atom_two/atom_two.glb"
+            "url": "models/atom_two/atom_two.glb"
           }
         ],
         "position": {
@@ -31,8 +31,8 @@
           "z": 0
         },
         "scale": {
-          "x": 0.25,
-          "z": 0.25
+          "x": 0.375,
+          "z": 0.375
         }
       }
     }

@@ -888,119 +888,199 @@ class WorldSystem extends engine.BaseSystem {
 
 
         // Get the molecule type (same as terrain rendering logic)
-        const molecule = this.game.terrainTileMapper.getMoleculeByTileAnalysis(tileAnalysis);
+        const molecule = this.getCliffMoleculeByTileAnalysis(tileAnalysis);
         
         // Place cliff atoms to form the molecule
         this.placeCliffMolecule(worldX, worldZ, molecule, tileAnalysis, gridSize);
     }
 
+	getCliffMoleculeByTileAnalysis(tileAnalysis){
+
+		var molecule = this.game.terrainTileMapper.TileCliffMolecules.Full;
+        console.log(tileAnalysis.neighborLowerCount);								
+		switch(tileAnalysis.neighborLowerCount){
+			case 0: 
+				// Randomly choose between Full (sprite 0) and FullVariation (sprite 4)
+				molecule = Math.random() < 0.5 ? this.game.terrainTileMapper.TileCliffMolecules.Full : this.game.terrainTileMapper.TileCliffMolecules.FullVariation;
+				break;
+			case 1:
+				if(tileAnalysis.topLess) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.EdgeT;
+				} else if(tileAnalysis.leftLess) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.EdgeL;
+				} else if(tileAnalysis.rightLess) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.EdgeR;
+				} else if(tileAnalysis.botLess) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.EdgeB;
+				}
+				break;
+			case 2:
+				if(tileAnalysis.topLess && tileAnalysis.botLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TunnelH;
+				} else if(tileAnalysis.leftLess && tileAnalysis.rightLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TunnelV;
+				} else if(tileAnalysis.topLess && tileAnalysis.leftLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTL;
+				} else if(tileAnalysis.topLess && tileAnalysis.rightLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTR;
+				} else if(tileAnalysis.botLess && tileAnalysis.leftLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBL;
+				} else if(tileAnalysis.botLess && tileAnalysis.rightLess){
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBR;
+				} 
+				break;
+			case 3:
+				if( !tileAnalysis.topLess ) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.PenninsulaB;
+				} else if( !tileAnalysis.leftLess ) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.PenninsulaR;
+				} else if( !tileAnalysis.rightLess ) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.PenninsulaL;
+				} else if( !tileAnalysis.botLess ) {
+					molecule = this.game.terrainTileMapper.TileCliffMolecules.PenninsulaT;
+				}
+				break;								
+			case 4:
+				molecule = this.game.terrainTileMapper.TileCliffMolecules.Island;
+				break;
+		}
+
+
+		if (tileAnalysis.cornerLowerCount > 0) {
+			if (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {		
+                molecule = this.game.terrainTileMapper.TileCliffMolecules.CornerTL;		
+			}
+			// Assuming tileAnalysis, textureDict, and other variables are already defined
+			if (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {	
+                molecule = this.game.terrainTileMapper.TileCliffMolecules.CornerTR;					
+			}
+
+			if (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {	
+                molecule = this.game.terrainTileMapper.TileCliffMolecules.CornerBL;					
+			}
+
+			if (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {		
+                molecule = this.game.terrainTileMapper.TileCliffMolecules.CornerBR;				
+			}
+		}
+
+		return molecule;
+	}
+
     placeCliffMolecule(worldX, worldZ, molecule, tileAnalysis, gridSize) {
         const halfGrid = gridSize / 2;
-        
+        const offSet = 0;
+    	const terrainHeight = this.getTerrainHeightAtPosition(worldX, worldZ);
         // Map of molecule types to their cliff atom compositions
         // Each position represents a quadrant: [topLeft, topRight, bottomLeft, bottomRight]
         const moleculeCompositions = {
             [this.game.terrainTileMapper.TileCliffMolecules.Full]: [
-               // { type: 'atom_four', rotation: 0, x: -halfGrid/2, z: -halfGrid/2 },
+               // { type: 'atom_four', rotation: 0, x: -offSet, z: -offSet },
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.FullVariation]: [
-               // { type: 'atom_four', rotation: 0, x: -halfGrid/2, z: -halfGrid/2 },
+               // { type: 'atom_four', rotation: 0, x: -offSet, z: -offSet },
             ],
             // Single corners
             [this.game.terrainTileMapper.TileCliffMolecules.CornerTL]: [
-                { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 }
+                { type: 'atom_three', rotation: 0, x: offSet, z: offSet }
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.CornerTR]: [
-                { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 }
+                { type: 'atom_three', rotation: Math.PI/2, x: gridSize - offSet, z: offSet}
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.CornerBL]: [
-                { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 }
+               { type: 'atom_three', rotation: -Math.PI/2, x: offSet, z: gridSize - offSet }
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.CornerBR]: [
-                { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+                { type: 'atom_three', rotation: Math.PI, x: gridSize - offSet, z: gridSize - offSet }
             ],
             // Edges
             [this.game.terrainTileMapper.TileCliffMolecules.EdgeT]: [
-                { type: 'atom_two', rotation: Math.PI, x: 0, z: -halfGrid / 2 },
-                { type: 'atom_two', rotation: Math.PI, x: halfGrid, z: -halfGrid / 2 }
+                { type: 'atom_two', rotation: Math.PI/2, x: offSet, z: offSet },
+                { type: 'atom_two', rotation: Math.PI/2, x: offSet + halfGrid, z: offSet },
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.EdgeL]: [
-                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: 0},
-                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid}
+                { type: 'atom_two', rotation: 0, x: offSet, z: offSet},
+                { type: 'atom_two', rotation: 0, x: offSet, z: offSet + halfGrid}
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.EdgeR]: [
-                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: 0 },
-                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: halfGrid}
+                { type: 'atom_two', rotation: Math.PI, x: gridSize - offSet, z: offSet },
+                { type: 'atom_two', rotation: Math.PI, x: gridSize - offSet, z: offSet + halfGrid}
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.EdgeB]: [
-                { type: 'atom_two', rotation: 0, x: 0, z: gridSize + halfGrid/2 },
-                { type: 'atom_two', rotation: 0, x: halfGrid, z: gridSize + halfGrid/2 }
+                { type: 'atom_two', rotation: -Math.PI/2, x: offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: -Math.PI/2, x: offSet + halfGrid, z: gridSize - offSet },
             ],
             // Tunnels
             [this.game.terrainTileMapper.TileCliffMolecules.TunnelH]: [
-              //  { type: 'atom_two', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_two', rotation: 0, x: -halfGrid/2, z: halfGrid/2 },
-             //  { type: 'atom_two', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+              //  { type: 'atom_two', rotation: Math.PI, x: -offSet, z: -offSet },
+              //  { type: 'atom_two', rotation: Math.PI, x: offSet, z: -offSet },
+              //  { type: 'atom_two', rotation: 0, x: -offSet, z: offSet },
+             //  { type: 'atom_two', rotation: 0, x: offSet, z: offSet }
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.TunnelV]: [
-              //  { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
-            //    { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: halfGrid/2 }
+              //  { type: 'atom_two', rotation: Math.PI/2, x: -offSet, z: -offSet },
+             //   { type: 'atom_two', rotation: -Math.PI/2, x: offSet, z: -offSet },
+             //   { type: 'atom_two', rotation: Math.PI/2, x: -offSet, z: offSet },
+            //    { type: 'atom_two', rotation: -Math.PI/2, x: offSet, z: offSet }
             ],
             // Two sides (protruding corners)
             [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTL]: [
-                { type: 'atom_one', rotation: 0, x: -halfGrid/2, z: -halfGrid/2 },
-                { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
-                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 }
+                { type: 'atom_two', rotation: Math.PI/2, x: offSet + halfGrid, z: offSet },
+                { type: 'atom_one', rotation: 0, x: offSet, z: offSet },
+                { type: 'atom_two', rotation: 0, x: offSet, z: offSet + halfGrid}
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesTR]: [
-                { type: 'atom_two', rotation: Math.PI, x: gridSize -halfGrid/2, z: -halfGrid/2 },
-                { type: 'atom_one', rotation: Math.PI/2, x: gridSize + halfGrid/2, z: -halfGrid/2 },
-                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: halfGrid/2 }
+                { type: 'atom_one', rotation: Math.PI/2, x: gridSize - offSet, z: offSet },
+                { type: 'atom_two', rotation: Math.PI, x: gridSize - offSet, z: offSet + halfGrid},
+                { type: 'atom_two', rotation: Math.PI/2, x: gridSize - offSet - halfGrid, z: offSet }
             ],
-                 [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBL]: [
-                { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: gridSize -halfGrid/2 },
-                { type: 'atom_one', rotation: -Math.PI/2, x: -halfGrid/2, z: gridSize + halfGrid/2 },
-                { type: 'atom_two', rotation: 0, x: halfGrid/2, z: gridSize + halfGrid/2 }
+              [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBL]: [
+                { type: 'atom_one', rotation: -Math.PI/2, x: offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: -Math.PI/2, x: offSet + halfGrid, z: gridSize - offSet },
+                { type: 'atom_two', rotation: 0, x: offSet, z: offSet + halfGrid}
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.TwoSidesBR]: [
-                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize + halfGrid/2, z: gridSize -halfGrid/2 },
-                { type: 'atom_two', rotation: 0, x: gridSize -halfGrid/2, z: gridSize + halfGrid/2 },
-                { type: 'atom_one', rotation: -Math.PI, x: gridSize + halfGrid/2, z: gridSize + halfGrid/2 }
+                { type: 'atom_two', rotation: Math.PI, x: gridSize - offSet, z: offSet + halfGrid},
+                { type: 'atom_one', rotation: -Math.PI, x: gridSize - offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: -Math.PI/2, x: gridSize - halfGrid, z: gridSize - offSet }
             ],
             // Peninsulas
             [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaT]: [
-             //   { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
-             //   { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: halfGrid/2 }
+                { type: 'atom_one', rotation: Math.PI/2, x: offSet, z: offSet },
+                { type: 'atom_one', rotation: 0, x: gridSize - offSet, z: offSet }
+             //   { type: 'atom_two', rotation: Math.PI/2, x: -offSet, z: offSet },
+             //   { type: 'atom_two', rotation: -Math.PI/2, x: offSet, z: offSet }
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaL]: [
-              //  { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_two', rotation: Math.PI, x: halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
-              //  { type: 'atom_two', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+             //   { type: 'atom_two', rotation: Math.PI, x: offSet, z: -offSet },
+              //  { type: 'atom_two', rotation: 0, x: offSet, z: offSet }
+                { type: 'atom_one', rotation: 0, x: offSet, z: offSet },
+                { type: 'atom_two', rotation: 0, x: offSet, z: offSet + halfGrid},
+                { type: 'atom_one', rotation: -Math.PI/2, x:offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: -Math.PI/2, x: offSet + halfGrid, z: offSet },
+                { type: 'atom_two', rotation: Math.PI/2, x: offSet + halfGrid, z: gridSize - offSet },
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaR]: [
-              //  { type: 'atom_two', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_two', rotation: 0, x: -halfGrid/2, z: halfGrid/2 },
-              //  { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+              //  { type: 'atom_two', rotation: Math.PI, x: -offSet, z: -offSet },
+              //  { type: 'atom_two', rotation: 0, x: -offSet, z: offSet },
+                { type: 'atom_one', rotation: Math.PI, x: gridSize - offSet, z: offSet },
+                { type: 'atom_one', rotation: Math.PI/2, x: gridSize - offSet, z: gridSize - offSet }
             ],
             [this.game.terrainTileMapper.TileCliffMolecules.PenninsulaB]: [
-              //  { type: 'atom_two', rotation: Math.PI/2, x: -halfGrid/2, z: -halfGrid/2 },
-            //    { type: 'atom_two', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
-              //  { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+              //  { type: 'atom_two', rotation: Math.PI/2, x: -offSet, z: -offSet },
+            //    { type: 'atom_two', rotation: -Math.PI/2, x: offSet, z: -offSet },
+                { type: 'atom_one', rotation: -Math.PI/2, x: offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: -Math.PI/2, x: offSet + halfGrid, z: gridSize - offSet },
+                { type: 'atom_one', rotation: Math.PI, x: gridSize - offSet, z: gridSize - offSet },
+                { type: 'atom_two', rotation: 0, x: offSet, z: gridSize - halfGrid},
+                { type: 'atom_two', rotation: Math.PI, x: gridSize + offSet, z: gridSize - halfGrid},
             ],
             // Island
             [this.game.terrainTileMapper.TileCliffMolecules.Island]: [
-              //  { type: 'atom_one', rotation: Math.PI, x: -halfGrid/2, z: -halfGrid/2 },
-              //  { type: 'atom_one', rotation: -Math.PI/2, x: halfGrid/2, z: -halfGrid/2 },
-             //   { type: 'atom_one', rotation: Math.PI/2, x: -halfGrid/2, z: halfGrid/2 },
-            //    { type: 'atom_one', rotation: 0, x: halfGrid/2, z: halfGrid/2 }
+              //  { type: 'atom_one', rotation: Math.PI, x: -offSet, z: -offSet },
+              //  { type: 'atom_one', rotation: -Math.PI/2, x: offSet, z: -offSet },
+             //   { type: 'atom_one', rotation: Math.PI/2, x: -offSet, z: offSet },
+            //    { type: 'atom_one', rotation: 0, x: offSet, z: offSet }
             ]
         };
 
@@ -1010,6 +1090,11 @@ class WorldSystem extends engine.BaseSystem {
             return;
         }
 
+
+        let cliffBottomHeightIndex = tileAnalysis.heightIndex - 2;
+        if(tileAnalysis.neighborLowerCount == 0 && tileAnalysis.cornerLowerCount == 0){
+            cliffBottomHeightIndex += 1;
+        }
         // Place each atom that makes up this molecule
         composition.forEach((atom, index) => {
             let atomPos = {
@@ -1017,15 +1102,19 @@ class WorldSystem extends engine.BaseSystem {
                 z: atom.z + worldZ
             }
             // Get the base height for this tile
-            const terrainHeight = this.getTerrainHeightAtPosition(atomPos.x, atomPos.z);
             this.createCliffEntity(
                 atom.type, 
                 atomPos.x, 
-                terrainHeight,
+                cliffBottomHeightIndex * this.heightStep,
                 atomPos.z, 
                 atom.rotation, 
             );
         });
+    }
+
+    resetCliffs() {
+        this.destroyAllCliffs();
+        this.generateCliffEntities();
     }
 
     destroyAllCliffs() {
