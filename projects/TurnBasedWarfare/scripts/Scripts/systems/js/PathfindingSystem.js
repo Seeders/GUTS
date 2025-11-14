@@ -31,7 +31,9 @@ class PathfindingSystem extends engine.BaseSystem {
 
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        this.game.gameManager.register('requestPath', this.requestPath.bind(this));
+        this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
+        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
+
 
         const collections = this.game.getCollections();
         if (!collections) {
@@ -382,7 +384,95 @@ class PathfindingSystem extends engine.BaseSystem {
 
         return smoothed;
     }
-
+    hasDirectWalkablePath(fromPos, toPos, entityId = null) {
+        if (!this.initialized || !this.navMesh) return false;
+        
+        const fromGrid = this.worldToNavGrid(fromPos.x, fromPos.z);
+        const toGrid = this.worldToNavGrid(toPos.x, toPos.z);
+        
+        // Same grid cell = direct path
+        if (fromGrid.x === toGrid.x && fromGrid.z === toGrid.z) {
+            return true;
+        }
+        
+        // Bresenham's line algorithm to check every grid cell along the path
+        const dx = Math.abs(toGrid.x - fromGrid.x);
+        const dz = Math.abs(toGrid.z - fromGrid.z);
+        const sx = fromGrid.x < toGrid.x ? 1 : -1;
+        const sz = fromGrid.z < toGrid.z ? 1 : -1;
+        let err = dx - dz;
+        
+        let x = fromGrid.x;
+        let z = fromGrid.z;
+        let lastTerrain = this.getTerrainAtNavGrid(x, z);
+        
+        // If starting position isn't walkable, fail immediately
+        if (!this.isTerrainWalkable(lastTerrain)) {
+            return false;
+        }
+        
+        while (true) {
+            // Reached destination
+            if (x === toGrid.x && z === toGrid.z) {
+                return true;
+            }
+            
+            const currentTerrain = this.getTerrainAtNavGrid(x, z);
+            
+            // Hit impassable terrain or out of bounds
+            if (currentTerrain === null || currentTerrain === 255) {
+                return false;
+            }
+            
+            // Check if current terrain is walkable
+            if (!this.isTerrainWalkable(currentTerrain)) {
+                return false;
+            }
+            
+            // Check if we can transition from last terrain to current terrain
+            if (!this.canWalkBetweenTerrains(lastTerrain, currentTerrain)) {
+                return false;
+            }
+            
+            const e2 = 2 * err;
+            const willMoveX = e2 > -dz;
+            const willMoveZ = e2 < dx;
+            
+            // For diagonal movement, check both adjacent cells to prevent corner cutting
+            if (willMoveX && willMoveZ) {
+                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
+                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
+                
+                // Both adjacent cells must be valid and walkable
+                if (terrainX === null || terrainX === 255 || 
+                    terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+                
+                if (!this.isTerrainWalkable(terrainX) || !this.isTerrainWalkable(terrainZ)) {
+                    return false;
+                }
+                
+                // Check terrain transitions for both adjacent cells
+                if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
+                    !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+                    return false;
+                }
+            }
+            
+            lastTerrain = currentTerrain;
+            
+            // Move along the line
+            if (willMoveX) {
+                err -= dz;
+                x += sx;
+            }
+            if (willMoveZ) {
+                err += dx;
+                z += sz;
+            }
+        }
+    }
     hasLineOfSight(from, to) {
         const fromGrid = this.worldToNavGrid(from.x, from.z);
         const toGrid = this.worldToNavGrid(to.x, to.z);

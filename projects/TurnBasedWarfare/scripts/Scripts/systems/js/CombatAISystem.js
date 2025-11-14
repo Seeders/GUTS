@@ -204,22 +204,13 @@ class CombatAISystem extends engine.BaseSystem {
         // Check if we have direct line of sight to the target
         const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
         const hasLOS = this.game.gameManager.call('hasLineOfSight', pos, enemyPos, unitType, entityId);
+        const hasDirectPath = this.game.gameManager.call('hasDirectWalkablePath', pos, enemyPos, entityId);
 
-        // Update target position
-        currentCombatAi.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
-        aiState.targetPosition = currentCombatAi.targetPosition;
-
-        if (hasLOS) {
-            // Direct line of sight - use direct movement (steering behaviors only)
-            // Clear any existing path and set flag for direct movement
+        if (hasLOS && hasDirectPath) {
+            // Can see AND walk directly - use steering only
             aiState.path = null;
             aiState.useDirectMovement = true;
-        } else {
-            // No line of sight - need pathfinding
-            // Clear the direct movement flag and request a path
-            aiState.useDirectMovement = false;
-            aiState.path = [];
-        }
+        } 
 
         if(currentAI != "CombatAISystem"){
             this.game.gameManager.call('setCurrentAIController', entityId, "CombatAISystem", currentCombatAi);
