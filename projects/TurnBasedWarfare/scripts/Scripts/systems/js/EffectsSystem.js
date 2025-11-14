@@ -617,6 +617,25 @@ class EffectsSystem extends engine.BaseSystem {
     }
 
     
+    // Convert 3D world position to 2D screen position
+    worldToScreen(worldX, worldY, worldZ) {
+        if (!this.game.camera || !this.game.renderer) {
+            return { x: 0, y: 0 };
+        }
+
+        const vector = new THREE.Vector3(worldX, worldY, worldZ);
+        vector.project(this.game.camera);
+
+        const canvas = this.game.renderer.domElement;
+        const widthHalf = canvas.width / 2;
+        const heightHalf = canvas.height / 2;
+
+        return {
+            x: (vector.x * widthHalf) + widthHalf,
+            y: -(vector.y * heightHalf) + heightHalf
+        };
+    }
+
     // UI effects (unchanged)
     showFloatingText(text, position, type = 'damage', duration = 1500) {
         const floatingText = document.createElement('div');
@@ -628,15 +647,15 @@ class EffectsSystem extends engine.BaseSystem {
             top: ${position.y}px;
             color: ${this.getTextColor(type)};
             font-weight: bold;
-            font-size: 16px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
             pointer-events: none;
             z-index: 1000;
             animation: floatingText ${duration}ms ease-out forwards;
         `;
-        
+
         document.body.appendChild(floatingText);
-        
+
         setTimeout(() => {
             if (document.body.contains(floatingText)) {
                 document.body.removeChild(floatingText);
@@ -723,10 +742,6 @@ class EffectsSystem extends engine.BaseSystem {
         };
 
         this.game.gameManager.call('createParticles', config);
-    }
-    
-    showDamageNumber(x, y, z, damage, type = 'damage') {
-        this.showFloatingText(damage.toString(), { x, y }, type);
     }
     
     showVictoryEffect(x, y, z, options = {}) {
@@ -884,8 +899,12 @@ class EffectsSystem extends engine.BaseSystem {
     }
     
     showDamageNumber(x, y, z, damage, type = 'damage') {
+        // Convert 3D world position to 2D screen position
+        // Add offset to position above the unit's head
+        const screenPos = this.worldToScreen(x, y + 60, z);
+
         // Use floating text for damage numbers
-        this.showFloatingText(damage.toString(), { x, y: y + 50 }, type);
+        this.showFloatingText(damage.toString(), screenPos, type);
 
         // Also create particle effect for visual emphasis
         const config = {
@@ -984,16 +1003,16 @@ class EffectsSystem extends engine.BaseSystem {
             }
             
             @keyframes floatingText {
-                0% { 
-                    transform: translate(-50%, -50%) scale(0.8);
+                0% {
+                    transform: translate(-50%, 0%) scale(0.9);
                     opacity: 0;
                 }
-                20% { 
-                    transform: translate(-50%, -50%) scale(1.2);
+                10% {
+                    transform: translate(-50%, -10px) scale(1.3);
                     opacity: 1;
                 }
-                100% { 
-                    transform: translate(-50%, -150%) scale(1);
+                100% {
+                    transform: translate(-50%, -100px) scale(1);
                     opacity: 0;
                 }
             }
