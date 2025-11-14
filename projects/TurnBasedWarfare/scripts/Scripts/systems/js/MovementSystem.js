@@ -628,9 +628,6 @@ class MovementSystem extends engine.BaseSystem {
         
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
             aiState.pathIndex++;
-            pos.x = waypoint.x;
-            pos.z = waypoint.z;
-            this.game.triggerEvent("onEntityPositionUpdated", entityId);
             if (aiState.pathIndex >= aiState.path.length) {
                 aiState.path = null;
                 aiState.pathIndex = 0;
