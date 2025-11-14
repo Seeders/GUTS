@@ -61,6 +61,8 @@ class DamageSystem extends engine.BaseSystem {
     applyDamage(sourceId, targetId, baseDamage, element = this.ELEMENT_TYPES.PHYSICAL, options = {}) {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
+        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
 
         if (!targetHealth || (targetDeathState && targetDeathState.isDying)) {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
@@ -96,7 +98,9 @@ class DamageSystem extends engine.BaseSystem {
         }
 
         this.game.gameManager.call('setRetaliatoryTarget', targetId, sourceId);
-           
+        
+        this.game.gameManager.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
+        
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,
@@ -195,6 +199,7 @@ class DamageSystem extends engine.BaseSystem {
                     splashMultiplier: damageMultiplier
                 });
                 
+
                 if (result.damage > 0) {
                     results.push({
                         entityId,

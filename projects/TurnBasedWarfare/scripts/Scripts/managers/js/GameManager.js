@@ -94,7 +94,7 @@ class GameManager {
     call(key, ...args) {
         const method = this.services.get(key);
         if (!method) {
-            throw new Error(`Service not found: ${key}`);
+            return undefined;
         }
         return method(...args);
     }

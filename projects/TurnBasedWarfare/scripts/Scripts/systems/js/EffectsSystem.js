@@ -19,6 +19,7 @@ class EffectsSystem extends engine.BaseSystem {
         this.materialPool = new Map(); // key -> material[]
         this.effectPool = []; // Reusable effect objects        
         this.activeAuras = new Map();
+        
         // Batching system
         this.batchedEffects = new Map(); // type -> effects[]
         
@@ -480,11 +481,27 @@ class EffectsSystem extends engine.BaseSystem {
     
     // Clear effects efficiently
     clearAllEffects() {
-        // Recycle all active effects
+        // Clear all active line effects
         for (const effect of this.activeEffects) {
             this.recycleEffect(effect);
         }
         this.activeEffects = [];
+        
+        // Clear all active auras
+        if (this.activeAuras) {
+            this.activeAuras.clear();
+        }
+
+        // Clear particle effects
+        this.game.gameManager.call('clearAllParticles');
+
+        // Clear notifications
+        this.notifications.forEach(notification => {
+            this.removeNotification(notification);
+        });
+        
+        this.shakeActive = false;
+        this.flashActive = false;
     }
     
     // Force cleanup with pool clearing
@@ -588,6 +605,7 @@ class EffectsSystem extends engine.BaseSystem {
     }
 
     playScreenFlash(color = '#ffffff', duration = 0.3) {
+        // Disabled for now
         // if (this.flashActive) return;
         // return;
         // this.flashActive = true;
@@ -615,94 +633,6 @@ class EffectsSystem extends engine.BaseSystem {
         //     startOpacity: 0.6
         // };
     }
-
-    
-    // UI effects (unchanged)
-    showFloatingText(text, position, type = 'damage', duration = 1500) {
-        const floatingText = document.createElement('div');
-        floatingText.className = `floating-text ${type}`;
-        floatingText.textContent = text;
-        floatingText.style.cssText = `
-            position: absolute;
-            left: ${position.x}px;
-            top: ${position.y}px;
-            color: ${this.getTextColor(type)};
-            font-weight: bold;
-            font-size: 16px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            pointer-events: none;
-            z-index: 1000;
-            animation: floatingText ${duration}ms ease-out forwards;
-        `;
-        
-        document.body.appendChild(floatingText);
-        
-        setTimeout(() => {
-            if (document.body.contains(floatingText)) {
-                document.body.removeChild(floatingText);
-            }
-        }, duration);
-    }
-    
-    getTextColor(type) {
-        const colors = {
-            damage: '#ff4444',
-            healing: '#44ff44', 
-            levelup: '#ffaa00',
-            gold: '#ffdd00',
-            experience: '#88aaff'
-        };
-        return colors[type] || '#ffffff';
-    }
-    
-    showGameNotification(title, message, type = 'info', duration = 3000) {
-        const notification = document.createElement('div');
-        notification.className = `game-notification notification-${type}`;
-        notification.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
-            <div>${message}</div>
-        `;
-        
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid ${this.getNotificationColor(type)};
-            max-width: 300px;
-            z-index: 1001;
-            animation: notificationSlideIn 0.3s ease-out;
-        `;
-        
-        document.body.appendChild(notification);
-        this.notifications.push(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                    const index = this.notifications.indexOf(notification);
-                    if (index > -1) {
-                        this.notifications.splice(index, 1);
-                    }
-                }
-            }, 300);
-        }, duration);
-    }
-    
-    getNotificationColor(type) {
-        const colors = {
-            info: '#4444ff',
-            success: '#44ff44',
-            warning: '#ffaa00',
-            error: '#ff4444'
-        };
-        return colors[type] || '#4444ff';
-    }
     
     // Particle effects - delegate to particle system
     createParticleEffect(x, y, z, type, options = {}) {
@@ -723,10 +653,6 @@ class EffectsSystem extends engine.BaseSystem {
         };
 
         this.game.gameManager.call('createParticles', config);
-    }
-    
-    showDamageNumber(x, y, z, damage, type = 'damage') {
-        this.showFloatingText(damage.toString(), { x, y }, type);
     }
     
     showVictoryEffect(x, y, z, options = {}) {
@@ -861,6 +787,55 @@ class EffectsSystem extends engine.BaseSystem {
         }, duration);
     }
     
+    showGameNotification(title, message, type = 'info', duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = `game-notification notification-${type}`;
+        notification.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
+            <div>${message}</div>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid ${this.getNotificationColor(type)};
+            max-width: 300px;
+            z-index: 1001;
+            animation: notificationSlideIn 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        this.notifications.push(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                    const index = this.notifications.indexOf(notification);
+                    if (index > -1) {
+                        this.notifications.splice(index, 1);
+                    }
+                }
+            }, 300);
+        }, duration);
+    }
+    
+    getNotificationColor(type) {
+        const colors = {
+            info: '#4444ff',
+            success: '#44ff44',
+            warning: '#ffaa00',
+            error: '#ff4444'
+        };
+        return colors[type] || '#4444ff';
+    }
+    
     removeNotification(notification) {
         if (document.body.contains(notification)) {
             notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
@@ -883,28 +858,6 @@ class EffectsSystem extends engine.BaseSystem {
         });
     }
     
-    showDamageNumber(x, y, z, damage, type = 'damage') {
-        // Use floating text for damage numbers
-        this.showFloatingText(damage.toString(), { x, y: y + 50 }, type);
-
-        // Also create particle effect for visual emphasis
-        const config = {
-            position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-            count: 3,
-            shape: 'circle',
-            color: this.getDamageColor(type),
-            lifetime: 1.0,
-            velocity: { speed: 15, spread: 0.3, pattern: 'burst' },
-            scale: 0.8,
-            scaleVariation: 0.2,
-            physics: { gravity: -0.5, drag: 0.95 },
-            rotation: { enabled: false },
-            visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-        };
-
-        this.game.gameManager.call('createParticles', config);
-    }
-    
     getDamageColor(type) {
         switch (type) {
             case 'heal': return 0x00ff88;
@@ -916,31 +869,6 @@ class EffectsSystem extends engine.BaseSystem {
             case 'divine': return 0xffd700;
             default: return 0xff4444;
         }
-    }
-    
-    // Clear all effects method that was referenced
-    clearAllEffects() {
-        // Clear all active line effects
-        for (const effect of this.activeEffects) {
-            this.recycleEffect(effect);
-        }
-        this.activeEffects = [];
-        
-        // Clear all active auras
-        if (this.activeAuras) {
-            this.activeAuras.clear();
-        }
-
-        // Clear particle effects
-        this.game.gameManager.call('clearAllParticles');
-
-        // Clear notifications
-        this.notifications.forEach(notification => {
-            this.removeNotification(notification);
-        });
-        
-        this.shakeActive = false;
-        this.flashActive = false;
     }
     
     addEffectsCSS() {
@@ -983,21 +911,6 @@ class EffectsSystem extends engine.BaseSystem {
                 }
             }
             
-            @keyframes floatingText {
-                0% { 
-                    transform: translate(-50%, -50%) scale(0.8);
-                    opacity: 0;
-                }
-                20% { 
-                    transform: translate(-50%, -50%) scale(1.2);
-                    opacity: 1;
-                }
-                100% { 
-                    transform: translate(-50%, -150%) scale(1);
-                    opacity: 0;
-                }
-            }
-            
             .game-notification {
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
                 backdrop-filter: blur(5px);
@@ -1012,6 +925,7 @@ class EffectsSystem extends engine.BaseSystem {
         this.updateAuras(); 
         this.updateScreenEffects();
     }
+    
     updateAuras() {
         if (!this.activeAuras || !this.game.state) return;
         
@@ -1084,6 +998,7 @@ class EffectsSystem extends engine.BaseSystem {
             }
         }
     }
+    
     createAuraParticles(auraData) {
         const particleConfig = {
             position: auraData.position,
@@ -1092,8 +1007,17 @@ class EffectsSystem extends engine.BaseSystem {
 
         this.game.gameManager.call('createParticles', particleConfig);
     }
+    
     destroy() {
         this.forceCleanup();
+        
+        // Clean up damage number system
+        if (this.damageNumberMesh) {
+            this.game.scene.remove(this.damageNumberMesh);
+            this.damageTextGeometry.dispose();
+            this.damageTextMaterial.dispose();
+            this.damageTexture.dispose();
+        }
         
         const styleElement = document.querySelector('#effects-styles');
         if (styleElement) {
@@ -1102,6 +1026,7 @@ class EffectsSystem extends engine.BaseSystem {
         
         console.log('EffectsSystem destroyed');
     }
+    
     entityDestroyed(entityId) {
         // Clean up any auras associated with this entity
         if (this.activeAuras) {

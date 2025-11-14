@@ -56,7 +56,8 @@
         { "type": "SelectedUnitSystem" },    
         { "type": "UnitOrderSystem" },    
         { "type": "MiniMapSystem" },    
-        { "type": "CameraControlSystem" },    
+        { "type": "CameraControlSystem" }, 
+        { "type": "DamageNumberSystem" },    
         { "type": "VisionSystem" }
       ],
       "classes": [
