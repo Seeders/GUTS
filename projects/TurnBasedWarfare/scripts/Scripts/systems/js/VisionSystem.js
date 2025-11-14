@@ -1,7 +1,10 @@
 class VisionSystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.visionSystem = this;   
+        this.game.visionSystem = this;
+
+        // Default unit height for line of sight calculations
+        this.DEFAULT_UNIT_HEIGHT = 25;
     }
 
     init() {
@@ -15,20 +18,23 @@ class VisionSystem extends engine.BaseSystem {
         const distanceSq = dx * dx + dz * dz;
         const distance = Math.sqrt(distanceSq);
         const gridSize = this.game.getCollections().configs.game.gridSize;
-        
-        if (distance < gridSize*2) return true;        
-        
+
+        if (distance < gridSize*2) return true;
+
         const terrainSystem = this.game.terrainSystem;
         if (!terrainSystem) {
             console.warn('[hasLineOfSight] No terrain system found!');
             return true;
         }
-        
+
         const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
         const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
-        
-        const fromEyeHeight = fromTerrainHeight + unitType.height;
-        const toEyeHeight = toTerrainHeight + unitType.height;
+
+        // Use unit height from unitType, or fall back to default if not available
+        const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
+
+        const fromEyeHeight = fromTerrainHeight + unitHeight;
+        const toEyeHeight = toTerrainHeight + unitHeight;
         
         if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight)) {
             return false;
@@ -41,7 +47,8 @@ class VisionSystem extends engine.BaseSystem {
 
         const midX = (from.x + to.x) / 2;
         const midZ = (from.z + to.z) / 2;
-        nearbyUnits = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ} , distance / 2 + unitType.size, viewerEntityId);
+        const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
+        nearbyUnits = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ} , distance / 2 + unitSize, viewerEntityId);
 
 
         if (nearbyUnits.length > 0) {
