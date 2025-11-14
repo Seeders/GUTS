@@ -14,9 +14,14 @@ class PathfindingSystem extends engine.BaseSystem {
         this.pathCache = new Map();
         this.MAX_CACHE_SIZE = 1000;
         this.CACHE_EXPIRY_TIME = 5000;
-        
+
         this.pathRequests = [];
         this.MAX_PATHS_PER_FRAME = 100;
+
+        // Path smoothing configuration
+        // Lower values = less aggressive smoothing = less corner cutting
+        // Higher values = more aggressive smoothing = smoother but riskier paths
+        this.MAX_SMOOTH_LOOKAHEAD = 3; // Maximum waypoints to look ahead when smoothing
         
         this.initialized = false;
     }
@@ -349,24 +354,32 @@ class PathfindingSystem extends engine.BaseSystem {
 
     smoothPath(path) {
         if (path.length <= 2) return path;
-        
+
         const smoothed = [path[0]];
         let currentIdx = 0;
-        
+
         while (currentIdx < path.length - 1) {
             let farthestVisible = currentIdx + 1;
-            
-            for (let i = path.length - 1; i > currentIdx + 1; i--) {
+
+            // Limit how far ahead we look to prevent aggressive corner cutting
+            const maxLookahead = Math.min(
+                path.length - 1,
+                currentIdx + this.MAX_SMOOTH_LOOKAHEAD
+            );
+
+            // Check from far to near within the limited lookahead range
+            // This still prioritizes smoother paths but prevents excessive shortcuts
+            for (let i = maxLookahead; i > currentIdx + 1; i--) {
                 if (this.hasLineOfSight(path[currentIdx], path[i])) {
                     farthestVisible = i;
                     break;
                 }
             }
-            
+
             smoothed.push(path[farthestVisible]);
             currentIdx = farthestVisible;
         }
-        
+
         return smoothed;
     }
 
