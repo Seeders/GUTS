@@ -845,8 +845,8 @@ class WorldSystem extends engine.BaseSystem {
                 const nx = x / segments;
                 const nz = z / segments;
 
-                const terrainX = Math.floor(nx * (this.extendedSize - 1));
-                const terrainZ = Math.floor(nz * (this.extendedSize - 1));
+                const terrainX = Math.floor(nx * (this.extendedSize));
+                const terrainZ = Math.floor(nz * (this.extendedSize));
 
                 const heightIndex = terrainZ * this.extendedSize + terrainX;
                 const height = this.heightMapData[heightIndex] || 0;

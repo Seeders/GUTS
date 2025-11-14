@@ -29,8 +29,7 @@ class MovementSystem extends engine.BaseSystem {
         this.STUCK_TIME_LIMIT = 2000;
         this.REPATH_DISTANCE = 50;
         
-        this.PATH_WAYPOINT_DISTANCE = 50;
-        this.PATH_REACHED_DISTANCE = 24;
+        this.PATH_REACHED_DISTANCE = 3;
         this.PATH_REREQUEST_INTERVAL = 0.5;
         
         this.SPATIAL_GRID_SIZE = 80;
@@ -621,7 +620,7 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vy = 0;
             return;
         }
-        
+        const gridSize = this.game.getCollections().configs.game.gridSize;
         const waypoint = aiState.path[aiState.pathIndex];
         const dx = waypoint.x - pos.x;
         const dz = waypoint.z - pos.z;
@@ -629,7 +628,9 @@ class MovementSystem extends engine.BaseSystem {
         
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
             aiState.pathIndex++;
-            
+            pos.x = waypoint.x;
+            pos.z = waypoint.z;
+            this.game.triggerEvent("onEntityPositionUpdated", entityId);
             if (aiState.pathIndex >= aiState.path.length) {
                 aiState.path = null;
                 aiState.pathIndex = 0;
