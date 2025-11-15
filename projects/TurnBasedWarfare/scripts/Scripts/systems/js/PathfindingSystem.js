@@ -82,6 +82,8 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     buildWalkabilityCache() {
+        // This cache is now deprecated in favor of height-based walkability
+        // Kept for backwards compatibility with old level data
         this.walkabilityCache.clear();
 
         for (let i = 0; i < this.terrainTypes.length; i++) {
@@ -99,6 +101,13 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
+        // NEW: Use height-based walkability if heightMap is available
+        if (this.game.terrainSystem?.level?.heightMap?.heightData) {
+            // Always walkable between same terrain types
+            return true;
+        }
+
+        // OLD: Fall back to walkableNeighbors cache for backwards compatibility
         const key = `${fromTerrainIndex}-${toTerrainIndex}`;
         return this.walkabilityCache.get(key) === true;
     }
@@ -125,8 +134,35 @@ class PathfindingSystem extends engine.BaseSystem {
     hasRampAt(gridX, gridZ) {
         return this.ramps.has(`${gridX},${gridZ}`);
     }
-    // Check if movement between terrains is allowed (either through walkableNeighbors or ramps)
+
+    // Get height level at nav grid position
+    getHeightLevelAtNavGrid(navGridX, navGridZ) {
+        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
+        return this.game.terrainSystem?.getHeightLevelAtGridPosition(terrainGrid.x, terrainGrid.z) || 0;
+    }
+
+    // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
     canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
+        // NEW: Use height-based walkability if heightMap is available
+        if (this.game.terrainSystem?.level?.heightMap?.heightData) {
+            const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
+            const toHeight = this.getHeightLevelAtNavGrid(toNavGridX, toNavGridZ);
+
+            // Same height level = always walkable
+            if (fromHeight === toHeight) {
+                return true;
+            }
+
+            // Different heights = only walkable with a ramp
+            // Ramps allow movement between any adjacent height levels
+            if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        // OLD: Use walkableNeighbors logic for backwards compatibility
         // First check normal walkability
         if (this.canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex)) {
             return true;

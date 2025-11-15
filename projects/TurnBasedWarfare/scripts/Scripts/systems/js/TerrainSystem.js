@@ -105,10 +105,20 @@ class TerrainSystem extends engine.BaseSystem {
 
         // Initialize height map data array
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
-        
-        // Set extension area to extension terrain height
-        const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-        const extensionHeight = extensionTerrainType * this.heightStep;
+
+        // Check if we have a separate heightMap in the level data
+        const hasHeightMap = this.level.heightMap && this.level.heightMap.heightData;
+
+        // Set extension area height
+        let extensionHeight;
+        if (hasHeightMap) {
+            // Use extension height from heightMap if available
+            extensionHeight = (this.level.heightMap.extensionHeight || 0) * this.heightStep;
+        } else {
+            // Fall back to old behavior: derive from terrain type
+            const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
+            extensionHeight = extensionTerrainType * this.heightStep;
+        }
 
         // Initialize all points with extension height
         for (let z = 0; z < this.extendedSize; z++) {
@@ -117,38 +127,73 @@ class TerrainSystem extends engine.BaseSystem {
             }
         }
 
-        // Process the actual terrain area directly from terrain map
-        const terrainMap = this.tileMap.terrainMap;
         const gridSize = this.game.getCollections().configs.game.gridSize;
-        
-        for (let z = 0; z < terrainMap.length; z++) {
-            for (let x = 0; x < terrainMap[z].length; x++) {
-                const terrainType = terrainMap[z][x];
-                const height = terrainType * this.heightStep;
-                
-                // Map terrain coordinates to extended coordinates
-                const extX = x * gridSize + this.extensionSize;
-                const extZ = z * gridSize + this.extensionSize;
-                
-                // Apply height to a region around this tile
-                const halfGrid = Math.floor(gridSize / 2);
-                for (let dz = -halfGrid; dz <= halfGrid; dz++) {
-                    for (let dx = -halfGrid; dx <= halfGrid; dx++) {
-                        const finalX = extX + dx;
-                        const finalZ = extZ + dz;
-                        
-                        if (finalX >= 0 && finalX < this.extendedSize && 
-                            finalZ >= 0 && finalZ < this.extendedSize) {
-                            
-                            const heightIndex = finalZ * this.extendedSize + finalX;
-                            this.heightMapData[heightIndex] = height;
+
+        if (hasHeightMap) {
+            // NEW: Use separate heightMap data
+            const heightData = this.level.heightMap.heightData;
+
+            for (let z = 0; z < heightData.length; z++) {
+                for (let x = 0; x < heightData[z].length; x++) {
+                    const heightLevel = heightData[z][x];
+                    const height = heightLevel * this.heightStep;
+
+                    // Map terrain coordinates to extended coordinates
+                    const extX = x * gridSize + this.extensionSize;
+                    const extZ = z * gridSize + this.extensionSize;
+
+                    // Apply height to a region around this tile
+                    const halfGrid = Math.floor(gridSize / 2);
+                    for (let dz = -halfGrid; dz <= halfGrid; dz++) {
+                        for (let dx = -halfGrid; dx <= halfGrid; dx++) {
+                            const finalX = extX + dx;
+                            const finalZ = extZ + dz;
+
+                            if (finalX >= 0 && finalX < this.extendedSize &&
+                                finalZ >= 0 && finalZ < this.extendedSize) {
+
+                                const heightIndex = finalZ * this.extendedSize + finalX;
+                                this.heightMapData[heightIndex] = height;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        console.log(`TerrainSystem: Processed height map from data - ${this.extendedSize}x${this.extendedSize}`);
+            console.log(`TerrainSystem: Processed height map from separate heightMap data - ${this.extendedSize}x${this.extendedSize}`);
+        } else {
+            // OLD: Derive heights from terrain types (backwards compatibility)
+            const terrainMap = this.tileMap.terrainMap;
+
+            for (let z = 0; z < terrainMap.length; z++) {
+                for (let x = 0; x < terrainMap[z].length; x++) {
+                    const terrainType = terrainMap[z][x];
+                    const height = terrainType * this.heightStep;
+
+                    // Map terrain coordinates to extended coordinates
+                    const extX = x * gridSize + this.extensionSize;
+                    const extZ = z * gridSize + this.extensionSize;
+
+                    // Apply height to a region around this tile
+                    const halfGrid = Math.floor(gridSize / 2);
+                    for (let dz = -halfGrid; dz <= halfGrid; dz++) {
+                        for (let dx = -halfGrid; dx <= halfGrid; dx++) {
+                            const finalX = extX + dx;
+                            const finalZ = extZ + dz;
+
+                            if (finalX >= 0 && finalX < this.extendedSize &&
+                                finalZ >= 0 && finalZ < this.extendedSize) {
+
+                                const heightIndex = finalZ * this.extendedSize + finalX;
+                                this.heightMapData[heightIndex] = height;
+                            }
+                        }
+                    }
+                }
+            }
+
+            console.log(`TerrainSystem: Processed height map from terrain type data (legacy) - ${this.extendedSize}x${this.extendedSize}`);
+        }
     }
 
     processHeightMapFromCanvas() {
@@ -275,16 +320,43 @@ class TerrainSystem extends engine.BaseSystem {
         }
 
         const terrainMap = this.tileMap.terrainMap;
-        
+
         if(terrainMap.length <= gridZ || gridZ < 0) {
             return null;
         }
         if(terrainMap[gridZ].length <= gridX || gridX < 0) {
             return null;
         }
-        
+
         return terrainMap[gridZ][gridX];
     }
+
+    /**
+     * Get height level at grid position (not the actual height, but the level index)
+     * @param {number} gridX - Grid X coordinate
+     * @param {number} gridZ - Grid Z coordinate
+     * @returns {number|null} Height level (0, 1, 2, etc.), or null if outside bounds
+     */
+    getHeightLevelAtGridPosition(gridX, gridZ) {
+        // If we have a separate heightMap, use it
+        if (this.level?.heightMap?.heightData) {
+            const heightData = this.level.heightMap.heightData;
+
+            if (heightData.length <= gridZ || gridZ < 0) {
+                return this.level.heightMap.extensionHeight || 0;
+            }
+            if (heightData[gridZ].length <= gridX || gridX < 0) {
+                return this.level.heightMap.extensionHeight || 0;
+            }
+
+            return heightData[gridZ][gridX];
+        }
+
+        // Fall back to old behavior: derive from terrain type
+        const terrainType = this.getTerrainTypeAtGridPosition(gridX, gridZ);
+        return terrainType !== null ? terrainType : 0;
+    }
+
     /**
      * Check if a position is within terrain bounds
      * @param {number} worldX - World X coordinate

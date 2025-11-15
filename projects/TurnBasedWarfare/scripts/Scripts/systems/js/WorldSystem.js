@@ -545,8 +545,10 @@ class WorldSystem extends engine.BaseSystem {
         
     }
 
-    drawTerrainTiles(terrainMap) {       
-        this.game.terrainTileMapper.draw(terrainMap);
+    drawTerrainTiles(terrainMap) {
+        // NEW: Pass heightMap if available
+        const heightMap = this.level?.heightMap?.heightData || null;
+        this.game.terrainTileMapper.draw(terrainMap, heightMap);
     }
 
     updateGroundTexture() {

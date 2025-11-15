@@ -139,28 +139,29 @@ class TileMap {
 		return this.heightMapCtx.getImageData(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
 	}
 
-    draw(map){
+    draw(map, heightMap = null){
 		this.tileMap = map;
+		this.heightMap = heightMap; // NEW: Store heightMap separately
 		this.numColumns = this.tileMap.length;
-		
+
 		// Initialize height map canvas if not already done
 		if (!this.heightMapCanvas) {
 			this.initializeHeightMapCanvas();
 		}
-		
+
 		// Clear height map canvas
 		this.heightMapCtx.fillStyle = 'black';
 		this.heightMapCtx.fillRect(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
-		
+
 		// Load all textures
 		if(this.layerTextures.length == 0 && this.layerSpriteSheets) {
-			this.layerSpriteSheets.forEach((layerSprites, index) => {      
+			this.layerSpriteSheets.forEach((layerSprites, index) => {
 				const moleculeData = this.buildBaseMolecules(layerSprites.sprites);
 				this.layerTextures[index] = moleculeData;
 			});
 		}
 
-		let analyzedMap = this.analyzeMap(this.tileMap);
+		let analyzedMap = this.analyzeMap();
 		this.drawMap(analyzedMap);
         if(this.isometric){
           //  this.drawIsometric();
@@ -467,7 +468,9 @@ class TileMap {
 			return tileAnalysis; // Out of bounds
 		}
 
-		tileAnalysis.heightIndex = this.tileMap[row][col];
+		// NEW: Use heightMap if available, otherwise fall back to tileMap (backwards compatibility)
+		const heightData = this.heightMap || this.tileMap;
+		tileAnalysis.heightIndex = heightData[row][col];
 
 		// Helper function to check if a location is within bounds
 		function isWithinBounds(r, c, n) {
@@ -477,8 +480,9 @@ class TileMap {
 		// Helper function to check and update tile analysis
 		var checkAndUpdate = ((r, c, n, direction, propertyLess) => {
 			if (isWithinBounds(r, c, n) ) {
-				tileAnalysis[direction] = this.tileMap[r][c];
-				if( this.tileMap[r][c] < tileAnalysis.heightIndex) {
+				// NEW: Use heightMap if available, otherwise fall back to tileMap
+				tileAnalysis[direction] = heightData[r][c];
+				if( heightData[r][c] < tileAnalysis.heightIndex) {
 					tileAnalysis[propertyLess] = true;
 					if(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0 ) {
 						tileAnalysis.neighborLowerCount++;
