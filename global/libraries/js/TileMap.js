@@ -511,11 +511,28 @@ class TileMap {
 		const analysis = tile.terrainAnalysis;
 
 		// For each atom position, determine which lower neighbor to use as base
+		// and which atom from that neighbor aligns with this position
 		const positions = [
-			{ name: 'TL', x: 0, y: 0, neighbors: ['top', 'left', 'topLeft'] },
-			{ name: 'TR', x: atomSize, y: 0, neighbors: ['top', 'right', 'topRight'] },
-			{ name: 'BL', x: 0, y: atomSize, neighbors: ['bot', 'left', 'botLeft'] },
-			{ name: 'BR', x: atomSize, y: atomSize, neighbors: ['bot', 'right', 'botRight'] }
+			{ name: 'TL', x: 0, y: 0, neighbors: [
+				{ key: 'top', atomPos: 'BL' },
+				{ key: 'left', atomPos: 'TR' },
+				{ key: 'topLeft', atomPos: 'BR' }
+			]},
+			{ name: 'TR', x: atomSize, y: 0, neighbors: [
+				{ key: 'top', atomPos: 'BR' },
+				{ key: 'right', atomPos: 'TL' },
+				{ key: 'topRight', atomPos: 'BL' }
+			]},
+			{ name: 'BL', x: 0, y: atomSize, neighbors: [
+				{ key: 'bot', atomPos: 'TL' },
+				{ key: 'left', atomPos: 'BR' },
+				{ key: 'botLeft', atomPos: 'TR' }
+			]},
+			{ name: 'BR', x: atomSize, y: atomSize, neighbors: [
+				{ key: 'bot', atomPos: 'TR' },
+				{ key: 'right', atomPos: 'BL' },
+				{ key: 'botRight', atomPos: 'TL' }
+			]}
 		];
 
 		const neighborMap = {
@@ -531,11 +548,12 @@ class TileMap {
 
 		// Paint base layer for each atom position
 		for (const pos of positions) {
+			let bestNeighbor = null;
 			let highestLowerTerrainIndex = null;
 
 			// Find the HIGHEST terrain index that's still LOWER than current (immediate neighbor)
-			for (const neighborKey of pos.neighbors) {
-				const neighbor = neighborMap[neighborKey];
+			for (const neighborSpec of pos.neighbors) {
+				const neighbor = neighborMap[neighborSpec.key];
 				if (neighbor && neighbor.less) {
 					const nRow = neighbor.row;
 					const nCol = neighbor.col;
@@ -548,17 +566,26 @@ class TileMap {
 							// Use the neighbor closest to current terrain (highest among lower neighbors)
 							if (highestLowerTerrainIndex === null || nTile.terrainIndex > highestLowerTerrainIndex) {
 								highestLowerTerrainIndex = nTile.terrainIndex;
+								bestNeighbor = { tile: nTile, atomPos: neighborSpec.atomPos };
 							}
 						}
 					}
 				}
 			}
 
-			// Paint a FULL base atom from the immediate lower neighbor terrain type
-			if (highestLowerTerrainIndex !== null && this.baseAtoms[highestLowerTerrainIndex]) {
-				const fullAtom = this.baseAtoms[highestLowerTerrainIndex].full;
-				if (fullAtom) {
-					ctx.putImageData(fullAtom, pos.x, pos.y);
+			// Paint the actual atom from the neighbor's molecule (not just full atom)
+			if (bestNeighbor) {
+				const nTile = bestNeighbor.tile;
+
+				// Get the neighbor's molecule based on its own terrain analysis
+				const molecule = this.getMoleculeByTileAnalysis(nTile.terrainAnalysis);
+				const moleculeImageData = this.layerTextures[nTile.terrainIndex][molecule];
+				const neighborAtoms = this.extractAtomsFromMolecule(moleculeImageData);
+
+				// Paint the specific atom from the neighbor that aligns with this position
+				const atomToPaint = neighborAtoms[bestNeighbor.atomPos];
+				if (atomToPaint) {
+					ctx.putImageData(atomToPaint, pos.x, pos.y);
 				}
 			}
 		}
