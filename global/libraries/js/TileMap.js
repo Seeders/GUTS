@@ -396,6 +396,164 @@ class TileMap {
 		return context.getImageData(0, 0, size, size);
 	}
 
+	// Extract individual atoms from a molecule ImageData
+	extractAtomsFromMolecule(moleculeImageData) {
+		const atomSize = this.tileSize / 2;
+		const canvas = document.createElement('canvas');
+		canvas.width = this.tileSize;
+		canvas.height = this.tileSize;
+		const ctx = canvas.getContext('2d');
+
+		// Draw the molecule onto canvas
+		ctx.putImageData(moleculeImageData, 0, 0);
+
+		// Extract each atom
+		return {
+			TL: ctx.getImageData(0, 0, atomSize, atomSize),
+			TR: ctx.getImageData(atomSize, 0, atomSize, atomSize),
+			BL: ctx.getImageData(0, atomSize, atomSize, atomSize),
+			BR: ctx.getImageData(atomSize, atomSize, atomSize, atomSize)
+		};
+	}
+
+	// Get a specific neighbor's atom for layering
+	getNeighborAtom(analyzedMap, row, col, neighborRow, neighborCol, atomPosition) {
+		// Check bounds
+		if (neighborRow < 0 || neighborRow >= this.numColumns ||
+		    neighborCol < 0 || neighborCol >= this.numColumns) {
+			return null;
+		}
+
+		const index = neighborRow * this.numColumns + neighborCol;
+		const neighborTile = analyzedMap[index];
+
+		if (!neighborTile || neighborTile.terrainIndex < 0) {
+			return null;
+		}
+
+		// Get the molecule for the neighbor tile
+		const molecule = this.getMoleculeByTileAnalysis(neighborTile.terrainAnalysis);
+		const moleculeImageData = this.layerTextures[neighborTile.terrainIndex][molecule];
+
+		// Extract atoms from the molecule
+		const atoms = this.extractAtomsFromMolecule(moleculeImageData);
+
+		// Return the specific atom requested
+		return {
+			atom: atoms[atomPosition],
+			terrainIndex: neighborTile.terrainIndex
+		};
+	}
+
+	// Draw a single tile with proper atom layering for smooth transitions
+	drawTileWithLayering(analyzedMap, tile, row, col) {
+		const atomSize = this.tileSize / 2;
+		const canvas = document.createElement('canvas');
+		canvas.width = this.tileSize;
+		canvas.height = this.tileSize;
+		const ctx = canvas.getContext('2d');
+
+		// Fill with black background
+		ctx.fillStyle = 'black';
+		ctx.fillRect(0, 0, this.tileSize, this.tileSize);
+
+		// Get the molecule for this tile based on terrain analysis
+		const molecule = this.getMoleculeByTileAnalysis(tile.terrainAnalysis);
+		const moleculeImageData = this.layerTextures[tile.terrainIndex][molecule];
+
+		// Extract the 4 atoms for this tile
+		const currentAtoms = this.extractAtomsFromMolecule(moleculeImageData);
+
+		// Draw each atom position with proper layering
+		// TL atom (top-left)
+		this.drawAtomWithNeighborLayers(
+			ctx, analyzedMap, tile, row, col,
+			0, 0, 'TL', currentAtoms.TL
+		);
+
+		// TR atom (top-right)
+		this.drawAtomWithNeighborLayers(
+			ctx, analyzedMap, tile, row, col,
+			atomSize, 0, 'TR', currentAtoms.TR
+		);
+
+		// BL atom (bottom-left)
+		this.drawAtomWithNeighborLayers(
+			ctx, analyzedMap, tile, row, col,
+			0, atomSize, 'BL', currentAtoms.BL
+		);
+
+		// BR atom (bottom-right)
+		this.drawAtomWithNeighborLayers(
+			ctx, analyzedMap, tile, row, col,
+			atomSize, atomSize, 'BR', currentAtoms.BR
+		);
+
+		// Apply coloring and corner graphics
+		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
+		imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
+		imageData = this.addCornerGraphics(imageData, tile.heightAnalysis, tile.terrainIndex);
+
+		return imageData;
+	}
+
+	// Draw a single atom with neighbor layers underneath for smooth transitions
+	drawAtomWithNeighborLayers(ctx, analyzedMap, tile, row, col, x, y, atomPosition, currentAtom) {
+		const currentTerrainIndex = tile.terrainIndex;
+
+		// Define which neighbors affect each atom position
+		// Each atom can be influenced by up to 3 neighbors (cardinal + diagonal)
+		const neighborInfluences = {
+			'TL': [
+				{ row: row - 1, col: col, atom: 'BL' },      // Top neighbor's bottom-left
+				{ row: row, col: col - 1, atom: 'TR' },      // Left neighbor's top-right
+				{ row: row - 1, col: col - 1, atom: 'BR' }   // Top-left diagonal's bottom-right
+			],
+			'TR': [
+				{ row: row - 1, col: col, atom: 'BR' },      // Top neighbor's bottom-right
+				{ row: row, col: col + 1, atom: 'TL' },      // Right neighbor's top-left
+				{ row: row - 1, col: col + 1, atom: 'BL' }   // Top-right diagonal's bottom-left
+			],
+			'BL': [
+				{ row: row + 1, col: col, atom: 'TL' },      // Bottom neighbor's top-left
+				{ row: row, col: col - 1, atom: 'BR' },      // Left neighbor's bottom-right
+				{ row: row + 1, col: col - 1, atom: 'TR' }   // Bottom-left diagonal's top-right
+			],
+			'BR': [
+				{ row: row + 1, col: col, atom: 'TR' },      // Bottom neighbor's top-right
+				{ row: row, col: col + 1, atom: 'BL' },      // Right neighbor's bottom-left
+				{ row: row + 1, col: col + 1, atom: 'TL' }   // Bottom-right diagonal's top-left
+			]
+		};
+
+		const influences = neighborInfluences[atomPosition];
+
+		// Collect all neighbor atoms that have lower terrain indices
+		const lowerLayerAtoms = [];
+
+		for (const influence of influences) {
+			const neighborData = this.getNeighborAtom(
+				analyzedMap, row, col,
+				influence.row, influence.col, influence.atom
+			);
+
+			if (neighborData && neighborData.terrainIndex < currentTerrainIndex) {
+				lowerLayerAtoms.push(neighborData);
+			}
+		}
+
+		// Sort by terrain index (lowest first) so we layer correctly
+		lowerLayerAtoms.sort((a, b) => a.terrainIndex - b.terrainIndex);
+
+		// Draw lower layer atoms first (they will be underneath)
+		for (const neighborData of lowerLayerAtoms) {
+			ctx.putImageData(neighborData.atom, x, y);
+		}
+
+		// Draw the current atom on top (its transparent areas will show lower layers)
+		ctx.putImageData(currentAtom, x, y);
+	}
+
 	extractSpritesFromSheet(spriteSheet, columns, rows) {
 		let sprites = [];
 		let spriteWidth = spriteSheet.width / columns;
@@ -821,63 +979,39 @@ class TileMap {
 	
 	drawMap(analyzedMap) {
 		const ctx = this.canvas.getContext('2d');
-		const layerCanvases = {};
-	
-		for (let layerIndex = 0; layerIndex < this.layerTextures.length; layerIndex++) {
-			const offscreenCanvas = document.createElement('canvas');
-			offscreenCanvas.width = this.canvas.width;
-			offscreenCanvas.height = this.canvas.height;
-			layerCanvases[layerIndex] = offscreenCanvas;
-			const offscreenCtx = offscreenCanvas.getContext('2d');
-	
-			analyzedMap.forEach((tile, index) => {
-				const x = (index % this.numColumns) * this.tileSize;
-				const y = Math.floor(index / this.numColumns) * this.tileSize;
 
-				let imageData;
+		// Clear the canvas with black background
+		ctx.fillStyle = 'black';
+		ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-				// Check if this tile's terrain should be drawn on this layer
-				if (tile.terrainIndex !== layerIndex) {
-					// This terrain type is on a different layer - render transparent
-					let numPixels = this.tileSize * this.tileSize;
-					const transparentData = new Uint8ClampedArray(numPixels * 4);
-					for (let i = 0; i < numPixels * 4; i += 4) {
-						transparentData[i + 3] = 0; // Alpha = 0 (transparent)
-					}
-					imageData = new ImageData(transparentData, this.tileSize, this.tileSize);
-				} else {
-					// This terrain type should be drawn on this layer
-					if (tile.terrainIndex >= 0) {
-						// Use terrain analysis for texture molecule selection (determines tiling pattern)
-						let molecule = this.getMoleculeByTileAnalysis(tile.terrainAnalysis);
+		// Draw each tile with atom-level layering for smooth transitions
+		analyzedMap.forEach((tile, index) => {
+			const col = index % this.numColumns;
+			const row = Math.floor(index / this.numColumns);
+			const x = col * this.tileSize;
+			const y = row * this.tileSize;
 
-						// Use terrainIndex to select the correct texture layer
-						imageData = this.layerTextures[tile.terrainIndex][molecule];
-						imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
-						//imageData = this.addVariationImage(imageData, tile);
-						// Use height analysis for cliff corner graphics
-						imageData = this.addCornerGraphics(imageData, tile.heightAnalysis, tile.terrainIndex);
-					} else {
-						let numPixels = this.tileSize * this.tileSize;
-						const blackData = new Uint8ClampedArray(numPixels * 4);
-						blackData.fill(0);
-						imageData = new ImageData(blackData, this.tileSize, this.tileSize);
-					}
-				}
+			let imageData;
 
-				// Update height map for this tile
-				this.updateHeightMapForTile(x, y, tile.heightAnalysis.heightIndex);
+			if (tile.terrainIndex >= 0) {
+				// Use the new atom-based layering system for smooth transitions
+				imageData = this.drawTileWithLayering(analyzedMap, tile, row, col);
+			} else {
+				// Create transparent/black tile for invalid terrain
+				let numPixels = this.tileSize * this.tileSize;
+				const blackData = new Uint8ClampedArray(numPixels * 4);
+				blackData.fill(0);
+				imageData = new ImageData(blackData, this.tileSize, this.tileSize);
+			}
 
-				offscreenCtx.putImageData(imageData, x + 2, y + 2);
-			});
-		}
-	
-		// Drawing each layer canvas onto the main canvas
-		Object.keys(layerCanvases).forEach(layerIndex => {
-			ctx.drawImage(layerCanvases[layerIndex], 0, 0);
+			// Update height map for this tile
+			this.updateHeightMapForTile(x, y, tile.heightAnalysis.heightIndex);
+
+			// Draw the tile to the main canvas
+			ctx.putImageData(imageData, x + 2, y + 2);
 		});
-		
+
 		// Store terrain data for height mapping
-		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;          
+		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
 	}
 }
