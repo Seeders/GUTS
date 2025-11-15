@@ -32,12 +32,9 @@ class TerrainMapEditor {
                 { type: "water", color: "#64b5f6", image: [] },
                 { type: "rock", color: "#9e9e9e", image: [] }
             ],
-            terrainMap: []
-        };
-        // Height map structure (separate from terrain)
-        this.heightMap = {
-            heightData: [],
-            extensionHeight: 0
+            terrainMap: [],
+            heightMap: [],  // Height levels independent of terrain types
+            extensionHeight: 0  // Height for extension area
         };
         this.environmentObjects = this.tileMap.environmentObjects || [];
         this.selectedEnvironmentType = null;
@@ -234,16 +231,14 @@ class TerrainMapEditor {
                 this.tileMap.environmentObjects = [];
             }
 
-            // Load or initialize heightMap
+            // Load or initialize heightMap from objectData
             if (this.objectData.heightMap) {
-                this.heightMap = this.objectData.heightMap;
-            } else {
+                this.tileMap.heightMap = this.objectData.heightMap;
+                this.tileMap.extensionHeight = this.objectData.extensionHeight || 0;
+            } else if (!this.tileMap.heightMap) {
                 // Initialize heightMap if it doesn't exist
-                // Default to deriving heights from terrain types for backwards compatibility
-                this.heightMap = {
-                    heightData: [],
-                    extensionHeight: this.tileMap.extensionTerrainType || 0
-                };
+                this.tileMap.heightMap = [];
+                this.tileMap.extensionHeight = this.tileMap.extensionTerrainType || 0;
             }
             const extensionTerrainTypeSelector = document.getElementById('extensionTerrainType');
             // Strip id from terrainTypes if present, assume order is correct
@@ -279,16 +274,16 @@ class TerrainMapEditor {
             }
 
             // Initialize heightMap data if empty
-            if (!this.heightMap.heightData || this.heightMap.heightData.length === 0) {
-                this.heightMap.heightData = [];
+            if (!this.tileMap.heightMap || this.tileMap.heightMap.length === 0) {
+                this.tileMap.heightMap = [];
                 for (let y = 0; y < this.mapSize; y++) {
-                    this.heightMap.heightData[y] = [];
+                    this.tileMap.heightMap[y] = [];
                     for (let x = 0; x < this.mapSize; x++) {
                         // Default to deriving height from terrain type (backwards compatibility)
                         if (this.tileMap.terrainMap && this.tileMap.terrainMap[y] && this.tileMap.terrainMap[y][x] !== undefined) {
-                            this.heightMap.heightData[y][x] = this.tileMap.terrainMap[y][x];
+                            this.tileMap.heightMap[y][x] = this.tileMap.terrainMap[y][x];
                         } else {
-                            this.heightMap.heightData[y][x] = 0;
+                            this.tileMap.heightMap[y][x] = 0;
                         }
                     }
                 }
@@ -1428,11 +1423,11 @@ class TerrainMapEditor {
 
                 // Performance: Check if this tile already has this height level
                 const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-                const currentValue = this.heightMap.heightData[snappedGrid.y][snappedGrid.x];
+                const currentValue = this.tileMap.heightMap[snappedGrid.y][snappedGrid.x];
 
                 if (currentValue !== this.currentHeightLevel || this.lastPaintedTile !== tileKey) {
                     // Update height map with selected height level
-                    this.heightMap.heightData[snappedGrid.y][snappedGrid.x] = this.currentHeightLevel;
+                    this.tileMap.heightMap[snappedGrid.y][snappedGrid.x] = this.currentHeightLevel;
                     this.lastPaintedTile = tileKey;
 
                     // Apply terrain type 0 / height 0 coupling rule
@@ -1495,20 +1490,20 @@ class TerrainMapEditor {
             // Non-isometric rendering (simple squares)
             const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
             const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-            
+
             for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
                 for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
                     const terrainId = this.tileMap.terrainMap[y][x];
                     const terrain = this.tileMap.terrainTypes[terrainId];
-                    
+
                     if (!terrain) continue;
-                    
+
                     const drawX = offsetX + x * gridSize;
                     const drawY = offsetY + y * gridSize;
-                    
+
                     ctx.fillStyle = terrain.color;
                     ctx.fillRect(drawX, drawY, gridSize, gridSize);
-                    
+
                     // Optional: draw grid lines
                     ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
                     ctx.lineWidth = 1;
@@ -1516,7 +1511,64 @@ class TerrainMapEditor {
                 }
             }
         }
-        
+
+        // Height mode overlay - show height levels
+        if (this.placementMode === 'height' && this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
+            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
+            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+            for (let y = 0; y < this.tileMap.heightMap.length; y++) {
+                for (let x = 0; x < this.tileMap.heightMap[y].length; x++) {
+                    const heightLevel = this.tileMap.heightMap[y][x];
+
+                    if (isIsometric) {
+                        const isoCoords = this.translator.gridToIso(x, y);
+                        const tileWidth = gridSize;
+                        const tileHeight = gridSize * 0.5;
+
+                        // Semi-transparent height overlay
+                        const alpha = 0.6;
+                        const intensity = Math.min(heightLevel / 10, 1);
+                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
+
+                        ctx.beginPath();
+                        ctx.moveTo(isoCoords.x, isoCoords.y);
+                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Draw height number
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 12px monospace';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(heightLevel, isoCoords.x, isoCoords.y + tileHeight / 2);
+                    } else {
+                        const drawX = offsetX + x * gridSize;
+                        const drawY = offsetY + y * gridSize;
+
+                        // Color gradient from blue (low) to red (high)
+                        const alpha = 0.6;
+                        const intensity = Math.min(heightLevel / 10, 1);
+                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
+                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
+
+                        // Draw height number
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 14px monospace';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 3;
+                        ctx.strokeText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
+                        ctx.fillText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
+                    }
+                }
+            }
+        }
+
         // Render environment objects with their actual images
         if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0 && this.imageManager) {
             for (const obj of this.tileMap.environmentObjects) {
@@ -1628,10 +1680,9 @@ class TerrainMapEditor {
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('saveTileMap', {
             detail: {
-                data: this.tileMap,
+                data: this.tileMap,  // tileMap now includes heightMap array
                 propertyName: this.savePropertyName,
-                refresh: false,
-                heightMap: this.heightMap  // Include heightMap in the exported data
+                refresh: false
             },
             bubbles: true,
             cancelable: true
