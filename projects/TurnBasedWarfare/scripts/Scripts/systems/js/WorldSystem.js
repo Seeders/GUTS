@@ -392,19 +392,9 @@ class WorldSystem extends engine.BaseSystem {
         this.groundCanvas.height = this.extendedSize;
         this.groundCtx = this.groundCanvas.getContext('2d');
 
-        // Fill with extension terrain color
-        const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-        const terrainTypes = this.tileMap.terrainTypes || [];
-        let bgColor = terrainTypes[extensionTerrainType]?.color;
-        
-        if (bgColor?.paletteColor && this.game.palette) {
-            bgColor = this.game.palette[bgColor.paletteColor];
-        }
-        
-        const finalBgColor = bgColor || '#333333';
-        
-        this.groundCtx.fillStyle = finalBgColor;
-        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
+        // Don't fill with extension terrain color - only sprite pixels should be visible
+        // The extension color was bleeding through at tile edges due to 2px offset in TileMap
+        // Leave canvas transparent/black instead
 
         this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
         this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
