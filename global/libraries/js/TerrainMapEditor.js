@@ -313,10 +313,12 @@ class TerrainMapEditor {
 
         document.getElementById('terrainsBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.add('active');
+            document.getElementById('heightsBtn').classList.remove('active');
             document.getElementById('environmentBtn').classList.remove('active');
             document.getElementById('rampsBtn').classList.remove('active');
 
             document.getElementById('terrainsPanel').style.display = 'block';
+            document.getElementById('heightsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'terrain';
@@ -331,12 +333,40 @@ class TerrainMapEditor {
                 this.placementModeIndicator.style.opacity = '0';
             }, 2000);
         });
-        
+
+        document.getElementById('heightsBtn').addEventListener('click', () => {
+            document.getElementById('terrainsBtn').classList.remove('active');
+            document.getElementById('heightsBtn').classList.add('active');
+            document.getElementById('environmentBtn').classList.remove('active');
+            document.getElementById('rampsBtn').classList.remove('active');
+
+            document.getElementById('terrainsPanel').style.display = 'none';
+            document.getElementById('heightsPanel').style.display = 'block';
+            document.getElementById('environmentPanel').style.display = 'none';
+            document.getElementById('rampsPanel').style.display = 'none';
+            this.placementMode = 'height';
+            this.previewCanvas.style.display = 'none';
+
+            // Setup height levels UI
+            this.setupHeightLevelsUI();
+
+            this.placementModeIndicator.textContent = 'Placement Mode: Heights';
+            this.placementModeIndicator.style.opacity = '1';
+
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 2000);
+        });
+
         document.getElementById('environmentBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.remove('active');
+            document.getElementById('heightsBtn').classList.remove('active');
             document.getElementById('environmentBtn').classList.add('active');
             document.getElementById('rampsBtn').classList.remove('active');
             document.getElementById('terrainsPanel').style.display = 'none';
+            document.getElementById('heightsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'block';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'environment';
@@ -355,9 +385,11 @@ class TerrainMapEditor {
 
         document.getElementById('rampsBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.remove('active');
+            document.getElementById('heightsBtn').classList.remove('active');
             document.getElementById('environmentBtn').classList.remove('active');
             document.getElementById('rampsBtn').classList.add('active');
             document.getElementById('terrainsPanel').style.display = 'none';
+            document.getElementById('heightsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'block';
             this.placementMode = 'ramp';
@@ -386,9 +418,22 @@ class TerrainMapEditor {
             }
         });
 
+        // Height level input
+        document.getElementById('heightLevel').addEventListener('change', (e) => {
+            this.currentHeightLevel = parseInt(e.target.value);
+            this.placementModeIndicator.textContent = `Painting Height Level: ${this.currentHeightLevel}`;
+            this.placementModeIndicator.style.opacity = '1';
+
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 2000);
+        });
+
         this.canvasEl.addEventListener('contextmenu', (e) => {
             e.preventDefault(); // Prevent default context menu
-            
+
             if (this.placementMode === 'environment' && this.tileMap.environmentObjects) {
                 this.deleteEnvironmentObjectAt(e);
             }
@@ -792,6 +837,51 @@ class TerrainMapEditor {
             environmentPanel.appendChild(message);
         }
     }
+
+    setupHeightLevelsUI() {
+        const buttonsContainer = document.getElementById('heightLevelButtons');
+        if (!buttonsContainer) return;
+
+        // Clear existing buttons
+        buttonsContainer.innerHTML = '';
+
+        // Create height level buttons (0-10)
+        for (let level = 0; level <= 10; level++) {
+            const button = document.createElement('button');
+            button.className = 'editor-module__btn editor-module__btn--small terrain-editor__height-btn';
+            button.textContent = `Level ${level}`;
+            button.dataset.heightLevel = level;
+
+            // Highlight current level
+            if (level === this.currentHeightLevel) {
+                button.classList.add('active');
+            }
+
+            button.addEventListener('click', () => {
+                this.currentHeightLevel = level;
+                document.getElementById('heightLevel').value = level;
+
+                // Update active states
+                buttonsContainer.querySelectorAll('.terrain-editor__height-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+
+                // Update indicator
+                this.placementModeIndicator.textContent = `Painting Height Level: ${level}`;
+                this.placementModeIndicator.style.opacity = '1';
+
+                // Hide indicator after a delay
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 2000);
+            });
+
+            buttonsContainer.appendChild(button);
+        }
+    }
+
     deleteEnvironmentObjectAt(e) {
         // Get mouse position and convert to game coordinates
         let offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;//48*4;
