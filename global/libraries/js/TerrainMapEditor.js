@@ -36,7 +36,8 @@ class TerrainMapEditor {
         this.environmentObjects = this.tileMap.environmentObjects || [];
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
-        this.placementMode = 'terrain'; // can be 'terrain' or 'environment'
+        this.placementMode = 'terrain'; // can be 'terrain', 'environment', or 'ramp'
+        this.ramps = this.tileMap.ramps || []; // Array of {x, z} ramp locations
         this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -1194,16 +1195,16 @@ class TerrainMapEditor {
                     
                 }
             }
-        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && 
+        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType &&
                    this.selectedEnvironmentItem !== null) {
             // Environment object placement logic
             const isoPos = { x: mouseX, y: mouseY };
             const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-            
+
             // Get the image to calculate its size
             const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
             const image = images.idle[0][this.selectedEnvironmentItem];
-            
+
             // Create new environment object
             const newObject = {
                 type: this.selectedEnvironmentType,
@@ -1211,18 +1212,48 @@ class TerrainMapEditor {
                 x: pixelPos.x,
                 y: pixelPos.y
             };
-            
+
             // Add to environment objects array
             if (!this.tileMap.environmentObjects) {
                 this.tileMap.environmentObjects = [];
             }
             this.tileMap.environmentObjects.push(newObject);
-            
+
             // Schedule render instead of immediate render
             this.needsRender = true;
             this.scheduleRender();
-            
+
             // Debounce export to reduce frequency
+        } else if (this.placementMode === 'ramp') {
+            // Ramp placement logic
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+
+            // Check if coordinates are within bounds
+            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
+                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+
+                // Initialize ramps array if needed
+                if (!this.tileMap.ramps) {
+                    this.tileMap.ramps = [];
+                    this.ramps = this.tileMap.ramps;
+                }
+
+                // Check if ramp already exists at this position
+                const rampIndex = this.ramps.findIndex(r => r.x === snappedGrid.x && r.z === snappedGrid.y);
+
+                if (rampIndex >= 0) {
+                    // Remove existing ramp (toggle off)
+                    this.ramps.splice(rampIndex, 1);
+                } else {
+                    // Add new ramp (toggle on)
+                    this.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
+                }
+
+                // Schedule render to show ramps
+                this.needsRender = true;
+                this.scheduleRender();
+            }
         }
     }
 
@@ -1331,6 +1362,60 @@ class TerrainMapEditor {
                     image.width,
                     image.height
                 );
+            }
+        }
+
+        // Render ramps as visual indicators
+        if (this.tileMap.ramps && this.tileMap.ramps.length > 0) {
+            for (const ramp of this.tileMap.ramps) {
+                if (isIsometric) {
+                    // Isometric rendering for ramps
+                    const isoCoords = this.translator.gridToIso(ramp.x, ramp.z);
+                    const tileWidth = gridSize;
+                    const tileHeight = gridSize * 0.5;
+
+                    // Draw ramp indicator (triangle pointing up)
+                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
+                    ctx.beginPath();
+                    ctx.moveTo(isoCoords.x, isoCoords.y + tileHeight / 4);
+                    ctx.lineTo(isoCoords.x + tileWidth / 4, isoCoords.y + tileHeight / 2);
+                    ctx.lineTo(isoCoords.x - tileWidth / 4, isoCoords.y + tileHeight / 2);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Add border
+                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                } else {
+                    // Non-isometric rendering for ramps
+                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+                    const drawX = offsetX + ramp.x * gridSize;
+                    const drawY = offsetY + ramp.z * gridSize;
+
+                    // Draw ramp indicator (triangle or arrow)
+                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
+                    ctx.beginPath();
+                    ctx.moveTo(drawX + gridSize / 2, drawY + gridSize / 4);
+                    ctx.lineTo(drawX + 3 * gridSize / 4, drawY + 3 * gridSize / 4);
+                    ctx.lineTo(drawX + gridSize / 4, drawY + 3 * gridSize / 4);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Add border
+                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Optional: Add "R" text to clearly mark it as a ramp
+                    ctx.fillStyle = 'white';
+                    ctx.font = `${gridSize / 3}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('R', drawX + gridSize / 2, drawY + gridSize / 2);
+                }
             }
         }
     }
