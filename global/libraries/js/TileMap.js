@@ -563,6 +563,16 @@ class TileMap {
 		}
 	}
 
+	// Convert ImageData to a canvas for proper alpha blending
+	imageDataToCanvas(imageData) {
+		const canvas = document.createElement('canvas');
+		canvas.width = imageData.width;
+		canvas.height = imageData.height;
+		const ctx = canvas.getContext('2d');
+		ctx.putImageData(imageData, 0, 0);
+		return canvas;
+	}
+
 	// Draw a single tile with proper atom layering for smooth transitions
 	drawTileWithLayering(analyzedMap, tile, row, col) {
 		const atomSize = this.tileSize / 2;
@@ -599,11 +609,19 @@ class TileMap {
 			BR: atoms.BR || moleculeAtoms.BR
 		};
 
-		// Draw each atom directly (base layer already painted)
-		ctx.putImageData(currentAtoms.TL, 0, 0);
-		ctx.putImageData(currentAtoms.TR, atomSize, 0);
-		ctx.putImageData(currentAtoms.BL, 0, atomSize);
-		ctx.putImageData(currentAtoms.BR, atomSize, atomSize);
+		// Convert atoms to canvases and use drawImage for proper alpha blending
+		const atomCanvases = {
+			TL: this.imageDataToCanvas(currentAtoms.TL),
+			TR: this.imageDataToCanvas(currentAtoms.TR),
+			BL: this.imageDataToCanvas(currentAtoms.BL),
+			BR: this.imageDataToCanvas(currentAtoms.BR)
+		};
+
+		// Draw each atom using drawImage (respects alpha blending)
+		ctx.drawImage(atomCanvases.TL, 0, 0);
+		ctx.drawImage(atomCanvases.TR, atomSize, 0);
+		ctx.drawImage(atomCanvases.BL, 0, atomSize);
+		ctx.drawImage(atomCanvases.BR, atomSize, atomSize);
 
 		// Apply coloring and corner graphics
 		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
