@@ -789,8 +789,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x, worldPosition.z);
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        worldPosition.x -= gridSize / 3;
+        worldPosition.z += gridSize / 3;
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x , worldPosition.z);
         const state = this.game.state;
         
         let cells = [];
@@ -826,7 +828,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (!this.mouse) {
             this.mouse = new THREE.Vector2();
         }
-        
+
         if (mouseX !== undefined && mouseY !== undefined) {
             this.mouse.set(mouseX, mouseY);
         } else {

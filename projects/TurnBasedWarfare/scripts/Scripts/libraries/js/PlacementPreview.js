@@ -15,11 +15,12 @@ class PlacementPreview {
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: 20,
-            unitElevationOffset: 20,
+            elevationOffset: 0,
+            unitElevationOffset: 0,
             cellSizeMultiplier: 0.9,
             maxCells: 50,
-            updateThrottle: 16
+            updateThrottle: 16,
+            gridSize: game.getCollections().configs.game.gridSize
         };
         
         this.geometryPool = this.createGeometryPool();
@@ -127,19 +128,19 @@ class PlacementPreview {
         
         const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
         const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
-        
+        const amt = this.config.gridSize / 3;
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= this.cellMeshPool.length) return;
             
             const cellMesh = this.cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            cellMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
             
             const borderMesh = this.borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            borderMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });

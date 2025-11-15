@@ -1008,7 +1008,7 @@ class TileMap {
 			this.updateHeightMapForTile(x, y, tile.heightAnalysis.heightIndex);
 
 			// Draw the tile to the main canvas
-			ctx.putImageData(imageData, x + 2, y + 2);
+			ctx.putImageData(imageData, x, y);
 		});
 
 		// Store terrain data for height mapping
