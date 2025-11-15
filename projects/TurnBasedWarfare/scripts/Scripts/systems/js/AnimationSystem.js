@@ -327,10 +327,17 @@ class AnimationSystem extends engine.BaseSystem {
         animState.isDying = false;
         animState.isCorpse = true;
         
-        // Stop the animation completely - set speed to 0 and freeze at current frame
-        this.game.renderSystem?.setInstanceSpeed(entityId, 0);
+        // Get the current clip's duration and set to last frame
+        const animationStateData = this.game.gameManager.call('getEntityAnimationState', entityId);
         
-    
+        if (animationStateData && animationStateData.clipDuration > 0) {
+            // Set to 99% through the animation (last frame before loop)
+            const lastFrameTime = animationStateData.clipDuration * 0.99;
+            this.game.gameManager.call('setInstanceAnimationTime', entityId, lastFrameTime);
+        }
+        
+        // Now freeze it at that frame
+        this.game.gameManager.call('setInstanceSpeed', entityId, 0);
     }
 
     startCelebration(entityId, teamType = null) {

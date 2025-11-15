@@ -31,6 +31,7 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('setInstanceSpeed', this.setInstanceSpeed.bind(this));
         this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
         this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
+        this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
     }
 
     _bindDebugHelpers() {
@@ -495,6 +496,20 @@ class RenderSystem extends engine.BaseSystem {
         batch.attributes.animSpeed.setX(instance.instanceIndex, speed);
         batch.dirty.animation = true;
     
+        return true;
+    }
+
+    setInstanceAnimationTime(entityId, time) {
+        const instance = this.entityToInstance.get(entityId);
+        if (!instance) return false;
+
+        const batch = this.vatBatches.get(instance.batchKey);
+        if (!batch) return false;
+
+        batch.attributes.animTime.setX(instance.instanceIndex, time);
+        batch.attributes.animTime.array[instance.instanceIndex] = time;
+        batch.dirty.animation = true;
+
         return true;
     }
 
