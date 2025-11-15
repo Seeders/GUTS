@@ -16730,7 +16730,8 @@
       "paletteColor": "greenMColor"
     },
     "environmentObjects": [],
-    "extensionTerrainType": 3
+    "extensionTerrainType": 3,
+    "ramps": []
   },
   "world": "shire",
   "grassShader": "grass",

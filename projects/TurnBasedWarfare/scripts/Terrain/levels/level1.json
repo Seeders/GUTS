@@ -7714,7 +7714,8 @@
         "y": 12.800003051757812
       }
     ],
-    "extensionTerrainType": 3
+    "extensionTerrainType": 3,
+    "ramps": []
   },
   "world": "shire",
   "grassShader": "grass",
