@@ -15,8 +15,9 @@ class TileMap {
 		this.layerSpriteSheets = layerSpriteSheets;
 		this.tileMap = [];
 		this.layerTextures = [];
+		this.baseAtoms = []; // Store base atoms per terrain type
 		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
-		
+
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
 		this.heightMapCtx = null;
@@ -164,8 +165,9 @@ class TileMap {
 		// Load all textures
 		if(this.layerTextures.length == 0 && this.layerSpriteSheets) {
 			this.layerSpriteSheets.forEach((layerSprites, index) => {
-				const moleculeData = this.buildBaseMolecules(layerSprites.sprites);
-				this.layerTextures[index] = moleculeData;
+				const result = this.buildBaseMolecules(layerSprites.sprites);
+				this.layerTextures[index] = result.molecules;
+				this.baseAtoms[index] = result.baseAtoms;
 			});
 		}
 
@@ -327,8 +329,8 @@ class TileMap {
 		const threeCornerBottomRightImageData = threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const threeCornerBottomLeftImageData = this.flipTextureHorizontal(threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));
 
-		// Store base atoms for acute corner handling
-		this.baseAtoms = {
+		// Store base atoms for acute corner handling (will be returned, not stored here)
+		const baseAtoms = {
 			full: fullImageData,
 			fullVariation: fullVariationImageData,
 			oneCornerTL: oneCornerTopLeftImageData,
@@ -390,7 +392,7 @@ class TileMap {
 			this.createMolecule(moleculeCtx, fullVariationImageData, fullVariationImageData, fullVariationImageData, fullVariationImageData),
 		];
 
-		return imageDataList;
+		return { molecules: imageDataList, baseAtoms: baseAtoms };
 	}
 
 	createMolecule(context, TLImageData, TRImageData, BLImageData, BRImageData) {
@@ -455,8 +457,11 @@ class TileMap {
 	}
 
 	// Select the correct atom for a specific position based on neighbor analysis
-	selectAtomForPosition(tile, position) {
+	selectAtomForPosition(tile, position, terrainIndex) {
 		const analysis = tile.terrainAnalysis;
+		const atoms = this.baseAtoms[terrainIndex];
+
+		if (!atoms) return null;
 
 		// For each position, check diagonal and adjacent cardinals to determine atom type
 		switch(position) {
@@ -468,10 +473,10 @@ class TileMap {
 
 				if (diagonalLess && !topLess && !leftLess) {
 					// Only diagonal is lower: use oneCorner with TL corner cut
-					return this.baseAtoms.oneCornerTL;
+					return atoms.oneCornerTL;
 				} else if (!topLess && !leftLess) {
 					// No neighbors lower: use full atom
-					return this.baseAtoms.full;
+					return atoms.full;
 				} else {
 					// Cardinal neighbors are lower: handled by molecule logic
 					return null; // Will use molecule-based atom
@@ -485,10 +490,10 @@ class TileMap {
 
 				if (diagonalLess && !topLess && !rightLess) {
 					// Only diagonal is lower: use oneCorner with TR corner cut
-					return this.baseAtoms.oneCornerTR;
+					return atoms.oneCornerTR;
 				} else if (!topLess && !rightLess) {
 					// No neighbors lower: use full atom
-					return this.baseAtoms.full;
+					return atoms.full;
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -501,10 +506,10 @@ class TileMap {
 
 				if (diagonalLess && !botLess && !leftLess) {
 					// Only diagonal is lower: use oneCorner with BL corner cut
-					return this.baseAtoms.oneCornerBL;
+					return atoms.oneCornerBL;
 				} else if (!botLess && !leftLess) {
 					// No neighbors lower: use full atom
-					return this.baseAtoms.full;
+					return atoms.full;
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -517,10 +522,10 @@ class TileMap {
 
 				if (diagonalLess && !botLess && !rightLess) {
 					// Only diagonal is lower: use oneCorner with BR corner cut
-					return this.baseAtoms.oneCornerBR;
+					return atoms.oneCornerBR;
 				} else if (!botLess && !rightLess) {
 					// No neighbors lower: use full atom
-					return this.baseAtoms.full;
+					return atoms.full;
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -543,10 +548,10 @@ class TileMap {
 
 		// Build custom molecule based on diagonal-aware atom selection
 		const atoms = {
-			TL: this.selectAtomForPosition(tile, 'TL'),
-			TR: this.selectAtomForPosition(tile, 'TR'),
-			BL: this.selectAtomForPosition(tile, 'BL'),
-			BR: this.selectAtomForPosition(tile, 'BR')
+			TL: this.selectAtomForPosition(tile, 'TL', tile.terrainIndex),
+			TR: this.selectAtomForPosition(tile, 'TR', tile.terrainIndex),
+			BL: this.selectAtomForPosition(tile, 'BL', tile.terrainIndex),
+			BR: this.selectAtomForPosition(tile, 'BR', tile.terrainIndex)
 		};
 
 		// If any atom is null, fall back to molecule-based extraction
