@@ -6,8 +6,9 @@ class ServerPlacementSystem extends PlacementSystem {
     constructor(game) {
         super(game);
 
-        // Initialize server-specific controller
-        this.serverController = new ServerPlacementController(this, this.engine);
+        // Load and initialize server-specific controller
+        const ServerPlacementControllerClass = game.moduleManager.getCompiledScript('ServerPlacementController', 'systems');
+        this.serverController = new ServerPlacementControllerClass(this, this.engine);
     }
 
     init(params) {

@@ -6,8 +6,9 @@ class MultiplayerPlacementSystem extends PlacementSystem {
     constructor(game, sceneManager) {
         super(game);
 
-        // Initialize client-specific UI controller
-        this.clientUI = new ClientPlacementUI(this, sceneManager);
+        // Load and initialize client-specific UI controller
+        const ClientPlacementUIClass = game.moduleManager.getCompiledScript('ClientPlacementUI', 'systems');
+        this.clientUI = new ClientPlacementUIClass(this, sceneManager);
     }
 
     init(params) {
