@@ -12,7 +12,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     init(params) {
         this.params = params || {};
-         this.subscribeToEvents();
+        this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
+        this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
+        this.subscribeToEvents();
     }
     subscribeToEvents() {
         if (!this.game.serverEventManager) {
@@ -595,7 +597,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     validatePlacement(placement, player) {
        
-
+        if(placement.isStartingState) return true;
         // Calculate cost of only NEW units
         const newUnitCost =  placement.unitType?.value;
         
@@ -604,9 +606,10 @@ class ServerPlacementSystem extends engine.BaseSystem {
             console.log(`Player ${player.id} insufficient gold: ${newUnitCost} > ${player.stats.gold}`);
             return false;
         }
-        
-        // Check placement positions (basic validation)
-    
+        if (this.game.gameManager.has('canAffordSupply') && !this.game.gameManager.call('canAffordSupply', player.stats.side, placement.unitType)) {
+            console.log(`Player ${player.id} insufficient supply for unit: ${placement.unitType.id}`);
+            return false;
+        }
         if (!placement.gridPosition || !placement.unitType) {
             console.log(`Player ${player.id} invalid placement data:`, placement);
             return false;
@@ -649,8 +652,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
             
             // Remove entities created by this player's placements
             placements.forEach(placement => {
-                if (placement.unitIds) {
-                    placement.unitIds.forEach(entityId => {
+                if (placement.squadUnits) {
+                    placement.squadUnits.forEach(entityId => {
                         try {
                             if (this.game.destroyEntity) {
                                 this.game.destroyEntity(entityId);

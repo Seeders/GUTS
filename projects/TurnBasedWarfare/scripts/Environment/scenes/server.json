@@ -30,7 +30,8 @@
         { "type": "SchedulingSystem" },    
         { "type": "PathfindingSystem" }, 
         { "type": "GoldMineSystem" },    
-        { "type": "VisionSystem" }
+        { "type": "VisionSystem" },
+        { "type": "SupplySystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }

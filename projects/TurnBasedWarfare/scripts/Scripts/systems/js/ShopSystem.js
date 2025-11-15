@@ -102,12 +102,16 @@ class ShopSystem extends engine.BaseSystem {
             const canAfford = this.game.state.playerGold >= unit.value;
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
             
-            let locked = !canAfford || !hasCapacity;
+            const hasSupply = !this.game.supplySystem || this.game.supplySystem.canAffordSupply(this.game.state.mySide, unit);
+            
+            let locked = !canAfford || !hasCapacity || !hasSupply;
             let lockReason = null;
             if (!canAfford) {
                 lockReason = "Can't afford";
             } else if (!hasCapacity) {
                 lockReason = `Need ${buildTime.toFixed(1)} rounds`;
+            } else if (!hasSupply) {
+                lockReason = "Not enough supply";
             }
             
             const btn = this.createActionButton({

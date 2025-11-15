@@ -189,5 +189,6 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_archer",
-  "visionRange": 650
+  "visionRange": 650,
+  "supplyCost": 2
 }

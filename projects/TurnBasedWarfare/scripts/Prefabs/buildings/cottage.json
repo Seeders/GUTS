@@ -59,5 +59,6 @@
   "height": 100,
   "size": 50,
   "icon": "building_cottage",
-  "hp": 500
+  "hp": 500,
+  "supplyProvided": 8
 }

@@ -175,5 +175,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "icon": "unit_rogue",
-  "visionRange": 800
+  "visionRange": 800,
+  "supplyCost": 2
 }

@@ -176,5 +176,6 @@
     "WindShieldAbility"
   ],
   "icon": "unit_soldier",
-  "visionRange": 500
+  "visionRange": 500,
+  "supplyCost": 2
 }

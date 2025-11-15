@@ -426,7 +426,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (state.playerGold < state.selectedUnitType.value) {
             return;
         }
-        
+        if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(this.game.state.mySide, state.selectedUnitType)) {
+            console.log('Not enough supply to place this unit');
+            return;
+        }
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;

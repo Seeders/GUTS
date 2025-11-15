@@ -173,5 +173,6 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_apprentice",
-  "visionRange": 500
+  "visionRange": 500,
+  "supplyCost": 2
 }

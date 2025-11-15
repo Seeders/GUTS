@@ -69,5 +69,6 @@
   "size": 75,
   "icon": "building_townHall",
   "hp": 2500,
-  "visionRange": 2000
+  "visionRange": 2000,
+  "supplyProvided": 10
 }

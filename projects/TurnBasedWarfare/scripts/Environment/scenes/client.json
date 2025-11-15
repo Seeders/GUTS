@@ -58,7 +58,8 @@
         { "type": "MiniMapSystem" },    
         { "type": "CameraControlSystem" }, 
         { "type": "DamageNumberSystem" },    
-        { "type": "VisionSystem" }
+        { "type": "VisionSystem" },
+        { "type": "SupplySystem" }
       ],
       "classes": [
         {

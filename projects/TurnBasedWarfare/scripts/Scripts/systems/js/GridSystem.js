@@ -211,7 +211,7 @@ class GridSystem extends engine.BaseSystem {
         return cells;
     }
 
-    getNearbyUnits(pos, radius, excludeEntityId = null) {
+    getNearbyUnits(pos, radius, excludeEntityId = null, collection = null) {
         const gridPos = this.worldToGrid(pos.x, pos.z);
         const cellRadius = Math.ceil(radius / this.cellSize);
         
@@ -238,6 +238,8 @@ class GridSystem extends engine.BaseSystem {
                     const dz = entityPos.z - pos.z;
                     const distSq = dx * dx + dz * dz;
                     
+                    if(collection && unitType.collection != collection) continue;
+
                     if (distSq <= radiusSq) {
                         seen.add(entityId);
                         nearbyUnits.push({

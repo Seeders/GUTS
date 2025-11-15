@@ -164,5 +164,6 @@
   ],
   "icon": "unit_peasant",
   "actionSet": "peasant_actions",
-  "visionRange": 400
+  "visionRange": 400,
+  "supplyCost": 1
 }
