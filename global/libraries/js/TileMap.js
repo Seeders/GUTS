@@ -527,9 +527,13 @@ class TileMap {
 				if (top && left) {
 					return atoms.threeCornerTL; // Both cardinals lower: 3 corners cut
 				} else if (top && diagonal) {
-					return atoms.twoCornerTop; // Top edge needs cutting
+					return atoms.twoCornerTop; // Top edge + corner
 				} else if (left && diagonal) {
-					return atoms.twoCornerLeft; // Left edge needs cutting
+					return atoms.twoCornerLeft; // Left edge + corner
+				} else if (top) {
+					return atoms.twoCornerTop; // Just top edge (no diagonal)
+				} else if (left) {
+					return atoms.twoCornerLeft; // Just left edge (no diagonal)
 				} else if (diagonal) {
 					return atoms.oneCornerTL; // Just corner
 				} else {
@@ -547,6 +551,10 @@ class TileMap {
 					return atoms.twoCornerTop;
 				} else if (right && diagonal) {
 					return atoms.twoCornerRight;
+				} else if (top) {
+					return atoms.twoCornerTop; // Just top edge
+				} else if (right) {
+					return atoms.twoCornerRight; // Just right edge
 				} else if (diagonal) {
 					return atoms.oneCornerTR;
 				} else {
@@ -564,6 +572,10 @@ class TileMap {
 					return atoms.twoCornerBottom;
 				} else if (left && diagonal) {
 					return atoms.twoCornerLeft;
+				} else if (bot) {
+					return atoms.twoCornerBottom; // Just bottom edge
+				} else if (left) {
+					return atoms.twoCornerLeft; // Just left edge
 				} else if (diagonal) {
 					return atoms.oneCornerBL;
 				} else {
@@ -581,6 +593,10 @@ class TileMap {
 					return atoms.twoCornerBottom;
 				} else if (right && diagonal) {
 					return atoms.twoCornerRight;
+				} else if (bot) {
+					return atoms.twoCornerBottom; // Just bottom edge
+				} else if (right) {
+					return atoms.twoCornerRight; // Just right edge
 				} else if (diagonal) {
 					return atoms.oneCornerBR;
 				} else {
