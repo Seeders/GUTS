@@ -873,14 +873,17 @@ class WorldSystem extends engine.BaseSystem {
         const cols = terrainMap[0].length;
 
         const mapAnalysis = this.game.terrainTileMapper.analyzeMap();
-        
-        mapAnalysis.forEach((tileAnalysis, index) => {
+
+        mapAnalysis.forEach((tile, index) => {
             const x = (index % cols);
             const z = Math.floor(index / cols);
-            
+
+            // Use heightAnalysis for cliff placement (cliffs are based on height differences)
+            const heightAnalysis = tile.heightAnalysis;
+
             // Only process tiles that have lower neighbors (cliff edges)
-            if (tileAnalysis.neighborLowerCount > 0 || tileAnalysis.cornerLowerCount > 0) {
-                this.placeCliffAtomsForTile(x, z, tileAnalysis, gridSize);
+            if (heightAnalysis.neighborLowerCount > 0 || heightAnalysis.cornerLowerCount > 0) {
+                this.placeCliffAtomsForTile(x, z, heightAnalysis, gridSize);
             }
         });
     }
