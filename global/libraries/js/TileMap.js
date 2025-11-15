@@ -630,7 +630,7 @@ class TileMap {
 	}
 
 	colorImageData(imageData, tileAnalysis) {
-		
+
 		const data = new Uint8ClampedArray(imageData.data);
 		var directions = ['topHeight', 'leftHeight', 'rightHeight', 'botHeight', 'topLeftHeight', 'topRightHeight', 'botLeftHeight', 'botRightHeight'];
 		let heightCounts = {};
@@ -643,7 +643,7 @@ class TileMap {
 				heightCounts[height]++;
 			}
 		});
-		
+
 		let lowerNeighborHeight = Math.max(0, tileAnalysis.heightIndex - 1);
 		let maxCount = 0;
 		Object.keys(heightCounts).forEach((height) => {
@@ -658,8 +658,9 @@ class TileMap {
 			blackData.fill(0); // Fill with black (0, 0, 0, 255)
 			return new ImageData(blackData, this.tileSize, this.tileSize);
 		}
-		let baseColors = this.layerTextures[tileAnalysis.heightIndex][this.TileMolecule.Full].data;
-		let neighborColors = this.layerTextures[lowerNeighborHeight][this.TileMolecule.Full].data;
+		// Use terrainIndex for texture selection, not heightIndex
+		let baseColors = this.layerTextures[tileAnalysis.terrainIndex][this.TileMolecule.Full].data;
+		let neighborColors = this.layerTextures[tileAnalysis.terrainIndex][this.TileMolecule.Full].data;
 
 		// Iterate over each pixel
 		for (let i = 0; i < numPixels; i++) {
@@ -667,8 +668,8 @@ class TileMap {
 			let pColor = { r: data[dataIndex], g: data[dataIndex + 1], b: data[dataIndex + 2], a: data[dataIndex + 3] };
 			let bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };
 			let tColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };
-	
-			if (this.layerTextures.length > tileAnalysis.heightIndex) {
+
+			if (this.layerTextures.length > tileAnalysis.terrainIndex) {
 				if (baseColors.length > i) {
 					bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };
 				}
@@ -694,36 +695,38 @@ class TileMap {
 	addCornerGraphics(imageData, tileAnalysis) {
 		let cornerSize = this.tileSize / 2;
 		let cornerTexture;
-		let heightIndex = tileAnalysis.heightIndex;
-	
+		// Use terrainIndex for texture selection, not heightIndex
+		let terrainIndex = tileAnalysis.terrainIndex;
+
 		if (tileAnalysis.cornerLowerCount > 0) {
-			if (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {				
-				cornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTL];
-				imageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, tileAnalysis);			
+			if (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {
+				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerTL];
+				imageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, tileAnalysis);
 			}
 			// Assuming tileAnalysis, textureDict, and other variables are already defined
-			if (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {				
-				cornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTR];
-				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, tileAnalysis);			
+			if (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {
+				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerTR];
+				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, tileAnalysis);
 			}
 
-			if (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {				
-				cornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBL];
+			if (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {
+				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerBL];
 				imageData = this.colorCornerTextureRoutine(imageData, 0, cornerSize, cornerTexture, tileAnalysis);			
 			}
 
-			if (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {			
-				cornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBR];
-				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, tileAnalysis);			
+			if (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {
+				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerBR];
+				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, tileAnalysis);
 			}
 		}
 		return imageData;
 	}
 	
 	colorCornerTextureRoutine(outputImageData, x, y, cornerImageData, tileAnalysis) {
-		let cornerSize = this.tileSize / 2;	
-		let baseHeightIndex = tileAnalysis.heightIndex;
-		let baseColors = this.layerTextures[baseHeightIndex][this.TileMolecule.Full];
+		let cornerSize = this.tileSize / 2;
+		// Use terrainIndex for texture selection, not heightIndex
+		let baseTerrainIndex = tileAnalysis.terrainIndex;
+		let baseColors = this.layerTextures[baseTerrainIndex][this.TileMolecule.Full];
 		const data = new Uint8ClampedArray(outputImageData.data);
 		for (let j = 0; j < cornerSize; j++) {
 			for (let i = 0; i < cornerSize; i++) {
