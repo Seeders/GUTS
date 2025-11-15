@@ -427,35 +427,6 @@ class TileMap {
 		};
 	}
 
-	// Get a specific neighbor's atom for layering
-	getNeighborAtom(analyzedMap, row, col, neighborRow, neighborCol, atomPosition) {
-		// Check bounds
-		if (neighborRow < 0 || neighborRow >= this.numColumns ||
-		    neighborCol < 0 || neighborCol >= this.numColumns) {
-			return null;
-		}
-
-		const index = neighborRow * this.numColumns + neighborCol;
-		const neighborTile = analyzedMap[index];
-
-		if (!neighborTile || neighborTile.terrainIndex < 0) {
-			return null;
-		}
-
-		// Get the molecule for the neighbor tile
-		const molecule = this.getMoleculeByTileAnalysis(neighborTile.terrainAnalysis);
-		const moleculeImageData = this.layerTextures[neighborTile.terrainIndex][molecule];
-
-		// Extract atoms from the molecule
-		const atoms = this.extractAtomsFromMolecule(moleculeImageData);
-
-		// Return the specific atom requested
-		return {
-			atom: atoms[atomPosition],
-			terrainIndex: neighborTile.terrainIndex
-		};
-	}
-
 	// Select the correct atom for a specific position based on neighbor analysis
 	selectAtomForPosition(tile, position, terrainIndex) {
 		const analysis = tile.terrainAnalysis;
@@ -534,6 +505,91 @@ class TileMap {
 		return null;
 	}
 
+	// Paint base layer with lower neighbor textures to fill gaps
+	paintBaseLowerLayer(ctx, analyzedMap, tile, row, col) {
+		const atomSize = this.tileSize / 2;
+		const analysis = tile.terrainAnalysis;
+
+		// For each atom position, determine which lower neighbor to use as base
+		const positions = [
+			{ name: 'TL', x: 0, y: 0, neighbors: ['top', 'left', 'topLeft'] },
+			{ name: 'TR', x: atomSize, y: 0, neighbors: ['top', 'right', 'topRight'] },
+			{ name: 'BL', x: 0, y: atomSize, neighbors: ['bot', 'left', 'botLeft'] },
+			{ name: 'BR', x: atomSize, y: atomSize, neighbors: ['bot', 'right', 'botRight'] }
+		];
+
+		const neighborMap = {
+			top: { row: row - 1, col: col, less: analysis.topLess, atomPos: 'BL', atomPosAlt: 'BR' },
+			left: { row: row, col: col - 1, less: analysis.leftLess, atomPos: 'TR', atomPosAlt: 'BR' },
+			right: { row: row, col: col + 1, less: analysis.rightLess, atomPos: 'TL', atomPosAlt: 'BL' },
+			bot: { row: row + 1, col: col, less: analysis.botLess, atomPos: 'TL', atomPosAlt: 'TR' },
+			topLeft: { row: row - 1, col: col - 1, less: analysis.cornerTopLeftLess, atomPos: 'BR' },
+			topRight: { row: row - 1, col: col + 1, less: analysis.cornerTopRightLess, atomPos: 'BL' },
+			botLeft: { row: row + 1, col: col - 1, less: analysis.cornerBottomLeftLess, atomPos: 'TR' },
+			botRight: { row: row + 1, col: col + 1, less: analysis.cornerBottomRightLess, atomPos: 'TL' }
+		};
+
+		// Paint base layer for each atom position
+		for (const pos of positions) {
+			let lowestNeighbor = null;
+			let lowestTerrainIndex = tile.terrainIndex;
+
+			// Find the lowest neighbor affecting this position
+			for (const neighborKey of pos.neighbors) {
+				const neighbor = neighborMap[neighborKey];
+				if (neighbor.less) {
+					const nRow = neighbor.row;
+					const nCol = neighbor.col;
+
+					if (nRow >= 0 && nRow < this.numColumns && nCol >= 0 && nCol < this.numColumns) {
+						const nIndex = nRow * this.numColumns + nCol;
+						const nTile = analyzedMap[nIndex];
+
+						if (nTile && nTile.terrainIndex < lowestTerrainIndex) {
+							lowestTerrainIndex = nTile.terrainIndex;
+							lowestNeighbor = { tile: nTile, neighbor: neighbor, key: neighborKey };
+						}
+					}
+				}
+			}
+
+			// Paint the appropriate atom from the lowest neighbor
+			if (lowestNeighbor) {
+				const nTile = lowestNeighbor.tile;
+				const molecule = this.getMoleculeByTileAnalysis(nTile.terrainAnalysis);
+				const moleculeImageData = this.layerTextures[nTile.terrainIndex][molecule];
+				const atoms = this.extractAtomsFromMolecule(moleculeImageData);
+
+				// Determine which atom to use based on the neighbor direction
+				let atomToUse = null;
+				const neighborKey = lowestNeighbor.key;
+
+				if (neighborKey === 'top' || neighborKey === 'bot') {
+					// For cardinal top/bottom, use both bottom atoms to fill width
+					if (pos.name === 'TL' || pos.name === 'BL') {
+						atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
+					} else {
+						atomToUse = atoms[lowestNeighbor.neighbor.atomPosAlt];
+					}
+				} else if (neighborKey === 'left' || neighborKey === 'right') {
+					// For cardinal left/right, use both right atoms to fill height
+					if (pos.name === 'TL' || pos.name === 'TR') {
+						atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
+					} else {
+						atomToUse = atoms[lowestNeighbor.neighbor.atomPosAlt];
+					}
+				} else {
+					// For diagonal, use the specific corner atom
+					atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
+				}
+
+				if (atomToUse) {
+					ctx.putImageData(atomToUse, pos.x, pos.y);
+				}
+			}
+		}
+	}
+
 	// Draw a single tile with proper atom layering for smooth transitions
 	drawTileWithLayering(analyzedMap, tile, row, col) {
 		const atomSize = this.tileSize / 2;
@@ -545,6 +601,9 @@ class TileMap {
 		// Fill with black background
 		ctx.fillStyle = 'black';
 		ctx.fillRect(0, 0, this.tileSize, this.tileSize);
+
+		// Paint base layer with lower neighbor textures first
+		this.paintBaseLowerLayer(ctx, analyzedMap, tile, row, col);
 
 		// Build custom molecule based on diagonal-aware atom selection
 		const atoms = {
@@ -567,30 +626,11 @@ class TileMap {
 			BR: atoms.BR || moleculeAtoms.BR
 		};
 
-		// Draw each atom position with proper layering
-		// TL atom (top-left)
-		this.drawAtomWithNeighborLayers(
-			ctx, analyzedMap, tile, row, col,
-			0, 0, 'TL', currentAtoms.TL
-		);
-
-		// TR atom (top-right)
-		this.drawAtomWithNeighborLayers(
-			ctx, analyzedMap, tile, row, col,
-			atomSize, 0, 'TR', currentAtoms.TR
-		);
-
-		// BL atom (bottom-left)
-		this.drawAtomWithNeighborLayers(
-			ctx, analyzedMap, tile, row, col,
-			0, atomSize, 'BL', currentAtoms.BL
-		);
-
-		// BR atom (bottom-right)
-		this.drawAtomWithNeighborLayers(
-			ctx, analyzedMap, tile, row, col,
-			atomSize, atomSize, 'BR', currentAtoms.BR
-		);
+		// Draw each atom directly (base layer already painted)
+		ctx.putImageData(currentAtoms.TL, 0, 0);
+		ctx.putImageData(currentAtoms.TR, atomSize, 0);
+		ctx.putImageData(currentAtoms.BL, 0, atomSize);
+		ctx.putImageData(currentAtoms.BR, atomSize, atomSize);
 
 		// Apply coloring and corner graphics
 		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
@@ -598,63 +638,6 @@ class TileMap {
 		imageData = this.addCornerGraphics(imageData, tile.heightAnalysis, tile.terrainIndex);
 
 		return imageData;
-	}
-
-	// Draw a single atom with neighbor layers underneath for smooth transitions
-	drawAtomWithNeighborLayers(ctx, analyzedMap, tile, row, col, x, y, atomPosition, currentAtom) {
-		const currentTerrainIndex = tile.terrainIndex;
-
-		// Define which neighbors affect each atom position
-		// Each atom can be influenced by up to 3 neighbors (cardinal + diagonal)
-		const neighborInfluences = {
-			'TL': [
-				{ row: row - 1, col: col, atom: 'BL' },      // Top neighbor's bottom-left
-				{ row: row, col: col - 1, atom: 'TR' },      // Left neighbor's top-right
-				{ row: row - 1, col: col - 1, atom: 'BR' }   // Top-left diagonal's bottom-right
-			],
-			'TR': [
-				{ row: row - 1, col: col, atom: 'BR' },      // Top neighbor's bottom-right
-				{ row: row, col: col + 1, atom: 'TL' },      // Right neighbor's top-left
-				{ row: row - 1, col: col + 1, atom: 'BL' }   // Top-right diagonal's bottom-left
-			],
-			'BL': [
-				{ row: row + 1, col: col, atom: 'TL' },      // Bottom neighbor's top-left
-				{ row: row, col: col - 1, atom: 'BR' },      // Left neighbor's bottom-right
-				{ row: row + 1, col: col - 1, atom: 'TR' }   // Bottom-left diagonal's top-right
-			],
-			'BR': [
-				{ row: row + 1, col: col, atom: 'TR' },      // Bottom neighbor's top-right
-				{ row: row, col: col + 1, atom: 'BL' },      // Right neighbor's bottom-left
-				{ row: row + 1, col: col + 1, atom: 'TL' }   // Bottom-right diagonal's top-left
-			]
-		};
-
-		const influences = neighborInfluences[atomPosition];
-
-		// Collect all neighbor atoms that have lower terrain indices
-		const lowerLayerAtoms = [];
-
-		for (const influence of influences) {
-			const neighborData = this.getNeighborAtom(
-				analyzedMap, row, col,
-				influence.row, influence.col, influence.atom
-			);
-
-			if (neighborData && neighborData.terrainIndex < currentTerrainIndex) {
-				lowerLayerAtoms.push(neighborData);
-			}
-		}
-
-		// Sort by terrain index (lowest first) so we layer correctly
-		lowerLayerAtoms.sort((a, b) => a.terrainIndex - b.terrainIndex);
-
-		// Draw lower layer atoms first (they will be underneath)
-		for (const neighborData of lowerLayerAtoms) {
-			ctx.putImageData(neighborData.atom, x, y);
-		}
-
-		// Draw the current atom on top (its transparent areas will show lower layers)
-		ctx.putImageData(currentAtom, x, y);
 	}
 
 	extractSpritesFromSheet(spriteSheet, columns, rows) {
