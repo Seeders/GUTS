@@ -318,6 +318,11 @@ class TerrainMapEditor {
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'terrain';
             this.previewCanvas.style.display = 'none';
+
+            // Trigger re-render to hide height overlay
+            this.needsRender = true;
+            this.scheduleRender();
+
             // Update placement indicator
             this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
             this.placementModeIndicator.style.opacity = '1';
@@ -345,6 +350,10 @@ class TerrainMapEditor {
             // Setup height levels UI
             this.setupHeightLevelsUI();
 
+            // Trigger re-render to show height overlay
+            this.needsRender = true;
+            this.scheduleRender();
+
             this.placementModeIndicator.textContent = 'Placement Mode: Heights';
             this.placementModeIndicator.style.opacity = '1';
 
@@ -368,6 +377,11 @@ class TerrainMapEditor {
 
             // Make sure environment panel is set up
             this.setupEnvironmentPanel();
+
+            // Trigger re-render to hide height overlay
+            this.needsRender = true;
+            this.scheduleRender();
+
             this.placementModeIndicator.textContent = 'Placement Mode: Environment';
             this.placementModeIndicator.style.opacity = '1';
 
@@ -392,6 +406,10 @@ class TerrainMapEditor {
 
             // Update ramp count display
             this.updateRampCount();
+
+            // Trigger re-render to show height overlay
+            this.needsRender = true;
+            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Ramps';
             this.placementModeIndicator.style.opacity = '1';
@@ -1512,8 +1530,8 @@ class TerrainMapEditor {
             }
         }
 
-        // Height mode overlay - show height levels
-        if (this.placementMode === 'height' && this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
+        // Height mode overlay - show height levels in both height and ramp modes
+        if ((this.placementMode === 'height' || this.placementMode === 'ramp') && this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
             const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
             const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
 
