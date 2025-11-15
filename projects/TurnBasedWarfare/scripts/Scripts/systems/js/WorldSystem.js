@@ -392,9 +392,24 @@ class WorldSystem extends engine.BaseSystem {
         this.groundCanvas.height = this.extendedSize;
         this.groundCtx = this.groundCanvas.getContext('2d');
 
-        // Don't fill with extension terrain color - only sprite pixels should be visible
-        // The extension color was bleeding through at tile edges due to 2px offset in TileMap
-        // Leave canvas transparent/black instead
+        // Fill extension area with sprite texture pattern instead of solid color
+        const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
+        const tileMapper = this.game.terrainTileMapper;
+
+        if (tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
+            // Use the Full sprite (index 0) from the extension terrain type
+            const fullSprite = tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
+
+            if (fullSprite) {
+                // Tile the sprite across the entire ground canvas
+                const spriteSize = fullSprite.width;
+                for (let y = 0; y < this.extendedSize; y += spriteSize) {
+                    for (let x = 0; x < this.extendedSize; x += spriteSize) {
+                        this.groundCtx.drawImage(fullSprite, x, y);
+                    }
+                }
+            }
+        }
 
         this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
         this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
@@ -432,38 +447,58 @@ class WorldSystem extends engine.BaseSystem {
 
     createExtensionPlanes() {
         if (!this.tileMap) return;
-        
-        
-        // Get the extension terrain color
+
+        // Get the extension terrain type
         const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-        const terrainTypes = this.tileMap.terrainTypes || [];
-        let bgColor = terrainTypes[extensionTerrainType]?.color;
-        
-        if (bgColor?.paletteColor && this.game.palette) {
-            bgColor = this.game.palette[bgColor.paletteColor];
-        }
-        
-        const extensionColor = bgColor || '#333333';
-        
+
         // Extension settings
         const extensionDistance = 19000; // How far the planes extend
         const detailedGroundSize = this.extendedSize; // Size of your existing detailed ground
         const halfDetailedSize = detailedGroundSize / 2;
-               
-        const extensionCanvas = document.createElement('canvas');
-        extensionCanvas.width = 1;
-        extensionCanvas.height = 1;
-        const extensionCtx = extensionCanvas.getContext('2d');
-        
-        extensionCtx.fillStyle = extensionColor;
-        extensionCtx.fillRect(0, 0, 1, 1);
 
-        const extensionTexture = new THREE.CanvasTexture(extensionCanvas);
-        extensionTexture.wrapS = THREE.ClampToEdgeWrapping;
-        extensionTexture.wrapT = THREE.ClampToEdgeWrapping;
-        extensionTexture.minFilter = THREE.NearestFilter;
-        extensionTexture.magFilter = THREE.NearestFilter;
-        // Create simple material for extension planes
+        // Get the sprite texture for the extension terrain type
+        const tileMapper = this.game.terrainTileMapper;
+        let extensionTexture;
+
+        if (tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
+            // Use the Full sprite (index 0) from the extension terrain type
+            const fullSprite = tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
+
+            if (fullSprite) {
+                // Create texture from the sprite canvas
+                extensionTexture = new THREE.CanvasTexture(fullSprite);
+                extensionTexture.wrapS = THREE.RepeatWrapping;
+                extensionTexture.wrapT = THREE.RepeatWrapping;
+                extensionTexture.minFilter = THREE.NearestFilter;
+                extensionTexture.magFilter = THREE.NearestFilter;
+            }
+        }
+
+        // Fallback to solid color if sprite not available
+        if (!extensionTexture) {
+            const terrainTypes = this.tileMap.terrainTypes || [];
+            let bgColor = terrainTypes[extensionTerrainType]?.color;
+
+            if (bgColor?.paletteColor && this.game.palette) {
+                bgColor = this.game.palette[bgColor.paletteColor];
+            }
+
+            const extensionColor = bgColor || '#333333';
+            const extensionCanvas = document.createElement('canvas');
+            extensionCanvas.width = 1;
+            extensionCanvas.height = 1;
+            const extensionCtx = extensionCanvas.getContext('2d');
+            extensionCtx.fillStyle = extensionColor;
+            extensionCtx.fillRect(0, 0, 1, 1);
+
+            extensionTexture = new THREE.CanvasTexture(extensionCanvas);
+            extensionTexture.wrapS = THREE.RepeatWrapping;
+            extensionTexture.wrapT = THREE.RepeatWrapping;
+            extensionTexture.minFilter = THREE.NearestFilter;
+            extensionTexture.magFilter = THREE.NearestFilter;
+        }
+
+        // Create material for extension planes with repeating texture
         const extensionMaterial = new THREE.MeshStandardMaterial({
             map: extensionTexture,
             side: THREE.DoubleSide,
