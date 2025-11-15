@@ -508,84 +508,137 @@ class TileMap {
 	// Paint base layer with lower neighbor textures to fill gaps
 	paintBaseLowerLayer(ctx, analyzedMap, tile, row, col) {
 		const atomSize = this.tileSize / 2;
-		const analysis = tile.terrainAnalysis;
 
-		// For each atom position, determine which lower neighbor to use as base
-		// and which atom from that neighbor aligns with this position
+		// For each atom position, check neighboring tile terrains and build appropriate base
 		const positions = [
-			{ name: 'TL', x: 0, y: 0, neighbors: [
-				{ key: 'top', atomPos: 'BL' },
-				{ key: 'left', atomPos: 'TR' },
-				{ key: 'topLeft', atomPos: 'BR' }
-			]},
-			{ name: 'TR', x: atomSize, y: 0, neighbors: [
-				{ key: 'top', atomPos: 'BR' },
-				{ key: 'right', atomPos: 'TL' },
-				{ key: 'topRight', atomPos: 'BL' }
-			]},
-			{ name: 'BL', x: 0, y: atomSize, neighbors: [
-				{ key: 'bot', atomPos: 'TL' },
-				{ key: 'left', atomPos: 'BR' },
-				{ key: 'botLeft', atomPos: 'TR' }
-			]},
-			{ name: 'BR', x: atomSize, y: atomSize, neighbors: [
-				{ key: 'bot', atomPos: 'TR' },
-				{ key: 'right', atomPos: 'BL' },
-				{ key: 'botRight', atomPos: 'TL' }
-			]}
+			{
+				name: 'TL', x: 0, y: 0,
+				// Tiles that affect TL atom
+				tileNeighbors: [
+					{ dir: 'topLeft', row: row - 1, col: col - 1 },
+					{ dir: 'top', row: row - 1, col: col },
+					{ dir: 'left', row: row, col: col - 1 }
+				]
+			},
+			{
+				name: 'TR', x: atomSize, y: 0,
+				// Tiles that affect TR atom
+				tileNeighbors: [
+					{ dir: 'topRight', row: row - 1, col: col + 1 },
+					{ dir: 'top', row: row - 1, col: col },
+					{ dir: 'right', row: row, col: col + 1 }
+				]
+			},
+			{
+				name: 'BL', x: 0, y: atomSize,
+				// Tiles that affect BL atom
+				tileNeighbors: [
+					{ dir: 'botLeft', row: row + 1, col: col - 1 },
+					{ dir: 'bot', row: row + 1, col: col },
+					{ dir: 'left', row: row, col: col - 1 }
+				]
+			},
+			{
+				name: 'BR', x: atomSize, y: atomSize,
+				// Tiles that affect BR atom
+				tileNeighbors: [
+					{ dir: 'botRight', row: row + 1, col: col + 1 },
+					{ dir: 'bot', row: row + 1, col: col },
+					{ dir: 'right', row: row, col: col + 1 }
+				]
+			}
 		];
-
-		const neighborMap = {
-			top: { row: row - 1, col: col, less: analysis.topLess },
-			left: { row: row, col: col - 1, less: analysis.leftLess },
-			right: { row: row, col: col + 1, less: analysis.rightLess },
-			bot: { row: row + 1, col: col, less: analysis.botLess },
-			topLeft: { row: row - 1, col: col - 1, less: analysis.cornerTopLeftLess },
-			topRight: { row: row - 1, col: col + 1, less: analysis.cornerTopRightLess },
-			botLeft: { row: row + 1, col: col - 1, less: analysis.cornerBottomLeftLess },
-			botRight: { row: row + 1, col: col + 1, less: analysis.cornerBottomRightLess }
-		};
 
 		// Paint base layer for each atom position
 		for (const pos of positions) {
-			let bestNeighbor = null;
-			let highestLowerTerrainIndex = null;
+			// Get terrain indices of neighboring tiles
+			const neighborTerrains = {};
+			for (const neighbor of pos.tileNeighbors) {
+				const nRow = neighbor.row;
+				const nCol = neighbor.col;
 
-			// Find the HIGHEST terrain index that's still LOWER than current (immediate neighbor)
-			for (const neighborSpec of pos.neighbors) {
-				const neighbor = neighborMap[neighborSpec.key];
-				if (neighbor && neighbor.less) {
-					const nRow = neighbor.row;
-					const nCol = neighbor.col;
-
-					if (nRow >= 0 && nRow < this.numColumns && nCol >= 0 && nCol < this.numColumns) {
-						const nIndex = nRow * this.numColumns + nCol;
-						const nTile = analyzedMap[nIndex];
-
-						if (nTile && nTile.terrainIndex >= 0 && nTile.terrainIndex < tile.terrainIndex) {
-							// Use the neighbor closest to current terrain (highest among lower neighbors)
-							if (highestLowerTerrainIndex === null || nTile.terrainIndex > highestLowerTerrainIndex) {
-								highestLowerTerrainIndex = nTile.terrainIndex;
-								bestNeighbor = { tile: nTile, atomPos: neighborSpec.atomPos };
-							}
-						}
+				if (nRow >= 0 && nRow < this.numColumns && nCol >= 0 && nCol < this.numColumns) {
+					const nIndex = nRow * this.numColumns + nCol;
+					const nTile = analyzedMap[nIndex];
+					if (nTile && nTile.terrainIndex >= 0) {
+						neighborTerrains[neighbor.dir] = nTile.terrainIndex;
 					}
 				}
 			}
 
-			// Paint the actual atom from the neighbor's molecule (not just full atom)
-			if (bestNeighbor) {
-				const nTile = bestNeighbor.tile;
+			// Find highest terrain that's still lower than current
+			let highestLowerTerrain = null;
+			for (const dir in neighborTerrains) {
+				const terrain = neighborTerrains[dir];
+				if (terrain < tile.terrainIndex) {
+					if (highestLowerTerrain === null || terrain > highestLowerTerrain) {
+						highestLowerTerrain = terrain;
+					}
+				}
+			}
 
-				// Get the neighbor's molecule based on its own terrain analysis
-				const molecule = this.getMoleculeByTileAnalysis(nTile.terrainAnalysis);
-				const moleculeImageData = this.layerTextures[nTile.terrainIndex][molecule];
-				const neighborAtoms = this.extractAtomsFromMolecule(moleculeImageData);
+			// If we found a lower neighbor, paint appropriate base atom
+			if (highestLowerTerrain !== null && this.baseAtoms[highestLowerTerrain]) {
+				// Build a mini-analysis to determine which atom shape to use
+				// Check which neighbors are EVEN LOWER than the base terrain
+				const miniAnalysis = {
+					topLess: false,
+					leftLess: false,
+					rightLess: false,
+					botLess: false,
+					cornerTopLeftLess: false,
+					cornerTopRightLess: false,
+					cornerBottomLeftLess: false,
+					cornerBottomRightLess: false
+				};
 
-				// Paint the specific atom from the neighbor that aligns with this position
-				const atomToPaint = neighborAtoms[bestNeighbor.atomPos];
-				if (atomToPaint) {
-					ctx.putImageData(atomToPaint, pos.x, pos.y);
+				// Map position-specific neighbors to analysis flags
+				const neighborMapping = {
+					'TL': {
+						topLeft: 'cornerTopLeftLess',
+						top: 'topLess',
+						left: 'leftLess'
+					},
+					'TR': {
+						topRight: 'cornerTopRightLess',
+						top: 'topLess',
+						right: 'rightLess'
+					},
+					'BL': {
+						botLeft: 'cornerBottomLeftLess',
+						bot: 'botLess',
+						left: 'leftLess'
+					},
+					'BR': {
+						botRight: 'cornerBottomRightLess',
+						bot: 'botLess',
+						right: 'rightLess'
+					}
+				};
+
+				// Check which neighboring tiles are even lower than our base terrain
+				const mapping = neighborMapping[pos.name];
+				for (const dir in neighborTerrains) {
+					if (mapping[dir] && neighborTerrains[dir] < highestLowerTerrain) {
+						miniAnalysis[mapping[dir]] = true;
+					}
+				}
+
+				// Select appropriate atom from base terrain
+				const baseAtom = this.selectAtomForPosition(
+					{ terrainAnalysis: miniAnalysis },
+					pos.name,
+					highestLowerTerrain
+				);
+
+				if (baseAtom) {
+					ctx.putImageData(baseAtom, pos.x, pos.y);
+				} else {
+					// Fallback to full atom if selection returns null
+					const fullAtom = this.baseAtoms[highestLowerTerrain].full;
+					if (fullAtom) {
+						ctx.putImageData(fullAtom, pos.x, pos.y);
+					}
 				}
 			}
 		}
