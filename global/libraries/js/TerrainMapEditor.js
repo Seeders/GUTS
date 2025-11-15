@@ -281,15 +281,17 @@ class TerrainMapEditor {
         document.getElementById('terrainsBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.add('active');
             document.getElementById('environmentBtn').classList.remove('active');
-            
+            document.getElementById('rampsBtn').classList.remove('active');
+
             document.getElementById('terrainsPanel').style.display = 'block';
             document.getElementById('environmentPanel').style.display = 'none';
+            document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'terrain';
             this.previewCanvas.style.display = 'none';
             // Update placement indicator
             this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
             this.placementModeIndicator.style.opacity = '1';
-            
+
             // Hide indicator after a delay
             clearTimeout(this.indicatorTimeout);
             this.indicatorTimeout = setTimeout(() => {
@@ -300,21 +302,58 @@ class TerrainMapEditor {
         document.getElementById('environmentBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.remove('active');
             document.getElementById('environmentBtn').classList.add('active');
+            document.getElementById('rampsBtn').classList.remove('active');
             document.getElementById('terrainsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'block';
+            document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'environment';
-            
+
             // Make sure environment panel is set up
             this.setupEnvironmentPanel();
             this.placementModeIndicator.textContent = 'Placement Mode: Environment';
             this.placementModeIndicator.style.opacity = '1';
-            
+
             // Hide indicator after a delay
             clearTimeout(this.indicatorTimeout);
             this.indicatorTimeout = setTimeout(() => {
                 this.placementModeIndicator.style.opacity = '0';
             }, 2000);
         });
+
+        document.getElementById('rampsBtn').addEventListener('click', () => {
+            document.getElementById('terrainsBtn').classList.remove('active');
+            document.getElementById('environmentBtn').classList.remove('active');
+            document.getElementById('rampsBtn').classList.add('active');
+            document.getElementById('terrainsPanel').style.display = 'none';
+            document.getElementById('environmentPanel').style.display = 'none';
+            document.getElementById('rampsPanel').style.display = 'block';
+            this.placementMode = 'ramp';
+            this.previewCanvas.style.display = 'none';
+
+            // Update ramp count display
+            this.updateRampCount();
+
+            this.placementModeIndicator.textContent = 'Placement Mode: Ramps';
+            this.placementModeIndicator.style.opacity = '1';
+
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 2000);
+        });
+
+        // Clear all ramps button
+        document.getElementById('clear-all-ramps-btn').addEventListener('click', () => {
+            if (this.tileMap.ramps) {
+                this.tileMap.ramps = [];
+                this.ramps = this.tileMap.ramps;
+                this.updateRampCount();
+                this.needsRender = true;
+                this.scheduleRender();
+            }
+        });
+
         this.canvasEl.addEventListener('contextmenu', (e) => {
             e.preventDefault(); // Prevent default context menu
             
@@ -1250,6 +1289,9 @@ class TerrainMapEditor {
                     this.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
                 }
 
+                // Update ramp count display
+                this.updateRampCount();
+
                 // Schedule render to show ramps
                 this.needsRender = true;
                 this.scheduleRender();
@@ -1422,6 +1464,14 @@ class TerrainMapEditor {
     async updateCanvasWithData() {
         // Use fast rendering for instant feedback
         this.renderMap();
+    }
+
+    updateRampCount() {
+        const rampCountEl = document.getElementById('rampCount');
+        if (rampCountEl) {
+            const count = this.tileMap.ramps ? this.tileMap.ramps.length : 0;
+            rampCountEl.textContent = count;
+        }
     }
 
     exportMap() {
