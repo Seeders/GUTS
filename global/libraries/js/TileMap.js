@@ -336,7 +336,15 @@ class TileMap {
 			oneCornerTL: oneCornerTopLeftImageData,
 			oneCornerTR: oneCornerTopRightImageData,
 			oneCornerBL: oneCornerBotLeftImageData,
-			oneCornerBR: oneCornerBotRightImageData
+			oneCornerBR: oneCornerBotRightImageData,
+			twoCornerTop: twoCornerTopImageData,
+			twoCornerLeft: twoCornerLeftImageData,
+			twoCornerRight: twoCornerRightImageData,
+			twoCornerBottom: twoCornerBottomImageData,
+			threeCornerTL: threeCornerTopLeftImageData,
+			threeCornerTR: threeCornerTopRightImageData,
+			threeCornerBL: threeCornerBottomLeftImageData,
+			threeCornerBR: threeCornerBottomRightImageData
 		};
 
 		// Define molecule objects
@@ -505,6 +513,84 @@ class TileMap {
 		return null;
 	}
 
+	// Select base layer atom based on which neighbors are even lower
+	selectBaseLayerAtom(atoms, position, miniAnalysis) {
+		if (!atoms) return null;
+
+		switch(position) {
+			case 'TL': {
+				const diagonal = miniAnalysis.cornerTopLeftLess;
+				const top = miniAnalysis.topLess;
+				const left = miniAnalysis.leftLess;
+
+				// Check how many neighbors are lower
+				if (top && left) {
+					return atoms.threeCornerTL; // Both cardinals lower: 3 corners cut
+				} else if (top && diagonal) {
+					return atoms.twoCornerTop; // Top edge needs cutting
+				} else if (left && diagonal) {
+					return atoms.twoCornerLeft; // Left edge needs cutting
+				} else if (diagonal) {
+					return atoms.oneCornerTL; // Just corner
+				} else {
+					return atoms.full; // No neighbors lower
+				}
+			}
+			case 'TR': {
+				const diagonal = miniAnalysis.cornerTopRightLess;
+				const top = miniAnalysis.topLess;
+				const right = miniAnalysis.rightLess;
+
+				if (top && right) {
+					return atoms.threeCornerTR;
+				} else if (top && diagonal) {
+					return atoms.twoCornerTop;
+				} else if (right && diagonal) {
+					return atoms.twoCornerRight;
+				} else if (diagonal) {
+					return atoms.oneCornerTR;
+				} else {
+					return atoms.full;
+				}
+			}
+			case 'BL': {
+				const diagonal = miniAnalysis.cornerBottomLeftLess;
+				const bot = miniAnalysis.botLess;
+				const left = miniAnalysis.leftLess;
+
+				if (bot && left) {
+					return atoms.threeCornerBL;
+				} else if (bot && diagonal) {
+					return atoms.twoCornerBottom;
+				} else if (left && diagonal) {
+					return atoms.twoCornerLeft;
+				} else if (diagonal) {
+					return atoms.oneCornerBL;
+				} else {
+					return atoms.full;
+				}
+			}
+			case 'BR': {
+				const diagonal = miniAnalysis.cornerBottomRightLess;
+				const bot = miniAnalysis.botLess;
+				const right = miniAnalysis.rightLess;
+
+				if (bot && right) {
+					return atoms.threeCornerBR;
+				} else if (bot && diagonal) {
+					return atoms.twoCornerBottom;
+				} else if (right && diagonal) {
+					return atoms.twoCornerRight;
+				} else if (diagonal) {
+					return atoms.oneCornerBR;
+				} else {
+					return atoms.full;
+				}
+			}
+		}
+		return atoms.full;
+	}
+
 	// Paint base layer with lower neighbor textures to fill gaps
 	paintBaseLowerLayer(ctx, analyzedMap, tile, row, col) {
 		const atomSize = this.tileSize / 2;
@@ -624,21 +710,15 @@ class TileMap {
 					}
 				}
 
-				// Select appropriate atom from base terrain
-				const baseAtom = this.selectAtomForPosition(
-					{ terrainAnalysis: miniAnalysis },
+				// Select appropriate atom from base terrain using proper base layer logic
+				const baseAtom = this.selectBaseLayerAtom(
+					this.baseAtoms[highestLowerTerrain],
 					pos.name,
-					highestLowerTerrain
+					miniAnalysis
 				);
 
 				if (baseAtom) {
 					ctx.putImageData(baseAtom, pos.x, pos.y);
-				} else {
-					// Fallback to full atom if selection returns null
-					const fullAtom = this.baseAtoms[highestLowerTerrain].full;
-					if (fullAtom) {
-						ctx.putImageData(fullAtom, pos.x, pos.y);
-					}
 				}
 			}
 		}
