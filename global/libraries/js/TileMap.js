@@ -652,21 +652,49 @@ class TileMap {
 				}
 			}
 
-			// Find highest terrain that's still lower than current
-			let highestLowerTerrain = null;
+			// Find ALL unique terrain indices that are lower than current
+			const lowerTerrains = new Set();
 			for (const dir in neighborTerrains) {
 				const terrain = neighborTerrains[dir];
 				if (terrain < tile.terrainIndex) {
-					if (highestLowerTerrain === null || terrain > highestLowerTerrain) {
-						highestLowerTerrain = terrain;
-					}
+					lowerTerrains.add(terrain);
 				}
 			}
 
-			// If we found a lower neighbor, paint appropriate base atom
-			if (highestLowerTerrain !== null && this.baseAtoms[highestLowerTerrain]) {
-				// Build a mini-analysis to determine which atom shape to use
-				// Check which neighbors are EVEN LOWER than the base terrain
+			// Sort terrains from lowest to highest for proper layering
+			const sortedTerrains = Array.from(lowerTerrains).sort((a, b) => a - b);
+
+			// Map position-specific neighbors to analysis flags
+			const neighborMapping = {
+				'TL': {
+					topLeft: 'cornerTopLeftLess',
+					top: 'topLess',
+					left: 'leftLess'
+				},
+				'TR': {
+					topRight: 'cornerTopRightLess',
+					top: 'topLess',
+					right: 'rightLess'
+				},
+				'BL': {
+					botLeft: 'cornerBottomLeftLess',
+					bot: 'botLess',
+					left: 'leftLess'
+				},
+				'BR': {
+					botRight: 'cornerBottomRightLess',
+					bot: 'botLess',
+					right: 'rightLess'
+				}
+			};
+
+			// Paint each terrain layer from lowest to highest
+			for (let i = 0; i < sortedTerrains.length; i++) {
+				const currentLayerTerrain = sortedTerrains[i];
+
+				if (!this.baseAtoms[currentLayerTerrain]) continue;
+
+				// Build mini-analysis: check which neighbors are lower than THIS layer
 				const miniAnalysis = {
 					topLess: false,
 					leftLess: false,
@@ -678,47 +706,29 @@ class TileMap {
 					cornerBottomRightLess: false
 				};
 
-				// Map position-specific neighbors to analysis flags
-				const neighborMapping = {
-					'TL': {
-						topLeft: 'cornerTopLeftLess',
-						top: 'topLess',
-						left: 'leftLess'
-					},
-					'TR': {
-						topRight: 'cornerTopRightLess',
-						top: 'topLess',
-						right: 'rightLess'
-					},
-					'BL': {
-						botLeft: 'cornerBottomLeftLess',
-						bot: 'botLess',
-						left: 'leftLess'
-					},
-					'BR': {
-						botRight: 'cornerBottomRightLess',
-						bot: 'botLess',
-						right: 'rightLess'
-					}
-				};
-
-				// Check which neighboring tiles are even lower than our base terrain
 				const mapping = neighborMapping[pos.name];
 				for (const dir in neighborTerrains) {
-					if (mapping[dir] && neighborTerrains[dir] < highestLowerTerrain) {
+					if (mapping[dir] && neighborTerrains[dir] < currentLayerTerrain) {
 						miniAnalysis[mapping[dir]] = true;
 					}
 				}
 
-				// Select appropriate atom from base terrain using proper base layer logic
-				const baseAtom = this.selectBaseLayerAtom(
-					this.baseAtoms[highestLowerTerrain],
+				// Select appropriate atom for this layer
+				const layerAtom = this.selectBaseLayerAtom(
+					this.baseAtoms[currentLayerTerrain],
 					pos.name,
 					miniAnalysis
 				);
 
-				if (baseAtom) {
-					ctx.putImageData(baseAtom, pos.x, pos.y);
+				if (layerAtom) {
+					if (i === 0) {
+						// First layer: use putImageData (on black background)
+						ctx.putImageData(layerAtom, pos.x, pos.y);
+					} else {
+						// Subsequent layers: use drawImage for alpha blending
+						const atomCanvas = this.imageDataToCanvas(layerAtom);
+						ctx.drawImage(atomCanvas, pos.x, pos.y);
+					}
 				}
 			}
 		}
