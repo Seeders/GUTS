@@ -759,23 +759,29 @@ class TileMap {
 	
 	colorCornerTextureRoutine(outputImageData, x, y, cornerImageData, terrainIndex) {
 		let cornerSize = this.tileSize / 2;
+		// Use terrainIndex for texture selection
+		let baseColors = this.layerTextures[terrainIndex][this.TileMolecule.Full];
 		const data = new Uint8ClampedArray(outputImageData.data);
 		for (let j = 0; j < cornerSize; j++) {
 			for (let i = 0; i < cornerSize; i++) {
 				// Calculate the correct position in the output image data
 				let outputIndex = ((y + j) * this.tileSize + (x + i)) * 4;
-
+	
+				let baseColor = this.getColorFromImageData(baseColors, outputIndex);
+		
 				let sourceOriginX = i;
 				let sourceOriginY = j * cornerSize;
 				let sourcePixel = (sourceOriginY + sourceOriginX) * 4;
 				let pColor = this.getColorFromImageData(cornerImageData, sourcePixel);
-				
-				// Use corner texture directly without color replacement
-				// Black pixels should remain black (part of the texture design)
-				data[outputIndex] = pColor.r;
-				data[outputIndex + 1] = pColor.g;
-				data[outputIndex + 2] = pColor.b;
-				data[outputIndex + 3] = pColor.a;
+				let fColor = pColor;
+				if (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 255 })) {
+					fColor = baseColor;				
+				}
+	
+				data[outputIndex] = fColor.r;
+				data[outputIndex + 1] = fColor.g;
+				data[outputIndex + 2] = fColor.b;
+				data[outputIndex + 3] = fColor.a;
 			}
 		}
 
@@ -847,8 +853,7 @@ class TileMap {
 
 						// Use terrainIndex to select the correct texture layer
 						imageData = this.layerTextures[tile.terrainIndex][molecule];
-						// Texture is already colored - no need for additional color processing
-						//imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
+						imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
 						//imageData = this.addVariationImage(imageData, tile);
 						// Use height analysis for cliff corner graphics
 						imageData = this.addCornerGraphics(imageData, tile.heightAnalysis, tile.terrainIndex);
