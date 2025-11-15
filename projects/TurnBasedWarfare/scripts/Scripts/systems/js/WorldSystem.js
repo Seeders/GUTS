@@ -888,7 +888,7 @@ class WorldSystem extends engine.BaseSystem {
         });
     }
 
-    placeCliffAtomsForTile(x, z, tileAnalysis, gridSize) {
+    placeCliffAtomsForTile(x, z, heightAnalysis, gridSize) {
 
         if(this.game.gameManager.call('hasRampAt', x, z)){
             return;
@@ -900,18 +900,18 @@ class WorldSystem extends engine.BaseSystem {
         const halfOffset = offset / 2;
         const halfGrid = gridSize / 2 + halfOffset;
         const quarterGrid = gridSize / 4 + halfOffset / 2; // Center of each quadrant
-        
-        
+
+
         // Calculate cliff bottom height
-        let cliffBottomHeightIndex = tileAnalysis.heightIndex - 2;
-        if (tileAnalysis.neighborLowerCount == 0 && tileAnalysis.cornerLowerCount == 0) {
+        let cliffBottomHeightIndex = heightAnalysis.heightIndex - 2;
+        if (heightAnalysis.neighborLowerCount == 0 && heightAnalysis.cornerLowerCount == 0) {
             cliffBottomHeightIndex += 1;
         }
         const cliffHeight = cliffBottomHeightIndex * this.heightStep;
-        
+
         // Array to store atom placements
         const atomPlacements = [];
-        
+
         // Helper function to add atom
         const addAtom = (type, localX, localZ, rotation) => {
             atomPlacements.push({
@@ -921,55 +921,55 @@ class WorldSystem extends engine.BaseSystem {
                 rotation
             });
         };
-        
+
         // Track which quadrants are occupied by corners
-        const topLeftOccupied = (tileAnalysis.topLess && tileAnalysis.leftLess) || 
-                                (tileAnalysis.cornerTopLeftLess && !tileAnalysis.topLess && !tileAnalysis.leftLess);
-        const topRightOccupied = (tileAnalysis.topLess && tileAnalysis.rightLess) || 
-                                (tileAnalysis.cornerTopRightLess && !tileAnalysis.topLess && !tileAnalysis.rightLess);
-        const botLeftOccupied = (tileAnalysis.botLess && tileAnalysis.leftLess) || 
-                                (tileAnalysis.cornerBottomLeftLess && !tileAnalysis.botLess && !tileAnalysis.leftLess);
-        const botRightOccupied = (tileAnalysis.botLess && tileAnalysis.rightLess) || 
-                                (tileAnalysis.cornerBottomRightLess && !tileAnalysis.botLess && !tileAnalysis.rightLess);
-        
+        const topLeftOccupied = (heightAnalysis.topLess && heightAnalysis.leftLess) ||
+                                (heightAnalysis.cornerTopLeftLess && !heightAnalysis.topLess && !heightAnalysis.leftLess);
+        const topRightOccupied = (heightAnalysis.topLess && heightAnalysis.rightLess) ||
+                                (heightAnalysis.cornerTopRightLess && !heightAnalysis.topLess && !heightAnalysis.rightLess);
+        const botLeftOccupied = (heightAnalysis.botLess && heightAnalysis.leftLess) ||
+                                (heightAnalysis.cornerBottomLeftLess && !heightAnalysis.botLess && !heightAnalysis.leftLess);
+        const botRightOccupied = (heightAnalysis.botLess && heightAnalysis.rightLess) ||
+                                (heightAnalysis.cornerBottomRightLess && !heightAnalysis.botLess && !heightAnalysis.rightLess);
+
         // Place corners first (they take priority) - CENTERED in their quadrants
         // Outer corners
-        if (tileAnalysis.topLess && tileAnalysis.leftLess) {
+        if (heightAnalysis.topLess && heightAnalysis.leftLess) {
             addAtom('atom_one', quarterGrid, quarterGrid, 0);
         }
-        
-        if (tileAnalysis.topLess && tileAnalysis.rightLess) {
+
+        if (heightAnalysis.topLess && heightAnalysis.rightLess) {
             addAtom('atom_one', quarterGrid * 3, quarterGrid, Math.PI / 2);
         }
-        
-        if (tileAnalysis.botLess && tileAnalysis.leftLess) {
+
+        if (heightAnalysis.botLess && heightAnalysis.leftLess) {
             addAtom('atom_one', quarterGrid, quarterGrid * 3, -Math.PI / 2);
         }
-        
-        if (tileAnalysis.botLess && tileAnalysis.rightLess) {
+
+        if (heightAnalysis.botLess && heightAnalysis.rightLess) {
             addAtom('atom_one', quarterGrid * 3, quarterGrid * 3, Math.PI);
         }
-        
+
         // Inner corners - CENTERED in their quadrants
-        if (tileAnalysis.cornerTopLeftLess && !tileAnalysis.topLess && !tileAnalysis.leftLess) {
+        if (heightAnalysis.cornerTopLeftLess && !heightAnalysis.topLess && !heightAnalysis.leftLess) {
             addAtom('atom_three', quarterGrid, quarterGrid, 0);
         }
-        
-        if (tileAnalysis.cornerTopRightLess && !tileAnalysis.topLess && !tileAnalysis.rightLess) {
+
+        if (heightAnalysis.cornerTopRightLess && !heightAnalysis.topLess && !heightAnalysis.rightLess) {
             addAtom('atom_three', quarterGrid * 3, quarterGrid, Math.PI / 2);
         }
-        
-        if (tileAnalysis.cornerBottomLeftLess && !tileAnalysis.botLess && !tileAnalysis.leftLess) {
+
+        if (heightAnalysis.cornerBottomLeftLess && !heightAnalysis.botLess && !heightAnalysis.leftLess) {
             addAtom('atom_three', quarterGrid, quarterGrid * 3, -Math.PI / 2);
         }
-        
-        if (tileAnalysis.cornerBottomRightLess && !tileAnalysis.botLess && !tileAnalysis.rightLess) {
+
+        if (heightAnalysis.cornerBottomRightLess && !heightAnalysis.botLess && !heightAnalysis.rightLess) {
             addAtom('atom_three', quarterGrid * 3, quarterGrid * 3, Math.PI);
         }
-        
+
         // Place edges in empty quadrants - CENTERED in their quadrants
         // Top edge uses top-left and top-right quadrants
-        if (tileAnalysis.topLess) {
+        if (heightAnalysis.topLess) {
             if (!topLeftOccupied) {
                 addAtom('atom_two', quarterGrid, quarterGrid, Math.PI / 2);
             }
@@ -977,9 +977,9 @@ class WorldSystem extends engine.BaseSystem {
                 addAtom('atom_two', quarterGrid * 3, quarterGrid, Math.PI / 2);
             }
         }
-        
+
         // Bottom edge uses bottom-left and bottom-right quadrants
-        if (tileAnalysis.botLess) {
+        if (heightAnalysis.botLess) {
             if (!botLeftOccupied) {
                 addAtom('atom_two', quarterGrid, quarterGrid * 3, -Math.PI / 2);
             }
@@ -987,9 +987,9 @@ class WorldSystem extends engine.BaseSystem {
                 addAtom('atom_two', quarterGrid * 3, quarterGrid * 3, -Math.PI / 2);
             }
         }
-        
+
         // Left edge uses top-left and bottom-left quadrants
-        if (tileAnalysis.leftLess) {
+        if (heightAnalysis.leftLess) {
             if (!topLeftOccupied) {
                 addAtom('atom_two', quarterGrid, quarterGrid, 0);
             }
@@ -997,9 +997,9 @@ class WorldSystem extends engine.BaseSystem {
                 addAtom('atom_two', quarterGrid, quarterGrid * 3, 0);
             }
         }
-        
-        // Right edge uses top-right and bottom-right quadrants  
-        if (tileAnalysis.rightLess) {
+
+        // Right edge uses top-right and bottom-right quadrants
+        if (heightAnalysis.rightLess) {
             if (!topRightOccupied) {
                 addAtom('atom_two', quarterGrid * 3, quarterGrid, Math.PI);
             }
@@ -1007,7 +1007,7 @@ class WorldSystem extends engine.BaseSystem {
                 addAtom('atom_two', quarterGrid * 3, quarterGrid * 3, Math.PI);
             }
         }
-        
+
         // Create entities for all atoms
         atomPlacements.forEach(atom => {
             this.createCliffEntity(atom.type, atom.x, cliffHeight, atom.z, atom.rotation);
