@@ -33,6 +33,7 @@ class PathfindingSystem extends engine.BaseSystem {
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
         this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
+        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));  
         this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
 
 
@@ -115,12 +116,15 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     // Check if there's a ramp at the given nav grid position
-    hasRampAt(navGridX, navGridZ) {
+    hasRampAtNav(navGridX, navGridZ) {
         const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
         const key = `${terrainGrid.x},${terrainGrid.z}`;
         return this.ramps.has(key);
     }
-
+    
+    hasRampAt(gridX, gridZ) {
+        return this.ramps.has(`${gridX},${gridZ}`);
+    }
     // Check if movement between terrains is allowed (either through walkableNeighbors or ramps)
     canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
         // First check normal walkability
@@ -130,7 +134,7 @@ class PathfindingSystem extends engine.BaseSystem {
 
         // If not normally walkable, check if there's a ramp at either position
         // Ramps allow movement between any terrain heights
-        if (this.hasRampAt(fromNavGridX, fromNavGridZ) || this.hasRampAt(toNavGridX, toNavGridZ)) {
+        if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
             return true;
         }
 
