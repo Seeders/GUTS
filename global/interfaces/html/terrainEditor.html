@@ -2,6 +2,7 @@
    <div class="editor-module__sidebar editor-module__sidebar--left">
      <div class="editor-module__toolbar">
        <button id="terrainsBtn" class="editor-module__btn editor-module__btn--active">Tiles</button>
+       <button id="heightsBtn" class="editor-module__btn">Heights</button>
        <button id="environmentBtn" class="editor-module__btn">Env</button>
        <button id="rampsBtn" class="editor-module__btn">Ramps</button>
      </div>
@@ -51,6 +52,26 @@
            </div>
            <div class="terrain-editor__object-controls">
              <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="clear-all-ramps-btn">Clear All Ramps</button>
+           </div>
+         </div>
+       </div>
+
+       <div id="heightsPanel" style="display: none;">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Height Map Editor</h3>
+           <div class="editor-module__info-box">
+             <p>Paint height levels on the map. Heights are independent of terrain types.</p>
+             <p>Click on tiles to paint the selected height level.</p>
+           </div>
+           <div class="editor-module__form-row">
+             <label for="heightLevel" class="editor-module__label">Height Level:</label>
+             <input type="number" id="heightLevel" class="editor-module__input" value="0" step="1" min="0" max="10">
+           </div>
+           <div class="editor-module__section">
+             <h4 class="editor-module__section-title">Quick Select</h4>
+             <div class="terrain-editor__height-levels" id="heightLevelButtons">
+               <!-- Height level buttons will be dynamically populated here -->
+             </div>
            </div>
          </div>
        </div>
