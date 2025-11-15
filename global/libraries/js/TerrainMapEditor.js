@@ -8,9 +8,10 @@ class TerrainMapEditor {
         this.defaultMapSize = 16;
         this.mapSize = this.defaultMapSize;
         this.currentTerrainId = 3; // Default to grass (index 3)
+        this.currentHeightLevel = 0; // Default to height level 0
         this.isMouseDown = false;
         this.objectData = {};
-        
+
         // Performance optimization: track last painted tile and debounce operations
         this.lastPaintedTile = null;
         this.needsRender = false;
@@ -33,10 +34,15 @@ class TerrainMapEditor {
             ],
             terrainMap: []
         };
+        // Height map structure (separate from terrain)
+        this.heightMap = {
+            heightData: [],
+            extensionHeight: 0
+        };
         this.environmentObjects = this.tileMap.environmentObjects || [];
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
-        this.placementMode = 'terrain'; // can be 'terrain', 'environment', or 'ramp'
+        this.placementMode = 'terrain'; // can be 'terrain', 'environment', 'ramp', or 'height'
         this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -204,7 +210,7 @@ class TerrainMapEditor {
             const world = this.objectData.world ? this.gameEditor.getCollections().worlds[this.objectData.world] : null;
             this.worldObjects = {};
             if(world){
-                const worldObjectNames = world.worldObjects || [];             
+                const worldObjectNames = world.worldObjects || [];
                 worldObjectNames.forEach((objectName) => {
                     this.worldObjects[objectName] = this.gameEditor.getCollections().worldObjects[objectName];
                 });
@@ -216,7 +222,7 @@ class TerrainMapEditor {
             this.canvasEl.style.width = '';
             this.canvasEl.style.height = '';
 
-            //this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b"); 
+            //this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b");
             if(this.tileMap.extensionTerrainType){
                 this.canvasEl.backgroundColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;
             } else {
@@ -226,6 +232,18 @@ class TerrainMapEditor {
 
             if (!this.tileMap.environmentObjects) {
                 this.tileMap.environmentObjects = [];
+            }
+
+            // Load or initialize heightMap
+            if (this.objectData.heightMap) {
+                this.heightMap = this.objectData.heightMap;
+            } else {
+                // Initialize heightMap if it doesn't exist
+                // Default to deriving heights from terrain types for backwards compatibility
+                this.heightMap = {
+                    heightData: [],
+                    extensionHeight: this.tileMap.extensionTerrainType || 0
+                };
             }
             const extensionTerrainTypeSelector = document.getElementById('extensionTerrainType');
             // Strip id from terrainTypes if present, assume order is correct
@@ -260,9 +278,25 @@ class TerrainMapEditor {
                 this.mapSize = this.defaultMapSize;
             }
 
+            // Initialize heightMap data if empty
+            if (!this.heightMap.heightData || this.heightMap.heightData.length === 0) {
+                this.heightMap.heightData = [];
+                for (let y = 0; y < this.mapSize; y++) {
+                    this.heightMap.heightData[y] = [];
+                    for (let x = 0; x < this.mapSize; x++) {
+                        // Default to deriving height from terrain type (backwards compatibility)
+                        if (this.tileMap.terrainMap && this.tileMap.terrainMap[y] && this.tileMap.terrainMap[y][x] !== undefined) {
+                            this.heightMap.heightData[y][x] = this.tileMap.terrainMap[y][x];
+                        } else {
+                            this.heightMap.heightData[y][x] = 0;
+                        }
+                    }
+                }
+            }
+
             // Always recreate translator with current map size
             this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
-            
+
             document.getElementById('terrainMapSize').value = this.mapSize;
             
             // Resize canvas to fit map size
@@ -1293,6 +1327,35 @@ class TerrainMapEditor {
                 this.needsRender = true;
                 this.scheduleRender();
             }
+        } else if (this.placementMode === 'height') {
+            // Height map editing logic
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+
+            // Check if coordinates are within bounds
+            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
+                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+
+                // Performance: Check if this tile already has this height level
+                const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
+                const currentValue = this.heightMap.heightData[snappedGrid.y][snappedGrid.x];
+
+                if (currentValue !== this.currentHeightLevel || this.lastPaintedTile !== tileKey) {
+                    // Update height map with selected height level
+                    this.heightMap.heightData[snappedGrid.y][snappedGrid.x] = this.currentHeightLevel;
+                    this.lastPaintedTile = tileKey;
+
+                    // Apply terrain type 0 / height 0 coupling rule
+                    if (this.currentHeightLevel === 0) {
+                        // When height is reduced to 0, set terrain to type 0 (lowest terrain type)
+                        this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = 0;
+                    }
+
+                    // Schedule render instead of immediate render
+                    this.needsRender = true;
+                    this.scheduleRender();
+                }
+            }
         }
     }
 
@@ -1474,7 +1537,12 @@ class TerrainMapEditor {
     exportMap() {
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('saveTileMap', {
-            detail: { data: this.tileMap, propertyName: this.savePropertyName, refresh: false },
+            detail: {
+                data: this.tileMap,
+                propertyName: this.savePropertyName,
+                refresh: false,
+                heightMap: this.heightMap  // Include heightMap in the exported data
+            },
             bubbles: true,
             cancelable: true
         });
