@@ -23,10 +23,17 @@ class TileMap {
 		
 		this.TileAnalysis = class {
 			constructor() {
-			  this.heightIndex = 0;      // Height level for cliff analysis
-			  this.terrainIndex = 0;     // Terrain type for texture selection
+			  this.heightIndex = 0;
 			  this.neighborLowerCount = 0;
 			  this.cornerLowerCount = 0;
+			  this.topHeight = 0;
+			  this.leftHeight = 0;
+			  this.rightHeight = 0;
+			  this.botHeight = 0;
+			  this.topLeftHeight = 0;
+			  this.topRightHeight = 0;
+			  this.botLeftHeight = 0;
+			  this.botRightHeight = 0;
 			  this.topLess = false;
 			  this.leftLess = false;
 			  this.rightLess = false;
@@ -461,52 +468,82 @@ class TileMap {
 	}
 
 	analyzeTile(x, y) {
-		let tileAnalysis = new this.TileAnalysis();
 		let row = y;
 		let col = x;
 
+		// Create result object with both analyses
+		let result = {
+			terrainIndex: 0,
+			heightAnalysis: new this.TileAnalysis(),
+			terrainAnalysis: new this.TileAnalysis()
+		};
+
 		if (row < 0 || row >= this.numColumns || col < 0 || col >= this.numColumns) {
-			return tileAnalysis; // Out of bounds
+			return result; // Out of bounds
 		}
 
-		// NEW: Use heightMap for cliff analysis if available
-		const heightData = this.heightMap || this.tileMap;
-		tileAnalysis.heightIndex = heightData[row][col];
-
-		// ALWAYS use tileMap for terrain texture selection
-		tileAnalysis.terrainIndex = this.tileMap[row][col];
+		// Get terrain type for this tile
+		result.terrainIndex = this.tileMap[row][col];
 
 		// Helper function to check if a location is within bounds
 		function isWithinBounds(r, c, n) {
 			return r >= 0 && r < n && c >= 0 && c < n;
 		}
 
-		// Helper function to check and update tile analysis
-		var checkAndUpdate = ((r, c, n, direction, propertyLess) => {
-			if (isWithinBounds(r, c, n) ) {
-				// NEW: Use heightMap if available, otherwise fall back to tileMap
-				tileAnalysis[direction] = heightData[r][c];
-				if( heightData[r][c] < tileAnalysis.heightIndex) {
-					tileAnalysis[propertyLess] = true;
-					if(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0 ) {
-						tileAnalysis.neighborLowerCount++;
+		// Analyze heights for cliff detection
+		const heightData = this.heightMap || this.tileMap;
+		result.heightAnalysis.heightIndex = heightData[row][col];
+
+		var analyzeHeight = ((r, c, n, direction, propertyLess) => {
+			if (isWithinBounds(r, c, n)) {
+				result.heightAnalysis[direction] = heightData[r][c];
+				if (heightData[r][c] < result.heightAnalysis.heightIndex) {
+					result.heightAnalysis[propertyLess] = true;
+					if(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0) {
+						result.heightAnalysis.neighborLowerCount++;
 					} else if(['cornerTopLeftLess', 'cornerTopRightLess', 'cornerBottomLeftLess', 'cornerBottomRightLess'].indexOf(propertyLess) >= 0) {
-						tileAnalysis.cornerLowerCount++;
+						result.heightAnalysis.cornerLowerCount++;
 					}
 				}
 			}
 		});
 
-		checkAndUpdate(row - 1, col, this.numColumns, 'topHeight', 'topLess');
-		checkAndUpdate(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');
-		checkAndUpdate(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');
-		checkAndUpdate(row + 1, col, this.numColumns, 'botHeight', 'botLess');
-		checkAndUpdate(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');
-		checkAndUpdate(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');
-		checkAndUpdate(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');
-		checkAndUpdate(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');
+		analyzeHeight(row - 1, col, this.numColumns, 'topHeight', 'topLess');
+		analyzeHeight(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');
+		analyzeHeight(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');
+		analyzeHeight(row + 1, col, this.numColumns, 'botHeight', 'botLess');
+		analyzeHeight(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');
+		analyzeHeight(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');
+		analyzeHeight(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');
+		analyzeHeight(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');
 
-		return tileAnalysis;
+		// Analyze terrain types for texture tiling
+		result.terrainAnalysis.heightIndex = this.tileMap[row][col];
+
+		var analyzeTerrain = ((r, c, n, direction, propertyLess) => {
+			if (isWithinBounds(r, c, n)) {
+				result.terrainAnalysis[direction] = this.tileMap[r][c];
+				if (this.tileMap[r][c] < result.terrainAnalysis.heightIndex) {
+					result.terrainAnalysis[propertyLess] = true;
+					if(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0) {
+						result.terrainAnalysis.neighborLowerCount++;
+					} else if(['cornerTopLeftLess', 'cornerTopRightLess', 'cornerBottomLeftLess', 'cornerBottomRightLess'].indexOf(propertyLess) >= 0) {
+						result.terrainAnalysis.cornerLowerCount++;
+					}
+				}
+			}
+		});
+
+		analyzeTerrain(row - 1, col, this.numColumns, 'topHeight', 'topLess');
+		analyzeTerrain(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');
+		analyzeTerrain(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');
+		analyzeTerrain(row + 1, col, this.numColumns, 'botHeight', 'botLess');
+		analyzeTerrain(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');
+		analyzeTerrain(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');
+		analyzeTerrain(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');
+		analyzeTerrain(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');
+
+		return result;
 	}
 
 	// Function to generate a random integer between min and max (inclusive)
@@ -629,14 +666,14 @@ class TileMap {
 		return molecule;
 	}
 
-	colorImageData(imageData, tileAnalysis) {
+	colorImageData(imageData, terrainAnalysis, terrainIndex) {
 
 		const data = new Uint8ClampedArray(imageData.data);
 		var directions = ['topHeight', 'leftHeight', 'rightHeight', 'botHeight', 'topLeftHeight', 'topRightHeight', 'botLeftHeight', 'botRightHeight'];
 		let heightCounts = {};
 		directions.forEach((direction) => {
-			let height = tileAnalysis[direction];
-			if (height !== tileAnalysis.heightIndex) {
+			let height = terrainAnalysis[direction];
+			if (height !== terrainAnalysis.heightIndex) {
 				if (!heightCounts[height]) {
 					heightCounts[height] = 0;
 				}
@@ -644,10 +681,10 @@ class TileMap {
 			}
 		});
 
-		let lowerNeighborHeight = Math.max(0, tileAnalysis.heightIndex - 1);
+		let lowerNeighborHeight = Math.max(0, terrainAnalysis.heightIndex - 1);
 		let maxCount = 0;
 		Object.keys(heightCounts).forEach((height) => {
-			if (heightCounts[height] > maxCount && height < tileAnalysis.heightIndex) {
+			if (heightCounts[height] > maxCount && height < terrainAnalysis.heightIndex) {
 				lowerNeighborHeight = parseInt(height);
 				maxCount = heightCounts[height];
 			}
@@ -658,9 +695,9 @@ class TileMap {
 			blackData.fill(0); // Fill with black (0, 0, 0, 255)
 			return new ImageData(blackData, this.tileSize, this.tileSize);
 		}
-		// Use terrainIndex for texture selection, not heightIndex
-		let baseColors = this.layerTextures[tileAnalysis.terrainIndex][this.TileMolecule.Full].data;
-		let neighborColors = this.layerTextures[tileAnalysis.terrainIndex][this.TileMolecule.Full].data;
+		// Use terrainIndex for texture selection
+		let baseColors = this.layerTextures[terrainIndex][this.TileMolecule.Full].data;
+		let neighborColors = this.layerTextures[terrainIndex][this.TileMolecule.Full].data;
 
 		// Iterate over each pixel
 		for (let i = 0; i < numPixels; i++) {
@@ -669,7 +706,7 @@ class TileMap {
 			let bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };
 			let tColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };
 
-			if (this.layerTextures.length > tileAnalysis.terrainIndex) {
+			if (this.layerTextures.length > terrainIndex) {
 				if (baseColors.length > i) {
 					bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };
 				}
@@ -692,41 +729,38 @@ class TileMap {
 		return color1.r === color2.r && color1.g === color2.g && color1.b === color2.b && color1.a === color2.a;
 	}
 
-	addCornerGraphics(imageData, tileAnalysis) {
+	addCornerGraphics(imageData, heightAnalysis, terrainIndex) {
 		let cornerSize = this.tileSize / 2;
 		let cornerTexture;
-		// Use terrainIndex for texture selection, not heightIndex
-		let terrainIndex = tileAnalysis.terrainIndex;
 
-		if (tileAnalysis.cornerLowerCount > 0) {
-			if (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {
+		if (heightAnalysis.cornerLowerCount > 0) {
+			if (heightAnalysis.cornerTopLeftLess && (!heightAnalysis.topLess && !heightAnalysis.leftLess)) {
 				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerTL];
-				imageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, tileAnalysis);
+				imageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, terrainIndex);
 			}
-			// Assuming tileAnalysis, textureDict, and other variables are already defined
-			if (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {
+			// Assuming heightAnalysis, textureDict, and other variables are already defined
+			if (heightAnalysis.cornerTopRightLess && (!heightAnalysis.topLess && !heightAnalysis.rightLess)) {
 				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerTR];
-				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, tileAnalysis);
+				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, terrainIndex);
 			}
 
-			if (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {
+			if (heightAnalysis.cornerBottomLeftLess && (!heightAnalysis.botLess && !heightAnalysis.leftLess)) {
 				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerBL];
-				imageData = this.colorCornerTextureRoutine(imageData, 0, cornerSize, cornerTexture, tileAnalysis);			
+				imageData = this.colorCornerTextureRoutine(imageData, 0, cornerSize, cornerTexture, terrainIndex);
 			}
 
-			if (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {
+			if (heightAnalysis.cornerBottomRightLess && (!heightAnalysis.botLess && !heightAnalysis.rightLess)) {
 				cornerTexture = this.layerTextures[terrainIndex][this.TileCliffMolecules.CornerBR];
-				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, tileAnalysis);
+				imageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, terrainIndex);
 			}
 		}
 		return imageData;
 	}
 	
-	colorCornerTextureRoutine(outputImageData, x, y, cornerImageData, tileAnalysis) {
+	colorCornerTextureRoutine(outputImageData, x, y, cornerImageData, terrainIndex) {
 		let cornerSize = this.tileSize / 2;
-		// Use terrainIndex for texture selection, not heightIndex
-		let baseTerrainIndex = tileAnalysis.terrainIndex;
-		let baseColors = this.layerTextures[baseTerrainIndex][this.TileMolecule.Full];
+		// Use terrainIndex for texture selection
+		let baseColors = this.layerTextures[terrainIndex][this.TileMolecule.Full];
 		const data = new Uint8ClampedArray(outputImageData.data);
 		for (let j = 0; j < cornerSize; j++) {
 			for (let i = 0; i < cornerSize; i++) {
@@ -796,90 +830,44 @@ class TileMap {
 			layerCanvases[layerIndex] = offscreenCanvas;
 			const offscreenCtx = offscreenCanvas.getContext('2d');
 	
-			analyzedMap.forEach((tileAnalysis, index) => {
+			analyzedMap.forEach((tile, index) => {
 				const x = (index % this.numColumns) * this.tileSize;
 				const y = Math.floor(index / this.numColumns) * this.tileSize;
 
 				let imageData;
-				let _tileAnalysis = {...tileAnalysis };
 
 				// Check if this tile's terrain should be drawn on this layer
-				// Note: We still use heightIndex for cliff edge detection
-				if (_tileAnalysis.terrainIndex > layerIndex) {
-					// This terrain type is drawn on a higher layer, skip it
-					// But we need to adjust cliff detection for this layer
-					const originalHeightIndex = _tileAnalysis.heightIndex;
-					_tileAnalysis.heightIndex = layerIndex;
-
-					// Adjust cliff flags based on the current layer
-					if(_tileAnalysis.topLess && _tileAnalysis.topHeight >= layerIndex) {
-						_tileAnalysis.topLess = false;
-						_tileAnalysis.neighborLowerCount--;
-					}
-					if(_tileAnalysis.leftLess && _tileAnalysis.leftHeight >= layerIndex) {
-						_tileAnalysis.leftLess = false;
-						_tileAnalysis.neighborLowerCount--;
-					}
-					if(_tileAnalysis.rightLess && _tileAnalysis.rightHeight >= layerIndex){
-						_tileAnalysis.rightLess = false;
-						_tileAnalysis.neighborLowerCount--;
-					}
-					if(_tileAnalysis.botLess && _tileAnalysis.botHeight >= layerIndex) {
-						_tileAnalysis.botLess = false;
-						_tileAnalysis.neighborLowerCount--;
-					}
-					if(_tileAnalysis.cornerTopLeftLess && _tileAnalysis.topLeftHeight >= layerIndex) {
-						_tileAnalysis.cornerTopLeftLess = false;
-						_tileAnalysis.cornerLowerCount--;
-					}
-					if(_tileAnalysis.cornerTopRightLess && _tileAnalysis.topRightHeight >= layerIndex) {
-						_tileAnalysis.cornerTopRightLess = false;
-						_tileAnalysis.cornerLowerCount--;
-					}
-					if(_tileAnalysis.cornerBottomLeftLess && _tileAnalysis.botLeftHeight >= layerIndex) {
-						_tileAnalysis.cornerBottomLeftLess = false;
-						_tileAnalysis.cornerLowerCount--;
-					}
-					if(_tileAnalysis.cornerBottomRightLess && _tileAnalysis.botRightHeight >= layerIndex) {
-						_tileAnalysis.cornerBottomRightLess = false;
-						_tileAnalysis.cornerLowerCount--;
-					}
-
-				}
-				if (_tileAnalysis.terrainIndex < layerIndex) {
-					// Use transparent data for tiles below current layer
+				if (tile.terrainIndex !== layerIndex) {
+					// This terrain type is on a different layer - render transparent
 					let numPixels = this.tileSize * this.tileSize;
-					const transparentData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)
-					
+					const transparentData = new Uint8ClampedArray(numPixels * 4);
 					for (let i = 0; i < numPixels * 4; i += 4) {
-						transparentData[i] = 0;     // Red (not important for transparency)
-						transparentData[i + 1] = 0; // Green (not important for transparency)
-						transparentData[i + 2] = 0; // Blue (not important for transparency)
-						transparentData[i + 3] = 0; // Alpha (0 for full transparency)
+						transparentData[i + 3] = 0; // Alpha = 0 (transparent)
 					}
-					
 					imageData = new ImageData(transparentData, this.tileSize, this.tileSize);
-					
-				 } else {
-					imageData = new ImageData(new Uint8ClampedArray(4), 1, 1);
-					if( _tileAnalysis.terrainIndex >= 0 ) {
-						let molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);
+				} else {
+					// This terrain type should be drawn on this layer
+					if (tile.terrainIndex >= 0) {
+						// Use terrain analysis for texture molecule selection (determines tiling pattern)
+						let molecule = this.getMoleculeByTileAnalysis(tile.terrainAnalysis);
+
 						// Use terrainIndex to select the correct texture layer
-						imageData = this.layerTextures[_tileAnalysis.terrainIndex][molecule];
-						imageData = this.colorImageData(imageData, _tileAnalysis);
-						//imageData = this.addVariationImage(imageData, _tileAnalysis);
-						imageData = this.addCornerGraphics(imageData, _tileAnalysis);
+						imageData = this.layerTextures[tile.terrainIndex][molecule];
+						imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
+						//imageData = this.addVariationImage(imageData, tile);
+						// Use height analysis for cliff corner graphics
+						imageData = this.addCornerGraphics(imageData, tile.heightAnalysis, tile.terrainIndex);
 					} else {
 						let numPixels = this.tileSize * this.tileSize;
-						const blackData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)
-						blackData.fill(0); // Fill with black (0, 0, 0, 255)
+						const blackData = new Uint8ClampedArray(numPixels * 4);
+						blackData.fill(0);
 						imageData = new ImageData(blackData, this.tileSize, this.tileSize);
 					}
 				}
 
 				// Update height map for this tile
-				this.updateHeightMapForTile(x, y, tileAnalysis.heightIndex);
-	
+				this.updateHeightMapForTile(x, y, tile.heightAnalysis.heightIndex);
+
 				offscreenCtx.putImageData(imageData, x + 2, y + 2);
 			});
 		}
