@@ -232,6 +232,66 @@
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }
 
+/* Tool buttons */
+.terrain-editor__tool-buttons {
+    display: flex;
+    gap: var(--editor-spacing-sm);
+    margin-top: var(--editor-spacing-xs);
+}
+
+.terrain-editor__tool-buttons button {
+    flex: 1;
+}
+
+/* Slider styling */
+.editor-module__slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--editor-bg-medium);
+    outline: none;
+    -webkit-appearance: none;
+    margin: 0 var(--editor-spacing-sm);
+}
+
+.editor-module__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--editor-primary);
+    cursor: pointer;
+    transition: var(--editor-transition);
+}
+
+.editor-module__slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--editor-primary);
+    cursor: pointer;
+    border: none;
+    transition: var(--editor-transition);
+}
+
+.editor-module__slider::-webkit-slider-thumb:hover {
+    background: var(--editor-primary-hover);
+    transform: scale(1.2);
+}
+
+.editor-module__slider::-moz-range-thumb:hover {
+    background: var(--editor-primary-hover);
+    transform: scale(1.2);
+}
+
+.editor-module__value-display {
+    min-width: 20px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--editor-text-primary);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .terrain-editor__environment-items {

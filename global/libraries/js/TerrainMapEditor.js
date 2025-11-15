@@ -40,6 +40,8 @@ class TerrainMapEditor {
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
         this.placementMode = 'terrain'; // can be 'terrain', 'environment', 'ramp', or 'height'
+        this.terrainTool = 'brush'; // can be 'brush' or 'fill'
+        this.brushSize = 1; // Default brush size (1x1)
         this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -442,6 +444,48 @@ class TerrainMapEditor {
             this.indicatorTimeout = setTimeout(() => {
                 this.placementModeIndicator.style.opacity = '0';
             }, 2000);
+        });
+
+        // Terrain tool buttons
+        document.getElementById('terrainBrushBtn').addEventListener('click', () => {
+            this.terrainTool = 'brush';
+            document.getElementById('terrainBrushBtn').classList.add('editor-module__btn--active');
+            document.getElementById('terrainFillBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('terrainBrushSizeRow').style.display = 'flex';
+        });
+
+        document.getElementById('terrainFillBtn').addEventListener('click', () => {
+            this.terrainTool = 'fill';
+            document.getElementById('terrainFillBtn').classList.add('editor-module__btn--active');
+            document.getElementById('terrainBrushBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('terrainBrushSizeRow').style.display = 'none';
+        });
+
+        // Terrain brush size
+        document.getElementById('terrainBrushSize').addEventListener('input', (e) => {
+            this.brushSize = parseInt(e.target.value);
+            document.getElementById('terrainBrushSizeValue').textContent = this.brushSize;
+        });
+
+        // Height tool buttons
+        document.getElementById('heightBrushBtn').addEventListener('click', () => {
+            this.terrainTool = 'brush';
+            document.getElementById('heightBrushBtn').classList.add('editor-module__btn--active');
+            document.getElementById('heightFillBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('heightBrushSizeRow').style.display = 'flex';
+        });
+
+        document.getElementById('heightFillBtn').addEventListener('click', () => {
+            this.terrainTool = 'fill';
+            document.getElementById('heightFillBtn').classList.add('editor-module__btn--active');
+            document.getElementById('heightBrushBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('heightBrushSizeRow').style.display = 'none';
+        });
+
+        // Height brush size
+        document.getElementById('heightBrushSize').addEventListener('input', (e) => {
+            this.brushSize = parseInt(e.target.value);
+            document.getElementById('heightBrushSizeValue').textContent = this.brushSize;
         });
 
         this.canvasEl.addEventListener('contextmenu', (e) => {
@@ -1329,6 +1373,150 @@ class TerrainMapEditor {
         }, 300); // Export 300ms after last change
     }
 
+    // Paint with brush on terrain map
+    paintBrushTerrain(centerX, centerY, terrainId) {
+        const radius = Math.floor(this.brushSize / 2);
+        let painted = false;
+
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const x = centerX + dx;
+                const y = centerY + dy;
+
+                // Check bounds
+                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                    // Check if within brush radius (circular brush)
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius + 0.5) {
+                        if (this.tileMap.terrainMap[y][x] !== terrainId) {
+                            this.tileMap.terrainMap[y][x] = terrainId;
+                            painted = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return painted;
+    }
+
+    // Paint with brush on height map
+    paintBrushHeight(centerX, centerY, heightLevel) {
+        const radius = Math.floor(this.brushSize / 2);
+        let painted = false;
+
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const x = centerX + dx;
+                const y = centerY + dy;
+
+                // Check bounds
+                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                    // Check if within brush radius (circular brush)
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius + 0.5) {
+                        if (this.tileMap.heightMap[y][x] !== heightLevel) {
+                            this.tileMap.heightMap[y][x] = heightLevel;
+                            painted = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return painted;
+    }
+
+    // Flood fill terrain map
+    floodFillTerrain(startX, startY, newTerrainId) {
+        if (startX < 0 || startX >= this.mapSize || startY < 0 || startY >= this.mapSize) {
+            return false;
+        }
+
+        const oldTerrainId = this.tileMap.terrainMap[startY][startX];
+
+        // If the target color is the same as the replacement, nothing to do
+        if (oldTerrainId === newTerrainId) {
+            return false;
+        }
+
+        // Use a queue-based flood fill to avoid stack overflow
+        const queue = [[startX, startY]];
+        const visited = new Set();
+
+        while (queue.length > 0) {
+            const [x, y] = queue.shift();
+            const key = `${x},${y}`;
+
+            // Skip if already visited or out of bounds
+            if (visited.has(key) || x < 0 || x >= this.mapSize || y < 0 || y >= this.mapSize) {
+                continue;
+            }
+
+            // Skip if not the target terrain
+            if (this.tileMap.terrainMap[y][x] !== oldTerrainId) {
+                continue;
+            }
+
+            // Mark as visited and paint
+            visited.add(key);
+            this.tileMap.terrainMap[y][x] = newTerrainId;
+
+            // Add neighbors to queue
+            queue.push([x + 1, y]);
+            queue.push([x - 1, y]);
+            queue.push([x, y + 1]);
+            queue.push([x, y - 1]);
+        }
+
+        return true;
+    }
+
+    // Flood fill height map
+    floodFillHeight(startX, startY, newHeightLevel) {
+        if (startX < 0 || startX >= this.mapSize || startY < 0 || startY >= this.mapSize) {
+            return false;
+        }
+
+        const oldHeightLevel = this.tileMap.heightMap[startY][startX];
+
+        // If the target height is the same as the replacement, nothing to do
+        if (oldHeightLevel === newHeightLevel) {
+            return false;
+        }
+
+        // Use a queue-based flood fill to avoid stack overflow
+        const queue = [[startX, startY]];
+        const visited = new Set();
+
+        while (queue.length > 0) {
+            const [x, y] = queue.shift();
+            const key = `${x},${y}`;
+
+            // Skip if already visited or out of bounds
+            if (visited.has(key) || x < 0 || x >= this.mapSize || y < 0 || y >= this.mapSize) {
+                continue;
+            }
+
+            // Skip if not the target height
+            if (this.tileMap.heightMap[y][x] !== oldHeightLevel) {
+                continue;
+            }
+
+            // Mark as visited and paint
+            visited.add(key);
+            this.tileMap.heightMap[y][x] = newHeightLevel;
+
+            // Add neighbors to queue
+            queue.push([x + 1, y]);
+            queue.push([x - 1, y]);
+            queue.push([x, y + 1]);
+            queue.push([x, y - 1]);
+        }
+
+        return true;
+    }
+
     handleCanvasInteraction(event) {
         // Get mouse position relative to canvas
         const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
@@ -1346,27 +1534,36 @@ class TerrainMapEditor {
         }
         
         if (this.placementMode === 'terrain') {
-            // Original terrain placement logic
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-            
+
             // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && 
+            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-                
-                // Performance: Check if this tile already has this terrain ID
-                const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-                const currentValue = this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x];
-                
-                if (currentValue !== this.currentTerrainId || this.lastPaintedTile !== tileKey) {
-                    // Update terrain map with selected terrain ID
-                    this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
-                    this.lastPaintedTile = tileKey;
-                    
+
+                let painted = false;
+
+                if (this.terrainTool === 'brush') {
+                    // Brush tool: paint with variable size
+                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
+
+                    // Only paint if we're on a new tile or haven't painted here yet
+                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                        painted = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        this.lastPaintedTile = tileKey;
+                    }
+                } else if (this.terrainTool === 'fill') {
+                    // Flood fill tool: fill contiguous area (only on click, not drag)
+                    if (!this.isMouseDown || this.lastPaintedTile === null) {
+                        painted = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
+                    }
+                }
+
+                if (painted) {
                     // Schedule render instead of immediate render
                     this.needsRender = true;
                     this.scheduleRender();
-                    
                 }
             }
         } else if (this.placementMode === 'environment' && this.selectedEnvironmentType &&
@@ -1439,21 +1636,54 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
 
-                // Performance: Check if this tile already has this height level
-                const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-                const currentValue = this.tileMap.heightMap[snappedGrid.y][snappedGrid.x];
+                let painted = false;
 
-                if (currentValue !== this.currentHeightLevel || this.lastPaintedTile !== tileKey) {
-                    // Update height map with selected height level
-                    this.tileMap.heightMap[snappedGrid.y][snappedGrid.x] = this.currentHeightLevel;
-                    this.lastPaintedTile = tileKey;
+                if (this.terrainTool === 'brush') {
+                    // Brush tool: paint with variable size
+                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
 
-                    // Apply terrain type 0 / height 0 coupling rule
-                    if (this.currentHeightLevel === 0) {
-                        // When height is reduced to 0, set terrain to type 0 (lowest terrain type)
-                        this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = 0;
+                    // Only paint if we're on a new tile or haven't painted here yet
+                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                        painted = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        this.lastPaintedTile = tileKey;
+
+                        // Apply terrain type 0 / height 0 coupling rule for brush strokes
+                        if (painted && this.currentHeightLevel === 0) {
+                            const radius = Math.floor(this.brushSize / 2);
+                            for (let dy = -radius; dy <= radius; dy++) {
+                                for (let dx = -radius; dx <= radius; dx++) {
+                                    const x = snappedGrid.x + dx;
+                                    const y = snappedGrid.y + dy;
+                                    if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                                        const distance = Math.sqrt(dx * dx + dy * dy);
+                                        if (distance <= radius + 0.5 && this.tileMap.heightMap[y][x] === 0) {
+                                            this.tileMap.terrainMap[y][x] = 0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
+                } else if (this.terrainTool === 'fill') {
+                    // Flood fill tool: fill contiguous area (only on click, not drag)
+                    if (!this.isMouseDown || this.lastPaintedTile === null) {
+                        painted = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
 
+                        // Apply terrain type 0 / height 0 coupling rule for filled area
+                        if (painted && this.currentHeightLevel === 0) {
+                            for (let y = 0; y < this.mapSize; y++) {
+                                for (let x = 0; x < this.mapSize; x++) {
+                                    if (this.tileMap.heightMap[y][x] === 0) {
+                                        this.tileMap.terrainMap[y][x] = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (painted) {
                     // Schedule render instead of immediate render
                     this.needsRender = true;
                     this.scheduleRender();
