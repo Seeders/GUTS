@@ -37,7 +37,6 @@ class TerrainMapEditor {
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
         this.placementMode = 'terrain'; // can be 'terrain', 'environment', or 'ramp'
-        this.ramps = this.tileMap.ramps || []; // Array of {x, z} ramp locations
         this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -347,7 +346,6 @@ class TerrainMapEditor {
         document.getElementById('clear-all-ramps-btn').addEventListener('click', () => {
             if (this.tileMap.ramps) {
                 this.tileMap.ramps = [];
-                this.ramps = this.tileMap.ramps;
                 this.updateRampCount();
                 this.needsRender = true;
                 this.scheduleRender();
@@ -1267,7 +1265,7 @@ class TerrainMapEditor {
             // Ramp placement logic
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
+            console.log('clicked');
             // Check if coordinates are within bounds
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
@@ -1275,18 +1273,17 @@ class TerrainMapEditor {
                 // Initialize ramps array if needed
                 if (!this.tileMap.ramps) {
                     this.tileMap.ramps = [];
-                    this.ramps = this.tileMap.ramps;
                 }
 
                 // Check if ramp already exists at this position
-                const rampIndex = this.ramps.findIndex(r => r.x === snappedGrid.x && r.z === snappedGrid.y);
+                const rampIndex = this.tileMap.ramps.findIndex(r => r.x === snappedGrid.x && r.z === snappedGrid.y);
 
                 if (rampIndex >= 0) {
                     // Remove existing ramp (toggle off)
-                    this.ramps.splice(rampIndex, 1);
+                    this.tileMap.ramps.splice(rampIndex, 1);
                 } else {
                     // Add new ramp (toggle on)
-                    this.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
+                    this.tileMap.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
                 }
 
                 // Update ramp count display
