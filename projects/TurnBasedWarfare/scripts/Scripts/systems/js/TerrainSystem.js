@@ -106,14 +106,14 @@ class TerrainSystem extends engine.BaseSystem {
         // Initialize height map data array
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
 
-        // Check if we have a separate heightMap in the level data
-        const hasHeightMap = this.level.heightMap && this.level.heightMap.heightData;
+        // Check if we have a separate heightMap in the tileMap
+        const hasHeightMap = this.tileMap.heightMap && this.tileMap.heightMap.length > 0;
 
         // Set extension area height
         let extensionHeight;
         if (hasHeightMap) {
-            // Use extension height from heightMap if available
-            extensionHeight = (this.level.heightMap.extensionHeight || 0) * this.heightStep;
+            // Use extension height from tileMap if available
+            extensionHeight = (this.tileMap.extensionHeight || 0) * this.heightStep;
         } else {
             // Fall back to old behavior: derive from terrain type
             const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
@@ -130,8 +130,8 @@ class TerrainSystem extends engine.BaseSystem {
         const gridSize = this.game.getCollections().configs.game.gridSize;
 
         if (hasHeightMap) {
-            // NEW: Use separate heightMap data
-            const heightData = this.level.heightMap.heightData;
+            // NEW: Use separate heightMap data from tileMap
+            const heightData = this.tileMap.heightMap;
 
             for (let z = 0; z < heightData.length; z++) {
                 for (let x = 0; x < heightData[z].length; x++) {
@@ -338,15 +338,15 @@ class TerrainSystem extends engine.BaseSystem {
      * @returns {number|null} Height level (0, 1, 2, etc.), or null if outside bounds
      */
     getHeightLevelAtGridPosition(gridX, gridZ) {
-        // If we have a separate heightMap, use it
-        if (this.level?.heightMap?.heightData) {
-            const heightData = this.level.heightMap.heightData;
+        // If we have a separate heightMap in tileMap, use it
+        if (this.tileMap?.heightMap && this.tileMap.heightMap.length > 0) {
+            const heightData = this.tileMap.heightMap;
 
             if (heightData.length <= gridZ || gridZ < 0) {
-                return this.level.heightMap.extensionHeight || 0;
+                return this.tileMap.extensionHeight || 0;
             }
             if (heightData[gridZ].length <= gridX || gridX < 0) {
-                return this.level.heightMap.extensionHeight || 0;
+                return this.tileMap.extensionHeight || 0;
             }
 
             return heightData[gridZ][gridX];
