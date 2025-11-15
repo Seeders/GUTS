@@ -531,10 +531,9 @@ class TileMap {
 
 		// Paint base layer for each atom position
 		for (const pos of positions) {
-			let lowestTerrainIndex = tile.terrainIndex;
-			let lowestNeighborTerrainIndex = null;
+			let highestLowerTerrainIndex = null;
 
-			// Find the lowest terrain index affecting this position
+			// Find the HIGHEST terrain index that's still LOWER than current (immediate neighbor)
 			for (const neighborKey of pos.neighbors) {
 				const neighbor = neighborMap[neighborKey];
 				if (neighbor && neighbor.less) {
@@ -545,17 +544,19 @@ class TileMap {
 						const nIndex = nRow * this.numColumns + nCol;
 						const nTile = analyzedMap[nIndex];
 
-						if (nTile && nTile.terrainIndex >= 0 && nTile.terrainIndex < lowestTerrainIndex) {
-							lowestTerrainIndex = nTile.terrainIndex;
-							lowestNeighborTerrainIndex = nTile.terrainIndex;
+						if (nTile && nTile.terrainIndex >= 0 && nTile.terrainIndex < tile.terrainIndex) {
+							// Use the neighbor closest to current terrain (highest among lower neighbors)
+							if (highestLowerTerrainIndex === null || nTile.terrainIndex > highestLowerTerrainIndex) {
+								highestLowerTerrainIndex = nTile.terrainIndex;
+							}
 						}
 					}
 				}
 			}
 
-			// Paint a FULL base atom from the lowest neighbor terrain type
-			if (lowestNeighborTerrainIndex !== null && this.baseAtoms[lowestNeighborTerrainIndex]) {
-				const fullAtom = this.baseAtoms[lowestNeighborTerrainIndex].full;
+			// Paint a FULL base atom from the immediate lower neighbor terrain type
+			if (highestLowerTerrainIndex !== null && this.baseAtoms[highestLowerTerrainIndex]) {
+				const fullAtom = this.baseAtoms[highestLowerTerrainIndex].full;
 				if (fullAtom) {
 					ctx.putImageData(fullAtom, pos.x, pos.y);
 				}
