@@ -3,6 +3,7 @@
      <div class="editor-module__toolbar">
        <button id="terrainsBtn" class="editor-module__btn editor-module__btn--active">Tiles</button>
        <button id="environmentBtn" class="editor-module__btn">Env</button>
+       <button id="rampsBtn" class="editor-module__btn">Ramps</button>
      </div>
 
      <div class="editor-module__scroll-y">
@@ -38,6 +39,19 @@
              <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="delete-mode-btn">Delete Mode</button>
            </div>
            <div class="terrain-editor__environment-objects"></div>
+         </div>
+       </div>
+
+       <div id="rampsPanel" style="display: none;">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Ramp Placement</h3>
+           <div class="editor-module__info-box">
+             <p>Click on tiles to place/remove ramps. Ramps allow units to walk between different terrain heights.</p>
+             <p><strong>Current ramps:</strong> <span id="rampCount">0</span></p>
+           </div>
+           <div class="terrain-editor__object-controls">
+             <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="clear-all-ramps-btn">Clear All Ramps</button>
+           </div>
          </div>
        </div>
      </div>

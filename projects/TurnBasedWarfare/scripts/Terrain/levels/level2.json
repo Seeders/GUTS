@@ -1220,7 +1220,8 @@
       ]
     ],
     "terrainBGColor": "#467554",
-    "environmentObjects": []
+    "environmentObjects": [],
+    "ramps": []
   },
   "world": "shire"
 }

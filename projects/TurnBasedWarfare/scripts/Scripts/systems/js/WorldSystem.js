@@ -885,6 +885,9 @@ class WorldSystem extends engine.BaseSystem {
 
     placeCliffAtomsForTile(x, z, tileAnalysis, gridSize) {
 
+        if(this.game.gameManager.call('hasRampAt', x, z)){
+            return;
+        }
         // Convert grid coordinates to world coordinates
         const worldX = (x * gridSize + this.extensionSize) - this.extendedSize / 2;
         const worldZ = (z * gridSize + this.extensionSize) - this.extendedSize / 2;

@@ -10,7 +10,8 @@ class PathfindingSystem extends engine.BaseSystem {
         
         this.terrainTypes = null;
         this.walkabilityCache = new Map();
-        
+        this.ramps = new Set(); // Stores ramp locations in "x,z" format (terrain grid coords)
+
         this.pathCache = new Map();
         this.MAX_CACHE_SIZE = 1000;
         this.CACHE_EXPIRY_TIME = 5000;
@@ -32,6 +33,7 @@ class PathfindingSystem extends engine.BaseSystem {
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
         this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
+        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));  
         this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
 
 
@@ -57,24 +59,39 @@ class PathfindingSystem extends engine.BaseSystem {
             console.warn('PathfindingSystem: No terrain types found in level');
             return;
         }
-        
+
+        // Load ramps data
+        this.loadRamps(level.tileMap);
+
         this.buildWalkabilityCache();
         this.bakeNavMesh();
         this.initialized = true;
         console.log('PathfindingSystem: Initialized with', this.terrainTypes.length, 'terrain types');
     }
 
+    loadRamps(tileMap) {
+        this.ramps.clear();
+
+        const ramps = tileMap.ramps || [];
+        for (const ramp of ramps) {
+            const key = `${ramp.x},${ramp.z}`;
+            this.ramps.add(key);
+        }
+
+        console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
+    }
+
     buildWalkabilityCache() {
         this.walkabilityCache.clear();
-        
+
         for (let i = 0; i < this.terrainTypes.length; i++) {
             const terrainType = this.terrainTypes[i];
             const walkableNeighbors = terrainType.walkableNeighbors || [];
-            
+
             for (let j = 0; j < this.terrainTypes.length; j++) {
                 const targetType = this.terrainTypes[j].type;
                 const canWalk = walkableNeighbors.includes(targetType);
-                
+
                 const key = `${i}-${j}`;
                 this.walkabilityCache.set(key, canWalk);
             }
@@ -84,6 +101,44 @@ class PathfindingSystem extends engine.BaseSystem {
     canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
         const key = `${fromTerrainIndex}-${toTerrainIndex}`;
         return this.walkabilityCache.get(key) === true;
+    }
+
+    // Convert nav grid coordinates to terrain grid coordinates
+    navGridToTerrainGrid(navGridX, navGridZ) {
+        const worldPos = this.navGridToWorld(navGridX, navGridZ);
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const terrainSize = this.game.gameManager.call('getTerrainSize');
+
+        const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
+        const terrainZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
+
+        return { x: terrainX, z: terrainZ };
+    }
+
+    // Check if there's a ramp at the given nav grid position
+    hasRampAtNav(navGridX, navGridZ) {
+        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
+        const key = `${terrainGrid.x},${terrainGrid.z}`;
+        return this.ramps.has(key);
+    }
+    
+    hasRampAt(gridX, gridZ) {
+        return this.ramps.has(`${gridX},${gridZ}`);
+    }
+    // Check if movement between terrains is allowed (either through walkableNeighbors or ramps)
+    canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
+        // First check normal walkability
+        if (this.canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex)) {
+            return true;
+        }
+
+        // If not normally walkable, check if there's a ramp at either position
+        // Ramps allow movement between any terrain heights
+        if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
+            return true;
+        }
+
+        return false;
     }
 
     bakeNavMesh() {
@@ -275,8 +330,8 @@ class PathfindingSystem extends engine.BaseSystem {
                 
                 const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
                 if (neighborTerrain === null || neighborTerrain === 255) continue;
-                
-                if (!this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
+
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, neighborTerrain, current.x, current.z, neighborX, neighborZ)) {
                     continue;
                 }
                 
@@ -286,15 +341,15 @@ class PathfindingSystem extends engine.BaseSystem {
                 if (isDiagonal) {
                     const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
                     const terrainZ = this.getTerrainAtNavGrid(current.x, current.z + dir.dz);
-                    
+
                     // Both adjacent cells must exist and be walkable
-                    if (terrainX === null || terrainX === 255 || 
+                    if (terrainX === null || terrainX === 255 ||
                         terrainZ === null || terrainZ === 255) {
                         continue;
                     }
-                    
-                    if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
-                        !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+
+                    if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, current.x, current.z, current.x + dir.dx, current.z) ||
+                        !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, current.x, current.z, current.x, current.z + dir.dz)) {
                         continue;
                     }
                 }
@@ -404,33 +459,35 @@ class PathfindingSystem extends engine.BaseSystem {
         
         let x = fromGrid.x;
         let z = fromGrid.z;
+        let lastX = x;
+        let lastZ = z;
         let lastTerrain = this.getTerrainAtNavGrid(x, z);
-        
+
         // If starting position isn't walkable, fail immediately
         if (!this.isTerrainWalkable(lastTerrain)) {
             return false;
         }
-        
+
         while (true) {
             // Reached destination
             if (x === toGrid.x && z === toGrid.z) {
                 return true;
             }
-            
+
             const currentTerrain = this.getTerrainAtNavGrid(x, z);
-            
+
             // Hit impassable terrain or out of bounds
             if (currentTerrain === null || currentTerrain === 255) {
                 return false;
             }
-            
+
             // Check if current terrain is walkable
             if (!this.isTerrainWalkable(currentTerrain)) {
                 return false;
             }
-            
+
             // Check if we can transition from last terrain to current terrain
-            if (!this.canWalkBetweenTerrains(lastTerrain, currentTerrain)) {
+            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
                 return false;
             }
             
@@ -442,26 +499,28 @@ class PathfindingSystem extends engine.BaseSystem {
             if (willMoveX && willMoveZ) {
                 const terrainX = this.getTerrainAtNavGrid(x + sx, z);
                 const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
-                
+
                 // Both adjacent cells must be valid and walkable
-                if (terrainX === null || terrainX === 255 || 
+                if (terrainX === null || terrainX === 255 ||
                     terrainZ === null || terrainZ === 255) {
                     return false;
                 }
-                
+
                 if (!this.isTerrainWalkable(terrainX) || !this.isTerrainWalkable(terrainZ)) {
                     return false;
                 }
-                
+
                 // Check terrain transitions for both adjacent cells
-                if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
-                    !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
+                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
                     return false;
                 }
             }
-            
+
             lastTerrain = currentTerrain;
-            
+            lastX = x;
+            lastZ = z;
+
             // Move along the line
             if (willMoveX) {
                 err -= dz;
@@ -485,15 +544,17 @@ class PathfindingSystem extends engine.BaseSystem {
         
         let x = fromGrid.x;
         let z = fromGrid.z;
+        let lastX = x;
+        let lastZ = z;
         let lastTerrain = this.getTerrainAtNavGrid(x, z);
-        
+
         while (true) {
             if (x === toGrid.x && z === toGrid.z) return true;
-            
+
             const currentTerrain = this.getTerrainAtNavGrid(x, z);
             if (currentTerrain === null || currentTerrain === 255) return false;
-            
-            if (!this.canWalkBetweenTerrains(lastTerrain, currentTerrain)) {
+
+            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
                 return false;
             }
             
@@ -508,19 +569,21 @@ class PathfindingSystem extends engine.BaseSystem {
                 const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
                 
                 // Both adjacent cells must be valid and walkable from current position
-                if (terrainX === null || terrainX === 255 || 
+                if (terrainX === null || terrainX === 255 ||
                     terrainZ === null || terrainZ === 255) {
                     return false;
                 }
-                
-                if (!this.canWalkBetweenTerrains(currentTerrain, terrainX) || 
-                    !this.canWalkBetweenTerrains(currentTerrain, terrainZ)) {
+
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
+                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
                     return false;
                 }
             }
-            
+
             lastTerrain = currentTerrain;
-            
+            lastX = x;
+            lastZ = z;
+
             if (willMoveX) {
                 err -= dz;
                 x += sx;
