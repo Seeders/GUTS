@@ -284,13 +284,14 @@ class ImageManager {
                     sprites: sprites 
                 };
             } else {
-                // Create a solid color placeholder for types without images
+                // Create transparent placeholder for types without images
+                // Don't use terrainType.color as it causes color bleed at tile edges
                 const sprites = new Array(8).fill().map(() => {
                     const canvas = document.createElement('canvas');
                     canvas.width = canvas.height = tileWidth;
                     const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = terrainType.color || '#cccccc';
-                    ctx.fillRect(0, 0, tileWidth, tileWidth);
+                    // Leave canvas transparent (don't fillRect)
+                    // This prevents layer colors from bleeding through at edges
                     return canvas;
                 });
                 
