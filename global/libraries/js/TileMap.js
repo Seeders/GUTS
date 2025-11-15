@@ -519,25 +519,25 @@ class TileMap {
 		];
 
 		const neighborMap = {
-			top: { row: row - 1, col: col, less: analysis.topLess, atomPos: 'BL', atomPosAlt: 'BR' },
-			left: { row: row, col: col - 1, less: analysis.leftLess, atomPos: 'TR', atomPosAlt: 'BR' },
-			right: { row: row, col: col + 1, less: analysis.rightLess, atomPos: 'TL', atomPosAlt: 'BL' },
-			bot: { row: row + 1, col: col, less: analysis.botLess, atomPos: 'TL', atomPosAlt: 'TR' },
-			topLeft: { row: row - 1, col: col - 1, less: analysis.cornerTopLeftLess, atomPos: 'BR' },
-			topRight: { row: row - 1, col: col + 1, less: analysis.cornerTopRightLess, atomPos: 'BL' },
-			botLeft: { row: row + 1, col: col - 1, less: analysis.cornerBottomLeftLess, atomPos: 'TR' },
-			botRight: { row: row + 1, col: col + 1, less: analysis.cornerBottomRightLess, atomPos: 'TL' }
+			top: { row: row - 1, col: col, less: analysis.topLess },
+			left: { row: row, col: col - 1, less: analysis.leftLess },
+			right: { row: row, col: col + 1, less: analysis.rightLess },
+			bot: { row: row + 1, col: col, less: analysis.botLess },
+			topLeft: { row: row - 1, col: col - 1, less: analysis.cornerTopLeftLess },
+			topRight: { row: row - 1, col: col + 1, less: analysis.cornerTopRightLess },
+			botLeft: { row: row + 1, col: col - 1, less: analysis.cornerBottomLeftLess },
+			botRight: { row: row + 1, col: col + 1, less: analysis.cornerBottomRightLess }
 		};
 
 		// Paint base layer for each atom position
 		for (const pos of positions) {
-			let lowestNeighbor = null;
 			let lowestTerrainIndex = tile.terrainIndex;
+			let lowestNeighborTerrainIndex = null;
 
-			// Find the lowest neighbor affecting this position
+			// Find the lowest terrain index affecting this position
 			for (const neighborKey of pos.neighbors) {
 				const neighbor = neighborMap[neighborKey];
-				if (neighbor.less) {
+				if (neighbor && neighbor.less) {
 					const nRow = neighbor.row;
 					const nCol = neighbor.col;
 
@@ -545,46 +545,19 @@ class TileMap {
 						const nIndex = nRow * this.numColumns + nCol;
 						const nTile = analyzedMap[nIndex];
 
-						if (nTile && nTile.terrainIndex < lowestTerrainIndex) {
+						if (nTile && nTile.terrainIndex >= 0 && nTile.terrainIndex < lowestTerrainIndex) {
 							lowestTerrainIndex = nTile.terrainIndex;
-							lowestNeighbor = { tile: nTile, neighbor: neighbor, key: neighborKey };
+							lowestNeighborTerrainIndex = nTile.terrainIndex;
 						}
 					}
 				}
 			}
 
-			// Paint the appropriate atom from the lowest neighbor
-			if (lowestNeighbor) {
-				const nTile = lowestNeighbor.tile;
-				const molecule = this.getMoleculeByTileAnalysis(nTile.terrainAnalysis);
-				const moleculeImageData = this.layerTextures[nTile.terrainIndex][molecule];
-				const atoms = this.extractAtomsFromMolecule(moleculeImageData);
-
-				// Determine which atom to use based on the neighbor direction
-				let atomToUse = null;
-				const neighborKey = lowestNeighbor.key;
-
-				if (neighborKey === 'top' || neighborKey === 'bot') {
-					// For cardinal top/bottom, use both bottom atoms to fill width
-					if (pos.name === 'TL' || pos.name === 'BL') {
-						atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
-					} else {
-						atomToUse = atoms[lowestNeighbor.neighbor.atomPosAlt];
-					}
-				} else if (neighborKey === 'left' || neighborKey === 'right') {
-					// For cardinal left/right, use both right atoms to fill height
-					if (pos.name === 'TL' || pos.name === 'TR') {
-						atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
-					} else {
-						atomToUse = atoms[lowestNeighbor.neighbor.atomPosAlt];
-					}
-				} else {
-					// For diagonal, use the specific corner atom
-					atomToUse = atoms[lowestNeighbor.neighbor.atomPos];
-				}
-
-				if (atomToUse) {
-					ctx.putImageData(atomToUse, pos.x, pos.y);
+			// Paint a FULL base atom from the lowest neighbor terrain type
+			if (lowestNeighborTerrainIndex !== null && this.baseAtoms[lowestNeighborTerrainIndex]) {
+				const fullAtom = this.baseAtoms[lowestNeighborTerrainIndex].full;
+				if (fullAtom) {
+					ctx.putImageData(fullAtom, pos.x, pos.y);
 				}
 			}
 		}
