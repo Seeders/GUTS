@@ -23,7 +23,8 @@ class TileMap {
 		
 		this.TileAnalysis = class {
 			constructor() {
-			  this.heightIndex = 0;
+			  this.heightIndex = 0;      // Height level for cliff analysis
+			  this.terrainIndex = 0;     // Terrain type for texture selection
 			  this.neighborLowerCount = 0;
 			  this.cornerLowerCount = 0;
 			  this.topLess = false;
@@ -468,9 +469,12 @@ class TileMap {
 			return tileAnalysis; // Out of bounds
 		}
 
-		// NEW: Use heightMap if available, otherwise fall back to tileMap (backwards compatibility)
+		// NEW: Use heightMap for cliff analysis if available
 		const heightData = this.heightMap || this.tileMap;
 		tileAnalysis.heightIndex = heightData[row][col];
+
+		// ALWAYS use tileMap for terrain texture selection
+		tileAnalysis.terrainIndex = this.tileMap[row][col];
 
 		// Helper function to check if a location is within bounds
 		function isWithinBounds(r, c, n) {
@@ -792,47 +796,54 @@ class TileMap {
 			analyzedMap.forEach((tileAnalysis, index) => {
 				const x = (index % this.numColumns) * this.tileSize;
 				const y = Math.floor(index / this.numColumns) * this.tileSize;
-	
+
 				let imageData;
 				let _tileAnalysis = {...tileAnalysis };
-				if (_tileAnalysis.heightIndex > layerIndex) {
-					// Use base image data for higher layers
+
+				// Check if this tile's terrain should be drawn on this layer
+				// Note: We still use heightIndex for cliff edge detection
+				if (_tileAnalysis.terrainIndex > layerIndex) {
+					// This terrain type is drawn on a higher layer, skip it
+					// But we need to adjust cliff detection for this layer
+					const originalHeightIndex = _tileAnalysis.heightIndex;
 					_tileAnalysis.heightIndex = layerIndex;
-					if(_tileAnalysis.topLess && _tileAnalysis.topHeight >= _tileAnalysis.heightIndex) {
+
+					// Adjust cliff flags based on the current layer
+					if(_tileAnalysis.topLess && _tileAnalysis.topHeight >= layerIndex) {
 						_tileAnalysis.topLess = false;
 						_tileAnalysis.neighborLowerCount--;
 					}
-					if(_tileAnalysis.leftLess && _tileAnalysis.leftHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.leftLess && _tileAnalysis.leftHeight >= layerIndex) {
 						_tileAnalysis.leftLess = false;
 						_tileAnalysis.neighborLowerCount--;
 					}
-					if(_tileAnalysis.rightLess && _tileAnalysis.rightHeight >= _tileAnalysis.heightIndex){
+					if(_tileAnalysis.rightLess && _tileAnalysis.rightHeight >= layerIndex){
 						_tileAnalysis.rightLess = false;
 						_tileAnalysis.neighborLowerCount--;
 					}
-					if(_tileAnalysis.botLess && _tileAnalysis.botHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.botLess && _tileAnalysis.botHeight >= layerIndex) {
 						_tileAnalysis.botLess = false;
 						_tileAnalysis.neighborLowerCount--;
 					}
-					if(_tileAnalysis.cornerTopLeftLess && _tileAnalysis.topLeftHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.cornerTopLeftLess && _tileAnalysis.topLeftHeight >= layerIndex) {
 						_tileAnalysis.cornerTopLeftLess = false;
 						_tileAnalysis.cornerLowerCount--;
 					}
-					if(_tileAnalysis.cornerTopRightLess && _tileAnalysis.topRightHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.cornerTopRightLess && _tileAnalysis.topRightHeight >= layerIndex) {
 						_tileAnalysis.cornerTopRightLess = false;
 						_tileAnalysis.cornerLowerCount--;
 					}
-					if(_tileAnalysis.cornerBottomLeftLess && _tileAnalysis.botLeftHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.cornerBottomLeftLess && _tileAnalysis.botLeftHeight >= layerIndex) {
 						_tileAnalysis.cornerBottomLeftLess = false;
 						_tileAnalysis.cornerLowerCount--;
 					}
-					if(_tileAnalysis.cornerBottomRightLess && _tileAnalysis.botRightHeight >= _tileAnalysis.heightIndex) {
+					if(_tileAnalysis.cornerBottomRightLess && _tileAnalysis.botRightHeight >= layerIndex) {
 						_tileAnalysis.cornerBottomRightLess = false;
 						_tileAnalysis.cornerLowerCount--;
 					}
-					
-				} 
-				if (_tileAnalysis.heightIndex < layerIndex) {
+
+				}
+				if (_tileAnalysis.terrainIndex < layerIndex) {
 					// Use transparent data for tiles below current layer
 					let numPixels = this.tileSize * this.tileSize;
 					const transparentData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)
@@ -848,9 +859,10 @@ class TileMap {
 					
 				 } else {
 					imageData = new ImageData(new Uint8ClampedArray(4), 1, 1);
-					if( _tileAnalysis.heightIndex >= 0 ) {
-						let molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);						
-						imageData = this.layerTextures[_tileAnalysis.heightIndex][molecule];
+					if( _tileAnalysis.terrainIndex >= 0 ) {
+						let molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);
+						// Use terrainIndex to select the correct texture layer
+						imageData = this.layerTextures[_tileAnalysis.terrainIndex][molecule];
 						imageData = this.colorImageData(imageData, _tileAnalysis);
 						//imageData = this.addVariationImage(imageData, _tileAnalysis);
 						imageData = this.addCornerGraphics(imageData, _tileAnalysis);
