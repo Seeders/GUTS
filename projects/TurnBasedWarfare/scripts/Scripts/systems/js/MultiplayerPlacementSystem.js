@@ -790,9 +790,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
-        worldPosition.x -= placementGridSize / 3;
-        worldPosition.z += placementGridSize / 3;
         const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x , worldPosition.z);
         const state = this.game.state;
         

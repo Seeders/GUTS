@@ -155,20 +155,21 @@ class PlacementPreview {
         const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
         const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
         const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
-        const amt = gridSize / 3;
+        // Center the mesh on the cell (gridToWorld returns corner positions)
+        const halfSize = gridSize / 2;
 
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
+            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
+            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });
@@ -206,19 +207,22 @@ class PlacementPreview {
         // Choose appropriate mesh pools based on whether it's a building or unit
         const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
         const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
+        const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
+        // Center the mesh on the cell (gridToWorld returns corner positions)
+        const halfSize = gridSize / 2;
 
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
+            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });
