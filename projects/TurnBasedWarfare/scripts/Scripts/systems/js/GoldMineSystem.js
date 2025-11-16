@@ -36,10 +36,17 @@ class GoldMineSystem extends engine.BaseSystem {
                 const worldZ = (obj.y + extensionSize) - extendedSize / 2;
 
                 const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
-                
-                const gridWidth = obj.placementGridWidth || 2;
-                const gridHeight = obj.placementGridHeight || 2;
-                
+
+                // Gold veins use placementGridWidth which is already in placement grid units
+                // But we need to match how buildings calculate their cells (footprintWidth * 2)
+                // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
+                // we need to convert: footprintWidth * 2 = 2 * 2 = 4 placement grid cells
+                const veinPlacementGridWidth = obj.placementGridWidth || 2;
+                const veinPlacementGridHeight = obj.placementGridHeight || 2;
+                // Convert to match building footprint calculation
+                const gridWidth = veinPlacementGridWidth * 2;
+                const gridHeight = veinPlacementGridHeight * 2;
+
                 const cells = this.calculateGoldVeinCells(gridPos, gridWidth, gridHeight);
 
                 return {
@@ -48,8 +55,8 @@ class GoldMineSystem extends engine.BaseSystem {
                     worldX: worldX,
                     worldZ: worldZ,
                     gridPos: gridPos,
-                    gridWidth: gridWidth,
-                    gridHeight: gridHeight,
+                    gridWidth: gridWidth,  // 4 (placement grid cells)
+                    gridHeight: gridHeight,  // 4 (placement grid cells)
                     cells: cells,
                     claimed: false,
                     claimedBy: null,
@@ -84,15 +91,25 @@ class GoldMineSystem extends engine.BaseSystem {
 
     isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
         const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
-        
+
+        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] Checking placement:`, {
+            gridPos,
+            buildingGridWidth,
+            buildingGridHeight,
+            buildingCells: buildingCells.length,
+            availableVeins: this.goldVeinLocations.filter(v => !v.claimed).length
+        });
+
         for (const vein of this.goldVeinLocations) {
             if (vein.claimed) continue;
-            
+
             if (this.cellsMatch(buildingCells, vein.cells)) {
+                console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] MATCH FOUND with vein at`, vein.gridPos);
                 return { valid: true, vein: vein };
             }
         }
 
+        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] NO MATCH - placement invalid`);
         return { valid: false };
     }
 
