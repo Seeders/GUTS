@@ -1,0 +1,30 @@
+{
+  "title": "client",
+  "type": "ECS",
+  "sceneData": [
+    {
+      "id": 1,
+      "objectType": "gamePrefabs",
+      "spawnType": "actionrpg",
+      "parent": null,
+      "children": [],
+      "managers": [
+        { "type": "ComponentManager" },
+        { "type": "GameManager" },
+        { "type": "ScreenManager" }
+      ],
+      "systems": [
+        { "type": "LevelGeneratorSystem" },
+        { "type": "RenderSystem" },
+        { "type": "FogOfWarSystem" },
+        { "type": "MinimapSystem" },
+        { "type": "PlayerControllerSystem" },
+        { "type": "MovementSystem" },
+        { "type": "EnemyAISystem" },
+        { "type": "CombatSystem" },
+        { "type": "UISystem" }
+      ],
+      "classes": []
+    }
+  ]
+}
