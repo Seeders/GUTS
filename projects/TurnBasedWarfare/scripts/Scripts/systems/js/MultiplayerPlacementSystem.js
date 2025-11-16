@@ -274,7 +274,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
                             const distSq = dx * dx + dz * dz;
-                            const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                            const configs = this.game.getCollections().configs.game;
+                            const threshold = (configs.placementGridSize || configs.gridSize) * 0.5;
 
                             if (distSq <= threshold * threshold) {
                                 this.game.gameManager.call('removeCurrentAIController', entityId);
@@ -789,9 +790,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        worldPosition.x -= gridSize / 3;
-        worldPosition.z += gridSize / 3;
+        const configs = this.game.getCollections().configs.game;
+        const placementGridSize = configs.placementGridSize || configs.gridSize;
+        worldPosition.x -= placementGridSize / 3;
+        worldPosition.z += placementGridSize / 3;
         const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x , worldPosition.z);
         const state = this.game.state;
         

@@ -10,6 +10,7 @@ class PlacementPreview {
         this.previewGroup.visible = false;
         this.game.uiScene.add(this.previewGroup);
         
+        const configs = game.getCollections().configs.game;
         this.config = {
             cellOpacity: 0.4,
             borderOpacity: 0.8,
@@ -20,7 +21,7 @@ class PlacementPreview {
             cellSizeMultiplier: 0.9,
             maxCells: 50,
             updateThrottle: 16,
-            gridSize: game.getCollections().configs.game.gridSize
+            placementGridSize: configs.placementGridSize || configs.gridSize
         };
         
         this.geometryPool = this.createGeometryPool();
@@ -128,7 +129,7 @@ class PlacementPreview {
         
         const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
         const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
-        const amt = this.config.gridSize / 3;
+        const amt = this.config.placementGridSize / 3;
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= this.cellMeshPool.length) return;
             

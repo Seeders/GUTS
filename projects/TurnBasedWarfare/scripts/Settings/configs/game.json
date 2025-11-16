@@ -1,5 +1,6 @@
 {
   "gridSize": 48,
+  "placementGridSize": 24,
   "imageSize": 128,
   "title": "Turn Based Warfare",
   "isIsometric": false,

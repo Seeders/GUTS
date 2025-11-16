@@ -439,7 +439,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
                                 const distSq = dx * dx + dz * dz;
-                                const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                                const configs = this.game.getCollections().configs.game;
+                                const threshold = (configs.placementGridSize || configs.gridSize) * 0.5;
 
                                 if (distSq <= threshold * threshold) {
                                     this.game.gameManager.call('removeCurrentAIController', entityId);

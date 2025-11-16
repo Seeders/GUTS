@@ -21,20 +21,22 @@ class GridSystem extends engine.BaseSystem {
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
 
         const collections = this.game.getCollections();
-        
-        const cellSize = collections.configs.game.gridSize; 
+
+        const terrainGridSize = collections.configs.game.gridSize;
+        const placementGridSize = collections.configs.game.placementGridSize || terrainGridSize;
         const currentLevel = collections.configs.state.level;
-        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * cellSize;
-        
-        this.cellSize = cellSize;
+        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
+
+        this.cellSize = placementGridSize;
+        this.terrainGridSize = terrainGridSize;
         this.showGrid = true;
         this.snapToGrid = true;
         this.highlightValidCells = true;
         
         this.dimensions = {
-            width: Math.floor(terrainSize / cellSize),
-            height: Math.floor(terrainSize / cellSize),
-            cellSize: cellSize,
+            width: Math.floor(terrainSize / placementGridSize),
+            height: Math.floor(terrainSize / placementGridSize),
+            cellSize: placementGridSize,
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
@@ -64,9 +66,9 @@ class GridSystem extends engine.BaseSystem {
         // Pre-calculate world bounds for faster collision detection
         this.worldBounds = {
             minX: this.dimensions.startX,
-            maxX: this.dimensions.startX + (this.dimensions.width * cellSize),
+            maxX: this.dimensions.startX + (this.dimensions.width * placementGridSize),
             minZ: this.dimensions.startZ,
-            maxZ: this.dimensions.startZ + (this.dimensions.height * cellSize)
+            maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
         };
     }
 
