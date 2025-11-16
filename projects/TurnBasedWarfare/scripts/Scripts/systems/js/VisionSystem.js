@@ -11,7 +11,7 @@ class VisionSystem extends engine.BaseSystem {
         this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
     }
 
-   
+
     hasLineOfSight(from, to, unitType, viewerEntityId = null) {
         const dx = to.x - from.x;
         const dz = to.z - from.z;
@@ -27,6 +27,20 @@ class VisionSystem extends engine.BaseSystem {
             return true;
         }
 
+        // Get discrete heightmap levels for from and to positions
+        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
+
+        const fromHeightLevel = terrainSystem.getHeightLevelAtGridPosition(fromGridX, fromGridZ);
+        const toHeightLevel = terrainSystem.getHeightLevelAtGridPosition(toGridX, toGridZ);
+
+        // Cannot see up to tiles with higher heightmap values
+        if (toHeightLevel > fromHeightLevel) {
+            return false;
+        }
+
         const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
         const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
 
@@ -35,12 +49,10 @@ class VisionSystem extends engine.BaseSystem {
 
         const fromEyeHeight = fromTerrainHeight + unitHeight;
         const toEyeHeight = toTerrainHeight + unitHeight;
-        
-        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight)) {
+
+        // Check for terrain blocking along the path (for same-level or downward vision)
+        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel)) {
             return false;
-        }
-        if(fromTerrainHeight > toTerrainHeight){
-            return true;
         }
         
         let nearbyTrees = [];
@@ -79,37 +91,40 @@ class VisionSystem extends engine.BaseSystem {
         return true;
     }
 
-    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight) {
-        if(fromEyeHeight < toTerrainHeight){
-            return false;
-        }
+    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
         const terrainSystem = this.game.terrainSystem;
         const gridSize = this.game.getCollections().configs.game.gridSize;
-        
+
         const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
         const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
         const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
         const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
-        
+
         const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
-        
+
+        // Check intermediate tiles along the path
         for (let i = 1; i < tiles.length - 1; i++) {
             const tile = tiles[i];
+
+            // Check if this intermediate tile has a higher heightmap level than the viewer
+            const tileHeightLevel = terrainSystem.getHeightLevelAtGridPosition(tile.x, tile.z);
+            if (tileHeightLevel > fromHeightLevel) {
+                // Cannot see through a tile with higher elevation
+                return false;
+            }
+
+            // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
             const t = i / (tiles.length - 1);
-            
             const worldX = tile.x * gridSize - terrainSystem.terrainSize / 2;
             const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
-            
             const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            
             const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
-            
-            
-            if (rayHeight <= terrainHeight) {  
+
+            if (rayHeight <= terrainHeight) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
