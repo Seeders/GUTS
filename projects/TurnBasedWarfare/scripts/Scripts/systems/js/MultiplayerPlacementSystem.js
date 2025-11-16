@@ -43,7 +43,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
         this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
-        this.game.gameManager.register('getWorldPositionFromMouse', this.getFlatWorldPositionFromMouse.bind(this));
+        this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
 
         this.initializeSubsystems();
         this.setupEventListeners();
@@ -732,10 +732,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
         this.mouseRayCastInterval = setInterval(() => {                          
         
+            this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);  
             if (this.game.state.phase === 'placement' && 
-                this.game.state.selectedUnitType && 
-                !this.isPlayerReady) {
-                this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);  
+                this.game.state.selectedUnitType) {
                 this.updatePlacementPreview();
             }
                             

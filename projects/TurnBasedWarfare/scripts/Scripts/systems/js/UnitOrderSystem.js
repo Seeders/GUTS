@@ -336,12 +336,8 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.stopTargeting();
             return;
         }
-
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
+ 
+        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
             this.stopTargeting();
