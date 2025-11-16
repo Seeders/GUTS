@@ -902,12 +902,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
                 let terrainValid = true;
                 cells.forEach((cell) => {
-                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', cell.x, cell.z);
+                    // Convert placement grid coordinates to terrain grid coordinates
+                    const terrainGridX = Math.floor(cell.x / 2);
+                    const terrainGridZ = Math.floor(cell.z / 2);
+                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', terrainGridX, terrainGridZ);
                     if(!terrainTypeId) {
                         terrainValid = false;
                         return;
                     }
                     const terrainType = this.game.gameManager.call('getTileMapTerrainType', terrainTypeId);
+                    // Check walkability using placement grid cell (already in placement grid coords)
                     const isPositionWalkable = this.game.gameManager.call('isGridPositionWalkable', cell);
                     terrainValid = terrainValid && terrainType.buildable && isPositionWalkable;
                 });
