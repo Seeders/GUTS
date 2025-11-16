@@ -851,7 +851,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     getWorldPositionFromMouse(event, mouseX, mouseY) {
         if (!this.game.scene || !this.game.camera) return null;
-        
+
         if (!this.mouse) {
             this.mouse = new THREE.Vector2();
         }
@@ -863,28 +863,73 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         }
-        
+
         if (!this.raycaster) {
             this.raycaster = new THREE.Raycaster();
         }
         this.raycaster.setFromCamera(this.mouse, this.game.camera);
-        
+
         const ray = this.raycaster.ray;
-        
+
         if (Math.abs(ray.direction.y) < 0.0001) {
             return null;
         }
-        
+
+        // Sample along the ray to find intersection with terrain heightmap
+        const maxDistance = 10000; // Maximum ray distance to check
+        const stepSize = 5; // Sample every 5 units along the ray
+
+        for (let distance = 0; distance < maxDistance; distance += stepSize) {
+            const point = ray.origin.clone().add(
+                ray.direction.clone().multiplyScalar(distance)
+            );
+
+            // Get terrain height at this XZ position
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', point.x, point.z) || 0;
+
+            // Check if ray point is below terrain (intersection found)
+            if (point.y <= terrainHeight) {
+                // Refine the intersection with binary search for accuracy
+                let minDist = distance - stepSize;
+                let maxDist = distance;
+
+                for (let i = 0; i < 5; i++) { // 5 iterations for refinement
+                    const midDist = (minDist + maxDist) / 2;
+                    const midPoint = ray.origin.clone().add(
+                        ray.direction.clone().multiplyScalar(midDist)
+                    );
+                    const midTerrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', midPoint.x, midPoint.z) || 0;
+
+                    if (midPoint.y > midTerrainHeight) {
+                        minDist = midDist;
+                    } else {
+                        maxDist = midDist;
+                    }
+                }
+
+                const finalDist = (minDist + maxDist) / 2;
+                const intersectionPoint = ray.origin.clone().add(
+                    ray.direction.clone().multiplyScalar(finalDist)
+                );
+
+                // Set Y to exact terrain height at intersection
+                intersectionPoint.y = this.game.gameManager.call('getTerrainHeightAtPosition', intersectionPoint.x, intersectionPoint.z) || 0;
+
+                return intersectionPoint;
+            }
+        }
+
+        // Fallback to flat plane intersection if no terrain height found
         const distance = (0 - ray.origin.y) / ray.direction.y;
-        
+
         if (distance < 0) {
             return null;
         }
-        
+
         const intersectionPoint = ray.origin.clone().add(
             ray.direction.clone().multiplyScalar(distance)
         );
-        
+
         return intersectionPoint;
     }
 
