@@ -21,7 +21,7 @@ class PlacementPreview {
             cellSizeMultiplier: 0.9,
             maxCells: 50,
             updateThrottle: 16,
-            placementGridSize: configs.placementGridSize || configs.gridSize
+            placementGridSize: configs.gridSize / 2 // Placement grid is always half the terrain grid
         };
         
         this.geometryPool = this.createGeometryPool();

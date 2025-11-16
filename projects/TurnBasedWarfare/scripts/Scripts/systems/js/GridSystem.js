@@ -23,7 +23,7 @@ class GridSystem extends engine.BaseSystem {
         const collections = this.game.getCollections();
 
         const terrainGridSize = collections.configs.game.gridSize;
-        const placementGridSize = collections.configs.game.placementGridSize || terrainGridSize;
+        const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
         const currentLevel = collections.configs.state.level;
         const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
 

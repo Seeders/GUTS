@@ -60,8 +60,8 @@ class PathfindingSystem extends engine.BaseSystem {
             return;
         }
 
-        // Set navigation grid size from config (use placementGridSize for pathfinding)
-        this.navGridSize = collections.configs.game.placementGridSize || collections.configs.game.gridSize;
+        // Set navigation grid size to half of terrain grid (matches placement grid)
+        this.navGridSize = collections.configs.game.gridSize / 2;
         console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
 
         // Load ramps data
