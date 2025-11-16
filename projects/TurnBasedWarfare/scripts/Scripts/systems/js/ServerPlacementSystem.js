@@ -691,8 +691,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
         console.log(`Data received:`, entityId, team, unitType);
 
         if (unitType.id === 'goldMine') {
-            const gridWidth = unitType.placementGridWidth || 2;
-            const gridHeight = unitType.placementGridHeight || 2;
+            // Convert footprint (terrain grid units) to placement grid cells
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
 
             const result = this.game.gameManager.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
             if (!result.success) {

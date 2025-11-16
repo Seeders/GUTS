@@ -54,8 +54,8 @@
     }
   },
   "units": [],
-  "placementGridWidth": 1,
-  "placementGridHeight": 1,
+  "footprintWidth": 1,
+  "footprintHeight": 1,
   "height": 100,
   "size": 50,
   "icon": "building_cottage",

@@ -65,8 +65,8 @@
     "1_is_acolyte",
     "1_i_apprentice"
   ],
-  "placementGridWidth": 2,
-  "placementGridHeight": 2,
+  "footprintWidth": 2,
+  "footprintHeight": 2,
   "height": 100,
   "anchored": true,
   "size": 50,

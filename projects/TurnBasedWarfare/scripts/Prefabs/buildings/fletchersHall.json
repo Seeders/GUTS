@@ -62,8 +62,8 @@
     "1_di_scout",
     "1_d_archer"
   ],
-  "placementGridWidth": 2,
-  "placementGridHeight": 2,
+  "footprintWidth": 2,
+  "footprintHeight": 2,
   "height": 100,
   "size": 50,
   "icon": "building_fletchersHall",

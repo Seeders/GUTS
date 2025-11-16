@@ -21,30 +21,35 @@ class PlacementPreview {
             cellSizeMultiplier: 0.9,
             maxCells: 50,
             updateThrottle: 16,
-            placementGridSize: configs.gridSize / 2 // Placement grid is always half the terrain grid
+            placementGridSize: configs.gridSize / 2, // Placement grid is always half the terrain grid
+            terrainGridSize: configs.gridSize // Terrain grid size for building footprints
         };
-        
+
         this.geometryPool = this.createGeometryPool();
         this.materials = this.createMaterials();
         
-        this.cellMeshPool = [];
-        this.borderMeshPool = [];
+        this.placementCellMeshPool = [];
+        this.placementBorderMeshPool = [];
+        this.footprintCellMeshPool = [];
+        this.footprintBorderMeshPool = [];
         this.unitMeshPool = [];
         this.activeMeshes = [];
-        
+
         this.animationId = null;
         this.lastUpdateTime = 0;
-        
+
         this.initializeObjectPools();
     }
     
     createGeometryPool() {
-        const cellSize = this.game.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
-        
+        const placementCellSize = this.game.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
+        const footprintCellSize = this.config.terrainGridSize * this.config.cellSizeMultiplier;
+
         return {
-            cellPlane: new THREE.PlaneGeometry(cellSize, cellSize),
+            placementCellPlane: new THREE.PlaneGeometry(placementCellSize, placementCellSize), // For units
+            footprintCellPlane: new THREE.PlaneGeometry(footprintCellSize, footprintCellSize), // For buildings
             unitCircle: new THREE.CircleGeometry(
-                this.config.unitIndicatorRadius, 
+                this.config.unitIndicatorRadius,
                 this.config.unitIndicatorSegments
             )
         };
@@ -89,21 +94,37 @@ class PlacementPreview {
     
     initializeObjectPools() {
         const maxObjects = this.config.maxCells;
-        
+
         for (let i = 0; i < maxObjects; i++) {
-            const cellMesh = new THREE.Mesh(this.geometryPool.cellPlane, this.materials.validCell);
-            cellMesh.rotation.x = -Math.PI / 2;
-            cellMesh.visible = false;
-            this.cellMeshPool.push(cellMesh);
-            this.previewGroup.add(cellMesh);
-            
-            const borderGeometry = new THREE.EdgesGeometry(this.geometryPool.cellPlane);
-            const borderMesh = new THREE.LineSegments(borderGeometry, this.materials.validBorder);
-            borderMesh.rotation.x = -Math.PI / 2;
-            borderMesh.visible = false;
-            this.borderMeshPool.push(borderMesh);
-            this.previewGroup.add(borderMesh);
-            
+            // Placement cell meshes (for units)
+            const placementCellMesh = new THREE.Mesh(this.geometryPool.placementCellPlane, this.materials.validCell);
+            placementCellMesh.rotation.x = -Math.PI / 2;
+            placementCellMesh.visible = false;
+            this.placementCellMeshPool.push(placementCellMesh);
+            this.previewGroup.add(placementCellMesh);
+
+            const placementBorderGeometry = new THREE.EdgesGeometry(this.geometryPool.placementCellPlane);
+            const placementBorderMesh = new THREE.LineSegments(placementBorderGeometry, this.materials.validBorder);
+            placementBorderMesh.rotation.x = -Math.PI / 2;
+            placementBorderMesh.visible = false;
+            this.placementBorderMeshPool.push(placementBorderMesh);
+            this.previewGroup.add(placementBorderMesh);
+
+            // Footprint cell meshes (for buildings)
+            const footprintCellMesh = new THREE.Mesh(this.geometryPool.footprintCellPlane, this.materials.validCell);
+            footprintCellMesh.rotation.x = -Math.PI / 2;
+            footprintCellMesh.visible = false;
+            this.footprintCellMeshPool.push(footprintCellMesh);
+            this.previewGroup.add(footprintCellMesh);
+
+            const footprintBorderGeometry = new THREE.EdgesGeometry(this.geometryPool.footprintCellPlane);
+            const footprintBorderMesh = new THREE.LineSegments(footprintBorderGeometry, this.materials.validBorder);
+            footprintBorderMesh.rotation.x = -Math.PI / 2;
+            footprintBorderMesh.visible = false;
+            this.footprintBorderMeshPool.push(footprintBorderMesh);
+            this.previewGroup.add(footprintBorderMesh);
+
+            // Unit indicator meshes
             const unitMesh = new THREE.Mesh(this.geometryPool.unitCircle, this.materials.validUnit);
             unitMesh.rotation.x = -Math.PI / 2;
             unitMesh.visible = false;
@@ -112,34 +133,40 @@ class PlacementPreview {
         }
     }
     
-    showAtWorldPositions(worldPositions, isValid = true) {
+    showAtWorldPositions(worldPositions, isValid = true, isBuilding = false) {
         const now = performance.now();
         if (now - this.lastUpdateTime < this.config.updateThrottle) {
             return;
         }
         this.lastUpdateTime = now;
-        
+
         if (!worldPositions || worldPositions.length === 0) {
             this.hide();
             return;
         }
-        
+
         this.isActive = true;
         this.hideAllMeshes();
-        
+
         const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
         const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
-        const amt = this.config.placementGridSize / 3;
+
+        // Choose appropriate mesh pools based on whether it's a building or unit
+        const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
+        const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
+        const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
+        const amt = gridSize / 3;
+
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
-            if (index >= this.cellMeshPool.length) return;
-            
-            const cellMesh = this.cellMeshPool[index];
+            if (index >= cellMeshPool.length) return;
+
+            const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
             cellMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
-            
-            const borderMesh = this.borderMeshPool[index];
+
+            const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
             borderMesh.position.set(pos.x + amt, this.config.elevationOffset, pos.z - amt);
             borderMesh.visible = true;
@@ -150,42 +177,46 @@ class PlacementPreview {
         this.startAnimation();
     }
     
-    showAtGridPositions(gridPositions, isValid = true) {
-        const worldPositions = gridPositions.map(gridPos => 
+    showAtGridPositions(gridPositions, isValid = true, isBuilding = false) {
+        const worldPositions = gridPositions.map(gridPos =>
             this.game.gridSystem.gridToWorld(gridPos.x, gridPos.z)
         );
-        this.showAtWorldPositions(worldPositions, isValid);
+        this.showAtWorldPositions(worldPositions, isValid, isBuilding);
     }
-    
-    showWithUnitMarkers(worldPositions, unitPositions, isValid = true) {
+
+    showWithUnitMarkers(worldPositions, unitPositions, isValid = true, isBuilding = false) {
         const now = performance.now();
         if (now - this.lastUpdateTime < this.config.updateThrottle) {
             return;
         }
         this.lastUpdateTime = now;
-        
+
         if (!worldPositions || worldPositions.length === 0) {
             this.hide();
             return;
         }
-        
+
         this.isActive = true;
         this.hideAllMeshes();
-        
+
         const cellMaterial = isValid ? this.materials.validCell : this.materials.invalidCell;
         const borderMaterial = isValid ? this.materials.validBorder : this.materials.invalidBorder;
         const unitMaterial = isValid ? this.materials.validUnit : this.materials.invalidUnit;
-        
+
+        // Choose appropriate mesh pools based on whether it's a building or unit
+        const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
+        const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
+
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
-            if (index >= this.cellMeshPool.length) return;
-            
-            const cellMesh = this.cellMeshPool[index];
+            if (index >= cellMeshPool.length) return;
+
+            const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
             cellMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
-            
-            const borderMesh = this.borderMeshPool[index];
+
+            const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
             borderMesh.position.set(pos.x, this.config.elevationOffset, pos.z);
             borderMesh.visible = true;

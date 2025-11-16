@@ -193,10 +193,24 @@ class GridSystem extends engine.BaseSystem {
         const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
 
         if(!unitType) return null;
-        const cells = [];       
-        let { placementGridWidth, placementGridHeight } = unitType;        
-        if(!placementGridHeight) placementGridHeight = 1;
-        if(!placementGridWidth) placementGridWidth = 1;
+        const cells = [];
+
+        // For buildings, convert footprint (terrain grid units) to placement grid cells
+        // For units, use placementGridWidth/Height directly (already in placement grid units)
+        let placementGridWidth, placementGridHeight;
+
+        if (unitType.collection === 'buildings') {
+            // Buildings use footprint in terrain grid units, convert to placement grid cells (2x)
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 1;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 1;
+            placementGridWidth = footprintWidth * 2;
+            placementGridHeight = footprintHeight * 2;
+        } else {
+            // Units use placement grid units directly
+            placementGridWidth = unitType.placementGridWidth || 1;
+            placementGridHeight = unitType.placementGridHeight || 1;
+        }
+
         const gridPos = this.worldToGrid(pos.x, pos.z);
         // Calculate starting position to center the formation
         const startX = gridPos.x - Math.floor(placementGridWidth / 2);
@@ -209,7 +223,7 @@ class GridSystem extends engine.BaseSystem {
                 });
             }
         }
-        
+
         return cells;
     }
 

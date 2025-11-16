@@ -799,9 +799,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         let cells = [];
         let isValid = this.isValidGridPlacement(worldPosition);
         let unitPositions = null;
+        let isBuilding = false;
+        let footprintCells = [];
 
         if (state.selectedUnitType.collection === 'buildings') {
-            cells = this.calculateBuildingCells(gridPos, state.selectedUnitType);            
+            isBuilding = true;
+            cells = this.calculateBuildingCells(gridPos, state.selectedUnitType);
+            // Calculate footprint cells for preview (in terrain grid units, not placement grid)
+            footprintCells = this.calculateFootprintCells(gridPos, state.selectedUnitType);
         } else {
             const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
             cells = this.game.squadManager.getSquadCells(gridPos, squadData);
@@ -810,14 +815,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             }
         }
 
-        const worldPositions = cells.map(cell =>
+        // For buildings, show footprint-sized preview. For units, show placement grid cells.
+        const previewPositions = isBuilding ? footprintCells : cells;
+        const worldPositions = previewPositions.map(cell =>
             this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
         );
 
         if (unitPositions && unitPositions.length > 0) {
-            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid);
+            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid, isBuilding);
         } else {
-            this.placementPreview.showAtWorldPositions(worldPositions, isValid);
+            this.placementPreview.showAtWorldPositions(worldPositions, isValid, isBuilding);
         }
 
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
@@ -883,8 +890,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             cells = this.calculateBuildingCells(gridPos, selectedUnitType);
 
             if (selectedUnitType.id === 'goldMine') {
-                const gridWidth = selectedUnitType.placementGridWidth || 2;
-                const gridHeight = selectedUnitType.placementGridHeight || 2;
+                // Convert footprint to placement grid cells
+                const footprintWidth = selectedUnitType.footprintWidth || selectedUnitType.placementGridWidth || 2;
+                const footprintHeight = selectedUnitType.footprintHeight || selectedUnitType.placementGridHeight || 2;
+                const gridWidth = footprintWidth * 2;
+                const gridHeight = footprintHeight * 2;
                 const validation = this.game.gameManager.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
                 isValid = validation.valid;
             } else {
@@ -945,8 +955,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     calculateBuildingCells(gridPos, building) {
         const cells = [];
-        const gridWidth = building.placementGridWidth || 1;
-        const gridHeight = building.placementGridHeight || 1;
+        // Convert footprint (terrain grid units) to placement grid cells (multiply by 2)
+        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
+        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
+        const gridWidth = footprintWidth * 2;
+        const gridHeight = footprintHeight * 2;
+
         const startX = gridPos.x - Math.floor(gridWidth / 2);
         const startZ = gridPos.z - Math.floor(gridHeight / 2);
 
@@ -955,6 +969,29 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 cells.push({
                     x: startX + x,
                     z: startZ + z
+                });
+            }
+        }
+
+        return cells;
+    }
+
+    calculateFootprintCells(gridPos, building) {
+        const cells = [];
+        // Footprint is in terrain grid units - use directly for preview
+        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
+        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
+
+        const startX = gridPos.x - Math.floor(footprintWidth * 2 / 2);
+        const startZ = gridPos.z - Math.floor(footprintHeight * 2 / 2);
+
+        // Calculate center position for each footprint cell in placement grid coordinates
+        for (let z = 0; z < footprintHeight; z++) {
+            for (let x = 0; x < footprintWidth; x++) {
+                // Each footprint cell is centered in its 2x2 placement grid area
+                cells.push({
+                    x: startX + x * 2 + 1,  // Center of 2-cell width
+                    z: startZ + z * 2 + 1   // Center of 2-cell height
                 });
             }
         }

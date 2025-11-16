@@ -59,8 +59,8 @@
     }
   },
   "units": [],
-  "placementGridWidth": 2,
-  "placementGridHeight": 2,
+  "footprintWidth": 2,
+  "footprintHeight": 2,
   "height": 100,
   "size": 50,
   "icon": "unit_archer",

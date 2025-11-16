@@ -62,8 +62,8 @@
     "peasantEfficiency"
   ],
   "units": [],
-  "placementGridWidth": 2,
-  "placementGridHeight": 2,
+  "footprintWidth": 2,
+  "footprintHeight": 2,
   "size": 50,
   "icon": "building_goldMine",
   "hp": 2000,
