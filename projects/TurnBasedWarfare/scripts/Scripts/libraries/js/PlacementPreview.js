@@ -161,19 +161,25 @@ class PlacementPreview {
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
+            // Get terrain height at the center of the cell
+            const centerX = pos.x + halfSize;
+            const centerZ = pos.z - halfSize;
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', centerX, centerZ);
+            const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
+
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z - halfSize);
+            cellMesh.position.set(centerX, yPosition, centerZ);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z - halfSize);
+            borderMesh.position.set(centerX, yPosition, centerZ);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });
-        
+
         this.previewGroup.visible = true;
         this.startAnimation();
     }
@@ -214,31 +220,41 @@ class PlacementPreview {
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
+            // Get terrain height at the center of the cell
+            const centerX = pos.x + halfSize;
+            const centerZ = pos.z + halfSize;
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', centerX, centerZ);
+            const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
+
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
+            cellMesh.position.set(centerX, yPosition, centerZ);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
+            borderMesh.position.set(centerX, yPosition, centerZ);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });
-        
+
         if (unitPositions && unitPositions.length > 0) {
             unitPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
                 if (index >= this.unitMeshPool.length) return;
-                
+
+                // Get terrain height at the unit position
+                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
+                const yPosition = (terrainHeight || 0) + this.config.unitElevationOffset;
+
                 const unitMesh = this.unitMeshPool[index];
                 unitMesh.material = unitMaterial;
-                unitMesh.position.set(pos.x, this.config.unitElevationOffset, pos.z);
+                unitMesh.position.set(pos.x, yPosition, pos.z);
                 unitMesh.visible = true;
                 this.activeMeshes.push(unitMesh);
             });
         }
-        
+
         this.previewGroup.visible = true;
         this.startAnimation();
     }
