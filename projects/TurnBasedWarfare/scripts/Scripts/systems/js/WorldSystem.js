@@ -871,6 +871,233 @@ class WorldSystem extends engine.BaseSystem {
         return colorMap;
     }
 
+    /**
+     * Decimates a mesh by reducing vertex count while preserving form
+     * Uses a simplified quadric error metrics approach
+     * @param {THREE.BufferGeometry} geometry - The geometry to decimate
+     * @param {number} targetReduction - Target reduction ratio (0.0 to 1.0), default 0.5
+     */
+    decimateMesh(geometry, targetReduction = 0.5) {
+        if (!geometry.index) {
+            console.warn('Mesh decimation requires indexed geometry');
+            return;
+        }
+
+        const startTime = performance.now();
+        const positions = geometry.attributes.position.array;
+        const indices = geometry.index.array;
+        const originalVertexCount = positions.length / 3;
+        const originalTriangleCount = indices.length / 3;
+
+        console.log(`[MeshDecimation] Starting decimation:`, {
+            vertices: originalVertexCount,
+            triangles: originalTriangleCount,
+            targetReduction: targetReduction
+        });
+
+        // Build edge list and adjacency information
+        const edges = new Map(); // key: "v1,v2" -> {v1, v2, triangles: []}
+        const vertexTriangles = new Map(); // vertex -> triangle indices
+
+        // Initialize vertex triangle lists
+        for (let i = 0; i < originalVertexCount; i++) {
+            vertexTriangles.set(i, []);
+        }
+
+        // Build edge and adjacency data
+        for (let i = 0; i < indices.length; i += 3) {
+            const v0 = indices[i];
+            const v1 = indices[i + 1];
+            const v2 = indices[i + 2];
+            const triIndex = i / 3;
+
+            vertexTriangles.get(v0).push(triIndex);
+            vertexTriangles.get(v1).push(triIndex);
+            vertexTriangles.get(v2).push(triIndex);
+
+            // Add edges
+            this._addEdge(edges, v0, v1, triIndex);
+            this._addEdge(edges, v1, v2, triIndex);
+            this._addEdge(edges, v2, v0, triIndex);
+        }
+
+        // Calculate quadric error matrices for each vertex
+        const quadrics = new Array(originalVertexCount);
+        for (let i = 0; i < originalVertexCount; i++) {
+            quadrics[i] = this._calculateVertexQuadric(i, positions, indices, vertexTriangles);
+        }
+
+        // Calculate error for each edge and sort by error
+        const edgeErrors = [];
+        edges.forEach((edge, key) => {
+            const error = this._calculateEdgeCollapseError(edge, positions, quadrics);
+            edgeErrors.push({ edge, error, key });
+        });
+
+        // Sort edges by error (lowest first)
+        edgeErrors.sort((a, b) => a.error - b.error);
+
+        // Collapse edges until target reduction is reached
+        const targetVertexCount = Math.floor(originalVertexCount * (1 - targetReduction));
+        const removedVertices = new Set();
+        const vertexMapping = new Map(); // maps old vertex to new vertex
+
+        let currentVertexCount = originalVertexCount;
+        let collapsedEdges = 0;
+
+        for (const { edge, key } of edgeErrors) {
+            if (currentVertexCount <= targetVertexCount) break;
+
+            const { v1, v2 } = edge;
+
+            // Skip if either vertex has already been removed
+            if (removedVertices.has(v1) || removedVertices.has(v2)) continue;
+
+            // Skip boundary edges (edges with only one triangle)
+            if (edge.triangles.length < 2) continue;
+
+            // Collapse edge: keep v1, remove v2
+            removedVertices.add(v2);
+            vertexMapping.set(v2, v1);
+
+            // Merge position to midpoint
+            const i1 = v1 * 3;
+            const i2 = v2 * 3;
+            positions[i1] = (positions[i1] + positions[i2]) / 2;
+            positions[i1 + 1] = (positions[i1 + 1] + positions[i2 + 1]) / 2;
+            positions[i1 + 2] = (positions[i1 + 2] + positions[i2 + 2]) / 2;
+
+            currentVertexCount--;
+            collapsedEdges++;
+        }
+
+        // Rebuild index buffer, removing degenerate triangles
+        const newIndices = [];
+        for (let i = 0; i < indices.length; i += 3) {
+            let v0 = indices[i];
+            let v1 = indices[i + 1];
+            let v2 = indices[i + 2];
+
+            // Remap vertices
+            while (vertexMapping.has(v0)) v0 = vertexMapping.get(v0);
+            while (vertexMapping.has(v1)) v1 = vertexMapping.get(v1);
+            while (vertexMapping.has(v2)) v2 = vertexMapping.get(v2);
+
+            // Skip degenerate triangles
+            if (v0 === v1 || v1 === v2 || v2 === v0) continue;
+
+            newIndices.push(v0, v1, v2);
+        }
+
+        // Update geometry
+        geometry.setIndex(newIndices);
+        geometry.attributes.position.needsUpdate = true;
+
+        // Recompute normals
+        geometry.computeVertexNormals();
+
+        const endTime = performance.now();
+        const finalTriangleCount = newIndices.length / 3;
+
+        console.log(`[MeshDecimation] Completed in ${(endTime - startTime).toFixed(2)}ms:`, {
+            originalVertices: originalVertexCount,
+            remainingVertices: currentVertexCount,
+            originalTriangles: originalTriangleCount,
+            finalTriangles: finalTriangleCount,
+            reduction: ((1 - finalTriangleCount / originalTriangleCount) * 100).toFixed(1) + '%',
+            collapsedEdges: collapsedEdges
+        });
+    }
+
+    _addEdge(edges, v1, v2, triIndex) {
+        // Ensure consistent edge key (lower index first)
+        const [min, max] = v1 < v2 ? [v1, v2] : [v2, v1];
+        const key = `${min},${max}`;
+
+        if (!edges.has(key)) {
+            edges.set(key, { v1: min, v2: max, triangles: [] });
+        }
+        edges.get(key).triangles.push(triIndex);
+    }
+
+    _calculateVertexQuadric(vertexIndex, positions, indices, vertexTriangles) {
+        // Quadric error matrix (4x4 symmetric matrix, stored as 10 values)
+        const Q = new Float32Array(10); // [a,b,c,d,e,f,g,h,i,j] representing symmetric 4x4
+
+        const triangles = vertexTriangles.get(vertexIndex);
+
+        for (const triIndex of triangles) {
+            const i = triIndex * 3;
+            const v0 = indices[i];
+            const v1 = indices[i + 1];
+            const v2 = indices[i + 2];
+
+            // Get triangle vertices
+            const p0 = new THREE.Vector3(
+                positions[v0 * 3],
+                positions[v0 * 3 + 1],
+                positions[v0 * 3 + 2]
+            );
+            const p1 = new THREE.Vector3(
+                positions[v1 * 3],
+                positions[v1 * 3 + 1],
+                positions[v1 * 3 + 2]
+            );
+            const p2 = new THREE.Vector3(
+                positions[v2 * 3],
+                positions[v2 * 3 + 1],
+                positions[v2 * 3 + 2]
+            );
+
+            // Calculate plane equation: ax + by + cz + d = 0
+            const edge1 = new THREE.Vector3().subVectors(p1, p0);
+            const edge2 = new THREE.Vector3().subVectors(p2, p0);
+            const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+
+            const a = normal.x;
+            const b = normal.y;
+            const c = normal.z;
+            const d = -normal.dot(p0);
+
+            // Add to quadric (sum of plane equations)
+            Q[0] += a * a; Q[1] += a * b; Q[2] += a * c; Q[3] += a * d;
+            Q[4] += b * b; Q[5] += b * c; Q[6] += b * d;
+            Q[7] += c * c; Q[8] += c * d;
+            Q[9] += d * d;
+        }
+
+        return Q;
+    }
+
+    _calculateEdgeCollapseError(edge, positions, quadrics) {
+        const { v1, v2 } = edge;
+
+        // Get midpoint of edge
+        const i1 = v1 * 3;
+        const i2 = v2 * 3;
+        const x = (positions[i1] + positions[i2]) / 2;
+        const y = (positions[i1 + 1] + positions[i2 + 1]) / 2;
+        const z = (positions[i1 + 2] + positions[i2 + 2]) / 2;
+
+        // Sum quadrics of both vertices
+        const Q = new Float32Array(10);
+        const Q1 = quadrics[v1];
+        const Q2 = quadrics[v2];
+
+        for (let i = 0; i < 10; i++) {
+            Q[i] = Q1[i] + Q2[i];
+        }
+
+        // Calculate error: v^T * Q * v where v = [x, y, z, 1]
+        const error =
+            Q[0] * x * x + 2 * Q[1] * x * y + 2 * Q[2] * x * z + 2 * Q[3] * x +
+            Q[4] * y * y + 2 * Q[5] * y * z + 2 * Q[6] * y +
+            Q[7] * z * z + 2 * Q[8] * z +
+            Q[9];
+
+        return Math.abs(error);
+    }
+
     applyHeightMapToGeometry() {
         if (!this.ground || !this.groundVertices) return;
 
@@ -901,6 +1128,8 @@ class WorldSystem extends engine.BaseSystem {
         this.groundVertices.needsUpdate = true;
         geometry.computeVertexNormals();
 
+        // Decimate the mesh to reduce vertex count
+        this.decimateMesh(geometry);
 
         // Rebuild BVH tree after geometry modification for accurate raycasting
         if (geometry.boundsTree) {
