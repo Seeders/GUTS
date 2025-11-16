@@ -869,43 +869,30 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         this.raycaster.setFromCamera(this.mouse, this.game.camera);
 
+        // Try to raycast directly against the terrain mesh (most efficient)
+        if (this.groundMeshCache) {
+            const intersects = this.raycaster.intersectObject(this.groundMeshCache, false);
+            if (intersects.length > 0) {
+                return intersects[0].point;
+            }
+        }
+
+        // Fallback: raycast to flat plane at y=0 if ground mesh not available
         const ray = this.raycaster.ray;
 
         if (Math.abs(ray.direction.y) < 0.0001) {
             return null;
         }
 
-        // Iteratively converge on the correct height-adjusted position
-        // Start with y=0 as initial guess
-        let targetHeight = 0;
-        let intersectionPoint = null;
+        const distance = (0 - ray.origin.y) / ray.direction.y;
 
-        // Iterate to account for terrain height (2-3 iterations is usually enough)
-        for (let i = 0; i < 3; i++) {
-            const distance = (targetHeight - ray.origin.y) / ray.direction.y;
-
-            if (distance < 0) {
-                return null;
-            }
-
-            intersectionPoint = ray.origin.clone().add(
-                ray.direction.clone().multiplyScalar(distance)
-            );
-
-            // Get the terrain height at this position
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', intersectionPoint.x, intersectionPoint.z);
-
-            // If terrain height is close enough to our target, we've converged
-            if (terrainHeight !== null && terrainHeight !== undefined) {
-                if (Math.abs(terrainHeight - targetHeight) < 0.1) {
-                    break;
-                }
-                targetHeight = terrainHeight;
-            } else {
-                // No height data available, use y=0
-                break;
-            }
+        if (distance < 0) {
+            return null;
         }
+
+        const intersectionPoint = ray.origin.clone().add(
+            ray.direction.clone().multiplyScalar(distance)
+        );
 
         return intersectionPoint;
     }
