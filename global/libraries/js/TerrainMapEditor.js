@@ -59,6 +59,7 @@ class TerrainMapEditor {
         // Preview elements for cursor
         this.previewCanvas = null;
         this.currentPreviewImage = null;
+        this.hoverGridPosition = null; // Track mouse position for brush preview
 
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
@@ -191,12 +192,22 @@ class TerrainMapEditor {
             if (!this.previewAnimationFrame) {
                 this.previewAnimationFrame = requestAnimationFrame(() => {
                     this.updatePreviewPosition(this.pendingPreviewEvent);
+                    this.updateBrushPreview(this.pendingPreviewEvent);
                     this.previewAnimationFrame = null;
                 });
             }
-            
+
             if (this.isMouseDown) {
                 this.handleCanvasInteraction(e);
+            }
+        });
+
+        // Add mouse leave event to clear brush preview
+        this.canvasEl.addEventListener('mouseleave', () => {
+            this.hoverGridPosition = null;
+            if (this.placementMode === 'terrain' || this.placementMode === 'height') {
+                this.needsRender = true;
+                this.scheduleRender();
             }
         });
 
@@ -574,15 +585,15 @@ class TerrainMapEditor {
         ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
     }
     updatePreviewPosition(e) {
-        if (this.placementMode !== 'environment' || 
-            !this.selectedEnvironmentType || 
-            this.selectedEnvironmentItem === null || 
-            this.deleteMode || 
+        if (this.placementMode !== 'environment' ||
+            !this.selectedEnvironmentType ||
+            this.selectedEnvironmentItem === null ||
+            this.deleteMode ||
             !this.currentPreviewImage) {
             this.previewCanvas.style.display = 'none';
             return;
         }
-        
+
         // Get mouse position relative to canvas
         const rect = this.canvasEl.getBoundingClientRect();
         // Account for CSS scaling of the canvas
@@ -594,13 +605,13 @@ class TerrainMapEditor {
         if (!this.gameEditor.getCollections().configs.game.isIsometric) {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
         }
-        
+
         // For isometric view, we need to convert cursor position to actual object position
         let posX, posY;
         if (this.gameEditor.getCollections().configs.game.isIsometric) {
             const isoPos = { x: mouseX, y: mouseY };
             const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-            
+
             // Convert back to screen coordinates
             const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);
             posX = screenPos.x + rect.left;
@@ -615,6 +626,43 @@ class TerrainMapEditor {
         // Center the preview on the cursor
         this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;
         this.previewCanvas.style.display = 'block';
+    }
+
+    updateBrushPreview(e) {
+        // Only show preview in terrain or height mode
+        if (this.placementMode !== 'terrain' && this.placementMode !== 'height') {
+            if (this.hoverGridPosition !== null) {
+                this.hoverGridPosition = null;
+                this.needsRender = true;
+                this.scheduleRender();
+            }
+            return;
+        }
+
+        // Get mouse position relative to canvas
+        const rect = this.canvasEl.getBoundingClientRect();
+        const scaleX = this.canvasEl.width / rect.width;
+        const scaleY = this.canvasEl.height / rect.height;
+        let mouseX = (e.clientX - rect.left) * scaleX;
+        let mouseY = (e.clientY - rect.top) * scaleY;
+
+        if (!this.gameEditor.getCollections().configs.game.isIsometric) {
+            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+            mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
+        }
+
+        // Convert to grid coordinates
+        const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+        const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+
+        // Update hover position if it changed
+        if (!this.hoverGridPosition ||
+            this.hoverGridPosition.x !== snappedGrid.x ||
+            this.hoverGridPosition.y !== snappedGrid.y) {
+            this.hoverGridPosition = { x: snappedGrid.x, y: snappedGrid.y };
+            this.needsRender = true;
+            this.scheduleRender();
+        }
     }
     setupTerrainImageProcessor() {
         this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
@@ -1907,6 +1955,115 @@ class TerrainMapEditor {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('R', drawX + gridSize / 2, drawY + gridSize / 2);
+                }
+            }
+        }
+
+        // Render brush/fill preview overlay
+        if (this.hoverGridPosition &&
+            (this.placementMode === 'terrain' || this.placementMode === 'height')) {
+
+            if (this.terrainTool === 'brush') {
+                // Brush tool preview - show all affected tiles
+                const centerX = this.hoverGridPosition.x;
+                const centerY = this.hoverGridPosition.y;
+                const radius = Math.floor(this.brushSize / 2);
+
+                // Render each tile in the brush area
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const x = centerX + dx;
+                        const y = centerY + dy;
+
+                        // Check bounds
+                        if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                            // Check if within brush radius (circular brush)
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance <= radius + 0.5) {
+                                if (isIsometric) {
+                                    // Isometric preview
+                                    const isoCoords = this.translator.gridToIso(x, y);
+                                    const tileWidth = gridSize;
+                                    const tileHeight = gridSize * 0.5;
+
+                                    // Draw semi-transparent overlay
+                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                                    ctx.beginPath();
+                                    ctx.moveTo(isoCoords.x, isoCoords.y);
+                                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                                    ctx.closePath();
+                                    ctx.fill();
+
+                                    // Draw border
+                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                                    ctx.lineWidth = 2;
+                                    ctx.stroke();
+                                } else {
+                                    // Non-isometric preview
+                                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+                                    const drawX = offsetX + x * gridSize;
+                                    const drawY = offsetY + y * gridSize;
+
+                                    // Draw semi-transparent overlay
+                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
+
+                                    // Draw border
+                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                                    ctx.lineWidth = 2;
+                                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (this.terrainTool === 'fill') {
+                // Fill tool preview - show single tile with different color
+                const x = this.hoverGridPosition.x;
+                const y = this.hoverGridPosition.y;
+
+                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                    if (isIsometric) {
+                        // Isometric preview
+                        const isoCoords = this.translator.gridToIso(x, y);
+                        const tileWidth = gridSize;
+                        const tileHeight = gridSize * 0.5;
+
+                        // Draw semi-transparent overlay with blue tint for fill
+                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
+                        ctx.beginPath();
+                        ctx.moveTo(isoCoords.x, isoCoords.y);
+                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Draw border
+                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    } else {
+                        // Non-isometric preview
+                        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+                        const drawX = offsetX + x * gridSize;
+                        const drawY = offsetY + y * gridSize;
+
+                        // Draw semi-transparent overlay with blue tint for fill
+                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
+                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
+
+                        // Draw border
+                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                    }
                 }
             }
         }
