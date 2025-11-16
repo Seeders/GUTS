@@ -902,7 +902,7 @@ class WorldSystem extends engine.BaseSystem {
         geometry.computeVertexNormals();
 
         // Simplify mesh by reducing triangles in flat areas
-        this.simplifyGroundMesh();
+       // this.simplifyGroundMesh();
 
         // Rebuild BVH tree after geometry modification for accurate raycasting
         if (geometry.boundsTree) {

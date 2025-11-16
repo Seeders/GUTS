@@ -739,7 +739,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.updatePlacementPreview();
             }
                             
-        }, 1000);
+        }, 100);
 
         if (this.config.enablePreview && this.placementPreview) {       
             
