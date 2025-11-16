@@ -161,8 +161,8 @@ class GridSystem extends engine.BaseSystem {
     gridToWorld(gridX, gridZ) {
         const { cellSize, startX, startZ } = this.dimensions;
         return {
-            x: startX + (gridX * cellSize) + (cellSize / 2),
-            z: startZ + (gridZ * cellSize) + (cellSize / 2)
+            x: startX + (gridX * cellSize),
+            z: startZ + (gridZ * cellSize)
         };
     }
     
