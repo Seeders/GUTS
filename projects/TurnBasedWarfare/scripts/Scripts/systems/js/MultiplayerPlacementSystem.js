@@ -829,9 +829,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
         
         // For buildings, show footprint-sized preview. For units, show placement grid cells.
-        const worldPositions = cells.map(cell =>
-            this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
-        );
+        const worldPositions = cells.map(cell => {
+            const worldPos = this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z);
+            // Add terrain height at this position
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z) || 0;
+            return {
+                x: worldPos.x,
+                z: worldPos.z,
+                y: terrainHeight
+            };
+        });
 
         if (unitPositions && unitPositions.length > 0) {
             this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid, isBuilding);
