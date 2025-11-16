@@ -1,0 +1,24 @@
+{
+  "gridSize": 1,
+  "title": "Action RPG",
+  "isIsometric": false,
+  "libraries": [
+    "threejs",
+    "BaseSystem",
+    "BaseECSGame",
+    "MultiplayerECSGame",
+    "ProjectLoader",
+    "GameState"
+  ],
+  "fileName": "game",
+  "interface": "main",
+  "appLibrary": "MultiplayerECSGame",
+  "canvasWidth": 1600,
+  "canvasHeight": 1200,
+  "is3D": true,
+  "appLoaderLibrary": "ProjectLoader",
+  "initialScene": "client",
+  "tickRate": 0.05,
+  "renderPixelated": false,
+  "pixelSize": 4
+}

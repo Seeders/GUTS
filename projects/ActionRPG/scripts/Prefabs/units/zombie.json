@@ -1,0 +1,27 @@
+{
+  "title": "Zombie",
+  "collection": "units",
+  "size": 30,
+  "height": 50,
+  "hp": 80,
+  "speed": 2,
+  "damage": 8,
+  "attackSpeed": 0.8,
+  "range": 1.2,
+  "element": "physical",
+  "armor": 10,
+  "fireResistance": -50,
+  "coldResistance": 25,
+  "lightningResistance": 0,
+  "poisonResistance": 100,
+  "aggroRange": 8,
+  "chaseRange": 12,
+  "attackRange": 1.2,
+  "experienceReward": 15,
+  "lootTable": {
+    "goldMin": 8,
+    "goldMax": 20,
+    "dropChance": 0.4,
+    "items": []
+  }
+}

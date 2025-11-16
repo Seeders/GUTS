@@ -1,0 +1,34 @@
+{
+  "title": "Player",
+  "collection": "units",
+  "size": 25,
+  "height": 50,
+  "hp": 100,
+  "mana": 100,
+  "speed": 5,
+  "damage": 10,
+  "attackSpeed": 1.0,
+  "range": 1.5,
+  "element": "physical",
+  "armor": 0,
+  "fireResistance": 0,
+  "coldResistance": 0,
+  "lightningResistance": 0,
+  "poisonResistance": 0,
+  "critChance": 0.05,
+  "critMultiplier": 1.5,
+  "visionRange": 10,
+  "stats": {
+    "strength": 10,
+    "dexterity": 10,
+    "intelligence": 10,
+    "vitality": 10,
+    "level": 1,
+    "experience": 0,
+    "experienceToNextLevel": 100
+  },
+  "inventory": {
+    "capacity": 40,
+    "gold": 0
+  }
+}

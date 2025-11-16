@@ -1,0 +1,13 @@
+{
+  "title": "Fireball",
+  "collection": "skills",
+  "skillId": "fireball",
+  "manaCost": 20,
+  "cooldown": 2,
+  "damage": 30,
+  "range": 10,
+  "element": "fire",
+  "areaOfEffect": 2,
+  "projectileSpeed": 10,
+  "effects": []
+}

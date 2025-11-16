@@ -1,0 +1,27 @@
+{
+  "title": "Skeleton",
+  "collection": "units",
+  "size": 25,
+  "height": 50,
+  "hp": 50,
+  "speed": 3,
+  "damage": 5,
+  "attackSpeed": 1.0,
+  "range": 1.5,
+  "element": "physical",
+  "armor": 5,
+  "fireResistance": -25,
+  "coldResistance": 50,
+  "lightningResistance": 0,
+  "poisonResistance": 100,
+  "aggroRange": 10,
+  "chaseRange": 15,
+  "attackRange": 1.5,
+  "experienceReward": 10,
+  "lootTable": {
+    "goldMin": 5,
+    "goldMax": 15,
+    "dropChance": 0.3,
+    "items": []
+  }
+}

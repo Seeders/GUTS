@@ -1,0 +1,13 @@
+{
+  "title": "Ice Blast",
+  "collection": "skills",
+  "skillId": "iceBlast",
+  "manaCost": 25,
+  "cooldown": 3,
+  "damage": 25,
+  "range": 8,
+  "element": "cold",
+  "areaOfEffect": 3,
+  "projectileSpeed": 8,
+  "effects": ["slow"]
+}

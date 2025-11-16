@@ -1,0 +1,11 @@
+{
+  "title": "Mana Potion",
+  "collection": "items",
+  "itemType": "consumable",
+  "rarity": "common",
+  "value": 10,
+  "maxStack": 10,
+  "stats": {
+    "manaAmount": 50
+  }
+}

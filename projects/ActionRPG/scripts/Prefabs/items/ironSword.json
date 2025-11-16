@@ -1,0 +1,12 @@
+{
+  "title": "Iron Sword",
+  "collection": "items",
+  "itemType": "weapon",
+  "rarity": "common",
+  "value": 50,
+  "maxStack": 1,
+  "stats": {
+    "damage": 15,
+    "element": "physical"
+  }
+}
