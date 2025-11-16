@@ -72,35 +72,6 @@ class SquadManager {
         const positions = [];
         const cellSize = this.game.gridSystem.dimensions.cellSize;
 
-        // For buildings, use footprint-based positioning aligned to terrain grid
-        if (unitType.collection === 'buildings') {
-            // Buildings use footprint in terrain grid units
-            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 1;
-            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 1;
-            const terrainGridSize = this.game.gridSystem.terrainGridSize;
-
-            // Convert placement grid position to terrain grid position
-            // The placement grid position is at the center of the 2x2 block
-            const terrainGridX = Math.floor(gridPos.x / 2);
-            const terrainGridZ = Math.floor(gridPos.z / 2);
-
-            // Calculate terrain grid world position (center of terrain cell)
-            const terrainStartX = this.game.gridSystem.dimensions.startX;
-            const terrainStartZ = this.game.gridSystem.dimensions.startZ;
-
-            // Center of the footprint in terrain grid coordinates
-            const centerTerrainX = terrainGridX + footprintWidth / 2;
-            const centerTerrainZ = terrainGridZ + footprintHeight / 2;
-
-            // Convert to world coordinates using terrain grid size
-            const worldX = terrainStartX + (centerTerrainX * terrainGridSize);
-            const worldZ = terrainStartZ + (centerTerrainZ * terrainGridSize);
-
-            positions.push({ x: worldX, z: worldZ });
-            return positions;
-        }
-
-        // Units use placement grid positioning
         // Compute the top-left (min) cell of the formation footprint
         const startCellX = gridPos.x - Math.floor(placementGridWidth / 2);
         const startCellZ = gridPos.z - Math.floor(placementGridHeight / 2);
