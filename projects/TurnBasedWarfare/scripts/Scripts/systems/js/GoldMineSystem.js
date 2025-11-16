@@ -92,24 +92,14 @@ class GoldMineSystem extends engine.BaseSystem {
     isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
         const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
 
-        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] Checking placement:`, {
-            gridPos,
-            buildingGridWidth,
-            buildingGridHeight,
-            buildingCells: buildingCells.length,
-            availableVeins: this.goldVeinLocations.filter(v => !v.claimed).length
-        });
-
         for (const vein of this.goldVeinLocations) {
             if (vein.claimed) continue;
 
             if (this.cellsMatch(buildingCells, vein.cells)) {
-                console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] MATCH FOUND with vein at`, vein.gridPos);
                 return { valid: true, vein: vein };
             }
         }
 
-        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] NO MATCH - placement invalid`);
         return { valid: false };
     }
 
@@ -176,14 +166,6 @@ class GoldMineSystem extends engine.BaseSystem {
             veinData: vein,
             team: team,
             model: mineModel
-        });
-
-        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] Built gold mine:`, {
-            entityId,
-            team,
-            gridPos,
-            worldPos: { x: vein.worldX, z: vein.worldZ },
-            totalMines: this.claimedGoldMines.size
         });
 
         return { success: true };

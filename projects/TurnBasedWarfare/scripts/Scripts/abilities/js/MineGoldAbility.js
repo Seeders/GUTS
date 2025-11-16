@@ -106,11 +106,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             String(a).localeCompare(String(b))
         );
 
-        // Debug logging
-        if (this.game.isServer && sortedMineIds.length > 0) {
-            console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} searching for mines. Available mines:`, sortedMineIds);
-        }
-
         // Search through all claimed gold mines in deterministic order
         for (const mineEntityId of sortedMineIds) {
             const goldMine = this.game.goldMineSystem.claimedGoldMines.get(mineEntityId);
@@ -131,9 +126,6 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
 
         if (!closestMine) {
-            if (this.game.isServer) {
-                console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} found NO mines for team ${miningState.team}. Total mines: ${sortedMineIds.length}`);
-            }
             return;
         }
 
@@ -145,17 +137,10 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         };
         miningState.state = 'walking_to_mine';
 
-        if (this.game.isServer) {
-            console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} targeting mine ${closestMineEntityId} at distance ${closestDistance}`);
-        }
-
         if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
             aiState.targetPosition = miningState.targetMinePosition;
             aiState.path = [];
             aiState.meta = {};
-               if(miningState.entityId == "peasant_1224_1368_right_1"){
-                    console.log("findMineTarget");
-                }
         }
     }
 
@@ -192,11 +177,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         if (closestTownHall) {
             miningState.targetTownHall = closestTownHall;
             if (aiState) {
-                aiState.targetPosition = miningState.targetTownHall;          
-                aiState.path = [];      
-                  if(miningState.entityId == "peasant_1224_1368_right_1"){
-                    console.log("findTownHall");
-                }                    
+                aiState.targetPosition = miningState.targetTownHall;
+                aiState.path = [];
                 aiState.meta = {};
             }
         }
@@ -305,11 +287,8 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             
             if (aiState && aiState.targetPosition != miningState.targetTownHall) {
                 aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetTownHall;  
-                aiState.path = [];   
-                  if(miningState.entityId == "peasant_1224_1368_right_1"){
-                    console.log("walkToTownHall");
-                }                       
+                aiState.targetPosition = miningState.targetTownHall;
+                aiState.path = [];
                 aiState.meta = {};
             }
         }
