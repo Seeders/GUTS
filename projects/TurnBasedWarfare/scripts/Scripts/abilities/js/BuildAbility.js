@@ -61,18 +61,18 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const Components = this.game.componentManager.getComponents();
         const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
         const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
-        
+
         if (!buildingPos) return;
 
         const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
         const renderComponent = this.game.getComponent(buildingEntityId, ComponentTypes.RENDERABLE);
         renderComponent.spawnType = 'underConstruction';
-        
+
         this.game.removeComponent(buildingEntityId, ComponentTypes.HEALTH);
 
         const peasantId = peasantInfo.peasantId;
-        const buildTime = peasantInfo.buildTime;       
-        
+        const buildTime = peasantInfo.buildTime;
+
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = true;
             buildingPlacement.buildTime = buildTime;
@@ -82,11 +82,26 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         this.peasantId = peasantEntityId;
         this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
         this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
-        
-        let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
-        currentBuildingStateAI.targetPosition = buildingPos;                          
-        currentBuildingStateAI.meta = this.meta;
-        this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);    
+
+        // Use command queue system to issue build command
+        // This will properly interrupt current movement and clear the path
+        if (this.game.commandQueueSystem) {
+            this.game.gameManager.call('queueCommand', peasantEntityId, {
+                type: 'build',
+                controllerId: ComponentTypes.BUILDING_STATE,
+                targetPosition: buildingPos,
+                target: buildingEntityId,
+                meta: this.meta,
+                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
+                interruptible: true
+            }, true); // true = interrupt current command
+        } else {
+            // Fallback to old method if command queue system not available
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
+            currentBuildingStateAI.targetPosition = buildingPos;
+            currentBuildingStateAI.meta = this.meta;
+            this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
+        }
 
         if (buildingPlacement) {
             buildingPlacement.assignedBuilder = peasantEntityId;
@@ -182,7 +197,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         if(this.game.shopSystem){
             this.game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
         }
-        
+
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
 
@@ -193,9 +208,15 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         buildState.targetBuildingEntityId = null;
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
-        
-        this.game.aiSystem.removeCurrentAIController(this.peasantId);
-        
+
+        // Mark command as complete in command queue system
+        if (this.game.commandQueueSystem) {
+            this.game.gameManager.call('completeCurrentCommand', this.peasantId);
+        } else {
+            // Fallback to old method
+            this.game.aiSystem.removeCurrentAIController(this.peasantId);
+        }
+
         this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
     }
     

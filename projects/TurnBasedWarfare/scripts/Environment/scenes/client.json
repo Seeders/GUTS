@@ -28,6 +28,7 @@
         { "type": "PostProcessingSystem" },
         { "type": "RenderSystem" },
         { "type": "AISystem" },
+        { "type": "CommandQueueSystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
         { "type": "ProjectileSystem" },

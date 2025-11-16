@@ -214,7 +214,32 @@ class CombatAISystem extends engine.BaseSystem {
         } 
 
         if(currentAI != "CombatAISystem"){
-            this.game.gameManager.call('setCurrentAIController', entityId, "CombatAISystem", currentCombatAi);
+            // Check if we can interrupt current command with combat AI
+            // Only take control if current command is interruptible or has lower priority
+            const ComponentTypes = this.game.componentTypes;
+
+            if (this.game.commandQueueSystem) {
+                // Use command queue - combat has lower priority than player commands
+                const canTakeControl = this.game.gameManager.call('canInterruptCommand', entityId, this.game.commandQueueSystem.PRIORITY.IDLE);
+
+                if (canTakeControl || !aiState.meta?.preventEnemiesInRangeCheck) {
+                    // Queue combat command with IDLE priority (won't interrupt player commands)
+                    this.game.gameManager.call('queueCommand', entityId, {
+                        type: 'combat',
+                        controllerId: "CombatAISystem",
+                        targetPosition: null,
+                        target: targetEnemy,
+                        meta: {},
+                        priority: this.game.commandQueueSystem.PRIORITY.IDLE,
+                        interruptible: true
+                    }, false); // false = don't force interrupt
+                }
+            } else {
+                // Fallback to old method - only switch if no preventEnemiesInRangeCheck
+                if (!aiState.meta?.preventEnemiesInRangeCheck) {
+                    this.game.gameManager.call('setCurrentAIController', entityId, "CombatAISystem", currentCombatAi);
+                }
+            }
         }
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             // Check if this is a spell caster and if abilities are available

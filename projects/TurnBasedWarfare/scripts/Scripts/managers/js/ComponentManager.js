@@ -619,6 +619,41 @@ class ComponentManager {
                 caster,
                 lastTickTime,
                 isConsecrated: true
+            }),
+
+            // =============================================
+            // COMMAND QUEUE SYSTEM
+            // =============================================
+
+            CommandQueue: (
+                commands = [],
+                currentCommand = null,
+                commandHistory = []
+            ) => ({
+                commands,           // Array of pending commands
+                currentCommand,     // Currently executing command
+                commandHistory      // History of completed commands (for debugging)
+            }),
+
+            Command: (
+                type = 'move',
+                controllerId = null,
+                targetPosition = null,
+                target = null,
+                meta = {},
+                priority = 0,
+                interruptible = true,
+                createdTime = 0
+            ) => ({
+                type,               // 'move', 'build', 'mine', 'attack', etc.
+                controllerId,       // Which AI controller to activate
+                targetPosition,     // Target position for movement
+                target,            // Target entity ID
+                meta,              // Controller-specific metadata
+                priority,          // Higher priority interrupts lower priority
+                interruptible,     // Can this command be interrupted?
+                createdTime: createdTime || (this.game.state.now || 0),
+                id: Math.random().toString(36).substr(2, 9) // Unique command ID
             })
         };
     }
@@ -713,7 +748,10 @@ class ComponentManager {
             
             // Environmental
             ENVIRONMENTAL_HAZARD: 'environmentalHazard',
-            CONSECRATED: 'consecrated'
+            CONSECRATED: 'consecrated',
+
+            // Command Queue
+            COMMAND_QUEUE: 'commandQueue'
         };
     }
 }

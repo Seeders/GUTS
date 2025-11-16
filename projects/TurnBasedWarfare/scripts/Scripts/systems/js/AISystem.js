@@ -37,7 +37,7 @@ class AISystem extends engine.BaseSystem {
         return entityControllersMap.get(aiControllerId) || CT.AIState('idle');
     }
 
-    setCurrentAIController(entityId, aiControllerId, data) {        
+    setCurrentAIController(entityId, aiControllerId, data) {
         this.setAIControllerData(entityId, aiControllerId, data);
         this.setAIControllerData(entityId, "AISystem", data, false);
 
@@ -46,6 +46,19 @@ class AISystem extends engine.BaseSystem {
         aiState.target = data.target;
         aiState.meta = data.meta;
         aiState.aiControllerId = aiControllerId;
+
+        // CRITICAL: Always clear path when switching controllers
+        // This prevents units from continuing old paths before executing new commands
+        aiState.path = [];
+        aiState.pathIndex = 0;
+        aiState.useDirectMovement = false;
+
+        // Update state based on new target
+        if (data.targetPosition || data.target) {
+            aiState.state = data.state || 'chasing';
+        } else {
+            aiState.state = data.state || 'idle';
+        }
     }
 
     getCurrentAIController(entityId) {

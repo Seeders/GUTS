@@ -365,7 +365,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         if(this.game.state.phase != "placement") {
             return;
         };
-        const meta = { ...this.orderMeta };        
+        const meta = { ...this.orderMeta };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         this.game.networkManager.setSquadTargets(
@@ -381,21 +381,32 @@ class UnitOrderSystem extends engine.BaseSystem {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
-                                let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                                currentOrderAI.targetPosition = targetPosition;
-                                currentOrderAI.path = [];
-                                if(unitId == "peasant_1224_1368_right_1"){
-                                    console.log("issueMoveOrders");
+                                // Use command queue system for move orders
+                                if (this.game.commandQueueSystem) {
+                                    this.game.gameManager.call('queueCommand', unitId, {
+                                        type: 'move',
+                                        controllerId: "UnitOrderSystem",
+                                        targetPosition: targetPosition,
+                                        target: null,
+                                        meta: meta,
+                                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                                        interruptible: true
+                                    }, true); // true = interrupt current command
+                                } else {
+                                    // Fallback to old method
+                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
+                                    currentOrderAI.targetPosition = targetPosition;
+                                    currentOrderAI.path = [];
+                                    currentOrderAI.meta = meta;
+                                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
                                 }
-                                currentOrderAI.meta = meta;
-                                this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);   
                             }
                         });
-                                
-                    }       
-                    this.startTargeting();   
-                    this.showMoveTargets();           
-                }                
+
+                    }
+                    this.startTargeting();
+                    this.showMoveTargets();
+                }
             }
         );
     }
@@ -424,16 +435,27 @@ class UnitOrderSystem extends engine.BaseSystem {
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
-                let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                currentOrderAI.targetPosition = targetPosition;
-                currentOrderAI.path = [];
-                if(unitId == "peasant_1224_1368_right_1"){
-                    console.log("applySquadTargetPosition");
+                // Use command queue system for move orders
+                if (this.game.commandQueueSystem) {
+                    this.game.gameManager.call('queueCommand', unitId, {
+                        type: 'move',
+                        controllerId: "UnitOrderSystem",
+                        targetPosition: targetPosition,
+                        target: null,
+                        meta: meta,
+                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                        interruptible: true
+                    }, true); // true = interrupt current command
+                } else {
+                    // Fallback to old method
+                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
+                    currentOrderAI.targetPosition = targetPosition;
+                    currentOrderAI.path = [];
+                    currentOrderAI.meta = meta;
+                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
                 }
-                currentOrderAI.meta = meta;
-                this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);   
-            }            
-        });            
+            }
+        });
     }
 
     applySquadsTargetPositions(placementIds, targetPositions, meta) {     
