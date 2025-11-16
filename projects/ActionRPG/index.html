@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action RPG</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #appContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        #mainMenu {
+            display: flex;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        .menu-button {
+            padding: 15px 40px;
+            margin: 10px;
+            font-size: 20px;
+            background: #8b0000;
+            border: 2px solid #ff0000;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-button:hover {
+            background: #ff0000;
+            transform: scale(1.05);
+        }
+
+        .loading-tip {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #888;
+        }
+
+        #pauseMenu {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border: 2px solid #ff0000;
+            z-index: 200;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stats {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .stats p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="appContainer">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen">
+            <h1 class="menu-title">ACTION RPG</h1>
+            <button class="menu-button" onclick="game?.gameManager?.initializeGame()">Start Game</button>
+            <button class="menu-button" onclick="alert('Not implemented yet')">Options</button>
+            <button class="menu-button" onclick="alert('Thanks for playing!')">Quit</button>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="screen">
+            <h2>Loading...</h2>
+            <p class="loading-tip">Generating dungeon...</p>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen" style="background: transparent;">
+            <!-- Game canvas will be here -->
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victoryScreen" class="screen">
+            <h1 class="menu-title">Victory!</h1>
+            <div id="victoryStats" class="stats"></div>
+            <button class="menu-button" onclick="game?.gameManager?.continueGame()">Continue</button>
+            <button class="menu-button" onclick="game?.gameManager?.exitToMenu()">Main Menu</button>
+        </div>
+
+        <!-- Defeat Screen -->
+        <div id="defeatScreen" class="screen">
+            <h1 class="menu-title">You Died</h1>
+            <div id="defeatStats" class="stats"></div>
+            <button class="menu-button" onclick="game?.gameManager?.restartGame()">Try Again</button>
+            <button class="menu-button" onclick="game?.gameManager?.exitToMenu()">Main Menu</button>
+        </div>
+
+        <!-- Pause Menu -->
+        <div id="pauseMenu">
+            <h2>Paused</h2>
+            <button class="menu-button" onclick="game?.gameManager?.resumeGame()">Resume</button>
+            <button class="menu-button" onclick="game?.gameManager?.restartGame()">Restart</button>
+            <button class="menu-button" onclick="game?.gameManager?.exitToMenu()">Main Menu</button>
+        </div>
+    </div>
+
+    <script src="../../engine/Engine.js"></script>
+    <script src="index.js"></script>
+
+    <script>
+        // Pause on ESC key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && game?.screenManager?.currentScreen === 'gameScreen') {
+                if (game.state.isPaused) {
+                    game.gameManager.resumeGame();
+                } else {
+                    game.gameManager.pauseGame();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
