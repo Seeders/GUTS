@@ -95,6 +95,130 @@
             margin: 10px 0;
             font-size: 18px;
         }
+
+        /* HUD Styles */
+        #gameHUD {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        #gameHUD > * {
+            pointer-events: auto;
+        }
+
+        /* Minimap */
+        #minimapContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b0000;
+        }
+
+        /* Health and Mana Bars */
+        .stat-bar-container {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            width: 300px;
+        }
+
+        .stat-bar {
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: #fff;
+        }
+
+        .bar-background {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #666;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .health-bar {
+            background: linear-gradient(90deg, #ff0000, #cc0000);
+        }
+
+        .mana-bar {
+            background: linear-gradient(90deg, #0066ff, #0044cc);
+        }
+
+        .bar-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Character Stats */
+        #characterStats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 14px;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        #characterStats p {
+            margin: 2px 0;
+        }
+
+        /* Skills */
+        #skillsContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .skill-button {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b0000;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skill-button:hover:not(:disabled) {
+            background: rgba(139, 0, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .skill-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +239,48 @@
 
         <!-- Game Screen -->
         <div id="gameScreen" class="screen" style="background: transparent;">
-            <!-- Game canvas will be here -->
+            <!-- Game HUD -->
+            <div id="gameHUD" style="display: none;">
+                <!-- Minimap -->
+                <div id="minimapContainer"></div>
+
+                <!-- Health and Mana Bars -->
+                <div class="stat-bar-container">
+                    <div class="stat-bar">
+                        <div class="stat-label">Health</div>
+                        <div class="bar-background">
+                            <div id="healthBar" class="bar-fill health-bar" style="width: 100%;"></div>
+                            <div id="healthText" class="bar-text">100 / 100</div>
+                        </div>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-label">Mana</div>
+                        <div class="bar-background">
+                            <div id="manaBar" class="bar-fill mana-bar" style="width: 100%;"></div>
+                            <div id="manaText" class="bar-text">100 / 100</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Character Stats -->
+                <div id="characterStats">
+                    <p id="levelText">Level 1</p>
+                    <p id="expText">XP: 0 / 100</p>
+                    <p id="goldText">Gold: 0</p>
+                </div>
+
+                <!-- Skills -->
+                <div id="skillsContainer">
+                    <button id="skill1" class="skill-button">1</button>
+                    <button id="skill2" class="skill-button">2</button>
+                    <button id="skill3" class="skill-button">3</button>
+                    <button id="skill4" class="skill-button">4</button>
+                    <button id="skill5" class="skill-button">5</button>
+                    <button id="skill6" class="skill-button">6</button>
+                    <button id="skill7" class="skill-button">7</button>
+                    <button id="skill8" class="skill-button">8</button>
+                </div>
+            </div>
         </div>
 
         <!-- Victory Screen -->

@@ -23,7 +23,10 @@
       "MovementSystem",
       "CombatSystem",
       "EnemyAISystem",
-      "LevelGeneratorSystem"
+      "LevelGeneratorSystem",
+      "FogOfWarSystem",
+      "MinimapSystem",
+      "UISystem"
     ],
     "models": {},
     "colliders": {},
@@ -155,7 +158,10 @@
         "MovementSystem",
         "CombatSystem",
         "EnemyAISystem",
-        "LevelGeneratorSystem"
+        "LevelGeneratorSystem",
+        "FogOfWarSystem",
+        "MinimapSystem",
+        "UISystem"
       ]
     }
   }

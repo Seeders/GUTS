@@ -28,6 +28,13 @@ class ScreenManager {
             gameScreen.style.display = 'block';
             this.currentScreen = 'gameScreen';
         }
+
+        // Show HUD
+        const gameHUD = document.getElementById('gameHUD');
+        if (gameHUD) {
+            gameHUD.style.display = 'block';
+        }
+
         this.game.state.isPaused = false;
     }
 
@@ -71,6 +78,12 @@ class ScreenManager {
                 screen.style.display = 'none';
             }
         });
+
+        // Hide HUD
+        const gameHUD = document.getElementById('gameHUD');
+        if (gameHUD) {
+            gameHUD.style.display = 'none';
+        }
     }
 
     updateVictoryStats() {
