@@ -435,7 +435,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x, worldPosition.z);
+
+        // Adjust world position to account for camera angle and cell centering
+        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+        const adjustedWorldPos = {
+            x: worldPosition.x + (placementGridSize / 2),
+            z: worldPosition.z + (placementGridSize / 2)
+        };
+
+        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
 
         let isValidPlacement = this.isValidGridPlacement(worldPosition);
        
@@ -790,7 +798,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x , worldPosition.z);
+
+        // Adjust world position to account for camera angle and cell centering
+        // Add half cell size to snap to nearest cell center
+        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+        const adjustedWorldPos = {
+            x: worldPosition.x + (placementGridSize / 2),
+            z: worldPosition.z + (placementGridSize / 2)
+        };
+
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
         const state = this.game.state;
         
         let cells = [];
