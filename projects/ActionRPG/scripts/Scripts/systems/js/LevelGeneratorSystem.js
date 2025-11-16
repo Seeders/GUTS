@@ -7,185 +7,53 @@ class LevelGeneratorSystem extends BaseSystem {
         this.levelWidth = 5; // Number of chunks wide
         this.levelHeight = 5; // Number of chunks tall
 
-        // Terrain chunk templates (these would come from TerrainMapEditor)
-        this.chunkTemplates = this.loadChunkTemplates();
+        // Terrain chunk templates loaded from JSON files
+        this.chunkTemplates = {};
+        this.chunkFiles = [
+            'start_room',
+            'corridor_ns',
+            'corridor_ew',
+            'l_bend_ne',
+            'l_bend_se',
+            'l_bend_sw',
+            'l_bend_nw',
+            'junction_nse',
+            'junction_nsw',
+            'junction_new',
+            'junction_sew',
+            'combat_room_small',
+            'combat_room_large',
+            'treasure_room',
+            'boss_room'
+        ];
 
-        // WFC constraint rules
+        // WFC constraint rules (will be setup after loading chunks)
+        this.constraints = null;
+    }
+
+    async loadChunkTemplates() {
+        console.log('Loading terrain chunk templates...');
+        const basePath = './scripts/Terrain/levels/';
+
+        for (const chunkFile of this.chunkFiles) {
+            try {
+                const response = await fetch(`${basePath}${chunkFile}.json`);
+                if (!response.ok) {
+                    console.warn(`Failed to load chunk: ${chunkFile}`);
+                    continue;
+                }
+                const chunkData = await response.json();
+                this.chunkTemplates[chunkData.name] = chunkData;
+                console.log(`Loaded chunk: ${chunkData.name}`);
+            } catch (error) {
+                console.error(`Error loading chunk ${chunkFile}:`, error);
+            }
+        }
+
+        console.log(`Loaded ${Object.keys(this.chunkTemplates).length} chunk templates`);
+
+        // Setup constraints after loading
         this.constraints = this.setupConstraints();
-    }
-
-    loadChunkTemplates() {
-        // In a real implementation, these would be loaded from TerrainMapEditor JSON files
-        // For now, we define some basic templates
-        return {
-            // Start room - always has 4 exits
-            start: {
-                type: 'start',
-                terrainMap: this.createRoomTemplate(4, 4, true),
-                exits: { north: true, south: true, east: true, west: true },
-                weight: 1
-            },
-
-            // Corridor - connects two sides
-            corridorNS: {
-                type: 'corridor',
-                terrainMap: this.createCorridorTemplate('ns'),
-                exits: { north: true, south: true, east: false, west: false },
-                weight: 3
-            },
-
-            corridorEW: {
-                type: 'corridor',
-                terrainMap: this.createCorridorTemplate('ew'),
-                exits: { north: false, south: false, east: true, west: true },
-                weight: 3
-            },
-
-            // T-junction rooms
-            junctionNSE: {
-                type: 'junction',
-                terrainMap: this.createJunctionTemplate('nse'),
-                exits: { north: true, south: true, east: true, west: false },
-                weight: 2
-            },
-
-            junctionNSW: {
-                type: 'junction',
-                terrainMap: this.createJunctionTemplate('nsw'),
-                exits: { north: true, south: true, east: false, west: true },
-                weight: 2
-            },
-
-            // Large rooms
-            room4Way: {
-                type: 'room',
-                terrainMap: this.createRoomTemplate(8, 8, true),
-                exits: { north: true, south: true, east: true, west: true },
-                weight: 2,
-                spawners: [
-                    { x: 4, z: 4, type: 'enemy', count: 3 },
-                    { x: 8, z: 8, type: 'enemy', count: 2 }
-                ]
-            },
-
-            // Dead end with treasure
-            treasureRoom: {
-                type: 'treasure',
-                terrainMap: this.createRoomTemplate(6, 6, false),
-                exits: { north: true, south: false, east: false, west: false },
-                weight: 1,
-                spawners: [
-                    { x: 3, z: 3, type: 'chest', count: 1 },
-                    { x: 2, z: 2, type: 'enemy', count: 2 }
-                ]
-            },
-
-            // Boss room
-            bossRoom: {
-                type: 'boss',
-                terrainMap: this.createRoomTemplate(12, 12, false),
-                exits: { north: true, south: false, east: false, west: false },
-                weight: 1,
-                spawners: [
-                    { x: 6, z: 6, type: 'boss', count: 1 },
-                    { x: 8, z: 8, type: 'enemy', count: 4 }
-                ]
-            }
-        };
-    }
-
-    createRoomTemplate(width, height, hasAllExits) {
-        const template = [];
-        for (let z = 0; z < this.chunkSize; z++) {
-            template[z] = [];
-            for (let x = 0; x < this.chunkSize; x++) {
-                // Floor in the room area
-                if (x >= 2 && x < width + 2 && z >= 2 && z < height + 2) {
-                    template[z][x] = 2; // floor
-                } else {
-                    template[z][x] = 1; // wall
-                }
-            }
-        }
-
-        // Add exits
-        if (hasAllExits) {
-            template[0][8] = 2; // north
-            template[15][8] = 2; // south
-            template[8][0] = 2; // west
-            template[8][15] = 2; // east
-        }
-
-        return template;
-    }
-
-    createCorridorTemplate(direction) {
-        const template = [];
-        for (let z = 0; z < this.chunkSize; z++) {
-            template[z] = [];
-            for (let x = 0; x < this.chunkSize; x++) {
-                template[z][x] = 1; // wall by default
-            }
-        }
-
-        if (direction === 'ns') {
-            // North-south corridor
-            for (let z = 0; z < this.chunkSize; z++) {
-                template[z][7] = 2; // floor
-                template[z][8] = 2; // floor
-            }
-        } else {
-            // East-west corridor
-            for (let x = 0; x < this.chunkSize; x++) {
-                template[7][x] = 2; // floor
-                template[8][x] = 2; // floor
-            }
-        }
-
-        return template;
-    }
-
-    createJunctionTemplate(directions) {
-        const template = [];
-        for (let z = 0; z < this.chunkSize; z++) {
-            template[z] = [];
-            for (let x = 0; x < this.chunkSize; x++) {
-                // Create a central room
-                if (x >= 5 && x <= 10 && z >= 5 && z <= 10) {
-                    template[z][x] = 2; // floor
-                } else {
-                    template[z][x] = 1; // wall
-                }
-            }
-        }
-
-        // Add corridors based on directions
-        if (directions.includes('n')) {
-            for (let z = 0; z <= 5; z++) {
-                template[z][7] = 2;
-                template[z][8] = 2;
-            }
-        }
-        if (directions.includes('s')) {
-            for (let z = 10; z < this.chunkSize; z++) {
-                template[z][7] = 2;
-                template[z][8] = 2;
-            }
-        }
-        if (directions.includes('e')) {
-            for (let x = 10; x < this.chunkSize; x++) {
-                template[7][x] = 2;
-                template[8][x] = 2;
-            }
-        }
-        if (directions.includes('w')) {
-            for (let x = 0; x <= 5; x++) {
-                template[7][x] = 2;
-                template[8][x] = 2;
-            }
-        }
-
-        return template;
     }
 
     setupConstraints() {
@@ -225,8 +93,13 @@ class LevelGeneratorSystem extends BaseSystem {
         return constraints;
     }
 
-    generateLevel() {
+    async generateLevel() {
         console.log('Generating level using Wave Function Collapse...');
+
+        // Load chunks if not already loaded
+        if (Object.keys(this.chunkTemplates).length === 0) {
+            await this.loadChunkTemplates();
+        }
 
         // Initialize grid with all possibilities
         const grid = [];
@@ -245,7 +118,7 @@ class LevelGeneratorSystem extends BaseSystem {
         const centerY = Math.floor(this.levelHeight / 2);
         grid[centerY][centerX] = {
             collapsed: true,
-            options: ['start']
+            options: ['start_room']
         };
 
         // Wave Function Collapse algorithm
@@ -408,7 +281,7 @@ class LevelGeneratorSystem extends BaseSystem {
         }
     }
 
-    onGameStarted() {
-        this.generateLevel();
+    async onGameStarted() {
+        await this.generateLevel();
     }
 }
