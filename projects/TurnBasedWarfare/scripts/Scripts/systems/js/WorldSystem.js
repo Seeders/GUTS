@@ -872,14 +872,14 @@ class WorldSystem extends engine.BaseSystem {
     }
 
     /**
-     * Decimates a mesh by reducing vertex count while preserving form
-     * Uses a simplified quadric error metrics approach
-     * @param {THREE.BufferGeometry} geometry - The geometry to decimate
-     * @param {number} targetReduction - Target reduction ratio (0.0 to 1.0), default 0.5
+     * Simplifies mesh by removing vertices in flat areas based on angle analysis
+     * Preserves detail in areas with significant terrain changes
+     * @param {THREE.BufferGeometry} geometry - The geometry to simplify
+     * @param {number} angleThreshold - Maximum angle deviation (in degrees) to consider area as flat, default 5
      */
-    decimateMesh(geometry, targetReduction = 0.5) {
+    simplifyMeshByAngle(geometry, angleThreshold = 5) {
         if (!geometry.index) {
-            console.warn('Mesh decimation requires indexed geometry');
+            console.warn('Mesh simplification requires indexed geometry');
             return;
         }
 
@@ -888,214 +888,180 @@ class WorldSystem extends engine.BaseSystem {
         const indices = geometry.index.array;
         const originalVertexCount = positions.length / 3;
         const originalTriangleCount = indices.length / 3;
+        const segments = this.heightMapResolution;
+        const verticesPerRow = segments + 1;
 
-        console.log(`[MeshDecimation] Starting decimation:`, {
+        console.log(`[AngleBasedSimplification] Starting simplification:`, {
             vertices: originalVertexCount,
             triangles: originalTriangleCount,
-            targetReduction: targetReduction
+            angleThreshold: angleThreshold + '°'
         });
 
-        // Build edge list and adjacency information
-        const edges = new Map(); // key: "v1,v2" -> {v1, v2, triangles: []}
-        const vertexTriangles = new Map(); // vertex -> triangle indices
+        // Convert angle threshold to radians
+        const angleThresholdRad = (angleThreshold * Math.PI) / 180;
 
-        // Initialize vertex triangle lists
+        // Build vertex connectivity map
+        const vertexNeighbors = new Map();
         for (let i = 0; i < originalVertexCount; i++) {
-            vertexTriangles.set(i, []);
+            vertexNeighbors.set(i, new Set());
         }
 
-        // Build edge and adjacency data
+        // Build adjacency from grid structure (more reliable than triangle-based for regular grids)
+        for (let z = 0; z < verticesPerRow; z++) {
+            for (let x = 0; x < verticesPerRow; x++) {
+                const vertexIndex = z * verticesPerRow + x;
+
+                // Add horizontal and vertical neighbors
+                if (x > 0) vertexNeighbors.get(vertexIndex).add(vertexIndex - 1); // left
+                if (x < verticesPerRow - 1) vertexNeighbors.get(vertexIndex).add(vertexIndex + 1); // right
+                if (z > 0) vertexNeighbors.get(vertexIndex).add(vertexIndex - verticesPerRow); // top
+                if (z < verticesPerRow - 1) vertexNeighbors.get(vertexIndex).add(vertexIndex + verticesPerRow); // bottom
+
+                // Add diagonal neighbors for better surface analysis
+                if (x > 0 && z > 0) vertexNeighbors.get(vertexIndex).add(vertexIndex - verticesPerRow - 1); // top-left
+                if (x < verticesPerRow - 1 && z > 0) vertexNeighbors.get(vertexIndex).add(vertexIndex - verticesPerRow + 1); // top-right
+                if (x > 0 && z < verticesPerRow - 1) vertexNeighbors.get(vertexIndex).add(vertexIndex + verticesPerRow - 1); // bottom-left
+                if (x < verticesPerRow - 1 && z < verticesPerRow - 1) vertexNeighbors.get(vertexIndex).add(vertexIndex + verticesPerRow + 1); // bottom-right
+            }
+        }
+
+        // Calculate which vertices to keep based on angle deviation
+        const keepVertex = new Array(originalVertexCount).fill(false);
+        const vertexImportance = new Array(originalVertexCount).fill(0);
+
+        for (let i = 0; i < originalVertexCount; i++) {
+            const z = Math.floor(i / verticesPerRow);
+            const x = i % verticesPerRow;
+
+            // Always keep boundary vertices
+            if (x === 0 || x === verticesPerRow - 1 || z === 0 || z === verticesPerRow - 1) {
+                keepVertex[i] = true;
+                vertexImportance[i] = 1.0;
+                continue;
+            }
+
+            // Calculate angle deviation for this vertex
+            const angleDeviation = this._calculateVertexAngleDeviation(i, positions, vertexNeighbors);
+            vertexImportance[i] = angleDeviation;
+
+            // Keep vertex if angle deviation exceeds threshold (not flat)
+            if (angleDeviation > angleThresholdRad) {
+                keepVertex[i] = true;
+            }
+        }
+
+        // Additional pass: Keep vertices at regular intervals to maintain minimum density
+        const minSpacing = 2; // Keep at least every Nth vertex
+        for (let z = 0; z < verticesPerRow; z += minSpacing) {
+            for (let x = 0; x < verticesPerRow; x += minSpacing) {
+                const vertexIndex = z * verticesPerRow + x;
+                keepVertex[vertexIndex] = true;
+            }
+        }
+
+        // Build vertex mapping (old index -> new index)
+        const vertexMapping = new Map();
+        let newVertexCount = 0;
+        for (let i = 0; i < originalVertexCount; i++) {
+            if (keepVertex[i]) {
+                vertexMapping.set(i, newVertexCount++);
+            }
+        }
+
+        // Build new position array
+        const newPositions = new Float32Array(newVertexCount * 3);
+        let writeIndex = 0;
+        for (let i = 0; i < originalVertexCount; i++) {
+            if (keepVertex[i]) {
+                const readIndex = i * 3;
+                newPositions[writeIndex++] = positions[readIndex];
+                newPositions[writeIndex++] = positions[readIndex + 1];
+                newPositions[writeIndex++] = positions[readIndex + 2];
+            }
+        }
+
+        // Rebuild indices, skipping triangles with removed vertices
+        const newIndices = [];
         for (let i = 0; i < indices.length; i += 3) {
             const v0 = indices[i];
             const v1 = indices[i + 1];
             const v2 = indices[i + 2];
-            const triIndex = i / 3;
 
-            vertexTriangles.get(v0).push(triIndex);
-            vertexTriangles.get(v1).push(triIndex);
-            vertexTriangles.get(v2).push(triIndex);
-
-            // Add edges
-            this._addEdge(edges, v0, v1, triIndex);
-            this._addEdge(edges, v1, v2, triIndex);
-            this._addEdge(edges, v2, v0, triIndex);
+            // Check if all vertices are kept
+            if (keepVertex[v0] && keepVertex[v1] && keepVertex[v2]) {
+                newIndices.push(
+                    vertexMapping.get(v0),
+                    vertexMapping.get(v1),
+                    vertexMapping.get(v2)
+                );
+            }
         }
 
-        // Calculate quadric error matrices for each vertex
-        const quadrics = new Array(originalVertexCount);
-        for (let i = 0; i < originalVertexCount; i++) {
-            quadrics[i] = this._calculateVertexQuadric(i, positions, indices, vertexTriangles);
-        }
-
-        // Calculate error for each edge and sort by error
-        const edgeErrors = [];
-        edges.forEach((edge, key) => {
-            const error = this._calculateEdgeCollapseError(edge, positions, quadrics);
-            edgeErrors.push({ edge, error, key });
-        });
-
-        // Sort edges by error (lowest first)
-        edgeErrors.sort((a, b) => a.error - b.error);
-
-        // Collapse edges until target reduction is reached
-        const targetVertexCount = Math.floor(originalVertexCount * (1 - targetReduction));
-        const removedVertices = new Set();
-        const vertexMapping = new Map(); // maps old vertex to new vertex
-
-        let currentVertexCount = originalVertexCount;
-        let collapsedEdges = 0;
-
-        for (const { edge, key } of edgeErrors) {
-            if (currentVertexCount <= targetVertexCount) break;
-
-            const { v1, v2 } = edge;
-
-            // Skip if either vertex has already been removed
-            if (removedVertices.has(v1) || removedVertices.has(v2)) continue;
-
-            // Skip boundary edges (edges with only one triangle)
-            if (edge.triangles.length < 2) continue;
-
-            // Collapse edge: keep v1, remove v2
-            removedVertices.add(v2);
-            vertexMapping.set(v2, v1);
-
-            // Merge position to midpoint
-            const i1 = v1 * 3;
-            const i2 = v2 * 3;
-            positions[i1] = (positions[i1] + positions[i2]) / 2;
-            positions[i1 + 1] = (positions[i1 + 1] + positions[i2 + 1]) / 2;
-            positions[i1 + 2] = (positions[i1 + 2] + positions[i2 + 2]) / 2;
-
-            currentVertexCount--;
-            collapsedEdges++;
-        }
-
-        // Rebuild index buffer, removing degenerate triangles
-        const newIndices = [];
-        for (let i = 0; i < indices.length; i += 3) {
-            let v0 = indices[i];
-            let v1 = indices[i + 1];
-            let v2 = indices[i + 2];
-
-            // Remap vertices
-            while (vertexMapping.has(v0)) v0 = vertexMapping.get(v0);
-            while (vertexMapping.has(v1)) v1 = vertexMapping.get(v1);
-            while (vertexMapping.has(v2)) v2 = vertexMapping.get(v2);
-
-            // Skip degenerate triangles
-            if (v0 === v1 || v1 === v2 || v2 === v0) continue;
-
-            newIndices.push(v0, v1, v2);
-        }
-
-        // Update geometry
+        // Update geometry with simplified mesh
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3));
         geometry.setIndex(newIndices);
         geometry.attributes.position.needsUpdate = true;
 
-        // Recompute normals
+        // Recompute normals for proper lighting
         geometry.computeVertexNormals();
 
         const endTime = performance.now();
         const finalTriangleCount = newIndices.length / 3;
+        const removedVertices = originalVertexCount - newVertexCount;
 
-        console.log(`[MeshDecimation] Completed in ${(endTime - startTime).toFixed(2)}ms:`, {
+        console.log(`[AngleBasedSimplification] Completed in ${(endTime - startTime).toFixed(2)}ms:`, {
             originalVertices: originalVertexCount,
-            remainingVertices: currentVertexCount,
+            remainingVertices: newVertexCount,
+            removedVertices: removedVertices,
+            vertexReduction: ((removedVertices / originalVertexCount) * 100).toFixed(1) + '%',
             originalTriangles: originalTriangleCount,
             finalTriangles: finalTriangleCount,
-            reduction: ((1 - finalTriangleCount / originalTriangleCount) * 100).toFixed(1) + '%',
-            collapsedEdges: collapsedEdges
+            triangleReduction: ((1 - finalTriangleCount / originalTriangleCount) * 100).toFixed(1) + '%'
         });
     }
 
-    _addEdge(edges, v1, v2, triIndex) {
-        // Ensure consistent edge key (lower index first)
-        const [min, max] = v1 < v2 ? [v1, v2] : [v2, v1];
-        const key = `${min},${max}`;
+    /**
+     * Calculate the maximum angle deviation between a vertex and its neighbors
+     * Higher values indicate more geometric detail (hills, valleys)
+     * Lower values indicate flat areas
+     */
+    _calculateVertexAngleDeviation(vertexIndex, positions, vertexNeighbors) {
+        const idx = vertexIndex * 3;
+        const vx = positions[idx];
+        const vy = positions[idx + 1];
+        const vz = positions[idx + 2];
 
-        if (!edges.has(key)) {
-            edges.set(key, { v1: min, v2: max, triangles: [] });
-        }
-        edges.get(key).triangles.push(triIndex);
-    }
+        const neighbors = Array.from(vertexNeighbors.get(vertexIndex));
+        if (neighbors.length < 2) return Math.PI; // Keep isolated vertices
 
-    _calculateVertexQuadric(vertexIndex, positions, indices, vertexTriangles) {
-        // Quadric error matrix (4x4 symmetric matrix, stored as 10 values)
-        const Q = new Float32Array(10); // [a,b,c,d,e,f,g,h,i,j] representing symmetric 4x4
+        let maxAngleDiff = 0;
 
-        const triangles = vertexTriangles.get(vertexIndex);
+        // Calculate vectors to all neighbors
+        const neighborVectors = neighbors.map(nIdx => {
+            const nidx = nIdx * 3;
+            const dx = positions[nidx] - vx;
+            const dy = positions[nidx + 1] - vy;
+            const dz = positions[nidx + 2] - vz;
+            const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            return len > 0 ? { x: dx / len, y: dy / len, z: dz / len } : { x: 0, y: 1, z: 0 };
+        });
 
-        for (const triIndex of triangles) {
-            const i = triIndex * 3;
-            const v0 = indices[i];
-            const v1 = indices[i + 1];
-            const v2 = indices[i + 2];
+        // Compare angles between all pairs of neighbor vectors
+        for (let i = 0; i < neighborVectors.length; i++) {
+            for (let j = i + 1; j < neighborVectors.length; j++) {
+                const v1 = neighborVectors[i];
+                const v2 = neighborVectors[j];
 
-            // Get triangle vertices
-            const p0 = new THREE.Vector3(
-                positions[v0 * 3],
-                positions[v0 * 3 + 1],
-                positions[v0 * 3 + 2]
-            );
-            const p1 = new THREE.Vector3(
-                positions[v1 * 3],
-                positions[v1 * 3 + 1],
-                positions[v1 * 3 + 2]
-            );
-            const p2 = new THREE.Vector3(
-                positions[v2 * 3],
-                positions[v2 * 3 + 1],
-                positions[v2 * 3 + 2]
-            );
+                // Dot product to get angle between vectors
+                const dot = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+                const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
 
-            // Calculate plane equation: ax + by + cz + d = 0
-            const edge1 = new THREE.Vector3().subVectors(p1, p0);
-            const edge2 = new THREE.Vector3().subVectors(p2, p0);
-            const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
-
-            const a = normal.x;
-            const b = normal.y;
-            const c = normal.z;
-            const d = -normal.dot(p0);
-
-            // Add to quadric (sum of plane equations)
-            Q[0] += a * a; Q[1] += a * b; Q[2] += a * c; Q[3] += a * d;
-            Q[4] += b * b; Q[5] += b * c; Q[6] += b * d;
-            Q[7] += c * c; Q[8] += c * d;
-            Q[9] += d * d;
+                // Track maximum deviation
+                maxAngleDiff = Math.max(maxAngleDiff, Math.abs(angle));
+            }
         }
 
-        return Q;
-    }
-
-    _calculateEdgeCollapseError(edge, positions, quadrics) {
-        const { v1, v2 } = edge;
-
-        // Get midpoint of edge
-        const i1 = v1 * 3;
-        const i2 = v2 * 3;
-        const x = (positions[i1] + positions[i2]) / 2;
-        const y = (positions[i1 + 1] + positions[i2 + 1]) / 2;
-        const z = (positions[i1 + 2] + positions[i2 + 2]) / 2;
-
-        // Sum quadrics of both vertices
-        const Q = new Float32Array(10);
-        const Q1 = quadrics[v1];
-        const Q2 = quadrics[v2];
-
-        for (let i = 0; i < 10; i++) {
-            Q[i] = Q1[i] + Q2[i];
-        }
-
-        // Calculate error: v^T * Q * v where v = [x, y, z, 1]
-        const error =
-            Q[0] * x * x + 2 * Q[1] * x * y + 2 * Q[2] * x * z + 2 * Q[3] * x +
-            Q[4] * y * y + 2 * Q[5] * y * z + 2 * Q[6] * y +
-            Q[7] * z * z + 2 * Q[8] * z +
-            Q[9];
-
-        return Math.abs(error);
+        return maxAngleDiff;
     }
 
     applyHeightMapToGeometry() {
@@ -1128,8 +1094,8 @@ class WorldSystem extends engine.BaseSystem {
         this.groundVertices.needsUpdate = true;
         geometry.computeVertexNormals();
 
-        // Decimate the mesh to reduce vertex count
-        this.decimateMesh(geometry);
+        // Simplify the mesh by removing vertices in flat areas
+        this.simplifyMeshByAngle(geometry, 5);
 
         // Rebuild BVH tree after geometry modification for accurate raycasting
         if (geometry.boundsTree) {
