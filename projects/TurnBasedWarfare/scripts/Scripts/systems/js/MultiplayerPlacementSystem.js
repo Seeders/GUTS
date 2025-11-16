@@ -30,6 +30,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             validationThrottle: .32
         };
         this.elements = {};
+        this.mouseOffset = {
+            x: -12,
+            z: 24
+        }
     }
 
     init(params) {
@@ -436,16 +440,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
 
-        // Adjust world position to account for camera angle and cell centering
-        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+        // Adjust world position to account for camera angle and cell centering        
         const adjustedWorldPos = {
-            x: worldPosition.x + (placementGridSize / 2),
-            z: worldPosition.z + (placementGridSize / 2)
+            x: worldPosition.x + this.mouseOffset.x,
+            z: worldPosition.z + this.mouseOffset.z
         };
 
         let gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
 
-        let isValidPlacement = this.isValidGridPlacement(worldPosition);
+        let isValidPlacement = this.isValidGridPlacement(adjustedWorldPos);
        
         if (!isValidPlacement) {
             return;
@@ -801,37 +804,26 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
         // Adjust world position to account for camera angle and cell centering
         // Add half cell size to snap to nearest cell center
-        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
         const adjustedWorldPos = {
-            x: worldPosition.x + (placementGridSize / 2),
-            z: worldPosition.z + (placementGridSize / 2)
+            x: worldPosition.x + this.mouseOffset.x,
+            z: worldPosition.z + this.mouseOffset.z
         };
 
         const gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
         const state = this.game.state;
         
-        let cells = [];
-        let isValid = this.isValidGridPlacement(worldPosition);
+        let isValid = this.isValidGridPlacement(adjustedWorldPos);
         let unitPositions = null;
-        let isBuilding = false;
-        let footprintCells = [];
+        let isBuilding = state.selectedUnitType.collection === 'buildings';
 
-        if (state.selectedUnitType.collection === 'buildings') {
-            isBuilding = true;
-            cells = this.calculateBuildingCells(gridPos, state.selectedUnitType);
-            // Calculate footprint cells for preview (in terrain grid units, not placement grid)
-            footprintCells = this.calculateFootprintCells(gridPos, state.selectedUnitType);
-        } else {
-            const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            if (this.game.squadManager.getSquadSize(squadData) > 1) {
-                unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
-            }
+        const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
+        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        if (this.game.squadManager.getSquadSize(squadData) > 1) {
+            unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
         }
-
+        
         // For buildings, show footprint-sized preview. For units, show placement grid cells.
-        const previewPositions = isBuilding ? footprintCells : cells;
-        const worldPositions = previewPositions.map(cell =>
+        const worldPositions = cells.map(cell =>
             this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
         );
 
@@ -842,6 +834,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
 
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
+    }
+
+    getCurrentCells(gridPos) {
+
+
+        // For buildings, show footprint-sized preview. For units, show placement grid cells.
+        return 
     }
 
     getWorldPositionFromMouse(event, mouseX, mouseY) {
@@ -994,28 +993,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return cells;
     }
 
-    calculateFootprintCells(gridPos, building) {
-        const cells = [];
-        // Footprint is in terrain grid units - use directly for preview
-        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
-        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
-
-        const startX = gridPos.x - Math.floor(footprintWidth * 2 / 2);
-        const startZ = gridPos.z - Math.floor(footprintHeight * 2 / 2);
-
-        // Calculate center position for each footprint cell in placement grid coordinates
-        for (let z = 0; z < footprintHeight; z++) {
-            for (let x = 0; x < footprintWidth; x++) {
-                // Each footprint cell is centered in its 2x2 placement grid area
-                cells.push({
-                    x: startX + x * 2 + 1,  // Center of 2-cell width
-                    z: startZ + z * 2 + 1   // Center of 2-cell height
-                });
-            }
-        }
-
-        return cells;
-    }
 
     updateCursorState(isValid) {
         if (this.isPlayerReady) {

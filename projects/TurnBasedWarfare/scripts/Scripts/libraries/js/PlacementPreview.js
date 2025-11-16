@@ -16,8 +16,8 @@ class PlacementPreview {
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: 2,
-            unitElevationOffset: 2,
+            elevationOffset: -12,
+            unitElevationOffset: -12,
             cellSizeMultiplier: 0.9,
             maxCells: 50,
             updateThrottle: 16,
@@ -163,13 +163,13 @@ class PlacementPreview {
 
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
+            cellMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z - halfSize);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z + halfSize);
+            borderMesh.position.set(pos.x + halfSize, this.config.elevationOffset, pos.z - halfSize);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });

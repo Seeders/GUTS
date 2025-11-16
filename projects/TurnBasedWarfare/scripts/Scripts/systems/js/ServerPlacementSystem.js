@@ -745,9 +745,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     getStartingState(player){
 
-        let startPosition = { x: 5, z: 5 };
+        let startPosition = { x: 10, z: 10 };
         if(player.stats.side == 'right'){
-            startPosition = { x: 58, z: 58 };
+            startPosition = { x: 116, z: 116 };
         }
         
         // Find nearest unclaimed gold vein

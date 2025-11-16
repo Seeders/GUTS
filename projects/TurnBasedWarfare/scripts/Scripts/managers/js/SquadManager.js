@@ -43,6 +43,9 @@ class SquadManager {
         const cells = [];
         const { placementGridWidth, placementGridHeight } = squadData;
         
+        if(squadData.collection == "buildings"){
+            return this.calculateFootprintCells(gridPos, squadData);
+        }
         // Calculate starting position to center the formation
         const startX = gridPos.x - Math.floor(placementGridWidth / 2);
         const startZ = gridPos.z - Math.floor(placementGridHeight / 2);
@@ -58,7 +61,29 @@ class SquadManager {
         
         return cells;
     }
-        
+      
+    calculateFootprintCells(gridPos, building) {
+        const cells = [];
+        // Footprint is in terrain grid units - use directly for preview
+        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
+        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
+
+        const startX = gridPos.x - Math.floor(footprintWidth * 2 / 2);
+        const startZ = gridPos.z - Math.floor(footprintHeight * 2 / 2);
+
+        // Calculate center position for each footprint cell in placement grid coordinates
+        for (let z = 0; z < footprintHeight; z++) {
+            for (let x = 0; x < footprintWidth; x++) {
+                // Each footprint cell is centered in its 2x2 placement grid area
+                cells.push({
+                    x: startX + x * 2 + 1,  // Center of 2-cell width
+                    z: startZ + z * 2 + 1   // Center of 2-cell height
+                });
+            }
+        }
+
+        return cells;
+    }  
     /**
      * Calculate world positions for individual units within a squad formation
      * @param {Object} gridPos - Center grid position {x, z}
