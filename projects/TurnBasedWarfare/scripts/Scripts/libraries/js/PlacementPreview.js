@@ -16,7 +16,7 @@ class PlacementPreview {
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: -12,
+            elevationOffset: -48,
             unitElevationOffset: -12,
             cellSizeMultiplier: 0.9,
             maxCells: 50,

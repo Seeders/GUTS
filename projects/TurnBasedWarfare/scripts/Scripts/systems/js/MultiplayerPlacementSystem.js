@@ -31,7 +31,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         };
         this.elements = {};
         this.mouseOffset = {
-            x: -12,
+            x: 0,
             z: 24
         }
     }
