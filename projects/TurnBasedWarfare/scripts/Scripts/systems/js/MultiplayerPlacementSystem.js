@@ -353,8 +353,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );
                 if (opponentPlacement.unitType.id === 'goldMine') {
-                    const gridWidth = opponentPlacement.unitType.placementGridWidth || 1;
-                    const gridHeight = opponentPlacement.unitType.placementGridHeight || 1;
+                    // Convert footprint (terrain grid units) to placement grid cells
+                    const footprintWidth = opponentPlacement.unitType.footprintWidth || opponentPlacement.unitType.placementGridWidth || 2;
+                    const footprintHeight = opponentPlacement.unitType.footprintHeight || opponentPlacement.unitType.placementGridHeight || 2;
+                    const gridWidth = footprintWidth * 2;
+                    const gridHeight = footprintHeight * 2;
 
                     const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
 
@@ -521,8 +524,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
             if(placement.unitType.id == 'goldMine'){
-                const gridWidth = placement.unitType.placementGridWidth || 2;
-                const gridHeight = placement.unitType.placementGridHeight || 2;
+                // Convert footprint (terrain grid units) to placement grid cells
+                const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
+                const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
+                const gridWidth = footprintWidth * 2;
+                const gridHeight = footprintHeight * 2;
                 this.game.gameManager.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
             }
             if (placement.peasantInfo && placement.collection === 'buildings') {
