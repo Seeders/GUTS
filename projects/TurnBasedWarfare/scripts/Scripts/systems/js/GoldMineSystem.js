@@ -132,7 +132,7 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
-        
+
         const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
         if (!validation.valid) {
             console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');
@@ -140,7 +140,7 @@ class GoldMineSystem extends engine.BaseSystem {
         }
 
         const vein = validation.vein;
-        
+
         vein.claimed = true;
         vein.claimedBy = team;
 
@@ -159,6 +159,14 @@ class GoldMineSystem extends engine.BaseSystem {
             veinData: vein,
             team: team,
             model: mineModel
+        });
+
+        console.log(`[GoldMineSystem ${this.game.isServer ? 'SERVER' : 'CLIENT'}] Built gold mine:`, {
+            entityId,
+            team,
+            gridPos,
+            worldPos: { x: vein.worldX, z: vein.worldZ },
+            totalMines: this.claimedGoldMines.size
         });
 
         return { success: true };

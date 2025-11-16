@@ -94,29 +94,34 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         let closestMine = null;
         let closestDistance = Infinity;
         let closestMineEntityId = null;
-        
+
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const pos = this.game.getComponent(miningState.entityId, ComponentTypes.POSITION);
         const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-         
+
         if (!pos) return;
-        
+
         // Get sorted mine entityIds for deterministic iteration
-        const sortedMineIds = Array.from(this.game.goldMineSystem.claimedGoldMines.keys()).sort((a, b) => 
+        const sortedMineIds = Array.from(this.game.goldMineSystem.claimedGoldMines.keys()).sort((a, b) =>
             String(a).localeCompare(String(b))
         );
-        
+
+        // Debug logging
+        if (this.game.isServer && sortedMineIds.length > 0) {
+            console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} searching for mines. Available mines:`, sortedMineIds);
+        }
+
         // Search through all claimed gold mines in deterministic order
         for (const mineEntityId of sortedMineIds) {
             const goldMine = this.game.goldMineSystem.claimedGoldMines.get(mineEntityId);
-            
+
             // Check if this mine belongs to our team
             if (goldMine.team === miningState.team) {
                 // Calculate distance to this mine
                 const dx = goldMine.worldPosition.x - pos.x;
                 const dz = goldMine.worldPosition.z - pos.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (distance < closestDistance) {
                     closestDistance = distance;
                     closestMine = goldMine;
@@ -124,26 +129,33 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 }
             }
         }
-        
+
         if (!closestMine) {
+            if (this.game.isServer) {
+                console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} found NO mines for team ${miningState.team}. Total mines: ${sortedMineIds.length}`);
+            }
             return;
         }
 
         miningState.targetMineEntityId = closestMineEntityId;
-        miningState.targetMinePosition = { 
-            x: closestMine.worldPosition.x, 
-            y: closestMine.worldPosition.y || 0, 
-            z: closestMine.worldPosition.z 
+        miningState.targetMinePosition = {
+            x: closestMine.worldPosition.x,
+            y: closestMine.worldPosition.y || 0,
+            z: closestMine.worldPosition.z
         };
         miningState.state = 'walking_to_mine';
-        
+
+        if (this.game.isServer) {
+            console.log(`[MineGoldAbility SERVER] Peasant ${miningState.entityId} targeting mine ${closestMineEntityId} at distance ${closestDistance}`);
+        }
+
         if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
-            aiState.targetPosition = miningState.targetMinePosition;             
-            aiState.path = [];                         
+            aiState.targetPosition = miningState.targetMinePosition;
+            aiState.path = [];
             aiState.meta = {};
                if(miningState.entityId == "peasant_1224_1368_right_1"){
                     console.log("findMineTarget");
-                } 
+                }
         }
     }
 

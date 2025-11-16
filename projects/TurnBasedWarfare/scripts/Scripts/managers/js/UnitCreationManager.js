@@ -71,7 +71,10 @@ class UnitCreationManager {
     create(worldX, worldY, worldZ, targetPosition, placement, team) {
         const unitType = placement.unitType;
         try {
-            const entity = this.game.createEntity(`${unitType.id}_${worldX}_${worldZ}_${team}_${this.game.state.round}`);
+            // Round world coordinates to ensure deterministic entity IDs across client and server
+            const roundedX = Math.round(worldX * 100) / 100;
+            const roundedZ = Math.round(worldZ * 100) / 100;
+            const entity = this.game.createEntity(`${unitType.id}_${roundedX}_${roundedZ}_${team}_${this.game.state.round}`);
             console.log('created unit', unitType.id, team, entity);
             const teamConfig = this.teamConfigs[team];
             // Add core components
