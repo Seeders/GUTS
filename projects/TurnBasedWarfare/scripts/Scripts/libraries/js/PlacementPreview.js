@@ -16,7 +16,7 @@ class PlacementPreview {
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: -48,
+            elevationOffset: 0,
             unitElevationOffset: -12,
             cellSizeMultiplier: 0.9,
             maxCells: 50,
@@ -155,27 +155,22 @@ class PlacementPreview {
         const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
         const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
         const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
-        // Center the mesh on the cell (gridToWorld returns corner positions)
-        const halfSize = gridSize / 2;
 
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
-            // Get terrain height at the center of the cell
-            const centerX = pos.x + halfSize;
-            const centerZ = pos.z - halfSize;
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', centerX, centerZ);
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
             const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
 
             const cellMesh = cellMeshPool[index];
             cellMesh.material = cellMaterial;
-            cellMesh.position.set(centerX, yPosition, centerZ);
+            cellMesh.position.set(pos.x, yPosition, pos.z);
             cellMesh.visible = true;
             this.activeMeshes.push(cellMesh);
 
             const borderMesh = borderMeshPool[index];
             borderMesh.material = borderMaterial;
-            borderMesh.position.set(centerX, yPosition, centerZ);
+            borderMesh.position.set(pos.x, yPosition, pos.z);
             borderMesh.visible = true;
             this.activeMeshes.push(borderMesh);
         });

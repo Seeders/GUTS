@@ -30,10 +30,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             validationThrottle: .32
         };
         this.elements = {};
-        this.mouseOffset = {
-            x: 0,
-            z: 24
-        }
+        this.mouseWorldOffset = { x: 0, z: 0 };
+        this.mouseWorldPos = { x: 0, y: 0, z: 0 };
+        this.mouseScreenPos = { x: 0, y: 0 };
     }
 
     init(params) {
@@ -44,10 +43,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
         this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
-        this.game.gameManager.register('getWorldPositionFromMouse', this.getWorldPositionFromMouse.bind(this));
+        this.game.gameManager.register('getWorldPositionFromMouse', this.getFlatWorldPositionFromMouse.bind(this));
 
         this.initializeSubsystems();
         this.setupEventListeners();
+        this.mouseWorldOffset = { x: this.game.getCollections().configs.game.gridSize / 4, z: this.game.getCollections().configs.game.gridSize / 4 };
     }
 
     setupEventListeners() {
@@ -441,12 +441,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
+        const worldPosition = this.getFlatWorldPositionFromMouse(event, mouseX, mouseY);
 
         // Adjust world position to account for camera angle and cell centering        
         const adjustedWorldPos = {
-            x: worldPosition.x + this.mouseOffset.x,
-            z: worldPosition.z + this.mouseOffset.z
+            x: worldPosition.x + this.mouseWorldOffset.x,
+            z: worldPosition.z + this.mouseWorldOffset.z
         };
 
         let gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
@@ -729,44 +729,27 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 }
             });
         }
+
+        this.mouseRayCastInterval = setInterval(() => {                          
         
-        if (this.config.enablePreview && this.placementPreview) {
-            let animationFrameId = null;
-            let pendingMouseEvent = null;
+            if (this.game.state.phase === 'placement' && 
+                this.game.state.selectedUnitType && 
+                !this.isPlayerReady) {
+                this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);  
+                this.updatePlacementPreview();
+            }
+                            
+        }, 1000);
+
+        if (this.config.enablePreview && this.placementPreview) {       
             
-            const throttledMouseMove = (event) => {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-                pendingMouseEvent = event;
-                
-                animationFrameId = requestAnimationFrame(() => {
-                    if (this.game.state.now - this.lastUpdateTime < .08) {
-                        return;
-                    }
-                    
-                    this.lastUpdateTime = this.game.state.now;
-                    if (this.game.state.phase === 'placement' && 
-                        this.game.state.selectedUnitType && 
-                        !this.isPlayerReady &&
-                        pendingMouseEvent) {
-                        
-                        this.updatePlacementPreview(pendingMouseEvent);
-                    }
-                    
-                    animationFrameId = null;
-                    pendingMouseEvent = null;
-                });
-            };
+            this.canvas.addEventListener('mousemove', (event) => {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;    
+            });
             
-            this.canvas.addEventListener('mousemove', throttledMouseMove);
-            
-            this.canvas.addEventListener('mouseleave', () => {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-                
+            this.canvas.addEventListener('mouseleave', () => {                
                 this.placementPreview.clear();
                 this.cachedValidation = null;
                 this.cachedGridPos = null;
@@ -777,30 +760,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
-        
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        
-        this.lastMouseX = mouseX;
-        this.lastMouseY = mouseY;
-        
-        const timeSinceLastRaycast = this.game.state.now - (this.lastRaycastTime || 0);
-        const shouldRaycast = timeSinceLastRaycast > 0.15;
-        
-        let worldPosition;
-        if (!shouldRaycast) {
-            return;
-        } else {
-            worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-            
-            if (worldPosition) {
-                this.cachedWorldPos = worldPosition;
-                this.lastRaycastTime = this.game.state.now;
-                this.lastRaycastMouseX = mouseX;
-                this.lastRaycastMouseY = mouseY;
-            }
-        }
+        let worldPosition = this.mouseWorldPos; 
         
         if (!worldPosition) {
             this.placementPreview.clear();
@@ -811,8 +771,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         // Adjust world position to account for camera angle and cell centering
         // Add half cell size to snap to nearest cell center
         const adjustedWorldPos = {
-            x: worldPosition.x + this.mouseOffset.x,
-            z: worldPosition.z + this.mouseOffset.z
+            x: worldPosition.x + this.mouseWorldOffset.x,
+            z: worldPosition.z + this.mouseWorldOffset.z
         };
 
         const gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
@@ -842,27 +802,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
     }
 
-    getCurrentCells(gridPos) {
-
-
-        // For buildings, show footprint-sized preview. For units, show placement grid cells.
-        return 
-    }
-
-    getWorldPositionFromMouse(event, mouseX, mouseY) {
+    rayCastGround(mouseX, mouseY) {
         if (!this.game.scene || !this.game.camera) return null;
 
         if (!this.mouse) {
             this.mouse = new THREE.Vector2();
         }
-
-        if (mouseX !== undefined && mouseY !== undefined) {
-            this.mouse.set(mouseX, mouseY);
-        } else {
-            const rect = this.canvas.getBoundingClientRect();
-            this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        }
+        this.mouse.set(mouseX, mouseY);
 
         if (!this.raycaster) {
             this.raycaster = new THREE.Raycaster();
@@ -870,12 +816,26 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.raycaster.setFromCamera(this.mouse, this.game.camera);
 
         // Try to raycast directly against the terrain mesh (most efficient)
-        if (this.groundMeshCache) {
-            const intersects = this.raycaster.intersectObject(this.groundMeshCache, false);
+        const ground = this.game.gameManager.call('getGroundMesh');
+        if (ground) {
+            const intersects = this.raycaster.intersectObject(ground, false);
             if (intersects.length > 0) {
                 return intersects[0].point;
             }
         }
+    }
+
+    getFlatWorldPositionFromMouse(event, mouseX, mouseY) {
+        if (!this.game.scene || !this.game.camera) return null;
+
+        const mouse = new THREE.Vector2();
+        
+
+        mouse.set(mouseX, mouseY);
+        if (!this.raycaster) {
+            this.raycaster = new THREE.Raycaster();
+        }
+        this.raycaster.setFromCamera(mouse, this.game.camera);
 
         // Fallback: raycast to flat plane at y=0 if ground mesh not available
         const ray = this.raycaster.ray;
@@ -883,8 +843,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (Math.abs(ray.direction.y) < 0.0001) {
             return null;
         }
-
-        const distance = (0 - ray.origin.y) / ray.direction.y;
+        const baseHeight = this.game.gameManager.call('getBaseTerrainHeight');
+        const distance = (baseHeight - ray.origin.y) / ray.direction.y;
 
         if (distance < 0) {
             return null;

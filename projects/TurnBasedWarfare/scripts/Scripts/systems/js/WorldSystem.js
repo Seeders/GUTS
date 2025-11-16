@@ -46,6 +46,7 @@ class WorldSystem extends engine.BaseSystem {
         this.heightMapSettings = null;
         this.cameraSettings = null;
         
+        this.heightStep = 0;
         // Timing
         this.clock = new THREE.Clock();
         this.timer = 0;
@@ -65,7 +66,18 @@ class WorldSystem extends engine.BaseSystem {
         this.game.gameManager.register('getWorldScene', this.getScene.bind(this));
         this.game.gameManager.register('getWorldExtendedSize', () => this.extendedSize);
         this.game.gameManager.register('getGroundTexture', () => this.groundTexture);
+        this.game.gameManager.register('getGroundMesh', () => this.ground);
+        this.game.gameManager.register('getHeightStep', () => this.heightStep);
+        this.game.gameManager.register('getBaseTerrainHeight', () => this.heightStep * this.tileMap.extensionHeight);
 
+        // Add the extension functions
+        THREE.BufferGeometry.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBoundsTree;
+        THREE.BufferGeometry.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBoundsTree;
+        THREE.Mesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
+
+        THREE.BatchedMesh.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBatchedBoundsTree;
+        THREE.BatchedMesh.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBatchedBoundsTree;
+        THREE.BatchedMesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
         this.initializeThreeJS();
 
         this.loadWorldData();
@@ -443,6 +455,10 @@ class WorldSystem extends engine.BaseSystem {
         this.scene.add(this.ground);
 
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
+    }
+
+    getGroundMesh() {
+        return this.ground;
     }
 
     createExtensionPlanes() {
