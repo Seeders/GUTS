@@ -406,13 +406,14 @@ class UnitOrderSystem extends engine.BaseSystem {
 
     getFormationTargetPositions(targetPosition, placementIds){
         let targetPositions = [];
-        const gridSize = this.game.getCollections().configs.game.gridSize;
+        // Use placement grid size (half of terrain grid) for unit formation spacing
+        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
         const unitPadding = 1;
 
         for(let i = 0; i < placementIds.length; i++){
             targetPositions.push({
                 x: targetPosition.x,
-                z: i % 2 == 0 ? targetPosition.z + i * gridSize * unitPadding : targetPosition.z - i * gridSize * unitPadding
+                z: i % 2 == 0 ? targetPosition.z + i * placementGridSize * unitPadding : targetPosition.z - i * placementGridSize * unitPadding
             });
         }
         return targetPositions;

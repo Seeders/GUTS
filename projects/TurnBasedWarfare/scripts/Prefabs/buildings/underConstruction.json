@@ -44,8 +44,8 @@
     }
   },
   "units": [],
-  "placementGridWidth": 3,
-  "placementGridHeight": 2,
+  "footprintWidth": 3,
+  "footprintHeight": 2,
   "height": 100,
   "size": 75,
   "hp": 1000

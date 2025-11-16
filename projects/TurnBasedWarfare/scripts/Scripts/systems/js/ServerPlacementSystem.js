@@ -439,7 +439,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
                                 const distSq = dx * dx + dz * dz;
-                                const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                                const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+                                const threshold = placementGridSize * 0.5;
 
                                 if (distSq <= threshold * threshold) {
                                     this.game.gameManager.call('removeCurrentAIController', entityId);
@@ -690,8 +691,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
         console.log(`Data received:`, entityId, team, unitType);
 
         if (unitType.id === 'goldMine') {
-            const gridWidth = unitType.placementGridWidth || 2;
-            const gridHeight = unitType.placementGridHeight || 2;
+            // Convert footprint (terrain grid units) to placement grid cells
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
 
             const result = this.game.gameManager.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
             if (!result.success) {
@@ -741,9 +745,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     getStartingState(player){
 
-        let startPosition = { x: 5, z: 5 };
+        let startPosition = { x: 10, z: 10 };
         if(player.stats.side == 'right'){
-            startPosition = { x: 58, z: 58 };
+            startPosition = { x: 116, z: 116 };
         }
         
         // Find nearest unclaimed gold vein

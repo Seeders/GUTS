@@ -30,6 +30,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             validationThrottle: .32
         };
         this.elements = {};
+        this.mouseOffset = {
+            x: -12,
+            z: 24
+        }
     }
 
     init(params) {
@@ -274,7 +278,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                             const dx = position.x - targetPosition.x;
                             const dz = position.z - targetPosition.z;
                             const distSq = dx * dx + dz * dz;
-                            const threshold = this.game.getCollections().configs.game.gridSize * 0.5;
+                            const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+                            const threshold = placementGridSize * 0.5;
 
                             if (distSq <= threshold * threshold) {
                                 this.game.gameManager.call('removeCurrentAIController', entityId);
@@ -434,9 +439,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         const worldPosition = this.getWorldPositionFromMouse(event, mouseX, mouseY);
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x, worldPosition.z);
 
-        let isValidPlacement = this.isValidGridPlacement(worldPosition);
+        // Adjust world position to account for camera angle and cell centering        
+        const adjustedWorldPos = {
+            x: worldPosition.x + this.mouseOffset.x,
+            z: worldPosition.z + this.mouseOffset.z
+        };
+
+        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
+
+        let isValidPlacement = this.isValidGridPlacement(adjustedWorldPos);
        
         if (!isValidPlacement) {
             return;
@@ -789,37 +801,46 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             document.body.style.cursor = 'not-allowed';
             return;
         }
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        worldPosition.x -= gridSize / 3;
-        worldPosition.z += gridSize / 3;
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPosition.x , worldPosition.z);
+
+        // Adjust world position to account for camera angle and cell centering
+        // Add half cell size to snap to nearest cell center
+        const adjustedWorldPos = {
+            x: worldPosition.x + this.mouseOffset.x,
+            z: worldPosition.z + this.mouseOffset.z
+        };
+
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
         const state = this.game.state;
         
-        let cells = [];
-        let isValid = this.isValidGridPlacement(worldPosition);
+        let isValid = this.isValidGridPlacement(adjustedWorldPos);
         let unitPositions = null;
+        let isBuilding = state.selectedUnitType.collection === 'buildings';
 
-        if (state.selectedUnitType.collection === 'buildings') {
-            cells = this.calculateBuildingCells(gridPos, state.selectedUnitType);            
-        } else {
-            const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            if (this.game.squadManager.getSquadSize(squadData) > 1) {
-                unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
-            }
+        const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
+        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        if (this.game.squadManager.getSquadSize(squadData) > 1) {
+            unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
         }
-
+        
+        // For buildings, show footprint-sized preview. For units, show placement grid cells.
         const worldPositions = cells.map(cell =>
             this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
         );
 
         if (unitPositions && unitPositions.length > 0) {
-            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid);
+            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid, isBuilding);
         } else {
-            this.placementPreview.showAtWorldPositions(worldPositions, isValid);
+            this.placementPreview.showAtWorldPositions(worldPositions, isValid, isBuilding);
         }
 
         document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
+    }
+
+    getCurrentCells(gridPos) {
+
+
+        // For buildings, show footprint-sized preview. For units, show placement grid cells.
+        return 
     }
 
     getWorldPositionFromMouse(event, mouseX, mouseY) {
@@ -882,8 +903,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             cells = this.calculateBuildingCells(gridPos, selectedUnitType);
 
             if (selectedUnitType.id === 'goldMine') {
-                const gridWidth = selectedUnitType.placementGridWidth || 2;
-                const gridHeight = selectedUnitType.placementGridHeight || 2;
+                // Convert footprint to placement grid cells
+                const footprintWidth = selectedUnitType.footprintWidth || selectedUnitType.placementGridWidth || 2;
+                const footprintHeight = selectedUnitType.footprintHeight || selectedUnitType.placementGridHeight || 2;
+                const gridWidth = footprintWidth * 2;
+                const gridHeight = footprintHeight * 2;
                 const validation = this.game.gameManager.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
                 isValid = validation.valid;
             } else {
@@ -891,12 +915,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
                 let terrainValid = true;
                 cells.forEach((cell) => {
-                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', cell.x, cell.z);
+                    // Convert placement grid coordinates to terrain grid coordinates
+                    const terrainGridX = Math.floor(cell.x / 2);
+                    const terrainGridZ = Math.floor(cell.z / 2);
+                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', terrainGridX, terrainGridZ);
                     if(!terrainTypeId) {
                         terrainValid = false;
                         return;
                     }
                     const terrainType = this.game.gameManager.call('getTileMapTerrainType', terrainTypeId);
+                    // Check walkability using placement grid cell (already in placement grid coords)
                     const isPositionWalkable = this.game.gameManager.call('isGridPositionWalkable', cell);
                     terrainValid = terrainValid && terrainType.buildable && isPositionWalkable;
                 });
@@ -944,8 +972,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     calculateBuildingCells(gridPos, building) {
         const cells = [];
-        const gridWidth = building.placementGridWidth || 1;
-        const gridHeight = building.placementGridHeight || 1;
+        // Convert footprint (terrain grid units) to placement grid cells (multiply by 2)
+        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
+        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
+        const gridWidth = footprintWidth * 2;
+        const gridHeight = footprintHeight * 2;
+
         const startX = gridPos.x - Math.floor(gridWidth / 2);
         const startZ = gridPos.z - Math.floor(gridHeight / 2);
 
@@ -960,6 +992,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
         return cells;
     }
+
 
     updateCursorState(isValid) {
         if (this.isPlayerReady) {

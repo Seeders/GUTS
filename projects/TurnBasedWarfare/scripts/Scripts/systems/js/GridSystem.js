@@ -21,20 +21,22 @@ class GridSystem extends engine.BaseSystem {
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
 
         const collections = this.game.getCollections();
-        
-        const cellSize = collections.configs.game.gridSize; 
+
+        const terrainGridSize = collections.configs.game.gridSize;
+        const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
         const currentLevel = collections.configs.state.level;
-        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * cellSize;
-        
-        this.cellSize = cellSize;
+        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
+
+        this.cellSize = placementGridSize;
+        this.terrainGridSize = terrainGridSize;
         this.showGrid = true;
         this.snapToGrid = true;
         this.highlightValidCells = true;
         
         this.dimensions = {
-            width: Math.floor(terrainSize / cellSize),
-            height: Math.floor(terrainSize / cellSize),
-            cellSize: cellSize,
+            width: Math.floor(terrainSize / placementGridSize),
+            height: Math.floor(terrainSize / placementGridSize),
+            cellSize: placementGridSize,
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
@@ -64,9 +66,9 @@ class GridSystem extends engine.BaseSystem {
         // Pre-calculate world bounds for faster collision detection
         this.worldBounds = {
             minX: this.dimensions.startX,
-            maxX: this.dimensions.startX + (this.dimensions.width * cellSize),
+            maxX: this.dimensions.startX + (this.dimensions.width * placementGridSize),
             minZ: this.dimensions.startZ,
-            maxZ: this.dimensions.startZ + (this.dimensions.height * cellSize)
+            maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
         };
     }
 
@@ -159,8 +161,8 @@ class GridSystem extends engine.BaseSystem {
     gridToWorld(gridX, gridZ) {
         const { cellSize, startX, startZ } = this.dimensions;
         return {
-            x: startX + (gridX * cellSize) + (cellSize / 2),
-            z: startZ + (gridZ * cellSize) + (cellSize / 2)
+            x: startX + (gridX * cellSize),
+            z: startZ + (gridZ * cellSize)
         };
     }
     
@@ -191,10 +193,24 @@ class GridSystem extends engine.BaseSystem {
         const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
 
         if(!unitType) return null;
-        const cells = [];       
-        let { placementGridWidth, placementGridHeight } = unitType;        
-        if(!placementGridHeight) placementGridHeight = 1;
-        if(!placementGridWidth) placementGridWidth = 1;
+        const cells = [];
+
+        // For buildings, convert footprint (terrain grid units) to placement grid cells
+        // For units, use placementGridWidth/Height directly (already in placement grid units)
+        let placementGridWidth, placementGridHeight;
+
+        if (unitType.collection === 'buildings') {
+            // Buildings use footprint in terrain grid units, convert to placement grid cells (2x)
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 1;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 1;
+            placementGridWidth = footprintWidth * 2;
+            placementGridHeight = footprintHeight * 2;
+        } else {
+            // Units use placement grid units directly
+            placementGridWidth = unitType.placementGridWidth || 1;
+            placementGridHeight = unitType.placementGridHeight || 1;
+        }
+
         const gridPos = this.worldToGrid(pos.x, pos.z);
         // Calculate starting position to center the formation
         const startX = gridPos.x - Math.floor(placementGridWidth / 2);
@@ -207,7 +223,7 @@ class GridSystem extends engine.BaseSystem {
                 });
             }
         }
-        
+
         return cells;
     }
 

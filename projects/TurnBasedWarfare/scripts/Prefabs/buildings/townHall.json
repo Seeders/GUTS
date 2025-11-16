@@ -60,8 +60,8 @@
       }
     }
   },
-  "placementGridWidth": 3,
-  "placementGridHeight": 3,
+  "footprintWidth": 3,
+  "footprintHeight": 3,
   "units": [
     "peasant"
   ],

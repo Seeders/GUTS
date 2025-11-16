@@ -2,9 +2,9 @@ class PathfindingSystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
         this.game.pathfindingSystem = this;
-        
+
         this.navMesh = null;
-        this.navGridSize = 32;
+        this.navGridSize = null; // Will be set from config
         this.navGridWidth = 0;
         this.navGridHeight = 0;
         
@@ -59,6 +59,10 @@ class PathfindingSystem extends engine.BaseSystem {
             console.warn('PathfindingSystem: No terrain types found in level');
             return;
         }
+
+        // Set navigation grid size to half of terrain grid (matches placement grid)
+        this.navGridSize = collections.configs.game.gridSize / 2;
+        console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
 
         // Load ramps data
         this.loadRamps(level.tileMap);

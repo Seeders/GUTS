@@ -620,7 +620,6 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vy = 0;
             return;
         }
-        const gridSize = this.game.getCollections().configs.game.gridSize;
         const waypoint = aiState.path[aiState.pathIndex];
         const dx = waypoint.x - pos.x;
         const dz = waypoint.z - pos.z;
