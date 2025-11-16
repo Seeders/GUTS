@@ -246,7 +246,7 @@ class PlacementPreview {
     hideAllMeshes() {
         this.activeMeshes.length = 0;
         
-        [...this.cellMeshPool, ...this.borderMeshPool, ...this.unitMeshPool].forEach(mesh => {
+        [...this.placementCellMeshPool, ...this.placementBorderMeshPool, ...this.footprintCellMeshPool, ...this.footprintBorderMeshPool, ...this.unitMeshPool].forEach(mesh => {
             mesh.visible = false;
         });
     }
