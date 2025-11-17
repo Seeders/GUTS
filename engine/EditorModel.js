@@ -227,7 +227,7 @@ class EditorModel {
                 return false;
             }
 
-            const compiler = new Compiler(this.core);
+            const compiler = new Compiler('game');
 
             // Engine file paths (relative to the server)
             const engineFilePaths = {
@@ -254,7 +254,7 @@ class EditorModel {
                 console.log('🔨 Compiling server game bundle...');
 
                 // Compile with server scene filter
-                const serverCompiler = new Compiler(this.core);
+                const serverCompiler = new Compiler('server');
                 serverResult = await serverCompiler.compile(
                     this.state.currentProject,
                     this.getCollections(),
