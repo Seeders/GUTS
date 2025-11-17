@@ -1,7 +1,7 @@
 /**
  * Compiled Game Bundle
  * Project: TurnBasedWarfare
- * Generated: 2025-11-17T17:47:15.990Z
+ * Generated: 2025-11-17T17:47:16.189Z
  */
 
 window.engine = {
@@ -11,7 +11,7 @@ window.engine = {
 // Global bundle namespace
 window.COMPILED_GAME = {
     projectName: "TurnBasedWarfare",
-    version: "2025-11-17T17:47:15.990Z",
+    version: "2025-11-17T17:47:16.189Z",
     classRegistry: {},
     libraryClasses: {},
     collections: {
@@ -51933,169 +51933,6 @@ window.COMPILED_GAME.externalLibraries = [
 
 // ========== Functions ==========
 
-// Function: calculateDamage
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['calculateDamage'] = function calculateDamage(attack, target) {
-    // Set default values if not provided
-    
-    attack.speed = attack.speed || 5;     
-    attack.piercing = attack.piercing || 0,
-    attack.splashRadius = attack.splashRadius || 0;
-    attack.critChance = attack.critChance || .05;
-    attack.critMultiplier = attack.critMultiplier || 2;
-    attack.penetration = {
-      "fire": attack.firePenetration || 0,
-      "electric": attack.electricPenetration || 0,
-      "cold": attack.coldPenetration || 0,
-      "physical": attack.physicalPenetration || 0,
-      "toxic": attack.toxicPenetration || 0,
-    }
-    target.resistances = {
-      "fire": target.fireResistance || 0,
-      "electric": target.electricResistance || 0,
-      "cold": target.coldResistance || 0,
-      "physical": target.physicalResistance || 0,
-      "toxic": target.toxicResistance || 0,
-    }
-    
-    // Initialize result object
-    const result = {
-      damageBlocked: 0,
-      damageAbsorbed: 0,
-      damageDealt: 0,
-      energyShieldRemaining: target.energyShield || 0,
-      wasEvaded: false,
-      wasCritical: Math.random() <= attack.critChance,
-      hitDetails: {}
-    };
-    
-    // Check for evasion
-    if (target.evasion && target.evasion > 0) {
-      const evasionRoll = Math.random() * 100;
-      if (evasionRoll < target.evasion) {
-        result.wasEvaded = true;
-        result.hitDetails.evasion = "Attack evaded";
-        return result;
-      }
-    }
-    
-    // Calculate initial damage
-    let damage = attack.baseDamage;
-    
-    // Apply critical hit
-    if (result.wasCritical) {
-      damage *= attack.critMultiplier;
-      result.hitDetails.critical = `Critical hit (${attack.critMultiplier}x damage)`;
-    }
-    
-    // Apply resistances based on damage type
-  
-    if(attack.damageType != "physical") {
-      const resistance = target.resistances[attack.damageType] || 0;
-      const penetration = attack.penetration[attack.damageType] || 0;
-      const finalResist = resistance - penetration;
-      let resistanceMultiplier = 1 - (finalResist / 100);
-      damage *= resistanceMultiplier;
-  
-      
-      if (finalResist !== 0) {
-        if (finalResist > 0) {
-          result.hitDetails.resistance = `${attack.damageType} resisted (${finalResist}%)`;
-        } else {
-          result.hitDetails.resistance = `${attack.damageType} vulnerability (${-finalResist}%)`;
-        }
-      }  
-    }
-    
-    // Apply armor (only affects physical damage)
-    if (attack.damageType === "physical" && target.armor > 0) {
-      let effectiveArmor = target.armor;
-      if (attack.penetration.physical > 0 ) {
-        // Piercing ignores 75% of armor
-        effectiveArmor = target.armor * (1 - attack.penetration.physical);
-      }
-      // Armor formula: damage reduction percentage = armor / (armor + 100)
-      const armorReduction = effectiveArmor / (effectiveArmor + 100);
-      const blockedDamage = damage * armorReduction;
-      
-      damage -= blockedDamage;
-      result.damageBlocked = blockedDamage;
-      result.hitDetails.armor = `Armor blocked ${blockedDamage.toFixed(1)} damage`;
-    }
-    
-    // Round damage to 1 decimal place for cleaner numbers
-    damage = Math.round(damage * 10) / 10;
-    
-    // Apply shield absorption
-    if (target.energyShield > 0) {
-      if (damage <= target.energyShield) {
-        // Shield absorbs all damage
-        result.damageAbsorbed = damage;
-        result.energyShieldRemaining = target.energyShield - damage;
-        result.hitDetails.energyShield = `Shield absorbed all damage, ${result.energyShieldRemaining.toFixed(1)} shield remaining`;
-        damage = 0;
-      } else {
-        // Shield is depleted, remaining damage goes through
-        result.damageAbsorbed = target.energyShield;
-        result.damageDealt = damage - target.energyShield;
-        result.energyShieldRemaining = 0;
-        result.hitDetails.energyShield = `Shield depleted, ${result.damageDealt.toFixed(1)} damage dealt to health`;
-        damage -= target.energyShield;
-      }
-    } else {
-      // No shield, all damage goes to health
-      result.damageDealt = damage;
-    }
-    
-    // Make sure we don't return negative damage
-    result.damageDealt = Math.max(0, result.damageDealt);
-    
-    return result;
-  }
-;
-
-// Function: calculateStats
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['calculateStats'] = function calculateStats(stats, calcArray) {
-
-    if( calcArray && calcArray.length > 0 ) {
-        let additiveStats = {};
-        let multiplicitiveStats = {};
-        for(let key in stats) {
-            additiveStats[key] = [];
-            multiplicitiveStats[key] = [];
-        }
-        for(let effect of calcArray) {
-            effect.apply(stats, additiveStats, multiplicitiveStats);
-        }
-        let addedEffects = {};
-        for(let key in additiveStats){
-            for(let val of additiveStats[key]){ 
-                if(addedEffects[key]){
-                    addedEffects[key] += val - 1;
-                } else {
-                    addedEffects[key] = val - 1;
-                }
-            }
-        }
-
-        for(let key in addedEffects) {
-            if( stats[key] ) {
-                stats[key] *= ( 1 + addedEffects[key] );
-            }
-        }
-
-        let multipliedUpgrades = {};        
-        for(let key in multiplicitiveStats){
-            for(let val of multiplicitiveStats[key]){ 
-                if(stats[key]){
-                    stats[key] *= val;
-                }
-            }
-        }
-    }
-};
-
 // ========== Managers ==========
 
 // manager: ComponentManager
@@ -52973,369 +52810,6 @@ window.engine.app.appClasses['GameManager'] = class GameManager {
 
 }
 ;
-
-// manager: GameModeManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['GameModeManager'] = class GameModeManager {
-    constructor(app) {
-        this.game = app;
-        this.game.gameModeManager = this;        
-        this.modes = this.initializeGameModes();
-        this.setupUI();
-    }
-
-    initializeGameModes() {
-        return {
-            arena: {
-                id: 'arena',
-                title: 'Arena',
-                icon: '⚔️',
-                interfaceId: 'createOrJoinRoom',
-                description: 'Battle against another player in real-time strategic combat',
-                difficulty: 'Player vs Player',
-                difficultyClass: 'pvp',
-                isMultiplayer: true,
-                maxPlayers: 2,
-                startingGold: 100,
-                onStart: (mode) => {
-                    this.game.uiSystem.handleMultiplayerModeSelection(mode);
-                }
-            }
-            // ,
-            // campaign: {
-            //     id: 'campaign',
-            //     title: 'Campaign',
-            //     icon: '🏆',
-            //     description: 'Progress through increasingly difficult battles and unlock new units',
-            //     startingGold: 100
-            // },
-            // survival: {
-            //     id: 'survival',
-            //     title: 'Survival',
-            //     icon: '⚡',
-            //     description: 'See how many waves you can survive with limited resources',
-            //     startingGold: 150
-            // },
-            // arena: {
-            //     id: 'arena',
-            //     title: 'Arena',
-            //     icon: '⚔️',
-            //     description: 'Quick battles with balanced armies for testing strategies',
-            //     startingGold: 200
-            // },
-            // challenge: {
-            //     id: 'challenge',
-            //     title: 'Challenge',
-            //     icon: '💀',
-            //     description: 'Face pre-built enemy compositions with specific constraints',
-            //     startingGold: 100
-            // },
-            // endless: {
-            //     id: 'endless',
-            //     title: 'Endless',
-            //     icon: '♾️',
-            //     description: 'Battle continues until defeat with exponentially scaling enemies',
-            //     startingGold: 100
-            // },
-            // tournament: {
-            //     id: 'tournament',
-            //     title: 'Tournament',
-            //     icon: '🏅',
-            //     description: 'Bracket-style competition against AI opponents',
-            //     startingGold: 120
-            // }
-        };
-    }
-
-    setupUI() {
-        const modeGrid = document.getElementById('modeGrid');
-        if (!modeGrid) return;
-
-        modeGrid.innerHTML = '';
-        
-        Object.values(this.modes).forEach(mode => {
-            const card = this.createModeCard(mode);
-            modeGrid.appendChild(card);
-        });
-    }
-
-    createModeCard(mode) {
-        const card = document.createElement('div');
-        card.className = 'mode-card';
-        card.dataset.mode = mode.id;
-        
-        card.innerHTML = `
-            <div class="mode-icon">${mode.icon}</div>
-            <div class="mode-title">${mode.title}</div>
-            <div class="mode-description">${mode.description}</div>
-            <div class="mode-difficulty ${mode.difficultyClass}">${mode.difficulty}</div>
-        `;
-
-        card.addEventListener('click', () => this.selectMode(mode.id));
-        
-        return card;
-    }
-
-    selectMode(modeId) {
-        // Remove previous selection
-        document.querySelectorAll('.mode-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Add selection to clicked card
-        const selectedCard = document.querySelector(`[data-mode="${modeId}"]`);
-        if (selectedCard) {
-            selectedCard.classList.add('selected');
-            this.game.screenManager.setGameMode(modeId);
-            const modeConfig = this.getModeConfig(modeId);
-            modeConfig.onStart(modeConfig);
-        }
-    }
-
-    getSelectedMode() {
-        return this.modes[this.game.screenManager.selectedGameMode];
-    }
-
-    getModeConfig(modeId) {
-        return this.modes[modeId];
-    }
-};
-
-// manager: KeyboardManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['KeyboardManager'] = class KeyboardManager {
-    constructor(app) {
-        this.game = app;
-        this.game.keyboardManager = this;
-    }
-};
-
-// manager: LoadingManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['LoadingManager'] = class LoadingManager {
-    constructor(app) {
-        this.game = app;
-        this.game.loadingManager = this;
-        this.loadingSteps = [
-            'Initializing game engine...',
-            'Loading unit data...',
-            'Preparing battlefield...',
-            'Setting up AI opponents...',
-            'Ready to battle!'
-        ];
-    }
-
-    showLoadingWithProgress(onComplete) {
-        let currentStep = 0;
-        const loadingText = document.querySelector('.loading-text');
-        
-        const progressInterval = setInterval(() => {
-            if (currentStep < this.loadingSteps.length) {
-                if (loadingText) {
-                    loadingText.textContent = this.loadingSteps[currentStep];
-                }
-                currentStep++;
-            } else {
-                clearInterval(progressInterval);
-                onComplete();
-            }
-        }, 400);
-    }
-};
-
-// manager: ResultsManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ResultsManager'] = class ResultsManager {
-    constructor(app) {
-        this.game = app;
-        this.game.resultsManager = this;                
-    }
-
-    showVictory(stats) {
-        this.populateStats('victoryStats', stats, 'victory');
-        this.game.screenManager.showVictoryScreen();
-    }
-
-    showDefeat(stats) {
-        this.populateStats('defeatStats', stats, 'defeat');
-        this.game.screenManager.showDefeatScreen();
-    }
-
-    populateStats(containerId, stats, type) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        const statItems = type === 'victory' 
-            ? this.getVictoryStats(stats)
-            : this.getDefeatStats(stats);
-
-        statItems.forEach(item => {
-            const card = this.createStatCard(item.label, item.value);
-            container.appendChild(card);
-        });
-    }
-
-    getVictoryStats(stats) {
-        return [
-            { label: 'Round Reached', value: stats.round || 1 },
-            { label: 'Gold Earned', value: stats.goldEarned || 0 },
-            { label: 'Units Deployed', value: stats.unitsDeployed || 0 },
-            { label: 'Time Played', value: this.formatTime(stats.totalPlayTime || 0) }
-        ];
-    }
-
-    getDefeatStats(stats) {
-        return [
-            { label: 'Final Round', value: stats.round || 1 },
-            { label: 'Total Gold', value: stats.goldEarned || 0 },
-            { label: 'Units Lost', value: stats.unitsLost || 0 },
-            { label: 'Survival Time', value: this.formatTime(stats.totalPlayTime || 0) }
-        ];
-    }
-
-    createStatCard(label, value) {
-        const card = document.createElement('div');
-        card.className = 'stat-card';
-        card.innerHTML = `
-            <div class="stat-label">${label}</div>
-            <div class="stat-value">${value}</div>
-        `;
-        return card;
-    }
-
-    formatTime(milliseconds) {
-        const seconds = Math.floor(milliseconds / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-};
-
-// manager: SaveManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['SaveManager'] = class SaveManager {
-    constructor(app) {
-        this.game = app;
-        this.game.saveManager = this;
-        this.setupAutoSave();
-    }
-
-    setupAutoSave() {
-        // Auto-save every 30 seconds
-        setInterval(() => {
-            this.saveGameState();
-        }, 30000);
-    }
-
-    saveGameState() {
-     
-    }
-
-    loadGameState() {
-        // In a real implementation, you might load from localStorage here
-        // const saved = localStorage.getItem('autoBattleArena_save');
-        // return saved ? JSON.parse(saved) : null;
-        return null;
-    }
-}
-;
-
-// manager: ScreenManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ScreenManager'] = class ScreenManager {
-    constructor(app) {
-        this.game = app;
-        this.game.screenManager = this;
-    }
-
-    
-
-    showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        
-        const targetScreen = document.getElementById(screenId);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-        }
-    }
-
-    showMainMenu() {
-        this.setScreen('mainMenu');
-    }
-
-    showGameModeSelect() {
-        this.setScreen('gameModeSelect');
-        // Reset selection
-        document.querySelectorAll('.mode-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        this.selectedGameMode = null;
-    }
-
-    showLoadingScreen() {
-        this.setScreen('loadingScreen');
-    }
-
-    showGameScreen() {
-        this.setScreen('gameScreen');
-    }
-
-    showVictoryScreen() {
-        this.setScreen('victoryScreen');
-    }
-
-    showDefeatScreen() {
-        this.setScreen('defeatScreen');
-    }
-
-
-    
-    reset() {
-        this.currentScreen = 'mainMenu';
-        this.selectedGameMode = null;
-        this.gameStartTime = null;
-        this.isPaused = false;
-        this.stats = {
-            round: 1,
-            goldEarned: 0,
-            unitsDeployed: 0,
-            unitsLost: 0,
-            totalPlayTime: 0
-        };
-    }
-
-    setScreen(screenId) {
-        this.currentScreen = screenId;
-        this.showScreen(screenId);
-    }
-
-    setGameMode(mode) {
-        this.selectedGameMode = mode;
-    }
-
-    onGameStarted() {
-        this.gameStartTime = Date.now();
-    }
-
-    endGame(result, finalStats = {}) {
-        if (this.gameStartTime) {
-            this.stats.totalPlayTime = Date.now() - this.gameStartTime;
-        }
-        Object.assign(this.stats, finalStats);
-    }
-
-    pause() {
-        this.isPaused = true;
-    }
-
-    resume() {
-        this.isPaused = false;
-    }
-};
 
 // manager: UnitCreationManager
 window.engine.app.appClasses = window.engine.app.appClasses || {};
@@ -54340,998 +53814,6 @@ window.engine.app.appClasses['SquadManager'] = class SquadManager {
     }
 };
 
-// manager: MultiplayerNetworkManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MultiplayerNetworkManager'] = class MultiplayerNetworkManager {
-    constructor(game) {
-        this.game = game;
-        this.game.networkManager = this;
-        
-        // State tracking
-        this.roomId = null;
-        this.isHost = false;
-        this.gameState = null;
-        // Store unsubscribe functions
-        this.networkUnsubscribers = [];
-    }
-
-    // GUTS Manager Interface
-    init(params) {
-        this.params = params || {};
-        this.connectToServer();        
-        this.setupNetworkListeners();
-    }
-
-    async connectToServer() {
-        try {
-            await this.game.clientNetworkManager.connect();
-            
-            // Call server to get player ID
-            this.game.clientNetworkManager.call(
-                'CONNECT',
-                null,
-                'CONNECTED',
-                (data, error) => {
-                    if (error) {
-                        console.error('Failed to get player ID:', error);
-                        this.game.uiSystem.showNotification('Failed to get player ID from server', 'error');
-                    } else if (data && data.playerId) {
-                        this.game.clientNetworkManager.playerId = data.playerId;
-                        this.game.state.playerId = data.playerId;
-                    } else {
-                        console.error('Server response missing player ID:', data);
-                        this.game.uiSystem.showNotification('Server did not provide player ID', 'error');
-                    }
-                }
-            );
-            
-        } catch (error) {
-            console.error('Failed to connect to server:', error);
-            this.game.uiSystem.showNotification('Failed to connect to server', 'error');
-        }
-    }
-
-    setupNetworkListeners() {
-        const nm = this.game.clientNetworkManager;
-        if (!nm) {
-            console.error('ClientNetworkManager not available');
-            return;
-        }
-
-        // Listen to events that update the UI
-        this.networkUnsubscribers.push(
-            nm.listen('PLAYER_JOINED', (data) => {
-                this.syncWithServerState(data);   
-                this.handlePlayerJoined(data);
-            }),
-
-            nm.listen('PLAYER_LEFT', (data) => {
-                this.syncWithServerState(data);   
-                this.handlePlayerLeft(data);
-            }),
-
-            nm.listen('PLAYER_READY_UPDATE', (data) => {
-                this.syncWithServerState(data);   
-                this.handlePlayerReadyUpdate(data);
-            }),
-
-            nm.listen('GAME_STARTED', (data) => {
-                this.syncWithServerState(data);   
-                this.handleGameStarted(data);
-            }),
-            nm.listen('OPPONENT_SQUAD_TARGET_SET', (data) => {
-                this.syncWithServerState(data);   
-                this.handleOpponentSquadTarget(data);
-            }),
-            nm.listen('OPPONENT_SQUAD_TARGETS_SET', (data) => {
-                this.syncWithServerState(data);   
-                this.handleOpponentSquadTargets(data);
-            }),
-            nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
-                this.syncWithServerState(data);   
-                this.handleReadyForBattleUpdate(data);
-            }),
-
-            nm.listen('BATTLE_END', (data) => {
-                this.syncWithServerState(data);   
-                this.handleBattleEnd(data);
-            }),
-
-            nm.listen('GAME_END', (data) => {
-                this.syncWithServerState(data);        
-                this.handleGameEnd(data);
-            })
-        );
-    }
-
-    createRoom(playerName, maxPlayers = 2) {
-        this.game.uiSystem.showNotification('Creating room...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'CREATE_ROOM',
-            { playerName, maxPlayers },
-            'ROOM_CREATED',
-            (data, error) => {
-                if (error) {
-                    this.game.uiSystem.showNotification(`Failed to create room: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.game.uiSystem.showNotification(`Room created! Code: ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
-                }
-            }
-        );
-    }
-
-    joinRoom(roomId, playerName) {
-        this.game.uiSystem.showNotification('Joining room...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'JOIN_ROOM',
-            { roomId, playerName },
-            'ROOM_JOINED',
-            (data, error) => {
-                if (error) {
-                    this.game.uiSystem.showNotification(`Failed to join room: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.game.uiSystem.showNotification(`Joined room ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
-                }
-            }
-        );
-    }
-
-    startQuickMatch(playerName) {
-        this.game.uiSystem.showNotification('Finding opponent...', 'info');
-        
-        this.game.clientNetworkManager.call(
-            'QUICK_MATCH',
-            { playerName },
-            'QUICK_MATCH_FOUND',
-            (data, error) => {
-                if (error) {
-                    this.game.uiSystem.showNotification(`Quick match failed: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-                    this.game.uiSystem.showNotification(`Match found! Entering room...`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
-                }
-            }
-        );
-    }
-
-    getStartingState(callback){
-        this.game.clientNetworkManager.call(
-            'GET_STARTING_STATE',
-            {},
-            'GOT_STARTING_STATE',
-            (data, error) => {           
-                if (data.error) {
-                    console.log('getStartingState error:', data.error);
-                    callback(false, error);
-                } else {
-                    console.log('getStartingState response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    submitPlacement(placement, callback){
-        if(this.game.state.phase != "placement") {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'SUBMIT_PLACEMENT',
-            { placement },
-            'SUBMITTED_PLACEMENT',
-            (data, error) => {           
-                if (data.error) {
-                    console.log('Placement error:', data.error);
-                    callback(false, error);
-                } else {
-                    console.log('Placement response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    purchaseUpgrade(data, callback){
-        if(this.game.state.phase != "placement") {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'PURCHASE_UPGRADE',
-            { data },
-            'PURCHASED_UPGRADE',
-            (data, error) => {           
-                if (data.error) {
-                    console.log('Purchase error:', data.error);
-                    callback(false, error);
-                } else {
-                    console.log('Purchase response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    setSquadTarget(data, callback) {
-        if(this.game.state.phase != "placement") {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'SET_SQUAD_TARGET',
-            data,
-            'SQUAD_TARGET_SET',
-            (data, error) => {
-                if (error || data.error) {
-                    console.log('Set target error:', error || data.error);
-                    callback(false, error || data.error);
-                } else {
-                    console.log('Set target response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    setSquadTargets(data, callback) {
-        if(this.game.state.phase != "placement") {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'SET_SQUAD_TARGETS',
-            data,
-            'SQUAD_TARGETS_SET',
-            (data, error) => {
-                if (error || data.error) {
-                    console.log('Set target error:', error || data.error);
-                    callback(false, error || data.error);
-                } else {
-                    console.log('Set target response:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    toggleReadyForBattle(callback) {
-        if(this.game.state.phase != "placement") {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'READY_FOR_BATTLE',
-            {},
-            'READY_FOR_BATTLE_RESPONSE',
-            (data, error) => {                                
-                if (data.error) {
-                    console.log('Battle ready state error:', data.error);
-                    callback(false, data.error);
-                } else {
-                    console.log('Battle ready state updated:', data);
-                    callback(true, data);
-                }
-            }
-        );
-    }
-
-    toggleReady() {
-        this.game.clientNetworkManager.call('TOGGLE_READY');
-    }
-
-    startGame() {
-        if (!this.isHost) return;
-        this.game.clientNetworkManager.call('START_GAME');
-    }
-
-    leaveRoom() {
-        this.game.clientNetworkManager.call('LEAVE_ROOM');
-    }
-
-    handlePlayerJoined(data){
-
-        this.game.uiSystem.showNotification(`${data.playerName} joined the room`, 'info');
-        this.game.uiSystem.updateLobby(data.gameState);
-    }
-
-    handlePlayerLeft(data){
-
-        this.game.uiSystem.showNotification('Player left the room', 'warning');
-        this.game.uiSystem.updateLobby(data.gameState);
-    }
-
-    handlePlayerReadyUpdate(data){
-
-        this.game.uiSystem.updateLobby(data.gameState);
-        console.log('handlePlayerReadyUpdate', data);
-        // Show notification for ready state changes
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        if (data.playerId === myPlayerId) {
-            if(!data.ready){
-                console.log("not ready", data);
-            }
-            this.game.uiSystem.showNotification(
-                data.ready ? 'You are ready!' : 'Ready status removed',
-                data.ready ? 'success' : 'info'
-            );
-        }
-        
-        if (data.allReady) {
-            this.game.uiSystem.showNotification('All players ready! Game starting...', 'success');
-        }
-    }
-
-    handleGameStarted(data){
-        this.game.gameManager.initializeGame(data);
-    }
-
-    handleReadyForBattleUpdate(data) {
-        this.game.placementSystem.handleReadyForBattleUpdate(data);
-    }
-
-    handleBattleEnd(data) {
-        
-        if (data.entitySync) {
-            this.resyncEntities(data.entitySync);
-        }
-        this.game.triggerEvent('onBattleEnd');        
-        console.log('battle result', data);
-        this.game.desyncDebugger.displaySync(true); 
-        this.game.desyncDebugger.enabled = false;
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        data.gameState?.players?.forEach((player) => {
-            if(player.id == myPlayerId) {
-                this.game.state.playerGold = player.stats.gold;
-            }
-        })
-        this.game.state.round += 1;
-        // Transition back to placement phase
-        this.game.state.phase = 'placement';
-        this.game.triggerEvent('onPlacementPhaseStart');   
-    }
-
-    resyncEntities(entitySync) {
-
-        for (const [entityId, components] of Object.entries(entitySync)) {
-        
-            
-            for (const [componentType, componentData] of Object.entries(components)) {
-                if (this.game.hasComponent(entityId, componentType)) {
-                    const existing = this.game.getComponent(entityId, componentType);
-                    Object.assign(existing, componentData);
-                } 
-            }
-        }
-        
-    }
-
-    handleGameEnd(data) {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        if (data.result.winner === myPlayerId) {
-            this.game.uiSystem.showNotification('GAME WON! Congratulations!', 'success');
-        } else {
-            this.game.uiSystem.showNotification('Game lost. Better luck next time!', 'warning');
-        }
-    }
- 
-    handleRoundResult(roundResult) {
-        const state = this.game.state;
-        state.phase = 'ended';      
-    }
-
-    handleOpponentSquadTarget(data) {
-        const { placementId, targetPosition, meta } = data;
-        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta);        
-    }
-
-    handleOpponentSquadTargets(data) {
-        const { placementIds, targetPositions, meta } = data;
-        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta);        
-    }
-
-    syncWithServerState(data) {
-        if(!data.gameState) return;
-        const gameState = data.gameState;
-        if (!gameState.players) return;
-        console.log('sync with server', gameState);
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-        
-        if (myPlayer) {
-            // Sync squad count and side
-            if (this.game.state) {
-                this.game.state.mySide = myPlayer.stats.side;
-                this.game.state.playerGold = myPlayer.stats.gold;
-                this.game.state.playerHealth = myPlayer.stats.health;
-                this.game.state.round = gameState.round;
-                this.game.state.serverGameState = gameState;
-            }
-            
-            // Set team sides in grid system
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-            if (opponent && this.game.gridSystem) {
-                this.game.gridSystem.setTeamSides({
-                    player: myPlayer.stats.side,
-                    enemy: opponent.stats.side
-                });
-            }
-            
-            // Also set sides in placement system
-            if (this.game.placementSystem ) {
-                if(this.game.placementSystem.setTeamSides) {
-                
-                    this.game.placementSystem.setTeamSides({
-                        player: myPlayer.stats.side,
-                        enemy: opponent.stats.side
-                    });
-                }
-
-                this.game.placementSystem.setPlacementExperience(myPlayer.placements);
-            }
-
-                
-            // Update UI to reflect synced experience data
-            if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
-                this.game.shopSystem.updateGoldDisplay();
-            }
-            
-        }
-    }
- 
-    dispose() {
-        this.networkUnsubscribers.forEach(unsubscribe => {
-            if (typeof unsubscribe === 'function') {
-                unsubscribe();
-            }
-        });
-        this.networkUnsubscribers = [];
-        
-    }
-
-         
-};
-
-// manager: InputManager
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['InputManager'] = class InputManager {
-    constructor(app) {
-        this.game = app;
-        this.game.inputManager = this;
-        this.keyStates = {};
-        this.mouseState = { x: 0, y: 0, pressed: false };
-        this.shortcuts = new Map();
-        
-    }
-    
-    init() {
-        this.setupCanvasEvents();
-        this.setupButtonEvents();
-        this.setupKeyboardEvents();
-        this.setupMouseTracking();
-        this.setupDefaultShortcuts();
-    }
-        
-    setupCanvasEvents() {
-        const canvas = document.getElementById('gameCanvas');
-        if (!canvas) return;
-        
-        canvas.addEventListener('click', (event) => {
-            this.game.placementSystem.handleCanvasClick(event);
-        });
-        
-        canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            this.handleRightClick(event);
-        });
-    }
-    
-    setupButtonEvents() {        
-        const mainMenuPlayGameBtn = document.getElementById('mainMenu_PlayGameBtn');
-        const mainMenuTutorialBtn = document.getElementById('mainMenu_TutorialBtn');
-        const mainMenuSettingsBtn = document.getElementById('mainMenu_SettingsBtn');
-        const mainMenuCreditsBtn = document.getElementById('mainMenu_CreditsBtn');
-
-        const gameModeBackBtn = document.getElementById('gameMode_BackBtn');
-
-        const gamePauseBtn = document.getElementById('game_PauseBtn');
-        const gameExitBtn = document.getElementById('game_ExitBtn');
-        
-        
-        const victoryNextRoundBtn = document.getElementById('victory_NextRoundBtn');
-        const victoryRestartBtn = document.getElementById('victory_RestartBtn');
-        const victoryMainMenuBtn = document.getElementById('victory_MainMenuBtn');
-
-        
-        const defeatRetryBtn = document.getElementById('defeat_RetryBtn');
-        const defeatChangeModeBtn = document.getElementById('defeat_ChangeModeBtn');
-        const defeatMainMenuBtn = document.getElementById('defeat_MainMenuBtn');
-
-        
-        const pausedResumeBtn = document.getElementById('paused_ResumeBtn');
-        const pausedRestartBtn = document.getElementById('paused_RestartBtn');
-        const pausedMainMenuBtn = document.getElementById('paused_MainMenuBtn');
-
-        mainMenuPlayGameBtn?.addEventListener('click', () => {
-            this.game.screenManager.showGameModeSelect();
-        });
-        mainMenuTutorialBtn?.addEventListener('click', () => {
-            alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
-        });
-        mainMenuSettingsBtn?.addEventListener('click', () => {
-            this.showSettingsModal();
-        });
-        mainMenuCreditsBtn?.addEventListener('click', () => {
-            alert('Auto Battle Arena\nDeveloped with Claude AI\n\nA tactical auto-battler game featuring strategic unit placement and AI opponents.');
-        });
-
-        gameModeBackBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
-        });
-
-        gamePauseBtn?.addEventListener('click', () => {
-            this.game.gameManager.pauseGame();
-        });
-        gameExitBtn?.addEventListener('click', () => {
-            this.game.gameManager.exitToMenu();
-        });
-
-        victoryNextRoundBtn?.addEventListener('click', () => {
-            this.game.gameManager.continueGame();
-        });
-        victoryRestartBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
-        });
-        victoryMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
-        });
-
-        defeatRetryBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
-        });
-        defeatChangeModeBtn?.addEventListener('click', () => {
-            this.game.screenManager.showGameModeSelect();
-        });
-        defeatMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
-        });
-
-        pausedResumeBtn?.addEventListener('click', () => {
-            this.game.gameManager.resumeGame();
-        });
-        pausedRestartBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
-        });
-        pausedMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
-        });
-
-
-
-    }
-    
-    setupKeyboardEvents() {
-        document.addEventListener('keydown', (event) => {
-            this.keyStates[event.code] = true;
-            this.handleKeyDown(event);
-        });
-        
-        document.addEventListener('keyup', (event) => {
-            this.keyStates[event.code] = false;
-            this.handleKeyUp(event);
-        });
-        
-        // Prevent default browser shortcuts that might interfere
-        document.addEventListener('keydown', (event) => {
-            if (this.shouldPreventDefault(event)) {
-                event.preventDefault();
-            }
-        });
-    }
-        
-    setupMouseTracking() {
-        document.addEventListener('mousedown', (event) => {
-            this.mouseState.pressed = true;
-        });
-        
-        document.addEventListener('mouseup', (event) => {
-            this.mouseState.pressed = false;
-        });
-        
-        document.addEventListener('mousemove', (event) => {
-            this.mouseState.x = event.clientX;
-            this.mouseState.y = event.clientY;
-        });
-    }
-    
-    setupDefaultShortcuts() {
-        // Define keyboard shortcuts
-        this.shortcuts.set('Escape', () => this.handleEscapeKey());
-        this.shortcuts.set('KeyH', () => this.showHelpModal());
-        this.shortcuts.set('KeyP', () => this.game.phaseSystem.pauseGame());
-        this.shortcuts.set('Space', () => this.handleSpaceKey());
-        this.shortcuts.set('F1', () => this.showHelpModal());
-    }
-    
-    handleKeyDown(event) {
-        const shortcutKey = this.getShortcutKey(event);
-        const shortcutHandler = this.shortcuts.get(shortcutKey);
-        
-        if (shortcutHandler) {
-            event.preventDefault();
-            shortcutHandler();
-        }
-        
-        // Handle continuous key press actions
-        this.handleContinuousKeys(event);
-    }
-    
-    handleKeyUp(event) {
-        // Handle key release actions if needed
-        this.handleKeyRelease(event);
-    }
-    
-    getShortcutKey(event) {
-        let key = event.code;
-        if (event.ctrlKey) key += '+Control';
-        if (event.shiftKey) key += '+Shift';
-        if (event.altKey) key += '+Alt';
-        return key;
-    }
-    
-    handleEscapeKey() {
-        const pauseMenu = document.getElementById('pauseMenu');
-        
-        if (this.game.state.currentScreen === 'gameScreen') {
-            this.game.phaseSystem.pauseGame();
-        } else if (pauseMenu && pauseMenu.style.display === 'flex') {
-            this.game.phaseSystem.resumeGame();
-        }
-        this.cancelSelectedUnit();
-    }
-    
-    handleSpaceKey() {
-        const state = this.game.state;
-        if (state.phase === 'placement') {
-            this.game.phaseSystem.toggleReady();
-        }
-    }
-    
-    handleSaveGame() {
-        // Trigger save game functionality
-        GUTS.NotificationSystem.show('Game saved!', 'success', 2000);
-    }
-    
-    selectUnitShortcut(index) {
-        const unitCards = document.querySelectorAll('.unit-card');
-        if (unitCards[index] && !unitCards[index].classList.contains('disabled')) {
-            unitCards[index].click();
-        }
-    }
-    
-    handleContinuousKeys(event) {
-        // Handle keys that should trigger repeatedly while held
-        if (this.keyStates['ArrowUp']) {
-            this.scrollBattleLog(-1);
-        }
-        if (this.keyStates['ArrowDown']) {
-            this.scrollBattleLog(1);
-        }
-    }
-    
-    handleKeyRelease(event) {
-        // Handle specific key release events
-        console.log(event.code);
-        switch (event.code) {
-            case 'Tab':
-                this.cycleThroughUnits();
-                break;
-        }
-    }
-    
-    shouldPreventDefault(event) {
-        // Prevent certain browser shortcuts
-        if (event.ctrlKey && event.code === 'KeyS') return true;
-        if (event.code === 'F1') return true;
-        return false;
-    }
-    
-    handleRightClick(event) {
-        // Handle right-click on canvas (e.g., cancel selection)
-
-    }
-        
-    updateMousePosition(event) {
-        this.mouseState.x = event.clientX;
-        this.mouseState.y = event.clientY;
-    }
-   
-    
-    cancelSelectedUnit() {
-        const state = this.game.state;
-        if (state.selectedUnitType) {
-            document.querySelectorAll('.selected').forEach(selected => {
-                selected.classList.remove('selected');
-            });
-            state.selectedUnitType = null;
-            this.game.placementSystem.handleUnitSelectionChange(null);
-        }
-    }
-    cycleThroughUnits() {
-        const unitCards = document.querySelectorAll('.unit-card:not(.disabled)');
-        const currentSelected = document.querySelector('.unit-card.selected');
-        
-        if (unitCards.length === 0) return;
-        
-        let nextIndex = 0;
-        if (currentSelected) {
-            const currentIndex = Array.from(unitCards).indexOf(currentSelected);
-            nextIndex = (currentIndex + 1) % unitCards.length;
-        }
-        
-        unitCards[nextIndex].click();
-    }
-    
-    scrollBattleLog(direction) {
-        const battleLog = document.getElementById('battleLog');
-        if (battleLog) {
-            battleLog.scrollTop += direction * 20;
-        }
-    }
-    
-    handleMainMenuAction() {
-        if (confirm('Return to main menu? Current progress will be lost.')) {
-            // Trigger main menu navigation
-            if (window.screenManager) {
-                window.screenManager.showMainMenu();
-            }
-        }
-    }
-    
-    showSettingsModal() {
-        const settingsContent = `
-            <h3>⚙️ GAME SETTINGS</h3>
-            <div class="settings-section">
-                <h4>Graphics</h4>
-                <label><input type="checkbox" id="particles-enabled" checked> Particle Effects</label>
-                <label><input type="checkbox" id="screen-shake" checked> Screen Shake</label>
-                <label><input type="range" id="particle-density" min="0.5" max="2" step="0.1" value="1"> Particle Density</label>
-            </div>
-            <div class="settings-section">
-                <h4>Audio</h4>
-                <label><input type="checkbox" id="sound-effects" checked> Sound Effects</label>
-                <label><input type="range" id="volume" min="0" max="1" step="0.1" value="0.7"> Volume</label>
-            </div>
-            <div class="settings-section">
-                <h4>Controls</h4>
-                <p><strong>ESC</strong> - Pause/Resume</p>
-                <p><strong>H</strong> - Help</p>
-                <p><strong>Space</strong> - Ready</p>
-                <p><strong>1-4</strong> - Select Units</p>
-                <p><strong>Ctrl+R</strong> - Restart</p>
-            </div>
-        `;
-        
-        this.showModal('Settings', settingsContent, () => {
-            this.applySettings();
-        });
-    }
-    
-    applySettings() {
-        // Apply settings from modal
-        const particlesEnabled = document.getElementById('particles-enabled')?.checked ?? true;
-        const screenShake = document.getElementById('screen-shake')?.checked ?? true;
-        const particleDensity = document.getElementById('particle-density')?.value ?? 1;
-        const soundEffects = document.getElementById('sound-effects')?.checked ?? true;
-        const volume = document.getElementById('volume')?.value ?? 0.7;
-        
-        // Save to localStorage
-        localStorage.setItem('gameSettings', JSON.stringify({
-            particlesEnabled,
-            screenShake,
-            particleDensity,
-            soundEffects,
-            volume
-        }));
-        
-        GUTS.NotificationSystem.show('Settings saved!', 'success');
-    }
-    
-    showHelpModal() {
-        const helpContent = `
-            <h3>🎮 CONTROLS</h3>
-            <div class="help-section">
-                <p><strong>ESC</strong> - Pause/Resume game</p>
-                <p><strong>H or F1</strong> - Show this help</p>
-                <p><strong>P</strong> - Pause game</p>
-                <p><strong>Space</strong> - Ready for battle</p>
-                <p><strong>Ctrl+R</strong> - Restart game</p>
-                <p><strong>Ctrl+S</strong> - Save game</p>
-                <p><strong>1-4</strong> - Quick select units</p>
-                <p><strong>Tab</strong> - Cycle through units</p>
-                <p><strong>Right Click</strong> - Cancel selection</p>
-            </div>
-            
-            <h3>📋 HOW TO PLAY</h3>
-            <div class="help-section">
-                <p>1. <strong>Select units</strong> from the shop by clicking or using number keys</p>
-                <p>2. <strong>Place units</strong> on your side of the battlefield (left half)</p>
-                <p>3. <strong>Ready up</strong> when your army is prepared</p>
-                <p>4. <strong>Watch the battle</strong> unfold automatically</p>
-                <p>5. <strong>Earn gold</strong> from victories to build stronger armies</p>
-            </div>
-            
-            <h3>💡 STRATEGY TIPS</h3>
-            <div class="help-section">
-                <p>• Balance offense and defense in your army</p>
-                <p>• Position tanks in front to absorb damage</p>
-                <p>• Place ranged units behind melee fighters</p>
-                <p>• Spread units to avoid area damage</p>
-                <p>• Save some gold for emergency purchases</p>
-                <p>• Adapt your strategy based on enemy composition</p>
-            </div>
-        `;
-        
-        this.showModal('Game Help', helpContent);
-    }
-    
-    showModal(title, content, onClose = null) {
-        const modal = document.createElement('div');
-        modal.className = 'game-modal';
-        modal.innerHTML = `
-            <div class="modal-backdrop"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>${title}</h2>
-                    <button class="modal-close" type="button">&times;</button>
-                </div>
-                <div class="modal-body">${content}</div>
-            </div>
-        `;
-        
-        const closeBtn = modal.querySelector('.modal-close');
-        const backdrop = modal.querySelector('.modal-backdrop');
-        
-        const closeModal = () => {
-            if (document.body.contains(modal)) {
-                document.body.removeChild(modal);
-                if (onClose) onClose();
-            }
-        };
-        
-        closeBtn.addEventListener('click', closeModal);
-        backdrop.addEventListener('click', closeModal);
-        
-        // Close on ESC key
-        const escHandler = (event) => {
-            if (event.key === 'Escape') {
-                closeModal();
-                document.removeEventListener('keydown', escHandler);
-            }
-        };
-        document.addEventListener('keydown', escHandler);
-        
-        document.body.appendChild(modal);
-        this.addModalCSS();
-    }
-    
-    addModalCSS() {
-        if (document.querySelector('#modal-styles')) return;
-        
-        const style = document.createElement('style');
-        style.id = 'modal-styles';
-        style.textContent = `
-            .game-modal {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                z-index: 2000; display: flex; justify-content: center; align-items: center;
-            }
-            
-            .modal-backdrop {
-                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(3px);
-            }
-            
-            .modal-content {
-                position: relative; background: linear-gradient(145deg, #1a1a2e, #16213e);
-                border: 2px solid #00ffff; border-radius: 10px; max-width: 600px;
-                width: 90%; max-height: 80%; overflow-y: auto;
-                animation: modalAppear 0.3s ease-out;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            }
-            
-            @keyframes modalAppear {
-                from { transform: scale(0.9); opacity: 0; }
-                to { transform: scale(1); opacity: 1; }
-            }
-            
-            .modal-header {
-                padding: 1rem; border-bottom: 1px solid #333;
-                display: flex; justify-content: space-between; align-items: center;
-                background: rgba(0, 255, 255, 0.1);
-            }
-            
-            .modal-header h2 { color: #00ffff; margin: 0; }
-            
-            .modal-close {
-                background: none; border: none; color: #ccc; font-size: 1.5rem;
-                cursor: pointer; padding: 0; width: 30px; height: 30px;
-                display: flex; align-items: center; justify-content: center;
-                border-radius: 50%; transition: all 0.2s;
-            }
-            
-            .modal-close:hover { 
-                color: #ff4444; background: rgba(255, 68, 68, 0.1); 
-            }
-            .modal-body {
-                padding: 1.5rem; color: #ccc; line-height: 1.6;
-            }
-            
-            .modal-body h3 { 
-                color: #00ffff; margin-top: 1.5rem; margin-bottom: 0.8rem;
-                border-bottom: 1px solid #333; padding-bottom: 0.5rem;
-            }
-            
-            .modal-body h4 {
-                color: #ffff88; margin-top: 1rem; margin-bottom: 0.5rem;
-            }
-            
-            .modal-body p { margin-bottom: 0.6rem; }
-            .modal-body strong { color: #ffff00; }
-            
-            .help-section {
-                margin-bottom: 1rem; padding-left: 1rem;
-            }
-            
-            .settings-section {
-                margin-bottom: 1.5rem; padding: 1rem;
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 5px;
-            }
-            
-            .settings-section label {
-                display: block; margin-bottom: 0.8rem;
-                color: #ccc; cursor: pointer;
-            }
-            
-            .settings-section input[type="checkbox"] {
-                margin-right: 0.5rem; accent-color: #00ffff;
-            }
-            
-            .settings-section input[type="range"] {
-                width: 100%; margin-top: 0.3rem;
-                accent-color: #00ffff;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // Utility methods
-    isKeyPressed(keyCode) {
-        return this.keyStates[keyCode] || false;
-    }
-    
-    getMousePosition() {
-        return { ...this.mouseState };
-    }
-    
-    addCustomShortcut(keyCombo, handler) {
-        this.shortcuts.set(keyCombo, handler);
-    }
-    
-    removeShortcut(keyCombo) {
-        this.shortcuts.delete(keyCombo);
-    }
-}
-;
-
 // ========== Systems ==========
 
 // system: TerrainSystem
@@ -55785,2743 +54267,6 @@ window.engine.app.appClasses['TerrainSystem'] = class TerrainSystem extends engi
         this.heightMapCtx = null;
         
         this.initialized = false;
-    }
-};
-
-// system: WorldSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['WorldSystem'] = class WorldSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.worldSystem = this;
-        
-        this.initialized = false;
-        
-        // Core Three.js components
-        this.scene = null;
-        this.camera = null;
-        this.renderer = null;
-        this.composer = null;
-        
-        // Terrain and world objects
-        this.ground = null;
-        this.groundTexture = null;
-        this.groundCanvas = null;
-        this.groundCtx = null;
-        this.grass = null;
-        this.liquidMeshes = [];
-        
-        // Extension planes
-        this.extensionPlanes = [];
-        
-        // Terrain canvas for tile mapping
-        this.terrainCanvas = null;
-        this.terrainCtx = null;
-        
-        // Lighting
-        this.ambientLight = null;
-        this.directionalLight = null;
-        this.hemisphereLight = null;
-        
-        // Uniforms for shaders
-        this.uniforms = {};
-        
-        // World data
-        this.level = null;
-        this.world = null;
-        this.tileMap = null;
-        this.heightMapData = null;
-        // Settings from collections
-        this.lightingSettings = null;
-        this.shadowSettings = null;
-        this.fogSettings = null;
-        this.heightMapSettings = null;
-        this.cameraSettings = null;
-        
-        this.heightStep = 0;
-        // Timing
-        this.clock = new THREE.Clock();
-        this.timer = 0;
-        this.terrainRendered = false;
-
-        // Controls
-        this.controls = null;
-
-        // Window resize handler
-        this.onWindowResizeHandler = this.onWindowResize.bind(this);
-    }
-
-    init() {
-        if (this.initialized) return;
-
-        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
-        this.game.gameManager.register('getWorldScene', this.getScene.bind(this));
-        this.game.gameManager.register('getWorldExtendedSize', () => this.extendedSize);
-        this.game.gameManager.register('getGroundTexture', () => this.groundTexture);
-        this.game.gameManager.register('getGroundMesh', () => this.ground);
-        this.game.gameManager.register('getHeightStep', () => this.heightStep);
-        this.game.gameManager.register('getBaseTerrainHeight', () => this.heightStep * this.tileMap.extensionHeight);
-
-        // Add the extension functions
-        THREE.BufferGeometry.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBoundsTree;
-        THREE.BufferGeometry.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBoundsTree;
-        THREE.Mesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
-
-        THREE.BatchedMesh.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
-        this.initializeThreeJS();
-
-        this.loadWorldData();
-    }
-
-    getScene() {
-        return this.scene;
-    }
-
-    initializeThreeJS() {
-        const gameCanvas = document.getElementById('gameCanvas');
-        if (!gameCanvas) {
-            console.error('WorldRenderSystem: gameCanvas not found!');
-            return;
-        }
-
-        this.scene = new THREE.Scene();
-        this.uiScene = new THREE.Scene();
-        const currentLevel = this.game.state?.level || 'level1';
-        this.level = this.game.getCollections().levels?.[currentLevel];
-        this.world = this.game.getCollections().worlds[this.level.world];
-        this.cameraData = this.game.getCollections().cameras[this.world.camera]; 
-        const width = window.innerWidth;
-        const height = window.innerHeight; 
-      // Camera setup
-        if(this.cameraData.fov){
-            this.camera = new THREE.PerspectiveCamera(
-                this.cameraData.fov,
-                width / height,
-                this.cameraData.near,
-                this.cameraData.far
-            );
-        } else if(this.cameraData.zoom){
-            this.camera = new THREE.OrthographicCamera(
-                width / - 2, 
-                width / 2, 
-                height / 2, 
-                height / - 2, 
-                this.cameraData.near,
-                this.cameraData.far
-            );
-            this.camera.zoom = this.cameraData.zoom;
-            this.camera.updateProjectionMatrix();
-        }
-
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: gameCanvas,
-            antialias: false,
-            alpha: true
-        });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
-        window.addEventListener('resize', this.onWindowResizeHandler);
-        
-        this.game.camera = this.camera;
-        this.game.scene = this.scene;
-        this.game.uiScene = this.uiScene;
-        this.game.renderer = this.renderer;
-    }
-
-    initializeTerrainCanvas() {
-        this.terrainCanvas = document.createElement('canvas');
-        this.terrainCanvas.width = 700;
-        this.terrainCanvas.height = 500;
-        this.terrainCtx = this.terrainCanvas.getContext('2d');
-    }
-
-    loadWorldData() {
-        const collections = this.game.getCollections();
-        if (!collections) {
-            console.error('WorldRenderSystem: No collections found');
-            return;
-        }
-
-        const currentLevel = this.game.state?.level || 'level1';
-        this.level = collections.levels?.[currentLevel];
-        
-        if (!this.level) {
-            console.error(`WorldRenderSystem: Level '${currentLevel}' not found`);
-            return;
-        }
-
-        this.world = collections.worlds?.[this.level.world];
-        if (!this.world) {
-            console.error(`WorldRenderSystem: World '${this.level.world}' not found`);
-            return;
-        }
-
-        this.lightingSettings = collections.lightings?.[this.world.lighting];
-        this.shadowSettings = collections.shadows?.[this.world.shadow];
-        this.fogSettings = collections.fogs?.[this.world.fog];
-        this.heightMapSettings = collections.heightMaps?.[this.world.heightMap];
-        this.cameraSettings = collections.cameras?.[this.world.camera];
-        this.heightStep = this.heightMapSettings.heightStep;
-        this.tileMap = this.level.tileMap;
-
-        // Calculate world dimensions
-        this.terrainSize = this.tileMap.size * collections.configs.game.gridSize;
-        this.extensionSize = this.world.extensionSize || 0;
-        this.extendedSize = this.terrainSize + 2 * this.extensionSize;
-        this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);
-        
-        this.renderer.shadowMap.enabled = this.shadowSettings?.enabled;
-    }
-
-    onGameStarted() {      
-        this.initializeTerrainCanvas();
-
-        if (this.world?.backgroundColor) {
-            this.scene.background = new THREE.Color(this.world.backgroundColor);
-        }
-
-        this.setupFog();
-        this.setupLighting();
-        this.setupCamera();
-        this.setupGround();
-        
-        this.createExtensionPlanes();
-        
-        if (this.tileMap?.terrainMap) {
-            this.renderTerrain();
-        } else {
-            console.warn('WorldRenderSystem: No terrain map available during setup');
-        }
-        
-        this.initialized = true;  
-    }
-
-    setupFog() {
-        if (this.fogSettings?.enabled) {
-            this.scene.fog = new THREE.FogExp2(
-                this.fogSettings.color, 
-                this.fogSettings.density
-            );
-        }
-    }
-
-    setupLighting() {
-        if (!this.lightingSettings) {
-            this.lightingSettings = {
-                ambientColor: '#404040',
-                ambientIntensity: 0.6,
-                directionalColor: '#ffffff',
-                directionalIntensity: 1.0,
-                skyColor: '#87CEEB',
-                groundColor: '#ffffff',
-                hemisphereIntensity: 0.4
-            };
-        }
-
-        this.ambientLight = new THREE.AmbientLight(
-            this.lightingSettings.ambientColor,
-            this.lightingSettings.ambientIntensity
-        );
-        this.scene.add(this.ambientLight);
-
-        this.directionalLight = new THREE.DirectionalLight(
-            this.lightingSettings.directionalColor,
-            this.lightingSettings.directionalIntensity
-        );
-        if(this.lightingSettings.direction){
-            this.lightingSettings.direction = JSON.parse(this.lightingSettings.direction);
-            this.directionalLight.position.set(
-                -this.lightingSettings.direction.x * this.extendedSize,  
-                -this.lightingSettings.direction.y * this.extendedSize, 
-                -this.lightingSettings.direction.z * this.extendedSize
-            );
-        }
-
-        this.directionalLight.castShadow = this.shadowSettings?.enabled || false;
-
-        if (this.shadowSettings?.enabled) {
-            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;
-            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;
-            this.directionalLight.shadow.camera.near = 0.5;
-            this.directionalLight.shadow.camera.far = 20000;
-            this.directionalLight.shadow.bias = this.shadowSettings.bias;
-            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;
-            this.directionalLight.shadow.radius = this.shadowSettings.radius;
-
-            const d = this.extendedSize * 0.75;
-            this.directionalLight.shadow.camera.left = -d;
-            this.directionalLight.shadow.camera.right = d;
-            this.directionalLight.shadow.camera.top = d;
-            this.directionalLight.shadow.camera.bottom = -d;
-
-            this.directionalLight.target.position.set(
-                0, 
-                0, 
-                0
-            );
-            this.directionalLight.target.updateMatrixWorld();
-            this.directionalLight.shadow.camera.updateProjectionMatrix();
-        }
-
-        this.scene.add(this.directionalLight);
-        this.scene.add(this.directionalLight.target);
-
-        this.hemisphereLight = new THREE.HemisphereLight(
-            this.lightingSettings.skyColor,
-            this.lightingSettings.groundColor,
-            this.lightingSettings.hemisphereIntensity
-        );
-        this.scene.add(this.hemisphereLight);
-
-    }
-
-    postAllInit(){
-        
-        this.setupPostProcessing();
-    }
-
-    setupPostProcessing() {
-        const gameConfig = this.game.getCollections()?.configs?.game;
-        if (!gameConfig) return;
-
-        const pixelSize = gameConfig.pixelSize || 1;
-        this.game.gameManager.call('registerPostProcessingPass', 'render', {
-            enabled: true,
-            create: () => {
-                return {
-                    enabled: true,
-                    needsSwap: true,
-                    clear: true,
-                    renderToScreen: false,
-                    
-                    render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
-                        renderer.setRenderTarget(writeBuffer);
-                        renderer.clear(true, true, true); // Clear color, depth, and stencil
-                        renderer.render(this.scene, this.camera);
-                    },
-                    
-                    setSize: (width, height) => {
-                        // No-op
-                    }
-                };
-            }
-        });
-        // Register pixel pass
-        this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
-            enabled: pixelSize !== 1,
-            create: () => {
-                const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
-                pixelPass.enabled = pixelSize !== 1;
-                pixelPass.normalEdgeStrength = 0;
-                return pixelPass;
-            }
-        });
-
-        // Register output pass (always last)
-        this.game.gameManager.call('registerPostProcessingPass', 'output', {
-            enabled: true,
-            create: () => {
-                return new THREE_.OutputPass();
-            }
-        });
-        
-        console.log('[WorldSystem] Registered post-processing passes');
-    }
-
-    setupCamera() {
-        if (!this.cameraSettings) {
-            this.cameraSettings = {
-                position: '{"x":0,"y":200,"z":300}',
-                lookAt: '{"x":0,"y":0,"z":0}',
-                fov: 60,
-                near: 1,
-                far: 30000
-            };
-        }
-
-        const cameraPos = JSON.parse(this.cameraSettings.position);
-       // this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-
-        const lookAt = JSON.parse(this.cameraSettings.lookAt);
-       // this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
-
-        if (this.cameraSettings.fov && this.camera.isPerspectiveCamera) {
-            this.camera.fov = this.cameraSettings.fov;
-            this.camera.near = this.cameraSettings.near || 0.1;
-            this.camera.far = this.cameraSettings.far || 30000;
-            this.camera.updateProjectionMatrix();
-        }
-
-       // this.setupOrbitControls(lookAt);
-
-     
-    }
-
-    setupOrbitControls(lookAt) {
-        if (typeof THREE_.OrbitControls === 'undefined') {
-            console.warn('WorldRenderSystem: THREE.OrbitControls not found.');
-            return;
-        }
-
-        this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.mouseButtons = {
-            LEFT: null,                           // Disable left click
-            MIDDLE: THREE.MOUSE.ROTATE,          // Middle mouse for rotation
-            RIGHT: THREE.MOUSE.PAN               // Right mouse for panning (optional)
-        };
-        this.controls.target.set(lookAt.x, lookAt.y, lookAt.z);
-        this.controls.maxPolarAngle = Math.PI / 2.05;
-        this.controls.minPolarAngle = 0.1;
-        this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.05;
-        this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 50;
-        this.controls.maxDistance = 1000;
-        
-        this.controls.update();
-        
-    }
-
-    setupGround() {
-        if (!this.tileMap) {
-            console.warn('WorldRenderSystem: No tile map found');
-            return;
-        }
-
-        this.groundCanvas = document.createElement('canvas');
-        this.groundCanvas.width = this.extendedSize;
-        this.groundCanvas.height = this.extendedSize;
-        this.groundCtx = this.groundCanvas.getContext('2d');
-
-        // Fill extension area with sprite texture pattern instead of solid color
-        const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-        const tileMapper = this.game.terrainTileMapper;
-
-        if (tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
-            // Use the Full sprite (index 0) from the extension terrain type
-            const fullSprite = tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
-
-            if (fullSprite) {
-                // Tile the sprite across the entire ground canvas
-                const spriteSize = fullSprite.width;
-                for (let y = 0; y < this.extendedSize; y += spriteSize) {
-                    for (let x = 0; x < this.extendedSize; x += spriteSize) {
-                        this.groundCtx.drawImage(fullSprite, x, y);
-                    }
-                }
-            }
-        }
-
-        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
-        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
-        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-        this.groundTexture.minFilter = THREE.NearestFilter;
-        this.groundTexture.magFilter = THREE.NearestFilter;
-
-        const segments = this.heightMapResolution || 1;
-        const groundGeometry = new THREE.PlaneGeometry(
-            this.extendedSize,
-            this.extendedSize,
-            segments,
-            segments
-        );
-
-        this.groundVertices = groundGeometry.attributes.position;
-        const groundMaterial = new THREE.MeshStandardMaterial({
-            map: this.groundTexture,
-            side: THREE.DoubleSide,
-            metalness: 0.0,
-            roughness: 1
-        });
-
-        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        this.ground.rotation.x = -Math.PI / 2;
-        // Center the ground at origin instead of offset
-        this.ground.position.set(0, 0, 0);
-        this.ground.receiveShadow = true;
-        this.ground.castShadow = true;
-
-        this.scene.add(this.ground);
-
-        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
-    }
-
-    getGroundMesh() {
-        return this.ground;
-    }
-
-    createExtensionPlanes() {
-        if (!this.tileMap) return;
-
-        // Get the extension terrain type
-        const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-
-        // Extension settings
-        const extensionDistance = 19000; // How far the planes extend
-        const detailedGroundSize = this.extendedSize; // Size of your existing detailed ground
-        const halfDetailedSize = detailedGroundSize / 2;
-
-        // Get the sprite texture for the extension terrain type
-        const tileMapper = this.game.terrainTileMapper;
-        let extensionTexture;
-
-        if (tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
-            // Use the Full sprite (index 0) from the extension terrain type
-            const fullSprite = tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
-
-            if (fullSprite) {
-                // Create texture from the sprite canvas
-                extensionTexture = new THREE.CanvasTexture(fullSprite);
-                extensionTexture.wrapS = THREE.RepeatWrapping;
-                extensionTexture.wrapT = THREE.RepeatWrapping;
-                extensionTexture.minFilter = THREE.NearestFilter;
-                extensionTexture.magFilter = THREE.NearestFilter;
-            }
-        }
-
-        // Fallback to solid color if sprite not available
-        if (!extensionTexture) {
-            const terrainTypes = this.tileMap.terrainTypes || [];
-            let bgColor = terrainTypes[extensionTerrainType]?.color;
-
-            if (bgColor?.paletteColor && this.game.palette) {
-                bgColor = this.game.palette[bgColor.paletteColor];
-            }
-
-            const extensionColor = bgColor || '#333333';
-            const extensionCanvas = document.createElement('canvas');
-            extensionCanvas.width = 1;
-            extensionCanvas.height = 1;
-            const extensionCtx = extensionCanvas.getContext('2d');
-            extensionCtx.fillStyle = extensionColor;
-            extensionCtx.fillRect(0, 0, 1, 1);
-
-            extensionTexture = new THREE.CanvasTexture(extensionCanvas);
-            extensionTexture.wrapS = THREE.RepeatWrapping;
-            extensionTexture.wrapT = THREE.RepeatWrapping;
-            extensionTexture.minFilter = THREE.NearestFilter;
-            extensionTexture.magFilter = THREE.NearestFilter;
-        }
-
-        // Create material for extension planes with repeating texture
-        const extensionMaterial = new THREE.MeshStandardMaterial({
-            map: extensionTexture,
-            side: THREE.DoubleSide,
-            metalness: 0.0,
-            roughness: 0.8,
-            fog: false
-        });
-        
-        // Store extension planes for cleanup
-        this.extensionPlanes = [];
-    
-        const extensionHeight = extensionTerrainType * this.heightStep;
-
-        // 1. North plane (positive Z)
-        const northGeometry = new THREE.PlaneGeometry(detailedGroundSize + 2 * extensionDistance, extensionDistance);
-        const northPlane = new THREE.Mesh(northGeometry, extensionMaterial.clone());
-        northPlane.rotation.x = -Math.PI / 2;
-        northPlane.position.set(0, extensionHeight, halfDetailedSize + extensionDistance / 2);
-        northPlane.receiveShadow = true;
-        this.scene.add(northPlane);
-        this.extensionPlanes.push(northPlane);
-        
-        // 2. South plane (negative Z)
-        const southGeometry = new THREE.PlaneGeometry(detailedGroundSize + 2 * extensionDistance, extensionDistance);
-        const southPlane = new THREE.Mesh(southGeometry, extensionMaterial.clone());
-        southPlane.rotation.x = -Math.PI / 2;
-        southPlane.position.set(0, extensionHeight, -halfDetailedSize - extensionDistance / 2);
-        southPlane.receiveShadow = true;
-        this.scene.add(southPlane);
-        this.extensionPlanes.push(southPlane);
-        
-        // 3. East plane (positive X)
-        const eastGeometry = new THREE.PlaneGeometry(extensionDistance, detailedGroundSize);
-        const eastPlane = new THREE.Mesh(eastGeometry, extensionMaterial.clone());
-        eastPlane.rotation.x = -Math.PI / 2;
-        eastPlane.position.set(halfDetailedSize + extensionDistance / 2, extensionHeight, 0);
-        eastPlane.receiveShadow = true;
-        this.scene.add(eastPlane);
-        this.extensionPlanes.push(eastPlane);
-        
-        // 4. West plane (negative X)  
-        const westGeometry = new THREE.PlaneGeometry(extensionDistance, detailedGroundSize);
-        const westPlane = new THREE.Mesh(westGeometry, extensionMaterial.clone());
-        westPlane.rotation.x = -Math.PI / 2;
-        westPlane.position.set(-halfDetailedSize - extensionDistance / 2, extensionHeight, 0);
-        westPlane.receiveShadow = true;
-        this.scene.add(westPlane);
-        this.extensionPlanes.push(westPlane);
-        
-    }
-
-    renderTerrain() {
-        if (!this.tileMap?.terrainMap) {
-            console.warn('WorldRenderSystem: No terrain map data found');
-            return;
-        }
-
-        
-        // Clear terrain canvas
-        this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
-        
-        // Draw terrain tiles
-        this.drawTerrainTiles(this.tileMap.terrainMap);
-        
-        // Update ground texture with terrain data
-        this.updateGroundTexture();
-        
-        this.terrainRendered = true;
-        
-    }
-
-    drawTerrainTiles(terrainMap) {
-        // NEW: Pass heightMap if available (now in tileMap)
-        const heightMap = this.tileMap?.heightMap || null;
-        this.game.terrainTileMapper.draw(terrainMap, heightMap);
-    }
-
-    updateGroundTexture() {
-        if (!this.terrainCanvas) {
-            console.warn('WorldRenderSystem: No terrain canvas available for ground texture update');
-            return;
-        }
-
-        // Draw terrain data onto ground canvas
-        this.groundCtx.drawImage(
-            this.game.terrainTileMapper.canvas, 
-            this.extensionSize, 
-            this.extensionSize
-        );
-        this.groundTexture.needsUpdate = true;
-        
-        if (this.heightMapSettings?.enabled) {
-            this.updateHeightMap();
-        }
-        
-        // Generate liquid surfaces
-        if (this.tileMap?.terrainTypes) {
-            this.generateLiquidSurfaceMesh(0); // Water
-            this.generateLiquidSurfaceMesh(1); // Lava/other liquid
-        }
-
-        // Add grass
-       // this.addGrassToTerrain();
-
-        // Render environment objects
-        this.renderEnvironmentObjects();
-    }
-
-
-    renderEnvironmentObjects() {
-        if (!this.scene || !this.tileMap.environmentObjects || this.tileMap.environmentObjects.length === 0) {
-            return;
-        }
-
-        // Create entities for each environment object
-        this.tileMap.environmentObjects.forEach(obj => {
-            this.createEnvironmentEntity(obj);
-        });
-    }
-
-    createEnvironmentEntity(envObj) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-
-        const unitType = this.game.getCollections().worldObjects[envObj.type];
-        unitType.collection = "worldObjects";
-        unitType.id = envObj.type;
-        // Calculate world position (matching your existing offset logic)
-        const worldX = (envObj.x + this.extensionSize) - this.extendedSize / 2;
-        const worldZ = (envObj.y + this.extensionSize) - this.extendedSize / 2;
-        
-        // Get terrain height
-        let height = 0;
-        if (this.heightMapSettings?.enabled) {
-            height = this.game.gameManager.call('getTerrainHeightAtPosition', worldX, worldZ);
-        }
-
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
-        
-        // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION, 
-            Components.Position(worldX, height, worldZ));
-                
-        // Add Renderable component
-        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
-            Components.Renderable('worldObjects', envObj.type, 1024));
-        
-        // Add Animation component for rotation and scale
-        const rotation = Math.random() * Math.PI * 2;
-        const scale = (0.8 + Math.random() * 0.4) * (envObj.type === 'rock' ? 1 : 50);
-        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
-            Components.Animation(scale, rotation, 0));
-        
-        // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING, 
-            Components.Facing(rotation));
-        
-         this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
-            Components.UnitType(
-                unitType
-            ));
-        
-        // Add Team component (neutral for environment objects)
-        this.game.addComponent(entityId, ComponentTypes.TEAM, 
-            Components.Team('neutral'));
-
-        console.log('created tree');
-        this.game.triggerEvent('onEntityPositionUpdated', entityId);
-    }
-
-    onWindowResize() {
-        if (!this.camera || !this.renderer) return;
-        
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
-        
-        if (this.composer) {
-            this.composer.setSize(width, height);
-        }
-    }
-
-    update() {
-        if (!this.initialized) return;
-
-        this.timer += this.game.state.deltaTime;
-
-        if (this.controls) {
-            this.controls.update();
-        }
-
-        for (const key in this.uniforms) {
-            if (this.uniforms[key].time) {
-                this.uniforms[key].time.value = this.timer;
-            }
-        }
-
-        this.render();
-    }
-
-    render() {
-        if (!this.scene || !this.camera || !this.renderer) {
-            console.warn('WorldRenderSystem: Missing components for rendering');
-            return;
-        }
-
-        const composer = this.game.gameManager.call('getPostProcessingComposer');
-        if (composer) {
-            this.game.gameManager.call('renderPostProcessing');
-        } else {
-            this.renderer.render(this.scene, this.camera);
-        }
-    }
-
-    updateHeightMap() {
-        if (!this.heightMapSettings.enabled || !this.game.terrainTileMapper.heightMapCanvas) {
-            console.warn('Height map not available from TileMapper');
-            return;
-        }
-
-        try {
-            const heightMapCanvas = this.game.terrainTileMapper.heightMapCanvas;
-            const heightMapCtx = heightMapCanvas.getContext('2d', { willReadFrequently: true });
-            
-            // Get the height map image data directly from TileMapper
-            const heightMapImageData = heightMapCtx.getImageData(0, 0, heightMapCanvas.width, heightMapCanvas.height);
-            const heightData = heightMapImageData.data;
-
-            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
-
-            // Set extension area to extension terrain height
-            const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-            const extensionHeight = extensionTerrainType * this.heightStep;
-
-            // Initialize all points with extension height
-            for (let z = 0; z < this.extendedSize; z++) {
-                for (let x = 0; x < this.extendedSize; x++) {
-                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;
-                }
-            }
-
-            // Process the actual terrain area using height map data
-            const scaleX = heightMapCanvas.width / this.terrainSize;
-            const scaleZ = heightMapCanvas.height / this.terrainSize;
-
-            for (let z = 0; z < this.terrainSize; z++) {
-                for (let x = 0; x < this.terrainSize; x++) {
-                    // Sample from height map
-                    const heightMapX = Math.floor(x * scaleX);
-                    const heightMapZ = Math.floor(z * scaleZ);
-                    
-                    const pixelIndex = (heightMapZ * heightMapCanvas.width + heightMapX) * 4;
-                    const heightValue = heightData[pixelIndex]; // Red channel (grayscale)
-                    
-                    // Convert grayscale value back to height index
-                    const heightIndex = Math.floor(heightValue / 32); // Inverse of scaling in TileMapper
-                    let height = heightIndex * this.heightStep;
-
-                    // Check neighboring pixels for cliff smoothing if needed
-                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor || 1;
-                    const neighbors = [
-                        { x: x - neighborCheckDist, z: z },   // left
-                        { x: x + neighborCheckDist, z: z },   // right
-                        { x: x, z: z - neighborCheckDist },   // top
-                        { x: x, z: z + neighborCheckDist },   // bottom
-                        { x: x - neighborCheckDist, z: z - neighborCheckDist }, // top-left
-                        { x: x + neighborCheckDist, z: z - neighborCheckDist }, // top-right
-                        { x: x - neighborCheckDist, z: z + neighborCheckDist }, // bottom-left
-                        { x: x + neighborCheckDist, z: z + neighborCheckDist }  // bottom-right
-                    ];
-
-                    let lowestNeighborHeight = height;
-                    for (const neighbor of neighbors) {
-                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && 
-                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {
-                            
-                            const neighborHMapX = Math.floor(neighbor.x * scaleX);
-                            const neighborHMapZ = Math.floor(neighbor.z * scaleZ);
-                            const neighborIndex = (neighborHMapZ * heightMapCanvas.width + neighborHMapX) * 4;
-                            const neighborHeightValue = heightData[neighborIndex];
-                            const neighborHeightIndex = Math.floor(neighborHeightValue / 32);
-                            const neighborHeight = neighborHeightIndex * this.heightStep;
-                            
-                            if (neighborHeight < lowestNeighborHeight) {
-                                lowestNeighborHeight = neighborHeight;
-                            }
-                        }
-                    }
-                    
-                    // Use the lowest neighbor height for cliff smoothing
-                    height = lowestNeighborHeight;
-                    // Set height in extended coordinate system
-                    const extX = x + this.extensionSize;
-                    const extZ = z + this.extensionSize;
-                    this.heightMapData[extZ * this.extendedSize + extX] = height;
-                }
-            }
-
-            this.applyHeightMapToGeometry();
-
-        } catch (e) {
-            console.warn('Failed to update height map from TileMapper:', e);
-        }
-    }
-    findClosestTerrainType(r, g, b, terrainTypeColors) {
-        let minDistance = Infinity;
-        let bestTypeIndex = null;
-        const toleranceSquared = 36;
-
-        for (const [colorKey, typeIndex] of Object.entries(terrainTypeColors)) {
-            const [cr, cg, cb] = colorKey.split(',').map(Number);
-            const distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);
-            
-            if (distance < minDistance && distance < toleranceSquared) {
-                minDistance = distance;
-                bestTypeIndex = typeIndex;
-            }
-        }
-
-        return bestTypeIndex;
-    }
-
-    createTerrainTypeColorMap() {
-        const colorMap = {};
-        const terrainTypes = this.tileMap.terrainTypes || [];
-
-        for (let i = 0; i < terrainTypes.length; i++) {
-            const terrainType = terrainTypes[i];
-            let color = terrainType.color || {};
-
-            if (color.paletteColor && this.game.palette) {
-                const hexColor = this.game.palette[color.paletteColor];
-                if (hexColor) {
-                    const r = parseInt(hexColor.slice(1, 3), 16);
-                    const g = parseInt(hexColor.slice(3, 5), 16);
-                    const b = parseInt(hexColor.slice(5, 7), 16);
-                    colorMap[`${r},${g},${b}`] = i;
-                }
-            } else {
-                const hexColor = color;
-                if (hexColor) {
-                    const r = parseInt(hexColor.slice(1, 3), 16);
-                    const g = parseInt(hexColor.slice(3, 5), 16);
-                    const b = parseInt(hexColor.slice(5, 7), 16);
-                    colorMap[`${r},${g},${b}`] = i;
-                }
-            }
-        }
-
-        return colorMap;
-    }
-
-    /**
-     * Decimates a mesh by reducing vertex count while preserving form
-     * Uses a simplified quadric error metrics approach
-     * @param {THREE.BufferGeometry} geometry - The geometry to decimate
-     * @param {number} targetReduction - Target reduction ratio (0.0 to 1.0), default 0.5
-     */
-    decimateMesh(geometry, targetReduction = 0.5) {
-        if (!geometry.index) {
-            console.warn('Mesh decimation requires indexed geometry');
-            return;
-        }
-
-        const startTime = performance.now();
-        const positions = geometry.attributes.position.array;
-        const indices = geometry.index.array;
-        const originalVertexCount = positions.length / 3;
-        const originalTriangleCount = indices.length / 3;
-
-        console.log(`[MeshDecimation] Starting decimation:`, {
-            vertices: originalVertexCount,
-            triangles: originalTriangleCount,
-            targetReduction: targetReduction
-        });
-
-        // Build edge list and adjacency information
-        const edges = new Map(); // key: "v1,v2" -> {v1, v2, triangles: []}
-        const vertexTriangles = new Map(); // vertex -> triangle indices
-
-        // Initialize vertex triangle lists
-        for (let i = 0; i < originalVertexCount; i++) {
-            vertexTriangles.set(i, []);
-        }
-
-        // Build edge and adjacency data
-        for (let i = 0; i < indices.length; i += 3) {
-            const v0 = indices[i];
-            const v1 = indices[i + 1];
-            const v2 = indices[i + 2];
-            const triIndex = i / 3;
-
-            vertexTriangles.get(v0).push(triIndex);
-            vertexTriangles.get(v1).push(triIndex);
-            vertexTriangles.get(v2).push(triIndex);
-
-            // Add edges
-            this._addEdge(edges, v0, v1, triIndex);
-            this._addEdge(edges, v1, v2, triIndex);
-            this._addEdge(edges, v2, v0, triIndex);
-        }
-
-        // Calculate quadric error matrices for each vertex
-        const quadrics = new Array(originalVertexCount);
-        for (let i = 0; i < originalVertexCount; i++) {
-            quadrics[i] = this._calculateVertexQuadric(i, positions, indices, vertexTriangles);
-        }
-
-        // Calculate error for each edge and sort by error
-        const edgeErrors = [];
-        edges.forEach((edge, key) => {
-            const error = this._calculateEdgeCollapseError(edge, positions, quadrics);
-            edgeErrors.push({ edge, error, key });
-        });
-
-        // Sort edges by error (lowest first)
-        edgeErrors.sort((a, b) => a.error - b.error);
-
-        // Collapse edges until target reduction is reached
-        const targetVertexCount = Math.floor(originalVertexCount * (1 - targetReduction));
-        const removedVertices = new Set();
-        const vertexMapping = new Map(); // maps old vertex to new vertex
-
-        let currentVertexCount = originalVertexCount;
-        let collapsedEdges = 0;
-
-        for (const { edge, key } of edgeErrors) {
-            if (currentVertexCount <= targetVertexCount) break;
-
-            const { v1, v2 } = edge;
-
-            // Skip if either vertex has already been removed
-            if (removedVertices.has(v1) || removedVertices.has(v2)) continue;
-
-            // Skip boundary edges (edges with only one triangle)
-            if (edge.triangles.length < 2) continue;
-
-            // Collapse edge: keep v1, remove v2
-            removedVertices.add(v2);
-            vertexMapping.set(v2, v1);
-
-            // Merge position to midpoint
-            const i1 = v1 * 3;
-            const i2 = v2 * 3;
-            positions[i1] = (positions[i1] + positions[i2]) / 2;
-            positions[i1 + 1] = (positions[i1 + 1] + positions[i2 + 1]) / 2;
-            positions[i1 + 2] = (positions[i1 + 2] + positions[i2 + 2]) / 2;
-
-            currentVertexCount--;
-            collapsedEdges++;
-        }
-
-        // Rebuild index buffer, removing degenerate triangles
-        const newIndices = [];
-        for (let i = 0; i < indices.length; i += 3) {
-            let v0 = indices[i];
-            let v1 = indices[i + 1];
-            let v2 = indices[i + 2];
-
-            // Remap vertices
-            while (vertexMapping.has(v0)) v0 = vertexMapping.get(v0);
-            while (vertexMapping.has(v1)) v1 = vertexMapping.get(v1);
-            while (vertexMapping.has(v2)) v2 = vertexMapping.get(v2);
-
-            // Skip degenerate triangles
-            if (v0 === v1 || v1 === v2 || v2 === v0) continue;
-
-            newIndices.push(v0, v1, v2);
-        }
-
-        // Update geometry
-        geometry.setIndex(newIndices);
-        geometry.attributes.position.needsUpdate = true;
-
-        // Recompute normals
-        geometry.computeVertexNormals();
-
-        const endTime = performance.now();
-        const finalTriangleCount = newIndices.length / 3;
-
-        console.log(`[MeshDecimation] Completed in ${(endTime - startTime).toFixed(2)}ms:`, {
-            originalVertices: originalVertexCount,
-            remainingVertices: currentVertexCount,
-            originalTriangles: originalTriangleCount,
-            finalTriangles: finalTriangleCount,
-            reduction: ((1 - finalTriangleCount / originalTriangleCount) * 100).toFixed(1) + '%',
-            collapsedEdges: collapsedEdges
-        });
-    }
-
-    _addEdge(edges, v1, v2, triIndex) {
-        // Ensure consistent edge key (lower index first)
-        const [min, max] = v1 < v2 ? [v1, v2] : [v2, v1];
-        const key = `${min},${max}`;
-
-        if (!edges.has(key)) {
-            edges.set(key, { v1: min, v2: max, triangles: [] });
-        }
-        edges.get(key).triangles.push(triIndex);
-    }
-
-    _calculateVertexQuadric(vertexIndex, positions, indices, vertexTriangles) {
-        // Quadric error matrix (4x4 symmetric matrix, stored as 10 values)
-        const Q = new Float32Array(10); // [a,b,c,d,e,f,g,h,i,j] representing symmetric 4x4
-
-        const triangles = vertexTriangles.get(vertexIndex);
-
-        for (const triIndex of triangles) {
-            const i = triIndex * 3;
-            const v0 = indices[i];
-            const v1 = indices[i + 1];
-            const v2 = indices[i + 2];
-
-            // Get triangle vertices
-            const p0 = new THREE.Vector3(
-                positions[v0 * 3],
-                positions[v0 * 3 + 1],
-                positions[v0 * 3 + 2]
-            );
-            const p1 = new THREE.Vector3(
-                positions[v1 * 3],
-                positions[v1 * 3 + 1],
-                positions[v1 * 3 + 2]
-            );
-            const p2 = new THREE.Vector3(
-                positions[v2 * 3],
-                positions[v2 * 3 + 1],
-                positions[v2 * 3 + 2]
-            );
-
-            // Calculate plane equation: ax + by + cz + d = 0
-            const edge1 = new THREE.Vector3().subVectors(p1, p0);
-            const edge2 = new THREE.Vector3().subVectors(p2, p0);
-            const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
-
-            const a = normal.x;
-            const b = normal.y;
-            const c = normal.z;
-            const d = -normal.dot(p0);
-
-            // Add to quadric (sum of plane equations)
-            Q[0] += a * a; Q[1] += a * b; Q[2] += a * c; Q[3] += a * d;
-            Q[4] += b * b; Q[5] += b * c; Q[6] += b * d;
-            Q[7] += c * c; Q[8] += c * d;
-            Q[9] += d * d;
-        }
-
-        return Q;
-    }
-
-    _calculateEdgeCollapseError(edge, positions, quadrics) {
-        const { v1, v2 } = edge;
-
-        // Get midpoint of edge
-        const i1 = v1 * 3;
-        const i2 = v2 * 3;
-        const x = (positions[i1] + positions[i2]) / 2;
-        const y = (positions[i1 + 1] + positions[i2 + 1]) / 2;
-        const z = (positions[i1 + 2] + positions[i2 + 2]) / 2;
-
-        // Sum quadrics of both vertices
-        const Q = new Float32Array(10);
-        const Q1 = quadrics[v1];
-        const Q2 = quadrics[v2];
-
-        for (let i = 0; i < 10; i++) {
-            Q[i] = Q1[i] + Q2[i];
-        }
-
-        // Calculate error: v^T * Q * v where v = [x, y, z, 1]
-        const error =
-            Q[0] * x * x + 2 * Q[1] * x * y + 2 * Q[2] * x * z + 2 * Q[3] * x +
-            Q[4] * y * y + 2 * Q[5] * y * z + 2 * Q[6] * y +
-            Q[7] * z * z + 2 * Q[8] * z +
-            Q[9];
-
-        return Math.abs(error);
-    }
-
-    applyHeightMapToGeometry() {
-        if (!this.ground || !this.groundVertices) return;
-
-        const positions = this.groundVertices.array;
-        const geometry = this.ground.geometry;
-        const segments = this.heightMapResolution;
-        const verticesPerRow = segments + 1;
-
-        // First pass: Update vertex heights
-        for (let z = 0; z < verticesPerRow; z++) {
-            for (let x = 0; x < verticesPerRow; x++) {
-                const vertexIndex = (z * verticesPerRow + x);
-                const idx = vertexIndex * 3;
-
-                const nx = x / segments;
-                const nz = z / segments;
-
-                const terrainX = Math.floor(nx * (this.extendedSize));
-                const terrainZ = Math.floor(nz * (this.extendedSize));
-
-                const heightIndex = terrainZ * this.extendedSize + terrainX;
-                const height = this.heightMapData[heightIndex] || 0;
-
-                positions[idx + 2] = height;
-            }
-        }
-
-        this.groundVertices.needsUpdate = true;
-        geometry.computeVertexNormals();
-
-        // Decimate the mesh to reduce vertex count
-      //  this.decimateMesh(geometry);
-
-        // Rebuild BVH tree after geometry modification for accurate raycasting
-        if (geometry.boundsTree) {
-            geometry.disposeBoundsTree();
-        }
-        geometry.computeBoundsTree();
-
-        // Second pass: Generate cliff entities using TileMap analysis
-        this.generateCliffEntities();
-    }
-
-
-    generateCliffEntities() {
-        if (!this.heightMapData || !this.tileMap?.terrainMap || !this.game.terrainTileMapper) return;
-
-        const terrainMap = this.tileMap.terrainMap;
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        const rows = terrainMap.length;
-        const cols = terrainMap[0].length;
-
-        const mapAnalysis = this.game.terrainTileMapper.analyzeMap();
-
-        mapAnalysis.forEach((tile, index) => {
-            const x = (index % cols);
-            const z = Math.floor(index / cols);
-
-            // Use heightAnalysis for cliff placement (cliffs are based on height differences)
-            const heightAnalysis = tile.heightAnalysis;
-
-            // Only process tiles that have lower neighbors (cliff edges)
-            if (heightAnalysis.neighborLowerCount > 0 || heightAnalysis.cornerLowerCount > 0) {
-                this.placeCliffAtomsForTile(x, z, heightAnalysis, gridSize);
-            }
-        });
-    }
-
-    placeCliffAtomsForTile(x, z, heightAnalysis, gridSize) {
-
-        if(this.game.gameManager.call('hasRampAt', x, z)){
-            return;
-        }
-        // Convert grid coordinates to world coordinates
-        const worldX = (x * gridSize + this.extensionSize) - this.extendedSize / 2;
-        const worldZ = (z * gridSize + this.extensionSize) - this.extendedSize / 2;
-        const offset = 0;
-        const halfOffset = offset / 2;
-        const halfGrid = gridSize / 2 + halfOffset;
-        const quarterGrid = gridSize / 4 + halfOffset / 2; // Center of each quadrant
-
-
-        // Calculate cliff bottom height
-        let cliffBottomHeightIndex = heightAnalysis.heightIndex - 2;
-        if (heightAnalysis.neighborLowerCount == 0 && heightAnalysis.cornerLowerCount == 0) {
-            cliffBottomHeightIndex += 1;
-        }
-        const cliffHeight = cliffBottomHeightIndex * this.heightStep;
-
-        // Array to store atom placements
-        const atomPlacements = [];
-
-        // Helper function to add atom
-        const addAtom = (type, localX, localZ, rotation) => {
-            atomPlacements.push({
-                type,
-                x: worldX + localX - halfOffset,
-                z: worldZ + localZ - halfOffset,
-                rotation
-            });
-        };
-
-        // Track which quadrants are occupied by corners
-        const topLeftOccupied = (heightAnalysis.topLess && heightAnalysis.leftLess) ||
-                                (heightAnalysis.cornerTopLeftLess && !heightAnalysis.topLess && !heightAnalysis.leftLess);
-        const topRightOccupied = (heightAnalysis.topLess && heightAnalysis.rightLess) ||
-                                (heightAnalysis.cornerTopRightLess && !heightAnalysis.topLess && !heightAnalysis.rightLess);
-        const botLeftOccupied = (heightAnalysis.botLess && heightAnalysis.leftLess) ||
-                                (heightAnalysis.cornerBottomLeftLess && !heightAnalysis.botLess && !heightAnalysis.leftLess);
-        const botRightOccupied = (heightAnalysis.botLess && heightAnalysis.rightLess) ||
-                                (heightAnalysis.cornerBottomRightLess && !heightAnalysis.botLess && !heightAnalysis.rightLess);
-
-        // Place corners first (they take priority) - CENTERED in their quadrants
-        // Outer corners
-        if (heightAnalysis.topLess && heightAnalysis.leftLess) {
-            addAtom('atom_one', quarterGrid, quarterGrid, 0);
-        }
-
-        if (heightAnalysis.topLess && heightAnalysis.rightLess) {
-            addAtom('atom_one', quarterGrid * 3, quarterGrid, Math.PI / 2);
-        }
-
-        if (heightAnalysis.botLess && heightAnalysis.leftLess) {
-            addAtom('atom_one', quarterGrid, quarterGrid * 3, -Math.PI / 2);
-        }
-
-        if (heightAnalysis.botLess && heightAnalysis.rightLess) {
-            addAtom('atom_one', quarterGrid * 3, quarterGrid * 3, Math.PI);
-        }
-
-        // Inner corners - CENTERED in their quadrants
-        if (heightAnalysis.cornerTopLeftLess && !heightAnalysis.topLess && !heightAnalysis.leftLess) {
-            addAtom('atom_three', quarterGrid, quarterGrid, 0);
-        }
-
-        if (heightAnalysis.cornerTopRightLess && !heightAnalysis.topLess && !heightAnalysis.rightLess) {
-            addAtom('atom_three', quarterGrid * 3, quarterGrid, Math.PI / 2);
-        }
-
-        if (heightAnalysis.cornerBottomLeftLess && !heightAnalysis.botLess && !heightAnalysis.leftLess) {
-            addAtom('atom_three', quarterGrid, quarterGrid * 3, -Math.PI / 2);
-        }
-
-        if (heightAnalysis.cornerBottomRightLess && !heightAnalysis.botLess && !heightAnalysis.rightLess) {
-            addAtom('atom_three', quarterGrid * 3, quarterGrid * 3, Math.PI);
-        }
-
-        // Place edges in empty quadrants - CENTERED in their quadrants
-        // Top edge uses top-left and top-right quadrants
-        if (heightAnalysis.topLess) {
-            if (!topLeftOccupied) {
-                addAtom('atom_two', quarterGrid, quarterGrid, Math.PI / 2);
-            }
-            if (!topRightOccupied) {
-                addAtom('atom_two', quarterGrid * 3, quarterGrid, Math.PI / 2);
-            }
-        }
-
-        // Bottom edge uses bottom-left and bottom-right quadrants
-        if (heightAnalysis.botLess) {
-            if (!botLeftOccupied) {
-                addAtom('atom_two', quarterGrid, quarterGrid * 3, -Math.PI / 2);
-            }
-            if (!botRightOccupied) {
-                addAtom('atom_two', quarterGrid * 3, quarterGrid * 3, -Math.PI / 2);
-            }
-        }
-
-        // Left edge uses top-left and bottom-left quadrants
-        if (heightAnalysis.leftLess) {
-            if (!topLeftOccupied) {
-                addAtom('atom_two', quarterGrid, quarterGrid, 0);
-            }
-            if (!botLeftOccupied) {
-                addAtom('atom_two', quarterGrid, quarterGrid * 3, 0);
-            }
-        }
-
-        // Right edge uses top-right and bottom-right quadrants
-        if (heightAnalysis.rightLess) {
-            if (!topRightOccupied) {
-                addAtom('atom_two', quarterGrid * 3, quarterGrid, Math.PI);
-            }
-            if (!botRightOccupied) {
-                addAtom('atom_two', quarterGrid * 3, quarterGrid * 3, Math.PI);
-            }
-        }
-
-        // Create entities for all atoms
-        atomPlacements.forEach(atom => {
-            this.createCliffEntity(atom.type, atom.x, cliffHeight, atom.z, atom.rotation);
-        });
-    }
-
-
-    resetCliffs() {
-        this.destroyAllCliffs();
-        this.generateCliffEntities();
-    }
-
-    destroyAllCliffs() {
-        const cliffs = this.game.getEntitiesWith('cliff');
-        cliffs.forEach((cliff) => {
-            this.game.destroyEntity(cliff);
-        });
-    }
-
-    createCliffEntity(type, worldX, worldY, worldZ, rotation) {
-        const cliffsType = "cliffs";
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-
-        const unitType = this.game.getCollections()[cliffsType]?.[type];
-        if (!unitType) {
-            console.warn(`Cliff type ${type} not found in cliffs collection`);
-            return;
-        }
-
-        unitType.collection = cliffsType;
-        unitType.id = type;        
-
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`${cliffsType}_${type}_${Math.round(worldX)}_${Math.round(worldZ)}_${Math.random()}`);
-
-        // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION, 
-            Components.Position(worldX, worldY, worldZ));
-
-        // Add Renderable component
-        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
-            Components.Renderable(cliffsType, type, 1024));
-
-        // Add Animation component for rotation and scale
-        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
-            Components.Animation(1, rotation, 0));
-
-        // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING, 
-            Components.Facing(rotation));
-
-        // Add UnitType component
-        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
-            Components.UnitType(unitType));
-
-        // Add Team component (neutral for cliffs)
-        this.game.addComponent(entityId, ComponentTypes.TEAM, 
-            Components.Team('cliff'));
-
-        this.game.addComponent(entityId, "cliff", { type });
-
-        this.game.triggerEvent('onEntityPositionUpdated', entityId);
-    }
-
-    generateLiquidSurfaceMesh(terrainType) {
-        const terrainMap = this.tileMap.terrainMap;
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        const rows = terrainMap.length;
-        const cols = terrainMap[0].length;
-        
-        // Arrays to store vertices, indices, and UVs for the BufferGeometry
-        const vertices = [];
-        const indices = [];
-        const uvs = [];
-        
-        // Amount to extend the perimeter (e.g., 10% of gridSize)
-        const extensionAmount = gridSize * 0.25; // Adjust as needed        
-
-        // Calculate centering offset to match ground positioning
-        const terrainWorldWidth = cols * gridSize;
-        const terrainWorldHeight = rows * gridSize;
-        const centerOffsetX = -terrainWorldWidth / 2;
-        const centerOffsetZ = -terrainWorldHeight / 2;
-
-        // Helper function to check if a tile is a water tile
-        const isWaterTile = (x, z) => {
-            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;
-            return terrainMap[z][x] === terrainType;
-        };
-        
-        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles
-        const usedPositions = new Set();
-        for (let z = 0; z < rows; z++) {
-            for (let x = 0; x < cols; x++) {
-                if (terrainMap[z][x] === terrainType) {
-                    usedPositions.add(`${x},${z}`);     // Bottom-left
-                    usedPositions.add(`${x + 1},${z}`); // Bottom-right
-                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)
-                    usedPositions.add(`${x},${z + 1}`); // Top-left
-                }
-            }
-        }
-        
-        // Step 2: Create vertices for all used positions and store their original positions
-        const positionToVertexIndex = new Map();
-        const originalPositions = []; // Store original (x, z) for each vertex
-        let vertexIndex = 0;
-        for (const pos of usedPositions) {
-            const [x, z] = pos.split(',').map(Number);
-            positionToVertexIndex.set(pos, vertexIndex++);
-            
-            // Apply centering offset to match ground positioning
-            const worldX = x * gridSize + centerOffsetX;
-            const worldZ = z * gridSize + centerOffsetZ;
-            
-            vertices.push(worldX, 0.1, worldZ);
-            originalPositions.push([x, z]); // Store original grid position
-            uvs.push(x, z); // UVs based on grid position
-        }
-        
-        // Step 3: Generate indices for water tiles, connecting them into a single mesh
-        for (let z = 0; z < rows; z++) {
-            for (let x = 0; x < cols; x++) {
-                if (terrainMap[z][x] === terrainType) {
-                    const bl = positionToVertexIndex.get(`${x},${z}`);
-                    const br = positionToVertexIndex.get(`${x + 1},${z}`);
-                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view
-                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);
-
-                    indices.push(bl, br, tl);
-                    indices.push(br, tr, tl);
-                }
-            }
-        }
-        
-        // Step 4: Identify perimeter vertices and their extension directions
-        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }
-        for (let z = 0; z < rows; z++) {
-            for (let x = 0; x < cols; x++) {
-                if (terrainMap[z][x] === terrainType) {
-                    const isLeftEdge = !isWaterTile(x - 1, z);
-                    const isRightEdge = !isWaterTile(x + 1, z);
-                    const isBottomEdge = !isWaterTile(x, z - 1); // North
-                    const isTopEdge = !isWaterTile(x, z + 1);    // South
-
-                    // Bottom-left vertex (x, z)
-                    if (isLeftEdge || isBottomEdge) {
-                        const vIdx = positionToVertexIndex.get(`${x},${z}`);
-                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
-                        const ext = perimeterExtensions.get(vIdx);
-                        if (isLeftEdge) ext.extendLeft = true;
-                        if (isBottomEdge) ext.extendUp = true; // North
-                    }
-
-                    // Bottom-right vertex (x + 1, z)
-                    if (isRightEdge || isBottomEdge) {
-                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);
-                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
-                        const ext = perimeterExtensions.get(vIdx);
-                        if (isRightEdge) ext.extendRight = true;
-                        if (isBottomEdge) ext.extendUp = true; // North
-                    }
-
-                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view
-                    if (isRightEdge || isTopEdge) {
-                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);
-                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
-                        const ext = perimeterExtensions.get(vIdx);
-                        if (isRightEdge) ext.extendRight = true;
-                        if (isTopEdge) ext.extendDown = true; // South
-                    }
-
-                    // Top-left vertex (x, z + 1)
-                    if (isLeftEdge || isTopEdge) {
-                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);
-                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
-                        const ext = perimeterExtensions.get(vIdx);
-                        if (isLeftEdge) ext.extendLeft = true;
-                        if (isTopEdge) ext.extendDown = true; // South
-                    }
-                }
-            }
-        }
-        
-        // Step 5: Apply perimeter extensions
-        perimeterExtensions.forEach((ext, vertexIndex) => {
-            const idx = vertexIndex * 3;
-            const [origX, origZ] = originalPositions[vertexIndex];     
-
-            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left
-            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right
-            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)
-            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)
-
-       
-        });
-        
-        // Step 6: Create the BufferGeometry
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals(); // For lighting
-        
-        // Parse the hex color to RGB
-        const parseHexColor = (hex) => {
-            const r = parseInt(hex.slice(1, 3), 16) / 255;
-            const g = parseInt(hex.slice(3, 5), 16) / 255;
-            const b = parseInt(hex.slice(5, 7), 16) / 255;
-            return { r, g, b };
-        };
-        
-        const waterShader = this.game.getCollections().shaders[this.level.waterShader];
-        
-        // Use the hex color in a ShaderMaterial
-        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);
-        let vectorizeProps = JSON.parse(waterShader.vectors);
-        vectorizeProps.forEach((prop => {
-            if (this.uniforms[terrainType][prop]) {
-                if( prop.toLowerCase().endsWith("color")){
-                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;
-                    const { r, g, b } = parseHexColor(colorToUse);
-                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);
-                } else {
-                    let arr = this.uniforms[terrainType][prop].value;
-                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);
-                }
-            }
-        }));
-        
-        this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };
-        this.uniforms[terrainType].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;
-        
-        // Reference the uniforms
-        const uniforms = this.uniforms[terrainType];
-        
-        // Create the shader material
-        const material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: waterShader.vertexScript,
-            fragmentShader: waterShader.fragmentScript,
-            side: THREE.DoubleSide,
-            transparent: true
-        });
-
-        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation
-        const waterMesh = new THREE.Mesh(geometry, material);        
-        waterMesh.position.y = (terrainType + 1) * this.heightMapSettings.heightStep;
-        
-        // No additional position offset needed since vertices are already centered
-        waterMesh.position.x = 0;
-        waterMesh.position.z = 0;
-        
-        this.scene.add(waterMesh);
-        this.liquidMeshes.push(waterMesh);
-
-    }
-
-    addGrassToTerrain() {
-        const bladeWidth = 12;
-        const bladeHeight = 18;
-        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
-        grassGeometry.translate(0, bladeHeight / 2, 0);
-        const grassCount = 50000;
-
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        const phases = new Float32Array(grassCount);
-        for (let i = 0; i < grassCount; i++) {
-            phases[i] = Math.random() * Math.PI * 2;
-        }
-        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
-
-        const grassTexture = this.createGrassTexture();
-        const grassShader = this.game.getCollections().shaders[this.level.grassShader];
-        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);
-        
-        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};
-        this.uniforms['grass'].map = { value: grassTexture };
-        this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };
-        this.uniforms['grass'].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;
-        const lightDirection = new THREE.Vector3();
-        lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
-        lightDirection.normalize();
-
-        this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color
-        this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color
-        this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };
-
-        const uniforms = this.uniforms['grass'];
-        this.grassMaterial = new THREE.ShaderMaterial({
-            vertexShader: grassShader.vertexScript,
-            fragmentShader: grassShader.fragmentScript,
-            uniforms: uniforms,
-            transparent: true
-        });
-
-        this.grassShader = this.grassMaterial;
-        
-        grassGeometry.computeVertexNormals(); 
-        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);
-        grass.castShadow = true;
-        grass.receiveShadow = false;
-
-        const dummy = new THREE.Object3D();
-        const grassArea = this.extendedSize;  
-        const ctx = this.groundCanvas.getContext('2d');
-        const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
-
-        // Create a density map for grass placement
-        const densityMap = new Float32Array(this.extendedSize * this.extendedSize);
-        for (let z = 0; z < this.extendedSize; z++) {
-            for (let x = 0; x < this.extendedSize; x++) {
-                // Check current pixel for green dominance
-                const pixelIndex = (z * this.groundCanvas.width + x) * 4;
-                const isGreenDominant = (pixel) => {
-                    const r = terrainData[pixel];
-                    const g = terrainData[pixel + 1];
-                    const b = terrainData[pixel + 2];
-                    return g > r && g > b;
-                };
-
-                // Only set density if current pixel and all neighbors are green
-                if (isGreenDominant(pixelIndex)) {
-                    // Check 8 neighboring pixels
-                    let checkDist = Math.ceil(gridSize / 10);
-                    const neighbors = [
-                        [-checkDist, -checkDist], [0, -checkDist], [checkDist, -checkDist],
-                        [-checkDist,  0],                           [checkDist,  0],
-                        [-checkDist,  checkDist], [0,  checkDist], [checkDist,  checkDist]
-                    ];
-
-                    let allNeighborsGreen = true;
-                    for (const [dx, dz] of neighbors) {
-                        const nx = x + dx;
-                        const nz = z + dz;
-                        
-                        // Skip if neighbor is outside bounds
-                        if (nx < 0 || nx >= this.extendedSize || nz < 0 || nz >= this.extendedSize) {
-                            allNeighborsGreen = false;
-                            break;
-                        }
-
-                        const neighborIndex = (nz * this.groundCanvas.width + nx) * 4;
-                        if (!isGreenDominant(neighborIndex)) {
-                            allNeighborsGreen = false;
-                            break;
-                        }
-                    }
-
-                    densityMap[z * this.extendedSize + x] = allNeighborsGreen ? 1 : 0;
-                } else {
-                    densityMap[z * this.extendedSize + x] = 0;
-                }
-            }
-        }
-
-        // Place grass based on density
-        let placed = 0;
-        for (let i = 0; i < grassCount * 2 && placed < grassCount; i++) {
-            const x = Math.floor(Math.random() * grassArea);
-            const z = Math.floor(Math.random() * grassArea);
-            if (densityMap[z * this.extendedSize + x] > 0) {
-                const rotationY = Math.random() * Math.PI * 2;
-                const scale = 0.7 + Math.random() * 0.5;
-                let height = this.heightMapSettings.enabled
-                    ? this.heightMapData[Math.min(z, this.extendedSize - 1) * this.extendedSize + Math.min(x, this.extendedSize - 1)] || 0
-                    : 0;
-                dummy.position.set(x - grassArea / 2 , height - bladeHeight, z - grassArea / 2);
-                dummy.rotation.set(0, rotationY, 0);
-                dummy.scale.set(scale, scale, scale);
-                dummy.updateMatrix();
-                grass.setMatrixAt(placed++, dummy.matrix);
-            }
-        }
-
-        grass.instanceMatrix.needsUpdate = true;
-        this.scene.add(grass);
-        this.grass = grass;
-    }
-    
-    createCurvedBladeGeometry(width = 0.1, height = 1) {
-        const shape = new THREE.Shape();
-        shape.moveTo(0, 0);
-        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);
-    
-        const shapeGeom = new THREE.ShapeGeometry(shape, 12);
-        const positions = shapeGeom.attributes.position.array;
-        const uvs = shapeGeom.attributes.uv.array;
-        const vertexCount = positions.length / 3;
-    
-        const newUVs = new Float32Array(uvs.length);
-        const newNormals = new Float32Array(positions.length);
-    
-        for (let i = 0; i < vertexCount; i++) {
-            const posIndex = i * 3;
-            const uvIndex = i * 2;
-            const x = positions[posIndex];
-            const y = positions[posIndex + 1];
-            const normalizedY = y / height;
-    
-            newUVs[uvIndex] = uvs[uvIndex];
-            newUVs[uvIndex + 1] = normalizedY;
-    
-            // Compute normal: approximate outward direction along curve
-            const t = y / height; // Parameter along curve
-            const curveX = width * 0.5 * (1 - t); // Quadratic curve approximation
-            const tangent = new THREE.Vector2(curveX - x, y - (y - height * 0.5)).normalize();
-            const normal = new THREE.Vector2(-tangent.y, tangent.x); // Perpendicular to tangent
-            newNormals[posIndex] = normal.x;
-            newNormals[posIndex + 1] = 0;
-            newNormals[posIndex + 2] = normal.y;
-        }
-    
-        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));
-        shapeGeom.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));
-        return shapeGeom;
-    }
-
-    createGrassTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 4;
-        canvas.height = 32;
-        const ctx = canvas.getContext('2d');
-
-        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-        gradient.addColorStop(0.0, this.game.palette["greenMColor"]);
-        gradient.addColorStop(0.8, this.game.palette["greenMColor"]);
-        gradient.addColorStop(1.0, this.game.palette["redLColor"]);
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
-        return texture;
-    }
-
-    // Utility methods for external systems
-    setControlsEnabled(enabled) {
-        if (this.controls) {
-            this.controls.enabled = enabled;
-        }
-    }
-
-    resetCamera() {
-        if (!this.cameraSettings) return;
-
-        const cameraPos = JSON.parse(this.cameraSettings.position);
-        const lookAt = JSON.parse(this.cameraSettings.lookAt);
-
-        if (this.controls) {
-            this.controls.reset();
-            this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-            this.controls.target.set(lookAt.x, lookAt.y, lookAt.z);
-            this.controls.update();
-        } else {
-         //   this.camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-        //    this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
-        }
-
-    }
-
-    // Terrain update methods for dynamic changes
-    updateTerrain() {
-        this.terrainRendered = false;
-        this._cachedColorMap = null;
-        this.renderTerrain();
-    }
-
-    destroy() {
-
-        // Clean up extension planes
-        if (this.extensionPlanes) {
-            this.extensionPlanes.forEach(plane => {
-                this.scene.remove(plane);
-                plane.geometry?.dispose();
-                plane.material?.dispose();
-            });
-            this.extensionPlanes = [];
-        }
-
-        // Clean up ground
-        if (this.ground) {
-            this.scene.remove(this.ground);
-            this.ground.geometry?.dispose();
-            this.ground.material?.dispose();
-        }
-
-        // Clean up grass
-        if (this.grass) {
-            this.scene.remove(this.grass);
-            this.grass.geometry?.dispose();
-            this.grass.material?.dispose();
-        }
-
-        // Clean up liquid meshes
-        this.liquidMeshes.forEach(mesh => {
-            this.scene.remove(mesh);
-            mesh.geometry?.dispose();
-            mesh.material?.dispose();
-        });
-        this.liquidMeshes = [];
-
-        // Clean up textures
-        this.groundTexture?.dispose();
-
-        // Clean up lights
-        if (this.ambientLight) this.scene.remove(this.ambientLight);
-        if (this.directionalLight) {
-            this.scene.remove(this.directionalLight);
-            this.scene.remove(this.directionalLight.target);
-        }
-        if (this.hemisphereLight) this.scene.remove(this.hemisphereLight);
-
-        // Clean up Three.js core
-        if (this.renderer) {
-            this.renderer.dispose();
-        }
-
-        // Clean up composer
-        if (this.composer) {
-            this.composer.dispose();
-        }
-
-        // Clean up orbit controls
-        if (this.controls) {
-            this.controls.dispose();
-            this.controls = null;
-        }
-
-        // Remove event listeners
-        window.removeEventListener('resize', this.onWindowResizeHandler);
-
-        // Clear references
-        this.groundCanvas = null;
-        this.terrainCanvas = null;
-        this.scene = null;
-        this.camera = null;
-        this.renderer = null;
-        this.composer = null;
-
-        this.initialized = false;
-    }
-
-    // Add this method to the WorldSystem class
-
-    getTerrainHeightAtPosition(worldX, worldZ) {
-        // Check if height map is available and enabled
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
-            return 0; // Fallback to flat ground
-        }
-        
-        // Convert world coordinates to height map coordinates
-        // The ground is centered at origin, so we need to offset by half the extended size
-        const heightMapX = Math.floor(worldX + this.extendedSize / 2);
-        const heightMapZ = Math.floor(worldZ + this.extendedSize / 2);
-        
-        // Ensure coordinates are within bounds
-        if (heightMapX < 0 || heightMapX >= this.extendedSize || heightMapZ < 0 || heightMapZ >= this.extendedSize) {
-            // Outside terrain bounds, use extension terrain height
-            const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-            return extensionTerrainType * this.heightStep;
-        }
-        
-        // Get height from height map
-        const heightIndex = heightMapZ * this.extendedSize + heightMapX;
-        return this.heightMapData[heightIndex] || 0;
-    }
-
-    // Optional: Add bilinear interpolation for smoother height transitions
-    getTerrainHeightAtPositionSmooth(worldX, worldZ) {
-        // Check if height map is available and enabled
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
-            return 0; // Fallback to flat ground
-        }
-        
-        // Convert world coordinates to height map coordinates (with decimal precision)
-        const heightMapX = worldX + this.extendedSize / 2;
-        const heightMapZ = worldZ + this.extendedSize / 2;
-        
-        // Get the four surrounding grid points
-        const x0 = Math.floor(heightMapX);
-        const x1 = x0 + 1;
-        const z0 = Math.floor(heightMapZ);
-        const z1 = z0 + 1;
-        
-        // Get fractional parts for interpolation
-        const fx = heightMapX - x0;
-        const fz = heightMapZ - z0;
-        
-        // Helper function to get height at specific grid point
-        const getHeightAt = (x, z) => {
-            if (x < 0 || x >= this.extendedSize || z < 0 || z >= this.extendedSize) {
-                const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-                return extensionTerrainType * this.heightStep;
-            }
-            const heightIndex = z * this.extendedSize + x;
-            return this.heightMapData[heightIndex] || 0;
-        };
-        
-        // Get heights at the four corners
-        const h00 = getHeightAt(x0, z0);
-        const h10 = getHeightAt(x1, z0);
-        const h01 = getHeightAt(x0, z1);
-        const h11 = getHeightAt(x1, z1);
-        
-        // Bilinear interpolation
-        const h0 = h00 * (1 - fx) + h10 * fx;
-        const h1 = h01 * (1 - fx) + h11 * fx;
-        return h0 * (1 - fz) + h1 * fz;
-    }
-};
-
-// system: PostProcessingSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['PostProcessingSystem'] = class PostProcessingSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.postProcessingSystem = this;
-        
-        this.composer = null;
-        this.passes = new Map();
-        this.passOrder = ['render', 'pixel', 'fog', 'output'];
-    }
-
-    init(params = {}) {
-        this.params = params;
-
-        this.game.gameManager.register('registerPostProcessingPass', this.registerPass.bind(this));
-        this.game.gameManager.register('removePostProcessingPass', this.removePass.bind(this));
-        this.game.gameManager.register('renderPostProcessing', this.render.bind(this));
-        this.game.gameManager.register('getPostProcessingComposer', this.getPostProcessingComposer.bind(this));
-    }
-
-    postAllInit() {
-        
-        if (!this.game.renderer || !this.game.scene || !this.game.camera) {
-            console.error('[PostProcessingSystem] Missing renderer, scene, or camera in postAllInit');
-            return;
-        }
-        
-        
-        this.composer = new THREE_.EffectComposer(this.game.renderer);
-        
-        // Create depth textures for both render targets
-        const depthTexture1 = new THREE.DepthTexture();
-        depthTexture1.format = THREE.DepthFormat;
-        depthTexture1.type   = THREE.UnsignedIntType; // 24/32-bit depth
-
-        const depthTexture2 = new THREE.DepthTexture();
-        depthTexture2.format = THREE.DepthFormat;
-        depthTexture2.type   = THREE.UnsignedIntType;
-
-        this.composer.renderTarget1.depthTexture = depthTexture1;
-        this.composer.renderTarget1.depthBuffer  = true;
-        this.composer.renderTarget2.depthTexture = depthTexture2;
-        this.composer.renderTarget2.depthBuffer  = true;
-
-        // Make sure sizes are synced after attaching:
-        const size = this.game.renderer.getSize(new THREE.Vector2());
-        this.composer.setSize(size.x, size.y);
-        
-        if (this.passes.size > 0) {
-            this.rebuildComposer();
-        }
-        
-    }
-
-    getPostProcessingComposer() {
-        return this.composer;
-    }
-
-    registerPass(name, passConfig) {
-        
-        if (this.passes.has(name)) {
-            console.warn(`[PostProcessingSystem] Pass ${name} already exists, replacing`);
-        }
-        
-        this.passes.set(name, passConfig);
-        
-        if (this.composer) {
-            this.rebuildComposer();
-        } 
-    }
-
-    removePass(name) {
-        
-        if (this.passes.has(name)) {
-            const passConfig = this.passes.get(name);
-            if (passConfig.dispose) {
-                passConfig.dispose();
-            }
-            this.passes.delete(name);
-            
-            if (this.composer) {
-                this.rebuildComposer();
-            }
-        }
-    }
-
-    rebuildComposer() {
-        if (!this.composer) {
-            console.warn('[PostProcessingSystem] Composer not initialized yet');
-            return;
-        }
-        
-        
-        this.composer.passes = [];
-        
-        for (const passName of this.passOrder) {
-            const passConfig = this.passes.get(passName);
-            
-            if (!passConfig) continue;
-            
-            if (passConfig.enabled === false) {
-                continue;
-            }
-            
-            if (typeof passConfig.create === 'function') {
-                const pass = passConfig.create();
-                this.composer.addPass(pass);
-            } else if (passConfig.pass) {
-                this.composer.addPass(passConfig.pass);
-            }
-        }
-        
-    }
-
-    render() {
-        if (this.composer) {
-            // Render main scene with all post-processing (including fog)
-            this.composer.render();
-            
-            if (this.game.uiScene) {
-                this.game.renderer.autoClear = false;  // Don't clear the screen    
-                this.game.renderer.clearDepth();             
-                this.game.renderer.render(this.game.uiScene, this.game.camera);
-                this.game.renderer.autoClear = true;   // Reset for next frame
-            }
-        }
-    }
-
-    setSize(width, height) {
-        if (this.composer) {
-            this.composer.setSize(width, height);
-        }
-    }
-
-    dispose() {
-        if (this.composer) {
-            this.composer.passes.forEach(pass => {
-                if (pass.dispose) pass.dispose();
-            });
-        }
-        this.passes.clear();
-    }
-};
-
-// system: RenderSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['RenderSystem'] = class RenderSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.renderSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-
-        this.vatBatches = new Map();
-        this.entityToInstance = new Map();
-        this.batchCreationPromises = new Map();
-        
-        this.modelScale = 32;
-        this.DEFAULT_CAPACITY = 128;
-        this.MIN_MOVEMENT_THRESHOLD = 0.1;
-
-        this.DEBUG = true;
-        this.DEBUG_LEVEL = 1;
-        this._frame = 0;
-        this._stats = {
-            entitiesProcessed: 0,
-            instancesCreated: 0,
-            instancesRemoved: 0,
-            batchesActive: 0
-        };
-
-        this._bindDebugHelpers();
-        this.hiddenEntities = new Set();
-    }
-
-    init() {
-        this.game.gameManager.register('setInstanceClip', this.setInstanceClip.bind(this));
-        this.game.gameManager.register('setInstanceSpeed', this.setInstanceSpeed.bind(this));
-        this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
-        this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
-        this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
-    }
-
-    _bindDebugHelpers() {
-        if (typeof window !== "undefined") {
-            window.VATRenderDebug = {
-                dumpBatches: () => this.dumpBatches(),
-                dumpInstances: () => this.dumpInstances(),
-                setDebugLevel: (level) => this.DEBUG_LEVEL = level,
-                getStats: () => this._stats
-            };
-        }
-    }
-
-    async update() {
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
-
-        this._frame++;
-        await this.updateEntities();
-        this.updateAnimations();
-        this.finalizeUpdates();
-    }
-
-    async updateEntities() {
-        const CT = this.componentTypes;
-        const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
-        this._stats.entitiesProcessed = entities.length;
-        entities.forEach(async (entityId) => {
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-            const velocity = this.game.getComponent(entityId, CT.VELOCITY);
-            const facing = this.game.getComponent(entityId, CT.FACING);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
-
-            if (!unitType) return;
-
-            const fow = this.game.fogOfWarSystem;            
-            const isVisible = fow ? fow.isVisibleAt(pos.x, pos.z) : true;
-            if (unitType.collection != "worldObjects" && unitType.collection != "cliffs" && !isVisible) {
-                if (this.entityToInstance.has(entityId)) {
-                    this.hideEntityInstance(entityId);
-                }
-                return;
-            } else {
-                if (this.hiddenEntities.has(entityId)) {
-                    this.showEntityInstance(entityId);
-                }
-            }
-
-            if (typeof renderable.spawnType !== 'string') {
-                console.error(`[RenderSystem] Unit entity ${entityId} has invalid spawnType:`, {
-                    objectType: renderable.objectType,
-                    spawnType: renderable.spawnType,
-                    spawnTypeType: typeof renderable.spawnType
-                });
-                return;
-            }
-
-            let instance = this.entityToInstance.get(entityId);
-            if (!instance) {
-                await this.createInstance(entityId, renderable.objectType, renderable.spawnType, renderable.capacity);
-                instance = this.entityToInstance.get(entityId);
-            }
-
-            if (instance && !this.hiddenEntities.has(entityId)) {
-                this.updateInstanceTransform(instance, pos, velocity, facing);
-            }
-        });
-
-        this.cleanupRemovedEntities(new Set(entities));
-    }
-
-    async createInstance(entityId, objectType, spawnType, capacity = this.DEFAULT_CAPACITY) {
-        if (typeof spawnType !== 'string') {
-            console.error(`[RenderSystem] CRITICAL: spawnType should be string but got ${typeof spawnType}:`, spawnType);
-            return null;
-        }
-
-        const batchKey = `${objectType}_${spawnType}`;
-        let batch = this.vatBatches.get(batchKey);
-        if (!batch) {
-            if (this.batchCreationPromises.has(batchKey)) {
-                try {
-                    batch = await this.batchCreationPromises.get(batchKey);
-                } catch (error) {
-                    return null;
-                }
-            } else {
-                const creationPromise = this.createVATBatch(batchKey, objectType, spawnType, capacity);
-                this.batchCreationPromises.set(batchKey, creationPromise);
-                
-                try {
-                    batch = await creationPromise;
-                    if (!batch) {
-                        console.error(`[RenderSystem] Failed to create batch for ${batchKey}`);
-                        return null;
-                    }
-                } finally {
-                    this.batchCreationPromises.delete(batchKey);
-                }
-            }
-        }
-
-        if (!batch || !batch.capacity) {
-            console.error(`[RenderSystem] Batch has no capacity property:`, batch);
-            return null;
-        }
-
-        let instanceIndex = -1;
-        for (let i = 0; i < batch.capacity; i++) {
-            if (!batch.entityMap.has(i)) {               
-                instanceIndex = i;
-                break;
-            }
-        }
-
-        if (instanceIndex === -1) {
-            console.warn(`[RenderSystem] Batch ${batchKey} is full (${batch.capacity} instances)`);
-            return null;
-        }
-
-        batch.entityMap.set(instanceIndex, entityId);
-        batch.count = Math.max(batch.count, instanceIndex + 1);
-        batch.mesh.count = batch.count;
-
-        if (batch.attributes && batch.attributes.clipIndex) {
-            batch.attributes.clipIndex.setX(instanceIndex, 0);
-            batch.attributes.animTime.setX(instanceIndex, 0);
-            batch.attributes.animSpeed.setX(instanceIndex, 1);
-            
-            batch.attributes.clipIndex.array[instanceIndex] = 0;
-            batch.attributes.animTime.array[instanceIndex] = 0;
-            batch.attributes.animSpeed.array[instanceIndex] = 1;
-            
-            batch.dirty.animation = true; 
-        }
-
-        const instance = { batchKey, instanceIndex };
-        this.entityToInstance.set(entityId, instance);
-        this._stats.instancesCreated++;
-    
-        return instance;
-    }
-
-    async createVATBatch(batchKey, objectType, spawnType, capacity) {
-        const collections = this.game.getCollections?.();
-        let objectDef = null;
-        
-        if (collections[objectType]) {
-            objectDef = collections[objectType][spawnType];
-            if (!objectDef && typeof spawnType === 'number') {
-                const objectKeys = Object.keys(collections[objectType]);
-                if (spawnType < objectKeys.length) {
-                    const unitKey = objectKeys[spawnType];
-                    objectDef = collections[objectType][unitKey];
-                }
-            }
-            if (!objectDef) {
-                objectDef = collections[objectType][String(spawnType)];
-            }
-        }
-        
-        if (!objectDef) {
-            console.error(`[RenderSystem] No object definition found for ${objectType} - ${spawnType}`);
-            return null;
-        }
-
-        let bundleResult;
-        try {
-            bundleResult = await this.game.modelManager.requestVATBundle(objectType, spawnType, objectDef);
-        } catch (error) {
-            console.error(`[RenderSystem] VAT bundle request failed for ${batchKey}:`, error);
-            return null;
-        }
-        
-        if (!bundleResult.ready) {
-            console.warn(`[RenderSystem] VAT bundle not ready for ${batchKey}`);
-            return null;
-        }
-
-        const bundle = bundleResult.bundle;
-        if (!bundle) {
-            console.error(`[RenderSystem] No bundle in result for ${batchKey}`, bundleResult);
-            return null;
-        }
-        
-        if (!bundle.geometry || !bundle.material) {
-            console.error(`[RenderSystem] Invalid VAT bundle for ${batchKey} - missing geometry or material:`, {
-                hasGeometry: !!bundle.geometry,
-                hasMaterial: !!bundle.material,
-                bundle
-            });
-            return null;
-        }
-
-        if (bundle.meta) {
-            if (bundle.meta.clips && bundle.meta.clipIndexByName) {
-                bundle.meta.clips.forEach((clip, arrayIndex) => {
-                    const mappedIndex = bundle.meta.clipIndexByName[clip.name];
-                    const match = mappedIndex === arrayIndex;
-                    if (!match) {
-                        console.error(`[RenderSystem] METADATA CORRUPTION: Clip "${clip.name}" index mismatch!`);
-                    }
-                });
-            }
-        } else {
-            console.error(`[RenderSystem] CRITICAL: No meta object in VAT bundle for ${batchKey}`);
-        }
-
-        const geometry = bundle.geometry.clone();
-        const material = bundle.material;
-
-        material.uuid = THREE.MathUtils.generateUUID();
-        material.needsUpdate = true;
-
-        material.userData = {
-            batchKey: batchKey,
-            createdAt: Date.now(),
-            vatTexture: bundle.meta.vatTextureId || 'unknown'
-        };
-
-        this.setupVATAttributes(geometry, capacity);
-
-        const mesh = new THREE.InstancedMesh(geometry, material, capacity);
-        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        mesh.count = 0;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.frustumCulled = false;
-        
-        const boundingBox = new THREE.Box3();
-        const size = this.modelScale * 2;
-        boundingBox.setFromCenterAndSize(new THREE.Vector3(0, 0, 0), new THREE.Vector3(size, size, size));
-        geometry.boundingBox = boundingBox;
-        geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), this.modelScale);
-
-        if (!material.side || material.side === THREE.FrontSide) {
-            material.side = THREE.DoubleSide;
-        }
-
-        this.game.scene.add(mesh);
-
-        const batch = {
-            mesh,
-            geometry,
-            material,
-            capacity,
-            count: 0,
-            entityMap: new Map(),
-            attributes: {
-                clipIndex: geometry.getAttribute('aClipIndex'),
-                animTime: geometry.getAttribute('aAnimTime'),
-                animSpeed: geometry.getAttribute('aAnimSpeed')
-            },
-            dirty: {
-                matrices: false,
-                animation: false
-            },
-            meta: bundle.meta,
-            bundleSource: `${objectType}/${spawnType}`
-        };
-
-        for (let i = 0; i < capacity; i++) {
-            batch.attributes.clipIndex.setX(i, 0);
-            batch.attributes.animTime.setX(i, 0);
-            batch.attributes.animSpeed.setX(i, 1);
-        }
-        batch.dirty.animation = true;
-
-        this.vatBatches.set(batchKey, batch);
-        this._stats.batchesActive = this.vatBatches.size;
-  
-        return batch;
-    }
-
-    setupVATAttributes(geometry, capacity) {
-        const clipIndexArray = new Float32Array(capacity).fill(0);
-        const animTimeArray = new Float32Array(capacity).fill(0);
-        const animSpeedArray = new Float32Array(capacity).fill(1);
-
-        const clipIndexAttr = new THREE.InstancedBufferAttribute(clipIndexArray, 1);
-        const animTimeAttr = new THREE.InstancedBufferAttribute(animTimeArray, 1);
-        const animSpeedAttr = new THREE.InstancedBufferAttribute(animSpeedArray, 1);
-        
-        clipIndexAttr.setUsage(THREE.DynamicDrawUsage);
-        animTimeAttr.setUsage(THREE.DynamicDrawUsage);
-        animSpeedAttr.setUsage(THREE.DynamicDrawUsage);
-        
-        geometry.setAttribute('aClipIndex', clipIndexAttr);
-        geometry.setAttribute('aAnimTime', animTimeAttr);
-        geometry.setAttribute('aAnimSpeed', animSpeedAttr);
-    }
-
-    updateInstanceTransform(instance, pos, velocity, facing) {
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return;
-
-        const matrix = new THREE.Matrix4();
-        const baseScale = (batch.meta && batch.meta.baseScale) ? batch.meta.baseScale : new THREE.Vector3(1, 1, 1);
-        const basePosition = (batch.meta && batch.meta.basePos) ? batch.meta.basePos : new THREE.Vector3(0, 0, 0);
-
-        const position = new THREE.Vector3(
-            pos.x + basePosition.x,
-            pos.y + basePosition.y,
-            pos.z + basePosition.z
-        );
-        
-        const quaternion = new THREE.Quaternion();
-        const facingAngle = this.calculateFacingAngle(velocity, facing);
-        if (facingAngle !== null) {
-            const isProjectile = !facing || facing.angle === undefined;
-			if(isProjectile) {
-                const direction = new THREE.Vector3(velocity.vx, velocity.vy, velocity.vz).normalize();
-                const defaultForward = new THREE.Vector3(0, 1, 0);
-                quaternion.setFromUnitVectors(defaultForward, direction);
-            } else {
-				quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -facingAngle + Math.PI / 2);
-			}
-        }
-
-        const scale = new THREE.Vector3(
-            this.modelScale * baseScale.x,
-            this.modelScale * baseScale.y,
-            this.modelScale * baseScale.z
-        );
-
-        matrix.compose(position, quaternion, scale);
-        batch.mesh.setMatrixAt(instance.instanceIndex, matrix);
-        batch.dirty.matrices = true;
-    }
-
-    calculateFacingAngle(velocity, facing) {
-        if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
-            return Math.atan2(velocity.vz, velocity.vx);
-        }
-        
-        if (facing && facing.angle !== undefined) {
-            return facing.angle;
-        }
-
-        return null;
-    }
-
-    updateAnimations() {
-        const dt = this.game.state?.deltaTime;
-        if (!dt) return;
-
-        for (const [batchKey, batch] of this.vatBatches) {
-            if (batchKey.startsWith('buildings_')) continue;
-            const clipIndexAttr = batch.attributes.clipIndex;
-            const animTimeAttr = batch.attributes.animTime;
-            const animSpeedAttr = batch.attributes.animSpeed;
-            
-            let hasAnimationUpdates = false;
-
-            for (const [instanceIndex, entityId] of batch.entityMap) {
-                const currentTime = animTimeAttr.array[instanceIndex];
-                const speed = animSpeedAttr.array[instanceIndex];
-                const clipIndex = clipIndexAttr.array[instanceIndex];
-
-                if (speed > 0) {
-                    const clip = batch.meta.clips[clipIndex];
-                    const duration = clip?.duration || 1.0;
-                    
-                    const newTime = (currentTime + dt * speed) % duration;
-                    animTimeAttr.array[instanceIndex] = newTime;
-                    hasAnimationUpdates = true;
-                }
-            }
-
-            if (hasAnimationUpdates) {
-                animTimeAttr.needsUpdate = true;
-                batch.dirty.animation = true;
-            }
-        }
-    }
-
-    finalizeUpdates() {
-        for (const batch of this.vatBatches.values()) {
-            if (batch.dirty.matrices) {
-                batch.mesh.instanceMatrix.needsUpdate = true;
-                batch.dirty.matrices = false;
-            }
-            
-            if (batch.dirty.animation) {
-                batch.attributes.clipIndex.needsUpdate = true;
-                batch.attributes.animSpeed.needsUpdate = true;
-                batch.dirty.animation = false;
-            }
-        }
-    }
-
-    setInstanceClip(entityId, clipName, resetTime = true) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) {
-            console.warn(`[RenderSystem] No instance found for entity ${entityId}`);
-            return false;
-        }
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) {
-            console.warn(`[RenderSystem] No batch found for key ${instance.batchKey}`);
-            return false;
-        }
-
-        const clipIndex = batch.meta.clipIndexByName[clipName];
-        if (clipIndex === undefined) {
-            console.warn(`[RenderSystem] Clip '${clipName}' not found in batch ${instance.batchKey}.`);
-            console.warn(`Available:`, Object.keys(batch.meta.clipIndexByName));
-            console.warn(`  - Batch meta clips array:`, batch.meta.clips?.map(c => c.name || 'unnamed'));
-            console.warn(`  - Bundle source:`, batch.bundleSource || 'unknown');
-            return false;
-        }
-
-        const currentEntity = batch.entityMap.get(instance.instanceIndex);
-        
-        if (currentEntity !== entityId) {
-            console.error(`[RenderSystem] SLOT CORRUPTION! Slot ${instance.instanceIndex} maps to ${currentEntity} but trying to write for ${entityId}`);
-            
-            let correctSlot = -1;
-            for (const [slot, mappedEntityId] of batch.entityMap.entries()) {
-                if (mappedEntityId === entityId) {
-                    correctSlot = slot;
-                    break;
-                }
-            }
-            if (correctSlot !== -1) {
-                console.warn(`[RenderSystem] RECOVERY: Found correct slot ${correctSlot} for entity ${entityId}`);
-                instance.instanceIndex = correctSlot;
-                this.entityToInstance.set(entityId, instance);
-            } else {
-                console.error(`[RenderSystem] CORRUPTION: Entity ${entityId} not found in any slot!`);
-                return false;
-            }
-        }
-
-        batch.attributes.clipIndex.setX(instance.instanceIndex, clipIndex);
-        batch.attributes.clipIndex.array[instance.instanceIndex] = clipIndex;
-        
-        if (resetTime) {
-            batch.attributes.animTime.setX(instance.instanceIndex, 0);
-            batch.attributes.animTime.array[instance.instanceIndex] = 0;
-        }
-        batch.dirty.animation = true;
-
-        const verifyClipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
-  
-        if (verifyClipIndex !== clipIndex) {
-            console.error(`[RenderSystem] WRITE FAILED! Expected ${clipIndex} but got ${verifyClipIndex}`);
-        }
-
-        return true;
-    }
-
-    setInstanceSpeed(entityId, speed) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) return false;
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return false;
-
-        batch.attributes.animSpeed.setX(instance.instanceIndex, speed);
-        batch.dirty.animation = true;
-    
-        return true;
-    }
-
-    setInstanceAnimationTime(entityId, time) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) return false;
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return false;
-
-        batch.attributes.animTime.setX(instance.instanceIndex, time);
-        batch.attributes.animTime.array[instance.instanceIndex] = time;
-        batch.dirty.animation = true;
-
-        return true;
-    }
-
-    getEntityAnimationState(entityId) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) return null;
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return null;
-
-        try {
-            const clipIndex = batch.attributes.clipIndex.array[instance.instanceIndex];
-            const animTime = batch.attributes.animTime.array[instance.instanceIndex];
-            const animSpeed = batch.attributes.animSpeed.array[instance.instanceIndex];
-
-            if (clipIndex === undefined || clipIndex === null) return null;
-
-            const clipName = Object.keys(batch.meta.clipIndexByName).find(
-                name => batch.meta.clipIndexByName[name] === clipIndex
-            );
-
-            return {
-                clipName,
-                clipIndex,
-                animTime,
-                animSpeed,
-                clipDuration: batch.meta.clips[clipIndex]?.duration || 1.0
-            };
-        } catch (error) {
-            return null;
-        }
-    }
-
-    cleanupRemovedEntities(currentEntities) {
-        const toRemove = [];
-        
-        for (const [entityId, instance] of this.entityToInstance) {
-            if (!currentEntities.has(entityId)) {
-                toRemove.push(entityId);
-            }
-        }
-
-        toRemove.forEach(entityId => {
-            this.removeInstance(entityId);
-        });
-    }
-
-    removeInstance(entityId) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) return;
-
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return;
-
-        const mappedEntity = batch.entityMap.get(instance.instanceIndex);
-        if (mappedEntity !== entityId) {
-            console.error(`[RenderSystem] CORRUPTION DETECTED! Instance ${instance.instanceIndex} maps to ${mappedEntity} but trying to remove ${entityId}`);
-        }
-
-        batch.entityMap.delete(instance.instanceIndex);
-        this.entityToInstance.delete(entityId);
-
-        const matrix = new THREE.Matrix4();
-        matrix.scale(new THREE.Vector3(0, 0, 0));
-        batch.mesh.setMatrixAt(instance.instanceIndex, matrix);
-        batch.dirty.matrices = true;
-
-        batch.attributes.clipIndex.setX(instance.instanceIndex, 0);
-        batch.attributes.animTime.setX(instance.instanceIndex, 0);
-        batch.attributes.animSpeed.setX(instance.instanceIndex, 0);
-        
-        batch.attributes.clipIndex.array[instance.instanceIndex] = 0;
-        batch.attributes.animTime.array[instance.instanceIndex] = 0;
-        batch.attributes.animSpeed.array[instance.instanceIndex] = 0;
-        
-        batch.dirty.animation = true;
-
-        this._stats.instancesRemoved++;
-    }
-
-    isInstanced(entityId) {
-        return this.entityToInstance.has(entityId);
-    }
-
-    getBatchInfo(objectType, spawnType) {
-        const batchKey = `${objectType}_${spawnType}`;
-        const batch = this.vatBatches.get(batchKey);
-        if (!batch) return null;
-
-        return {
-            batchKey,
-            capacity: batch.capacity,
-            count: batch.count,
-            activeInstances: batch.entityMap.size,
-            availableClips: Object.keys(batch.meta.clipIndexByName)
-        };
-    }
-
-    dumpBatches() {
-        const batches = [];
-        for (const [key, batch] of this.vatBatches) {
-            batches.push({
-                key,
-                capacity: batch.capacity,
-                count: batch.count,
-                activeInstances: batch.entityMap.size,
-                clips: Object.keys(batch.meta.clipIndexByName),
-                entityMappings: Array.from(batch.entityMap.entries())
-            });
-        }
-        return batches;
-    }
-
-    dumpInstances() {
-        const instances = [];
-        for (const [entityId, instance] of this.entityToInstance) {
-            const state = this.getEntityAnimationState(entityId);
-            instances.push({
-                entityId,
-                batchKey: instance.batchKey,
-                instanceIndex: instance.instanceIndex,
-                animationState: state
-            });
-        }
-        return instances;
-    }
-
-    entityDestroyed(entityId) {
-        this.removeInstance(entityId);
-    }
-
-    isEnemy(teamComp) {
-        const myTeam = this.game?.state?.mySide;
-        if (!teamComp || myTeam == null) return false;
-        return teamComp.team !== myTeam && teamComp.team !== "neutral";
-    }
-
-
-    hideEntityInstance(entityId) {
-        const instance = this.entityToInstance.get(entityId);
-        if (!instance) return;
-        const batch = this.vatBatches.get(instance.batchKey);
-        if (!batch) return;
-
-        const m = new THREE.Matrix4();
-        m.scale(new THREE.Vector3(0, 0, 0));
-        batch.mesh.setMatrixAt(instance.instanceIndex, m);
-        batch.dirty.matrices = true;
-
-        this.hiddenEntities.add(entityId);
-    }
-
-    showEntityInstance(entityId) {
-        this.hiddenEntities.delete(entityId);
-    }
-
-    destroy() {
-        for (const batch of this.vatBatches.values()) {
-            if (batch.mesh) {
-                this.game.scene.remove(batch.mesh);
-                batch.mesh.geometry?.dispose();
-                batch.mesh.material?.dispose();
-            }
-        }
-        
-        this.vatBatches.clear();
-        this.entityToInstance.clear();
-        this.batchCreationPromises.clear();
     }
 };
 
@@ -61084,4528 +56829,6 @@ window.engine.app.appClasses['ProjectileSystem'] = class ProjectileSystem extend
     }
 };
 
-// system: AnimationSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['AnimationSystem'] = class AnimationSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.animationSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-
-        // Animation state tracking (VAT-only, no mixers)
-        this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. }
-        
-        // Animation configuration
-        this.MIN_MOVEMENT_THRESHOLD = 0.1;
-        this.MIN_ATTACK_ANIMATION_TIME = 0.4;
-        this.STATE_CHANGE_COOLDOWN = 0.1;
-
-        // Single-play animations (play once then stop/transition)
-        this.SINGLE_PLAY_ANIMATIONS = new Set([
-            'attack', 'cast', 'death'
-        ]);
-
-    }
-
-    init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
-        this.game.gameManager.register('isAnimationFinished', this.isAnimationFinished.bind(this));
-        this.game.gameManager.register('setCorpseAnimation', this.setCorpseAnimation.bind(this));
-        this.game.gameManager.register('startCelebration', this.startCelebration.bind(this));
-        this.game.gameManager.register('stopCelebration', this.stopCelebration.bind(this));
-        this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
-        this.game.gameManager.register('getEntityAnimations', () => this.entityAnimationStates);
-    }
-
-    update() {
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
-        this.updateEntityAnimations();
-    }
-
-    updateEntityAnimations() {
-        const CT = this.componentTypes;
-        const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
-
-        entities.forEach(entityId => {
-            // Only process instanced entities
-            if (!this.game.renderSystem?.isInstanced(entityId)) return;
-
-            const velocity = this.game.getComponent(entityId, CT.VELOCITY);
-            const health = this.game.getComponent(entityId, CT.HEALTH);
-            const combat = this.game.getComponent(entityId, CT.COMBAT);
-            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-
-            // Ensure entity has animation state
-            if (!this.entityAnimationStates.has(entityId)) {
-                this.initializeEntityAnimationState(entityId);
-            }
-
-            // Update animation logic
-            this.updateEntityAnimationLogic(entityId, velocity, health, combat, aiState);
-        });
-
-        // Clean up removed entities
-        this.cleanupRemovedEntities(new Set(entities));
-    }
-
-    initializeEntityAnimationState(entityId) {
-        const state = {
-            currentClip: 'idle',
-            lastStateChange: this.game.state?.now || 0,
-            animationTime: 0,
-            minAnimationTime: 0,
-            pendingClip: null,
-            pendingSpeed: null,
-            pendingMinTime: null,
-            isTriggered: false,
-            isDying: false,
-            isCorpse: false,
-            isCelebrating: false,
-            // NEW: Track fallback usage to prevent thrashing
-            lastRequestedClip: null,    // What was originally requested
-            lastResolvedClip: null,     // What actually got set
-            fallbackCooldown: 0         // Time remaining before allowing re-request of failed clip
-        };
-
-        this.entityAnimationStates.set(entityId, state);
-
-        // Set initial animation
-        this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);
-        this.game.renderSystem?.setInstanceSpeed(entityId, 1);
-
-    }
-
-    updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
-    
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
-
-        const currentTime = this.game.state?.now || 0;
-        const deltaTime = this.game.state?.deltaTime || 1/60;
-        animState.animationTime += deltaTime;
-
-        // NEW: Handle animation completion for locked states
-        if (animState.isDying || animState.isCorpse || animState.isCelebrating) {
-            // Handle celebration completion ONLY
-            if (animState.isCelebrating && this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
-                const isFinished = this.isAnimationFinished(entityId, animState.currentClip);
-                
-                if (isFinished) {
-                    this.stopCelebration(entityId);
-                    return;
-                }
-            }
-            
-            return; // Still locked, don't process normal animation logic
-        }
-        // Handle pending triggered animations (from external calls)
-        if (animState.isTriggered && animState.pendingClip) {
-            this.applyTriggeredAnimation(entityId, animState);
-            return;
-        }
-
-        // Determine desired animation based on game state
-        const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, aiState);
-    
-        // Check if we should change animation
-        const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
-        
-
-        if (shouldChange) {
-            this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
-        } else {
-            // Update animation speed if needed (for continuous animations)
-            this.updateAnimationSpeed(entityId, desired.speed);
-        }
-    }
-
-    determineDesiredAnimation(entityId, velocity, health, combat, aiState) {
-        let clip = 'idle';
-        let speed = 1.0;
-        let minTime = 0;
-
-        if(this.game.state.phase == 'battle'){
-            // Check movement first
-            const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
-            
-            if (isMoving) {
-                clip = 'walk';
-                speed = this.calculateWalkSpeed(velocity);
-            }
-
-            // AI state overrides
-            if (aiState) {
-                switch (aiState.state) {
-                    case 'attacking':
-                    case 'combat':
-                        // During combat, prefer walking if moving, otherwise idle
-                        if (!isMoving) {
-                            clip = 'idle';
-                            speed = 1.0;
-                        }
-                        break;
-                        
-                    case 'chasing':
-                    case 'moving':
-                        clip = 'walk';
-                        speed = this.calculateWalkSpeed(velocity);
-                        break;
-                        
-                    case 'waiting':
-                        clip = isMoving ? 'walk' : 'idle';
-                        if (isMoving) speed = this.calculateWalkSpeed(velocity);
-                        break;
-                }
-            }
-        }
-
-        return { clip, speed, minTime };
-    }
-
-    shouldChangeAnimation(entityId, animState, desired, currentTime) {
-        // 1) If we are in a single-play clip, don't allow state changes until it's finished
-        if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
-            const finished = this.isAnimationFinished(entityId, animState.currentClip);
-
-            // Respect explicit minAnimationTime as an additional guard
-            const minTimeSatisfied = (animState.minAnimationTime <= 0) || (animState.animationTime >= animState.minAnimationTime);
-
-            // Block changes until BOTH: (a) clip finished OR (b) min time satisfied (use whichever is stricter for your game)
-            // If you want strictly "finished", change to: if (!finished) return false;
-            if (!finished && !minTimeSatisfied) {
-                return false;
-            }
-            // Once finished (or min time hit), we can flow through to normal logic below.
-        }
-
-        // 2) Cooldown: prevent thrashing even for continuous animations
-        const timeSinceLastChange = currentTime - animState.lastStateChange;
-        if(timeSinceLastChange < 0){
-            return true;
-
-        }
-        if (timeSinceLastChange < this.STATE_CHANGE_COOLDOWN) {
-            return false;
-        }
-
-        // 3) If the desired clip differs, allow change (this now runs AFTER the single-play guard)
-        if (animState.currentClip !== desired.clip) {
-            return true;
-        }
-
-        // 4) For single-play, if somehow the clip finished (edge case) allow refresh
-        if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
-            if (this.isAnimationFinished(entityId, animState.currentClip)) {
-                return true;
-            }
-        }
-
-        // 5) Respect minAnimationTime for non-single-play too
-        if (animState.minAnimationTime > 0 && animState.animationTime < animState.minAnimationTime) {
-            return false;
-        }
-
-        return false;
-    }
-
-    changeAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return false;
-
-        // Try to resolve clip name to available clip
-        const resolvedClip = this.resolveClipName(entityId, clipName);
-        
-        // Apply animation change
-        const success = this.game.renderSystem?.setInstanceClip(entityId, resolvedClip, true);
-        if (success) {
-            this.game.renderSystem?.setInstanceSpeed(entityId, speed);
-            
-            // Update state
-            animState.currentClip = resolvedClip;
-            animState.lastStateChange = this.game.state?.now || 0;
-            animState.animationTime = 0;
-            animState.minAnimationTime = minTime;
-            
-            return true;
-        } else {
-            console.warn(`[AnimationSystem] ❌ Failed to change animation for entity ${entityId}: ${clipName} -> ${resolvedClip}`);
-        }
-
-        return false;
-    }
-
-    updateAnimationSpeed(entityId, targetSpeed) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
-
-        // Only update speed for continuous animations
-        if (!this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
-            this.game.renderSystem?.setInstanceSpeed(entityId, targetSpeed);
-        }
-    }
-
-    applyTriggeredAnimation(entityId, animState) {
-        const clip = animState.pendingClip;
-        const speed = animState.pendingSpeed || 1.0;
-        const minTime = animState.pendingMinTime || 0;
-
-        // Clear pending state
-        animState.pendingClip = null;
-        animState.pendingSpeed = null;
-        animState.pendingMinTime = null;
-        animState.isTriggered = false;
-
-        // Apply the animation
-        this.changeAnimation(entityId, clip, speed, minTime);
-    }
-
-    // Public API methods
-    
-    triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) {
-            console.warn(`[AnimationSystem] No animation state for entity ${entityId}`);
-            return false;
-        }
-
-        
-        // Queue the animation
-        animState.pendingClip = clipName;
-        animState.pendingSpeed = speed;
-        animState.pendingMinTime = minTime;
-        animState.isTriggered = true;
-
-        return true;
-    }
-
-    playDeathAnimation(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) {
-            console.warn(`[AnimationSystem] ❌ No animation state found for entity ${entityId} during death`);
-            return;
-        }
-
-        // Set death state
-        animState.isDying = true;
-        animState.isCorpse = false;
-        animState.isCelebrating = false;
-        
-        // Clear any pending animations
-        animState.isTriggered = false;
-        animState.pendingClip = null;
-        animState.pendingSpeed = null;
-        animState.pendingMinTime = null;
-        
-        // Reset fallback tracking for death animation
-        animState.lastRequestedClip = null;
-        animState.lastResolvedClip = null;
-        animState.fallbackCooldown = 0;
-        
-        // Apply death animation immediately
-        this.changeAnimation(entityId, 'death', 1.0, 0);
-        
-    }
-
-    setCorpseAnimation(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
-
-        // Update animation state flags
-        animState.isDying = false;
-        animState.isCorpse = true;
-        
-        // Get the current clip's duration and set to last frame
-        const animationStateData = this.game.gameManager.call('getEntityAnimationState', entityId);
-        
-        if (animationStateData && animationStateData.clipDuration > 0) {
-            // Set to 99% through the animation (last frame before loop)
-            const lastFrameTime = animationStateData.clipDuration * 0.99;
-            this.game.gameManager.call('setInstanceAnimationTime', entityId, lastFrameTime);
-        }
-        
-        // Now freeze it at that frame
-        this.game.gameManager.call('setInstanceSpeed', entityId, 0);
-    }
-
-    startCelebration(entityId, teamType = null) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
-
-        animState.isCelebrating = true;
-        
-        // Try celebration animations, fallback to idle
-        const celebrationClips = ['celebrate'];
-        let clipToUse = 'idle';
-        
-        for (const clip of celebrationClips) {
-            if (this.hasClip(entityId, clip)) {
-                clipToUse = clip;
-                break;
-            }
-        }
-
-        this.changeAnimation(entityId, clipToUse, 1.0, 0);
-    }
-
-    stopCelebration(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
-
-        animState.isCelebrating = false;
-        this.changeAnimation(entityId, 'idle', 1.0, 0);
-    }
-
-    entityJump(entityId, speed = 1.0) {
-        if (this.hasClip(entityId, 'leap')) {
-            this.triggerSinglePlayAnimation(entityId, 'leap', speed, 0.5);
-        }
-    }
-
-    entityThrow(entityId, speed = 1.0) {
-        if (this.hasClip(entityId, 'throw')) {
-            this.triggerSinglePlayAnimation(entityId, 'throw', speed, 0.3);
-        }
-    }
-
-    stopAllAnimations(entityId) {
-        this.game.renderSystem?.setInstanceSpeed(entityId, 0);
-    }
-
-    // Utility methods
-
-    calculateWalkSpeed(velocity) {
-        if (!velocity) return 1.0;
-        const speed = Math.sqrt((velocity.vx || 0) ** 2 + (velocity.vz || 0) ** 2);
-        return Math.min(2.0, Math.max(0.5, speed / 30)); // Adjust divisor based on your units
-    }
-
-    isAnimationFinished(entityId, clipName) {
-        if (!this.SINGLE_PLAY_ANIMATIONS.has(clipName)) {
-            return false; // Continuous animations never finish
-        }
-
-        const animationState = this.game.gameManager.call('getEntityAnimationState', entityId);
-        if (!animationState) {
-            return true;
-        }
-
-        // Check if we've played through most of the clip
-        const progress = animationState.animTime / animationState.clipDuration;
-        const isFinished = progress >= 0.9; // Consider finished at 90%
-        
-        return isFinished;
-    }
-
-    hasClip(entityId, clipName) {
-        const CT = this.componentTypes;
-        const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-        if (!renderable) return false;
-
-        const batchInfo = this.game.renderSystem?.getBatchInfo(renderable.objectType, renderable.spawnType);
-        return batchInfo?.availableClips?.includes(clipName) || false;
-    }
-
-    resolveClipName(entityId, desiredClip) {
-        const CT = this.componentTypes;
-        const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-        if (!renderable) return 'idle';
-
-        const batchInfo = this.game.renderSystem?.getBatchInfo(renderable.objectType, renderable.spawnType);
-        if (!batchInfo) return 'idle';
-
-        const availableClips = batchInfo.availableClips;
-
-        // Return if exact match exists
-        if (availableClips.includes(desiredClip)) {
-            return desiredClip;
-        }
-
-        // Try fallbacks
-        const fallbacks = {
-            'attack': ['combat', 'fight', 'swing', 'strike', 'idle'],
-            'shoot': ['bow', 'cast', 'throw', 'attack', 'idle'],
-            'bow': ['shoot', 'cast', 'throw', 'attack', 'idle'],
-            'cast': ['shoot', 'throw', 'attack', 'idle'],
-            'walk': ['run', 'move', 'step', 'idle'],
-            'hurt': ['damage', 'hit', 'pain', 'idle'],
-            'death': ['die', 'idle'],
-            'celebrate': ['victory', 'cheer', 'dance', 'happy', 'win', 'idle']
-        };
-
-        const fallbackList = fallbacks[desiredClip] || ['idle'];
-        for (const fallback of fallbackList) {
-            if (availableClips.includes(fallback)) {
-                return fallback;
-            }
-        }
-
-        // Final fallback
-        return availableClips[0] || 'idle';
-    }
-
-    // Cleanup methods
-
-    cleanupRemovedEntities(currentEntities) {
-        const toRemove = [];
-        
-        for (const entityId of this.entityAnimationStates.keys()) {
-            if (!currentEntities.has(entityId)) {
-                toRemove.push(entityId);
-            }
-        }
-
-        toRemove.forEach(entityId => {
-            this.removeEntityAnimations(entityId);
-        });
-    }
-
-    entityDestroyed(entityId){
-        this.removeEntityAnimations(entityId);
-    }
-    removeEntityAnimations(entityId) {
-        this.entityAnimationStates.delete(entityId);        
-    }
-
-    destroy() {
-        this.entityAnimationStates.clear();
-    }
-
-};
-
-// system: ArmyDisplaySystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ArmyDisplaySystem'] = class ArmyDisplaySystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);  
-        this.game.armyDisplaySystem = this;
-        this.updateInterval = null;
-        this.lastUpdateData = null;
-    }
-    
-    initialize() {
-        this.addArmyDisplayCSS();
-        this.setupUpdateLoop();
-    }
-    
-    setupUpdateLoop() {
-        // Update army display every 500ms to avoid performance issues
-        this.updateInterval = setInterval(() => {
-            this.update();
-        }, 500);
-    }
-    
-    update() {
-        const playerArmy = document.getElementById('playerArmy');
-        const enemyArmy = document.getElementById('enemyArmy');
-        
-        if (!playerArmy || !enemyArmy) return;
-        
-        const armyData = this.getArmyData();
-        
-        // Only update if data has changed to avoid unnecessary DOM manipulation
-        if (this.hasDataChanged(armyData)) {
-            this.displayArmy(playerArmy, armyData.playerUnits, 'player');
-            this.displayArmy(enemyArmy, armyData.enemyUnits, 'enemy');
-            this.lastUpdateData = armyData;
-        }
-        
-        this.updateArmyStats(armyData);
-    }
-    
-    hasDataChanged(newData) {
-        if (!this.lastUpdateData) return true;
-        
-        return (
-            JSON.stringify(newData.playerUnits) !== JSON.stringify(this.lastUpdateData.playerUnits) ||
-            JSON.stringify(newData.enemyUnits) !== JSON.stringify(this.lastUpdateData.enemyUnits)
-        );
-    }
-    
-    getArmyData() {
-        try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const allUnits = this.game.getEntitiesWith(
-                ComponentTypes.TEAM, 
-                ComponentTypes.UNIT_TYPE, 
-                ComponentTypes.HEALTH
-            ) || [];
-            
-            const playerUnits = [];
-            const enemyUnits = [];
-            
-            allUnits.forEach(entityId => {
-                const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-                const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
-                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                const combat = this.game.getComponent(entityId, ComponentTypes.COMBAT);
-                
-                const unitInfo = {
-                    id: entityId,
-                    type: unitType?.type || 'Unknown',
-                    name: unitType?.name || unitType?.type || 'Unit',
-                    health: health?.current || 0,
-                    maxHealth: health?.max || 1,
-                    position: position ? { x: position.x, z: position.z } : null,
-                    damage: combat?.damage || 0,
-                    status: this.getUnitStatus(entityId)
-                };
-                
-                if (team?.team === 'player') {
-                    playerUnits.push(unitInfo);
-                } else if (team?.team === 'enemy') {
-                    enemyUnits.push(unitInfo);
-                }
-            });
-            
-            // Sort by health percentage (wounded units first, then by position)
-            const sortUnits = (units) => {
-                return units.sort((a, b) => {
-                    const healthPercentA = a.health / a.maxHealth;
-                    const healthPercentB = b.health / b.maxHealth;
-                    
-                    // Wounded units first
-                    if (healthPercentA < 1 && healthPercentB >= 1) return -1;
-                    if (healthPercentB < 1 && healthPercentA >= 1) return 1;
-                    
-                    // Then sort by position (front to back)
-                    if (a.position && b.position) {
-                        return a.position.x - b.position.x;
-                    }
-                    
-                    return 0;
-                });
-            };
-            
-            return {
-                playerUnits: sortUnits(playerUnits),
-                enemyUnits: sortUnits(enemyUnits)
-            };
-        } catch (error) {
-            console.warn('Error getting army data:', error);
-            return { playerUnits: [], enemyUnits: [] };
-        }
-    }
-    
-    getUnitStatus(entityId) {
-        try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-            const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-            
-            if (health?.current <= 0) return 'dead';
-            if (aiState?.state === 'attacking') return 'attacking';
-            if (aiState?.state === 'moving') return 'moving';
-            if (aiState?.state === 'idle') return 'idle';
-            
-            return 'unknown';
-        } catch (error) {
-            return 'unknown';
-        }
-    }
-    
-    displayArmy(container, units, armyType) {
-        // Clear container
-        container.innerHTML = '';
-        
-        if (units.length === 0) {
-            this.displayEmptyArmy(container, armyType);
-            return;
-        }
-        
-        // Create army header
-        this.createArmyHeader(container, units, armyType);
-        
-        // Display units
-        units.forEach((unit, index) => {
-            const unitElement = this.createUnitElement(unit, index, armyType);
-            container.appendChild(unitElement);
-        });
-    }
-    
-    displayEmptyArmy(container, armyType) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'army-empty';
-        emptyDiv.innerHTML = `
-            <div class="empty-icon">${armyType === 'player' ? '🛡️' : '⚔️'}</div>
-            <div class="empty-text">
-                ${armyType === 'player' ? 'No units deployed' : 'Enemy preparing...'}
-            </div>
-        `;
-        container.appendChild(emptyDiv);
-    }
-    
-    createArmyHeader(container, units, armyType) {
-        const header = document.createElement('div');
-        header.className = `army-header army-header-${armyType}`;
-        
-        const totalHealth = units.reduce((sum, unit) => sum + unit.health, 0);
-        const maxHealth = units.reduce((sum, unit) => sum + unit.maxHealth, 0);
-        const healthPercent = maxHealth > 0 ? Math.round((totalHealth / maxHealth) * 100) : 0;
-        
-        const aliveCount = units.filter(unit => unit.health > 0).length;
-        
-        header.innerHTML = `
-            <div class="army-summary">
-                <span class="unit-count">${aliveCount}/${units.length} Units</span>
-                <span class="health-percent ${this.getHealthPercentClass(healthPercent)}">${healthPercent}% HP</span>
-            </div>
-            <div class="army-health-bar">
-                <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
-            </div>
-        `;
-        
-        container.appendChild(header);
-    }
-    
-    createUnitElement(unit, index, armyType) {
-        const unitDiv = document.createElement('div');
-        unitDiv.className = `army-unit army-unit-${armyType}`;
-        unitDiv.dataset.unitId = unit.id;
-        
-        const healthPercent = unit.health / unit.maxHealth;
-        const healthClass = this.getHealthClass(healthPercent);
-        const statusIcon = this.getStatusIcon(unit.status);
-        
-        unitDiv.innerHTML = `
-            <div class="unit-info">
-                <div class="unit-name-row">
-                    <span class="unit-name">${unit.name}</span>
-                    <span class="unit-status">${statusIcon}</span>
-                </div>
-                <div class="unit-health-row">
-                    <span class="unit-health ${healthClass}">${unit.health}/${unit.maxHealth}</span>
-                    <span class="unit-damage">⚔️${unit.damage}</span>
-                </div>
-                <div class="unit-health-bar">
-                    <div class="health-bar-fill ${healthClass}" 
-                         style="width: ${Math.max(0, healthPercent * 100)}%"></div>
-                </div>
-            </div>
-        `;
-        
-        // Add click handler for unit selection/info
-        unitDiv.addEventListener('click', () => {
-            this.showUnitDetails(unit, armyType);
-        });
-        
-        // Add hover effects
-        unitDiv.addEventListener('mouseenter', () => {
-            this.highlightUnit(unit.id);
-        });
-        
-        unitDiv.addEventListener('mouseleave', () => {
-            this.unhighlightUnit(unit.id);
-        });
-        
-        return unitDiv;
-    }
-    
-    getHealthClass(healthPercent) {
-        if (healthPercent <= 0) return 'health-dead';
-        if (healthPercent <= 0.25) return 'health-critical';
-        if (healthPercent <= 0.5) return 'health-wounded';
-        if (healthPercent <= 0.75) return 'health-damaged';
-        return 'health-full';
-    }
-    
-    getHealthPercentClass(percent) {
-        if (percent <= 25) return 'health-critical';
-        if (percent <= 50) return 'health-wounded';
-        if (percent <= 75) return 'health-damaged';
-        return 'health-full';
-    }
-    
-    getStatusIcon(status) {
-        const icons = {
-            attacking: '⚔️',
-            moving: '🏃',
-            idle: '🛡️',
-            dead: '💀',
-            unknown: '❓'
-        };
-        return icons[status] || icons.unknown;
-    }
-    
-    showUnitDetails(unit, armyType) {
-        const details = `
-            <h3>${unit.name} Details</h3>
-            <div class="unit-details">
-                <div class="detail-row">
-                    <span>Health:</span>
-                    <span class="${this.getHealthClass(unit.health / unit.maxHealth)}">
-                        ${unit.health}/${unit.maxHealth}
-                    </span>
-                </div>
-                <div class="detail-row">
-                    <span>Damage:</span>
-                    <span>${unit.damage}</span>
-                </div>
-                <div class="detail-row">
-                    <span>Status:</span>
-                    <span>${this.getStatusIcon(unit.status)} ${unit.status}</span>
-                </div>
-                ${unit.position ? `
-                <div class="detail-row">
-                    <span>Position:</span>
-                    <span>(${unit.position.x.toFixed(1)}, ${unit.position.z.toFixed(1)})</span>
-                </div>
-                ` : ''}
-            </div>
-        `;
-
-        // Use the input handler to show modal
-        this.game.gameManager.call('showModal', `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
-    }
-    
-    highlightUnit(unitId) {
-        // Visual highlight on the battlefield (could integrate with effects system)
-        if (this.game.effectsSystem) {
-            // Get unit position and show highlight effect
-            try {
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
-                const position = this.game.getComponent(unitId, ComponentTypes.POSITION);
-                if (position) {
-                    // Convert world position to screen position and show highlight
-                    // This is a placeholder - actual implementation would depend on rendering system
-                    console.log(`Highlighting unit ${unitId} at position (${position.x}, ${position.z})`);
-                }
-            } catch (error) {
-                console.warn('Could not highlight unit:', error);
-            }
-        }
-    }
-    
-    unhighlightUnit(unitId) {
-        // Remove highlight
-        console.log(`Unhighlighting unit ${unitId}`);
-    }
-    
-    updateArmyStats(armyData) {
-        this.updateArmyStrength(armyData);
-        this.updateArmyComposition(armyData);
-    }
-    
-    updateArmyStrength(armyData) {
-        // Update army strength indicators
-        const playerStrength = this.calculateArmyStrength(armyData.playerUnits);
-        const enemyStrength = this.calculateArmyStrength(armyData.enemyUnits);
-        
-        // Update strength displays if they exist
-        const playerStrengthEl = document.getElementById('playerArmyStrength');
-        const enemyStrengthEl = document.getElementById('enemyArmyStrength');
-        
-        if (playerStrengthEl) {
-            playerStrengthEl.textContent = playerStrength;
-            playerStrengthEl.className = this.getStrengthClass(playerStrength);
-        }
-        
-        if (enemyStrengthEl) {
-            enemyStrengthEl.textContent = enemyStrength;
-            enemyStrengthEl.className = this.getStrengthClass(enemyStrength);
-        }
-    }
-    
-    calculateArmyStrength(units) {
-        return units.reduce((total, unit) => {
-            const healthFactor = unit.health / unit.maxHealth;
-            return total + (unit.damage * healthFactor);
-        }, 0);
-    }
-    
-    getStrengthClass(strength) {
-        if (strength >= 100) return 'strength-very-high';
-        if (strength >= 75) return 'strength-high';
-        if (strength >= 50) return 'strength-medium';
-        if (strength >= 25) return 'strength-low';
-        return 'strength-very-low';
-    }
-    
-    updateArmyComposition(armyData) {
-        // Update army composition displays
-        const playerComposition = this.analyzeComposition(armyData.playerUnits);
-        const enemyComposition = this.analyzeComposition(armyData.enemyUnits);
-        
-        // Could update composition indicators here
-        console.log('Player composition:', playerComposition);
-        console.log('Enemy composition:', enemyComposition);
-    }
-    
-    analyzeComposition(units) {
-        const composition = {};
-        units.forEach(unit => {
-            composition[unit.type] = (composition[unit.type] || 0) + 1;
-        });
-        return composition;
-    }
-    
-    addArmyDisplayCSS() {
-        if (document.querySelector('#army-display-styles')) return;
-        
-        const style = document.createElement('style');
-        style.id = 'army-display-styles';
-        style.textContent = `
-            .army-empty {
-                text-align: center; padding: 2rem; color: #666;
-            }
-            
-            .empty-icon {
-                font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;
-            }
-            
-            .empty-text {
-                font-size: 0.9rem; opacity: 0.7;
-            }
-            
-            .army-header {
-                background: rgba(255, 255, 255, 0.05);
-                padding: 0.8rem; margin-bottom: 0.5rem;
-                border-radius: 5px; border-left: 3px solid;
-            }
-            
-            .army-header-player { border-left-color: #00ff00; }
-            .army-header-enemy { border-left-color: #ff4444; }
-            
-            .army-summary {
-                display: flex; justify-content: space-between;
-                align-items: center; margin-bottom: 0.5rem;
-            }
-            
-            .unit-count {
-                font-weight: bold; color: #ccc;
-            }
-            
-            .health-percent {
-                font-weight: bold; font-size: 0.9rem;
-            }
-            
-            .army-health-bar {
-                height: 4px; background: #333; border-radius: 2px; overflow: hidden;
-            }
-            
-            .health-bar-fill {
-                height: 100%; transition: width 0.3s ease;
-            }
-            
-            .army-unit {
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid transparent;
-                border-radius: 4px; padding: 0.6rem;
-                margin: 0.3rem 0; cursor: pointer;
-                transition: all 0.2s ease;
-            }
-            
-            .army-unit:hover {
-                background: rgba(255, 255, 255, 0.08);
-                border-color: rgba(255, 255, 255, 0.2);
-                transform: translateX(2px);
-            }
-            
-            .army-unit-player:hover { border-left-color: #00ff00; }
-            .army-unit-enemy:hover { border-left-color: #ff4444; }
-            
-            .unit-info {
-                font-size: 0.85rem;
-            }
-            
-            .unit-name-row, .unit-health-row {
-                display: flex; justify-content: space-between;
-                align-items: center; margin-bottom: 0.3rem;
-            }
-            
-            .unit-name {
-                font-weight: bold; color: #ccc;
-            }
-            
-            .unit-status {
-                opacity: 0.8;
-            }
-            
-            .unit-health {
-                font-weight: bold;
-            }
-            
-            .unit-damage {
-                font-size: 0.8rem; opacity: 0.8;
-            }
-            
-            .unit-health-bar {
-                height: 3px; background: #333;
-                border-radius: 2px; overflow: hidden;
-            }
-            
-            /* Health color classes */
-            .health-full, .health-full .health-bar-fill { color: #00ff00; background-color: #00ff00; }
-            .health-damaged, .health-damaged .health-bar-fill { color: #88ff88; background-color: #88ff88; }
-            .health-wounded, .health-wounded .health-bar-fill { color: #ffff00; background-color: #ffff00; }
-            .health-critical, .health-critical .health-bar-fill { color: #ff8800; background-color: #ff8800; }
-            .health-dead, .health-dead .health-bar-fill { color: #ff0000; background-color: #ff0000; opacity: 0.5; }
-            
-            /* Strength classes */
-            .strength-very-high { color: #00ff88; }
-            .strength-high { color: #88ff88; }
-            .strength-medium { color: #ffff88; }
-            .strength-low { color: #ff8888; }
-            .strength-very-low { color: #ff4444; }
-            
-            /* Unit details modal content */
-            .unit-details {
-                font-family: monospace;
-            }
-            
-            .detail-row {
-                display: flex; justify-content: space-between;
-                padding: 0.5rem 0; border-bottom: 1px solid #333;
-            }
-            
-            .detail-row:last-child {
-                border-bottom: none;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    cleanup() {
-        if (this.updateInterval) {
-            clearInterval(this.updateInterval);
-        }
-    }
-}
-;
-
-// system: EffectsSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['EffectsSystem'] = class EffectsSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game); 
-        this.game.effectsSystem = this;
-        
-        // Screen effect tracking
-        this.screenEffects = [];
-        this.shakeActive = false;
-        this.flashActive = false;
-        
-        // UI notifications
-        this.notifications = [];
-        
-        // Single array for all active effects with unified update loop
-        this.activeEffects = [];
-        
-        // Object pools for reuse
-        this.geometryPool = new Map(); // type -> geometry[]
-        this.materialPool = new Map(); // key -> material[]
-        this.effectPool = []; // Reusable effect objects        
-        this.activeAuras = new Map();
-        
-        // Batching system
-        this.batchedEffects = new Map(); // type -> effects[]
-        
-        this.effectOffset = { x: 0, y: 75, z: 0 };
-        this.shakeData = null;
-        this.flashData = null;
-        // Performance tracking
-        this.stats = {
-            activeEffects: 0,
-            pooledObjects: 0
-        };
-    }
-
-    init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('createParticleEffect', this.createParticleEffect.bind(this));
-        this.game.gameManager.register('clearAllEffects', this.clearAllEffects.bind(this));
-        this.game.gameManager.register('showNotification', this.showNotification.bind(this));
-        this.game.gameManager.register('createLineEffect', this.createLineEffect.bind(this));
-        this.game.gameManager.register('createLightningBolt', this.createLightningBolt.bind(this));
-        this.game.gameManager.register('createEnergyBeam', this.createEnergyBeam.bind(this));
-        this.game.gameManager.register('playScreenShake', this.playScreenShake.bind(this));
-        this.game.gameManager.register('playScreenFlash', this.playScreenFlash.bind(this));
-        this.game.gameManager.register('initializeEffectsSystem', this.initialize.bind(this));
-    }
-
-    initialize() {
-        this.addEffectsCSS();
-        console.log('EffectsSystem initialized');
-    }
-    
-    // Batch process all effects using game time
-    updateAllEffects() {
-        if (!this.game.state) return;
-        
-        const currentTime = this.game.state.now;
-        if (!currentTime) return;
-        
-        const toRemove = [];
-        
-        for (let i = this.activeEffects.length - 1; i >= 0; i--) {
-            const effect = this.activeEffects[i];
-            const elapsed = currentTime - effect.startTime;
-            const progress = elapsed / effect.duration;
-            
-            if (progress >= 1) {
-                toRemove.push(i);
-                continue;
-            }
-            
-            this.updateEffect(effect, elapsed, progress);
-        }
-        
-        // Remove completed effects and return to pool
-        toRemove.forEach(index => {
-            const effect = this.activeEffects[index];
-            this.recycleEffect(effect);
-            this.activeEffects.splice(index, 1);
-        });
-        
-        this.stats.activeEffects = this.activeEffects.length;
-    }
-    
-    updateEffect(effect, elapsed, progress) {
-        const { material, animation } = effect;
-        
-        // Batch similar updates together
-        switch (effect?.animationType) {
-            case 'flicker':
-                this.updateFlickerEffect(effect, elapsed, animation);
-                break;
-            case 'pulse':
-                this.updatePulseEffect(effect, elapsed, animation);
-                break;
-            case 'fade':
-                this.updateFadeEffect(effect, progress, animation);
-                break;
-        }
-    }
-    
-    updateFlickerEffect(effect, elapsed, animation) {
-        if (animation?.flickerCount > 0 && effect?.flickerCount < animation?.flickerCount) {
-            if (elapsed % animation.flickerSpeed < animation.flickerSpeed / 2) {
-                if (animation.opacityFlicker) {
-                    effect.material.opacity = Math.random() * 0.6 + 0.4;
-                }
-                if (animation.colorFlicker) {
-                    const colors = [0x00ddff, 0x88aaff, 0xaaffff];
-                    effect.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
-                }
-                effect.flickerCount++;
-            }
-        }
-    }
-    
-    updatePulseEffect(effect, elapsed, animation) {
-        if (animation?.pulseEffect) {
-            const pulseIntensity = Math.sin(elapsed * 0.01) * 0.3 + 0.7;
-            effect.material.opacity = pulseIntensity;
-        }
-    }
-    
-    updateFadeEffect(effect, progress, animation) {
-        if (animation?.fadeOut && progress > 0.7) {
-            const fadeProgress = (progress - 0.7) / 0.3;
-            effect.material.opacity = effect.originalOpacity * (1 - fadeProgress);
-        }
-    }
-    
-    // Object pooling system
-    getPooledGeometry(type, points) {
-        const poolKey = `${type}_${points.length}`;
-        let pool = this.geometryPool.get(poolKey);
-        
-        if (!pool) {
-            pool = [];
-            this.geometryPool.set(poolKey, pool);
-        }
-        
-        if (pool.length > 0) {
-            const geometry = pool.pop();
-            geometry.setFromPoints(points);
-            geometry.computeBoundingSphere();
-            return geometry;
-        }
-        
-        return new THREE.BufferGeometry().setFromPoints(points);
-    }
-    
-    getPooledMaterial(config) {
-        const poolKey = `${config.color}_${config.linewidth}_${config.blending}`;
-        let pool = this.materialPool.get(poolKey);
-        
-        if (!pool) {
-            pool = [];
-            this.materialPool.set(poolKey, pool);
-        }
-        
-        if (pool.length > 0) {
-            const material = pool.pop();
-            material.opacity = config.opacity || 1.0;
-            material.color.setHex(config.color || 0xffffff);
-            return material;
-        }
-        
-        return new THREE.LineBasicMaterial({
-            color: config.color || 0xffffff,
-            linewidth: config.linewidth || 2,
-            transparent: true,
-            opacity: config.opacity || 1.0,
-            blending: config.blending || THREE.AdditiveBlending
-        });
-    }
-    
-    getPooledEffect() {
-        if (this.effectPool.length > 0) {
-            return this.effectPool.pop();
-        }
-        
-        return {
-            line: null,
-            geometry: null,
-            material: null,
-            startTime: 0,
-            duration: 0,
-            flickerCount: 0,
-            originalOpacity: 1,
-            animationType: null
-        };
-    }
-    
-    recycleEffect(effect) {
-        if (!effect) return;
-        
-        try {
-            // Remove from scene
-            if (this.game?.scene && effect.line) {
-                this.game.scene.remove(effect.line);
-            }
-            
-            // Return to pools
-            if (effect.geometry) {
-                const poolKey = `${effect.type}_${effect.geometry.attributes.position.count}`;
-                let pool = this.geometryPool.get(poolKey);
-                if (!pool) {
-                    pool = [];
-                    this.geometryPool.set(poolKey, pool);
-                }
-                if (pool.length < 10) { // Limit pool size
-                    pool.push(effect.geometry);
-                }
-            }
-            
-            if (effect.material) {
-                const poolKey = `${effect.material.color.getHex()}_${effect.material.linewidth}_${effect.material.blending}`;
-                let pool = this.materialPool.get(poolKey);
-                if (!pool) {
-                    pool = [];
-                    this.materialPool.set(poolKey, pool);
-                }
-                if (pool.length < 10) { // Limit pool size
-                    pool.push(effect.material);
-                }
-            }
-            
-            // Reset effect object and return to pool
-            effect.line = null;
-            effect.geometry = null;
-            effect.material = null;
-            effect.startTime = 0;
-            effect.duration = 0;
-            effect.flickerCount = 0;
-            effect.originalOpacity = 1;
-            effect.animationType = null;
-            
-            if (this.effectPool.length < 50) { // Limit pool size
-                this.effectPool.push(effect);
-            }
-            
-        } catch (e) {
-            console.warn('recycleEffect error:', e);
-        }
-    }
-    
-    // Main line effect creation (same interface, better performance)
-    createLineEffect(config) {
-        if (!this.game.scene) return null;
-        
-        const {
-            startPos,
-            endPos,
-            type = 'lightning',
-            style = {},
-            animation = {}
-        } = config;
-        
-        const lineConfig = this.getLineEffectConfig(type);
-        const mergedStyle = { ...lineConfig.style, ...style };
-        const mergedAnimation = { ...lineConfig.animation, ...animation };
-        
-        // Generate path based on type
-        const points = this.generateLinePath(startPos, endPos, type, mergedStyle);
-        
-        // Use pooled objects
-        const geometry = this.getPooledGeometry(type, points);
-        const material = this.getPooledMaterial(mergedStyle);
-        const effect = this.getPooledEffect();
-        
-        // Create line object
-        const lineEffect = new THREE.Line(geometry, material);
-        this.game.scene.add(lineEffect);
-        
-        // Setup effect tracking
-        effect.line = lineEffect;
-        effect.geometry = geometry;
-        effect.material = material;
-        effect.startTime = this.game.state.now;
-        effect.duration = mergedAnimation.duration || 1000;
-        effect.originalOpacity = material.opacity;
-        effect.type = type;
-        
-        // Determine animation type for efficient batching
-        if (mergedAnimation.flickerCount > 0) {
-            effect.animationType = 'flicker';
-        } else if (mergedAnimation.pulseEffect) {
-            effect.animationType = 'pulse';
-        } else if (mergedAnimation.fadeOut) {
-            effect.animationType = 'fade';
-        }
-        
-        this.activeEffects.push(effect);
-        
-        return effect;
-    }
-    
-    // Batch creation for multiple effects
-    createBatchedEffects(effects) {
-        const results = [];
-        
-        for (const config of effects) {
-            const effect = this.createLineEffect(config);
-            if (effect) {
-                results.push(effect);
-            }
-        }
-        
-        return results;
-    }
-    
-    // Keep existing interface methods unchanged
-    createLightningBolt(startPos, endPos, options = {}) {
-        return this.createLineEffect({
-            startPos,
-            endPos,
-            type: 'lightning',
-            style: options.style || {},
-            animation: options.animation || {}
-        });
-    }
-    
-    createEnergyBeam(startPos, endPos, options = {}) {
-        return this.createLineEffect({
-            startPos,
-            endPos,
-            type: 'beam',
-            style: options.style || {},
-            animation: options.animation || {}
-        });
-    }
-    
-    createMagicArc(startPos, endPos, options = {}) {
-        return this.createLineEffect({
-            startPos,
-            endPos,
-            type: 'arc',
-            style: options.style || {},
-            animation: options.animation || {}
-        });
-    }
-    
-    createChainLink(startPos, endPos, options = {}) {
-        return this.createLineEffect({
-            startPos,
-            endPos,
-            type: 'chain',
-            style: options.style || {},
-            animation: options.animation || {}
-        });
-    }
-    
-    // Line effect configuration (unchanged)
-    getLineEffectConfig(type) {
-        const configs = {
-            lightning: {
-                style: {
-                    color: 0x88aaff,
-                    linewidth: 3,
-                    opacity: 0.9,
-                    blending: THREE.AdditiveBlending,
-                    segments: 8,
-                    deviation: 15,
-                    jaggedIntensity: 1.2
-                },
-                animation: {
-                    duration: 0.3,
-                    flickerCount: 3,
-                    flickerSpeed: 50,
-                    opacityFlicker: true,
-                    colorFlicker: true,
-                    fadeOut: true
-                }
-            },
-            beam: {
-                style: {
-                    color: 0xff4444,
-                    linewidth: 4,
-                    opacity: 0.8,
-                    blending: THREE.AdditiveBlending,
-                    segments: 3,
-                    deviation: 2,
-                    jaggedIntensity: 0.1
-                },
-                animation: {
-                    duration: 0.5,
-                    pulseEffect: true,
-                    fadeOut: true
-                }
-            },
-            arc: {
-                style: {
-                    color: 0x44ff44,
-                    linewidth: 2,
-                    opacity: 0.7,
-                    blending: THREE.AdditiveBlending,
-                    segments: 12,
-                    deviation: 25,
-                    jaggedIntensity: 0.3,
-                    arcHeight: 30
-                },
-                animation: {
-                    duration: 0.8,
-                    fadeOut: true
-                }
-            },
-            chain: {
-                style: {
-                    color: 0xffaa00,
-                    linewidth: 3,
-                    opacity: 0.9,
-                    blending: THREE.AdditiveBlending,
-                    segments: 6,
-                    deviation: 8,
-                    jaggedIntensity: 0.8
-                },
-                animation: {
-                    duration: 0.6,
-                    flickerCount: 2,
-                    flickerSpeed: 80,
-                    fadeOut: true
-                }
-            }
-        };
-        
-        return configs[type] || configs.lightning;
-    }
-    
-    // Path generation (unchanged but more efficient)
-    generateLinePath(start, end, type, style) {
-        const points = [start.clone()];
-        const segments = style.segments || 5;
-        const deviation = style.deviation || 10;
-        const jaggedIntensity = style.jaggedIntensity || 1;
-        
-        // Different path generation based on type
-        if (type === 'arc') {
-            return this.generateArcPath(start, end, style.arcHeight || 20, segments);
-        }
-        
-        for (let i = 1; i < segments; i++) {
-            const t = i / segments;
-            const basePos = start.clone().lerp(end, t);
-            
-            // Add jagged deviation
-            if (deviation > 0 && jaggedIntensity > 0) {
-                const actualDeviation = deviation * jaggedIntensity;
-                basePos.x += (Math.random() - 0.5) * actualDeviation;
-                basePos.y += (Math.random() - 0.5) * actualDeviation * 0.5;
-                basePos.z += (Math.random() - 0.5) * actualDeviation;
-            }
-            
-            points.push(basePos);
-        }
-        
-        points.push(end.clone());
-        return points;
-    }
-    
-    generateArcPath(start, end, height, segments) {
-        const points = [];
-        const midPoint = start.clone().lerp(end, 0.5);
-        midPoint.y += height;
-        
-        for (let i = 0; i <= segments; i++) {
-            const t = i / segments;
-            const point = this.quadraticBezier(start, midPoint, end, t);
-            points.push(point);
-        }
-        
-        return points;
-    }
-    
-    quadraticBezier(p0, p1, p2, t) {
-        const point = new THREE.Vector3();
-        point.x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
-        point.y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
-        point.z = (1 - t) * (1 - t) * p0.z + 2 * (1 - t) * t * p1.z + t * t * p2.z;
-        return point;
-    }
-    
-    // Clear effects efficiently
-    clearAllEffects() {
-        // Clear all active line effects
-        for (const effect of this.activeEffects) {
-            this.recycleEffect(effect);
-        }
-        this.activeEffects = [];
-        
-        // Clear all active auras
-        if (this.activeAuras) {
-            this.activeAuras.clear();
-        }
-
-        // Clear particle effects
-        this.game.gameManager.call('clearAllParticles');
-
-        // Clear notifications
-        this.notifications.forEach(notification => {
-            this.removeNotification(notification);
-        });
-        
-        this.shakeActive = false;
-        this.flashActive = false;
-    }
-    
-    // Force cleanup with pool clearing
-    forceCleanup() {
-        this.clearAllEffects();
-        
-        // Clear pools
-        for (const [key, pool] of this.geometryPool) {
-            pool.forEach(geo => geo.dispose());
-            pool.length = 0;
-        }
-        
-        for (const [key, pool] of this.materialPool) {
-            pool.forEach(mat => mat.dispose());
-            pool.length = 0;
-        }
-        
-        this.effectPool.length = 0;
-        this.stats.pooledObjects = 0;
-    }
-    
-    // Performance monitoring
-    getPerformanceStats() {
-        const poolSize = Array.from(this.geometryPool.values()).reduce((sum, pool) => sum + pool.length, 0) +
-                        Array.from(this.materialPool.values()).reduce((sum, pool) => sum + pool.length, 0) +
-                        this.effectPool.length;
-        
-        this.stats.pooledObjects = poolSize;
-        
-        return {
-            ...this.stats,
-            memoryUsage: {
-                geometryPools: this.geometryPool.size,
-                materialPools: this.materialPool.size,
-                effectPool: this.effectPool.length
-            }
-        };
-    }
-    
-    // Keep all existing particle and screen effect methods unchanged
-    getEffectConfig(effectType) {
-        const configs = {
-            victory: {
-                count: 5,
-                shape: 'star',
-                color: 0x00ff00,
-                colorRange: { start: 0x00ff00, end: 0xffff00 },
-                lifetime: 1.5,
-                velocity: { speed: 8, spread: 0.5, pattern: 'burst' },
-                scale: 2,
-                scaleVariation: 0.3,
-                physics: { gravity: -0.5, drag: 0.99 },
-                rotation: { enabled: true, speed: 5 },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            },
-            defeat: {
-                count: 8,
-                shape: 'spark',
-                color: 0xff0000,
-                colorRange: { start: 0xff0000, end: 0x440000 },
-                lifetime: 2,
-                velocity: { speed: 6, spread: 0.8, pattern: 'burst' },
-                scale: 1.5,
-                scaleVariation: 0.4,
-                physics: { gravity: 0.3, drag: 0.95 },
-                rotation: { enabled: true, speed: 3 },
-                visual: { fadeOut: true, scaleOverTime: false, blending: 'normal' }
-            },
-            levelup: {
-                count: 12,
-                shape: 'glow',
-                color: 0xffaa00,
-                colorRange: { start: 0xffaa00, end: 0xffffff },
-                lifetime: 2.5,
-                velocity: { speed: 4, spread: 0.3, pattern: 'fountain' },
-                scale: 3,
-                scaleVariation: 0.2,
-                physics: { gravity: -0.2, drag: 0.98 },
-                rotation: { enabled: false },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            }
-        };
-        
-        return configs[effectType] || configs.victory;
-    }
-    
-    // Screen effects (unchanged)
-    playScreenShake(duration = 0.3, intensity = 2) {
-        if (this.shakeActive) return;
-        
-        const gameContainer = document.getElementById('gameContainer');
-        if (!gameContainer) return;
-        
-        this.shakeActive = true;
-        this.shakeData = {
-            startTime: this.game.state.now,
-            duration: duration, 
-            intensity: intensity,
-            originalTransform: gameContainer.style.transform
-        };
-    }
-
-    playScreenFlash(color = '#ffffff', duration = 0.3) {
-        // Disabled for now
-        // if (this.flashActive) return;
-        // return;
-        // this.flashActive = true;
-        // const flash = document.createElement('div');
-        // flash.className = 'screen-flash';
-        // flash.style.cssText = `
-        //     position: fixed;
-        //     top: 0;
-        //     left: 0;
-        //     width: 100%;
-        //     height: 100%;
-        //     background-color: ${color};
-        //     pointer-events: none;
-        //     z-index: 999;
-        //     opacity: 0.6;
-        // `;
-        
-        // document.body.appendChild(flash);
-        
-        // // Store flash data for game loop processing
-        // this.flashData = {
-        //     element: flash,
-        //     startTime: this.game.state.now,
-        //     duration: duration,
-        //     startOpacity: 0.6
-        // };
-    }
-    
-    // Particle effects - delegate to particle system
-    createParticleEffect(x, y, z, type, options = {}) {
-        // Convert to the config format that ParticleSystem.createParticles expects
-        const config = {
-            position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
-            count: options.count || 3,
-            shape: options.shape || 'circle',
-            color: options.color || 0xffffff,
-            colorRange: options.colorRange || null,
-            lifetime: options.lifetime || 1.5,
-            velocity: options.velocity || { speed: 5, spread: 1, pattern: 'burst' },
-            scale: (options.scaleMultiplier || 1) * 1.0,
-            scaleVariation: options.scaleVariation || 0.5,
-            physics: options.physics || { gravity: 0.5, drag: 0.98 },
-            rotation: options.rotation || { enabled: false, speed: 0 },
-            visual: options.visual || { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-        };
-
-        this.game.gameManager.call('createParticles', config);
-    }
-    
-    showVictoryEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'victory', options);
-        this.playScreenFlash('#44ff44', 0.3);
-        this.showGameNotification('Victory!', 'You won!', 'success', 2000);
-    }
-    
-    showDefeatEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'defeat', options);
-        this.playScreenFlash('#ff4444', 0.5);
-        this.showGameNotification('Defeat!', 'You lost!', 'error', 2000);
-    }
-    
-    showExplosionEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'explosion', options);
-        this.playScreenShake(0.2, 3);
-    }
-    
-    showHealEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'heal', options);
-    }
-    
-    showMagicEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'magic', options);
-    }
-    
-    showDamageEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'damage', options);
-    }
-    
-    showLevelUpEffect(x, y, z, options = {}) {
-        this.createParticleEffect(x, y, z, 'levelup', options);
-        this.playScreenShake(0.4, 1);
-        this.showGameNotification('Level Up!', 'Character advanced!', 'success', 3000);
-    }
-    
-    // Missing method that abilities are calling
-    createAuraEffect(x, y, z, type, duration) {
-        if (!this.game.particleSystem) return;
-        const auraId = `aura_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const startTime = this.game.state.now;
-        const position = new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z);
-        
-        // Create aura configuration
-        const config = this.getEffectConfig(type);
-        const auraData = {
-            id: auraId,
-            position: position.clone(),
-            type: type,
-            startTime: startTime,
-            duration: duration,
-            lastParticleTime: startTime,
-            particleInterval: 1, // 1 second between particle bursts
-            isActive: true,
-            config: {
-                count: 4,
-                shape: 'circle',
-                color: config.color || 0xffffff,
-                colorRange: config.colorRange || null,
-                lifetime: 2.0,
-                velocity: { speed: 2, spread: 0.8, pattern: 'burst' },
-                scale: (config.scale || 1) * 0.8,
-                scaleVariation: 0.3,
-                physics: { gravity: -0.1, drag: 0.98 },
-                rotation: { enabled: true, speed: 1 },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            }
-        };
-        
-        // Add to active auras tracking
-        if (!this.activeAuras) {
-            this.activeAuras = new Map();
-        }
-        this.activeAuras.set(auraId, auraData);
-        
-        return auraId;
-    }
-    
-    // Missing methods that were in the original EffectsSystem
-    showNotification(message, type = 'info', duration = 3000) {
-        const notification = document.createElement('div');
-        notification.className = `game-notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            z-index: 1000;
-            animation: notificationSlideIn 0.5s ease-out;
-            max-width: 300px;
-            word-wrap: break-word;
-        `;
-        
-        switch (type) {
-            case 'victory':
-                notification.style.background = 'linear-gradient(145deg, #001100, #003300)';
-                notification.style.border = '2px solid #00ff00';
-                notification.style.color = '#00ff00';
-                notification.style.textShadow = '0 0 10px rgba(0, 255, 0, 0.5)';
-                break;
-            case 'defeat':
-                notification.style.background = 'linear-gradient(145deg, #110000, #330000)';
-                notification.style.border = '2px solid #ff0000';
-                notification.style.color = '#ff4444';
-                notification.style.textShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
-                break;
-            case 'levelup':
-                notification.style.background = 'linear-gradient(145deg, #111100, #333300)';
-                notification.style.border = '2px solid #ffd700';
-                notification.style.color = '#ffd700';
-                notification.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
-                break;
-            default:
-                notification.style.background = 'linear-gradient(145deg, #001122, #003344)';
-                notification.style.border = '2px solid #00aaff';
-                notification.style.color = '#00aaff';
-                notification.style.textShadow = '0 0 10px rgba(0, 170, 255, 0.5)';
-        }
-        
-        document.body.appendChild(notification);
-        this.notifications.push(notification);
-        this.repositionNotifications();
-        
-        setTimeout(() => {
-            this.removeNotification(notification);
-        }, duration);
-    }
-    
-    showGameNotification(title, message, type = 'info', duration = 3000) {
-        const notification = document.createElement('div');
-        notification.className = `game-notification notification-${type}`;
-        notification.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
-            <div>${message}</div>
-        `;
-        
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid ${this.getNotificationColor(type)};
-            max-width: 300px;
-            z-index: 1001;
-            animation: notificationSlideIn 0.3s ease-out;
-        `;
-        
-        document.body.appendChild(notification);
-        this.notifications.push(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                    const index = this.notifications.indexOf(notification);
-                    if (index > -1) {
-                        this.notifications.splice(index, 1);
-                    }
-                }
-            }, 300);
-        }, duration);
-    }
-    
-    getNotificationColor(type) {
-        const colors = {
-            info: '#4444ff',
-            success: '#44ff44',
-            warning: '#ffaa00',
-            error: '#ff4444'
-        };
-        return colors[type] || '#4444ff';
-    }
-    
-    removeNotification(notification) {
-        if (document.body.contains(notification)) {
-            notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-                const index = this.notifications.indexOf(notification);
-                if (index > -1) {
-                    this.notifications.splice(index, 1);
-                }
-                this.repositionNotifications();
-            }, 300);
-        }
-    }
-    
-    repositionNotifications() {
-        this.notifications.forEach((notification, index) => {
-            notification.style.top = `${20 + index * 80}px`;
-        });
-    }
-    
-    getDamageColor(type) {
-        switch (type) {
-            case 'heal': return 0x00ff88;
-            case 'critical': return 0xff0044;
-            case 'poison': return 0x8a2be2;
-            case 'fire': return 0xff4400;
-            case 'cold': return 0x00bfff;
-            case 'lightning': return 0xffff00;
-            case 'divine': return 0xffd700;
-            default: return 0xff4444;
-        }
-    }
-    
-    addEffectsCSS() {
-        const style = document.createElement('style');
-        style.id = 'effects-styles';
-        style.textContent = `
-            .screen-flash {
-                transition: opacity 0.3s ease-out;
-            }
-            
-            @keyframes battleStartTransition {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
-            }
-            
-            @keyframes flashFade {
-                0% { opacity: 0.6; }
-                100% { opacity: 0; }
-            }
-            
-            @keyframes notificationSlideIn {
-                from { 
-                    transform: translateX(100%);
-                    opacity: 0; 
-                }
-                to { 
-                    transform: translateX(0);
-                    opacity: 1; 
-                }
-            }
-            
-            @keyframes notificationSlideOut {
-                from { 
-                    transform: translateX(0);
-                    opacity: 1; 
-                }
-                to { 
-                    transform: translateX(100%);
-                    opacity: 0; 
-                }
-            }
-            
-            .game-notification {
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-                backdrop-filter: blur(5px);
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // Main update method called by game loop
-    update() {
-        this.updateAllEffects();
-        this.updateAuras(); 
-        this.updateScreenEffects();
-    }
-    
-    updateAuras() {
-        if (!this.activeAuras || !this.game.state) return;
-        
-        const currentTime = this.game.state.now;
-        const aurasToRemove = [];
-        
-        for (const [auraId, auraData] of this.activeAuras) {
-            const elapsed = currentTime - auraData.startTime;
-            
-            // Check if aura has expired
-            if (elapsed >= auraData.duration) {
-                aurasToRemove.push(auraId);
-                continue;
-            }
-            
-            // Check if it's time to create new particles
-            const timeSinceLastParticle = currentTime - auraData.lastParticleTime;
-            if (timeSinceLastParticle >= auraData.particleInterval) {
-                this.createAuraParticles(auraData);
-                auraData.lastParticleTime = currentTime;
-            }
-        }
-        
-        // Remove expired auras
-        aurasToRemove.forEach(auraId => {
-            this.activeAuras.delete(auraId);
-        });
-    }
-    
-    updateScreenEffects() {
-        // Handle screen shake
-        if (this.shakeActive && this.shakeData) {
-            const gameContainer = document.getElementById('gameContainer');
-            if (!gameContainer) {
-                this.shakeActive = false;
-                return;
-            }
-            
-            const elapsed = this.game.state.now - this.shakeData.startTime;
-            const progress = elapsed / this.shakeData.duration;
-            
-            if (progress >= 1) {
-                gameContainer.style.transform = this.shakeData.originalTransform;
-                this.shakeActive = false;
-                this.shakeData = null;
-            } else {
-                const diminishingIntensity = this.shakeData.intensity * (1 - progress);
-                const shakeX = (Math.random() - 0.5) * diminishingIntensity;
-                const shakeY = (Math.random() - 0.5) * diminishingIntensity;
-                gameContainer.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
-            }
-        }
-        
-        // Handle screen flash
-        if (this.flashActive && this.flashData) {
-            const elapsed = this.game.state.now - this.flashData.startTime;
-            const progress = elapsed / this.flashData.duration;
-            
-            if (progress >= 1) {
-                // Flash finished
-                if (document.body.contains(this.flashData.element)) {
-                    document.body.removeChild(this.flashData.element);
-                }
-                this.flashActive = false;
-                this.flashData = null;
-            } else {
-                // Fade out the flash
-                const opacity = this.flashData.startOpacity * (1 - progress);
-                this.flashData.element.style.opacity = opacity;
-            }
-        }
-    }
-    
-    createAuraParticles(auraData) {
-        const particleConfig = {
-            position: auraData.position,
-            ...auraData.config
-        };
-
-        this.game.gameManager.call('createParticles', particleConfig);
-    }
-    
-    destroy() {
-        this.forceCleanup();
-        
-        // Clean up damage number system
-        if (this.damageNumberMesh) {
-            this.game.scene.remove(this.damageNumberMesh);
-            this.damageTextGeometry.dispose();
-            this.damageTextMaterial.dispose();
-            this.damageTexture.dispose();
-        }
-        
-        const styleElement = document.querySelector('#effects-styles');
-        if (styleElement) {
-            styleElement.remove();
-        }
-        
-        console.log('EffectsSystem destroyed');
-    }
-    
-    entityDestroyed(entityId) {
-        // Clean up any auras associated with this entity
-        if (this.activeAuras) {
-            const aurasToRemove = [];
-            for (const [auraId, auraData] of this.activeAuras) {
-                if (auraData.sourceEntityId === entityId || auraData.targetEntityId === entityId) {
-                    aurasToRemove.push(auraId);
-                }
-            }
-            aurasToRemove.forEach(auraId => this.activeAuras.delete(auraId));
-        }
-        
-        // Clean up any particle effects tracking
-        if (this.entityEffects) {
-            this.entityEffects.delete(entityId);
-        }
-    }
-};
-
-// system: GridSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['GridSystem'] = class GridSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.gridSystem = this;
-        
-        this.state = new Map();
-
-        // NEW: track which half each team owns
-        this.teamSides = { player: 'left', enemy: 'right' };
-        this.leftBounds = null;
-        this.rightBounds = null;
-    }
-    
-    init() {
-        this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
-        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
-        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
-        this.game.gameManager.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
-        this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
-        this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
-        this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
-
-        const collections = this.game.getCollections();
-
-        const terrainGridSize = collections.configs.game.gridSize;
-        const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
-        const currentLevel = collections.configs.state.level;
-        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
-
-        this.cellSize = placementGridSize;
-        this.terrainGridSize = terrainGridSize;
-        this.showGrid = true;
-        this.snapToGrid = true;
-        this.highlightValidCells = true;
-        
-        this.dimensions = {
-            width: Math.floor(terrainSize / placementGridSize),
-            height: Math.floor(terrainSize / placementGridSize),
-            cellSize: placementGridSize,
-            startX: -terrainSize / 2,
-            startZ: -terrainSize / 2
-        };
-        console.log("dimensions", this.dimensions);
-        
-        this.gridVisualization = null;
-
-        // Compute half-splits once
-        const half = Math.floor(this.dimensions.width / 2);
-        this.leftBounds = {
-            minX: 0,
-            maxX: half - 1,
-            minZ: 0,
-            maxZ: this.dimensions.height - 1
-        };
-        this.rightBounds = {
-            minX: half,
-            maxX: this.dimensions.width - 1,
-            minZ: 0,
-            maxZ: this.dimensions.height - 1
-        };
-
-        // Default: player=left, enemy=right (can be swapped later)
-        this.playerBounds = this.leftBounds;
-        this.enemyBounds  = this.rightBounds;
-        
-        // Pre-calculate world bounds for faster collision detection
-        this.worldBounds = {
-            minX: this.dimensions.startX,
-            maxX: this.dimensions.startX + (this.dimensions.width * placementGridSize),
-            minZ: this.dimensions.startZ,
-            maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
-        };
-    }
-
-    // NEW: set which half each team owns (call this when you learn sides from the server)
-    setTeamSides(sides) {
-        if (sides?.player === 'left' || sides?.player === 'right') {
-            this.teamSides.player = sides.player;
-        }
-        if (sides?.enemy === 'left' || sides?.enemy === 'right') {
-            this.teamSides.enemy = sides.enemy;
-        }
-
-        // Point player/enemy bounds at the correct half
-        this.playerBounds = (this.teamSides.player === 'left') ? this.leftBounds : this.rightBounds;
-        this.enemyBounds  = (this.teamSides.enemy  === 'left') ? this.leftBounds : this.rightBounds;
-
-    }
-    
-    createVisualization(scene) {
-        if (this.gridVisualization) {
-            scene.remove(this.gridVisualization);
-        }
-        
-        const group = new THREE.Group();
-        const { width, height, cellSize, startX, startZ } = this.dimensions;
-        
-        // Use BufferGeometry for better performance
-        const linePositions = [];
-        
-        // Vertical lines
-        for (let x = 0; x <= width; x++) {
-            const worldX = startX + (x * cellSize);
-            linePositions.push(
-                worldX, 1, startZ,
-                worldX, 1, startZ + (height * cellSize)
-            );
-        }
-        
-        // Horizontal lines
-        for (let z = 0; z <= height; z++) {
-            const worldZ = startZ + (z * cellSize);
-            linePositions.push(
-                startX, 1, worldZ,
-                startX + (width * cellSize), 1, worldZ
-            );
-        }
-        
-        const lineGeometry = new THREE.BufferGeometry();
-        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-        
-        const lineMaterial = new THREE.LineBasicMaterial({ 
-            color: 0x444444, 
-            transparent: true, 
-            opacity: 0.3 
-        });
-        
-        const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
-        group.add(lines);
-        
-        // Center divider line
-        const dividerPositions = [
-            startX + (width * cellSize / 2), 2, startZ,
-            startX + (width * cellSize / 2), 2, startZ + (height * cellSize)
-        ];
-        
-        const dividerGeometry = new THREE.BufferGeometry();
-        dividerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dividerPositions, 3));
-        
-        const dividerMaterial = new THREE.LineBasicMaterial({ 
-            color: 0xff0000, 
-            transparent: true, 
-            opacity: 0.5 
-        });
-        
-        const dividerLine = new THREE.LineSegments(dividerGeometry, dividerMaterial);
-        group.add(dividerLine);
-        
-        this.gridVisualization = group;
-        scene.add(this.gridVisualization);
-    }
-    
-    worldToGrid(worldX, worldZ) {
-        const { cellSize, startX, startZ } = this.dimensions;
-        return {
-            x: Math.floor((worldX - startX) / cellSize),
-            z: Math.floor((worldZ - startZ) / cellSize)
-        };
-    }
-    
-    gridToWorld(gridX, gridZ) {
-        const { cellSize, startX, startZ } = this.dimensions;
-        return {
-            x: startX + (gridX * cellSize),
-            z: startZ + (gridZ * cellSize)
-        };
-    }
-    
-    // OPTIMIZED: Early bounds checking
-    isValidPosition(gridPos) {
-        return gridPos.x >= 0 && gridPos.x < this.dimensions.width &&
-               gridPos.z >= 0 && gridPos.z < this.dimensions.height;
-    }
-
-    isValidGridPlacement(cells, team) {
-        if (!cells || cells.length === 0) return false;
-        
-        for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
-            const cellState = this.state.get(key);
-            if (cellState && cellState.occupied) {
-                return false;
-            }
-        }
-
-        
-        return true;
-    }
-
-    getUnitCells(entityId) {
-
-        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
-        const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
-
-        if(!unitType) return null;
-        const cells = [];
-
-        // For buildings, convert footprint (terrain grid units) to placement grid cells
-        // For units, use placementGridWidth/Height directly (already in placement grid units)
-        let placementGridWidth, placementGridHeight;
-
-        if (unitType.collection === 'buildings') {
-            // Buildings use footprint in terrain grid units, convert to placement grid cells (2x)
-            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 1;
-            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 1;
-            placementGridWidth = footprintWidth * 2;
-            placementGridHeight = footprintHeight * 2;
-        } else {
-            // Units use placement grid units directly
-            placementGridWidth = unitType.placementGridWidth || 1;
-            placementGridHeight = unitType.placementGridHeight || 1;
-        }
-
-        const gridPos = this.worldToGrid(pos.x, pos.z);
-        // Calculate starting position to center the formation
-        const startX = gridPos.x - Math.floor(placementGridWidth / 2);
-        const startZ = gridPos.z - Math.floor(placementGridHeight / 2);
-        for (let x = 0; x < placementGridWidth; x++) {
-            for (let z = 0; z < placementGridHeight; z++) {
-                cells.push({
-                    x: startX + x,
-                    z: startZ + z
-                });
-            }
-        }
-
-        return cells;
-    }
-
-    getNearbyUnits(pos, radius, excludeEntityId = null, collection = null) {
-        const gridPos = this.worldToGrid(pos.x, pos.z);
-        const cellRadius = Math.ceil(radius / this.cellSize);
-        
-        const nearbyUnits = [];
-        const radiusSq = radius * radius;
-        const seen = new Set(); // Prevent duplicates
-
-        for (let gz = gridPos.z - cellRadius; gz <= gridPos.z + cellRadius; gz++) {
-            for (let gx = gridPos.x - cellRadius; gx <= gridPos.x + cellRadius; gx++) {
-                if (!this.isValidPosition({ x: gx, z: gz })) continue;
-                
-                const cellState = this.getCellState(gx, gz);
-                if (!cellState?.entities?.length) continue;
-
-                for (const entityId of cellState.entities) {
-                    if (entityId === excludeEntityId || seen.has(entityId)) continue;
-
-                    const entityPos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
-                    const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
-                    
-                    if (!entityPos || !unitType) continue;
-
-                    const dx = entityPos.x - pos.x;
-                    const dz = entityPos.z - pos.z;
-                    const distSq = dx * dx + dz * dz;
-                    
-                    if(collection && unitType.collection != collection) continue;
-
-                    if (distSq <= radiusSq) {
-                        seen.add(entityId);
-                        nearbyUnits.push({
-                            x: entityPos.x,
-                            z: entityPos.z,
-                            y: entityPos.y,
-                            id: entityId,
-                            ...unitType
-                        });
-                    }
-                }
-            }
-        }
-        return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
-    }
-
-    onEntityPositionUpdated(entityId) {
-        const cells = this.getUnitCells(entityId);
-        this.freeCells(entityId);
-        this.occupyCells(cells, entityId);
-    }
-
-    occupyCells(cells, entityId) {       
-        for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
-            let cellState = this.state.get(key);
-
-            if (!cellState) {
-                cellState = { occupied: true, entities: [] };
-                this.state.set(key, cellState);
-            }
-
-            // Add entity if not already present
-            if (!cellState.entities.includes(entityId)) {
-                cellState.entities.push(entityId);
-            }
-            cellState.entities.sort((a, b) => a.localeCompare(b));     
-        }           
-    }
-        
-    freeCells(entityId) {
-        for (const [key, cellState] of this.state.entries()) {
-            if (cellState.entities.includes(entityId)) {
-                cellState.entities = cellState.entities.filter(id => id !== entityId);
-                
-                // Clean up empty cell
-                if (cellState.entities.length === 0) {
-                    this.state.delete(key);
-                } else {                    
-                    cellState.entities.sort((a, b) => a.localeCompare(b));
-                }
-            }
-        }
-    }
-
-    clear() {
-        console.log('grid system cleared');
-        this.state.clear();
-    }
-    
-    toggleVisibility(scene) {
-        this.showGrid = !this.showGrid;
-        
-        if (this.showGrid) {
-            this.createVisualization(scene);
-        } else if (this.gridVisualization) {
-            scene.remove(this.gridVisualization);
-            this.gridVisualization = null;
-        }
-    }
-    
-    getBounds(team) {
-        // Keep API compatibility; these references are updated by setTeamSides()
-        return team === 'right' ? this.rightBounds : this.leftBounds;
-    }
-        
-    getCellState(gridX, gridZ) {
-        return this.state.get(`${gridX},${gridZ}`);
-    }
-
-    getOccupiedCells() {
-        return Array.from(this.state.entries()).map(([key, value]) => {
-            const [x, z] = key.split(',').map(Number);
-            return { x, z, ...value };
-        });
-    }
-    
-    getGridInfo() {
-        return {
-            dimensions: this.dimensions,
-            leftBounds: this.leftBounds,
-            rightBounds: this.rightBounds,
-            teamSides: { ...this.teamSides },
-            occupiedCells: this.getOccupiedCells(),
-            totalCells: this.dimensions.width * this.dimensions.height,
-            occupiedCount: this.state.size
-        };
-    }
-    
-    // OPTIMIZED: Batch cell queries for better performance
-    areCellsOccupied(cells) {
-        for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
-            if (this.state.has(key)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    onDestroyBuilding(entityId){ 
-        this.freeCells(entityId);
-    }
-
-    onUnitKilled(entityId){  
-        this.freeCells(entityId);
-    }
-
-    
-    // OPTIMIZED: Fast world bounds check
-    isInWorldBounds(worldX, worldZ) {
-        return worldX >= this.worldBounds.minX && worldX <= this.worldBounds.maxX &&
-               worldZ >= this.worldBounds.minZ && worldZ <= this.worldBounds.maxZ;
-    }
-};
-
-// system: MultiplayerPlacementSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MultiplayerPlacementSystem'] = class MultiplayerPlacementSystem extends engine.BaseSystem {
-    constructor(game, sceneManager) {
-        super(game);
-        this.sceneManager = sceneManager;
-        this.game.placementSystem = this;
-        
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
-        this.canvas = this.game.canvas;
-        
-        this.playerPlacements = [];
-        this.opponentPlacements = [];        
-        this.undoStack = [];
-        this.maxUndoSteps = 10;
-        
-        this.game.state.targetPositions = new Map();
-        this.isPlayerReady = false;
-        this.hasSubmittedPlacements = false;
-        
-        this.lastMouseMoveTime = 0;
-        this.lastValidationTime = 0;
-        this.cachedValidation = null;
-        this.cachedGridPos = null;
-        this.groundMeshCache = null;
-        this.lastUpdateTime = 0;
-        this.config = {
-            maxSquadsPerRound: 2,
-            enablePreview: true,
-            enableUndo: true,
-            validationThrottle: .32
-        };
-        this.elements = {};
-        this.mouseWorldOffset = { x: 0, z: 0 };
-        this.mouseWorldPos = { x: 0, y: 0, z: 0 };
-        this.mouseScreenPos = { x: 0, y: 0 };
-    }
-
-    init(params) {
-        this.params = params || {};
-
-        this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
-        this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
-        this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
-        this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
-        this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
-        this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
-        this.mouseWorldOffset = { x: this.game.getCollections().configs.game.gridSize / 4, z: this.game.getCollections().configs.game.gridSize / 4 };
-
-    }
-
-    setupEventListeners() {
-        
-        this.elements.readyButton = document.getElementById('placementReadyBtn');
-        this.elements.undoButton = document.getElementById('undoBtn');
-
-        this.elements.readyButton.addEventListener('click', () => {
-            this.togglePlacementReady();
-        });
-        
-        this.elements.undoButton.addEventListener('click', () => {
-            this.undoLastPlacement();
-
-            this.elements.undoButton.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.elements.undoButton.style.transform = 'scale(1)';
-            }, 150);
-            
-            this.game.gameManager.call('showNotification', '↶ Last deployment undone', 'info', 2000);
-         
-        });
-        
-        this.elements.undoButton.addEventListener('mouseenter', () => {
-            if (!this.elements.undoButton.disabled) {
-                this.elements.undoButton.style.background = 'linear-gradient(135deg, #616161, #757575)';
-                this.elements.undoButton.style.transform = 'translateY(-2px)';
-                this.elements.undoButton.style.boxShadow = '0 4px 12px rgba(117, 117, 117, 0.3)';
-            }
-        });
-        
-        this.elements.undoButton.addEventListener('mouseleave', () => {
-            if (!this.elements.undoButton.disabled) {
-                this.elements.undoButton.style.background = 'linear-gradient(135deg, var(--stone-gray), #616161)';
-                this.elements.undoButton.style.transform = 'translateY(0)';
-                this.elements.undoButton.style.boxShadow = 'none';
-            }
-        });
-        if (this.config.enableUndo) {
-            document.addEventListener('keydown', (event) => {
-                if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
-                    event.preventDefault();
-                    this.undoLastPlacement();
-                }
-            });
-        }
-
-        if (this.config.enablePreview && this.placementPreview) {       
-            
-            this.canvas.addEventListener('mousemove', (event) => {
-                const rect = this.canvas.getBoundingClientRect();
-                this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;    
-            });
-            
-            this.canvas.addEventListener('mouseleave', () => {                
-                this.placementPreview.clear();
-                this.cachedValidation = null;
-                this.cachedGridPos = null;
-                document.body.style.cursor = 'default';
-            });
-        }
-        
-        this.mouseRayCastInterval = setInterval(() => {                    
-            
-            this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);
-            this.mouseWorldPos.x += this.mouseWorldOffset.x;
-            this.mouseWorldPos.z += this.mouseWorldOffset.z;
-            if (this.game.state.phase === 'placement' && 
-                this.game.state.selectedUnitType) {
-                this.updatePlacementPreview();
-            }
-                            
-        }, 100);
-        
-    }
-
-    initializeSubsystems() {
-       
-        this.squadManager = this.game.squadManager;
-        this.unitCreator = this.game.unitCreationManager;
-         
-        if (this.config.enablePreview) {
-            this.placementPreview = new GUTS.PlacementPreview(this.game);
-        }
-        
-        this.groundMeshCache = this.findGroundMesh();
-    }
-
-    onGameStarted() {
-        this.initializeSubsystems();
-        this.setupEventListeners();
-        this.getStartingState();
-        this.onPlacementPhaseStart();
-    }
-
-    getStartingState() {
-         this.game.networkManager.getStartingState((success, response) => {
-            if(success){
-                const buildingTypes = this.game.getCollections().buildings;
-                const unitTypes = this.game.getCollections().buildings;
-                response.startingUnits.forEach((unitData) => {
-                    const unitId = unitData.type;
-                    const unitPos = unitData.position;
-                    const collection = this.game.getCollections()[unitData.collection];
-                    if(collection){
-                        const unitDef = collection[unitId];
-                        const placementData = { id: unitId, collection: unitData.collection, ...unitDef };       
-                        const placement = this.createPlacementData(unitPos, placementData, this.game.state.mySide);
-                        placement.isStartingState = true;
-                        this.game.networkManager.submitPlacement(placement, (success, response) => {
-                            if(success){
-                                this.placeSquad(placement);
-                                if(placement.unitType.collection == "buildings"){
-                                    this.game.gameManager.call('addBuilding', placement.unitType.id, placement.squadUnits[0]);
-                                }
-                            }
-                        });            
-                    }          
-                });
-                const pos = response.camera.position;
-                const look = response.camera.lookAt;
-                this.game.camera.position.set(pos.x, pos.y, pos.z);
-                this.game.camera.lookAt(look.x, look.y, look.z);
-            }
-        });   
-    }
-
-    getPlacementsForSide(side){
-        if(side == this.game.state.mySide){
-            return this.playerPlacements;
-        } else {
-            return this.opponentPlacements;
-        }
-    }
-
-    onPlacementPhaseStart() {
-        this.isPlayerReady = false;
-        this.hasSubmittedPlacements = false;
-
-        this.game.gameManager.call('resetShop');
-        this.game.gameManager.call('clearAllDamageEffects');
-        this.game.gameManager.call('clearAllEffects');
-
-        this.enablePlacementUI();
-        this.elements.readyButton.textContent = 'Ready for Battle';
-    }
-    
-    respawnEnemyUnits() {
-        this.respawnSquads(this.opponentPlacements, this.game.state.mySide == 'left' ? 'right' : 'left');
-    }
-          
-    getTotalUnitCount(placements) {
-        return placements.reduce((sum, placement) => {
-            return sum + (placement.isSquad ? placement.squadUnits.length : 1);
-        }, 0);
-    }     
-    
-    createRespawnEffect(position, team) {
-        const effectType = team === 'player' ? 'magic' : 'heal';
-        this.game.gameManager.call('createParticleEffect',
-            position.x,
-            position.y,
-            position.z,
-            effectType,
-            { count: 3, speedMultiplier: 0.6 }
-        );
-    }
-        
-    enablePlacementUI() {
-        this.elements.readyButton.disabled = false;   
-        this.elements.undoButton.disabled = false;      
-    }
-        
-    disablePlacementUI() {
-        this.elements.readyButton.disabled = true; 
-        this.elements.undoButton.disabled = true;        
-    }
-
-    updatePlacementUI() {
-        if (this.elements.undoButton) {
-            this.elements.undoButton.disabled = this.undoStack.length === 0;
-            this.elements.undoButton.style.opacity = this.undoStack.length === 0 ? '0.5' : '1';
-        }
-    }
-
-    togglePlacementReady(callback) {
-        if (this.elements.readyButton) {
-            this.elements.readyButton.disabled = true;
-            this.elements.readyButton.textContent = 'Updating...';
-        }
-        this.game.networkManager.toggleReadyForBattle((success, response) => {
-            if(success){
-                this.hasSubmittedPlacements = true;
-                this.elements.readyButton.textContent = 'Waiting for Opponent...';
-            } else {
-                if (this.elements.readyButton) {
-                    this.elements.readyButton.disabled = false;
-                    this.elements.readyButton.textContent = 'Ready for Battle';
-                }
-            }
-        });
-    }
-
-    handleReadyForBattleUpdate(data) {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        if (data.playerId === myPlayerId) {
-            this.isPlayerReady = data.ready;
-            this.updatePlacementUI();
-        } 
-        
-        if (data.allReady) {
-            let opponentPlacements = null;
-            data.gameState.players.forEach((player) => {
-                if(player.id != myPlayerId){
-                    opponentPlacements = player.placements;
-                }
-            });
-            this.applyOpponentPlacements(opponentPlacements);
-            this.applyTargetPositions();
-            this.game.state.phase = 'battle';
-            this.game.triggerEvent("onBattleStart");
-            this.game.resetCurrentTime();
-            this.resetAI();
-            this.game.desyncDebugger.enabled = true;
-            this.game.desyncDebugger.displaySync(true);
-            if (this.elements.readyButton) {
-                this.elements.readyButton.disabled = true;
-                this.elements.readyButton.textContent = 'Battling!';
-            }
-        } else {
-            const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
-            if (opponentReady) {
-                this.game.gameManager.call('showNotification', 'Opponent is ready for battle!', 'info');
-            }
-        }
-    }
-
-    resetAI() {
-        const componentTypes = this.game.componentManager.getComponentTypes();            
-        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
-        AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
-            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
-            combat.lastAttack = 0;
-            aiState.aiBehavior = {};
-        });
-    }
-
-    applyTargetPositions(){
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
-        allPlacements.forEach((placement) => {
-            placement.squadUnits.forEach(entityId => {
-                const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                if (aiState && position) {
-                    let targetPosition = aiState.targetPosition;
-                    let meta = aiState.meta;
-                    let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
-                    if(tempMoveOrders){
-                        targetPosition = tempMoveOrders.targetPosition;
-                        meta = tempMoveOrders.meta;
-                        this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);                    
-                    }
-                    if(targetPosition){
-                        const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
-
-                        if(!currentAIController || currentAIController == "UnitOrderSystem"){
-                            const dx = position.x - targetPosition.x;
-                            const dz = position.z - targetPosition.z;
-                            const distSq = dx * dx + dz * dz;
-                            const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
-                            const threshold = placementGridSize * 0.5;
-
-                            if (distSq <= threshold * threshold) {
-                                this.game.gameManager.call('removeCurrentAIController', entityId);
-                                placement.targetPosition = null;
-                            } else {
-                                let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-                                currentOrderAI.targetPosition = targetPosition;
-                                currentOrderAI.path = [];
-                                  if(entityId == "peasant_1224_1368_right_1"){
-                                    console.log("applyTargetPositions");
-                                }
-                                currentOrderAI.meta = { ...meta };
-                                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
-                            }
-                        }
-                    }                    
-                }
-            });
-        });
-    }
-
-    update() {
-        if (this.game.state.phase !== 'placement') {
-            this.lastRaycastTime = 0;
-            this.lastValidationTime = 0;
-            this.lastUpdateTime = 0;            
-            this.disablePlacementUI();
-            return;
-        }
-        
-        if (this.game.state.now - this.lastValidationTime > this.config.validationThrottle) {
-            this.updateCursorState();
-            this.updatePlacementUI();
-            this.lastValidationTime = this.game.state.now;
-        }
-    }
-
-    applyOpponentPlacements(opponentData) {
-        opponentData.forEach(placement => {
-            if(this.game.gameManager.call('getOpponentPlacements').find(p => p.placementId === placement.placementId)) {
-                return;
-            }
-            this.placeSquad(placement);         
-        });
-
-        if (this.game.state) {
-            this.game.state.enemyPlacementComplete = true;
-        }
-    }
-
-    createEnemyFromOpponentPlacement(opponentPlacement) {
-        this.game.gameManager.call('setSquadInfo', opponentPlacement.placementId, opponentPlacement.experience);
-
-        if (this.game.squadManager && this.game.unitCreationManager) {
-            const unitPositions = this.game.squadManager.calculateUnitPositions(
-                opponentPlacement.gridPosition,
-                opponentPlacement.unitType
-            );
-
-            let squadUnits = [];
-            unitPositions.forEach((pos, index) => {
-                const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
-                const unitY = terrainHeight !== null ? terrainHeight : 0;
-
-                let entityId = this.game.unitCreationManager.create(
-                    pos.x,
-                    unitY,
-                    pos.z,
-                    opponentPlacement.targetPosition,
-                    opponentPlacement,
-                    this.game.state.mySide == 'right' ? 'left' : 'right'
-                );
-                if (opponentPlacement.unitType.id === 'goldMine') {
-                    // Convert footprint (terrain grid units) to placement grid cells
-                    const footprintWidth = opponentPlacement.unitType.footprintWidth || opponentPlacement.unitType.placementGridWidth || 2;
-                    const footprintHeight = opponentPlacement.unitType.footprintHeight || opponentPlacement.unitType.placementGridHeight || 2;
-                    const gridWidth = footprintWidth * 2;
-                    const gridHeight = footprintHeight * 2;
-
-                    const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
-
-                    this.game.gameManager.call('buildGoldMine',
-                        entityId,
-                        opponentSide,
-                        opponentPlacement.gridPosition,
-                        gridWidth,
-                        gridHeight
-                    );
-                }                
-                this.game.gameManager.call('reserveGridCells', opponentPlacement.cells, entityId);
-                squadUnits.push(entityId);
-            });
-            opponentPlacement.squadUnits = squadUnits;
-        }
-
-  
-
-        this.opponentPlacements.push(opponentPlacement);
-    }
-
-    handleUnitSelectionChange() {
-        this.cachedValidation = null;
-        this.cachedGridPos = null;
-        this.cachedWorldPos = null;
-        this.lastMouseX = null;
-        this.lastMouseY = null;
-        this.lastRaycastTime = null;
-        this.lastRaycastMouseX = null;
-        this.lastRaycastMouseY = null;
-        this.approximateWorldScale = null;
-        this.previousWorldPos = null;
-        this.previousMouseX = null;
-        this.previousMouseY = null;
-        
-        if (this.squadValidationCache) {
-            this.squadValidationCache.clear();
-        }
-        
-        if (this.placementPreview) {
-            this.placementPreview.clear();
-        }
-        
-        document.body.style.cursor = 'default';
-    }
-
-    onActivateBuildingPlacement(){
-        this.handleUnitSelectionChange();
-    }
-
-    handleCanvasClick(event) {
-        const state = this.game.state;
-        
-        if (this.settingTargetPosition) {
-            return;
-        }
-        
-        if (state.phase !== 'placement') {
-            return;
-        }
-        if(!state.selectedUnitType) {
-            return;
-        }
-        
-        if (this.isPlayerReady) {
-            return;
-        }
-        
-        if (!this.canPlayerPlaceSquad()) {
-            return;
-        }
-        
-        if (state.playerGold < state.selectedUnitType.value) {
-            return;
-        }
-        if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(this.game.state.mySide, state.selectedUnitType)) {
-            console.log('Not enough supply to place this unit');
-            return;
-        }
-
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
-
-        let isValidPlacement = this.isValidGridPlacement(this.mouseWorldPos);
-       
-        if (!isValidPlacement) {
-            return;
-        }
-    
-        if (this.game.squadManager) {
-            const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
-        
-            if (!validation.valid) {
-                return;
-            }
-        }
-        
-        const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
-
-        this.game.networkManager.submitPlacement(placement, (success, response) => {
-            if(success){
-                this.placeSquad(placement);
-            }
-        });        
-    }
-
-    canPlayerPlaceSquad() {
-        return true;
-    }
-
-    placeSquad(placement) {
-        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
-        const undoInfo = this.createUndoInfo(placement);
-        
-        const squadUnits = this.createSquadUnits(placement, unitPositions, placement.team, undoInfo);
-        placement.squadUnits = squadUnits;
-        placement.isSquad = squadUnits.length > 1;
-        this.updateGameStateForPlacement(placement, undoInfo);
-
-        this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
-
-        if (squadUnits.length <= 8) {
-            this.createPlacementEffects(unitPositions.slice(0, 8), placement.team);
-        }
-        
-        this.cachedValidation = null;
-        this.cachedGridPos = null;
-        
-        if (this.placementPreview) {
-            this.placementPreview.clear();
-        }
-
-        this.game.state.selectedUnitType = null;
-        this.handleUnitSelectionChange();
-        
-        return placement;
-    }
-
-    createSquadUnits(placement, unitPositions, team, undoInfo) {
-        const createdUnits = [];
-        
-        const maxUnits = Math.min(unitPositions.length, 16);
-        const positions = unitPositions.slice(0, maxUnits);
-        
-        positions.forEach(pos => {
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
-            const unitY = terrainHeight !== null ? terrainHeight : 0;
-
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
-            createdUnits.push(entityId);
-            undoInfo.unitIds.push(entityId);
-
-            this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
-
-            if(placement.unitType.id == 'goldMine'){
-                // Convert footprint (terrain grid units) to placement grid cells
-                const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
-                const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
-                const gridWidth = footprintWidth * 2;
-                const gridHeight = footprintHeight * 2;
-                this.game.gameManager.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
-            }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
-                const peasantInfo = placement.peasantInfo;
-                const peasantId = peasantInfo.peasantId;
-                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
-                if (peasantAbilities) {
-                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                    if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
-                    }
-                }
-                
-                this.game.state.peasantBuildingPlacement = null;
-            }
-        });
-        
-        return createdUnits;
-    }
-
-    createUndoInfo(placement) {
-        return {
-            type: 'squad_placement',
-            placementId: placement.placementId,
-            collection: placement.collection,
-            unitType: { ...placement.unitType },
-            cost: placement.unitType.value || 0,
-            gridPosition: { ...placement.gridPosition },
-            cells: [...placement.cells],
-            unitIds: [],
-            team: this.game.state.mySide,
-            timestamp: this.game.state.now
-        };
-    }
-
-    createPlacementData(gridPos, unitType, team) {
-        const squadData = this.game.squadManager.getSquadData(unitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-        
-        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}_${this.game.state.round}`;
-        return {
-            placementId: placementId,
-            gridPosition: gridPos,
-            cells: cells,
-            collection: unitType.collection,
-            unitType: { ...unitType },
-            squadUnits: [],
-            team: team,
-            targetPosition: this.game.state.targetPositions.get(placementId),
-            roundPlaced: this.game.state.round,
-            timestamp: this.game.state.now,
-            peasantInfo: this.game.state.peasantBuildingPlacement
-        };
-    }
-
-    updateGameStateForPlacement(placement, undoInfo) {                
-        if (this.isMyTeam(placement.team)) {
-            this.addToUndoStack(undoInfo);
-            if(!placement.isStartingState){
-                this.game.state.playerGold -= (placement.unitType.value || 0);
-            }
-            this.playerPlacements.push(placement);
-        } else {
-            this.opponentPlacements.push(placement);
-        }
-    }
-
-    setPlacementExperience(placements) {
-        if (placements) {
-            placements.forEach(placement => {
-                if (placement.experience && placement.placementId) {
-                    const experienceData = placement.experience;
-                    let squadData = this.game.gameManager.call('getSquadInfo', placement.placementId);
-                    
-                    if (squadData) {
-                        squadData.level = experienceData.level;
-                        squadData.experience = experienceData.experience;
-                        squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
-                        squadData.canLevelUp = experienceData.canLevelUp;                    
-                    }
-                }
-            });            
-        }
-    }
-
-    isMyTeam(team){
-        return team == this.game.state.mySide;
-    }
-
-    createPlacementEffects(unitPositions, team) {
-        const effectType = this.isMyTeam(team) ? 'magic' : 'defeat';
-        const maxEffects = Math.min(unitPositions.length, 6);
-
-        for (let i = 0; i < maxEffects; i++) {
-            const pos = unitPositions[i];
-            const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
-            const unitY = terrainHeight !== null ? terrainHeight : 0;
-
-            this.game.gameManager.call('createParticleEffect',
-                pos.x,
-                unitY,
-                pos.z,
-                effectType,
-                { count: 3, speedMultiplier: 0.8 }
-            );
-        }
-    }
-
-    undoLastPlacement() {
-        if (!this.config.enableUndo) return;
-        
-        const state = this.game.state;
-        
-        if (state.phase !== 'placement') {
-            return;
-        }
-        
-        if (this.isPlayerReady) {
-            return;
-        }
-        
-        if (this.undoStack.length === 0) {
-            return;
-        }
-        
-        const undoInfo = this.undoStack.pop();
-
-        try {
-            undoInfo.unitIds.forEach(entityId => {
-                if (this.game.destroyEntity) {
-                    this.game.destroyEntity(entityId);
-                }
-            });
-
-            state.playerGold += undoInfo.cost;
-
-            const placementIndex = this.playerPlacements.findIndex(p => p.placementId === undoInfo.placementId);
-            if (placementIndex !== -1) {
-                this.playerPlacements.splice(placementIndex, 1);
-            }
-
-            this.game.gameManager.call('removeSquad', undoInfo.placementId);
-
-            this.game.gameManager.call('releaseGridCells', undoInfo.placementId);
-            this.createUndoEffects(undoInfo);
-
-            this.cachedValidation = null;
-            this.cachedGridPos = null;
-            
-        } catch (error) {
-            console.error('Undo failed:', error);
-        }
-    }
-
-    createUndoEffects(undoInfo) {
-        const maxEffects = Math.min(undoInfo.cells.length, 4);
-
-        for (let i = 0; i < maxEffects; i++) {
-            const cell = undoInfo.cells[i];
-            const worldPos = this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z);
-            this.game.gameManager.call('createParticleEffect',
-                worldPos.x,
-                0,
-                worldPos.z,
-                'magic',
-                { count: 3, speedMultiplier: 0.7 }
-            );
-        }
-    }
-
-    getPlacementById(placementId) {
-        const playerPlacement = this.playerPlacements.find(placement => placement.placementId === placementId);
-        if (playerPlacement) {
-            return playerPlacement;
-        }
-        
-        const opponentPlacement = this.opponentPlacements.find(placement => placement.placementId === placementId);
-        if (opponentPlacement) {
-            return opponentPlacement;
-        }
-        
-        return null;
-    }
-
-    collectPlayerPlacements() {
-        return this.playerPlacements;
-    }
-
-   
-    updatePlacementPreview(event) {
-        if (!this.placementPreview) return;
-    
-        if (!this.mouseWorldPos) {
-            this.placementPreview.clear();
-            document.body.style.cursor = 'not-allowed';
-            return;
-        }
-
-        // Adjust world position to account for camera angle and cell centering
-        // Add half cell size to snap to nearest cell center
-
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
-        const state = this.game.state;
-        
-        let isValid = this.isValidGridPlacement(this.mouseWorldPos);
-        let unitPositions = null;
-        let isBuilding = state.selectedUnitType.collection === 'buildings';
-
-        const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-        if (this.game.squadManager.getSquadSize(squadData) > 1) {
-            unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
-        }
-        
-        // For buildings, show footprint-sized preview. For units, show placement grid cells.
-        const worldPositions = cells.map(cell =>
-            this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
-        );
-
-        if (unitPositions && unitPositions.length > 0) {
-            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid, isBuilding);
-        } else {
-            this.placementPreview.showAtWorldPositions(worldPositions, isValid, isBuilding);
-        }
-
-        document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
-    }
-
-    rayCastGround(mouseX, mouseY) {
-        if (!this.game.scene || !this.game.camera) return null;
-
-        if (!this.mouse) {
-            this.mouse = new THREE.Vector2();
-        }
-        this.mouse.set(mouseX, mouseY);
-
-        if (!this.raycaster) {
-            this.raycaster = new THREE.Raycaster();
-        }
-        this.raycaster.setFromCamera(this.mouse, this.game.camera);
-
-        // Try to raycast directly against the terrain mesh (most efficient)
-        const ground = this.game.gameManager.call('getGroundMesh');
-        if (ground) {
-            const intersects = this.raycaster.intersectObject(ground, false);
-            if (intersects.length > 0) {
-                return intersects[0].point;
-            }
-        }
-        return { x: 0, y: 0, z: 0 };
-    }
-
-    getFlatWorldPositionFromMouse(event, mouseX, mouseY) {
-        if (!this.game.scene || !this.game.camera) return null;
-
-        const mouse = new THREE.Vector2();
-        
-
-        mouse.set(mouseX, mouseY);
-        if (!this.raycaster) {
-            this.raycaster = new THREE.Raycaster();
-        }
-        this.raycaster.setFromCamera(mouse, this.game.camera);
-
-        // Fallback: raycast to flat plane at y=0 if ground mesh not available
-        const ray = this.raycaster.ray;
-
-        if (Math.abs(ray.direction.y) < 0.0001) {
-            return null;
-        }
-        const baseHeight = this.game.gameManager.call('getBaseTerrainHeight');
-        const distance = (baseHeight - ray.origin.y) / ray.direction.y;
-
-        if (distance < 0) {
-            return null;
-        }
-
-        const intersectionPoint = ray.origin.clone().add(
-            ray.direction.clone().multiplyScalar(distance)
-        );
-
-        return intersectionPoint;
-    }
-
-    findGroundMesh() {
-        for (let child of this.game.scene.children) {
-            if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
-                return child;
-            }
-        }
-        return null;
-    }
-
-    isValidGridPlacement(worldPos, unitDef) {
-        const selectedUnitType = unitDef || this.game.state.selectedUnitType;
-
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
-        let cells = [];
-        let isValid = false;
-        let gridValid = false;
-
-        if (selectedUnitType.collection === 'buildings') {
-            cells = this.calculateBuildingCells(gridPos, selectedUnitType);
-
-            if (selectedUnitType.id === 'goldMine') {
-                // Convert footprint to placement grid cells
-                const footprintWidth = selectedUnitType.footprintWidth || selectedUnitType.placementGridWidth || 2;
-                const footprintHeight = selectedUnitType.footprintHeight || selectedUnitType.placementGridHeight || 2;
-                const gridWidth = footprintWidth * 2;
-                const gridHeight = footprintHeight * 2;
-                const validation = this.game.gameManager.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
-                isValid = validation.valid;
-            } else {
-                gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
-
-                let terrainValid = true;
-                cells.forEach((cell) => {
-                    // Convert placement grid coordinates to terrain grid coordinates
-                    const terrainGridX = Math.floor(cell.x / 2);
-                    const terrainGridZ = Math.floor(cell.z / 2);
-                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', terrainGridX, terrainGridZ);
-                    if(!terrainTypeId) {
-                        terrainValid = false;
-                        return;
-                    }
-                    const terrainType = this.game.gameManager.call('getTileMapTerrainType', terrainTypeId);
-                    // Check walkability using placement grid cell (already in placement grid coords)
-                    const isPositionWalkable = this.game.gameManager.call('isGridPositionWalkable', cell);
-                    terrainValid = terrainValid && terrainType.buildable && isPositionWalkable;
-                });
-
-                isValid = gridValid && terrainValid;
-            }
-        } else {
-            const squadData = this.game.squadManager.getSquadData(selectedUnitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
-            isValid = gridValid;
-        }
-        return isValid;
-    }
-
-    addToUndoStack(undoInfo) {
-        if (!this.config.enableUndo) return;
-        
-        this.undoStack.push(undoInfo);
-        
-        if (this.undoStack.length > this.maxUndoSteps) {
-            this.undoStack.shift();
-        }
-    }
-
-    clearUndoStack() {
-        this.undoStack = [];
-    }
-
-    getUndoStatus() {
-        return {
-            canUndo: this.undoStack.length > 0 && this.config.enableUndo && !this.isPlayerReady,
-            undoCount: this.undoStack.length,
-            maxUndoSteps: this.maxUndoSteps,
-            lastAction: this.undoStack.length > 0 ? this.undoStack[this.undoStack.length - 1] : null
-        };
-    }
-
-    setTeamSides(sides) {
-        this.teamSides = {
-            player: sides?.player || 'left',
-            enemy: sides?.enemy || 'right'
-        };
-    }
-
-    calculateBuildingCells(gridPos, building) {
-        const cells = [];
-        // Convert footprint (terrain grid units) to placement grid cells (multiply by 2)
-        const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
-        const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
-        const gridWidth = footprintWidth * 2;
-        const gridHeight = footprintHeight * 2;
-
-        const startX = gridPos.x - Math.floor(gridWidth / 2);
-        const startZ = gridPos.z - Math.floor(gridHeight / 2);
-
-        for (let z = 0; z < gridHeight; z++) {
-            for (let x = 0; x < gridWidth; x++) {
-                cells.push({
-                    x: startX + x,
-                    z: startZ + z
-                });
-            }
-        }
-
-        return cells;
-    }
-
-
-    updateCursorState(isValid) {
-        if (this.isPlayerReady) {
-            document.body.style.cursor = 'not-allowed';
-        } else if (this.game.state.selectedUnitType) {
-            document.body.style.cursor = isValid ? 'crosshair' : 'not-allowed';
-        } else {
-            document.body.style.cursor = 'default';
-        }
-    }
-
-    onBattleEnd() {        
-        this.removeDeadSquadsAfterRound();
-    }
-        
-    removeDeadSquadsAfterRound() {
-        if (!this.game.componentManager) return;
-
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        this.playerPlacements = this.filterDeadSquads(this.playerPlacements, ComponentTypes);
-        this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements, ComponentTypes);
-    }
-
-    filterDeadSquads(placements, ComponentTypes) {
-        return placements.filter(placement => {
-            if (!placement.squadUnits || placement.squadUnits.length === 0) {
-                this.cleanupDeadSquad(placement);
-                return false;
-            }
-
-            const aliveUnits = placement.squadUnits.filter(entityId => {
-                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                const buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-                if(buildingState) return true;
-                return health && health.current > 0 && (!deathState || !deathState.isDying);
-            });
-
-            if (aliveUnits.length === 0) {
-                this.cleanupDeadSquad(placement);
-                return false;
-            }
-
-            placement.squadUnits = aliveUnits;
-            return true;
-        });
-    }
-
-    cleanupDeadSquad(placement) {
-        if (placement.placementId) {
-            this.game.gameManager.call('releaseGridCells', placement.placementId);
-            this.game.gameManager.call('removeSquad', placement.placementId);
-        }
-    }
-
-    resetAllPlacements() {
-        this.game.gameManager.call('resetSquadExperience');
-
-        this.playerPlacements = [];
-        this.opponentPlacements = [];
-        this.isPlayerReady = false;
-        this.hasSubmittedPlacements = false;
-        this.clearUndoStack();
-        
-        this.cachedValidation = null;
-        this.cachedGridPos = null;
-        this.groundMeshCache = null;
-        this.groundMeshCache = this.findGroundMesh();
-        
-        if (this.placementPreview) {
-            this.placementPreview.clear();
-        }
-    }
-
-    dispose() {
-        this.cachedValidation = null;
-        this.cachedGridPos = null;
-        this.groundMeshCache = null;
-        
-        if (this.placementPreview) {
-            this.placementPreview.dispose();
-        }
-                
-        this.resetAllPlacements();
-    }
-
-    getUnitAtWorldPosition(worldPos) {
-        const clickRadius = 30;
-        let closestEntityId = null;
-        let closestDistance = clickRadius;
-        
-        const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().TEAM
-        );
-        
-        entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-            const team = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().TEAM);
-            
-            const dx = pos.x - worldPos.x;
-            const dz = pos.z - worldPos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-            
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestEntityId = entityId;
-            }
-        });
-        
-        return closestEntityId;
-    }
-};
-
-// system: MultiplayerUISystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MultiplayerUISystem'] = class MultiplayerUISystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.uiSystem = this;
-        
-        // State tracking
-        this.currentScreen = null;
-        this.gameState = null;
-        this.config = {
-            maxSquadsPerRound: 2,
-            numBackgrounds: 5
-        };
-    }
-
-    // GUTS Manager Interface
-    init(params) {
-        this.params = params || {};
-        this.initializeUI();
-    }
-
-    initializeUI() {
-        let randomBG = Math.floor(Math.random() * (this.config.numBackgrounds + 1));
-        document.body.classList.add(`bg${randomBG}`);
-        // Add multiplayer UI elements to existing interface
-        const multiplayerHTML = `
-            <div id="multiplayerHUD" style="display: none; position: absolute; top: 10px; right: 330px; z-index: 1000;">
-                <div class="opponent-info">
-                    <h4>Opponent</h4>
-                    <div class="opponent-stats">
-                        <div>Name: <span id="opponentName">-</span></div>
-                        <div>Health: <span id="opponentHealth">100</span></div>
-                        <div>Gold: <span id="opponentGold">-</span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="multiplayerNotifications" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 2000;">
-                <!-- Notifications appear here -->
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', multiplayerHTML);
-    }
-
-    handleMultiplayerModeSelection(mode) {
-        // Create setup dialog for multiplayer
-        const setupDialog = document.createElement('div');
-        setupDialog.className = 'multiplayer-setup-dialog modal';
-
-        const interfaceConfig = this.game.getCollections().interfaces[mode.interfaceId]
-        setupDialog.innerHTML = interfaceConfig?.html || `Interface ${mode.interfaceId} not found`;
-
-        document.body.appendChild(setupDialog);
-        this.setupMultiplayerDialogEvents(setupDialog, mode);
-    }
-
-    setupMultiplayerDialogEvents(dialog, mode) {
-        const playerNameInput = dialog.querySelector('#playerName');
-        const quickMatchBtn = dialog.querySelector('#quickMatchBtn');
-        const createRoomBtn = dialog.querySelector('#createRoomBtn');
-        const joinRoomBtn = dialog.querySelector('#joinRoomBtn');
-        const roomIdInput = dialog.querySelector('#roomIdInput');
-        const cancelBtn = dialog.querySelector('#cancelMultiplayerBtn');
-
-        const getPlayerName = () => playerNameInput.value.trim() || 'Player';
-
-        if (quickMatchBtn) {
-            quickMatchBtn.addEventListener('click', () => {
-                this.game.networkManager.startQuickMatch(getPlayerName());
-                dialog.remove();
-            });
-        }
-
-        if (createRoomBtn) {
-            createRoomBtn.addEventListener('click', () => {
-                this.game.networkManager.createRoom(getPlayerName(), mode.maxPlayers);
-                dialog.remove();
-            });
-        }
-
-        if (joinRoomBtn) {
-            joinRoomBtn.addEventListener('click', () => {
-                const roomId = roomIdInput.value.trim().toUpperCase();
-                if (roomId) {
-                    this.game.networkManager.joinRoom(roomId, getPlayerName());
-                    dialog.remove();
-                } else {
-                    this.showNotification('Please enter a Room ID', 'error');
-                }
-            });
-        }
-
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                dialog.remove();
-            });
-        }
-
-        playerNameInput.focus();
-        playerNameInput.select();
-    }
-
-    toggleReady() {
-        // Disable button while updating
-        const btn = document.getElementById('player1ReadyBtn');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = 'Updating...';
-        }
-        this.game.networkManager.toggleReady(() => {
-        });
-    }
-    leaveRoom() {
-        this.game.networkManager.leaveRoom();
-        this.exitToMainMenu();
-    }
-
-
-    setupEventListeners() {
-        // Store bound handlers to enable proper cleanup
-        if (!this.boundHandlers) {
-            this.boundHandlers = {
-                readyClick: this.toggleReady.bind(this),
-                leaveClick: this.leaveRoom.bind(this)
-            };
-        }
-
-        // Clean up any existing listeners
-        const readyBtn = document.getElementById('player1ReadyBtn');
-        const leaveBtn = document.getElementById('leaveLobbyBtn');
-
-        if (readyBtn) {
-            // Remove old listener if it exists
-            readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
-            // Add new listener
-            readyBtn.addEventListener('click', this.boundHandlers.readyClick);
-        } 
-
-        if (leaveBtn) {
-            leaveBtn.removeEventListener('click', this.boundHandlers.leaveClick);
-            leaveBtn.addEventListener('click', this.boundHandlers.leaveClick);
-        }
-    }
-
-    showLobby(gameState, roomId) {
-        this.currentScreen = 'lobby';
-        this.roomId = roomId;
-          
-        // Show lobby screen
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById('multiplayerLobby').classList.add('active');
-
-        this.updateLobby(gameState);
-    }
-
-    updateLobby(gameState) {
-        if (!gameState) return;
-
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        
-        // Update room ID
-        const lobbyRoomId = document.getElementById('lobbyRoomId');
-        if (lobbyRoomId) {
-            lobbyRoomId.textContent = this.roomId || '------';
-        }
-        
-        // Update player count
-        const playerCount = document.getElementById('playerCount');
-        if (playerCount) {
-            playerCount.textContent = gameState.players?.length || 0;
-        }
-
-        // Update player cards
-        if (gameState.players) {
-            const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-
-            // Update my player card (Player 1)
-            if (myPlayer) {
-                const player1Name = document.getElementById('player1Name');
-                const player1Status = document.getElementById('player1Status');
-                const player1ReadyBtn = document.getElementById('player1ReadyBtn');
-                const player1Info = document.getElementById('player1Info');
-
-                if (player1Name) {
-                    player1Name.textContent = `${myPlayer.name} (You)${myPlayer.isHost ? ' - Host' : ''}`;
-                }
-                if (player1Status) {
-                    player1Status.textContent = myPlayer.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
-                    player1Status.className = `player-status ${myPlayer.ready ? 'ready' : 'waiting'}`;
-                }
-                if (player1ReadyBtn) {
-                    player1ReadyBtn.disabled = false;
-                    player1ReadyBtn.textContent = myPlayer.ready ? '⏳ CANCEL READY' : '🛡️ READY FOR BATTLE';
-                    player1ReadyBtn.className = myPlayer.ready ? 'ready-btn ready-state' : 'ready-btn';
-                }
-                if (player1Info) {
-                    player1Info.className = `player-card ${myPlayer.ready ? 'ready' : 'waiting'}`;
-                }
-            }
-
-            // Update opponent card (Player 2)
-            if (opponent) {
-                const player2Name = document.getElementById('player2Name');
-                const player2Status = document.getElementById('player2Status');
-                const player2Info = document.getElementById('player2Info');
-
-                if (player2Info) {
-                    player2Info.style.display = 'block';
-                    player2Info.className = `player-card ${opponent.ready ? 'ready' : 'waiting'}`;
-                }
-                if (player2Name) {
-                    player2Name.textContent = `${opponent.name}${opponent.isHost ? ' - Host' : ''}`;
-                }
-                if (player2Status) {
-                    player2Status.textContent = opponent.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
-                    player2Status.className = `player-status ${opponent.ready ? 'ready' : 'waiting'}`;
-                }
-            } else {
-                // Hide opponent card if no second player
-                const player2Info = document.getElementById('player2Info');
-                if (player2Info) {
-                    player2Info.style.display = 'none';
-                }
-            }
-
-            // Update start game button (only for host)
-            const startBtn = document.getElementById('startGameBtn');
-            if (startBtn && myPlayer?.isHost) {
-                const allReady = gameState.players.every(p => p.ready);
-                const canStart = gameState.players.length === 2 && allReady;
-                
-                startBtn.style.display = gameState.players.length === 2 ? 'block' : 'none';
-                startBtn.disabled = !canStart;
-                startBtn.textContent = allReady ? '⚡ COMMENCE WAR' : 'Waiting for Ready';
-            }
-
-            // Update lobby status message
-            const statusMsg = document.getElementById('lobbyStatusMessage');
-            if (statusMsg) {
-                if (gameState.players.length === 1) {
-                    statusMsg.textContent = 'Waiting for worthy opponents...';
-                } else if (gameState.players.length === 2) {
-                    const allReady = gameState.players.every(p => p.ready);
-                    statusMsg.textContent = allReady ? 
-                        'All warriors ready! Prepare for battle!' : 
-                        'Opponent found! Awaiting ready status...';
-                }
-            }
-        }
-
-        // Set up event listeners after DOM is updated
-        this.setupEventListeners();
-    }
-
-    onGameStarted(data) {
-
-        this.currentScreen = 'game';
-        
-        // Hide lobby, show game
-        document.getElementById('multiplayerLobby')?.classList.remove('active');
-        document.getElementById('gameScreen')?.classList.add('active');
-        
-        
-    }
-
-    showNotification(message, type = 'info', duration = 4000) {
-        const notification = document.createElement('div');
-        notification.textContent = message;
-        
-        const colors = {
-            info: '#00aaff',
-            success: '#00ff00',
-            warning: '#ffaa00',
-            error: '#ff4444'
-        };
-        
-        const color = colors[type] || colors.info;
-        notification.style.cssText = `
-            background: rgba(0, 0, 0, 0.9); border: 2px solid ${color};
-            color: ${color}; padding: 12px 16px; border-radius: 6px;
-            margin-bottom: 8px; font-weight: bold; pointer-events: auto; cursor: pointer;
-        `;
-        
-        notification.onclick = () => notification.remove();
-        
-        const container = document.getElementById('multiplayerNotifications') || document.body;
-        container.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, duration);
-    }
-    
-    start() {
-        this.game.gameManager.call('initializeParticleSystem');
-        this.game.gameManager.call('initializeEffectsSystem');
-    }
-
-    exitToMainMenu() {
-        this.currentScreen = null;
-        this.roomId = null;
-        this.isHost = false;
-        this.gameState = null;
-
-        if (this.game.screenManager?.showMainMenu) {
-            this.game.screenManager.showMainMenu();
-        } else {
-            window.location.reload();
-        }
-    }
-
- 
-    dispose() {
-        this.networkUnsubscribers.forEach(unsubscribe => {
-            if (typeof unsubscribe === 'function') {
-                unsubscribe();
-            }
-        });
-        this.networkUnsubscribers = [];
-        
-    }
-    onPlacementPhaseStart() {
-        const state = this.game.state;
-        state.phase = 'placement';
-        state.phaseTimeLeft = null; // No timer in multiplayer
-        state.playerReady = false;
-        state.enemyPlacementComplete = false; // Actually opponent placement
-        state.roundEnding = false;          
-    }
-    
-    onBattleEnd() {
-
-            
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const entitiesToDestroy = new Set();
-        
-        [
-            ComponentTypes.CORPSE
-        ].forEach(componentType => {
-            const entities = this.game.getEntitiesWith(componentType);
-            entities.forEach(id => entitiesToDestroy.add(id));
-        });
-        
-        entitiesToDestroy.forEach(entityId => {
-            try {
-                this.game.destroyEntity(entityId); 
-            } catch (error) {
-                console.warn(`Error destroying entity ${entityId}:`, error);
-            }
-        });
-        
-        
-    }
-       
-    startVictoryCelebration(victoriousUnits) {
-        // Determine which team won
-        const firstUnit = victoriousUnits[0];
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
-        const teamType = team?.team || 'player';
-
-        victoriousUnits.forEach(entityId => {
-            this.game.gameManager.call('startCelebration', entityId, teamType);
-        });
-    }
-
-    update() {
-        this.updatePhaseUI();
-        this.updateGoldDisplay();
-        this.updateRoundDisplay();
-        this.updateSideDisplay();
-    }
-
-    handleRoundResult(roundResult) {
-        const state = this.game.state;
-        state.phase = 'ended'; 
-    }
-
-    updatePhaseUI() {
-        const state = this.game.state;
-        
-        // Update round number
- 
-         
-        // Update phase status
-        const phaseStatusEl = document.getElementById('phaseStatus');
-        if (phaseStatusEl) {
-            if (state.phase === 'placement') {
-                if (state.playerReady) {
-                    phaseStatusEl.textContent = 'Army deployed! Waiting for opponent...';
-                } else {
-                    phaseStatusEl.textContent = 'Deploy your units and get ready!';
-                }
-            } else if (state.phase === 'battle') {
-                phaseStatusEl.textContent = 'Battle in progress! Watch your units fight!';
-            }
-        }
-    }
-    
-    updateGoldDisplay() {
-        const goldDisplay = document.getElementById('playerGold');
-        if (goldDisplay) {
-            goldDisplay.textContent = this.game.state.playerGold || 0;
-        }
-    }
-    
-    updateRoundDisplay() {
-        const roundNumberEl = document.getElementById('currentRound');
-        if (roundNumberEl) {
-            roundNumberEl.textContent = this.game.state.round || 1;
-        }
-    }
-    updateSideDisplay() {
-        const sideDisplay = document.getElementById('playerSide');
-        if (sideDisplay) {
-            sideDisplay.textContent = this.game.state.mySide || 0;
-        }
-    }
-   
-};
-
-// system: ShopSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ShopSystem'] = class ShopSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.shopSystem = this;
-        
-        this.ownedBuildings = new Map();
-        this.buildingUpgrades = new Map();
-        this.buildingProductionProgress = new Map();
-        this.game.state.selectedEntity = {
-            "collection": null,
-            "entityId": null
-        };
-        this.townHallLevel = 0;
-        
-        this.lastExperienceUpdate = 0;
-        this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
-    }
-
-    init() {
-        this.game.gameManager.register('addBuilding', this.addBuilding.bind(this));
-        this.game.gameManager.register('resetShop', this.reset.bind(this));
-        this.game.gameManager.register('updateSquadExperience', this.updateSquadExperience.bind(this));
-    }
-
-    updateSquadExperience() {
-        this.createExperiencePanel();
-    }
-
-    clearActionPanel() {
-        const container = document.getElementById('actionPanel');
-        if (!container) return;
-        container.innerHTML = '';
-    }
-
-    clearSelectedEntity() {    
-        this.game.state.selectedEntity.entityId = null;
-        this.game.state.selectedEntity.collection = null;
-    }
-    onUnitSelected(entityId){
-        const CT = this.game.componentManager.getComponentTypes();
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
-        if(unitType.collection == "buildings") {
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);        
-            this.renderBuildingActions(placement);
-        }
-    }
-    renderBuildingActions(placement) {
-        const building = placement.unitType;
-        const container = document.getElementById('actionPanel');  
-        if (!container) return;
-        container.innerHTML = '';
-        if (!building) {
-            this.clearSelectedEntity();
-            return;
-        }
-       
-        const buildingId = this.game.state.selectedEntity.entityId;
-        if(this.buildingProductionProgress.has(buildingId)){
-            const hasUnits = building.units && building.units.length > 0;
-            const hasUpgrades = building.upgrades && building.upgrades.length > 0;
-            if (hasUnits) {
-                const unitsSection = this.createUnitsSection(building);
-                container.appendChild(unitsSection);
-            }
-
-            if (hasUpgrades) {
-                const upgradesSection = this.createUpgradesSection(building);
-                container.appendChild(upgradesSection);
-            }
-
-            if (!hasUnits && !hasUpgrades) {
-                const empty = document.createElement('div');
-                empty.className = 'action-empty';
-                empty.textContent = 'No actions available';
-                container.appendChild(empty);
-            }
-        } else {
-            const empty = document.createElement('div');
-            empty.className = 'action-empty';
-            empty.textContent = 'Under Construction';
-            container.appendChild(empty);
-        }
-        
-        container.removeAttribute('style');
-    }
-
-    createUnitsSection(building) {
-        const section = document.createElement('div');
-        section.className = 'action-section';
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-        const UnitTypes = this.game.getCollections().units;
-        
-        const buildingId = this.game.state.selectedEntity.entityId;
-        const productionProgress = this.buildingProductionProgress.get(buildingId);
-        const remainingCapacity = 1 - productionProgress;
-        
-        building.units.forEach(unitId => {
-            const unit = UnitTypes[unitId];
-            const buildTime = unit.buildTime || 1;
-            const canAfford = this.game.state.playerGold >= unit.value;
-            const hasCapacity = buildTime <= remainingCapacity + 0.001;
-            
-            const hasSupply = !this.game.supplySystem || this.game.supplySystem.canAffordSupply(this.game.state.mySide, unit);
-            
-            let locked = !canAfford || !hasCapacity || !hasSupply;
-            let lockReason = null;
-            if (!canAfford) {
-                lockReason = "Can't afford";
-            } else if (!hasCapacity) {
-                lockReason = `Need ${buildTime.toFixed(1)} rounds`;
-            } else if (!hasSupply) {
-                lockReason = "Not enough supply";
-            }
-            
-            const btn = this.createActionButton({
-                iconId: unit.icon,
-                title: unit.title,
-                cost: unit.value,
-                buildTime: buildTime,
-                locked: locked,
-                lockReason: lockReason,
-                onClick: () => this.purchaseUnit(unitId, unit)
-            });
-            grid.appendChild(btn);
-        });
-
-        section.appendChild(grid);
-        return section;
-    }
-
-    createUpgradesSection(building) {
-        const section = document.createElement('div');
-        section.className = 'action-section';
-
-        const header = document.createElement('div');
-        header.className = 'action-section-header';
-        header.textContent = 'UPGRADES';
-        section.appendChild(header);
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-
-        const buildingId = this.game.state.selectedEntity.entityId;
-        const purchasedUpgrades = this.buildingUpgrades.get(buildingId) || new Set();
-
-        building.upgrades.forEach(upgradeId => {
-            const upgrade = this.game.getCollections().upgrades[upgradeId];
-            if (!upgrade) return;
-
-            const isOwned = purchasedUpgrades.has(upgradeId);
-            const locked = isOwned || this.game.state.playerGold < upgrade.value;
-
-            const btn = this.createActionButton({
-                icon: upgrade.icon || '⭐',
-                title: upgrade.title,
-                cost: upgrade.value,
-                locked: locked,
-                lockReason: isOwned ? 'Owned' : (locked ? "Can't afford" : null),
-                owned: isOwned,
-                onClick: () => !isOwned && this.purchaseUpgrade(upgradeId, upgrade, buildingId)
-            });
-            grid.appendChild(btn);
-        });
-
-        section.appendChild(grid);
-        return section;
-    }
-
-    createActionButton(options) {
-        const {
-            iconId,
-            title,
-            cost,
-            buildTime,
-            locked = false,
-            lockReason = null,
-            onClick
-        } = options;
-
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        if (locked) btn.classList.add('locked');
-
-        const iconEl = document.createElement('div');
-        iconEl.className = 'action-btn-icon';
-        if(iconId){
-            const icon = this.game.getCollections().icons[iconId];
-            if(icon && icon.filePath){
-                const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
-                iconEl.append(img);
-            } else {
-                iconEl.textContent =  '⚔️';
-            }
-        } else {
-            iconEl.textContent =  '⚔️';
-        }
-
-        
-        btn.appendChild(iconEl);
-        let costTxt = `💰 ${cost}`;
-        if (lockReason) {
-            costTxt = lockReason;
-        } 
-        btn.title = `${title} ${costTxt}`;
-        
-
-        if (!locked) {
-            btn.addEventListener('click', onClick);
-        }
-
-        return btn;
-    }
-
-    isBuildingLocked(buildingId, building) {
-        return this.game.state.playerGold < building.value ||
-               (building.requires && !this.hasRequirements(building.requires));
-    }
-
-    getLockReason(buildingId, building) {
-        if (this.game.state.playerGold < building.value) return "Can't afford";
-        if (building.requires && !this.hasRequirements(building.requires)) {
-            return 'Missing requirements';
-        }
-        return null;
-    }
-
-    hasRequirements(requirements) {
-        if (requirements.townHallLevel) {
-            if (this.townHallLevel < requirements.townHallLevel) return false;
-        }
-        if (requirements.buildings) {
-            for (const reqBuilding of requirements.buildings) {
-                if (!this.ownedBuildings.has(reqBuilding)) return false;
-            }
-        }
-        return true;
-    }
-
-    addBuilding(buildingId, entityId){
-        if(!this.ownedBuildings.has(buildingId)){
-            this.ownedBuildings.set(buildingId, [entityId]);
-        } else {
-            this.ownedBuildings.get(buildingId).push(entityId)            
-        }
-
-        this.buildingProductionProgress.set(entityId, 0);
-        this.buildingUpgrades.set(buildingId, new Set());        
-    }
-
-    purchaseUnit(unitId, unit) {
-        const buildingId = this.game.state.selectedEntity.entityId;
-        const placementId = this.getBuildingPlacementId(buildingId);
-        
-        if (!placementId) {
-            console.log('no building selected');
-            this.showNotification('No building selected!', 'error');
-            return;
-        }
-
-        const buildTime = unit.buildTime || 1;
-        const productionProgress = this.buildingProductionProgress.get(buildingId);
-        const remainingCapacity = 1 - productionProgress;
-        
-        if (buildTime > remainingCapacity + 0.001) {
-            this.showNotification(`Not enough production capacity! Need ${buildTime.toFixed(1)} rounds`, 'error');
-            return;
-        }
-
-        unit.id = unitId;
-        unit.collection = 'units';
-        const placementPos = this.findBuildingPlacementPosition(placementId, unit);
-        if (!placementPos) {
-            console.log('no valid placement');
-            this.showNotification('No valid placement near building!', 'error');
-            return;
-        }
-        const placement = this.game.gameManager.call('createPlacementData', placementPos, unit, this.game.state.mySide);
-
-        this.game.networkManager.submitPlacement(placement, (success, response) => {
-            if(success){
-                const newProgress = productionProgress + buildTime;
-                this.buildingProductionProgress.set(buildingId, newProgress);
-                this.game.gameManager.call('placeSquadOnBattlefield', placement);
-            }
-        });       
-    }
-
-    findBuildingPlacementPosition(placementId, unitDef) {
-        const buildingGridPos = this.getBuildingGridPosition(placementId);
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
-        if (!buildingGridPos) return null;
-
-        const gridSystem = this.game.gridSystem;
-        const placementSystem = this.game.placementSystem;
-        if (!gridSystem || !placementSystem) return null;
-
-        const buildingCells = placement.cells || [];
-        const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
-
-        const searchRadius = 12;
-        const spiralOffsets = this.generateSpiralOffsets(searchRadius);
-
-        for (const offset of spiralOffsets) {
-            const testPos = {
-                x: buildingGridPos.x + offset.x,
-                z: buildingGridPos.z + offset.z
-            };
-            
-            const testCellKey = `${testPos.x},${testPos.z}`;
-            if (buildingCellSet.has(testCellKey)) {
-                continue;
-            }
-            
-            const unitSquadData = this.game.squadManager.getSquadData(unitDef);
-            const unitCells = this.game.squadManager.getSquadCells(testPos, unitSquadData);
-            
-            const overlapsBuilding = unitCells.some(cell => 
-                buildingCellSet.has(`${cell.x},${cell.z}`)
-            );
-            
-            if (overlapsBuilding) {
-                continue;
-            }
-
-            const worldPos = gridSystem.gridToWorld(testPos.x, testPos.z);
-            if (placementSystem.isValidGridPlacement(worldPos, unitDef)) {
-                return testPos;
-            }
-        }
-
-        return null;
-    }
-
-    generateSpiralOffsets(maxRadius) {
-        const offsets = [];
-        let x = 0, z = 0;
-        let dx = 0, dz = -1;
-        
-        for (let i = 0; i < (maxRadius * 2) * (maxRadius * 2); i++) {
-            if ((-maxRadius < x && x <= maxRadius) && (-maxRadius < z && z <= maxRadius)) {
-                offsets.push({ x, z });
-            }
-            
-            if (x === z || (x < 0 && x === -z) || (x > 0 && x === 1 - z)) {
-                const temp = dx;
-                dx = -dz;
-                dz = temp;
-            }
-            
-            x += dx;
-            z += dz;
-        }
-        
-        return offsets;
-    }
-
-    getBuildingPlacementId(buildingId) {
-        const state = this.game.state;
-        const mySide = state.mySide;
-        const placements = this.game.gameManager.call('getPlacementsForSide', mySide);
-        if (!placements) return null;
-
-        for (const [placementIndex, placement] of Object.entries(placements)) {
-            for(const squadUnit of placement.squadUnits){
-                if (squadUnit === buildingId) {
-                    return placement.placementId;
-                }
-            }
-        }
-        return null;
-    }
-
-    getBuildingGridPosition(placementId) {
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
-        console.log('got placement', placement);
-        return placement.gridPosition;
-    }
-
-    purchaseUpgrade(upgradeId, upgrade) {
-        this.game.networkManager.purchaseUpgrade({ 
-            upgradeId, 
-            buildingId: this.game.state.selectedEntity.entityId 
-        }, (success, response) => {
-            if (success) {
-                if (!this.buildingUpgrades.has(this.game.state.selectedEntity.entityId)) {
-                    this.buildingUpgrades.set(this.game.state.selectedEntity.entityId, new Set());
-                }
-                this.buildingUpgrades.get(this.game.state.selectedEntity.entityId).add(upgradeId);
-                this.game.state.playerGold -= upgrade.value;
-                this.applyUpgradeEffects(this.game.state.mySide, upgrade);
-                this.showNotification(`${upgrade.title} purchased!`, 'success');
-            }
-        });
-    }
-
-    applyUpgradeEffects(team, upgrade) {
-        if (upgrade.effects) {
-            upgrade.effects.forEach(effectId => {
-                const effect = this.game.getCollections().effects[effectId];
-                if (effect) {
-                    effect.id = effectId;
-                    this.applyEffect(team, effect);
-                }
-            });
-        }
-    }
-
-    applyEffect(team, effectData) {
-        if(!this.game.state.teams){
-            this.game.state.teams = {};
-        }
-        if(!this.game.state.teams[team]) {
-            this.game.state.teams[team] = {};
-        } 
-        if(!this.game.state.teams[team].effects) {
-            this.game.state.teams[team].effects = {};
-        }
-        this.game.state.teams[team].effects[effectData.id] = effectData;
-    }
-
-    onPlacementPhaseStart() {
-        this.ownedBuildings.keys().forEach(buildingType => {
-            this.ownedBuildings.get(buildingType).forEach((buildingEntityId) => {
-                this.buildingProductionProgress.set(buildingEntityId, 0);
-            });
-        });
-    }
-
-    createExperiencePanel() {
-        const container = document.getElementById('unitPromotions');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
-        
-        if (squadsReadyToLevelUp.length === 0) return;
-
-        squadsReadyToLevelUp.forEach(squad => {
-            const panel = this.createExperienceCard(squad);
-            if (panel) {
-                container.appendChild(panel);
-            }
-        });
-    }
-
-    createExperienceCard(squad) {
-        const currentUnitType = this.getCurrentUnitType(squad.placementId, squad.team);
-        if (!currentUnitType) return null;
-
-        const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
-        const isSpecializationLevel = (squad.level) == 2;
-        const canSpecialize = isSpecializationLevel && hasSpecializations;
-        
-        const card = document.createElement('div');
-        card.className = 'experience-panel';
-
-        if (canSpecialize) {
-            const shimmer = document.createElement('div');
-            shimmer.classList.add("shimmer");
-            card.appendChild(shimmer);
-        }
-
-        const currentLevelText = ` (Lvl ${squad.level})`;
-        const nextLevelText = canSpecialize ? '⭐ Ascend!' : ` Level ${squad.level + 1}`;
-
-        const header = document.createElement('div');
-        header.className = 'experience-header';
-
-        const unitIcon = document.createElement('div');
-        unitIcon.className = 'experience-unit-icon';
-        unitIcon.textContent = currentUnitType.icon || '⚔️';
-        header.appendChild(unitIcon);
-
-        const info = document.createElement('div');
-        info.className = 'experience-info';
-
-        const title = document.createElement('div');
-        title.className = 'experience-title';
-        title.textContent = this.getSquadDisplayName(squad.placementId);
-        info.appendChild(title);
-
-        const subtitle = document.createElement('div');
-        subtitle.className = 'experience-subtitle';
-        subtitle.textContent = `${currentUnitType.title}${currentLevelText}`;
-        info.appendChild(subtitle);
-
-        header.appendChild(info);
-        card.appendChild(header);
-
-        const progress = document.createElement('div');
-        progress.className = 'experience-progress';
-
-        const progressBar = document.createElement('div');
-        progressBar.className = 'experience-progress-bar';
-
-        const progressFill = document.createElement('div');
-        progressFill.className = 'experience-progress-fill';
-        progressFill.style.width = '100%';
-        progressBar.appendChild(progressFill);
-
-        progress.appendChild(progressBar);
-
-        const xpText = document.createElement('div');
-        xpText.className = 'experience-xp-text';
-        xpText.textContent = 'Ready to advance!';
-        progress.appendChild(xpText);
-
-        card.appendChild(progress);
-
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'experience-buttons';
-
-        if (canSpecialize) {
-            const specBtn = document.createElement('button');
-            specBtn.className = 'btn btn-primary experience-btn';
-            specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
-            specBtn.onclick = () => {
-                this.game.gameManager.call('showSpecializationSelection',
-                    squad.placementId,
-                    squad,
-                    squad.levelUpCost
-                );
-            };
-            buttonContainer.appendChild(specBtn);
-        } else {
-            const levelUpBtn = document.createElement('button');
-            levelUpBtn.className = 'btn btn-primary experience-btn';
-            levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
-            levelUpBtn.onclick = () => {
-                this.game.gameManager.call('levelUpSquad', squad.placementId, squad.team);
-            };
-            buttonContainer.appendChild(levelUpBtn);
-        }
-
-        card.appendChild(buttonContainer);
-        return card;
-    }
-
-    getCurrentUnitType(placementId, team) {
-        const state = this.game.state;
-        const placement = state.placements?.[team]?.[placementId];
-        if (!placement) return null;
-        
-        const UnitTypes = this.game.getCollections().units;
-        return placement.unitType ? UnitTypes[placement.unitType] : null;
-    }
-
-    getSquadDisplayName(placementId) {
-        const match = placementId.match(/^([a-z]+)_(\d+)$/);
-        if (match) {
-            const side = match[1];
-            const index = parseInt(match[2], 10);
-            const sideLabel = side === 'left' ? 'Left' : side === 'right' ? 'Right' : side === 'center' ? 'Center' : 'Unknown';
-            return `${sideLabel} Squad ${index + 1}`;
-        }
-        return placementId;
-    }
-
-    showNotification(message, type) {
-        if (this.uiEnhancements) {
-            this.uiEnhancements.showNotification(message, type);
-        } 
-    }
-
-    update() {
-        const state = this.game.state;
-        const inPlacementPhase = state.phase === 'placement';
-
-        if (inPlacementPhase) {
-            if (this.game.state.now - this.lastExperienceUpdate > 2) {
-                const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
-                const hasReadySquads = squadsReadyToLevelUp && squadsReadyToLevelUp.length > 0;
-                const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
-
-                if (hasReadySquads !== hasExperiencePanel) {
-                    this.createExperiencePanel();
-                }
-
-                this.lastExperienceUpdate = this.game.state.now;
-            }
-        }
-    }
-
-    reset() {
-        this.clearSelectedEntity();
-    }
-
-  
-};
-
 // system: TeamHealthSystem
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['TeamHealthSystem'] = class TeamHealthSystem extends engine.BaseSystem {
@@ -65967,1059 +57190,6 @@ window.engine.app.appClasses['TeamHealthSystem'] = class TeamHealthSystem extend
         if (this.teamHealth.left <= 0) return 'right';
         if (this.teamHealth.right <= 0) return 'left';
         return null; // No winner yet
-    }
-};
-
-// system: HealthBarSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['HealthBarSystem'] = class HealthBarSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.healthBarSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        // Health bar configuration
-        this.HEALTH_BAR_WIDTH = 32;
-        this.HEALTH_BAR_HEIGHT = 4;
-        this.HEALTH_BAR_OFFSET_Y = 50; // Units above unit
-        this.BACKGROUND_DEPTH = 2; // Slight offset to prevent z-fighting
-        
-        // Track health bar meshes
-        this.healthBars = new Map(); // entityId -> { background, fill, group, lastHealth }
-        
-        // Initialize only after world system is ready
-        this.initialized = false;
-    }
-    
-    initialize() {
-        if (this.initialized || !this.game.scene) return;
-        
-        this.initialized = true;
-        console.log('Simple Quad HealthBarSystem initialized');
-    }
-    
-    update() {
-        // Wait for scene to be available from WorldSystem
-        if (!this.game.scene || !this.game.camera) {
-            return;
-        }
-        
-        // Initialize if not done yet
-        if (!this.initialized) {
-            this.initialize();
-        }
-        
-        // Get all entities with health and position
-        const healthEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.UNIT_TYPE
-        );
-        
-        // Update existing health bars and create new ones
-        healthEntities.forEach(entityId => {
-            const pos    = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const team   = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            if (!pos || !health) return;
-
-            // === Fog-of-war visibility filter (enemies only) ===
-            const isEnemy = this.isEnemy(team);
-            const isVisible = !isEnemy || this.isVisibleAt(pos);
-
-            // If enemy not visible: hide existing bar (if any) and skip work
-            if (!isVisible) {
-                const hb = this.healthBars.get(entityId);
-                if (hb) hb.group.visible = false;
-                return;
-            }
-            // Coming back into vision: unhide if we already have one
-            const existing = this.healthBars.get(entityId);
-            if (existing) existing.group.visible = true;
-            // === end FOW filter ===
-
-            // Create health bar if it doesn't exist
-            if (!existing) {
-                this.createHealthBarMesh(entityId, team);
-            }
-
-            // Update health bar
-            this.updateHealthBarMesh(entityId, pos, health, team);
-        });
-        
-        // Clean up health bars for destroyed entities
-        this.cleanupRemovedHealthBars(healthEntities);
-    }
-    
-    createHealthBarMesh(entityId, team) {
-        // Create group to hold both background and fill
-        const group = new THREE.Group();
-        
-        // Create background quad (dark background)
-        const backgroundGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
-        const backgroundMaterial = new THREE.MeshBasicMaterial({
-            color: 0x222222
-        });
-        const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
-        background.position.z = -this.BACKGROUND_DEPTH; // Slightly behind
-        
-        // Create health fill quad
-        const fillGeometry = new THREE.PlaneGeometry(this.HEALTH_BAR_WIDTH, this.HEALTH_BAR_HEIGHT);
-        const fillMaterial = new THREE.MeshBasicMaterial({
-            color: this.getHealthColor(team)
-        });
-        const fill = new THREE.Mesh(fillGeometry, fillMaterial);
-        
-        // Add both to group
-        group.add(background);
-        group.add(fill);
-        
-        // Add to scene
-        this.game.scene.add(group);
-        
-        // Store references
-        this.healthBars.set(entityId, {
-            background: background,
-            fill: fill,
-            group: group,
-            fillGeometry: fillGeometry,
-            fillMaterial: fillMaterial,
-            lastHealth: -1, // Force initial update
-            lastHealthPercent: -1,
-            lastMaxHealth: -1, // Track max health changes for notch updates
-            notches: [] // Array to hold notch meshes
-        });
-        
-        // Set high render order to ensure health bars render on top of everything
-        background.renderOrder = 9999;
-        fill.renderOrder = 10000;
-    }
-    
-    updateHealthBarMesh(entityId, pos, health, team) {
-        const healthBarData = this.healthBars.get(entityId);
-        if (!healthBarData) return;
-        
-        const { background, fill, group, fillGeometry, fillMaterial } = healthBarData;
-        
-
-        // Position group above unit
-        const unitType  = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        const collections = this.game.getCollections?.();
-        const unitData = (unitType && collections && collections[unitType.collection])
-            ? collections[unitType.collection][unitType.id]
-            : null;
-
-        const baseY   = pos.y || 0;
-        const heightY = (unitData && unitData.height != null)
-            ? unitData.height
-            : this.HEALTH_BAR_OFFSET_Y;
-
-        group.position.set(pos.x, baseY + heightY, pos.z);
-
-        
-        // Make health bar always face camera (billboard effect)
-        const cameraPosition = this.game.camera.position;
-        group.lookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        
-        // Calculate health percentage
-        const currentHealthPercent = Math.max(0, Math.min(100, (health.current / health.max) * 100));
-        
-        // Only update if health changed
-        if (healthBarData.lastHealthPercent !== currentHealthPercent) {
-            // Update fill width by scaling
-            const healthRatio = currentHealthPercent / 100;
-            fill.scale.x = healthRatio;
-            
-            // Adjust position to keep fill left-aligned
-            fill.position.x = -(this.HEALTH_BAR_WIDTH * (1 - healthRatio)) / 2;
-            
-            // Update color based on health percentage
-            fillMaterial.color.setHex(this.getHealthColorByPercent(currentHealthPercent, team));
-            
-            healthBarData.lastHealthPercent = currentHealthPercent;
-        }
-        
-        // Hide health bar if unit is at full health (optional)
-        if (this.shouldHideFullHealthBars() && health.current >= health.max) {
-            group.visible = false;
-        } else {
-            group.visible = true;
-        }
-        
-        // Update notches based on max health
-        this.updateHealthBarNotches(entityId, health.max);
-    }
-    
-    getHealthColor(team) {
-        const teamColors = {
-            'player': 0x00ff00,  // Green for player
-            'enemy': 0x00ff00,   // Green for enemy (all start green)
-            'neutral': 0x00ff00  // Green for neutral
-        };
-        return teamColors[team?.team] || teamColors.neutral;
-    }
-    
-    getHealthColorByPercent(percent, team) {
-        // All units start with green, then transition based on health
-        if (percent > 75) {
-            return 0x00ff00; // Green
-        } else if (percent > 50) {
-            return 0x88ff00; // Yellow-green
-        } else if (percent > 25) {
-            return 0xffff00; // Yellow
-        } else if (percent > 10) {
-            return 0xff8800; // Orange
-        } else {
-            return 0xff0000; // Red for critical health
-        }
-    }
-    
-    updateHealthBarNotches(entityId, maxHealth) {
-        const healthBarData = this.healthBars.get(entityId);
-        if (!healthBarData) return;
-        
-        // Only update notches if max health changed
-        if (healthBarData.lastMaxHealth === maxHealth) return;
-        
-        // Remove existing notches
-        healthBarData.notches.forEach(notch => {
-            healthBarData.group.remove(notch);
-            notch.geometry.dispose();
-            notch.material.dispose();
-        });
-        healthBarData.notches = [];
-        
-        // Calculate how many 100 HP marks we need
-        const numNotches = Math.floor(maxHealth / 100);
-
-        if (numNotches >= 1) { // Create notches for any unit with 100+ HP
-            const notchWidth = 1; // Make notches wider so they're more visible
-            const notchHeight = this.HEALTH_BAR_HEIGHT; // Make them shorter
-            
-            for (let i = 1; i <= numNotches; i++) { // i represents the HP value (100, 200, 300, etc.)
-                const hpValue = i * 100; // 100, 200, 300, etc.
-                
-                // Calculate position as percentage of max health
-                const positionPercent = hpValue / maxHealth; // 100/140 = 0.714 for your archer
-                
-                // Convert to X offset (-50% to +50% of bar width)
-                const xOffset = (positionPercent - 0.5) * this.HEALTH_BAR_WIDTH;
-                
-                
-                // Create notch geometry
-                const notchGeometry = new THREE.PlaneGeometry(notchWidth, notchHeight);
-                const notchMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x000000, // White notch lines for better visibility
-                    transparent: false
-                });
-                
-                const notch = new THREE.Mesh(notchGeometry, notchMaterial);
-                notch.position.set(xOffset, -this.HEALTH_BAR_HEIGHT * 0.5 + notchHeight * 0.5, 0.2); // Further in front
-                notch.renderOrder = 10001; // Above fill
-                
-                healthBarData.group.add(notch);
-                healthBarData.notches.push(notch);
-                
-            }
-        }
-        
-        healthBarData.lastMaxHealth = maxHealth;
-    }
-    
-    shouldHideFullHealthBars() {
-        // You can make this configurable
-        return false; // Set to true to hide health bars when units are at full health
-    }
-    
-    cleanupRemovedHealthBars(currentEntities) {
-        const currentEntitySet = new Set(currentEntities);
-        
-        for (const [entityId] of this.healthBars.entries()) {
-            if (!currentEntitySet.has(entityId)) {
-                this.removeHealthBarMesh(entityId);
-            }
-        }
-    }
-    
-    removeHealthBarMesh(entityId) {
-        const healthBarData = this.healthBars.get(entityId);
-        if (healthBarData) {
-            // Remove group from scene
-            if (this.game.scene) {
-                this.game.scene.remove(healthBarData.group);
-            }
-            
-            // Dispose of main geometries and materials
-            healthBarData.background.geometry.dispose();
-            healthBarData.background.material.dispose();
-            healthBarData.fill.geometry.dispose();
-            healthBarData.fill.material.dispose();
-            
-            // Dispose of notches
-            healthBarData.notches.forEach(notch => {
-                notch.geometry.dispose();
-                notch.material.dispose();
-            });
-            
-            // Remove from map
-            this.healthBars.delete(entityId);
-        }
-    }
-    
-    // Utility methods for configuration
-    setHealthBarScale(scale = 1.0) {
-        this.healthBars.forEach(healthBarData => {
-            const newWidth = this.HEALTH_BAR_WIDTH * scale;
-            const newHeight = this.HEALTH_BAR_HEIGHT * scale;
-            
-            // Update background geometry
-            healthBarData.background.geometry.dispose();
-            healthBarData.background.geometry = new THREE.PlaneGeometry(newWidth, newHeight);
-            
-            // Update fill geometry 
-            healthBarData.fillGeometry.dispose();
-            healthBarData.fillGeometry = new THREE.PlaneGeometry(newWidth, newHeight);
-            healthBarData.fill.geometry = healthBarData.fillGeometry;
-            
-            // Force position update
-            healthBarData.lastHealthPercent = -1;
-        });
-    }
-    isEnemy(teamComp) {
-        const myTeam = this.game?.state?.mySide;
-        if (myTeam == null || !teamComp) return false;
-        return teamComp.team !== myTeam;
-    }
-
-    isVisibleAt(pos) {
-        const fow = this.game?.fogOfWarSystem;
-        if (!fow || !pos) return true; // if no FOW, default to visible
-        return fow.isVisibleAt(pos.x, pos.z);
-    }
-
-    toggleHealthBars(visible = true) {
-        this.healthBars.forEach(healthBarData => {
-            healthBarData.group.visible = visible;
-        });
-    }
-    
-    setHealthBarOffset(offsetY) {
-        this.HEALTH_BAR_OFFSET_Y = offsetY;
-        // Positions will be updated on next frame
-    }
-    
-    // Update all health bar colors (useful for team color changes)
-    updateAllHealthBarColors() {
-        this.healthBars.forEach((healthBarData, entityId) => {
-            // Force color update
-            healthBarData.lastHealthPercent = -1;
-        });
-    }
-    
-    // Set render order to ensure health bars appear on top
-    setRenderOrder(order = 1000) {
-        this.healthBars.forEach(healthBarData => {
-            healthBarData.background.renderOrder = order;
-            healthBarData.fill.renderOrder = order + 1;
-        });
-    }
-    
-    destroy() {
-        // Clean up all health bar meshes
-        for (const [entityId] of this.healthBars.entries()) {
-            this.removeHealthBarMesh(entityId);
-        }
-        
-        this.healthBars.clear();
-        this.initialized = false;
-        
-        console.log('Simple Quad HealthBarSystem destroyed');
-    }
-};
-
-// system: UnitRadiusSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['UnitRadiusSystem'] = class UnitRadiusSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.unitRadiusSystem = this;        
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
-        this.enabled = false; // Toggle this to show/hide circles
-        
-        // Visual configuration
-        this.SIZE_CIRCLE_COLOR = 0x00ff00;      // Green for unit size
-        this.ATTACK_CIRCLE_COLOR = 0xff0000;    // Red for attack range
-        this.CIRCLE_OPACITY = 0.3;
-        this.CIRCLE_LINE_WIDTH = 2;
-    }
-    
-    update() {
-        if (!this.enabled ) return;
-        if(this.game.state.phase !== 'battle') {
-            this.hideAllCircles();
-            return;
-        }
-        
-        const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.UNIT_TYPE
-        );
-        
-        entities.forEach(entityId => {
-            this.updateEntityCircles(entityId);
-        });
-        
-        // Clean up circles for destroyed entities
-        this.cleanupDestroyedEntities(entities);
-    }
-    
-    updateEntityCircles(entityId) {
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
-        
-        if (!pos || !collision) return;
-        
-        // Get or create debug circles for this entity
-        let circles = this.debugCircles.get(entityId);
-        if (!circles) {
-            circles = this.createDebugCircles(entityId);
-            this.debugCircles.set(entityId, circles);
-        }
-        
-        if (!circles.sizeCircle || !circles.attackCircle) {
-            return;
-        }
-        
-        // Update positions
-        circles.sizeCircle.position.set(pos.x, pos.y + 50, pos.z); // y=1 to avoid z-fighting
-        circles.attackCircle.position.set(pos.x, pos.y + 60, pos.z); // y=2 to be above size circle
-        
-        // Update sizes
-        const unitRadius = this.getUnitRadius(collision);
-        const attackRange = this.getAttackRange(combat, collision);
-        
-        //console.log(`Entity ${entityId}: unitRadius=${unitRadius}, attackRange=${attackRange}, pos=(${pos.x}, ${pos.y})`);
-        
-        // Scale the circles - base circle is 50 units radius, so scale accordingly
-        circles.sizeCircle.scale.setScalar(unitRadius / 50);
-        circles.attackCircle.scale.setScalar(attackRange / 50);
-        
-        // Always show size circle
-        circles.sizeCircle.visible = true;
-        
-        // Show/hide attack circle based on entity state
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-        if (aiState && (aiState.state === 'attacking' || aiState.state === 'chasing')) {
-            circles.attackCircle.visible = true;
-            if (aiState.state === 'attacking') {
-                circles.attackCircle.material.color.setHex(0xff0000); // Bright red when attacking
-            } else {
-                circles.attackCircle.material.color.setHex(0xffaa00); // Orange when chasing
-            }
-        } else {
-            circles.attackCircle.visible = true; // Show it anyway for debugging
-            circles.attackCircle.material.color.setHex(0x0000ff); // Blue when idle
-        }
-    }
-    
-    createDebugCircles(entityId) {
-        const scene = this.game.gameManager.call('getWorldScene');
-        if (!scene) {
-            console.error('No scene found!');
-            return { sizeCircle: null, attackCircle: null };
-        }
-
-        // Create size circle (unit radius)
-        const sizeGeometry = new THREE.RingGeometry(48, 50, 32); // Thin ring
-        const sizeMaterial = new THREE.MeshBasicMaterial({
-            color: this.SIZE_CIRCLE_COLOR,
-            transparent: true,
-            opacity: this.CIRCLE_OPACITY,
-            side: THREE.DoubleSide
-        });
-        const sizeCircle = new THREE.Mesh(sizeGeometry, sizeMaterial);
-        sizeCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
-
-        // Create attack range circle
-        const attackGeometry = new THREE.RingGeometry(48, 50, 32); // Thin ring
-        const attackMaterial = new THREE.MeshBasicMaterial({
-            color: this.ATTACK_CIRCLE_COLOR,
-            transparent: true,
-            opacity: this.CIRCLE_OPACITY,
-            side: THREE.DoubleSide
-        });
-        const attackCircle = new THREE.Mesh(attackGeometry, attackMaterial);
-        attackCircle.rotation.x = -Math.PI / 2; // Lay flat on ground
-
-        // Add to scene
-        scene.add(sizeCircle);
-        scene.add(attackCircle);
-
-        return { sizeCircle, attackCircle };
-    }
-    
-    getUnitRadius(collision) {
-        // Use the same logic as your MovementSystem
-        if (collision && collision.radius) {
-            return collision.radius; 
-        }
-        
-        return 0.1;
-    }
-    
-    getAttackRange(combat, collision) {
-        if (!combat) return 0;
-        
-        const unitRadius = this.getUnitRadius(collision);
-        const attackRange = Math.max(combat.range, unitRadius);
-        
-        return attackRange;
-    }
-    
-    cleanupDestroyedEntities(activeEntities) {
-        const activeIds = new Set(activeEntities);
-        const scene = this.game.gameManager.call('getWorldScene');
-
-        for (const [entityId, circles] of this.debugCircles) {
-            if (!activeIds.has(entityId)) {
-                // Remove from scene
-                if (circles.sizeCircle && scene) {
-                    scene.remove(circles.sizeCircle);
-                    circles.sizeCircle.geometry.dispose();
-                    circles.sizeCircle.material.dispose();
-                }
-                if (circles.attackCircle && scene) {
-                    scene.remove(circles.attackCircle);
-                    circles.attackCircle.geometry.dispose();
-                    circles.attackCircle.material.dispose();
-                }
-
-                // Remove from map
-                this.debugCircles.delete(entityId);
-            }
-        }
-    }
-    
-    hideAllCircles() {
-        for (const [entityId, circles] of this.debugCircles) {
-            if (circles.sizeCircle) circles.sizeCircle.visible = false;
-            if (circles.attackCircle) circles.attackCircle.visible = false;
-        }
-    }
-    
-    showAllCircles() {
-        for (const [entityId, circles] of this.debugCircles) {
-            if (circles.sizeCircle) circles.sizeCircle.visible = true;
-            if (circles.attackCircle) circles.attackCircle.visible = true;
-        }
-    }
-    
-    toggle() {
-        this.enabled = !this.enabled;
-        if (this.enabled) {
-            this.showAllCircles();
-        } else {
-            this.hideAllCircles();
-        }
-        console.log(`Unit debug circles ${this.enabled ? 'enabled' : 'disabled'}`);
-    }
-    
-    cleanup() {
-        this.hideAllCircles();
-        this.cleanupDestroyedEntities([]);
-    }
-};
-
-// system: EquipmentSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['EquipmentSystem'] = class EquipmentSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.equipmentSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        this.entityEquipment = new Map();
-        this.equipmentCache = new Map();
-        this.equipmentBatches = new Map();
-        this.equipmentInstances = new Map();
-        
-        this.scaleFactor = 32;
-        this.DEFAULT_CAPACITY = 128;
-        this.bonePrefix = 'mixamorig';
-        
-        this.boneNameMappings = {
-            default: {
-                mainHand: ['RightHand', 'Hand_R', 'hand_R', 'R_Hand'],
-                offHand: ['LeftHand', 'Hand_L', 'hand_L', 'L_Hand'],
-                head: ['Head', 'head', 'Head_M'],
-                chest: ['Spine2', 'spine2', 'Chest', 'chest'],
-                back: ['Spine', 'spine', 'Back', 'back']
-            }
-        };
-        
-        this.slotDefaultOffsets = {
-            mainHand: { x: 0, y: 0, z: 0 },
-            offHand: { x: 0, y: 0, z: 0 },
-            head: { x: 0, y: 0.15, z: 0 },
-            chest: { x: 0, y: 0, z: 0 },
-            back: { x: 0, y: 0, z: -0.2 }
-        };
-        
-        console.log('[Equipment] System initialized with bone attachment texture');
-    }
-
-    init() {
-        this.game.gameManager.register('getItemData', this.getItemData.bind(this));
-    }
-
-    getItemData(itemId) {
-        if (!itemId) return null;
-        const collections = this.game.getCollections();
-        return collections.items?.[itemId] || null;
-    }
-
-    update() {
-        const entities = this.game.getEntitiesWith(
-            this.componentTypes.EQUIPMENT,
-            this.componentTypes.POSITION
-        );
-        
-        entities.forEach(entityId => {
-            this.updateEntityEquipment(entityId);
-        });
-        
-        this.cleanupRemovedEntities(entities);
-    }
-    
-    updateEntityEquipment(entityId) {
-        const equipmentData = this.equipmentInstances.get(entityId);
-        if (!equipmentData) return;
-        
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
-        
-        if (!pos) return;
-        
-        const unitInstance = this.game.renderSystem?.entityToInstance?.get(entityId);
-        if (!unitInstance) return;
-        
-        const unitBatch = this.game.renderSystem?.vatBatches?.get(unitInstance.batchKey);
-        if (!unitBatch) return;
-        
-        for (const [slotType, equipInstance] of equipmentData.entries()) {
-            this.updateEquipmentTransformWithBone(
-                equipInstance, 
-                pos, 
-                facing, 
-                unitBatch,
-                unitInstance
-            );
-        }
-    }
-    
-    sampleAttachmentMatrix(attachmentTexture, cols, rows, rowIndex, attachmentBoneIndex) {
-        if (!attachmentTexture?.image?.data) return null;
-        
-        const textureData = attachmentTexture.image.data;
-        const boneColStart = attachmentBoneIndex * 4;
-        
-        const matrix = new THREE.Matrix4();
-        const elements = matrix.elements;
-        
-        for (let col = 0; col < 4; col++) {
-            const pixelX = Math.floor(boneColStart + col);
-            const pixelY = Math.floor(rowIndex);
-            
-            if (pixelX >= cols || pixelY >= rows || pixelY < 0) {
-                return null;
-            }
-            
-            const pixelIndex = (pixelY * cols + pixelX) * 4;
-            
-            elements[col * 4 + 0] = textureData[pixelIndex + 0];
-            elements[col * 4 + 1] = textureData[pixelIndex + 1];
-            elements[col * 4 + 2] = textureData[pixelIndex + 2];
-            elements[col * 4 + 3] = textureData[pixelIndex + 3];
-        }
-        
-        return matrix;
-    }
-        
-    updateEquipmentTransformWithBone(equipInstance, pos, facing, unitBatch, unitInstance) {
-        const batch = this.equipmentBatches.get(equipInstance.batchKey);
-        if (!batch || equipInstance.instanceIndex === null) return;
-        
-        if (!unitBatch?.meta?.attachmentTexture) return;
-        
-        const clipIndex = unitBatch.attributes.clipIndex.array[unitInstance.instanceIndex];
-        const animTime = unitBatch.attributes.animTime.array[unitInstance.instanceIndex];
-        
-        if (clipIndex === undefined || animTime === undefined) return;
-        
-        const clipInfo = unitBatch.meta.clips[clipIndex];
-        if (!clipInfo) return;
-        
-        const fps = unitBatch.meta.fps || 30;
-        const frame = Math.floor((animTime * fps) % clipInfo.frames);
-        const rowIndex = clipInfo.startRow + frame;
-        
-        const attachmentBoneIndex = equipInstance.attachmentBoneIndex;
-        if (attachmentBoneIndex === undefined || attachmentBoneIndex < 0) return;
-        
-        const skinningMatrix = this.sampleAttachmentMatrix(
-            unitBatch.meta.attachmentTexture,
-            unitBatch.meta.attachmentTexture.image.width,
-            unitBatch.meta.attachmentTexture.image.height,
-            rowIndex,
-            attachmentBoneIndex
-        );
-        
-        if (!skinningMatrix) return;
-        
-        const skeleton = unitBatch.meta.skeleton;
-        const originalBoneIndex = unitBatch.meta.attachmentBones[attachmentBoneIndex].index;
-        const bindInverse = skeleton.boneInverses[originalBoneIndex];
-
-        const bindPose = new THREE.Matrix4().copy(bindInverse).invert();
-        const boneWorldLocal = new THREE.Matrix4().multiplyMatrices(skinningMatrix, bindPose);
-        
-        const bonePos = new THREE.Vector3();
-        const boneQuat = new THREE.Quaternion();
-        const boneScale = new THREE.Vector3();
-        boneWorldLocal.decompose(bonePos, boneQuat, boneScale);
-        
-        const baseScale = unitBatch.meta.baseScale || new THREE.Vector3(1, 1, 1);
-        const basePosition = unitBatch.meta.basePos || new THREE.Vector3(0, 0, 0);
-        
-        bonePos.multiply(baseScale);
-        bonePos.multiplyScalar(this.scaleFactor);
-        
-        const slotDefaults = this.slotDefaultOffsets[equipInstance.slotType] || { x: 0, y: 0, z: 0 };
-        const offsetVec = new THREE.Vector3(
-            slotDefaults.x,
-            slotDefaults.y,
-            slotDefaults.z
-        );
-        
-        if (equipInstance.attachmentData?.offset) {
-            offsetVec.x += (equipInstance.attachmentData.offset.x * 0.5);
-            offsetVec.y += (equipInstance.attachmentData.offset.y * 0.5);
-            offsetVec.z += (equipInstance.attachmentData.offset.z * 0.5);
-        }
-        const boneRotation = boneQuat.clone();
-        if (equipInstance.attachmentData?.rotation) {
-            const offsetRot = new THREE.Quaternion();
-            offsetRot.setFromEuler(new THREE.Euler(
-                (equipInstance.attachmentData.rotation.x) * Math.PI / 180,
-                (equipInstance.attachmentData.rotation.y) * Math.PI / 180,
-                (equipInstance.attachmentData.rotation.z) * Math.PI / 180,
-                'XYZ'
-            ));
-            boneRotation.multiply(offsetRot);
-        }
-        
-        offsetVec.applyQuaternion(boneRotation);
-        bonePos.add(offsetVec);
-        
-        const rotationY = facing ? (-facing.angle + Math.PI / 2) : (Math.PI / 2);
-        const worldRotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
-        
-        bonePos.applyQuaternion(worldRotation);
-        
-        const worldPos = new THREE.Vector3(
-            pos.x + basePosition.x * this.scaleFactor,
-            (pos.y || 0) + basePosition.y * this.scaleFactor,
-            pos.z + basePosition.z * this.scaleFactor
-        );
-        bonePos.add(worldPos);
-        
-        const finalRotation = new THREE.Quaternion().multiplyQuaternions(worldRotation, boneRotation);
-        
-        const finalScale = new THREE.Vector3(this.scaleFactor * 0.25, this.scaleFactor * 0.25, this.scaleFactor * 0.25);
-        
-        const matrix = new THREE.Matrix4();
-        matrix.compose(bonePos, finalRotation, finalScale);
-        
-        batch.mesh.setMatrixAt(equipInstance.instanceIndex, matrix);
-        batch.mesh.instanceMatrix.needsUpdate = true;
-    }
-    
-    findAttachmentBoneIndex(attachmentBones, boneName) {
-        if (!attachmentBones) return -1;
-        
-        for (let i = 0; i < attachmentBones.length; i++) {
-            const bone = attachmentBones[i];
-            if (bone.name === boneName || 
-                bone.name.replace(this.bonePrefix, '') === boneName ||
-                bone.name.includes(boneName)) {
-                console.log(`[Equipment] Found attachment bone "${boneName}" at index ${i} (original: ${bone.index})`);
-                return i;
-            }
-        }
-        
-        console.warn(`[Equipment] Attachment bone not found: ${boneName}`);
-        return -1;
-    }
-   
-    async equipItem(entityId, slotData, itemData) {
-        return false;
-        // const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
-        // const slotType = slotData.slot;
-        // if (!equipment) return false;
-        
-        // if (equipment.slots[slotType]) {
-        //     await this.unequipItem(entityId, slotType);
-        // }
-        
-        // const spawnType = slotData.item;
-        // const equipmentModel = await this.loadEquipmentModel(spawnType);
-        // if (!equipmentModel) return false;
-        
-        // const batchKey = `equipment_${spawnType}`;
-        // let batch = this.equipmentBatches.get(batchKey);
-        
-        // if (!batch) {
-        //     batch = this.createEquipmentBatch(batchKey, equipmentModel);
-        //     if (!batch) return false;
-        // }
-        
-        // const unitInstance = this.game.renderSystem?.entityToInstance?.get(entityId);
-        // if (!unitInstance) return false;
-        
-        // const unitBatch = this.game.renderSystem?.vatBatches?.get(unitInstance.batchKey);
-        // if (!unitBatch?.meta?.attachmentBones) {
-        //     console.error('[Equipment] Unit has no attachment bone data');
-        //     return false;
-        // }
-        
-        // const boneNames = this.boneNameMappings.default[slotType];
-        // let attachmentBoneIndex = -1;
-        
-        // for (const boneName of boneNames) {
-        //     attachmentBoneIndex = this.findAttachmentBoneIndex(unitBatch.meta.attachmentBones, boneName);
-        //     if (attachmentBoneIndex >= 0) break;
-        // }
-        
-        // if (attachmentBoneIndex < 0) {
-        //     console.error(`[Equipment] No valid attachment bone found for slot ${slotType}`);
-        //     return false;
-        // }
-        
-        // const instanceIndex = this.allocateEquipmentInstance(batch);
-        // if (instanceIndex === null) return false;
-        
-        // const equipInstance = {
-        //     batchKey,
-        //     instanceIndex,
-        //     slotType,
-        //     attachmentBoneIndex,
-        //     attachmentData: slotData.attachmentData
-        // };
-        
-        // if (!this.equipmentInstances.has(entityId)) {
-        //     this.equipmentInstances.set(entityId, new Map());
-        // }
-        // this.equipmentInstances.get(entityId).set(slotType, equipInstance);
-        
-        // if (!this.entityEquipment.has(entityId)) {
-        //     this.entityEquipment.set(entityId, new Map());
-        // }
-        
-        // this.entityEquipment.get(entityId).set(slotType, {
-        //     itemData,
-        //     spawnType,
-        //     instanceIndex,
-        //     batchKey
-        // });
-        
-        // equipment.slots[slotType] = {
-        //     itemData,
-        //     equippedItem: itemData
-        // };
-        
-        // console.log(`[Equipment] Equipped ${spawnType} to entity ${entityId} slot ${slotType} attachment bone ${attachmentBoneIndex}`);
-        // return true;
-    }
-    
-    createEquipmentBatch(batchKey, equipmentModel) {
-        let geometry = null;
-        let material = null;
-            
-        equipmentModel.updateMatrixWorld(true);
-
-        equipmentModel.traverse(child => {
-            if (child.isMesh && !geometry) {
-                geometry = child.geometry.clone();
-                child.updateMatrixWorld(true);
-                geometry.applyMatrix4(child.matrixWorld);
-                material = child.material.clone();
-            }
-        });
-        
-        if (!geometry || !material) return null;
-        
-        material.metalness = material.metalness || 0;
-        material.roughness = material.roughness || 1;
-        
-        const instancedMesh = new THREE.InstancedMesh(geometry, material, this.DEFAULT_CAPACITY);
-        instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        instancedMesh.castShadow = true;
-        instancedMesh.receiveShadow = true;
-        instancedMesh.frustumCulled = false;
-        
-        const hiddenMatrix = new THREE.Matrix4();
-        hiddenMatrix.makeTranslation(0, -10000, 0);
-        hiddenMatrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
-        
-        for (let i = 0; i < this.DEFAULT_CAPACITY; i++) {
-            instancedMesh.setMatrixAt(i, hiddenMatrix);
-        }
-        instancedMesh.instanceMatrix.needsUpdate = true;
-        
-        if (this.game.scene) {
-            this.game.scene.add(instancedMesh);
-        }
-        
-        const batch = {
-            mesh: instancedMesh,
-            capacity: this.DEFAULT_CAPACITY,
-            count: 0,
-            availableIndices: Array.from({ length: this.DEFAULT_CAPACITY }, (_, i) => i),
-            usedIndices: new Set()
-        };
-        
-        this.equipmentBatches.set(batchKey, batch);
-        return batch;
-    }
-    
-    allocateEquipmentInstance(batch) {
-        if (batch.availableIndices.length === 0) return null;
-        const instanceIndex = batch.availableIndices.shift();
-        batch.usedIndices.add(instanceIndex);
-        batch.count++;
-        return instanceIndex;
-    }
-    
-    releaseEquipmentInstance(batch, instanceIndex) {
-        if (!batch.usedIndices.has(instanceIndex)) return;
-        
-        const hiddenMatrix = new THREE.Matrix4();
-        hiddenMatrix.makeTranslation(0, -10000, 0);
-        hiddenMatrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
-        batch.mesh.setMatrixAt(instanceIndex, hiddenMatrix);
-        batch.mesh.instanceMatrix.needsUpdate = true;
-        
-        batch.usedIndices.delete(instanceIndex);
-        batch.availableIndices.push(instanceIndex);
-        batch.count--;
-    }
-    
-    async unequipItem(entityId, slotType) {
-        const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
-        if (!equipment || !equipment.slots[slotType]) return true;
-        
-        const equipInstance = this.equipmentInstances.get(entityId)?.get(slotType);
-        
-        if (equipInstance) {
-            const batch = this.equipmentBatches.get(equipInstance.batchKey);
-            if (batch) {
-                this.releaseEquipmentInstance(batch, equipInstance.instanceIndex);
-            }
-            this.equipmentInstances.get(entityId)?.delete(slotType);
-        }
-        
-        const entityEquip = this.entityEquipment.get(entityId);
-        if (entityEquip) {
-            entityEquip.delete(slotType);
-        }
-        
-        equipment.slots[slotType] = null;
-        return true;
-    }
-    
-    async loadEquipmentModel(spawnType) {
-        const cacheKey = `items_${spawnType}`;
-        
-        if (this.equipmentCache.has(cacheKey)) {
-            return this.equipmentCache.get(cacheKey).clone();
-        }
-        
-        try {
-            const model = this.game.modelManager.getModel("items", spawnType);
-            
-            if (model) {
-                model.traverse(child => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        if (child.material) {
-                            child.material.metalness = child.material.metalness || 0;
-                            child.material.roughness = child.material.roughness || 1;
-                        }
-                    }
-                });
-                
-                this.equipmentCache.set(cacheKey, model);
-                return model.clone();
-            }
-        } catch (error) {
-            console.error(`Error loading equipment model ${cacheKey}:`, error);
-        }
-        
-        return null;
-    }
-    
-    cleanupRemovedEntities(activeEntities) {
-        const activeSet = new Set(activeEntities);
-        
-        for (const [entityId, equipmentMap] of this.equipmentInstances.entries()) {
-            if (!activeSet.has(entityId)) {
-                for (const [slotType, equipInstance] of equipmentMap.entries()) {
-                    const batch = this.equipmentBatches.get(equipInstance.batchKey);
-                    if (batch) {
-                        this.releaseEquipmentInstance(batch, equipInstance.instanceIndex);
-                    }
-                }
-                this.equipmentInstances.delete(entityId);
-                this.entityEquipment.delete(entityId);
-            }
-        }
-    }
-    
-    destroy() {
-        for (const [batchKey, batch] of this.equipmentBatches.entries()) {
-            if (batch.mesh) {
-                if (this.game.scene) {
-                    this.game.scene.remove(batch.mesh);
-                }
-                batch.mesh.geometry.dispose();
-                if (Array.isArray(batch.mesh.material)) {
-                    batch.mesh.material.forEach(mat => mat.dispose());
-                } else {
-                    batch.mesh.material.dispose();
-                }
-            }
-        }
-        
-        for (const [key, model] of this.equipmentCache.entries()) {
-            model.traverse(child => {
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(mat => mat.dispose());
-                    } else {
-                        child.material.dispose();
-                    }
-                }
-            });
-        }
-        
-        this.equipmentBatches.clear();
-        this.equipmentInstances.clear();
-        this.entityEquipment.clear();
-        this.equipmentCache.clear();
     }
 };
 
@@ -68001,402 +58171,6 @@ window.engine.app.appClasses['AbilitySystem'] = class AbilitySystem extends engi
     }
 };
 
-// system: ParticleSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ParticleSystem'] = class ParticleSystem extends engine.BaseSystem {
-  constructor(game) {
-    super(game);
-    this.game.particleSystem = this;
-
-    this.CAPACITY = 2000;
-    this.initialized = false;
-    this.activeCount = 0;
-    this.freeList = [];
-
-    this.positions = new Array(this.CAPACITY);
-    this.velocities = new Array(this.CAPACITY);
-    this.gravityArr = new Float32Array(this.CAPACITY);
-    this.dragArr = new Float32Array(this.CAPACITY);
-
-    this.aColorStart = new Float32Array(this.CAPACITY * 3);
-    this.aColorEnd   = new Float32Array(this.CAPACITY * 3);
-    this.aLifetime   = new Float32Array(this.CAPACITY);
-    this.aStartTime  = new Float32Array(this.CAPACITY);
-    this.aInitScale  = new Float32Array(this.CAPACITY);
-    this.aFlags      = new Float32Array(this.CAPACITY * 2);
-
-    this._tmpMat = new THREE.Matrix4();
-    this._cursor = 0;
-
-    this.UPDATE_STRIDE = 2;
-  }
-
-  init() {
-    // Register methods with GameManager
-    this.game.gameManager.register('createParticles', this.createParticles.bind(this));
-    this.game.gameManager.register('clearAllParticles', this.clearAllParticles.bind(this));
-    this.game.gameManager.register('initializeParticleSystem', this.initialize.bind(this));
-  }
-
-  initialize() {
-    if (this.initialized || !this.game.scene) return;
-
-    const geometry = new THREE.PlaneGeometry(0.25, 0.25);
-
-    const vertexShader = `
-      attribute vec3 aColorStart;
-      attribute vec3 aColorEnd;
-      attribute float aLifetime;
-      attribute float aStartTime;
-      attribute float aInitScale;
-      attribute vec2 aFlags; // x: fadeOut, y: scaleOverTime
-      varying vec3 vColor;
-      varying float vAlpha;
-      varying vec2 vUv;
-      uniform float uTime;
-
-      vec3 camRight() { return vec3(modelViewMatrix[0][0], modelViewMatrix[1][0], modelViewMatrix[2][0]); }
-      vec3 camUp()    { return vec3(modelViewMatrix[0][1], modelViewMatrix[1][1], modelViewMatrix[2][1]); }
-
-      void main() {
-        vUv = uv;
-        float age = max(uTime - aStartTime, 0.0);
-        float lifeT = clamp(1.0 - age / max(aLifetime, 0.0001), 0.0, 1.0);
-
-        vColor = mix(aColorEnd, aColorStart, lifeT);
-        vAlpha = aFlags.x > 0.5 ? lifeT : 1.0;
-
-        float s = aInitScale;
-        if (aFlags.y > 0.5) {
-          if (lifeT > 0.8)       s *= (1.0 - lifeT) * 5.0;
-          else if (lifeT > 0.2)  s *= 1.0;
-          else                   s *= lifeT * 5.0;
-        }
-
-        vec3 right = camRight();
-        vec3 up    = camUp();
-
-        vec3 instT = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
-        vec3 worldPos = instT + right * (position.x * s) + up * (position.y * s);
-
-        gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
-      }
-    `;
-
-    const fragmentShader = `
-      precision mediump float;
-      varying vec3 vColor;
-      varying float vAlpha;
-      varying vec2 vUv;
-
-      void main() {
-        vec2 c = vUv - vec2(0.5);
-        float r = length(c) * 2.0;
-        float mask = smoothstep(1.0, 0.6, r);
-        float a = vAlpha * mask;
-
-        if (a <= 0.001) discard;
-
-        // CHANGED: simple straight output (no tone mapping), alpha not premultiplied here
-        gl_FragColor = vec4(vColor, a); // CHANGED
-      }
-    `;
-
-    this.material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.NormalBlending,          // CHANGED: sane default; per-effect override allowed
-      uniforms: { uTime: { value: 0 } },
-      toneMapped: false                        // CHANGED: ensure shader output isn't remapped
-    });
-
-    this.mesh = new THREE.InstancedMesh(geometry, this.material, this.CAPACITY);
-    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-
-    const addAttr = (arr, itemSize, name) => {
-      const a = new THREE.InstancedBufferAttribute(arr, itemSize);
-      this.mesh.geometry.setAttribute(name, a);
-      return a;
-    };
-    this.attrColorStart = addAttr(this.aColorStart, 3, 'aColorStart');
-    this.attrColorEnd   = addAttr(this.aColorEnd,   3, 'aColorEnd');
-    this.attrLifetime   = addAttr(this.aLifetime,   1, 'aLifetime');
-    this.attrStartTime  = addAttr(this.aStartTime,  1, 'aStartTime');
-    this.attrInitScale  = addAttr(this.aInitScale,  1, 'aInitScale');
-    this.attrFlags      = addAttr(this.aFlags,      2, 'aFlags');
-
-    for (let i = 0; i < this.CAPACITY; i++) {
-      this._writeTranslation(i, 1e9, 1e9, 1e9);
-      this.positions[i]  = new THREE.Vector3(1e9, 1e9, 1e9);
-      this.velocities[i] = new THREE.Vector3(0, 0, 0);
-      this.gravityArr[i] = 0.0;
-      this.dragArr[i]    = 1.0;
-      this.freeList.push(i);
-    }
-
-    this.mesh.frustumCulled = false;
-    this.game.scene.add(this.mesh);
-
-    this.initialized = true;
-  }
-
-  _writeTranslation(index, x, y, z) {
-    const m = this._tmpMat;
-    m.identity();
-    m.setPosition(x, y, z);
-    this.mesh.setMatrixAt(index, m);
-  }
-
-  /**
-   * createParticles(config)
-   * Config preserved:
-   *   position, count, lifetime,
-   *   visual.{color|colorRange{start,end}|scale|fadeOut|scaleOverTime|blending|scaleMultiplier},
-   *   velocityRange, gravity, drag, speedMultiplier, heightOffset, shape? (ignored)
-   */
-  createParticles(config) {
-    if (!this.initialized) {
-      this.initialize();
-      if (!this.initialized) return;
-    }
-
-    const {
-      position = new THREE.Vector3(0, 0, 0),
-      count = 10,
-      lifetime = 1.25,
-      visual = {},
-      velocityRange = { x: [-30, 30], y: [50, 120], z: [-30, 30] },
-      gravity = -100.0,
-      drag = 0.98,
-      speedMultiplier: speedMulTop = 1.0,
-      heightOffset = 0
-    } = config;
-
-    // ---------- COLOR RESOLUTION (broad compatibility) ----------
-    // CHANGED: find start/end colors across multiple common fields
-    const { startColorResolved, endColorResolved } = this._resolveColorPair(config, visual); // CHANGED
-
-    // ---------- SCALE / SPEED ----------
-    const scaleMul = (visual.scaleMultiplier != null ? visual.scaleMultiplier : 1.0);
-    const initScale = ((visual.scale != null) ? visual.scale : 16.0) * scaleMul;
-
-    const speedMulVisual = (visual.speedMultiplier != null ? visual.speedMultiplier : 1.0);
-    const speedMul = speedMulTop * speedMulVisual;
-
-    const fadeOut = (visual.fadeOut === undefined) ? true : !!visual.fadeOut;
-    const scaleOverTime = (visual.scaleOverTime === undefined) ? true : !!visual.scaleOverTime;
-
-    // Per-effect blending (global switch for the single material)
-    if (visual.blending) {
-      const b = String(visual.blending).toLowerCase();
-      const target =
-        b === 'additive' ? THREE.AdditiveBlending :
-        b === 'multiply' ? THREE.MultiplyBlending :
-                           THREE.NormalBlending;
-      if (this.material.blending !== target) {
-        this.material.blending = target;
-        this.material.needsUpdate = true;
-      }
-    }
-
-    const rv = (min, max) => min + Math.random() * (max - min);
-    const now = this._now();
-
-    let spawned = 0;
-    const want = Math.max(1, Math.floor(count));
-    while (spawned < want && this.freeList.length > 0) {
-      const i = this.freeList.pop();
-
-      const px = position.x;
-      const py = position.y + heightOffset;
-      const pz = position.z;
-
-      this.positions[i].set(px, py, pz);
-      this._writeTranslation(i, px, py, pz);
-
-      const vx = rv(velocityRange.x[0], velocityRange.x[1]) * speedMul;
-      const vy = rv(velocityRange.y[0], velocityRange.y[1]) * speedMul;
-      const vz = rv(velocityRange.z[0], velocityRange.z[1]) * speedMul;
-      this.velocities[i].set(vx, vy, vz);
-      this.gravityArr[i] = gravity;
-      this.dragArr[i]    = drag;
-
-      // CHANGED: write resolved colors
-      const si = i * 3;
-      this.aColorStart[si    ] = startColorResolved.r;
-      this.aColorStart[si + 1] = startColorResolved.g;
-      this.aColorStart[si + 2] = startColorResolved.b;
-
-      this.aColorEnd[si    ] = endColorResolved.r;
-      this.aColorEnd[si + 1] = endColorResolved.g;
-      this.aColorEnd[si + 2] = endColorResolved.b;
-
-      this.aLifetime[i]  = lifetime;
-      this.aStartTime[i] = now;
-      this.aInitScale[i] = initScale;
-      this.aFlags[i * 2    ] = fadeOut ? 1.0 : 0.0;
-      this.aFlags[i * 2 + 1] = scaleOverTime ? 1.0 : 0.0;
-
-      spawned++;
-      this.activeCount++;
-    }
-
-    this.attrColorStart.needsUpdate = true;
-    this.attrColorEnd.needsUpdate   = true;
-    this.attrLifetime.needsUpdate   = true;
-    this.attrStartTime.needsUpdate  = true;
-    this.attrInitScale.needsUpdate  = true;
-    this.attrFlags.needsUpdate      = true;
-    this.mesh.instanceMatrix.needsUpdate = true;
-  }
-
-  clearAllParticles() {
-    if (!this.initialized) return;
-    for (let i = 0; i < this.CAPACITY; i++) {
-      this.aLifetime[i] = 0.0;
-      this._writeTranslation(i, 1e9, 1e9, 1e9);
-      this.positions[i].set(1e9, 1e9, 1e9);
-      this.velocities[i].set(0, 0, 0);
-      this.gravityArr[i] = 0.0;
-      this.dragArr[i] = 1.0;
-      if (!this.freeList.includes(i)) this.freeList.push(i);
-    }
-    this.activeCount = 0;
-    this.attrLifetime.needsUpdate = true;
-    this.mesh.instanceMatrix.needsUpdate = true;
-  }
-
-  update() {
-    if (!this.initialized) return;
-
-    const dt = this.game?.state?.deltaTime || 0.016;
-    const now = this._now();
-    this.material.uniforms.uTime.value = now;
-
-    if (this.activeCount === 0) return;
-
-    const total = this.CAPACITY;
-    let processed = 0;
-    const target = Math.max(1, Math.floor(this.activeCount / this.UPDATE_STRIDE));
-
-    for (let loop = 0; loop < total && processed < target; loop++) {
-      const i = this._cursor;
-      this._cursor = (this._cursor + 1) % total;
-
-      const life = this.aLifetime[i];
-      if (life <= 0.0) continue;
-
-      if ((now - this.aStartTime[i]) >= life) {
-        this.aLifetime[i] = 0.0;
-        this.attrLifetime.needsUpdate = true;
-
-        this._writeTranslation(i, 1e9, 1e9, 1e9);
-        this.mesh.instanceMatrix.needsUpdate = true;
-
-        this.positions[i].set(1e9, 1e9, 1e9);
-        this.velocities[i].set(0, 0, 0);
-        this.gravityArr[i] = 0.0;
-        this.dragArr[i] = 1.0;
-
-        this.freeList.push(i);
-        this.activeCount--;
-        processed++;
-        continue;
-      }
-
-      const vel = this.velocities[i];
-      vel.y += this.gravityArr[i] * dt;
-      vel.x *= this.dragArr[i];
-      vel.y *= this.dragArr[i];
-      vel.z *= this.dragArr[i];
-
-      const pos = this.positions[i];
-      pos.x += vel.x * dt;
-      pos.y += vel.y * dt;
-      pos.z += vel.z * dt;
-
-      this._writeTranslation(i, pos.x, pos.y, pos.z);
-      processed++;
-    }
-
-    this.mesh.instanceMatrix.needsUpdate = true;
-  }
-
-  destroy() {
-    if (!this.initialized) return;
-    this.game.scene.remove(this.mesh);
-    this.mesh.geometry.dispose();
-    this.material.dispose();
-    this.initialized = false;
-  }
-
-  // ===== helpers =====
-
-  // CHANGED: resolve *pair* of colors from many possible config shapes
-  _resolveColorPair(config, visual) {
-    // Try pairs first (most explicit)
-    const pairCandidates = [
-      visual?.colorRange,
-      config?.colorRange,
-      (visual && (visual.startColor || visual.endColor)) ? { start: visual.startColor, end: visual.endColor } : null,
-      (config && (config.startColor || config.endColor)) ? { start: config.startColor, end: config.endColor } : null
-    ].filter(Boolean);
-
-    for (const pair of pairCandidates) {
-      if (pair?.start != null && pair?.end != null) {
-        return {
-          startColorResolved: this._resolveColor(pair.start),
-          endColorResolved:   this._resolveColor(pair.end)
-        };
-      }
-    }
-
-    // Single color fallbacks (use same for start/end)
-    const singleCandidates = [
-      visual?.color,
-      config?.color
-    ].filter((v) => v != null);
-
-    if (singleCandidates.length) {
-      const c = this._resolveColor(singleCandidates[0]);
-      return { startColorResolved: c, endColorResolved: c };
-    }
-
-    // Default white
-    const white = { r: 1, g: 1, b: 1 };
-    return { startColorResolved: white, endColorResolved: white };
-  }
-
-  // Normalize many color forms to {r,g,b} floats (0..1)
-  _resolveColor(input) {
-    if (input instanceof THREE.Color) {
-      return { r: input.r, g: input.g, b: input.b };
-    }
-    if (typeof input === 'number' || typeof input === 'string') {
-      const c = new THREE.Color(input);
-      return { r: c.r, g: c.g, b: c.b };
-    }
-    if (Array.isArray(input) && input.length >= 3) {
-      let [r, g, b] = input;
-      if (r > 1 || g > 1 || b > 1) { r /= 255; g /= 255; b /= 255; }
-      return { r, g, b };
-    }
-    if (input && typeof input === 'object' && 'r' in input && 'g' in input && 'b' in input) {
-      let { r, g, b } = input;
-      if (r > 1 || g > 1 || b > 1) { r /= 255; g /= 255; b /= 255; }
-      return { r, g, b };
-    }
-    return { r: 1, g: 1, b: 1 };
-  }
-
-  _now() {
-    if (this.game?.state?.simTime != null) return this.game.state.simTime;
-    return performance.now() / 1000;
-  }
-};
-
 // system: SquadExperienceSystem
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['SquadExperienceSystem'] = class SquadExperienceSystem extends engine.BaseSystem {
@@ -69170,5216 +58944,6 @@ window.engine.app.appClasses['SquadExperienceSystem'] = class SquadExperienceSys
             maxLevel: Math.max(0, ...squads.map(s => s.level))
         };
     }
-};
-
-// system: LifetimeSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['LifetimeSystem'] = class LifetimeSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.lifetimeSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        // Configuration
-        this.CHECK_INTERVAL = 0.1; // Check lifetimes every 100ms for performance
-        this.lastCheck = 0;
-        
-        // Track entities with custom destruction callbacks
-        this.destructionCallbacks = new Map(); // entityId -> callback function
-        
-        // Track entities that should fade out before destruction
-        this.fadeOutEntities = new Map(); // entityId -> fade data
-        
-        // Statistics
-        this.stats = {
-            entitiesDestroyed: 0,
-            entitiesExpired: 0,
-            entitiesFaded: 0
-        };
-    }
-
-    init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('addLifetime', this.addLifetime.bind(this));
-        this.game.gameManager.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
-        this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
-    }
-
-    update() {        
-        // Only check periodically for performance
-        if (this.game.state.now - this.lastCheck < this.CHECK_INTERVAL) return;
-        this.lastCheck = this.game.state.now;
-        
-        // Get all entities with lifetime components
-        const lifetimeEntities = this.game.getEntitiesWith(this.componentTypes.LIFETIME);
-        
-        lifetimeEntities.forEach(entityId => {
-            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-            if (!lifetime) return;
-            
-            const age = (this.game.state.now - lifetime.startTime);
-            
-            // Check if entity has expired
-            if (age >= lifetime.duration) {
-                this.handleExpiredEntity(entityId, lifetime);
-            } 
-        });
-    }
-    
-    // =============================================
-    // ENTITY EXPIRATION HANDLING
-    // =============================================
-    
-    handleExpiredEntity(entityId, lifetime) {
-        // Call custom destruction callback if registered
-        const callback = this.destructionCallbacks.get(entityId);
-        if (callback) {
-            try {
-                callback(entityId, lifetime);
-            } catch (error) {
-                console.warn(`Lifetime destruction callback error for entity ${entityId}:`, error);
-            }
-            this.destructionCallbacks.delete(entityId);
-        }
-        
-        // Special handling for different entity types
-        this.handleSpecialEntityTypes(entityId, lifetime);
-        
-        // Create destruction effects if specified
-        this.createDestructionEffects(entityId, lifetime);
-        
-        // Log destruction if enabled
-        this.logEntityDestruction(entityId, lifetime);
-        
-        // Remove from fade tracking
-        this.fadeOutEntities.delete(entityId);
-        
-        // Destroy the entity
-        this.game.destroyEntity(entityId);
-        
-        // Update statistics
-        this.stats.entitiesDestroyed++;
-        this.stats.entitiesExpired++;
-    }
-    
-    handleSpecialEntityTypes(entityId, lifetime) {
-        // Handle projectiles
-        if (this.game.hasComponent(entityId, this.componentTypes.PROJECTILE)) {
-            // Clean up projectile-specific data 
-            this.game.gameManager.call('deleteProjectileTrail', entityId);
-            
-        }
-        
-        // Handle summons
-        if (this.game.hasComponent(entityId, this.componentTypes.SUMMONED)) {
-            this.handleSummonExpiration(entityId);
-        }
-        
-        // Handle mirror images
-        if (this.game.hasComponent(entityId, this.componentTypes.MIRROR_IMAGE)) {
-            this.handleMirrorImageExpiration(entityId);
-        }
-        
-        // Handle traps
-        if (this.game.hasComponent(entityId, this.componentTypes.TRAP)) {
-            this.handleTrapExpiration(entityId);
-        }
-        
-        // Handle temporary effects
-        if (this.game.hasComponent(entityId, this.componentTypes.TEMPORARY_EFFECT)) {
-            this.handleTemporaryEffectExpiration(entityId);
-        }
-        
-        // Handle mind controlled entities
-        if (this.game.hasComponent(entityId, this.componentTypes.MIND_CONTROLLED)) {
-            this.handleMindControlExpiration(entityId);
-        }
-        
-        // Handle thorns effect
-        if (this.game.thornsEntities && this.game.thornsEntities.has(entityId)) {
-            this.game.thornsEntities.delete(entityId);
-        }
-    }
-    
-    handleSummonExpiration(entityId) {
-        const summonPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (summonPos) {
-            // Create disappearing effect
-            this.game.gameManager.call('createParticleEffect',
-                summonPos.x, summonPos.y, summonPos.z,
-                'magic',
-                { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
-            );
-        }
-
-    }
-    
-    handleMirrorImageExpiration(entityId) {
-        const imagePos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (imagePos) {
-            // Create shimmering dissolution effect
-            this.game.gameManager.call('createParticleEffect',
-                imagePos.x, imagePos.y, imagePos.z,
-                'magic',
-                { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
-            );
-        }
-    }
-    
-    handleTrapExpiration(entityId) {
-        const trapPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (trapPos) {
-            // Create fizzling effect for expired trap
-            this.game.gameManager.call('createParticleEffect',
-                trapPos.x, trapPos.y, trapPos.z,
-                'magic',
-                { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
-            );
-        }
-
-
-    }
-    
-    handleTemporaryEffectExpiration(entityId) {
-        // For visual effect entities, just let them fade naturally
-        const effectPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (effectPos) {
-            this.game.gameManager.call('createParticleEffect',
-                effectPos.x, effectPos.y, effectPos.z,
-                'magic',
-                { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
-            );
-        }
-    }
-    
-    handleMindControlExpiration(entityId) {
-        const mindControl = this.game.getComponent(entityId, this.componentTypes.MIND_CONTROLLED);
-        const targetTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        
-        if (mindControl && targetTeam) {
-            // Restore original team
-            targetTeam.team = mindControl.originalTeam;
-            
-            // Clear AI target
-            const targetAI = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-            if (targetAI && targetAI.aiBehavior) {
-                targetAI.target = null;
-                targetAI.targetPosition = null;
-                targetAI.path = [];
-                targetAI.meta = {};
-            }
-            
-            // Visual effect
-            if (targetPos) {
-                this.game.gameManager.call('createParticleEffect',
-                    targetPos.x, targetPos.y, targetPos.z,
-                    'magic',
-                    { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
-                );
-            }
-            
-            // Remove mind control component
-            this.game.removeComponent(entityId, this.componentTypes.MIND_CONTROLLED);
-            
-          
-        }
-    }
-
-    
-    // =============================================
-    // DESTRUCTION EFFECTS
-    // =============================================
-    
-    createDestructionEffects(entityId, lifetime) {
-        if (!lifetime.destructionEffect) return;
-
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (!pos) return;
-
-        const effectConfig = lifetime.destructionEffect;
-
-        // Create particle effect
-        this.game.gameManager.call('createParticleEffect',
-            pos.x, pos.y, pos.z,
-            effectConfig.type || 'magic',
-            {
-                count: effectConfig.count || 3,
-                color: effectConfig.color || 0xFFFFFF,
-                scaleMultiplier: effectConfig.scaleMultiplier || 1.0,
-                speedMultiplier: effectConfig.speedMultiplier || 1.0
-            }
-        );
-
-        // Screen effects if specified
-        if (effectConfig.screenShake) {
-            this.game.gameManager.call('playScreenShake',
-                effectConfig.screenShake.duration || 0.2,
-                effectConfig.screenShake.intensity || 1
-            );
-        }
-
-        if (effectConfig.screenFlash) {
-            this.game.gameManager.call('playScreenFlash',
-                effectConfig.screenFlash.color || '#FFFFFF',
-                effectConfig.screenFlash.duration || 0.2
-            );
-        }
-    }
-    
-    // =============================================
-    // PUBLIC API METHODS
-    // =============================================
-    
-    /**
-     * Add a lifetime component to an entity
-     * @param {number} entityId - Entity to add lifetime to
-     * @param {number} duration - Duration in seconds
-     * @param {Object} options - Additional options
-     */
-    addLifetime(entityId, duration, options = {}) {
-        
-        const lifetimeData = {
-            duration: duration,
-            startTime: this.game.state.now,
-            fadeOutDuration: options.fadeOutDuration || 0,
-            destructionEffect: options.destructionEffect || null,
-            onDestroy: options.onDestroy || null
-        };
-        
-        this.game.addComponent(entityId, this.componentTypes.LIFETIME, lifetimeData);
-        
-        // Register destruction callback if provided
-        if (options.onDestroy && typeof options.onDestroy === 'function') {
-            this.destructionCallbacks.set(entityId, options.onDestroy);
-        }
-        
-        return entityId;
-    }
-    
-    /**
-     * Extend the lifetime of an entity
-     * @param {number} entityId - Entity to extend
-     * @param {number} additionalDuration - Additional time in seconds
-     */
-    extendLifetime(entityId, additionalDuration) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-        if (lifetime) {
-            lifetime.duration += additionalDuration;
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Reduce the lifetime of an entity
-     * @param {number} entityId - Entity to reduce
-     * @param {number} reductionAmount - Time to reduce in seconds
-     */
-    reduceLifetime(entityId, reductionAmount) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-        if (lifetime) {
-            lifetime.duration = Math.max(0, lifetime.duration - reductionAmount);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Get remaining lifetime of an entity
-     * @param {number} entityId - Entity to check
-     * @returns {number} Remaining time in seconds, or -1 if no lifetime component
-     */
-    getRemainingLifetime(entityId) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-        if (lifetime) {
-            const age = (this.game.state.now - lifetime.startTime);
-            return Math.max(0, (lifetime.duration) - age);
-        }
-        return -1;
-    }
-    
-    /**
-     * Check if an entity will expire soon
-     * @param {number} entityId - Entity to check
-     * @param {number} threshold - Time threshold in seconds
-     * @returns {boolean} True if entity will expire within threshold
-     */
-    willExpireSoon(entityId, threshold = 5.0) {
-        const remaining = this.getRemainingLifetime(entityId);
-        return remaining >= 0 && remaining <= threshold;
-    }
-    
-    /**
-     * Remove lifetime component from an entity (makes it permanent)
-     * @param {number} entityId - Entity to make permanent
-     */
-    makeEntityPermanent(entityId) {
-        if (this.game.hasComponent(entityId, this.componentTypes.LIFETIME)) {
-            this.game.removeComponent(entityId, this.componentTypes.LIFETIME);
-            this.destructionCallbacks.delete(entityId);
-            this.fadeOutEntities.delete(entityId);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Force immediate destruction of an entity with lifetime
-     * @param {number} entityId - Entity to destroy
-     * @param {boolean} triggerEffects - Whether to trigger destruction effects
-     */
-    destroyEntityImmediately(entityId, triggerEffects = true) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-        if (lifetime) {
-            if (triggerEffects) {
-                this.handleExpiredEntity(entityId, lifetime);
-            } else {
-                this.destructionCallbacks.delete(entityId);
-                this.fadeOutEntities.delete(entityId);
-                this.game.destroyEntity(entityId);
-                this.stats.entitiesDestroyed++;
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Register a custom destruction callback for an entity
-     * @param {number} entityId - Entity to register callback for
-     * @param {Function} callback - Function to call on destruction
-     */
-    registerDestructionCallback(entityId, callback) {
-        if (typeof callback === 'function') {
-            this.destructionCallbacks.set(entityId, callback);
-        }
-    }
-    
-    /**
-     * Get all entities with lifetime components
-     * @returns {Array} Array of entity IDs
-     */
-    getAllLifetimeEntities() {
-        return this.game.getEntitiesWith(this.componentTypes.LIFETIME);
-    }
-    
-    /**
-     * Get entities that will expire within a time threshold
-     * @param {number} threshold - Time threshold in seconds
-     * @returns {Array} Array of entity IDs
-     */
-    getExpiringEntities(threshold = 5.0) {
-        const expiringEntities = [];
-        
-        const lifetimeEntities = this.getAllLifetimeEntities();
-        
-        lifetimeEntities.forEach(entityId => {
-            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
-            if (lifetime) {
-                const age = (this.game.state.now - lifetime.startTime);
-                const remaining = lifetime.duration - age;
-                
-                if (remaining <= threshold && remaining > 0) {
-                    expiringEntities.push(entityId);
-                }
-            }
-        });
-        
-        return expiringEntities;
-    }
-    
-    // =============================================
-    // LOGGING AND STATISTICS
-    // =============================================
-    
-    logEntityDestruction(entityId, lifetime) {
-       
-    }
-    
-    getStatistics() {
-        return { ...this.stats };
-    }
-    
-    resetStatistics() {
-        this.stats.entitiesDestroyed = 0;
-        this.stats.entitiesExpired = 0;
-        this.stats.entitiesFaded = 0;
-    }
-    
-    // =============================================
-    // SYSTEM MANAGEMENT
-    // =============================================
-    
-    destroy() {
-        // Clean up all tracking maps
-        this.destructionCallbacks.clear();
-        this.fadeOutEntities.clear();
-        this.resetStatistics();
-    }
-};
-
-// system: SchedulingSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['SchedulingSystem'] = class SchedulingSystem extends engine.BaseSystem {
-   constructor(game) {
-        super(game);
-        this.game.schedulingSystem = this;
-        
-        // Scheduled actions storage
-        this.scheduledActions = new Map();
-        this.actionIdCounter = 0;
-        
-        // Entity tracking for cleanup
-        this.entityActions = new Map(); // entityId -> Set of actionIds
-    }
-
-    init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('scheduleAction', this.scheduleAction.bind(this));
-        this.game.gameManager.register('cancelScheduledAction', this.cancelAction.bind(this));
-    }
-
-    update() {
-        this.processScheduledActions();
-    }
-    
-    /**
-     * Schedule an action to execute after a delay
-     * @param {Function} callback - Function to execute
-     * @param {number} delaySeconds - Delay in seconds (game time)
-     * @param {string|null} entityId - Optional entity ID for tracking/cleanup
-     * @returns {string} actionId - Unique identifier for this action
-     */
-    scheduleAction(callback, delaySeconds, entityId = null) {
-        const executeTime = this.game.state.now + delaySeconds;
-        const actionId = `action_${this.actionIdCounter++}_${executeTime.toFixed(6)}`;
-        
-        this.scheduledActions.set(actionId, {
-            callback: callback,
-            executeTime: executeTime,
-            entityId: entityId
-        });
-        
-        // Track entity associations for cleanup
-        if (entityId) {
-            if (!this.entityActions.has(entityId)) {
-                this.entityActions.set(entityId, new Set());
-            }
-            this.entityActions.get(entityId).add(actionId);
-        }
-        
-        return actionId;
-    }
-    
-    /**
-     * Process all scheduled actions that are ready to execute
-     */
-    processScheduledActions() {
-        const actionsToExecute = [];
-        
-        // Find all actions ready to execute
-        for (const [actionId, action] of this.scheduledActions.entries()) {
-            if (this.game.state.now >= action.executeTime) {
-                actionsToExecute.push({ id: actionId, action: action });
-            }
-        }
-        
-        // Sort actions for deterministic execution order
-        actionsToExecute.sort((a, b) => {
-            // Primary sort: by execution time
-            if (Math.abs(a.action.executeTime - b.action.executeTime) > 0.000001) {
-                return a.action.executeTime - b.action.executeTime;
-            }
-            // Secondary sort: by action ID for deterministic tie-breaking
-            return a.id.localeCompare(b.id);
-        });
-        
-        // Execute actions in deterministic order
-        actionsToExecute.forEach(({ id, action }) => {
-            try {
-                action.callback();
-            } catch (error) {
-                console.error(`Error executing scheduled action ${id}:`, error);
-            }
-            
-            // Clean up
-            this.removeAction(id, action.entityId);
-        });
-    }
-    
-    /**
-     * Cancel a scheduled action
-     * @param {string} actionId - Action to cancel
-     * @returns {boolean} - True if action was found and cancelled
-     */
-    cancelAction(actionId) {
-        const action = this.scheduledActions.get(actionId);
-        if (action) {
-            this.removeAction(actionId, action.entityId);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Cancel all actions associated with an entity
-     * @param {string} entityId - Entity whose actions should be cancelled
-     * @returns {number} - Number of actions cancelled
-     */
-    entityDestroyed(entityId) {
-        const entityActionIds = this.entityActions.get(entityId);
-        if (!entityActionIds) return 0;
-        
-        let cancelledCount = 0;
-        for (const actionId of entityActionIds) {
-            if (this.scheduledActions.has(actionId)) {
-                this.scheduledActions.delete(actionId);
-                cancelledCount++;
-            }
-        }
-        
-        this.entityActions.delete(entityId);
-        return cancelledCount;
-    }
-    
-    /**
-     * Internal method to remove action and clean up tracking
-     * @param {string} actionId 
-     * @param {string|null} entityId 
-     */
-    removeAction(actionId, entityId) {
-        this.scheduledActions.delete(actionId);
-        
-        if (entityId && this.entityActions.has(entityId)) {
-            this.entityActions.get(entityId).delete(actionId);
-            
-            // Clean up empty entity tracking
-            if (this.entityActions.get(entityId).size === 0) {
-                this.entityActions.delete(entityId);
-            }
-        }
-    }
-    
-    /**
-     * Get info about scheduled actions (for debugging)
-     * @returns {Object} - Statistics about scheduled actions
-     */
-    getSchedulingStats() {
-        return {
-            totalActions: this.scheduledActions.size,
-            entitiesWithActions: this.entityActions.size,
-            nextActionTime: this.getNextActionTime()
-        };
-    }
-    
-    /**
-     * Get the time of the next scheduled action
-     * @returns {number|null} - Time of next action, or null if none scheduled
-     */
-    getNextActionTime() {
-        let nextTime = null;
-        for (const action of this.scheduledActions.values()) {
-            if (nextTime === null || action.executeTime < nextTime) {
-                nextTime = action.executeTime;
-            }
-        }
-        return nextTime;
-    }
-    
-    /**
-     * Check if an entity has scheduled actions
-     * @param {string} entityId 
-     * @returns {boolean}
-     */
-    hasEntityActions(entityId) {
-        const entityActionIds = this.entityActions.get(entityId);
-        return entityActionIds && entityActionIds.size > 0;
-    }
-    
-    /**
-     * Clear all scheduled actions (useful for game reset)
-     */
-    clearAllActions() {
-        this.scheduledActions.clear();
-        this.entityActions.clear();
-    }
-    
-    /**
-     * Convenience method: Schedule a delayed function call
-     * @param {Object} obj - Object to call method on
-     * @param {string} methodName - Method name to call
-     * @param {Array} args - Arguments to pass
-     * @param {number} delaySeconds - Delay in seconds
-     * @param {string|null} entityId - Optional entity ID
-     * @returns {string} actionId
-     */
-    scheduleMethodCall(obj, methodName, args = [], delaySeconds, entityId = null) {
-        return this.scheduleAction(() => {
-            if (obj && typeof obj[methodName] === 'function') {
-                obj[methodName](...args);
-            }
-        }, delaySeconds, entityId);
-    }
-}
-;
-
-// system: GoldMineSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['GoldMineSystem'] = class GoldMineSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.goldMineSystem = this;
-        this.goldVeinLocations = [];
-        this.claimedGoldMines = new Map();
-        
-        console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
-    }
-
-    init(params) {
-        this.params = params || {};
-
-        this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
-        this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
-        this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
-
-        this.findGoldVeinLocations();
-        console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
-    }
-
-    findGoldVeinLocations() {
-        const tileMap = this.game.terrainSystem?.tileMap;
-        if (!tileMap?.environmentObjects) {
-            console.warn('[GoldMineSystem] No environment objects found');
-            return;
-        }
-
-        const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-        const extendedSize = this.game.terrainSystem?.extendedSize || 0;
-
-        this.goldVeinLocations = tileMap.environmentObjects
-            .filter(obj => obj.type === 'goldVein')
-            .map(obj => {
-                const worldX = (obj.x + extensionSize) - extendedSize / 2;
-                const worldZ = (obj.y + extensionSize) - extendedSize / 2;
-
-                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
-
-                // Gold veins use placementGridWidth which is already in placement grid units
-                // But we need to match how buildings calculate their cells (footprintWidth * 2)
-                // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
-                // we need to convert: footprintWidth * 2 = 2 * 2 = 4 placement grid cells
-                const veinPlacementGridWidth = obj.placementGridWidth || 2;
-                const veinPlacementGridHeight = obj.placementGridHeight || 2;
-                // Convert to match building footprint calculation
-                const gridWidth = veinPlacementGridWidth * 2;
-                const gridHeight = veinPlacementGridHeight * 2;
-
-                const cells = this.calculateGoldVeinCells(gridPos, gridWidth, gridHeight);
-
-                return {
-                    x: obj.x,
-                    y: obj.y,
-                    worldX: worldX,
-                    worldZ: worldZ,
-                    gridPos: gridPos,
-                    gridWidth: gridWidth,  // 4 (placement grid cells)
-                    gridHeight: gridHeight,  // 4 (placement grid cells)
-                    cells: cells,
-                    claimed: false,
-                    claimedBy: null,
-                    instanceIndex: null,
-                    originalIndex: tileMap.environmentObjects.indexOf(obj)
-                };
-            });
-
-        console.log('[GoldMineSystem] Found gold veins:', this.goldVeinLocations);
-
-        if (!this.game.isServer) {
-            this.mapGoldVeinInstances();
-        }
-    }
-
-    calculateGoldVeinCells(gridPos, gridWidth, gridHeight) {
-        const cells = [];
-        const startX = gridPos.x - Math.round(gridWidth / 2);
-        const startZ = gridPos.z - Math.round(gridHeight / 2);
-
-        for (let z = 0; z < gridHeight; z++) {
-            for (let x = 0; x < gridWidth; x++) {
-                cells.push({
-                    x: startX + x,
-                    z: startZ + z
-                });
-            }
-        }
-
-        return cells;
-    }
-
-    isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
-        const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
-
-        for (const vein of this.goldVeinLocations) {
-            if (vein.claimed) continue;
-
-            if (this.cellsMatch(buildingCells, vein.cells)) {
-                return { valid: true, vein: vein };
-            }
-        }
-
-        return { valid: false };
-    }
-
-    cellsMatch(cells1, cells2) {
-        if (cells1.length !== cells2.length) return false;
-
-        const cellSet = new Set(cells2.map(c => `${c.x},${c.z}`));
-        
-        for (const cell of cells1) {
-            if (!cellSet.has(`${cell.x},${cell.z}`)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    mapGoldVeinInstances() {
-        if (!this.game.gameManager.call('getWorldScene')) {
-            console.warn('[GoldMineSystem] No scene available for mapping instances');
-            return;
-        }
-
-        const goldVeinInstancedMeshes = [];
-        this.game.gameManager.call('getWorldScene').traverse(child => {
-            if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
-                goldVeinInstancedMeshes.push(child);
-            }
-        });
-
-        let globalIndex = 0;
-        for (const vein of this.goldVeinLocations) {
-            vein.instanceIndex = globalIndex;
-            vein.instancedMeshes = goldVeinInstancedMeshes;
-            globalIndex++;
-        }
-    }
-
-    buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
-
-        const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
-        if (!validation.valid) {
-            console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');
-            return { success: false, error: 'Must be placed on a gold vein' };
-        }
-
-        const vein = validation.vein;
-
-        vein.claimed = true;
-        vein.claimedBy = team;
-
-        let mineModel = null;
-        if (!this.game.isServer) {
-            mineModel = this.replaceVeinWithMine(vein);
-        }
-
-        this.claimedGoldMines.set(entityId, {
-            entityId: entityId,
-            position: { x: vein.x, z: vein.y },
-            worldPosition: { x: vein.worldX, z: vein.worldZ },
-            gridPos: vein.gridPos,
-            cells: vein.cells,
-            veinIndex: vein.originalIndex,
-            veinData: vein,
-            team: team,
-            model: mineModel
-        });
-
-        return { success: true };
-    }
-
-    destroyGoldMine(entityId) {
-        const goldMine = this.claimedGoldMines.get(entityId);
-        if (!goldMine) {
-            return { success: false, error: 'No gold mine to destroy' };
-        }
-
-        // Clear any miners targeting this mine
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && miningState.targetMineEntityId === entityId) {
-                miningState.targetMineEntityId = null;
-                miningState.targetMinePosition = null;
-                miningState.waitingPosition = null;
-                miningState.state = 'idle';
-            }
-        }
-
-        if (!this.game.isServer) {
-            console.log('[GoldMineSystem] CLIENT: Restoring vein');
-            this.restoreVein(goldMine.veinData);
-        } else {
-            console.log('[GoldMineSystem] SERVER: Releasing mine claim');
-            goldMine.veinData.claimed = false;
-            goldMine.veinData.claimedBy = null;
-        }
-        
-        this.claimedGoldMines.delete(entityId);
-
-        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', this.claimedGoldMines.size);
-        return { success: true };
-    }
-
-    // Check if a mine is currently occupied by looking at component states
-    isMineOccupied(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'mining') {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    // Get the current miner at a mine by checking component states
-    getCurrentMiner(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'mining') {
-                return minerEntityId;
-            }
-        }
-        
-        return null;
-    }
-
-    // Get all miners in queue (waiting_at_mine state) for a specific mine
-    getMinersInQueue(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        const queuedMiners = [];
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'waiting_at_mine') {
-                queuedMiners.push(minerEntityId);
-            }
-        }
-        
-        return queuedMiners;
-    }
-
-    // Get queue position for a specific miner
-    getQueuePosition(mineEntityId, minerEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        return queue.indexOf(minerEntityId);
-    }
-
-    // Check if a miner is next in queue
-    isNextInQueue(mineEntityId, minerEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        return queue.length > 0 && queue[0] === minerEntityId;
-    }
-
-    // Process next miner in queue when mine becomes available
-    processNextInQueue(mineEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        
-        if (queue.length === 0) {
-            return;
-        }
-        
-        const nextMinerId = queue[0];
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
-        
-        if (miningState && miningState.state === 'waiting_at_mine') {
-            const aiState = this.game.getComponent(nextMinerId, ComponentTypes.AI_STATE);
-            const pos = this.game.getComponent(nextMinerId, ComponentTypes.POSITION);
-            const vel = this.game.getComponent(nextMinerId, ComponentTypes.VELOCITY);
-            
-            if (pos && vel && miningState.targetMinePosition) {
-                miningState.waitingPosition = null;
-                
-                pos.x = miningState.targetMinePosition.x;
-                pos.z = miningState.targetMinePosition.z;
-                vel.vx = 0;
-                vel.vz = 0;
-                
-                miningState.state = 'mining';
-                miningState.miningStartTime = this.game.state.now;
-                
-                if (aiState) {
-                    aiState.state = 'idle';
-                    aiState.targetPosition = null;
-                }
-            }
-        }
-    }
-
-    replaceVeinWithMine(vein) {
-        return;
-        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
-        //     vein.instancedMeshes.forEach(mesh => {
-        //         const matrix = new THREE.Matrix4();
-        //         const position = new THREE.Vector3(0, -10000, 0);
-        //         matrix.makeTranslation(position.x, position.y, position.z);
-        //         matrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
-        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
-        //         mesh.instanceMatrix.needsUpdate = true;
-        //     });
-        // } 
-    }
-
-    restoreVein(vein) {
-        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
-        //     const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-        //     const extendedSize = this.game.terrainSystem?.extendedSize || 0;
-        //     const heightMapSettings = this.game.worldSystem?.heightMapSettings;
-            
-        //     let height = 0;
-        //     if (heightMapSettings?.enabled) {
-        //         height = heightMapSettings.heightStep * this.game.terrainSystem.tileMap.extensionTerrainType;
-        //     }
-
-        //     const worldX = (vein.x + extensionSize) - extendedSize / 2;
-        //     const worldZ = (vein.y + extensionSize) - extendedSize / 2;
-
-        //     const dummy = new THREE.Object3D();
-        //     dummy.position.set(worldX, height, worldZ);
-        //     dummy.rotation.y = Math.random() * Math.PI * 2;
-        //     dummy.scale.set(50, 50, 50);
-        //     dummy.updateMatrix();
-
-        //     vein.instancedMeshes.forEach(mesh => {
-        //         const matrix = new THREE.Matrix4();
-        //         matrix.copy(dummy.matrix);
-        //         if (mesh.userData.relativeMatrix) {
-        //             matrix.multiply(mesh.userData.relativeMatrix);
-        //         }
-        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
-        //         mesh.instanceMatrix.needsUpdate = true;
-        //     });            
-        // }
-
-        vein.claimed = false;
-        vein.claimedBy = null;
-    }
-
-    
-    onBattleEnd() {
-        const entities = this.game.getEntitiesWith(this.game.componentTypes.MINING_STATE);        
-        entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, this.game.componentTypes.MINING_STATE);
-            if (miningState) {
-                miningState.miningStartTime = 0;
-                miningState.depositStartTime = 0;
-            }
-        });
-    }
-
-    onDestroyBuilding(entityId){
-        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
-        if (unitType.id === 'goldMine') {
-            this.game.goldMineSystem.destroyGoldMine(entityId);
-        } 
-    }
-
-    reset() {
-        
-        if (!this.game.isServer) {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                this.restoreVein(goldMine.veinData, goldMine.model);
-            }
-        } else {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                goldMine.veinData.claimed = false;
-                goldMine.veinData.claimedBy = null;
-            }
-        }
-        
-        this.claimedGoldMines.clear();
-        
-    }
-};
-
-// system: PathfindingSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['PathfindingSystem'] = class PathfindingSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.pathfindingSystem = this;
-
-        this.navMesh = null;
-        this.navGridSize = null; // Will be set from config
-        this.navGridWidth = 0;
-        this.navGridHeight = 0;
-        
-        this.terrainTypes = null;
-        this.walkabilityCache = new Map();
-        this.ramps = new Set(); // Stores ramp locations in "x,z" format (terrain grid coords)
-
-        this.pathCache = new Map();
-        this.MAX_CACHE_SIZE = 1000;
-        this.CACHE_EXPIRY_TIME = 5000;
-
-        this.pathRequests = [];
-        this.MAX_PATHS_PER_FRAME = 100;
-
-        // Path smoothing configuration
-        // Lower values = less aggressive smoothing = less corner cutting
-        // Higher values = more aggressive smoothing = smoother but riskier paths
-        this.MAX_SMOOTH_LOOKAHEAD = 3; // Maximum waypoints to look ahead when smoothing
-        
-        this.initialized = false;
-    }
-
-    init() {
-        if (this.initialized) return;
-
-        this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
-        this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
-        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));  
-        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
-
-
-        const collections = this.game.getCollections();
-        if (!collections) {
-            console.warn('PathfindingSystem: Collections not available');
-            return;
-        }
-        
-        const level = collections.levels?.[this.game.state.level];
-        if (!level || !level.tileMap) {
-            console.warn('PathfindingSystem: Level or tileMap not available');
-            return;
-        }
-        
-        if (!this.game.terrainSystem || !this.game.terrainSystem.initialized) {
-            console.warn('PathfindingSystem: Waiting for terrain system...');
-            return;
-        }
-        
-        this.terrainTypes = level.tileMap.terrainTypes;
-        if (!this.terrainTypes) {
-            console.warn('PathfindingSystem: No terrain types found in level');
-            return;
-        }
-
-        // Set navigation grid size to half of terrain grid (matches placement grid)
-        this.navGridSize = collections.configs.game.gridSize / 2;
-        console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
-
-        // Load ramps data
-        this.loadRamps(level.tileMap);
-
-        this.buildWalkabilityCache();
-        this.bakeNavMesh();
-        this.initialized = true;
-        console.log('PathfindingSystem: Initialized with', this.terrainTypes.length, 'terrain types');
-    }
-
-    loadRamps(tileMap) {
-        this.ramps.clear();
-
-        const ramps = tileMap.ramps || [];
-        for (const ramp of ramps) {
-            const key = `${ramp.x},${ramp.z}`;
-            this.ramps.add(key);
-        }
-
-        console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
-    }
-
-    buildWalkabilityCache() {
-        // This cache is now deprecated in favor of height-based walkability
-        // Kept for backwards compatibility with old level data
-        this.walkabilityCache.clear();
-
-        for (let i = 0; i < this.terrainTypes.length; i++) {
-            const terrainType = this.terrainTypes[i];
-            const walkableNeighbors = terrainType.walkableNeighbors || [];
-
-            for (let j = 0; j < this.terrainTypes.length; j++) {
-                const targetType = this.terrainTypes[j].type;
-                const canWalk = walkableNeighbors.includes(targetType);
-
-                const key = `${i}-${j}`;
-                this.walkabilityCache.set(key, canWalk);
-            }
-        }
-    }
-
-    canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
-        // NEW: Use height-based walkability if heightMap is available
-        if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
-            // Always walkable between same terrain types
-            return true;
-        }
-
-        // OLD: Fall back to walkableNeighbors cache for backwards compatibility
-        const key = `${fromTerrainIndex}-${toTerrainIndex}`;
-        return this.walkabilityCache.get(key) === true;
-    }
-
-    // Convert nav grid coordinates to terrain grid coordinates
-    navGridToTerrainGrid(navGridX, navGridZ) {
-        const worldPos = this.navGridToWorld(navGridX, navGridZ);
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        const terrainSize = this.game.gameManager.call('getTerrainSize');
-
-        const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
-        const terrainZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
-
-        return { x: terrainX, z: terrainZ };
-    }
-
-    // Check if there's a ramp at the given nav grid position
-    hasRampAtNav(navGridX, navGridZ) {
-        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
-        const key = `${terrainGrid.x},${terrainGrid.z}`;
-        return this.ramps.has(key);
-    }
-    
-    hasRampAt(gridX, gridZ) {
-        return this.ramps.has(`${gridX},${gridZ}`);
-    }
-
-    // Get height level at nav grid position
-    getHeightLevelAtNavGrid(navGridX, navGridZ) {
-        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
-        return this.game.terrainSystem?.getHeightLevelAtGridPosition(terrainGrid.x, terrainGrid.z) || 0;
-    }
-
-    // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
-    canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
-        // NEW: Use height-based walkability if heightMap is available
-        if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
-            const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
-            const toHeight = this.getHeightLevelAtNavGrid(toNavGridX, toNavGridZ);
-
-            // Same height level = always walkable
-            if (fromHeight === toHeight) {
-                return true;
-            }
-
-            // Different heights = only walkable with a ramp
-            // Ramps allow movement between any adjacent height levels
-            if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        // OLD: Use walkableNeighbors logic for backwards compatibility
-        // First check normal walkability
-        if (this.canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex)) {
-            return true;
-        }
-
-        // If not normally walkable, check if there's a ramp at either position
-        // Ramps allow movement between any terrain heights
-        if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    bakeNavMesh() {
-        const terrainSize = this.game.gameManager.call('getTerrainSize');
-        
-        this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
-        this.navGridHeight = Math.ceil(terrainSize / this.navGridSize);
-        
-        this.navMesh = new Uint8Array(this.navGridWidth * this.navGridHeight);
-        
-        const halfTerrain = terrainSize / 2;
-        
-        // First pass: populate the navmesh with terrain types
-        for (let z = 0; z < this.navGridHeight; z++) {
-            for (let x = 0; x < this.navGridWidth; x++) {
-                const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
-                const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
-                
-                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition', worldX, worldZ);
-                
-                const idx = z * this.navGridWidth + x;
-                this.navMesh[idx] = terrainType !== null ? terrainType : 0;
-            }
-        }
-        
-        // Second pass: mark cells adjacent to impassable terrain as impassable
-        // Create a copy to read from while we modify
-        const originalNavMesh = new Uint8Array(this.navMesh);
-        
-        // for (let z = 0; z < this.navGridHeight; z++) {
-        //     for (let x = 0; x < this.navGridWidth; x++) {
-        //         const idx = z * this.navGridWidth + x;
-        //         const currentTerrain = originalNavMesh[idx];
-                
-        //         // Check if this cell is walkable
-        //         if (this.isTerrainWalkable(currentTerrain)) {
-        //             // Check all 8 neighbors
-        //             const neighbors = [
-        //                 {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
-        //                 {dx: 0, dz: 1}, {dx: 0, dz: -1},
-        //                 {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
-        //                 {dx: 1, dz: -1}, {dx: -1, dz: -1}
-        //             ];
-                    
-        //             for (const {dx, dz} of neighbors) {
-        //                 const nx = x + dx;
-        //                 const nz = z + dz;
-                        
-        //                 if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
-        //                     const neighborIdx = nz * this.navGridWidth + nx;
-        //                     const neighborTerrain = originalNavMesh[neighborIdx];
-                            
-        //                     // If neighbor is impassable or we can't walk to it
-        //                     if (!this.isTerrainWalkable(neighborTerrain) || 
-        //                         !this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
-        //                         // Mark this cell as impassable (use 255 as a special marker)
-        //                         this.navMesh[idx] = 255;
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        
-        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
-    }
-    
-    isTerrainWalkable(terrainIndex) {
-        if (terrainIndex === null || terrainIndex === 255) return false;
-        
-        // A terrain is walkable if it has at least one walkable neighbor defined
-        const terrainType = this.terrainTypes[terrainIndex];
-        if (!terrainType) return false;
-        
-        const walkableNeighbors = terrainType.walkableNeighbors || [];
-        return walkableNeighbors.length > 0;
-    }
-
-    worldToNavGrid(worldX, worldZ) {
-        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
-        const gridX = Math.floor((worldX + halfTerrain) / this.navGridSize);
-        const gridZ = Math.floor((worldZ + halfTerrain) / this.navGridSize);
-        return { x: gridX, z: gridZ };
-    }
-
-    navGridToWorld(gridX, gridZ) {
-        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
-        const worldX = (gridX * this.navGridSize) - halfTerrain + this.navGridSize / 2;
-        const worldZ = (gridZ * this.navGridSize) - halfTerrain + this.navGridSize / 2;
-        return { x: worldX, z: worldZ };
-    }
-
-    getTerrainAtNavGrid(gridX, gridZ) {
-        if (gridX < 0 || gridX >= this.navGridWidth || gridZ < 0 || gridZ >= this.navGridHeight) {
-            return null;
-        }
-        return this.navMesh[gridZ * this.navGridWidth + gridX];
-    }
-
-    requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
-        const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
-        
-        const cached = this.pathCache.get(cacheKey);
-        if (cached && (this.game.state.now - cached.timestamp) < this.CACHE_EXPIRY_TIME) {
-            return cached.path;
-        }
-        
-        this.pathRequests.push({
-            entityId,
-            startX,
-            startZ,
-            endX,
-            endZ,
-            priority,
-            cacheKey,
-            timestamp: this.game.state.now
-        });
-        
-        return null;
-    }
-
-    findPath(startX, startZ, endX, endZ, cacheKey = null) {
-        const startGrid = this.worldToNavGrid(startX, startZ);
-        const endGrid = this.worldToNavGrid(endX, endZ);
-        
-        if (startGrid.x === endGrid.x && startGrid.z === endGrid.z) {
-            return [{ x: endX, z: endZ }];
-        }
-        
-        const openSet = new GUTS.MinHeap();
-        const closedSet = new Set();
-        const cameFrom = new Map();
-        const gScore = new Map();
-        const fScore = new Map();
-        
-        const startKey = `${startGrid.x},${startGrid.z}`;
-        const endKey = `${endGrid.x},${endGrid.z}`;
-        
-        gScore.set(startKey, 0);
-        fScore.set(startKey, this.heuristic(startGrid, endGrid));
-        openSet.push({ key: startKey, x: startGrid.x, z: startGrid.z, f: fScore.get(startKey) });
-        
-        const directions = [
-            {dx: 1, dz: 0}, {dx: -1, dz: 0}, {dx: 0, dz: 1}, {dx: 0, dz: -1},
-            {dx: 1, dz: 1}, {dx: -1, dz: 1}, {dx: 1, dz: -1}, {dx: -1, dz: -1}
-        ];
-        
-        let iterations = 0;
-        const maxIterations = this.navGridWidth * this.navGridHeight;
-        
-        // Track the closest point we've found to the destination
-        let closestNode = { key: startKey, x: startGrid.x, z: startGrid.z };
-        let closestDistance = this.heuristic(startGrid, endGrid);
-        
-        while (!openSet.isEmpty() && iterations < maxIterations) {
-            iterations++;
-            
-            const current = openSet.pop();
-            const currentKey = current.key;
-            
-            if (currentKey === endKey) {
-                const path = this.reconstructPath(cameFrom, currentKey, endX, endZ);
-                
-                if (cacheKey) {
-                    this.addToCache(cacheKey, path);
-                }
-                
-                return path;
-            }
-            
-            closedSet.add(currentKey);
-            
-            // Check if this is closer to the destination than previous closest
-            const distToEnd = this.heuristic({ x: current.x, z: current.z }, endGrid);
-            if (distToEnd < closestDistance) {
-                closestDistance = distToEnd;
-                closestNode = current;
-            }
-            
-            const currentTerrain = this.getTerrainAtNavGrid(current.x, current.z);
-            
-            for (const dir of directions) {
-                const neighborX = current.x + dir.dx;
-                const neighborZ = current.z + dir.dz;
-                const neighborKey = `${neighborX},${neighborZ}`;
-                
-                if (closedSet.has(neighborKey)) continue;
-                
-                const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
-                if (neighborTerrain === null || neighborTerrain === 255) continue;
-
-                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, neighborTerrain, current.x, current.z, neighborX, neighborZ)) {
-                    continue;
-                }
-                
-                const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
-                
-                // For diagonal moves, check both adjacent cells to prevent corner cutting
-                if (isDiagonal) {
-                    const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
-                    const terrainZ = this.getTerrainAtNavGrid(current.x, current.z + dir.dz);
-
-                    // Both adjacent cells must exist and be walkable
-                    if (terrainX === null || terrainX === 255 ||
-                        terrainZ === null || terrainZ === 255) {
-                        continue;
-                    }
-
-                    if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, current.x, current.z, current.x + dir.dx, current.z) ||
-                        !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, current.x, current.z, current.x, current.z + dir.dz)) {
-                        continue;
-                    }
-                }
-                
-                const moveCost = isDiagonal ? 1.414 : 1;
-                const tentativeGScore = gScore.get(currentKey) + moveCost;
-                
-                if (!gScore.has(neighborKey) || tentativeGScore < gScore.get(neighborKey)) {
-                    cameFrom.set(neighborKey, currentKey);
-                    gScore.set(neighborKey, tentativeGScore);
-                    
-                    const h = this.heuristic({x: neighborX, z: neighborZ}, endGrid);
-                    const f = tentativeGScore + h;
-                    fScore.set(neighborKey, f);
-                    
-                    openSet.push({ key: neighborKey, x: neighborX, z: neighborZ, f });
-                }
-            }
-        }
-        
-        // No path found to exact destination - return path to closest reachable point
-        if (closestNode.key !== startKey) {
-            const closestWorld = this.navGridToWorld(closestNode.x, closestNode.z);
-            const path = this.reconstructPath(cameFrom, closestNode.key, closestWorld.x, closestWorld.z);
-            
-            if (cacheKey) {
-                this.addToCache(cacheKey, path);
-            }
-            
-            console.log(`PathfindingSystem: No path to destination, returning path to closest point (distance: ${closestDistance.toFixed(1)})`);
-            return path;
-        }
-        
-        return null;
-    }
-
-    reconstructPath(cameFrom, currentKey, endX, endZ) {
-        const path = [];
-        const gridPath = [];
-        
-        let current = currentKey;
-        while (current) {
-            const [x, z] = current.split(',').map(Number);
-            gridPath.unshift({ x, z });
-            current = cameFrom.get(current);
-        }
-        
-        for (const gridPoint of gridPath) {
-            const worldPos = this.navGridToWorld(gridPoint.x, gridPoint.z);
-            path.push(worldPos);
-        }
-        
-        if (path.length > 0) {
-            path[path.length - 1] = { x: endX, z: endZ };
-        }
-        
-        return this.smoothPath(path);
-    }
-
-    smoothPath(path) {
-        if (path.length <= 2) return path;
-
-        const smoothed = [path[0]];
-        let currentIdx = 0;
-
-        while (currentIdx < path.length - 1) {
-            let farthestVisible = currentIdx + 1;
-
-            // Limit how far ahead we look to prevent aggressive corner cutting
-            const maxLookahead = Math.min(
-                path.length - 1,
-                currentIdx + this.MAX_SMOOTH_LOOKAHEAD
-            );
-
-            // Check from far to near within the limited lookahead range
-            // This still prioritizes smoother paths but prevents excessive shortcuts
-            for (let i = maxLookahead; i > currentIdx + 1; i--) {
-                if (this.hasLineOfSight(path[currentIdx], path[i])) {
-                    farthestVisible = i;
-                    break;
-                }
-            }
-
-            smoothed.push(path[farthestVisible]);
-            currentIdx = farthestVisible;
-        }
-
-        return smoothed;
-    }
-    hasDirectWalkablePath(fromPos, toPos, entityId = null) {
-        if (!this.initialized || !this.navMesh) return false;
-        
-        const fromGrid = this.worldToNavGrid(fromPos.x, fromPos.z);
-        const toGrid = this.worldToNavGrid(toPos.x, toPos.z);
-        
-        // Same grid cell = direct path
-        if (fromGrid.x === toGrid.x && fromGrid.z === toGrid.z) {
-            return true;
-        }
-        
-        // Bresenham's line algorithm to check every grid cell along the path
-        const dx = Math.abs(toGrid.x - fromGrid.x);
-        const dz = Math.abs(toGrid.z - fromGrid.z);
-        const sx = fromGrid.x < toGrid.x ? 1 : -1;
-        const sz = fromGrid.z < toGrid.z ? 1 : -1;
-        let err = dx - dz;
-        
-        let x = fromGrid.x;
-        let z = fromGrid.z;
-        let lastX = x;
-        let lastZ = z;
-        let lastTerrain = this.getTerrainAtNavGrid(x, z);
-
-        // If starting position isn't walkable, fail immediately
-        if (!this.isTerrainWalkable(lastTerrain)) {
-            return false;
-        }
-
-        while (true) {
-            // Reached destination
-            if (x === toGrid.x && z === toGrid.z) {
-                return true;
-            }
-
-            const currentTerrain = this.getTerrainAtNavGrid(x, z);
-
-            // Hit impassable terrain or out of bounds
-            if (currentTerrain === null || currentTerrain === 255) {
-                return false;
-            }
-
-            // Check if current terrain is walkable
-            if (!this.isTerrainWalkable(currentTerrain)) {
-                return false;
-            }
-
-            // Check if we can transition from last terrain to current terrain
-            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
-                return false;
-            }
-            
-            const e2 = 2 * err;
-            const willMoveX = e2 > -dz;
-            const willMoveZ = e2 < dx;
-            
-            // For diagonal movement, check both adjacent cells to prevent corner cutting
-            if (willMoveX && willMoveZ) {
-                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
-                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
-
-                // Both adjacent cells must be valid and walkable
-                if (terrainX === null || terrainX === 255 ||
-                    terrainZ === null || terrainZ === 255) {
-                    return false;
-                }
-
-                if (!this.isTerrainWalkable(terrainX) || !this.isTerrainWalkable(terrainZ)) {
-                    return false;
-                }
-
-                // Check terrain transitions for both adjacent cells
-                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
-                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
-                    return false;
-                }
-            }
-
-            lastTerrain = currentTerrain;
-            lastX = x;
-            lastZ = z;
-
-            // Move along the line
-            if (willMoveX) {
-                err -= dz;
-                x += sx;
-            }
-            if (willMoveZ) {
-                err += dx;
-                z += sz;
-            }
-        }
-    }
-    hasLineOfSight(from, to) {
-        const fromGrid = this.worldToNavGrid(from.x, from.z);
-        const toGrid = this.worldToNavGrid(to.x, to.z);
-        
-        const dx = Math.abs(toGrid.x - fromGrid.x);
-        const dz = Math.abs(toGrid.z - fromGrid.z);
-        const sx = fromGrid.x < toGrid.x ? 1 : -1;
-        const sz = fromGrid.z < toGrid.z ? 1 : -1;
-        let err = dx - dz;
-        
-        let x = fromGrid.x;
-        let z = fromGrid.z;
-        let lastX = x;
-        let lastZ = z;
-        let lastTerrain = this.getTerrainAtNavGrid(x, z);
-
-        while (true) {
-            if (x === toGrid.x && z === toGrid.z) return true;
-
-            const currentTerrain = this.getTerrainAtNavGrid(x, z);
-            if (currentTerrain === null || currentTerrain === 255) return false;
-
-            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
-                return false;
-            }
-            
-            const e2 = 2 * err;
-            const willMoveX = e2 > -dz;
-            const willMoveZ = e2 < dx;
-            
-            // Check for diagonal movement (corner cutting)
-            if (willMoveX && willMoveZ) {
-                // We're moving diagonally - check both adjacent cells to prevent corner cutting
-                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
-                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
-                
-                // Both adjacent cells must be valid and walkable from current position
-                if (terrainX === null || terrainX === 255 ||
-                    terrainZ === null || terrainZ === 255) {
-                    return false;
-                }
-
-                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
-                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
-                    return false;
-                }
-            }
-
-            lastTerrain = currentTerrain;
-            lastX = x;
-            lastZ = z;
-
-            if (willMoveX) {
-                err -= dz;
-                x += sx;
-            }
-            if (willMoveZ) {
-                err += dx;
-                z += sz;
-            }
-        }
-    }
-
-    heuristic(a, b) {
-        const dx = Math.abs(a.x - b.x);
-        const dz = Math.abs(a.z - b.z);
-        return Math.sqrt(dx * dx + dz * dz);
-    }
-
-    addToCache(key, path) {
-        if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
-            const oldestKey = null;
-            let oldestTime = Infinity;
-            
-            for (const [k, v] of this.pathCache.entries()) {
-                if (v.timestamp < oldestTime) {
-                    oldestTime = v.timestamp;
-                    oldestKey = k;
-                }
-            }
-            
-            if (oldestKey) {
-                this.pathCache.delete(oldestKey);
-            }
-        }
-        
-        this.pathCache.set(key, {
-            path: path,
-            timestamp: this.game.state.now
-        });
-    }
-
-    clearPathCache() {
-        this.pathCache.clear();
-    }
-
-    update() {
-        if (!this.initialized) {
-            this.init();
-            return;
-        }
-        
-        const now = this.game.state.now;
-        const keysToDelete = [];
-        
-        for (const [key, data] of this.pathCache.entries()) {
-            if (now - data.timestamp > this.CACHE_EXPIRY_TIME) {
-                keysToDelete.push(key);
-            }
-        }
-        
-        keysToDelete.sort();
-        for (const key of keysToDelete) {
-            this.pathCache.delete(key);
-        }
-        
-        if (this.pathRequests.length === 0) return;
-        
-        this.pathRequests.sort((a, b) => {
-            if (b.priority !== a.priority) return b.priority - a.priority;
-            return String(a.entityId).localeCompare(String(b.entityId));
-        });
-        
-        const pathsToProcess = Math.min(this.MAX_PATHS_PER_FRAME, this.pathRequests.length);
-        
-        for (let i = 0; i < pathsToProcess; i++) {
-            const request = this.pathRequests.shift();
-            
-            const path = this.findPath(
-                request.startX,
-                request.startZ,
-                request.endX,
-                request.endZ,
-                request.cacheKey
-            );
-            
-            if (path && this.game.componentManager) {
-                const componentTypes = this.game.componentManager.getComponentTypes();
-                const aiState = this.game.getComponent(request.entityId, componentTypes.AI_STATE);
-                
-                if (aiState) {
-                    aiState.path = path;
-                    aiState.pathIndex = 0;
-                }
-            }
-        }
-    }
-
-    isGridPositionWalkable(gridPos) {
-        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z);
-        return this.isPositionWalkable(worldPos);
-    }
-
-    isPositionWalkable(pos) {
-        const grid = this.worldToNavGrid(pos.x, pos.z);
-        
-        // Check bounds
-        if (grid.x < 0 || grid.x >= this.navGridWidth || 
-            grid.z < 0 || grid.z >= this.navGridHeight) {
-            return false;
-        }
-        
-        const terrain = this.getTerrainAtNavGrid(grid.x, grid.z);
-        return this.isTerrainWalkable(terrain);
-    }
-
-    ping() {
-        console.log('pong');
-    }
-};
-
-// system: FogOfWarSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['FogOfWarSystem'] = class FogOfWarSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.fogOfWarSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-
-        this.VISION_RADIUS = 500;
-        this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
-        this.FOG_TEXTURE_SIZE = 64;
-
-        // Line of sight settings (optimized)
-        this.LOS_ENABLED = true;
-        this.LOS_RAYS_PER_UNIT = 16;
-        this.LOS_SAMPLE_DISTANCE = 12;
-        this.LOS_UNIT_BLOCKING_ENABLED = true;
-        this.LOS_UNIT_HEIGHT = 25;
-        this.LOS_UNIT_BLOCK_RADIUS = 25;
-
-        this.fogRenderTarget = null;
-        this.explorationRenderTarget = null;
-        this.explorationRenderTargetPingPong = null;
-        this.fogScene = null;
-        this.fogCamera = null;
-        this.fogPass = null;
-
-        // LOS mesh pool with geometry reuse
-        this.losGeometryPool = [];
-        this.losMeshPool = [];
-        this.losMaterial = null;
-        
-        this.accumulationMaterial = null;
-        this.accumulationQuad = null;
-        this.accumulationScene = null;
-        this.accumulationCamera = null;
-        
-        this.cachedVisibilityBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
-        this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
-        this.visibilityCacheValid = false;
-        this.explorationCacheValid = false;
-        
-        // Pre-allocate reusable arrays
-        this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
-        for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
-            this.tempVisiblePoints[i] = { x: 0, z: 0 };
-        }
-       
-    }
-
-    init(params = {}) {
-        this.params = params;
-        this.initRendering();
-
-        // Register getter methods
-        this.game.gameManager.register('getExplorationTexture', this.getExplorationTexture.bind(this));
-        this.game.gameManager.register('getFogTexture', this.getFogTexture.bind(this));
-    }
-
-    getExplorationTexture() {
-        return this.explorationRenderTarget?.texture || null;
-    }
-
-    getFogTexture() {
-        return this.fogRenderTarget?.texture || null;
-    }
-    initRendering(){
-        this.fogRenderTarget = new THREE.WebGLRenderTarget(
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RedFormat
-            }
-        );
-        
-        this.explorationRenderTarget = new THREE.WebGLRenderTarget(
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RedFormat
-            }
-        );
-        
-        this.explorationRenderTargetPingPong = new THREE.WebGLRenderTarget(
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RedFormat
-            }
-        );
-        
-        const halfSize = this.WORLD_SIZE / 2;
-        this.fogCamera = new THREE.OrthographicCamera(
-            -halfSize, halfSize,
-            halfSize, -halfSize,
-            0.1, 1000
-        );
-        this.fogCamera.position.set(0, 500, 0);
-        this.fogCamera.lookAt(0, 0, 0);
-        this.fogScene = new THREE.Scene();
-        this.fogScene.background = new THREE.Color(0x000000);
-                
-        this.losMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 1.0,
-            side: THREE.DoubleSide,
-            depthWrite: false
-        });
-        
-        this.accumulationMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                currentExploration: { value: null },
-                newVisibility: { value: null }
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D currentExploration;
-                uniform sampler2D newVisibility;
-                varying vec2 vUv;
-                
-                void main() {
-                    float explored = texture2D(currentExploration, vUv).r;
-                    float visible = texture2D(newVisibility, vUv).r;
-                    float newExploration = max(explored, visible);
-                    gl_FragColor = vec4(newExploration, newExploration, newExploration, 1.0);
-                }
-            `
-        });
-        
-        this.accumulationQuad = new THREE.Mesh(
-            new THREE.PlaneGeometry(2, 2),
-            this.accumulationMaterial
-        );
-        this.accumulationScene = new THREE.Scene();
-        this.accumulationScene.add(this.accumulationQuad);
-        this.accumulationCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        
-        console.log('[FogOfWarSystem] Optimized GPU fog with LOS initialized');
-    }
-
-    postAllInit() {
-        if (this.game.postProcessingSystem) {
-            this.createFogPass();
-            this.game.gameManager.call('registerPostProcessingPass', 'fog', {
-                enabled: true,
-                pass: this.fogPass
-            });
-        }
-    }
-
-
-    generateLOSVisibilityShape(unitPos, visionRadius, unitType, entityId) {
-        const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
-        
-        for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
-            const angle = i * angleStep;
-            const dirX = Math.cos(angle);
-            const dirZ = Math.sin(angle);
-            
-            // Binary search with reduced iterations (4 instead of 6)
-            let minDist = 0;
-            let maxDist = visionRadius;
-            let visibleDist = visionRadius;
-            
-            // First check max distance
-            const maxX = unitPos.x + dirX * visionRadius;
-            const maxZ = unitPos.z + dirZ * visionRadius;
-            if (!this.game.gameManager.call('hasLineOfSight',
-                { x: unitPos.x, z: unitPos.z },
-                { x: maxX, z: maxZ },
-                unitType,
-                entityId
-            )) {
-                // Binary search with 4 iterations (instead of 6)
-                for (let iter = 0; iter < 4; iter++) {
-                    const midDist = (minDist + maxDist) / 2;
-                    const midX = unitPos.x + dirX * midDist;
-                    const midZ = unitPos.z + dirZ * midDist;
-                    if (this.game.gameManager.call('hasLineOfSight',
-                        { x: unitPos.x, z: unitPos.z },
-                        { x: midX, z: midZ },
-                        unitType,
-                        entityId
-                    )) {
-                        minDist = midDist;
-                    } else {
-                        maxDist = midDist;
-                    }
-                }
-                visibleDist = minDist;
-            }
-            
-            // Reuse pre-allocated point objects
-            this.tempVisiblePoints[i].x = unitPos.x + dirX * visibleDist;
-            this.tempVisiblePoints[i].z = unitPos.z + dirZ * visibleDist;
-        }
-        
-        return this.tempVisiblePoints;
-    }
-
-    updateVisibilityMesh(points, meshIndex) {
-        if (points.length < 3) return null;
-        
-        const vertexCount = points.length * 3 * 3; // triangles * 3 vertices * 3 coords
-        
-        // Try to reuse existing geometry
-        let geometry;
-        if (meshIndex < this.losGeometryPool.length) {
-            geometry = this.losGeometryPool[meshIndex];
-            // Resize if needed
-            const currentSize = geometry.attributes.position?.array.length || 0;
-            if (currentSize !== vertexCount) {
-                geometry.dispose();
-                geometry = new THREE.BufferGeometry();
-                this.losGeometryPool[meshIndex] = geometry;
-            }
-        } else {
-            geometry = new THREE.BufferGeometry();
-            this.losGeometryPool.push(geometry);
-        }
-        
-        // Calculate center
-        let centerX = 0, centerZ = 0;
-        for (let i = 0; i < points.length; i++) {
-            centerX += points[i].x;
-            centerZ += points[i].z;
-        }
-        centerX /= points.length;
-        centerZ /= points.length;
-        
-        // Create or update vertex buffer
-        let vertices;
-        if (geometry.attributes.position) {
-            vertices = geometry.attributes.position.array;
-            // Expand array if needed
-            if (vertices.length !== vertexCount) {
-                vertices = new Float32Array(vertexCount);
-            }
-        } else {
-            vertices = new Float32Array(vertexCount);
-        }
-        
-        // Fill vertices (triangle fan from center)
-        // The fog camera looks down from Y=500, so we create a flat mesh in XZ plane at Y=0
-        let vertIdx = 0;
-        for (let i = 0; i < points.length; i++) {
-            const nextI = (i + 1) % points.length;
-            
-            // Center point
-            vertices[vertIdx++] = centerX;
-            vertices[vertIdx++] = 0;
-            vertices[vertIdx++] = centerZ;
-            
-            // Current point
-            vertices[vertIdx++] = points[i].x;
-            vertices[vertIdx++] = 0;
-            vertices[vertIdx++] = points[i].z;
-            
-            // Next point
-            vertices[vertIdx++] = points[nextI].x;
-            vertices[vertIdx++] = 0;
-            vertices[vertIdx++] = points[nextI].z;
-        }
-        
-        if (!geometry.attributes.position || geometry.attributes.position.array !== vertices) {
-            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-        }
-        geometry.attributes.position.needsUpdate = true;
-        geometry.computeBoundingSphere();
-        
-        // Reuse or create mesh
-        let mesh;
-        if (meshIndex < this.losMeshPool.length) {
-            mesh = this.losMeshPool[meshIndex];
-            if (mesh.geometry !== geometry) {
-                mesh.geometry = geometry;
-            }
-        } else {
-            mesh = new THREE.Mesh(geometry, this.losMaterial);
-            this.losMeshPool.push(mesh);
-            this.fogScene.add(mesh);
-        }
-        
-        // Position mesh at origin (vertices are already in world space)
-        mesh.position.set(0, 0, 0);
-        mesh.rotation.set(0, 0, 0);
-        mesh.scale.set(1, 1, 1);
-        mesh.visible = true;
-        
-        return mesh;
-    }
-
-    createFogPass() {
-        this.fogPass = {
-            enabled: true,
-            needsSwap: true,
-            clear: false,
-                                    
-            uniforms: {
-                tDiffuse: { value: null },
-                tDepth: { value: null },
-                fogTexture: { value: this.fogRenderTarget.texture },
-                explorationTexture: { value: this.explorationRenderTarget.texture },
-                worldSize: { value: this.WORLD_SIZE },
-                cameraNear: { value: 1 },
-                cameraFar: { value: 100 },
-                cameraWorldMatrix: { value: new THREE.Matrix4() },
-                cameraProjectionMatrixInv: { value: new THREE.Matrix4() }
-            },
-            
-            material: null,
-            fsQuad: null,
-            fsQuadScene: null,
-            fsQuadCamera: null
-        };
-
-        this.fogPass.material = new THREE.ShaderMaterial({
-            uniforms: this.fogPass.uniforms,
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D tDiffuse;
-                uniform sampler2D tDepth;
-                uniform sampler2D fogTexture;
-                uniform sampler2D explorationTexture;
-                uniform float worldSize;
-                uniform float cameraNear;
-                uniform float cameraFar;
-                uniform mat4 cameraWorldMatrix;
-                uniform mat4 cameraProjectionMatrixInv;
-
-                varying vec2 vUv;
-                
-                float readDepth(vec2 coord) {
-                    return texture2D(tDepth, coord).x;
-                }
-                
-                vec3 getWorldPosition(vec2 uv, float depth) {
-                    float x = uv.x * 2.0 - 1.0;
-                    float y = uv.y * 2.0 - 1.0;
-                    float z = depth * 2.0 - 1.0;
-                    
-                    vec4 clipPos = vec4(x, y, z, 1.0);
-                    vec4 viewPos = cameraProjectionMatrixInv * clipPos;
-                    viewPos /= viewPos.w;
-                    vec4 worldPos = cameraWorldMatrix * viewPos;
-                    
-                    return worldPos.xyz;
-                }
-
-                void main() {
-                    vec4 sceneColor = texture2D(tDiffuse, vUv);
-                    float unexploredIntensity = 0.025;
-                    float exploredIntensity = 0.2;
-                    
-                    float depth = readDepth(vUv);
-                    vec3 worldPos = getWorldPosition(vUv, depth);
-                    
-                    float halfSize = worldSize * 0.5;
-                    vec2 fogUV = vec2(
-                        (worldPos.x + halfSize) / worldSize,
-                        (-worldPos.z + halfSize) / worldSize
-                    );
-                    
-                    vec3 grayscale = vec3(dot(sceneColor.rgb, vec3(0.299, 0.587, 0.114)));
-                    
-                    float inset = 1e-4;
-                    if (fogUV.x < inset || fogUV.x > 1.0 - inset ||
-                        fogUV.y < inset || fogUV.y > 1.0 - inset) {
-                        gl_FragColor = vec4(grayscale * unexploredIntensity, 1.0);
-                        return;
-                    }
-                    
-                    vec4 fogSample = texture2D(fogTexture, fogUV);
-                    float visibleGradient = fogSample.r;
-                    
-                    vec4 explorationSample = texture2D(explorationTexture, fogUV);
-                    float explorationGradient = explorationSample.r;
-                    
-                    vec3 exploredColor = sceneColor.rgb * exploredIntensity;
-                    vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
-                    vec3 finalColor = mix(grayscale * unexploredIntensity, visibleColor, explorationGradient);
-                    
-                    gl_FragColor = vec4(finalColor, 1.0);
-                }
-            `
-        });
-        
-        const geometry = new THREE.PlaneGeometry(2, 2);
-        const mesh = new THREE.Mesh(geometry, this.fogPass.material);
-        const scene = new THREE.Scene();
-        scene.add(mesh);
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        
-        this.fogPass.fsQuadScene = scene;
-        this.fogPass.fsQuadCamera = camera;
-        
-        const fogPassObj = this.fogPass;
-        const fogSystemRef = this;
-        
-        this.fogPass.fsQuad = {
-            render: (renderer) => {
-                renderer.render(fogPassObj.fsQuadScene, fogPassObj.fsQuadCamera);
-            }
-        };
-        
-        this.fogPass.render = function(renderer, writeBuffer, readBuffer) {
-            if (fogSystemRef.game.camera) {
-                fogPassObj.uniforms.cameraWorldMatrix.value.copy(fogSystemRef.game.camera.matrixWorld);
-                fogPassObj.uniforms.cameraProjectionMatrixInv.value.copy(fogSystemRef.game.camera.projectionMatrixInverse);
-                fogPassObj.uniforms.cameraNear.value = fogSystemRef.game.camera.near;
-                fogPassObj.uniforms.cameraFar.value = fogSystemRef.game.camera.far;
-            }
-            
-            fogSystemRef.renderFogTexture();
-            
-            fogPassObj.uniforms.tDiffuse.value = readBuffer.texture;
-            fogPassObj.uniforms.tDepth.value = readBuffer.depthTexture;
-            
-            if (fogPassObj.needsSwap) {
-                renderer.setRenderTarget(writeBuffer);
-            } else {
-                renderer.setRenderTarget(null);
-            }
-            
-            fogPassObj.fsQuad.render(renderer);
-        };
-                
-        this.fogPass.setSize = function(width, height) {
-            // No-op
-        };
-    }
-
-    renderFogTexture() {
-        const myTeam = this.game.state.mySide;
-        if (!myTeam) return;
-
-        const myUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.HEALTH
-        ).filter(id => {
-            const team = this.game.getComponent(id, this.componentTypes.TEAM);
-            return team?.team === myTeam;
-        });
-
-        // Hide all meshes
-        this.losMeshPool.forEach(mesh => mesh.visible = false);
-
-        let meshIndex = 0;
-
-        myUnits.forEach((entityId) => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            if (!pos) return;
-
-            const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
-
-            const visiblePoints = this.generateLOSVisibilityShape(
-                { x: pos.x, z: pos.z },
-                visionRadius,
-                unitType,
-                entityId
-            );
-            
-            this.updateVisibilityMesh(visiblePoints, meshIndex);
-    
-            meshIndex++;
-            
-        });
-
-        // Render visibility
-        this.game.renderer.setRenderTarget(this.fogRenderTarget);
-        this.game.renderer.render(this.fogScene, this.fogCamera);
-        
-        // Accumulate exploration
-        this.accumulationMaterial.uniforms.currentExploration.value = this.explorationRenderTarget.texture;
-        this.accumulationMaterial.uniforms.newVisibility.value = this.fogRenderTarget.texture;
-        
-        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
-        this.game.renderer.render(this.accumulationScene, this.accumulationCamera);
-        
-        const temp = this.explorationRenderTarget;
-        this.explorationRenderTarget = this.explorationRenderTargetPingPong;
-        this.explorationRenderTargetPingPong = temp;
-        
-        this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
-        
-        this.game.renderer.setRenderTarget(null);
-        
-        this.visibilityCacheValid = false;
-        this.explorationCacheValid = false;
-    }
-
-    updateVisibilityCache() {
-        if (this.visibilityCacheValid) return;
-        
-        this.game.renderer.readRenderTargetPixels(
-            this.fogRenderTarget,
-            0, 0,
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            this.cachedVisibilityBuffer
-        );
-        
-        this.visibilityCacheValid = true;
-    }
-
-    updateExplorationCache() {
-        if (this.explorationCacheValid) return;
-        
-        this.game.renderer.readRenderTargetPixels(
-            this.explorationRenderTarget,
-            0, 0,
-            this.FOG_TEXTURE_SIZE,
-            this.FOG_TEXTURE_SIZE,
-            this.cachedExplorationBuffer
-        );
-        
-        this.explorationCacheValid = true;
-    }
-
-    //only available on CLIENT
-    isVisibleAt(x, z) {
-        const uv = this.worldToUV(x, z);
-        if (!uv) return false;
-        
-        this.updateVisibilityCache();
-        
-        const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
-        const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
-        const index = (py * this.FOG_TEXTURE_SIZE + px);
-        
-        return this.cachedVisibilityBuffer[index] > 0;
-    }
-
-    //only available on CLIENT
-    isExploredAt(x, z) {
-        const uv = this.worldToUV(x, z);
-        if (!uv) return false;
-        
-        this.updateExplorationCache();
-        
-        const px = Math.floor(uv.x * this.FOG_TEXTURE_SIZE);
-        const py = Math.floor(uv.y * this.FOG_TEXTURE_SIZE);
-        const index = (py * this.FOG_TEXTURE_SIZE + px);
-        
-        return this.cachedExplorationBuffer[index] > 0;
-    }
-
-    worldToUV(x, z) {
-        const half = this.WORLD_SIZE * 0.5;
-        let u = (x + half) / this.WORLD_SIZE;
-        let v = (-z + half) / this.WORLD_SIZE;
-
-        if (u < 0 || u > 1 || v < 0 || v > 1) {
-            return null;
-        }
-
-        return { x: u, y: v };
-    }
-
-    resetExploration() {
-        this.game.renderer.setRenderTarget(this.explorationRenderTarget);
-        this.game.renderer.clear();
-        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
-        this.game.renderer.clear();
-        this.game.renderer.setRenderTarget(null);
-        this.explorationCacheValid = false;
-    }
-
-    dispose() {
-        if (this.fogRenderTarget) this.fogRenderTarget.dispose();
-        if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
-        if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
-        if (this.game.postProcessingSystem) this.game.gameManager.call('removePostProcessingPass', 'fog');
-        if (this.accumulationMaterial) this.accumulationMaterial.dispose();
-        if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
-        if (this.losMaterial) this.losMaterial.dispose();
-
-        this.losGeometryPool.forEach(geom => geom.dispose());
-        this.losMeshPool = [];
-        this.losGeometryPool = [];
-    }
-};
-
-// system: SelectedUnitSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['SelectedUnitSystem'] = class SelectedUnitSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.selectedUnitSystem = this;
-        this.canvas = this.game.canvas;
-        
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        // Selection circle configuration
-        this.CIRCLE_RADIUS = 25;
-        this.CIRCLE_SEGMENTS = 32;
-        this.CIRCLE_THICKNESS = 2;
-        this.CIRCLE_COLOR = 0x00ff00; // Green selection color
-        this.CIRCLE_OFFSET_Y = 1;   // Slightly above ground to prevent z-fighting
-        
-        // Track selection circles
-        this.selectionCircles = new Map(); // entityId -> { circle, group, lastPosition }
-        
-        // Currently highlighted units
-        this.highlightedUnits = new Set();
-        
-        // Box selection state
-        this.boxSelection = {
-            active: false,
-            startX: 0,
-            startY: 0,
-            currentX: 0,
-            currentY: 0,
-            element: null
-        };
-        
-        // Selection mode tracking
-        this.selectedUnitIds = new Set(); // Track multiple selected squads
-        
-        this.currentSelectedIndex = 0;
-        // Initialize flag
-        this.initialized = false;
-    }
-
-    init() {
-        this.game.gameManager.register('getSelectedSquads', this.getSelectedSquads.bind(this));
-    }
-
-    initialize() {
-        if (this.initialized || !this.game.scene) return;
-        
-        this.initialized = true;
-        this.createBoxSelectionElement();
-        this.setupBoxSelectionListeners();
-        
-        const unitPortrait = document.getElementById('unitPortrait');   
-        unitPortrait.addEventListener('click', () => {
-            if(this.game.cameraControlSystem) {
-                if(this.game.state.selectedEntity.entityId){
-                    const pos = this.game.getComponent(this.game.state.selectedEntity.entityId, this.game.componentManager.getComponentTypes().POSITION);
-                    if(pos){
-                        this.game.gameManager.call('cameraLookAt', pos.x, pos.z);
-                    }
-                }
-            }
-        });
-    }
-    
-    createBoxSelectionElement() {
-        // Create the visual selection box element
-        const boxElement = document.createElement('div');
-        boxElement.id = 'unitSelectionBox';
-        boxElement.style.cssText = `
-            position: absolute;
-            border: 2px solid rgba(0, 255, 0, 0.8);
-            background: rgba(0, 255, 0, 0.1);
-            pointer-events: none;
-            display: none;
-            z-index: 10000;
-        `;
-        document.body.appendChild(boxElement);
-        this.boxSelection.element = boxElement;
-    }
-    
-    setupBoxSelectionListeners() {
-        // Mouse down - start box selection
-        this.canvas.addEventListener('mousedown', (event) => {
-            // Only left click, and not clicking on UI elements
-            if (event.button !== 0) return;
-            
-            const rect = this.canvas.getBoundingClientRect();
-            this.boxSelection.startX = event.clientX;
-            this.boxSelection.startY = event.clientY;
-            this.boxSelection.currentX = event.clientX;
-            this.boxSelection.currentY = event.clientY;
-            this.boxSelection.active = true;
-            
-            // Don't show box immediately - wait for drag
-        });
-        
-        // Mouse move - update box selection
-        this.canvas.addEventListener('mousemove', (event) => {
-            if (!this.boxSelection.active) return;
-            
-            this.boxSelection.currentX = event.clientX;
-            this.boxSelection.currentY = event.clientY;
-            
-            // Calculate distance dragged
-            const dx = this.boxSelection.currentX - this.boxSelection.startX;
-            const dy = this.boxSelection.currentY - this.boxSelection.startY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Only show box if dragged more than 5 pixels (prevents accidental box on click)
-            if (distance > 5) {
-                this.updateBoxSelectionVisual();
-            }
-        });
-        
-        // Mouse up - complete box selection
-        this.canvas.addEventListener('mouseup', (event) => {
-            if (!this.boxSelection.active) return;
-            
-            const dx = this.boxSelection.currentX - this.boxSelection.startX;
-            const dy = this.boxSelection.currentY - this.boxSelection.startY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // If dragged significantly, do box selection
-            if (distance > 5) {
-                requestAnimationFrame(() => {
-                    this.completeBoxSelection(event);
-                });
-            } else {
-                // Single click selection
-                
-                requestAnimationFrame(() => {
-                    this.checkUnitSelectionClick(event);
-                });
-            }
-            
-            // Reset box selection state
-            this.boxSelection.active = false;
-            this.boxSelection.element.style.display = 'none';
-        });
-        
-        // Cancel box selection on context menu or escape
-        this.canvas.addEventListener('contextmenu', (event) => {
-            if (this.boxSelection.active) {
-                event.preventDefault();
-                this.cancelBoxSelection();
-            }
-        });
-        
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.boxSelection.active) {
-                this.cancelBoxSelection();
-            }
-        });
-    }
-    
-    updateBoxSelectionVisual() {
-        const box = this.boxSelection;
-        const element = box.element;
-        
-        // Calculate box dimensions
-        const left = Math.min(box.startX, box.currentX);
-        const top = Math.min(box.startY, box.currentY);
-        const width = Math.abs(box.currentX - box.startX);
-        const height = Math.abs(box.currentY - box.startY);
-        
-        // Update element
-        element.style.left = left + 'px';
-        element.style.top = top + 'px';
-        element.style.width = width + 'px';
-        element.style.height = height + 'px';
-        element.style.display = 'block';
-    }
-        
-    completeBoxSelection(event) {
-        const box = this.boxSelection;
-        
-        // Get box boundaries in screen space (client coordinates)
-        const left = Math.min(box.startX, box.currentX);
-        const right = Math.max(box.startX, box.currentX);
-        const top = Math.min(box.startY, box.currentY);
-        const bottom = Math.max(box.startY, box.currentY);
-        
-        // Find all units within the selection box
-        const selectedUnits = this.getUnitsInScreenBox(left, top, right, bottom);
-        
-        // Check if shift is held for additive selection
-        const isAdditive = event.shiftKey;
-        
-        if (!isAdditive) {
-            this.selectedUnitIds.clear();
-        }
-        selectedUnits.forEach((unitId) => {
-            this.selectedUnitIds.add(unitId);
-        });
-        this.currentSelectedIndex = 0;
-        if (this.selectedUnitIds.size > 0) {
-            this.updateMultipleSquadSelection();
-        } else {            
-            this.deselectAll();
-        }
-        
-    }
-
-
-    getUnitsInScreenBox(left, top, right, bottom) {
-        const selectedUnits = [];
-        const selectedBuildings = [];
-        const rect = this.canvas.getBoundingClientRect();
-        
-        // Get all entities with position component
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION);
-        
-        entities.forEach(entityId => {
-            // Only select units on player's team
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            if (!team) return;
-            
-            // Try multiple ways to check team
-            const unitTeam = team.team || team.side || team.teamId;
-            const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
-            
-            if (unitTeam !== myTeam) {
-                return;
-            }
-            
-            // Get position component
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            if (!pos || !unitType) return;
-            
-            // Convert world position to screen position
-            const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
-            if (!screenPos) return;
-            
-            // Convert normalized screen coords (0-1) to client coordinates
-            const screenX = screenPos.x * rect.width + rect.left;
-            const screenY = screenPos.y * rect.height + rect.top;
-            
-            // Check if within selection box (in client coordinates)
-            if (screenX >= left && screenX <= right && 
-                screenY >= top && screenY <= bottom) {
-                if(unitType.collection == 'units'){
-                    selectedUnits.push(entityId);
-                } else {
-                    selectedBuildings.push(entityId);
-                }
-            }
-        });
-        
-        return selectedUnits.length > 0 ? selectedUnits : selectedBuildings;
-    }
-    worldToScreen(x, y, z) {
-        if (!this.game.camera || !this.game.canvas) return null;
-        
-        try {
-            // Create a 3D vector
-            const vector = new THREE.Vector3(x, y, z);
-            
-            // Project to screen space
-            vector.project(this.game.camera);
-            
-            // Check if behind camera
-            if (vector.z > 1) return null;
-            
-            // Convert to screen coordinates (0 to 1 range)
-            // (0,0) is top-left, (1,1) is bottom-right
-            return {
-                x: (vector.x + 1) / 2,
-                y: (-vector.y + 1) / 2
-            };
-        } catch (error) {
-            console.warn('[SelectedUnitSystem] worldToScreen error:', error);
-            return null;
-        }
-    }
-    findSquadForUnit(entityId) {           
-        const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        return team?.placementId || null;
-    }
-    updateMultipleSquadSelection() {        
-        this.currentSelectedIndex = 0;
-        const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-    
-        this.setSelectedEntity(unitId);         
-        this.highlightUnits(Array.from(this.selectedUnitIds)); 
-        this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
-        if(this.selectedUnitIds.size > 0){
-            let unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-            this.game.triggerEvent("onUnitSelected", unitId);
-        }
-    }
-    
-    
-    cancelBoxSelection() {
-        this.boxSelection.active = false;
-        this.boxSelection.element.style.display = 'none';
-    }
-
-    checkUnitSelectionClick(event) {
-        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
-    
-        if (!worldPos) return;
-    
-        const placementId = this.getPlacementAtWorldPosition(worldPos);
-    
-        if (placementId) {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
-            if (placement && placement.team === this.game.state.mySide) {
-                let entityId = placement.squadUnits[0];
-                // Check if shift is held for additive selection
-                if (event.shiftKey) {
-                    if (this.selectedUnitIds.has(entityId)) {
-                        // Deselect if already selected
-                        this.selectedUnitIds.delete(entityId);
-                    } else {
-                        // Add to selection
-                        this.selectedUnitIds.add(entityId);
-                    }
-                    this.updateMultipleSquadSelection();
-                } else {
-                    // Single selection (clear others)
-                    this.deselectAll();
-                    this.selectedUnitIds.add(entityId);
-                    this.selectUnit(entityId, placementId);
-                }
-            }
-        } else {
-            // Clicked on empty space - deselect all
-            if (!event.shiftKey) {
-                this.deselectAll();
-            }
-        }
-    }
-    
-    deselectAll() {
-        this.clearAllHighlights();
-        this.selectedUnitIds.clear();                
-        this.game.state.selectedEntity.entityId = null;
-        this.game.state.selectedEntity.collection = null;
-
-        const actionPanel = document.getElementById('actionPanel');     
-        if(actionPanel) {
-            actionPanel.innerHTML = "";
-        }
-
-        const selectedUnits = document.getElementById('selectedUnits');        
-        if(selectedUnits) {
-            selectedUnits.innerHTML = "";
-        }
-
-        const unitPortrait = document.getElementById('unitPortrait');        
-        if(unitPortrait){
-            unitPortrait.innerHTML = "";
-        }
-        
-        this.game.triggerEvent('onDeSelectAll');
-    }
-
-    getPlacementAtWorldPosition(worldPos) {
-        const clickRadius = 30;
-        let closestPlacementId = null;
-        let closestDistance = clickRadius;
-        
-        const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().PLACEMENT
-        );
-        
-        entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-            const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            
-            const dx = pos.x - worldPos.x;
-            const dz = pos.z - worldPos.z;
-            let distance = Math.sqrt(dx * dx + dz * dz);
-            
-            if(unitType.size) {
-                distance -= unitType.size;
-            }
-                
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestPlacementId = placement.placementId;
-            }
-        });
-        
-        return closestPlacementId;
-    }
-
-    selectUnit(entityId, placementId) {
-        if (!entityId) return;
-        
-        const squadData = this.game.gameManager.call('getSquadInfo', placementId);
-        
-        if (squadData) {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
-            squadData.unitIds = placement.squadUnits;
-            this.setSelectedEntity(entityId);
-            this.highlightUnits(placement.squadUnits);              
-            this.game.triggerEvent("onUnitSelected", entityId)
-        }
-    }
-
-    setSelectedEntity(entityId){         
-        const CT = this.game.componentManager.getComponentTypes();
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);     
-        this.game.state.selectedEntity.entityId = entityId;
-        this.game.state.selectedEntity.collection = unitType.collection;      
-    }
-
-    update() {
-        // Wait for scene to be available
-        if (!this.game.scene || !this.game.camera) {
-            return;
-        }
-        
-        // Initialize if not done yet
-        if (!this.initialized) {
-            this.initialize();
-        }
-        
-        
-        // Update all active selection circles
-        this.updateSelectionCircles();
-        
-        // Clean up circles for units that no longer exist or are deselected
-        this.cleanupRemovedCircles();
-    }
-    
-    highlightUnits(unitIds) {
-        if (!unitIds || !Array.isArray(unitIds)) {
-            this.clearAllHighlights();
-            return;
-        }
-        
-        // Convert to Set for easy comparison
-        const newHighlightSet = new Set(unitIds);
-        
-        // Remove circles for units no longer selected
-        for (const entityId of this.highlightedUnits) {
-            if (!newHighlightSet.has(entityId)) {
-                this.removeSelectionCircle(entityId);
-            }
-        }
-        
-        // Add circles for newly selected units
-        for (const entityId of unitIds) {
-            if (!this.highlightedUnits.has(entityId)) {
-                this.createSelectionCircle(entityId);
-            }
-        }
-        
-        if(document){
-            const container = document.getElementById('unitPortrait');
-            container.innerHTML = ``;
-            const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
-            if(portrait){
-                container.append(portrait);
-            }
-            const selectedUnitsContainer = document.getElementById('selectedUnits');
-            selectedUnitsContainer.innerHTML = ``;
-            
-            unitIds.forEach((unitId, index) => {
-                const selectedPortrait = this.createPortrait(unitId);
-                if(selectedPortrait){
-                    const selectedUnitIconContainer = document.createElement('div');
-                    if(index == this.currentSelectedIndex){                        
-                        selectedUnitIconContainer.classList.add('selected');
-                    }
-                    selectedUnitIconContainer.append(selectedPortrait);
-                    selectedUnitsContainer.append(selectedUnitIconContainer);
-                    selectedUnitIconContainer.addEventListener('click', () => {
-                        this.deselectAll();
-                        this.selectedUnitIds.add(unitId);
-                        const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
-                        this.selectUnit(unitId, placement.placementId);
-                    });
-                }            
-            });            
-        }
-        // Update tracked set
-        this.highlightedUnits = newHighlightSet;
-        
-    }
-
-    createPortrait(entityId){
-        if(document) {
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            const icon = this.game.getCollections().icons[unitType.icon];
-
-            if(icon){
-                const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
-                return img;
-            }
-        }
-        return null;
-    }
-    
-    clearAllHighlights() {
-        // Remove all selection circles
-        for (const entityId of this.highlightedUnits) {
-            this.removeSelectionCircle(entityId);
-        }
-        
-        this.currentSelectedIndex = 0;
-        this.highlightedUnits.clear();
-    }
-    
-    createSelectionCircle(entityId) {
-        // Don't create if already exists
-        if (this.selectionCircles.has(entityId)) return;
-        
-        // Get entity position to determine size
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        // Determine radius based on unit type
-        const radius = this.getUnitRadius(entityId);
-        
-        // Create ring geometry (donut shape)
-        const geometry = new THREE.RingGeometry(
-            radius - this.CIRCLE_THICKNESS / 2,
-            radius + this.CIRCLE_THICKNESS / 2,
-            this.CIRCLE_SEGMENTS
-        );
-        
-        // Create material
-        const material = new THREE.MeshBasicMaterial({
-            color: this.CIRCLE_COLOR,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
-        
-        // Create mesh
-        const circle = new THREE.Mesh(geometry, material);
-        circle.rotation.x = -Math.PI / 2; // Lay flat on ground
-        circle.renderOrder = 9998; // Render before health bars
-        
-        // Create group to hold circle
-        const group = new THREE.Group();
-        group.add(circle);
-        
-        // Add to UI scene
-        this.game.scene.add(group);
-        
-        // Store reference
-        this.selectionCircles.set(entityId, {
-            circle: circle,
-            group: group,
-            geometry: geometry,
-            material: material,
-            radius: radius,
-            lastPosition: { x: pos.x, y: pos.y, z: pos.z },
-            baseOpacity: 0.8
-        });
-        
-        console.log(`[SelectedUnitSystem] Created selection circle for entity ${entityId}`);
-    }
-    
-    updateSelectionCircles() {
-        for (const [entityId, circleData] of this.selectionCircles) {
-            // Check if entity still exists
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            if (!pos) {
-                this.removeSelectionCircle(entityId);
-                continue;
-            }
-            
-            // Update position
-            circleData.group.position.set(pos.x, pos.y + this.CIRCLE_OFFSET_Y, pos.z);
-        }
-    }
-    
-    getUnitRadius(entityId) {
-        // Try to get unit type to determine appropriate radius
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        
-        if (unitType) {
-            const collections = this.game.getCollections?.();
-            const unitData = (collections && collections[unitType.collection])
-                ? collections[unitType.collection][unitType.id]
-                : null;
-            
-            if (unitData && unitData.size) {
-                return unitData.size + 2; // Slightly larger than unit
-            }
-        }
-        
-        // Default radius if no unit data
-        return this.CIRCLE_RADIUS;
-    }
-    
-    cleanupRemovedCircles() {
-        for (const [entityId] of this.selectionCircles) {
-            // Check if entity still exists
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            if (!pos) {
-                this.removeSelectionCircle(entityId);
-            }
-            
-            // Check if entity is still highlighted
-            if (!this.highlightedUnits.has(entityId)) {
-                this.removeSelectionCircle(entityId);
-            }
-        }
-    }
-    
-    removeSelectionCircle(entityId) {
-        const circleData = this.selectionCircles.get(entityId);
-        if (!circleData) return;
-        
-        // Remove from scene
-        if (this.game.scene) {
-            this.game.scene.remove(circleData.group);
-        }
-        
-        // Dispose of resources
-        circleData.geometry.dispose();
-        circleData.material.dispose();
-        
-        // Remove from map
-        this.selectionCircles.delete(entityId);
-        
-        console.log(`[SelectedUnitSystem] Removed selection circle for entity ${entityId}`);
-    }
-    
-    // Configuration methods
-    setSelectionColor(color) {
-        this.CIRCLE_COLOR = color;
-        
-        // Update existing circles
-        for (const [_, circleData] of this.selectionCircles) {
-            circleData.material.color.setHex(color);
-        }
-    }
-    
-    
-    setCircleThickness(thickness) {
-        this.CIRCLE_THICKNESS = thickness;
-        
-        // Would need to recreate all circles to apply
-        // For now, just update the config for future circles
-    }
-    
-    toggleAnimation(enabled) {
-        if (!enabled) {
-            // Reset all circles to default state
-            for (const [_, circleData] of this.selectionCircles) {
-                circleData.circle.scale.set(1, 1, 1);
-                circleData.circle.rotation.z = 0;
-                circleData.material.opacity = circleData.baseOpacity;
-            }
-        }
-    }
-    
-    // Utility to check if a unit is currently highlighted
-    isHighlighted(entityId) {
-        return this.highlightedUnits.has(entityId);
-    }
-    
-    // Get all currently highlighted unit IDs
-    getHighlightedUnits() {
-        return Array.from(this.highlightedUnits);
-    }
-    
-    // Get all currently selected squad IDs
-    getSelectedSquads() {
-        let placementIds = new Set();
-        const CT = this.game.componentManager.getComponentTypes();
-        Array.from(this.selectedUnitIds).forEach((unitId) => {
-            const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
-            placementIds.add(placement.placementId);
-        });
-        return [...placementIds];
-    }
-    getSelectedUnits() {
-        return Array.from(this.selectedUnitIds);
-    }
-
-    
-    onBattleStart() {
-        this.deselectAll();
-    }
-    onKeyDown(key) {
-        if (key === 'Escape') {
-            this.deselectAll();
-        }
-    }
-    
-    destroy() {
-        // Clean up box selection element
-        if (this.boxSelection.element && this.boxSelection.element.parentElement) {
-            this.boxSelection.element.parentElement.removeChild(this.boxSelection.element);
-        }
-        
-        // Clean up all selection circles
-        for (const [entityId] of this.selectionCircles) {
-            this.removeSelectionCircle(entityId);
-        }
-        
-        this.selectionCircles.clear();
-        this.highlightedUnits.clear();
-        this.selectedUnitIds.clear();
-        this.initialized = false;
-        
-        console.log('[SelectedUnitSystem] Destroyed');
-    }
-};
-
-// system: UnitOrderSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['UnitOrderSystem'] = class UnitOrderSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game = game;
-        this.game.unitOrderSystem = this;
-
-        this.CT = this.game.componentManager.getComponentTypes();
-
-        this.isTargeting = false;
-        this.isForceMove = false;
-        this.pendingCallbacks = 0;
-
-        this._onCanvasClick = this._onCanvasClick.bind(this);
-       // this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
-
-        this.cursorWhenTargeting = 'crosshair';
-        this.pingEffect = { count: 12, color: 0x00ff00 };
-        this.temporaryOpponentMoveOrders = new Map();
-        this.targetingPreview = new GUTS.PlacementPreview(this.game);
-        this.targetingPreview.updateConfig({
-            cellOpacity: 0.3,
-            borderOpacity: 0.6
-        });
-    }
-
-    init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('getTemporaryOpponentMoveOrders', () => this.temporaryOpponentMoveOrders);
-        this.game.gameManager.register('deleteTemporaryOpponentMoveOrder', (placementId) => {
-            this.temporaryOpponentMoveOrders.delete(placementId);
-        });
-    }
-
-    showSquadActionPanel(placementId) {
-        const actionPanel = document.getElementById('actionPanel');
-        if (!actionPanel) return;
-
-
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
-        
-        actionPanel.innerHTML = "";
-          
-        
-        const firstUnit = placement.squadUnits[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, this.CT.UNIT_TYPE) : null;
-        
-        let squadPanel = document.createElement('div');
-        squadPanel.id = 'squadActionPanel';
-        
-        actionPanel.appendChild(squadPanel);
-        
-        this.displayActionSet(null, squadPanel, firstUnit, unitType);
-    }
-
-    displayActionSet(actionSetId, panel, selectedUnitId, unitType) {
-        panel.innerHTML = ``;
-        const actionSection = document.createElement('div');
-        actionSection.className = 'action-section';
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-        
-        let actions = [];
-
-        if(!unitType.actionSet){
-            if(unitType.collection == 'units'){
-                unitType.actionSet = 'defaultUnitActions';
-            } 
-        } 
-
-        if(actionSetId || unitType.actionSet){
-            if(!actionSetId) {
-                actionSetId = unitType.actionSet;
-            }
-            let currentActionSet = this.game.getCollections().actionSets[actionSetId];
-            if(currentActionSet.actions){
-                actions = currentActionSet.actions;
-                const actionsCollection = this.game.getCollections().actions;
-                actions.forEach((actionId) => {
-                    let action = actionsCollection[actionId];
-                    const btn = this.createActionButton(action, panel, selectedUnitId, unitType);
-                    grid.appendChild(btn);
-                });
-            } else if(currentActionSet.buildings){
-                const buildings = this.game.getCollections().buildings;
-                currentActionSet.buildings.forEach(buildingId => {
-                    if (buildingId === 'underConstruction') return;
-                    
-                    const building = buildings[buildingId];            
-                    if (!building.buildTime) building.buildTime = 1;
-                    
-                    building.id = buildingId;
-                    building.collection = "buildings";
-                    const canAfford = this.game.state.playerGold >= (building.value || 0);
-                    const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
-                    const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
-                    
-                    const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId);
-                    grid.appendChild(btn);
-                });
-            }
-        }
-        actionSection.appendChild(grid);
-    
-        panel.appendChild(actionSection);
-    }
-
-    createActionButton(action, panel, selectedUnitId, unitType) {
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        btn.title = `${action.title}`;
-
-        const iconEl = document.createElement('div');
-        iconEl.className = 'action-btn-icon';
-        if(action.icon){
-            const icon = this.game.getCollections().icons[action.icon];
-            if(icon && icon.filePath){
-                const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
-                iconEl.append(img);
-            } else {
-                iconEl.textContent =  '🏛️';
-            }
-        } else {
-            iconEl.textContent =  '🏛️';
-        }
-        btn.append(iconEl);
-
-        if(action.order){
-            btn.addEventListener('click', () => {
-                this[action.order]();
-            });
-        } else if(action.actionSet){
-            btn.addEventListener('click', () => {
-                this.displayActionSet(action.actionSet, panel, selectedUnitId, unitType);
-            });
-        }
-        return btn;
-    }
-
-    createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId) {
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        btn.title = `${building.title} 💰${building.value}`;
-        const locked = isLocked || !canAfford;
-        if (locked) {
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-            btn.title = `${building.title} ${lockReason}`;
-        }
-        
-        const iconEl = document.createElement('div');
-        iconEl.className = 'action-btn-icon';
-        if(building.icon){
-            const icon = this.game.getCollections().icons[building.icon];
-            if(icon && icon.filePath){
-                const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
-                iconEl.append(img);
-            } else {
-                iconEl.textContent =  '🏛️';
-            }
-        } else {
-            iconEl.textContent =  '🏛️';
-        }
-        btn.append(iconEl);
-
-        if (!locked) {
-            btn.addEventListener('click', () => {
-                this.activateBuildingPlacement(building, selectedUnitId);
-            });
-            
-            btn.addEventListener('mouseenter', () => {
-                btn.style.border = '2px solid var(--primary-gold)';
-                btn.style.transform = 'translateY(-2px)';
-            });
-            
-            btn.addEventListener('mouseleave', () => {
-                btn.style.border = '2px solid rgba(255, 170, 0, 0.3)';
-                btn.style.transform = 'translateY(0)';
-            });
-        }
-
-        return btn;
-    }
-
-    activateBuildingPlacement(building, selectedUnitId) {
-        this.game.state.selectedUnitType = {...building};
-        
-        this.game.state.peasantBuildingPlacement = {
-            peasantId: selectedUnitId,
-            buildTime: building.buildTime
-        };
-        
-        this.stopTargeting();
-        
-        this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
-    }
-    moveOrderAction() {
-        this.startTargeting({preventEnemiesInRangeCheck: true});
-    }
-
-    startTargeting(meta = {}) {
-        this.stopTargeting();
-        if(this.game.state.phase != 'placement') return;
-        this.isTargeting = true;
-        this.orderMeta = meta;
-        this.pendingCallbacks = 0;
-
-        const canvas = this.game.canvas;
-        if (canvas) {
-            canvas.addEventListener('contextmenu', this._onCanvasClick, { once: true });
-           // canvas.addEventListener('mousemove', this._onCanvasMouseMove);
-        }
-
-    }
-
-    stopTargeting() {
-        if (!this.isTargeting) return;
-        this.isTargeting = false;
-
-        const canvas = this.game.canvas;
-        if (canvas) {
-            canvas.removeEventListener('contextmenu', this._onCanvasClick, { once: true });
-       //     canvas.removeEventListener('mousemove', this._onCanvasMouseMove);
-        }
-        
-        this.targetingPreview.clear();
-    }
-
-    holdPosition() {
-        this.stopTargeting();
-
-        let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
-        
-        if (!placementIds || placementIds.length === 0) {
-            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
-            return;
-        }
-        placementIds.forEach((placementId) => {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
-            placement.squadUnits.forEach((unitId) => {
-                const position = this.game.getComponent(unitId, this.CT.POSITION);
-                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
-                if (this.game.effectsSystem && position) {
-                    this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
-                }
-                let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                currentOrderAI.targetPosition = position;
-                currentOrderAI.path = [];
-                currentOrderAI.meta = {
-                    allowMovement: false
-                };
-                this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);   
-            });
-        });
-        
-    }
-
-    onKeyDown(key) {
-        if (key === 'Escape' && this.isTargeting) {
-            this.game.uiSystem?.showNotification('❌ Targeting canceled', 'warning', 800);
-            this.stopTargeting();
-        }
-    }
-    onUnitSelected(entityId){
-        const unitType = this.game.getComponent(entityId, this.CT.UNIT_TYPE);
-        if(unitType.collection == "units") {
-            const placement = this.game.getComponent(entityId, this.CT.PLACEMENT);        
-            const placementId = placement.placementId;
-            this.showSquadActionPanel(placementId);   
-            this.startTargeting();     
-        } else {
-            this.stopTargeting();
-        }
-        this.showMoveTargets();
-    }
-    showMoveTargets() {
-        this.targetingPreview.clear();
-        const placementIds = this.game.gameManager.call('getSelectedSquads') || [];
-        const targetPositions = [];
-        placementIds.forEach((placementId) => {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
-            placement.squadUnits.forEach((entityId) => {                
-                const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
-                if(aiState.targetPosition && aiState.aiControllerId == "UnitOrderSystem"){
-                    targetPositions.push(aiState.targetPosition);
-                }
-            });            
-        });
-
-        this.targetingPreview.showAtWorldPositions(targetPositions, true);
-    }
-    // _onCanvasMouseMove(event) {
-    //     if (!this.isTargeting) return;
-
-    //     const canvas = this.game.canvas;
-    //     if (!canvas) {
-    //         this.stopTargeting();
-    //         this.targetingPreview.clear();
-    //         return;
-    //     }
-
-    //     const rect = canvas.getBoundingClientRect();
-    //     const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    //     const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    //     const worldPos = this.game.placementSystem?.getWorldPositionFromMouse?.(event, mouseX, mouseY);
-    //     if (!worldPos) {
-    //         this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
-    //         this.targetingPreview.clear();
-    //         this.stopTargeting();
-    //         return;
-    //     }
-    //     const placementIds = this.game.selectedUnitSystem.getSelectedSquads() || [];
-    //     let isBuilding = false;
-    //     placementIds.forEach((placementId) => {
-    //         const placement = this.game.placementSystem.getPlacementById(placementId);
-    //         if(placement.unitType.collection == "buildings"){
-    //             isBuilding = true;
-    //         }
-    //         targetPositions.push(placement.targetPosition);
-    //     });
-    //     if(isBuilding){
-    //         const targetPosition = { x: worldPos.x, z: worldPos.z };
-    //         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
-    //         this.targetingPreview.showAtWorldPositions(targetPositions, true);
-    //     }
-    // }
-
-    _onCanvasClick(event) {
-        if (!this.isTargeting) return;
-
-        const canvas = this.game.canvas;
-        if (!canvas) {
-            this.stopTargeting();
-            return;
-        }
- 
-        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
-        if (!worldPos) {
-            this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
-            this.stopTargeting();
-            return;
-        }
-
-        let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
-        
-        if (!placementIds || placementIds.length === 0) {
-            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
-            this.stopTargeting();
-            return;
-        }
-
-        const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
-
-        if (this.game.effectsSystem) {
-            this.game.gameManager.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
-        }
-
-        this.issueMoveOrders(placementIds, targetPosition);
-    }
-
-    issueMoveOrders(placementIds, targetPosition) {
-        if(this.game.state.phase != "placement") {
-            return;
-        };
-        const meta = { ...this.orderMeta };
-        this.orderMeta = {};
-        const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
-        this.game.networkManager.setSquadTargets(
-            { placementIds, targetPositions, meta },
-            (success) => {
-                if (success) {
-                    for(let i = 0; i < placementIds.length; i++){
-                        let placementId = placementIds[i];
-                        const targetPosition = targetPositions[i];
-                        const placement = this.game.gameManager.call('getPlacementById', placementId);
-                        placement.squadUnits.forEach((unitId) => {
-                            if (this.game.effectsSystem && targetPosition) {
-                                this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
-                            }
-                            if(targetPosition){
-                                this.game.gameManager.call('clearCommands', unitId);
-                                this.game.gameManager.call('queueCommand', unitId, {
-                                    type: 'move',
-                                    controllerId: "UnitOrderSystem",
-                                    targetPosition: targetPosition,
-                                    target: null,
-                                    meta: meta,
-                                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                    interruptible: true
-                                }, true); // true = interrupt current command
-                            
-                            }
-                        });
-
-                    }
-                    this.startTargeting();
-                    this.showMoveTargets();
-                }
-            }
-        );
-    }
-
-    getFormationTargetPositions(targetPosition, placementIds){
-        let targetPositions = [];
-        // Use placement grid size (half of terrain grid) for unit formation spacing
-        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
-        const unitPadding = 1;
-
-        for(let i = 0; i < placementIds.length; i++){
-            targetPositions.push({
-                x: targetPosition.x,
-                z: i % 2 == 0 ? targetPosition.z + i * placementGridSize * unitPadding : targetPosition.z - i * placementGridSize * unitPadding
-            });
-        }
-        return targetPositions;
-    }
-
-    applySquadTargetPosition(placementId, targetPosition, meta) {
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
-        if(!placement){
-            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta });
-            return;
-        }
-        placement.targetPosition = targetPosition;
-        placement.squadUnits.forEach((unitId) => {
-            if(targetPosition){
-                // Use command queue system for move orders
-                if (this.game.commandQueueSystem) {
-                    this.game.gameManager.call('queueCommand', unitId, {
-                        type: 'move',
-                        controllerId: "UnitOrderSystem",
-                        targetPosition: targetPosition,
-                        target: null,
-                        meta: meta,
-                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                        interruptible: true
-                    }, true); // true = interrupt current command
-                } else {
-                    // Fallback to old method
-                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                    currentOrderAI.targetPosition = targetPosition;
-                    currentOrderAI.path = [];
-                    currentOrderAI.meta = meta;
-                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
-                }
-            }
-        });
-    }
-
-    applySquadsTargetPositions(placementIds, targetPositions, meta) {     
-        for(let i = 0; i < placementIds.length; i++){  
-            let placementId = placementIds[i];
-            let targetPosition = targetPositions[i];
-            this.applySquadTargetPosition(placementId, targetPosition, meta);
-        }
-    }
-    onBattleStart() {
-        this.stopTargeting();
-    }
-    onDeSelectAll() {        
-        this.targetingPreview.clear();
-    }
-
-    destroy() {
-        this.stopTargeting();
-        if (this.targetingPreview) {
-            this.targetingPreview.dispose();
-        }
-    }
-};
-
-// system: MiniMapSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MiniMapSystem'] = class MiniMapSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.miniMapSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
-        this.MINIMAP_SIZE = 200;
-        this.MINIMAP_PADDING = 10;
-        
-        this.container = null;
-        this.canvas = null;
-        this.ctx = null;
-        
-        this.minimapCamera = null;
-        this.minimapScene = null;
-        this.minimapRenderTarget = null;
-        
-        this.unitIconGeometry = null;
-        this.buildingIconGeometry = null;
-        this.goldVeinIconGeometry = null;
-        this.friendlyIconMaterial = null;
-        this.friendlyInstancedMesh = null;
-        this.enemyIconMaterial = null;
-        this.enemyInstancedMesh = null;
-        this.friendlyBuildingMaterial = null;
-        this.friendlyBuildingMesh = null;
-        this.enemyBuildingMaterial = null;
-        this.enemyBuildingMesh = null;
-        this.goldVeinMaterial = null;
-        this.goldVeinMesh = null;
-        this.tempMatrix = null;
-        
-        this.isDragging = false;
-        this.minimapWorldSize = 0;
-        this.initialized = false;
-        this.MINIMAP_ROTATION = -45;
-    }
-
-    onGameStarted() {
-        // Get the container and its actual width
-        this.container = document.getElementById('miniMapContainer');
-        const rect = this.container.getBoundingClientRect();
-       // this.MINIMAP_SIZE = rect.width; // use actual displayed size
-
-        // Use that size for both the canvas and render target
-        this.minimapWorldSize = this.game.gameManager.call('getWorldExtendedSize');
-        
-        this.createMinimapCamera();
-        this.addTerrainBackground(); 
-        this.createIconMaterials();
-        this.createMinimapUI();
-        this.setupEventListeners();
-        this.initialized = true;
-    }
-
-
-    createMinimapCamera() {
-        const halfSize = this.minimapWorldSize / 2;
-        
-        this.minimapCamera = new THREE.OrthographicCamera(
-            -halfSize, halfSize,
-            halfSize, -halfSize,
-            0.1, 1000
-        );
-        this.minimapCamera.position.set(0, 500, 0);
-        this.minimapCamera.lookAt(0, 0, 0);
-        
-        this.minimapScene = new THREE.Scene();
-        
-        this.minimapRenderTarget = new THREE.WebGLRenderTarget(
-            this.MINIMAP_SIZE,
-            this.MINIMAP_SIZE,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat
-            }
-        );
-        
-        this.addFogBackground();
-    }
-
-    addFogBackground() {
-        const fogQuad = new THREE.Mesh(
-            new THREE.PlaneGeometry(this.minimapWorldSize, this.minimapWorldSize),
-            new THREE.ShaderMaterial({
-                uniforms: {
-                    explorationTexture: { value: null },
-                    visibilityTexture: { value: null }
-                },
-                vertexShader: `
-                    varying vec2 vUv;
-                    void main() {
-                        vUv = uv;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    uniform sampler2D explorationTexture;
-                    uniform sampler2D visibilityTexture;
-                    varying vec2 vUv;
-                    
-                    void main() {
-                        float explored = texture2D(explorationTexture, vUv).r;
-                        float visible = texture2D(visibilityTexture, vUv).r;
-                        
-                        vec3 color;
-                        float alpha;
-                        if (visible > 0.0) {
-                            // Fully visible - make it transparent so terrain shows through
-                            color = vec3(0.0);
-                            alpha = 0.0;
-                        } else if (explored > 0.0) {
-                            // Explored but not visible - dark overlay
-                            color = vec3(0.0);
-                            alpha = 0.6;
-                        } else {
-                            // Unexplored - black
-                            color = vec3(0.0);
-                            alpha = 1.0;
-                        }
-                        
-                        gl_FragColor = vec4(color, alpha);
-                    }
-                `,
-                transparent: true,
-                depthWrite: false,
-                depthTest: false
-            })
-        );
-        fogQuad.rotation.x = -Math.PI / 2;
-        fogQuad.position.y = -1;
-        fogQuad.renderOrder = 100;
-        
-        this.minimapScene.add(fogQuad);
-        this.fogQuad = fogQuad;
-    }
-
-    createIconMaterials() {
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-        // Unit icons - slightly bigger
-        this.unitIconGeometry = new THREE.CircleGeometry(gridSize, 4);
-        
-        // Building icons - much bigger
-        this.buildingIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
-        
-        // Gold vein icons - medium size
-        this.goldVeinIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
-        
-        const MAX_UNITS = 1000;
-        const MAX_BUILDINGS = 200;
-        
-        // Friendly units
-        this.friendlyIconMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        });
-        
-        this.friendlyInstancedMesh = new THREE.InstancedMesh(
-            this.unitIconGeometry,
-            this.friendlyIconMaterial,
-            MAX_UNITS
-        );
-        this.friendlyInstancedMesh.renderOrder = 100;
-        this.friendlyInstancedMesh.count = 0;
-        this.minimapScene.add(this.friendlyInstancedMesh);
-        
-        // Enemy units
-        this.enemyIconMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        });
-        
-        this.enemyInstancedMesh = new THREE.InstancedMesh(
-            this.unitIconGeometry,
-            this.enemyIconMaterial,
-            MAX_UNITS
-        );
-        this.enemyInstancedMesh.renderOrder = 100;
-        this.enemyInstancedMesh.count = 0;
-        this.minimapScene.add(this.enemyInstancedMesh);
-        
-        // Friendly buildings
-        this.friendlyBuildingMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        });
-        
-        this.friendlyBuildingMesh = new THREE.InstancedMesh(
-            this.buildingIconGeometry,
-            this.friendlyBuildingMaterial,
-            MAX_BUILDINGS
-        );
-        this.friendlyBuildingMesh.renderOrder = 100;
-        this.friendlyBuildingMesh.count = 0;
-        this.minimapScene.add(this.friendlyBuildingMesh);
-        
-        // Enemy buildings
-        this.enemyBuildingMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        });
-        
-        this.enemyBuildingMesh = new THREE.InstancedMesh(
-            this.buildingIconGeometry,
-            this.enemyBuildingMaterial,
-            MAX_BUILDINGS
-        );
-        this.enemyBuildingMesh.renderOrder = 100;
-        this.enemyBuildingMesh.count = 0;
-        this.minimapScene.add(this.enemyBuildingMesh);
-        
-        // Gold veins (yellow)
-        this.goldVeinMaterial = new THREE.MeshBasicMaterial({
-            color: 0xFFD700,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        });
-        
-        this.goldVeinMesh = new THREE.InstancedMesh(
-            this.goldVeinIconGeometry,
-            this.goldVeinMaterial,
-            100
-        );
-        this.goldVeinMesh.renderOrder = 50;
-        this.goldVeinMesh.count = 0;
-        this.minimapScene.add(this.goldVeinMesh);
-        
-        this.tempMatrix = new THREE.Matrix4();
-        this.rotationMatrix = new THREE.Matrix4();
-        this.rotationMatrix.makeRotationX(-Math.PI / 2);
-    }
-
-    createMinimapUI() {
-        this.canvas = document.createElement('canvas');
-        this.canvas.width = this.MINIMAP_SIZE;
-        this.canvas.height = this.MINIMAP_SIZE;
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.display = 'block';
-        this.ctx = this.canvas.getContext('2d');
-
-        if (this.container) {
-            this.container.appendChild(this.canvas);
-        }
-
-        // Update render target to match
-        if (this.minimapRenderTarget) {
-            this.minimapRenderTarget.setSize(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
-        }
-    }
-
-
-    setupEventListeners() {
-        this.container.addEventListener('mousedown', (e) => {
-            this.isDragging = true;
-            this.handleMinimapClick(e);
-        });
-        
-        this.container.addEventListener('mousemove', (e) => {
-            if (this.isDragging) {
-                this.handleMinimapClick(e);
-            }
-        });
-        
-        this.container.addEventListener('mouseup', () => {
-            this.isDragging = false;
-        });
-        
-        this.container.addEventListener('mouseleave', () => {
-            this.isDragging = false;
-        });
-    }
-
-    handleMinimapClick(event) {
-        const rect = this.canvas.getBoundingClientRect();
-         const camera = this.game.camera;
-     
-        // Get click position relative to canvas center (in pixels)
-        const clickX = event.clientX - rect.left - rect.width / 2;
-        const clickY = event.clientY - rect.top - rect.height / 2;
-        
-        // Apply inverse rotation to compensate for CSS rotation
-        const angle = -this.MINIMAP_ROTATION * Math.PI / 180;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        
-        const rotatedX = clickX * cos - clickY * sin;
-        const rotatedY = clickX * sin + clickY * cos;
-
-        // Convert back to normalized coordinates (0..1)
-        const nx = (rotatedX + rect.width / 2) / rect.width;
-        const ny = (rotatedY + rect.height / 2) / rect.height;
-
-        let worldSize = this.game.gameManager.call('getTerrainSize') * 2;
-        // Map to world coordinates
-        const half = worldSize * 0.5;
-        const worldX = nx * worldSize - half;
-        const worldZ = ny * worldSize - half;
-        this.game.gameManager.call('cameraLookAt', worldX, worldZ);
-    }
-
-    update() {
-        if(!this.initialized) return;
-        this.updateFogTextures();
-        this.updateUnitIcons();
-        this.updateGoldVeinIcons();
-        this.renderMinimap();
-    }
-
-    updateFogTextures() {
-        if (!this.game.fogOfWarSystem || !this.fogQuad) return;
-
-        this.fogQuad.material.uniforms.explorationTexture.value =
-            this.game.gameManager.call('getExplorationTexture');
-        this.fogQuad.material.uniforms.visibilityTexture.value =
-            this.game.gameManager.call('getFogTexture');
-
-        const groundTexture = this.game.gameManager.call('getGroundTexture');
-        if (this.terrainQuad && groundTexture) {
-            this.terrainQuad.material.map = groundTexture;
-            this.terrainQuad.material.needsUpdate = true;
-        }
-    }
-
-    updateUnitIcons() {
-        const myTeam = this.game.state.mySide;
-        if (!myTeam) return;
-        
-        const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.UNIT_TYPE
-        ).filter(id => {
-            const unitType = this.game.getComponent(id, this.componentTypes.UNIT_TYPE);
-            return unitType.collection == "units" || unitType.collection == "buildings"
-        });
-        
-        let friendlyUnitIndex = 0;
-        let enemyUnitIndex = 0;
-        let friendlyBuildingIndex = 0;
-        let enemyBuildingIndex = 0;
-        
-        for (const entityId of entities) {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            
-            if (!pos || !team || projectile) continue;
-            
-            const isMyUnit = team.team === myTeam;
-            const visible = this.game.fogOfWarSystem?.isVisibleAt(pos.x, pos.z);
-            
-            if (!isMyUnit && !visible) continue;
-            
-            this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
-            this.tempMatrix.multiply(this.rotationMatrix);
-            
-            if (unitType.collection == 'buildings') {
-                // It's a building
-                if (isMyUnit) {
-                    this.friendlyBuildingMesh.setMatrixAt(friendlyBuildingIndex, this.tempMatrix);
-                    friendlyBuildingIndex++;
-                } else {
-                    this.enemyBuildingMesh.setMatrixAt(enemyBuildingIndex, this.tempMatrix);
-                    enemyBuildingIndex++;
-                }
-            } else if(unitType.collection == 'units') {
-                // It's a unit
-                if (isMyUnit) {
-                    this.friendlyInstancedMesh.setMatrixAt(friendlyUnitIndex, this.tempMatrix);
-                    friendlyUnitIndex++;
-                } else {
-                    this.enemyInstancedMesh.setMatrixAt(enemyUnitIndex, this.tempMatrix);
-                    enemyUnitIndex++;
-                }
-            }
-        }
-        
-        this.friendlyInstancedMesh.count = friendlyUnitIndex;
-        this.enemyInstancedMesh.count = enemyUnitIndex;
-        this.friendlyBuildingMesh.count = friendlyBuildingIndex;
-        this.enemyBuildingMesh.count = enemyBuildingIndex;
-        
-        if (friendlyUnitIndex > 0) {
-            this.friendlyInstancedMesh.instanceMatrix.needsUpdate = true;
-        }
-        if (enemyUnitIndex > 0) {
-            this.enemyInstancedMesh.instanceMatrix.needsUpdate = true;
-        }
-        if (friendlyBuildingIndex > 0) {
-            this.friendlyBuildingMesh.instanceMatrix.needsUpdate = true;
-        }
-        if (enemyBuildingIndex > 0) {
-            this.enemyBuildingMesh.instanceMatrix.needsUpdate = true;
-        }
-    }
-
-    updateGoldVeinIcons() {
-        const goldVeins = this.game.gameManager.call('getGoldVeinLocations');
-        if (!goldVeins) {
-            return;
-        }
-        let goldIndex = 0;
-        
-        for (const vein of goldVeins) {
-            // Skip if claimed (has a gold mine built on it)
-            if (vein.claimed) continue;
-            
-            const explored = this.game.fogOfWarSystem?.isExploredAt(vein.worldX, vein.worldZ);
-            if (!explored) continue;
-            
-            this.tempMatrix.makeTranslation(vein.worldX, 0, vein.worldZ);
-            this.tempMatrix.multiply(this.rotationMatrix);
-            this.goldVeinMesh.setMatrixAt(goldIndex, this.tempMatrix);
-            goldIndex++;
-        }
-        
-        this.goldVeinMesh.count = goldIndex;
-        
-        if (goldIndex > 0) {
-            this.goldVeinMesh.instanceMatrix.needsUpdate = true;
-        }
-    }
-
-    updateCameraView() {
-        if (!this.game.camera) return;
-        
-        const camera = this.game.camera;
-        const cameraPos = camera.position;
-        
-        if (!cameraPos || isNaN(cameraPos.x) || isNaN(cameraPos.y) || isNaN(cameraPos.z)) {
-            return;
-        }
-        
-        const fov = camera.fov * (Math.PI / 180);
-        const aspect = camera.aspect;
-        const distance = camera.position.y;
-        
-        if (isNaN(fov) || isNaN(aspect) || isNaN(distance) || distance <= 0) {
-            return;
-        }
-        
-        const viewHeight = 2 * Math.tan(fov / 2) * distance;
-        const viewWidth = viewHeight * aspect;
-        
-        const halfWidth = viewWidth / 2;
-        const halfHeight = viewHeight / 2;
-        
-        const points = [
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight),
-            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z - halfHeight),
-            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z + halfHeight),
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z + halfHeight),
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight)
-        ];
-        
-        if (this.cameraViewMesh) {
-            this.cameraViewMesh.geometry.setFromPoints(points);
-        } else {
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const material = new THREE.LineBasicMaterial({
-                color: 0xffffff,
-                linewidth: 3,
-                depthWrite: false,
-                depthTest: false
-            });
-            this.cameraViewMesh = new THREE.Line(geometry, material);
-            this.cameraViewMesh.renderOrder = 1000;
-            this.minimapScene.add(this.cameraViewMesh);
-        }
-    }
-
-    addTerrainBackground() {
-        // Get the ground texture from the world system
-        const groundTexture = this.game.gameManager.call('getGroundTexture');
-        if (!groundTexture) {
-            console.warn('MiniMapSystem: Ground texture not available');
-            return;
-        }
-
-        const terrainQuad = new THREE.Mesh(
-            new THREE.PlaneGeometry(this.minimapWorldSize, this.minimapWorldSize),
-            new THREE.MeshBasicMaterial({
-                map: groundTexture,
-                depthWrite: false,
-                depthTest: false
-            })
-        );
-        terrainQuad.rotation.x = -Math.PI / 2;
-        terrainQuad.position.y = -2; // Below fog
-        terrainQuad.renderOrder = -2000;
-        
-        this.minimapScene.add(terrainQuad);
-        this.terrainQuad = terrainQuad;
-    }
-
-    renderMinimap() {
-        this.game.renderer.setRenderTarget(this.minimapRenderTarget);
-        this.game.renderer.render(this.minimapScene, this.minimapCamera);
-        
-        const pixels = new Uint8Array(this.MINIMAP_SIZE * this.MINIMAP_SIZE * 4);
-        this.game.renderer.readRenderTargetPixels(
-            this.minimapRenderTarget,
-            0, 0,
-            this.MINIMAP_SIZE, this.MINIMAP_SIZE,
-            pixels
-        );
-        
-        this.game.renderer.setRenderTarget(null);
-        
-        const imageData = this.ctx.createImageData(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
-        
-        for (let y = 0; y < this.MINIMAP_SIZE; y++) {
-            for (let x = 0; x < this.MINIMAP_SIZE; x++) {
-                const srcIdx = (y * this.MINIMAP_SIZE + x) * 4;
-                const dstIdx = ((this.MINIMAP_SIZE - 1 - y) * this.MINIMAP_SIZE + x) * 4;
-                
-                imageData.data[dstIdx + 0] = pixels[srcIdx + 0];
-                imageData.data[dstIdx + 1] = pixels[srcIdx + 1];
-                imageData.data[dstIdx + 2] = pixels[srcIdx + 2];
-                imageData.data[dstIdx + 3] = pixels[srcIdx + 3];
-            }
-        }
-        
-        this.ctx.putImageData(imageData, 0, 0);
-        
-        this.drawCameraOutline();
-    }
-        
-    drawCameraOutline() {
-        const camera = this.game.camera;
-        if (!camera || !camera.isOrthographicCamera) return;
-
-        // Frustum corners in NDC (CCW)
-        const corners = [
-            { x: -1, y: -1 }, // left-bottom
-            { x:  1, y: -1 }, // right-bottom
-            { x:  1, y:  1 }, // right-top
-            { x: -1, y:  1 }, // left-top
-        ];
-
-        // Intersect each corner "ray" with the ground plane (y=0)
-        const hits = [];
-        for (const c of corners) {
-            const hit = this.orthoCornerToGround(camera, c.x, c.y);
-            if (!hit) return; // early out if any corner can't hit the ground
-            hits.push(hit);
-        }
-
-        // Convert to canvas space
-        const pts = hits.map(h => this.worldToCanvas(h.x, h.z));
-
-        // Draw polygon overlay
-        this.ctx.save();
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length; i++) this.ctx.lineTo(pts[i].x, pts[i].y);
-        this.ctx.closePath();
-        this.ctx.stroke();
-        this.ctx.restore();
-    }
-
-    orthoCornerToGround(camera, ndcX, ndcY) {
-        // Point on near plane in world space
-        const p = new THREE.Vector3(ndcX, ndcY, -1).unproject(camera);
-
-        // Camera forward (world)
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-
-        const EPS = 1e-6;
-        if (Math.abs(forward.y) < EPS) return null; // looking exactly parallel to ground
-
-        // Move along forward so y -> 0
-        const t = -p.y / forward.y;
-        if (t <= 0) return null;                    // corner ray goes upward/behind
-        return p.addScaledVector(forward, t);       // world-space hit (x, 0, z)
-    }
-    
-    worldToCanvas(x, z) {
-        const half = this.minimapWorldSize / 2;
-        const nx = (x + half) / this.minimapWorldSize;
-        const nz = (z + half) / this.minimapWorldSize;
-        const cx = nx * this.MINIMAP_SIZE;
-        const cy = nz * this.MINIMAP_SIZE;
-        return { x: cx, y: cy };
-    }
-    
-    dispose() {
-        if (this.container && this.container.parentNode) {
-            this.container.parentNode.removeChild(this.container);
-        }
-        
-        if (this.minimapRenderTarget) {
-            this.minimapRenderTarget.dispose();
-        }
-        
-        if (this.unitIconGeometry) {
-            this.unitIconGeometry.dispose();
-        }
-        
-        if (this.buildingIconGeometry) {
-            this.buildingIconGeometry.dispose();
-        }
-        
-        if (this.goldVeinIconGeometry) {
-            this.goldVeinIconGeometry.dispose();
-        }
-        
-        if (this.friendlyIconMaterial) {
-            this.friendlyIconMaterial.dispose();
-        }
-        
-        if (this.friendlyInstancedMesh) {
-            this.minimapScene.remove(this.friendlyInstancedMesh);
-            this.friendlyInstancedMesh.dispose();
-        }
-        
-        if (this.enemyIconMaterial) {
-            this.enemyIconMaterial.dispose();
-        }
-        
-        if (this.enemyInstancedMesh) {
-            this.minimapScene.remove(this.enemyInstancedMesh);
-            this.enemyInstancedMesh.dispose();
-        }
-        
-        if (this.friendlyBuildingMaterial) {
-            this.friendlyBuildingMaterial.dispose();
-        }
-        
-        if (this.friendlyBuildingMesh) {
-            this.minimapScene.remove(this.friendlyBuildingMesh);
-            this.friendlyBuildingMesh.dispose();
-        }
-        
-        if (this.enemyBuildingMaterial) {
-            this.enemyBuildingMaterial.dispose();
-        }
-        
-        if (this.enemyBuildingMesh) {
-            this.minimapScene.remove(this.enemyBuildingMesh);
-            this.enemyBuildingMesh.dispose();
-        }
-        
-        if (this.goldVeinMaterial) {
-            this.goldVeinMaterial.dispose();
-        }
-        
-        if (this.goldVeinMesh) {
-            this.minimapScene.remove(this.goldVeinMesh);
-            this.goldVeinMesh.dispose();
-        }
-        
-        if (this.terrainQuad) {
-            this.minimapScene.remove(this.terrainQuad);
-            this.terrainQuad.geometry.dispose();
-            this.terrainQuad.material.dispose();
-        }
-    }
-};
-
-// system: CameraControlSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['CameraControlSystem'] = class CameraControlSystem extends engine.BaseSystem {
-  constructor(game) {
-    super(game);
-    this.game.cameraControlSystem = this;
-
-    this.SPEED = 900; // world units per second
-
-    // Mouse state
-    this.mouseX = -1;
-    this.mouseY = -1;
-    this.inside = false;
-
-    // When mouse leaves the window, keep panning in these directions
-    this.holdDirX = 0; // -1 left, +1 right
-    this.holdDirZ = 0; // +1 up/forward, -1 down/backward
-
-    this.vertical_threshold = 10;
-
-    // Reusable vectors
-    this.right = new THREE.Vector3();
-    this.fwd   = new THREE.Vector3();
-    this.delta = new THREE.Vector3();
-  }
-
-  init() {
-    this.game.gameManager.register('cameraLookAt', this.lookAt.bind(this));
-
-    this.onMove  = (e)=>this.onMouseMove(e);
-    this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
-    this.onLeave = ()=>this.onMouseLeave();
-    this.onBlur  = ()=>{ this.inside = false; this.holdDirX = 0; this.holdDirZ = 0; };
-
-    window.addEventListener('mousemove', this.onMove, { passive: true });
-    window.addEventListener('mouseenter', this.onEnter);
-    window.addEventListener('mouseleave', this.onLeave);
-    window.addEventListener('blur',      this.onBlur);
-    window.addEventListener('wheel', (e) => {
-      let dy = e.deltaY;
-      if(dy > 0){
-        //scrolling down
-        this.game.camera.zoom = this.game.camera.zoom * 0.9;
-      } else {
-        this.game.camera.zoom = this.game.camera.zoom * 1.1;
-      }
-      this.game.camera.zoom = Math.min(2, this.game.camera.zoom);
-      this.game.camera.updateProjectionMatrix();
-    });
-  }
-
-  dispose() {
-    window.removeEventListener('mousemove', this.onMove);
-    window.removeEventListener('mouseenter', this.onEnter);
-    window.removeEventListener('mouseleave', this.onLeave);
-    window.removeEventListener('blur',       this.onBlur);
-  }
-
-  onMouseMove(e) {
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
-    this.inside = true;
-  }
-
-  onMouseLeave() {
-    // Decide which edge we left from and “hold” that pan direction
-    const w = window.innerWidth  || document.documentElement.clientWidth;
-    const h = window.innerHeight || document.documentElement.clientHeight;
-
-    // X hold
-    if (this.mouseX <= 0)            this.holdDirX = -1;
-    else if (this.mouseX >= w - 1)   this.holdDirX =  1;
-    else                              this.holdDirX =  0;
-
-    // Z hold (reversed per your request: top = +forward, bottom = -backward)
-    if (this.mouseY <= this.vertical_threshold)            this.holdDirZ =  1;  // went off top -> forward
-    else if (this.mouseY >= h - this.vertical_threshold)   this.holdDirZ = -1;  // went off bottom -> backward
-    else                              this.holdDirZ =  0;
-
-    this.inside = false;
-  }
-
-  clampCamera(camera, padding = 0) {
-    const extendedSize = this.game.gameManager.call('getWorldExtendedSize');
-    const half = extendedSize ? extendedSize * 0.5 : 1000;
-    camera.position.x = Math.max(-half + padding, Math.min(half - padding, camera.position.x));
-    camera.position.z = Math.max(-half + padding, Math.min(half - padding, camera.position.z));
-
-    if (camera.userData?.lookAt instanceof THREE.Vector3) {
-      camera.userData.lookAt.x = Math.max(-half + padding, Math.min(half - padding, camera.userData.lookAt.x));
-      camera.userData.lookAt.z = Math.max(-half + padding, Math.min(half - padding, camera.userData.lookAt.z));
-    }
-  }
-
-  updateGroundBasis(camera) {
-    this.right.set(1,0,0).applyQuaternion(camera.quaternion);
-    this.fwd.set(0,0,-1).applyQuaternion(camera.quaternion);
-    this.right.y = 0; this.fwd.y = 0;
-    if (this.right.lengthSq() > 0) this.right.normalize();
-    if (this.fwd.lengthSq() > 0) this.fwd.normalize();
-  }
-
-  lookAt(worldX, worldZ){
-    const pitch = 35.264 * Math.PI / 180;
-    const yaw = 135 * Math.PI / 180;
-    const distance = 10240;
-
-    const cdx = Math.sin(yaw) * Math.cos(pitch);
-    const cdz = Math.cos(yaw) * Math.cos(pitch);
-
-    const cameraPosition = {
-        x: worldX - cdx * distance,
-        y: distance,
-        z: worldZ - cdz * distance
-    };
-
-    const lookAt = { x: worldX, y: 0, z: worldZ };
-
-    this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.game.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
-  }
-
-
-  moveCamera() {
-    const cam = this.game.camera;
-    if (!cam) return;
-
-    const dt = this.game.state.deltaTime || 1/60;
-
-    const w = window.innerWidth  || document.documentElement.clientWidth;
-    const h = window.innerHeight || document.documentElement.clientHeight;
-
-    // Compute directions from current mouse position (supports off-screen values too)
-    let dirX = 0;
-    let dirZ = 0;
-
-    if (this.inside) {
-      if (this.mouseX <= 0)           dirX = -1;
-      else if (this.mouseX >= w - 1)  dirX =  1;
-
-      // Z reversed: top edge -> +1 (forward), bottom -> -1 (backward)
-      if (this.mouseY <= this.vertical_threshold)           dirZ =  1;
-      else if (this.mouseY >= h - this.vertical_threshold)  dirZ = -1;
-
-      // Clear holds while inside; we’ll recompute every frame
-      this.holdDirX = 0;
-      this.holdDirZ = 0;
-    } else {
-      // Outside window—keep moving in the last known edge direction
-      dirX = this.holdDirX;
-      dirZ = this.holdDirZ;
-    }
-
-    if (dirX === 0 && dirZ === 0) return;
-
-    this.updateGroundBasis(cam);
-
-    this.delta.set(0,0,0)
-      .addScaledVector(this.right, dirX * this.SPEED * dt)
-      .addScaledVector(this.fwd,   dirZ * this.SPEED * dt);
-
-    cam.position.add(this.delta);
-
-    if (cam.userData?.lookAt instanceof THREE.Vector3) {
-      cam.userData.lookAt.add(this.delta);
-      cam.lookAt(cam.userData.lookAt);
-    }
-
-    this.clampCamera(cam, 0);
-  }
-}
-;
-
-// system: DamageNumberSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['DamageNumberSystem'] = class DamageNumberSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game); 
-        this.game.damageNumberSystem = this;
-              
-        // Damage number system
-        this.damageNumbers = [];
-        this.damageNumberPool = [];
-        this.maxDamageNumbers = 20;
-        
-        // Text atlas/sprite approach for damage numbers
-        this.damageTextMaterial = null;
-        this.damageTextGeometry = null;
-        this.damageNumberMesh = null;
-        this.activeCharInstances = 0;
-        this.VERTICAL_SPEED = 48;
-        this.CHAR_SIZE = 12;
-        this.effectOffset = { x: 0, y: 0, z: 0 };       
-        // Performance tracking
-        this.stats = {
-            activeDamageNumbers: 0
-        };
-    }
-
-    init() {
-        this.game.gameManager.register('showDamageNumber', this.showDamageNumber.bind(this));
-        this.initializeDamageNumberSystem();
-    }
-    
-    initializeDamageNumberSystem() {
-        // Create texture atlas with all characters we need
-        const canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 128;
-        const ctx = canvas.getContext('2d');
-        
-        // Store canvas for reference
-        this.damageTextCanvas = canvas;
-        this.damageTextContext = ctx;
-        
-        // Character set for damage numbers
-        this.damageChars = '0123456789,-+!CRITICAL';
-        this.charWidth = 64; // Each character is 64px wide
-        this.charHeight = 128;
-        this.atlasColumns = Math.floor(canvas.width / this.charWidth);
-        
-        // Draw all characters into the atlas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = 'bold 100px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        for (let i = 0; i < this.damageChars.length; i++) {
-            const char = this.damageChars[i];
-            const x = (i % this.atlasColumns) * this.charWidth + this.charWidth / 2;
-            const y = Math.floor(i / this.atlasColumns) * this.charHeight + this.charHeight / 2;
-            
-            // Draw outline
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 8;
-            ctx.strokeText(char, x, y);
-            
-            // Draw character (white, we'll tint with vertex colors)
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(char, x, y);
-        }
-        
-        // Create texture
-        this.damageTexture = new THREE.CanvasTexture(canvas);
-        this.damageTexture.minFilter = THREE.LinearFilter;
-        this.damageTexture.magFilter = THREE.LinearFilter;
-        this.damageTexture.needsUpdate = true;
-        
-        // Create instanced geometry for quads
-        // Each damage number can have up to 10 characters
-        const maxCharsPerNumber = 10;
-        const maxNumbers = 20; // Max simultaneous damage numbers
-        const maxInstances = maxNumbers * maxCharsPerNumber;
-        
-        this.maxDamageNumbers = maxNumbers;
-        this.maxDamageChars = maxCharsPerNumber;
-        this.maxDamageInstances = maxInstances;
-        
-        const geometry = new THREE.PlaneGeometry(1, 1);
-        this.damageTextGeometry = new THREE.InstancedBufferGeometry().copy(geometry);
-        
-        // Instance attributes
-        const instancePositions = new Float32Array(maxInstances * 3);
-        const instanceColors = new Float32Array(maxInstances * 3);
-        const instanceOpacities = new Float32Array(maxInstances);
-        const instanceScales = new Float32Array(maxInstances * 2);
-        const instanceUVOffsets = new Float32Array(maxInstances * 4); // x, y, width, height
-        
-        this.damageTextGeometry.setAttribute('instancePosition', 
-            new THREE.InstancedBufferAttribute(instancePositions, 3));
-        this.damageTextGeometry.setAttribute('instanceColor', 
-            new THREE.InstancedBufferAttribute(instanceColors, 3));
-        this.damageTextGeometry.setAttribute('instanceOpacity', 
-            new THREE.InstancedBufferAttribute(instanceOpacities, 1));
-        this.damageTextGeometry.setAttribute('instanceScale', 
-            new THREE.InstancedBufferAttribute(instanceScales, 2));
-        this.damageTextGeometry.setAttribute('instanceUVOffset', 
-            new THREE.InstancedBufferAttribute(instanceUVOffsets, 4));
-        
-        // Create material with custom shader
-        this.damageTextMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: this.damageTexture },
-                cameraRight: { value: new THREE.Vector3(1, 0, 0) },
-                cameraUp: { value: new THREE.Vector3(0, 1, 0) }
-            },
-            vertexShader: `
-                attribute vec3 instancePosition;
-                attribute vec3 instanceColor;
-                attribute float instanceOpacity;
-                attribute vec2 instanceScale;
-                attribute vec4 instanceUVOffset;
-                
-                uniform vec3 cameraRight;
-                uniform vec3 cameraUp;
-                
-                varying vec2 vUv;
-                varying vec3 vColor;
-                varying float vOpacity;
-                
-                void main() {
-                    vUv = uv * instanceUVOffset.zw + instanceUVOffset.xy;
-                    vColor = instanceColor;
-                    vOpacity = instanceOpacity;
-                    
-                    // For orthographic camera, build billboard in view space
-                    vec3 viewRight = normalize((modelViewMatrix * vec4(cameraRight, 0.0)).xyz);
-                    vec3 viewUp = normalize((modelViewMatrix * vec4(cameraUp, 0.0)).xyz);
-                    
-                    vec4 viewPos = modelViewMatrix * vec4(instancePosition, 1.0);
-                    viewPos.xyz += viewRight * position.x * instanceScale.x;
-                    viewPos.xyz += viewUp * position.y * instanceScale.y;
-                    
-                    gl_Position = projectionMatrix * viewPos;
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D map;
-                
-                varying vec2 vUv;
-                varying vec3 vColor;
-                varying float vOpacity;
-                
-                void main() {
-                    vec4 texColor = texture2D(map, vUv);
-                    
-                    // Use texture alpha and tint with color
-                    gl_FragColor = vec4(vColor * texColor.rgb, texColor.a * vOpacity);
-                    
-                    if (gl_FragColor.a < 0.01) discard;
-                }
-            `,
-            transparent: true,
-            depthWrite: false,
-            side: THREE.DoubleSide
-        });
-        
-        this.damageNumberMesh = new THREE.Mesh(this.damageTextGeometry, this.damageTextMaterial);
-        this.damageNumberMesh.frustumCulled = false;
-        this.game.scene.add(this.damageNumberMesh);
-        
-        // Initially hide all instances
-        this.damageTextGeometry.instanceCount = 0;
-        
-        // Track active character instances
-        this.activeCharInstances = 0;
-    }
-    
-    getCharUVOffset(char) {
-        const index = this.damageChars.indexOf(char);
-        if (index === -1) return { x: 0, y: 0, width: 0, height: 0 }; // Hide unknown chars
-        
-        const col = index % this.atlasColumns;
-        const row = Math.floor(index / this.atlasColumns);
-        
-        const uWidth = this.charWidth / this.damageTextCanvas.width;
-        const uHeight = this.charHeight / this.damageTextCanvas.height;
-        
-        return {
-            x: col * uWidth,
-            y: row * uHeight,
-            width: uWidth,
-            height: uHeight
-        };
-    }
-    
-    showDamageNumber(x, y, z, damage, type = 'physical') {
-        console.log('showing damage number', x, y, z, damage, type);
-        // Get or create damage number object
-        let damageObj = this.damageNumberPool.pop();
-        
-        if (!damageObj) {
-            damageObj = {
-                charStartIndex: 0, // Index in instance buffer where this number's chars start
-                charCount: 0,
-                startTime: 0,
-                duration: 1.5,
-                startPos: new THREE.Vector3(),
-                velocity: new THREE.Vector3(),
-                color: new THREE.Color(),
-                text: ''
-            };
-        }
-        
-        // Setup damage number
-        damageObj.text = Math.abs(Math.round(damage)).toString();
-        damageObj.charCount = damageObj.text.length;
-        damageObj.startTime = this.game.state.now;
-        damageObj.startPos.set(x + (Math.random() - 0.5) * 12, y + 10, z + (Math.random() - 0.5) * 12);
-        damageObj.velocity.set(
-            0, // Slight random horizontal drift
-            this.VERTICAL_SPEED, // Initial upward velocity
-            0
-        );
-        
-        // Set color based on type
-        switch (type) {
-            case 'heal':
-                damageObj.color.setHex(0x00ff88);
-                break;
-            case 'critical':
-                damageObj.color.setHex(0xff0044);
-                damageObj.velocity.y = 12;
-                break;
-            case 'poison':
-                damageObj.color.setHex(0x8a2be2);
-                break;
-            case 'fire':
-                damageObj.color.setHex(0xff4400);
-                break;
-            case 'cold':
-                damageObj.color.setHex(0x00bfff);
-                break;
-            case 'lightning':
-                damageObj.color.setHex(0xffff00);
-                break;
-            case 'divine':
-                damageObj.color.setHex(0xffd700);
-                break;
-            default:
-                damageObj.color.setHex(0xffffff);
-        }
-        
-        // Allocate character instances
-        if (this.activeCharInstances + damageObj.charCount > this.maxDamageInstances) {
-            // Pool is full, can't show this damage number
-            console.warn('Damage number pool full');
-            this.damageNumberPool.push(damageObj);
-            return;
-        }
-        
-        damageObj.charStartIndex = this.activeCharInstances;
-        this.activeCharInstances += damageObj.charCount;
-        
-        // Add to active list
-        this.damageNumbers.push(damageObj);
-        
-        // Update instance count
-        this.damageTextGeometry.instanceCount = this.activeCharInstances;
-        
-        // Initialize character instances
-        this.updateDamageNumberInstance(damageObj, 0);
-        
-    }
-    
-    updateDamageNumberInstance(damageObj, progress) {
-        if (!this.game.camera) return;
-        
-        // Calculate position with simple upward motion
-        const pos = damageObj.startPos.clone();
-        const elapsed = progress * damageObj.duration;
-        pos.x += damageObj.velocity.x * elapsed;
-        pos.y += damageObj.velocity.y * elapsed;
-        pos.z += damageObj.velocity.z * elapsed;
-        
-        // Calculate opacity with fade out
-        let opacity = 1.0;
-        if (progress > 0.6) {
-            opacity = 1.0 - ((progress - 0.6) / 0.4);
-        }
-        
-        // No scaling - constant size
-        const scale = 1.0;
-        
-        // Character size (world units)
-        const charWidth = this.CHAR_SIZE * scale;
-        const charHeight = this.CHAR_SIZE * scale * 2;
-        
-        // Update each character instance
-        const positions = this.damageTextGeometry.attributes.instancePosition;
-        const colors = this.damageTextGeometry.attributes.instanceColor;
-        const opacities = this.damageTextGeometry.attributes.instanceOpacity;
-        const scales = this.damageTextGeometry.attributes.instanceScale;
-        const uvOffsets = this.damageTextGeometry.attributes.instanceUVOffset;
-        
-        // Get camera right vector for horizontal spacing
-        const camera = this.game.camera;
-        const cameraRight = new THREE.Vector3();
-        const cameraUp = new THREE.Vector3();
-        camera.matrixWorld.extractBasis(cameraRight, cameraUp, new THREE.Vector3());
-        
-        // Center the entire text string at pos
-        const totalWidth = damageObj.charCount * charWidth;
-        const startOffset = -totalWidth / 2 + charWidth / 2;
-        
-        for (let i = 0; i < damageObj.charCount; i++) {
-            const instanceIdx = damageObj.charStartIndex + i;
-            const char = damageObj.text[i];
-            
-            // Position each character along camera right vector, centered
-            const offset = startOffset + i * charWidth;
-            const charPos = pos.clone().add(cameraRight.clone().multiplyScalar(offset));
-            positions.setXYZ(instanceIdx, charPos.x, charPos.y, charPos.z);
-            
-            // Color
-            colors.setXYZ(instanceIdx, damageObj.color.r, damageObj.color.g, damageObj.color.b);
-            
-            // Opacity
-            opacities.setX(instanceIdx, opacity);
-            
-            // Scale
-            scales.setXY(instanceIdx, charWidth, charHeight);
-            
-            // UV offset for this character
-            const uvOffset = this.getCharUVOffset(char);
-            uvOffsets.setXYZW(instanceIdx, uvOffset.x, uvOffset.y, uvOffset.width, uvOffset.height);
-        }
-        
-        positions.needsUpdate = true;
-        colors.needsUpdate = true;
-        opacities.needsUpdate = true;
-        scales.needsUpdate = true;
-        uvOffsets.needsUpdate = true;
-    }
-    
-    updateDamageNumbers() {
-        if (!this.game.state || this.damageNumbers.length === 0 || !this.game.camera) return;
-        console.log('update');
-        // Update camera vectors for billboarding
-        const camera = this.game.camera;
-        const cameraRight = new THREE.Vector3();
-        const cameraUp = new THREE.Vector3();
-        
-        camera.matrixWorld.extractBasis(cameraRight, cameraUp, new THREE.Vector3());
-        
-        this.damageTextMaterial.uniforms.cameraRight.value.copy(cameraRight);
-        this.damageTextMaterial.uniforms.cameraUp.value.copy(cameraUp);
-        
-        const currentTime = this.game.state.now;
-        const toRemove = [];
-        
-        for (let i = 0; i < this.damageNumbers.length; i++) {
-            const damageObj = this.damageNumbers[i];
-            const elapsed = currentTime - damageObj.startTime;
-            const progress = elapsed / damageObj.duration;
-            
-            if (progress >= 1) {
-                toRemove.push(i);
-                continue;
-            }
-            
-            this.updateDamageNumberInstance(damageObj, progress);
-        }
-        
-        // Remove completed damage numbers (backwards to maintain indices)
-        for (let i = toRemove.length - 1; i >= 0; i--) {
-            const idx = toRemove[i];
-            const damageObj = this.damageNumbers[idx];
-            
-            // Free up character instances
-            const charsToRemove = damageObj.charCount;
-            const startIdx = damageObj.charStartIndex;
-            
-            // Shift all subsequent characters back in the buffer
-            if (startIdx + charsToRemove < this.activeCharInstances) {
-                const positions = this.damageTextGeometry.attributes.instancePosition;
-                const colors = this.damageTextGeometry.attributes.instanceColor;
-                const opacities = this.damageTextGeometry.attributes.instanceOpacity;
-                const scales = this.damageTextGeometry.attributes.instanceScale;
-                const uvOffsets = this.damageTextGeometry.attributes.instanceUVOffset;
-                
-                for (let j = startIdx + charsToRemove; j < this.activeCharInstances; j++) {
-                    const sourceIdx = j;
-                    const destIdx = j - charsToRemove;
-                    
-                    // Copy position
-                    positions.setXYZ(destIdx, 
-                        positions.getX(sourceIdx),
-                        positions.getY(sourceIdx),
-                        positions.getZ(sourceIdx)
-                    );
-                    
-                    // Copy color
-                    colors.setXYZ(destIdx,
-                        colors.getX(sourceIdx),
-                        colors.getY(sourceIdx),
-                        colors.getZ(sourceIdx)
-                    );
-                    
-                    // Copy opacity
-                    opacities.setX(destIdx, opacities.getX(sourceIdx));
-                    
-                    // Copy scale
-                    scales.setXY(destIdx,
-                        scales.getX(sourceIdx),
-                        scales.getY(sourceIdx)
-                    );
-                    
-                    // Copy UV offset
-                    uvOffsets.setXYZW(destIdx,
-                        uvOffsets.getX(sourceIdx),
-                        uvOffsets.getY(sourceIdx),
-                        uvOffsets.getZ(sourceIdx),
-                        uvOffsets.getW(sourceIdx)
-                    );
-                }
-                
-                positions.needsUpdate = true;
-                colors.needsUpdate = true;
-                opacities.needsUpdate = true;
-                scales.needsUpdate = true;
-                uvOffsets.needsUpdate = true;
-            }
-            
-            this.activeCharInstances -= charsToRemove;
-            
-            // Update indices for remaining damage numbers
-            for (let j = idx + 1; j < this.damageNumbers.length; j++) {
-                this.damageNumbers[j].charStartIndex -= charsToRemove;
-            }
-            
-            // Return to pool
-            this.damageNumberPool.push(damageObj);
-            
-            // Remove from active array
-            this.damageNumbers.splice(idx, 1);
-        }
-        
-        // Update instance count
-        this.damageTextGeometry.instanceCount = this.activeCharInstances;
-        this.stats.activeDamageNumbers = this.damageNumbers.length;
-    }
-    
-    // Keep all existing particle and screen effect methods unchanged
-    getEffectConfig(effectType) {
-        const configs = {
-            victory: {
-                count: 5,
-                shape: 'star',
-                color: 0x00ff00,
-                colorRange: { start: 0x00ff00, end: 0xffff00 },
-                lifetime: 1.5,
-                velocity: { speed: 8, spread: 0.5, pattern: 'burst' },
-                scale: 2,
-                scaleVariation: 0.3,
-                physics: { gravity: -0.5, drag: 0.99 },
-                rotation: { enabled: true, speed: 5 },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            },
-            defeat: {
-                count: 8,
-                shape: 'spark',
-                color: 0xff0000,
-                colorRange: { start: 0xff0000, end: 0x440000 },
-                lifetime: 2,
-                velocity: { speed: 6, spread: 0.8, pattern: 'burst' },
-                scale: 1.5,
-                scaleVariation: 0.4,
-                physics: { gravity: 0.3, drag: 0.95 },
-                rotation: { enabled: true, speed: 3 },
-                visual: { fadeOut: true, scaleOverTime: false, blending: 'normal' }
-            },
-            levelup: {
-                count: 12,
-                shape: 'glow',
-                color: 0xffaa00,
-                colorRange: { start: 0xffaa00, end: 0xffffff },
-                lifetime: 2.5,
-                velocity: { speed: 4, spread: 0.3, pattern: 'fountain' },
-                scale: 3,
-                scaleVariation: 0.2,
-                physics: { gravity: -0.2, drag: 0.98 },
-                rotation: { enabled: false },
-                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
-            }
-        };
-        
-        return configs[effectType] || configs.victory;
-    }
-        
-    getDamageColor(type) {
-        switch (type) {
-            case 'heal': return 0x00ff88;
-            case 'critical': return 0xff0044;
-            case 'poison': return 0x8a2be2;
-            case 'fire': return 0xff4400;
-            case 'cold': return 0x00bfff;
-            case 'lightning': return 0xffff00;
-            case 'divine': return 0xffd700;
-            default: return 0xff4444;
-        }
-    }
-        
-    // Main update method called by game loop
-    update() {
-        this.updateDamageNumbers();
-    }
-
-    destroy() {
-        // Clean up damage number system
-        if (this.damageNumberMesh) {
-            this.game.scene.remove(this.damageNumberMesh);
-            this.damageTextGeometry.dispose();
-            this.damageTextMaterial.dispose();
-            this.damageTexture.dispose();
-        }
-
-    }
-
-};
-
-// system: VisionSystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['VisionSystem'] = class VisionSystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.visionSystem = this;
-
-        // Default unit height for line of sight calculations
-        this.DEFAULT_UNIT_HEIGHT = 25;
-    }
-
-    init() {
-        this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
-    }
-
-
-    hasLineOfSight(from, to, unitType, viewerEntityId = null) {
-        const dx = to.x - from.x;
-        const dz = to.z - from.z;
-        const distanceSq = dx * dx + dz * dz;
-        const distance = Math.sqrt(distanceSq);
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-
-        if (distance < gridSize*2) return true;
-
-        const terrainSystem = this.game.terrainSystem;
-        if (!terrainSystem) {
-            console.warn('[hasLineOfSight] No terrain system found!');
-            return true;
-        }
-
-        // Get discrete heightmap levels for from and to positions
-        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
-
-        const fromHeightLevel = terrainSystem.getHeightLevelAtGridPosition(fromGridX, fromGridZ);
-        const toHeightLevel = terrainSystem.getHeightLevelAtGridPosition(toGridX, toGridZ);
-
-        // Cannot see up to tiles with higher heightmap values
-        if (toHeightLevel > fromHeightLevel) {
-            return false;
-        }
-
-        const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
-        const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
-
-        // Use unit height from unitType, or fall back to default if not available
-        const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
-
-        const fromEyeHeight = fromTerrainHeight + unitHeight;
-        const toEyeHeight = toTerrainHeight + unitHeight;
-
-        // Check for terrain blocking along the path (for same-level or downward vision)
-        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel)) {
-            return false;
-        }
-        
-        let nearbyTrees = [];
-
-        const midX = (from.x + to.x) / 2;
-        const midZ = (from.z + to.z) / 2;
-        const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
-        nearbyTrees = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ} , distance / 2 + unitSize, viewerEntityId, 'worldObjects');
-
-
-        if (nearbyTrees.length > 0) {
-            const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
-            const stepX = dx / numSamples;
-            const stepZ = dz / numSamples;
-            
-            for (let i = 1; i < numSamples; i++) {
-                const t = i / numSamples;
-                const sampleX = from.x + stepX * i;
-                const sampleZ = from.z + stepZ * i;
-                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
-                
-                for (const unit of nearbyTrees) {                    
-                    const dx = sampleX - unit.x;
-                    const dz = sampleZ - unit.z;
-                    const distSq = dx * dx + dz * dz;
-                    if(!unit.size) unit.size = gridSize;
-                    if (distSq < unit.size * unit.size) {            
-                        if (rayHeight < unit.y+unit.height) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return true;
-    }
-
-    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
-        const terrainSystem = this.game.terrainSystem;
-        const gridSize = this.game.getCollections().configs.game.gridSize;
-
-        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
-
-        const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
-
-        // Check intermediate tiles along the path
-        for (let i = 1; i < tiles.length - 1; i++) {
-            const tile = tiles[i];
-
-            // Check if this intermediate tile has a higher heightmap level than the viewer
-            const tileHeightLevel = terrainSystem.getHeightLevelAtGridPosition(tile.x, tile.z);
-            if (tileHeightLevel > fromHeightLevel) {
-                // Cannot see through a tile with higher elevation
-                return false;
-            }
-
-            // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
-            const t = i / (tiles.length - 1);
-            const worldX = tile.x * gridSize - terrainSystem.terrainSize / 2;
-            const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
-            const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
-
-            if (rayHeight <= terrainHeight) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bresenhamLine(x0, z0, x1, z1) {
-        const tiles = [];
-        
-        const dx = Math.abs(x1 - x0);
-        const dz = Math.abs(z1 - z0);
-        const sx = x0 < x1 ? 1 : -1;
-        const sz = z0 < z1 ? 1 : -1;
-        let err = dx - dz;
-        
-        let x = x0;
-        let z = z0;
-        
-        while (true) {
-            tiles.push({ x, z });
-            
-            if (x === x1 && z === z1) break;
-            
-            const e2 = 2 * err;
-            if (e2 > -dz) {
-                err -= dz;
-                x += sx;
-            }
-            if (e2 < dx) {
-                err += dx;
-                z += sz;
-            }
-        }
-        
-        return tiles;
-    }
-};
-
-// system: SupplySystem
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['SupplySystem'] = class SupplySystem extends engine.BaseSystem {
-    constructor(game) {
-        super(game);
-        this.game.supplySystem = this;
-        this.supplyElement = null;
-    }
-
-    init() {
-        this.game.gameManager.register('getCurrentSupply', this.getCurrentSupply.bind(this));
-        this.game.gameManager.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
-        this.game.gameManager.register('canAffordSupply', this.canAffordSupply.bind(this));
-        if(!this.game.isServer){
-            this.supplyElement = document.getElementById('playerSupplies');
-        }
-        
-    }
-
-    updateSupplyDisplay() {
-        if (!this.supplyElement) return;
-
-        const team = this.game.state.mySide;
-        if (!team) return;
-
-        const currentPop = this.getCurrentPopulation(team);
-        const currentSupply = this.getCurrentSupply(team);
-
-        const isAtLimit = currentPop >= currentSupply;
-
-        this.supplyElement.innerHTML = `${currentPop}/${currentSupply}`;
-    }
-
-    update() {
-        if(this.game.isServer) return;
-        if (this.game.state.phase === 'placement') {
-            this.updateSupplyDisplay();
-        }
-    }
-
-    getCurrentSupply(team) {
-        const placements = this.game.gameManager.call('getPlacementsForSide', team);
-        if (!placements) return 0;
-
-        let totalSupply = 0;
-
-        placements.forEach(placement => {     
-            if(placement.unitType.supplyProvided){      
-                totalSupply += placement.unitType.supplyProvided;            
-            }
-        });
-        return totalSupply;
-    }
-
-
-    getCurrentPopulation(team) {
-        const placements = this.game.gameManager.call('getPlacementsForSide', team);
-        if (!placements) return 0;
-
-        let totalPopulation = 0;
-
-        placements.forEach(placement => {     
-            if(placement.unitType.supplyCost){      
-                totalPopulation += placement.unitType.supplyCost;            
-            }
-        });
-        return totalPopulation;
-    }
-
-    canAffordSupply(team, unitType) {
-        const currentPop = this.getCurrentPopulation(team);
-        const currentSupply = this.getCurrentSupply(team);
-        const supplyCost = unitType.supplyCost || 0;
-
-        return (currentPop + supplyCost) <= currentSupply;
-    }
-
-
 };
 
 // system: ServerBattlePhaseSystem
@@ -75667,6 +60231,2431 @@ window.engine.app.appClasses['ServerPlacementSystem'] = class ServerPlacementSys
     }
 }
 ;
+
+// system: LifetimeSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['LifetimeSystem'] = class LifetimeSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.lifetimeSystem = this;
+        this.componentTypes = this.game.componentManager.getComponentTypes();
+        
+        // Configuration
+        this.CHECK_INTERVAL = 0.1; // Check lifetimes every 100ms for performance
+        this.lastCheck = 0;
+        
+        // Track entities with custom destruction callbacks
+        this.destructionCallbacks = new Map(); // entityId -> callback function
+        
+        // Track entities that should fade out before destruction
+        this.fadeOutEntities = new Map(); // entityId -> fade data
+        
+        // Statistics
+        this.stats = {
+            entitiesDestroyed: 0,
+            entitiesExpired: 0,
+            entitiesFaded: 0
+        };
+    }
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('addLifetime', this.addLifetime.bind(this));
+        this.game.gameManager.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
+        this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
+    }
+
+    update() {        
+        // Only check periodically for performance
+        if (this.game.state.now - this.lastCheck < this.CHECK_INTERVAL) return;
+        this.lastCheck = this.game.state.now;
+        
+        // Get all entities with lifetime components
+        const lifetimeEntities = this.game.getEntitiesWith(this.componentTypes.LIFETIME);
+        
+        lifetimeEntities.forEach(entityId => {
+            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+            if (!lifetime) return;
+            
+            const age = (this.game.state.now - lifetime.startTime);
+            
+            // Check if entity has expired
+            if (age >= lifetime.duration) {
+                this.handleExpiredEntity(entityId, lifetime);
+            } 
+        });
+    }
+    
+    // =============================================
+    // ENTITY EXPIRATION HANDLING
+    // =============================================
+    
+    handleExpiredEntity(entityId, lifetime) {
+        // Call custom destruction callback if registered
+        const callback = this.destructionCallbacks.get(entityId);
+        if (callback) {
+            try {
+                callback(entityId, lifetime);
+            } catch (error) {
+                console.warn(`Lifetime destruction callback error for entity ${entityId}:`, error);
+            }
+            this.destructionCallbacks.delete(entityId);
+        }
+        
+        // Special handling for different entity types
+        this.handleSpecialEntityTypes(entityId, lifetime);
+        
+        // Create destruction effects if specified
+        this.createDestructionEffects(entityId, lifetime);
+        
+        // Log destruction if enabled
+        this.logEntityDestruction(entityId, lifetime);
+        
+        // Remove from fade tracking
+        this.fadeOutEntities.delete(entityId);
+        
+        // Destroy the entity
+        this.game.destroyEntity(entityId);
+        
+        // Update statistics
+        this.stats.entitiesDestroyed++;
+        this.stats.entitiesExpired++;
+    }
+    
+    handleSpecialEntityTypes(entityId, lifetime) {
+        // Handle projectiles
+        if (this.game.hasComponent(entityId, this.componentTypes.PROJECTILE)) {
+            // Clean up projectile-specific data 
+            this.game.gameManager.call('deleteProjectileTrail', entityId);
+            
+        }
+        
+        // Handle summons
+        if (this.game.hasComponent(entityId, this.componentTypes.SUMMONED)) {
+            this.handleSummonExpiration(entityId);
+        }
+        
+        // Handle mirror images
+        if (this.game.hasComponent(entityId, this.componentTypes.MIRROR_IMAGE)) {
+            this.handleMirrorImageExpiration(entityId);
+        }
+        
+        // Handle traps
+        if (this.game.hasComponent(entityId, this.componentTypes.TRAP)) {
+            this.handleTrapExpiration(entityId);
+        }
+        
+        // Handle temporary effects
+        if (this.game.hasComponent(entityId, this.componentTypes.TEMPORARY_EFFECT)) {
+            this.handleTemporaryEffectExpiration(entityId);
+        }
+        
+        // Handle mind controlled entities
+        if (this.game.hasComponent(entityId, this.componentTypes.MIND_CONTROLLED)) {
+            this.handleMindControlExpiration(entityId);
+        }
+        
+        // Handle thorns effect
+        if (this.game.thornsEntities && this.game.thornsEntities.has(entityId)) {
+            this.game.thornsEntities.delete(entityId);
+        }
+    }
+    
+    handleSummonExpiration(entityId) {
+        const summonPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        if (summonPos) {
+            // Create disappearing effect
+            this.game.gameManager.call('createParticleEffect',
+                summonPos.x, summonPos.y, summonPos.z,
+                'magic',
+                { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
+            );
+        }
+
+    }
+    
+    handleMirrorImageExpiration(entityId) {
+        const imagePos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        if (imagePos) {
+            // Create shimmering dissolution effect
+            this.game.gameManager.call('createParticleEffect',
+                imagePos.x, imagePos.y, imagePos.z,
+                'magic',
+                { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
+            );
+        }
+    }
+    
+    handleTrapExpiration(entityId) {
+        const trapPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        if (trapPos) {
+            // Create fizzling effect for expired trap
+            this.game.gameManager.call('createParticleEffect',
+                trapPos.x, trapPos.y, trapPos.z,
+                'magic',
+                { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
+            );
+        }
+
+
+    }
+    
+    handleTemporaryEffectExpiration(entityId) {
+        // For visual effect entities, just let them fade naturally
+        const effectPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        if (effectPos) {
+            this.game.gameManager.call('createParticleEffect',
+                effectPos.x, effectPos.y, effectPos.z,
+                'magic',
+                { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
+            );
+        }
+    }
+    
+    handleMindControlExpiration(entityId) {
+        const mindControl = this.game.getComponent(entityId, this.componentTypes.MIND_CONTROLLED);
+        const targetTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+        const targetPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        
+        if (mindControl && targetTeam) {
+            // Restore original team
+            targetTeam.team = mindControl.originalTeam;
+            
+            // Clear AI target
+            const targetAI = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+            if (targetAI && targetAI.aiBehavior) {
+                targetAI.target = null;
+                targetAI.targetPosition = null;
+                targetAI.path = [];
+                targetAI.meta = {};
+            }
+            
+            // Visual effect
+            if (targetPos) {
+                this.game.gameManager.call('createParticleEffect',
+                    targetPos.x, targetPos.y, targetPos.z,
+                    'magic',
+                    { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
+                );
+            }
+            
+            // Remove mind control component
+            this.game.removeComponent(entityId, this.componentTypes.MIND_CONTROLLED);
+            
+          
+        }
+    }
+
+    
+    // =============================================
+    // DESTRUCTION EFFECTS
+    // =============================================
+    
+    createDestructionEffects(entityId, lifetime) {
+        if (!lifetime.destructionEffect) return;
+
+        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        if (!pos) return;
+
+        const effectConfig = lifetime.destructionEffect;
+
+        // Create particle effect
+        this.game.gameManager.call('createParticleEffect',
+            pos.x, pos.y, pos.z,
+            effectConfig.type || 'magic',
+            {
+                count: effectConfig.count || 3,
+                color: effectConfig.color || 0xFFFFFF,
+                scaleMultiplier: effectConfig.scaleMultiplier || 1.0,
+                speedMultiplier: effectConfig.speedMultiplier || 1.0
+            }
+        );
+
+        // Screen effects if specified
+        if (effectConfig.screenShake) {
+            this.game.gameManager.call('playScreenShake',
+                effectConfig.screenShake.duration || 0.2,
+                effectConfig.screenShake.intensity || 1
+            );
+        }
+
+        if (effectConfig.screenFlash) {
+            this.game.gameManager.call('playScreenFlash',
+                effectConfig.screenFlash.color || '#FFFFFF',
+                effectConfig.screenFlash.duration || 0.2
+            );
+        }
+    }
+    
+    // =============================================
+    // PUBLIC API METHODS
+    // =============================================
+    
+    /**
+     * Add a lifetime component to an entity
+     * @param {number} entityId - Entity to add lifetime to
+     * @param {number} duration - Duration in seconds
+     * @param {Object} options - Additional options
+     */
+    addLifetime(entityId, duration, options = {}) {
+        
+        const lifetimeData = {
+            duration: duration,
+            startTime: this.game.state.now,
+            fadeOutDuration: options.fadeOutDuration || 0,
+            destructionEffect: options.destructionEffect || null,
+            onDestroy: options.onDestroy || null
+        };
+        
+        this.game.addComponent(entityId, this.componentTypes.LIFETIME, lifetimeData);
+        
+        // Register destruction callback if provided
+        if (options.onDestroy && typeof options.onDestroy === 'function') {
+            this.destructionCallbacks.set(entityId, options.onDestroy);
+        }
+        
+        return entityId;
+    }
+    
+    /**
+     * Extend the lifetime of an entity
+     * @param {number} entityId - Entity to extend
+     * @param {number} additionalDuration - Additional time in seconds
+     */
+    extendLifetime(entityId, additionalDuration) {
+        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        if (lifetime) {
+            lifetime.duration += additionalDuration;
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Reduce the lifetime of an entity
+     * @param {number} entityId - Entity to reduce
+     * @param {number} reductionAmount - Time to reduce in seconds
+     */
+    reduceLifetime(entityId, reductionAmount) {
+        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        if (lifetime) {
+            lifetime.duration = Math.max(0, lifetime.duration - reductionAmount);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Get remaining lifetime of an entity
+     * @param {number} entityId - Entity to check
+     * @returns {number} Remaining time in seconds, or -1 if no lifetime component
+     */
+    getRemainingLifetime(entityId) {
+        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        if (lifetime) {
+            const age = (this.game.state.now - lifetime.startTime);
+            return Math.max(0, (lifetime.duration) - age);
+        }
+        return -1;
+    }
+    
+    /**
+     * Check if an entity will expire soon
+     * @param {number} entityId - Entity to check
+     * @param {number} threshold - Time threshold in seconds
+     * @returns {boolean} True if entity will expire within threshold
+     */
+    willExpireSoon(entityId, threshold = 5.0) {
+        const remaining = this.getRemainingLifetime(entityId);
+        return remaining >= 0 && remaining <= threshold;
+    }
+    
+    /**
+     * Remove lifetime component from an entity (makes it permanent)
+     * @param {number} entityId - Entity to make permanent
+     */
+    makeEntityPermanent(entityId) {
+        if (this.game.hasComponent(entityId, this.componentTypes.LIFETIME)) {
+            this.game.removeComponent(entityId, this.componentTypes.LIFETIME);
+            this.destructionCallbacks.delete(entityId);
+            this.fadeOutEntities.delete(entityId);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Force immediate destruction of an entity with lifetime
+     * @param {number} entityId - Entity to destroy
+     * @param {boolean} triggerEffects - Whether to trigger destruction effects
+     */
+    destroyEntityImmediately(entityId, triggerEffects = true) {
+        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        if (lifetime) {
+            if (triggerEffects) {
+                this.handleExpiredEntity(entityId, lifetime);
+            } else {
+                this.destructionCallbacks.delete(entityId);
+                this.fadeOutEntities.delete(entityId);
+                this.game.destroyEntity(entityId);
+                this.stats.entitiesDestroyed++;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Register a custom destruction callback for an entity
+     * @param {number} entityId - Entity to register callback for
+     * @param {Function} callback - Function to call on destruction
+     */
+    registerDestructionCallback(entityId, callback) {
+        if (typeof callback === 'function') {
+            this.destructionCallbacks.set(entityId, callback);
+        }
+    }
+    
+    /**
+     * Get all entities with lifetime components
+     * @returns {Array} Array of entity IDs
+     */
+    getAllLifetimeEntities() {
+        return this.game.getEntitiesWith(this.componentTypes.LIFETIME);
+    }
+    
+    /**
+     * Get entities that will expire within a time threshold
+     * @param {number} threshold - Time threshold in seconds
+     * @returns {Array} Array of entity IDs
+     */
+    getExpiringEntities(threshold = 5.0) {
+        const expiringEntities = [];
+        
+        const lifetimeEntities = this.getAllLifetimeEntities();
+        
+        lifetimeEntities.forEach(entityId => {
+            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+            if (lifetime) {
+                const age = (this.game.state.now - lifetime.startTime);
+                const remaining = lifetime.duration - age;
+                
+                if (remaining <= threshold && remaining > 0) {
+                    expiringEntities.push(entityId);
+                }
+            }
+        });
+        
+        return expiringEntities;
+    }
+    
+    // =============================================
+    // LOGGING AND STATISTICS
+    // =============================================
+    
+    logEntityDestruction(entityId, lifetime) {
+       
+    }
+    
+    getStatistics() {
+        return { ...this.stats };
+    }
+    
+    resetStatistics() {
+        this.stats.entitiesDestroyed = 0;
+        this.stats.entitiesExpired = 0;
+        this.stats.entitiesFaded = 0;
+    }
+    
+    // =============================================
+    // SYSTEM MANAGEMENT
+    // =============================================
+    
+    destroy() {
+        // Clean up all tracking maps
+        this.destructionCallbacks.clear();
+        this.fadeOutEntities.clear();
+        this.resetStatistics();
+    }
+};
+
+// system: GridSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['GridSystem'] = class GridSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.gridSystem = this;
+        
+        this.state = new Map();
+
+        // NEW: track which half each team owns
+        this.teamSides = { player: 'left', enemy: 'right' };
+        this.leftBounds = null;
+        this.rightBounds = null;
+    }
+    
+    init() {
+        this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
+        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
+        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
+        this.game.gameManager.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
+        this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
+        this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
+        this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
+
+        const collections = this.game.getCollections();
+
+        const terrainGridSize = collections.configs.game.gridSize;
+        const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
+        const currentLevel = collections.configs.state.level;
+        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
+
+        this.cellSize = placementGridSize;
+        this.terrainGridSize = terrainGridSize;
+        this.showGrid = true;
+        this.snapToGrid = true;
+        this.highlightValidCells = true;
+        
+        this.dimensions = {
+            width: Math.floor(terrainSize / placementGridSize),
+            height: Math.floor(terrainSize / placementGridSize),
+            cellSize: placementGridSize,
+            startX: -terrainSize / 2,
+            startZ: -terrainSize / 2
+        };
+        console.log("dimensions", this.dimensions);
+        
+        this.gridVisualization = null;
+
+        // Compute half-splits once
+        const half = Math.floor(this.dimensions.width / 2);
+        this.leftBounds = {
+            minX: 0,
+            maxX: half - 1,
+            minZ: 0,
+            maxZ: this.dimensions.height - 1
+        };
+        this.rightBounds = {
+            minX: half,
+            maxX: this.dimensions.width - 1,
+            minZ: 0,
+            maxZ: this.dimensions.height - 1
+        };
+
+        // Default: player=left, enemy=right (can be swapped later)
+        this.playerBounds = this.leftBounds;
+        this.enemyBounds  = this.rightBounds;
+        
+        // Pre-calculate world bounds for faster collision detection
+        this.worldBounds = {
+            minX: this.dimensions.startX,
+            maxX: this.dimensions.startX + (this.dimensions.width * placementGridSize),
+            minZ: this.dimensions.startZ,
+            maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
+        };
+    }
+
+    // NEW: set which half each team owns (call this when you learn sides from the server)
+    setTeamSides(sides) {
+        if (sides?.player === 'left' || sides?.player === 'right') {
+            this.teamSides.player = sides.player;
+        }
+        if (sides?.enemy === 'left' || sides?.enemy === 'right') {
+            this.teamSides.enemy = sides.enemy;
+        }
+
+        // Point player/enemy bounds at the correct half
+        this.playerBounds = (this.teamSides.player === 'left') ? this.leftBounds : this.rightBounds;
+        this.enemyBounds  = (this.teamSides.enemy  === 'left') ? this.leftBounds : this.rightBounds;
+
+    }
+    
+    createVisualization(scene) {
+        if (this.gridVisualization) {
+            scene.remove(this.gridVisualization);
+        }
+        
+        const group = new THREE.Group();
+        const { width, height, cellSize, startX, startZ } = this.dimensions;
+        
+        // Use BufferGeometry for better performance
+        const linePositions = [];
+        
+        // Vertical lines
+        for (let x = 0; x <= width; x++) {
+            const worldX = startX + (x * cellSize);
+            linePositions.push(
+                worldX, 1, startZ,
+                worldX, 1, startZ + (height * cellSize)
+            );
+        }
+        
+        // Horizontal lines
+        for (let z = 0; z <= height; z++) {
+            const worldZ = startZ + (z * cellSize);
+            linePositions.push(
+                startX, 1, worldZ,
+                startX + (width * cellSize), 1, worldZ
+            );
+        }
+        
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+        
+        const lineMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x444444, 
+            transparent: true, 
+            opacity: 0.3 
+        });
+        
+        const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+        group.add(lines);
+        
+        // Center divider line
+        const dividerPositions = [
+            startX + (width * cellSize / 2), 2, startZ,
+            startX + (width * cellSize / 2), 2, startZ + (height * cellSize)
+        ];
+        
+        const dividerGeometry = new THREE.BufferGeometry();
+        dividerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dividerPositions, 3));
+        
+        const dividerMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xff0000, 
+            transparent: true, 
+            opacity: 0.5 
+        });
+        
+        const dividerLine = new THREE.LineSegments(dividerGeometry, dividerMaterial);
+        group.add(dividerLine);
+        
+        this.gridVisualization = group;
+        scene.add(this.gridVisualization);
+    }
+    
+    worldToGrid(worldX, worldZ) {
+        const { cellSize, startX, startZ } = this.dimensions;
+        return {
+            x: Math.floor((worldX - startX) / cellSize),
+            z: Math.floor((worldZ - startZ) / cellSize)
+        };
+    }
+    
+    gridToWorld(gridX, gridZ) {
+        const { cellSize, startX, startZ } = this.dimensions;
+        return {
+            x: startX + (gridX * cellSize),
+            z: startZ + (gridZ * cellSize)
+        };
+    }
+    
+    // OPTIMIZED: Early bounds checking
+    isValidPosition(gridPos) {
+        return gridPos.x >= 0 && gridPos.x < this.dimensions.width &&
+               gridPos.z >= 0 && gridPos.z < this.dimensions.height;
+    }
+
+    isValidGridPlacement(cells, team) {
+        if (!cells || cells.length === 0) return false;
+        
+        for (const cell of cells) {
+            const key = `${cell.x},${cell.z}`;
+            const cellState = this.state.get(key);
+            if (cellState && cellState.occupied) {
+                return false;
+            }
+        }
+
+        
+        return true;
+    }
+
+    getUnitCells(entityId) {
+
+        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
+
+        if(!unitType) return null;
+        const cells = [];
+
+        // For buildings, convert footprint (terrain grid units) to placement grid cells
+        // For units, use placementGridWidth/Height directly (already in placement grid units)
+        let placementGridWidth, placementGridHeight;
+
+        if (unitType.collection === 'buildings') {
+            // Buildings use footprint in terrain grid units, convert to placement grid cells (2x)
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 1;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 1;
+            placementGridWidth = footprintWidth * 2;
+            placementGridHeight = footprintHeight * 2;
+        } else {
+            // Units use placement grid units directly
+            placementGridWidth = unitType.placementGridWidth || 1;
+            placementGridHeight = unitType.placementGridHeight || 1;
+        }
+
+        const gridPos = this.worldToGrid(pos.x, pos.z);
+        // Calculate starting position to center the formation
+        const startX = gridPos.x - Math.floor(placementGridWidth / 2);
+        const startZ = gridPos.z - Math.floor(placementGridHeight / 2);
+        for (let x = 0; x < placementGridWidth; x++) {
+            for (let z = 0; z < placementGridHeight; z++) {
+                cells.push({
+                    x: startX + x,
+                    z: startZ + z
+                });
+            }
+        }
+
+        return cells;
+    }
+
+    getNearbyUnits(pos, radius, excludeEntityId = null, collection = null) {
+        const gridPos = this.worldToGrid(pos.x, pos.z);
+        const cellRadius = Math.ceil(radius / this.cellSize);
+        
+        const nearbyUnits = [];
+        const radiusSq = radius * radius;
+        const seen = new Set(); // Prevent duplicates
+
+        for (let gz = gridPos.z - cellRadius; gz <= gridPos.z + cellRadius; gz++) {
+            for (let gx = gridPos.x - cellRadius; gx <= gridPos.x + cellRadius; gx++) {
+                if (!this.isValidPosition({ x: gx, z: gz })) continue;
+                
+                const cellState = this.getCellState(gx, gz);
+                if (!cellState?.entities?.length) continue;
+
+                for (const entityId of cellState.entities) {
+                    if (entityId === excludeEntityId || seen.has(entityId)) continue;
+
+                    const entityPos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
+                    const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+                    
+                    if (!entityPos || !unitType) continue;
+
+                    const dx = entityPos.x - pos.x;
+                    const dz = entityPos.z - pos.z;
+                    const distSq = dx * dx + dz * dz;
+                    
+                    if(collection && unitType.collection != collection) continue;
+
+                    if (distSq <= radiusSq) {
+                        seen.add(entityId);
+                        nearbyUnits.push({
+                            x: entityPos.x,
+                            z: entityPos.z,
+                            y: entityPos.y,
+                            id: entityId,
+                            ...unitType
+                        });
+                    }
+                }
+            }
+        }
+        return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
+    }
+
+    onEntityPositionUpdated(entityId) {
+        const cells = this.getUnitCells(entityId);
+        this.freeCells(entityId);
+        this.occupyCells(cells, entityId);
+    }
+
+    occupyCells(cells, entityId) {       
+        for (const cell of cells) {
+            const key = `${cell.x},${cell.z}`;
+            let cellState = this.state.get(key);
+
+            if (!cellState) {
+                cellState = { occupied: true, entities: [] };
+                this.state.set(key, cellState);
+            }
+
+            // Add entity if not already present
+            if (!cellState.entities.includes(entityId)) {
+                cellState.entities.push(entityId);
+            }
+            cellState.entities.sort((a, b) => a.localeCompare(b));     
+        }           
+    }
+        
+    freeCells(entityId) {
+        for (const [key, cellState] of this.state.entries()) {
+            if (cellState.entities.includes(entityId)) {
+                cellState.entities = cellState.entities.filter(id => id !== entityId);
+                
+                // Clean up empty cell
+                if (cellState.entities.length === 0) {
+                    this.state.delete(key);
+                } else {                    
+                    cellState.entities.sort((a, b) => a.localeCompare(b));
+                }
+            }
+        }
+    }
+
+    clear() {
+        console.log('grid system cleared');
+        this.state.clear();
+    }
+    
+    toggleVisibility(scene) {
+        this.showGrid = !this.showGrid;
+        
+        if (this.showGrid) {
+            this.createVisualization(scene);
+        } else if (this.gridVisualization) {
+            scene.remove(this.gridVisualization);
+            this.gridVisualization = null;
+        }
+    }
+    
+    getBounds(team) {
+        // Keep API compatibility; these references are updated by setTeamSides()
+        return team === 'right' ? this.rightBounds : this.leftBounds;
+    }
+        
+    getCellState(gridX, gridZ) {
+        return this.state.get(`${gridX},${gridZ}`);
+    }
+
+    getOccupiedCells() {
+        return Array.from(this.state.entries()).map(([key, value]) => {
+            const [x, z] = key.split(',').map(Number);
+            return { x, z, ...value };
+        });
+    }
+    
+    getGridInfo() {
+        return {
+            dimensions: this.dimensions,
+            leftBounds: this.leftBounds,
+            rightBounds: this.rightBounds,
+            teamSides: { ...this.teamSides },
+            occupiedCells: this.getOccupiedCells(),
+            totalCells: this.dimensions.width * this.dimensions.height,
+            occupiedCount: this.state.size
+        };
+    }
+    
+    // OPTIMIZED: Batch cell queries for better performance
+    areCellsOccupied(cells) {
+        for (const cell of cells) {
+            const key = `${cell.x},${cell.z}`;
+            if (this.state.has(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    onDestroyBuilding(entityId){ 
+        this.freeCells(entityId);
+    }
+
+    onUnitKilled(entityId){  
+        this.freeCells(entityId);
+    }
+
+    
+    // OPTIMIZED: Fast world bounds check
+    isInWorldBounds(worldX, worldZ) {
+        return worldX >= this.worldBounds.minX && worldX <= this.worldBounds.maxX &&
+               worldZ >= this.worldBounds.minZ && worldZ <= this.worldBounds.maxZ;
+    }
+};
+
+// system: SchedulingSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['SchedulingSystem'] = class SchedulingSystem extends engine.BaseSystem {
+   constructor(game) {
+        super(game);
+        this.game.schedulingSystem = this;
+        
+        // Scheduled actions storage
+        this.scheduledActions = new Map();
+        this.actionIdCounter = 0;
+        
+        // Entity tracking for cleanup
+        this.entityActions = new Map(); // entityId -> Set of actionIds
+    }
+
+    init() {
+        // Register methods with GameManager
+        this.game.gameManager.register('scheduleAction', this.scheduleAction.bind(this));
+        this.game.gameManager.register('cancelScheduledAction', this.cancelAction.bind(this));
+    }
+
+    update() {
+        this.processScheduledActions();
+    }
+    
+    /**
+     * Schedule an action to execute after a delay
+     * @param {Function} callback - Function to execute
+     * @param {number} delaySeconds - Delay in seconds (game time)
+     * @param {string|null} entityId - Optional entity ID for tracking/cleanup
+     * @returns {string} actionId - Unique identifier for this action
+     */
+    scheduleAction(callback, delaySeconds, entityId = null) {
+        const executeTime = this.game.state.now + delaySeconds;
+        const actionId = `action_${this.actionIdCounter++}_${executeTime.toFixed(6)}`;
+        
+        this.scheduledActions.set(actionId, {
+            callback: callback,
+            executeTime: executeTime,
+            entityId: entityId
+        });
+        
+        // Track entity associations for cleanup
+        if (entityId) {
+            if (!this.entityActions.has(entityId)) {
+                this.entityActions.set(entityId, new Set());
+            }
+            this.entityActions.get(entityId).add(actionId);
+        }
+        
+        return actionId;
+    }
+    
+    /**
+     * Process all scheduled actions that are ready to execute
+     */
+    processScheduledActions() {
+        const actionsToExecute = [];
+        
+        // Find all actions ready to execute
+        for (const [actionId, action] of this.scheduledActions.entries()) {
+            if (this.game.state.now >= action.executeTime) {
+                actionsToExecute.push({ id: actionId, action: action });
+            }
+        }
+        
+        // Sort actions for deterministic execution order
+        actionsToExecute.sort((a, b) => {
+            // Primary sort: by execution time
+            if (Math.abs(a.action.executeTime - b.action.executeTime) > 0.000001) {
+                return a.action.executeTime - b.action.executeTime;
+            }
+            // Secondary sort: by action ID for deterministic tie-breaking
+            return a.id.localeCompare(b.id);
+        });
+        
+        // Execute actions in deterministic order
+        actionsToExecute.forEach(({ id, action }) => {
+            try {
+                action.callback();
+            } catch (error) {
+                console.error(`Error executing scheduled action ${id}:`, error);
+            }
+            
+            // Clean up
+            this.removeAction(id, action.entityId);
+        });
+    }
+    
+    /**
+     * Cancel a scheduled action
+     * @param {string} actionId - Action to cancel
+     * @returns {boolean} - True if action was found and cancelled
+     */
+    cancelAction(actionId) {
+        const action = this.scheduledActions.get(actionId);
+        if (action) {
+            this.removeAction(actionId, action.entityId);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Cancel all actions associated with an entity
+     * @param {string} entityId - Entity whose actions should be cancelled
+     * @returns {number} - Number of actions cancelled
+     */
+    entityDestroyed(entityId) {
+        const entityActionIds = this.entityActions.get(entityId);
+        if (!entityActionIds) return 0;
+        
+        let cancelledCount = 0;
+        for (const actionId of entityActionIds) {
+            if (this.scheduledActions.has(actionId)) {
+                this.scheduledActions.delete(actionId);
+                cancelledCount++;
+            }
+        }
+        
+        this.entityActions.delete(entityId);
+        return cancelledCount;
+    }
+    
+    /**
+     * Internal method to remove action and clean up tracking
+     * @param {string} actionId 
+     * @param {string|null} entityId 
+     */
+    removeAction(actionId, entityId) {
+        this.scheduledActions.delete(actionId);
+        
+        if (entityId && this.entityActions.has(entityId)) {
+            this.entityActions.get(entityId).delete(actionId);
+            
+            // Clean up empty entity tracking
+            if (this.entityActions.get(entityId).size === 0) {
+                this.entityActions.delete(entityId);
+            }
+        }
+    }
+    
+    /**
+     * Get info about scheduled actions (for debugging)
+     * @returns {Object} - Statistics about scheduled actions
+     */
+    getSchedulingStats() {
+        return {
+            totalActions: this.scheduledActions.size,
+            entitiesWithActions: this.entityActions.size,
+            nextActionTime: this.getNextActionTime()
+        };
+    }
+    
+    /**
+     * Get the time of the next scheduled action
+     * @returns {number|null} - Time of next action, or null if none scheduled
+     */
+    getNextActionTime() {
+        let nextTime = null;
+        for (const action of this.scheduledActions.values()) {
+            if (nextTime === null || action.executeTime < nextTime) {
+                nextTime = action.executeTime;
+            }
+        }
+        return nextTime;
+    }
+    
+    /**
+     * Check if an entity has scheduled actions
+     * @param {string} entityId 
+     * @returns {boolean}
+     */
+    hasEntityActions(entityId) {
+        const entityActionIds = this.entityActions.get(entityId);
+        return entityActionIds && entityActionIds.size > 0;
+    }
+    
+    /**
+     * Clear all scheduled actions (useful for game reset)
+     */
+    clearAllActions() {
+        this.scheduledActions.clear();
+        this.entityActions.clear();
+    }
+    
+    /**
+     * Convenience method: Schedule a delayed function call
+     * @param {Object} obj - Object to call method on
+     * @param {string} methodName - Method name to call
+     * @param {Array} args - Arguments to pass
+     * @param {number} delaySeconds - Delay in seconds
+     * @param {string|null} entityId - Optional entity ID
+     * @returns {string} actionId
+     */
+    scheduleMethodCall(obj, methodName, args = [], delaySeconds, entityId = null) {
+        return this.scheduleAction(() => {
+            if (obj && typeof obj[methodName] === 'function') {
+                obj[methodName](...args);
+            }
+        }, delaySeconds, entityId);
+    }
+}
+;
+
+// system: PathfindingSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['PathfindingSystem'] = class PathfindingSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.pathfindingSystem = this;
+
+        this.navMesh = null;
+        this.navGridSize = null; // Will be set from config
+        this.navGridWidth = 0;
+        this.navGridHeight = 0;
+        
+        this.terrainTypes = null;
+        this.walkabilityCache = new Map();
+        this.ramps = new Set(); // Stores ramp locations in "x,z" format (terrain grid coords)
+
+        this.pathCache = new Map();
+        this.MAX_CACHE_SIZE = 1000;
+        this.CACHE_EXPIRY_TIME = 5000;
+
+        this.pathRequests = [];
+        this.MAX_PATHS_PER_FRAME = 100;
+
+        // Path smoothing configuration
+        // Lower values = less aggressive smoothing = less corner cutting
+        // Higher values = more aggressive smoothing = smoother but riskier paths
+        this.MAX_SMOOTH_LOOKAHEAD = 3; // Maximum waypoints to look ahead when smoothing
+        
+        this.initialized = false;
+    }
+
+    init() {
+        if (this.initialized) return;
+
+        this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
+        this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
+        this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
+        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));  
+        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
+
+
+        const collections = this.game.getCollections();
+        if (!collections) {
+            console.warn('PathfindingSystem: Collections not available');
+            return;
+        }
+        
+        const level = collections.levels?.[this.game.state.level];
+        if (!level || !level.tileMap) {
+            console.warn('PathfindingSystem: Level or tileMap not available');
+            return;
+        }
+        
+        if (!this.game.terrainSystem || !this.game.terrainSystem.initialized) {
+            console.warn('PathfindingSystem: Waiting for terrain system...');
+            return;
+        }
+        
+        this.terrainTypes = level.tileMap.terrainTypes;
+        if (!this.terrainTypes) {
+            console.warn('PathfindingSystem: No terrain types found in level');
+            return;
+        }
+
+        // Set navigation grid size to half of terrain grid (matches placement grid)
+        this.navGridSize = collections.configs.game.gridSize / 2;
+        console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
+
+        // Load ramps data
+        this.loadRamps(level.tileMap);
+
+        this.buildWalkabilityCache();
+        this.bakeNavMesh();
+        this.initialized = true;
+        console.log('PathfindingSystem: Initialized with', this.terrainTypes.length, 'terrain types');
+    }
+
+    loadRamps(tileMap) {
+        this.ramps.clear();
+
+        const ramps = tileMap.ramps || [];
+        for (const ramp of ramps) {
+            const key = `${ramp.x},${ramp.z}`;
+            this.ramps.add(key);
+        }
+
+        console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
+    }
+
+    buildWalkabilityCache() {
+        // This cache is now deprecated in favor of height-based walkability
+        // Kept for backwards compatibility with old level data
+        this.walkabilityCache.clear();
+
+        for (let i = 0; i < this.terrainTypes.length; i++) {
+            const terrainType = this.terrainTypes[i];
+            const walkableNeighbors = terrainType.walkableNeighbors || [];
+
+            for (let j = 0; j < this.terrainTypes.length; j++) {
+                const targetType = this.terrainTypes[j].type;
+                const canWalk = walkableNeighbors.includes(targetType);
+
+                const key = `${i}-${j}`;
+                this.walkabilityCache.set(key, canWalk);
+            }
+        }
+    }
+
+    canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
+        // NEW: Use height-based walkability if heightMap is available
+        if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
+            // Always walkable between same terrain types
+            return true;
+        }
+
+        // OLD: Fall back to walkableNeighbors cache for backwards compatibility
+        const key = `${fromTerrainIndex}-${toTerrainIndex}`;
+        return this.walkabilityCache.get(key) === true;
+    }
+
+    // Convert nav grid coordinates to terrain grid coordinates
+    navGridToTerrainGrid(navGridX, navGridZ) {
+        const worldPos = this.navGridToWorld(navGridX, navGridZ);
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const terrainSize = this.game.gameManager.call('getTerrainSize');
+
+        const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
+        const terrainZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
+
+        return { x: terrainX, z: terrainZ };
+    }
+
+    // Check if there's a ramp at the given nav grid position
+    hasRampAtNav(navGridX, navGridZ) {
+        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
+        const key = `${terrainGrid.x},${terrainGrid.z}`;
+        return this.ramps.has(key);
+    }
+    
+    hasRampAt(gridX, gridZ) {
+        return this.ramps.has(`${gridX},${gridZ}`);
+    }
+
+    // Get height level at nav grid position
+    getHeightLevelAtNavGrid(navGridX, navGridZ) {
+        const terrainGrid = this.navGridToTerrainGrid(navGridX, navGridZ);
+        return this.game.terrainSystem?.getHeightLevelAtGridPosition(terrainGrid.x, terrainGrid.z) || 0;
+    }
+
+    // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
+    canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
+        // NEW: Use height-based walkability if heightMap is available
+        if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
+            const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
+            const toHeight = this.getHeightLevelAtNavGrid(toNavGridX, toNavGridZ);
+
+            // Same height level = always walkable
+            if (fromHeight === toHeight) {
+                return true;
+            }
+
+            // Different heights = only walkable with a ramp
+            // Ramps allow movement between any adjacent height levels
+            if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        // OLD: Use walkableNeighbors logic for backwards compatibility
+        // First check normal walkability
+        if (this.canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex)) {
+            return true;
+        }
+
+        // If not normally walkable, check if there's a ramp at either position
+        // Ramps allow movement between any terrain heights
+        if (this.hasRampAtNav(fromNavGridX, fromNavGridZ) || this.hasRampAtNav(toNavGridX, toNavGridZ)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bakeNavMesh() {
+        const terrainSize = this.game.gameManager.call('getTerrainSize');
+        
+        this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
+        this.navGridHeight = Math.ceil(terrainSize / this.navGridSize);
+        
+        this.navMesh = new Uint8Array(this.navGridWidth * this.navGridHeight);
+        
+        const halfTerrain = terrainSize / 2;
+        
+        // First pass: populate the navmesh with terrain types
+        for (let z = 0; z < this.navGridHeight; z++) {
+            for (let x = 0; x < this.navGridWidth; x++) {
+                const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
+                const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
+                
+                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition', worldX, worldZ);
+                
+                const idx = z * this.navGridWidth + x;
+                this.navMesh[idx] = terrainType !== null ? terrainType : 0;
+            }
+        }
+        
+        // Second pass: mark cells adjacent to impassable terrain as impassable
+        // Create a copy to read from while we modify
+        const originalNavMesh = new Uint8Array(this.navMesh);
+        
+        // for (let z = 0; z < this.navGridHeight; z++) {
+        //     for (let x = 0; x < this.navGridWidth; x++) {
+        //         const idx = z * this.navGridWidth + x;
+        //         const currentTerrain = originalNavMesh[idx];
+                
+        //         // Check if this cell is walkable
+        //         if (this.isTerrainWalkable(currentTerrain)) {
+        //             // Check all 8 neighbors
+        //             const neighbors = [
+        //                 {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
+        //                 {dx: 0, dz: 1}, {dx: 0, dz: -1},
+        //                 {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
+        //                 {dx: 1, dz: -1}, {dx: -1, dz: -1}
+        //             ];
+                    
+        //             for (const {dx, dz} of neighbors) {
+        //                 const nx = x + dx;
+        //                 const nz = z + dz;
+                        
+        //                 if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+        //                     const neighborIdx = nz * this.navGridWidth + nx;
+        //                     const neighborTerrain = originalNavMesh[neighborIdx];
+                            
+        //                     // If neighbor is impassable or we can't walk to it
+        //                     if (!this.isTerrainWalkable(neighborTerrain) || 
+        //                         !this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
+        //                         // Mark this cell as impassable (use 255 as a special marker)
+        //                         this.navMesh[idx] = 255;
+        //                         break;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        
+        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
+    }
+    
+    isTerrainWalkable(terrainIndex) {
+        if (terrainIndex === null || terrainIndex === 255) return false;
+        
+        // A terrain is walkable if it has at least one walkable neighbor defined
+        const terrainType = this.terrainTypes[terrainIndex];
+        if (!terrainType) return false;
+        
+        const walkableNeighbors = terrainType.walkableNeighbors || [];
+        return walkableNeighbors.length > 0;
+    }
+
+    worldToNavGrid(worldX, worldZ) {
+        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
+        const gridX = Math.floor((worldX + halfTerrain) / this.navGridSize);
+        const gridZ = Math.floor((worldZ + halfTerrain) / this.navGridSize);
+        return { x: gridX, z: gridZ };
+    }
+
+    navGridToWorld(gridX, gridZ) {
+        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
+        const worldX = (gridX * this.navGridSize) - halfTerrain + this.navGridSize / 2;
+        const worldZ = (gridZ * this.navGridSize) - halfTerrain + this.navGridSize / 2;
+        return { x: worldX, z: worldZ };
+    }
+
+    getTerrainAtNavGrid(gridX, gridZ) {
+        if (gridX < 0 || gridX >= this.navGridWidth || gridZ < 0 || gridZ >= this.navGridHeight) {
+            return null;
+        }
+        return this.navMesh[gridZ * this.navGridWidth + gridX];
+    }
+
+    requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
+        const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
+        
+        const cached = this.pathCache.get(cacheKey);
+        if (cached && (this.game.state.now - cached.timestamp) < this.CACHE_EXPIRY_TIME) {
+            return cached.path;
+        }
+        
+        this.pathRequests.push({
+            entityId,
+            startX,
+            startZ,
+            endX,
+            endZ,
+            priority,
+            cacheKey,
+            timestamp: this.game.state.now
+        });
+        
+        return null;
+    }
+
+    findPath(startX, startZ, endX, endZ, cacheKey = null) {
+        const startGrid = this.worldToNavGrid(startX, startZ);
+        const endGrid = this.worldToNavGrid(endX, endZ);
+        
+        if (startGrid.x === endGrid.x && startGrid.z === endGrid.z) {
+            return [{ x: endX, z: endZ }];
+        }
+        
+        const openSet = new GUTS.MinHeap();
+        const closedSet = new Set();
+        const cameFrom = new Map();
+        const gScore = new Map();
+        const fScore = new Map();
+        
+        const startKey = `${startGrid.x},${startGrid.z}`;
+        const endKey = `${endGrid.x},${endGrid.z}`;
+        
+        gScore.set(startKey, 0);
+        fScore.set(startKey, this.heuristic(startGrid, endGrid));
+        openSet.push({ key: startKey, x: startGrid.x, z: startGrid.z, f: fScore.get(startKey) });
+        
+        const directions = [
+            {dx: 1, dz: 0}, {dx: -1, dz: 0}, {dx: 0, dz: 1}, {dx: 0, dz: -1},
+            {dx: 1, dz: 1}, {dx: -1, dz: 1}, {dx: 1, dz: -1}, {dx: -1, dz: -1}
+        ];
+        
+        let iterations = 0;
+        const maxIterations = this.navGridWidth * this.navGridHeight;
+        
+        // Track the closest point we've found to the destination
+        let closestNode = { key: startKey, x: startGrid.x, z: startGrid.z };
+        let closestDistance = this.heuristic(startGrid, endGrid);
+        
+        while (!openSet.isEmpty() && iterations < maxIterations) {
+            iterations++;
+            
+            const current = openSet.pop();
+            const currentKey = current.key;
+            
+            if (currentKey === endKey) {
+                const path = this.reconstructPath(cameFrom, currentKey, endX, endZ);
+                
+                if (cacheKey) {
+                    this.addToCache(cacheKey, path);
+                }
+                
+                return path;
+            }
+            
+            closedSet.add(currentKey);
+            
+            // Check if this is closer to the destination than previous closest
+            const distToEnd = this.heuristic({ x: current.x, z: current.z }, endGrid);
+            if (distToEnd < closestDistance) {
+                closestDistance = distToEnd;
+                closestNode = current;
+            }
+            
+            const currentTerrain = this.getTerrainAtNavGrid(current.x, current.z);
+            
+            for (const dir of directions) {
+                const neighborX = current.x + dir.dx;
+                const neighborZ = current.z + dir.dz;
+                const neighborKey = `${neighborX},${neighborZ}`;
+                
+                if (closedSet.has(neighborKey)) continue;
+                
+                const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
+                if (neighborTerrain === null || neighborTerrain === 255) continue;
+
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, neighborTerrain, current.x, current.z, neighborX, neighborZ)) {
+                    continue;
+                }
+                
+                const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
+                
+                // For diagonal moves, check both adjacent cells to prevent corner cutting
+                if (isDiagonal) {
+                    const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
+                    const terrainZ = this.getTerrainAtNavGrid(current.x, current.z + dir.dz);
+
+                    // Both adjacent cells must exist and be walkable
+                    if (terrainX === null || terrainX === 255 ||
+                        terrainZ === null || terrainZ === 255) {
+                        continue;
+                    }
+
+                    if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, current.x, current.z, current.x + dir.dx, current.z) ||
+                        !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, current.x, current.z, current.x, current.z + dir.dz)) {
+                        continue;
+                    }
+                }
+                
+                const moveCost = isDiagonal ? 1.414 : 1;
+                const tentativeGScore = gScore.get(currentKey) + moveCost;
+                
+                if (!gScore.has(neighborKey) || tentativeGScore < gScore.get(neighborKey)) {
+                    cameFrom.set(neighborKey, currentKey);
+                    gScore.set(neighborKey, tentativeGScore);
+                    
+                    const h = this.heuristic({x: neighborX, z: neighborZ}, endGrid);
+                    const f = tentativeGScore + h;
+                    fScore.set(neighborKey, f);
+                    
+                    openSet.push({ key: neighborKey, x: neighborX, z: neighborZ, f });
+                }
+            }
+        }
+        
+        // No path found to exact destination - return path to closest reachable point
+        if (closestNode.key !== startKey) {
+            const closestWorld = this.navGridToWorld(closestNode.x, closestNode.z);
+            const path = this.reconstructPath(cameFrom, closestNode.key, closestWorld.x, closestWorld.z);
+            
+            if (cacheKey) {
+                this.addToCache(cacheKey, path);
+            }
+            
+            console.log(`PathfindingSystem: No path to destination, returning path to closest point (distance: ${closestDistance.toFixed(1)})`);
+            return path;
+        }
+        
+        return null;
+    }
+
+    reconstructPath(cameFrom, currentKey, endX, endZ) {
+        const path = [];
+        const gridPath = [];
+        
+        let current = currentKey;
+        while (current) {
+            const [x, z] = current.split(',').map(Number);
+            gridPath.unshift({ x, z });
+            current = cameFrom.get(current);
+        }
+        
+        for (const gridPoint of gridPath) {
+            const worldPos = this.navGridToWorld(gridPoint.x, gridPoint.z);
+            path.push(worldPos);
+        }
+        
+        if (path.length > 0) {
+            path[path.length - 1] = { x: endX, z: endZ };
+        }
+        
+        return this.smoothPath(path);
+    }
+
+    smoothPath(path) {
+        if (path.length <= 2) return path;
+
+        const smoothed = [path[0]];
+        let currentIdx = 0;
+
+        while (currentIdx < path.length - 1) {
+            let farthestVisible = currentIdx + 1;
+
+            // Limit how far ahead we look to prevent aggressive corner cutting
+            const maxLookahead = Math.min(
+                path.length - 1,
+                currentIdx + this.MAX_SMOOTH_LOOKAHEAD
+            );
+
+            // Check from far to near within the limited lookahead range
+            // This still prioritizes smoother paths but prevents excessive shortcuts
+            for (let i = maxLookahead; i > currentIdx + 1; i--) {
+                if (this.hasLineOfSight(path[currentIdx], path[i])) {
+                    farthestVisible = i;
+                    break;
+                }
+            }
+
+            smoothed.push(path[farthestVisible]);
+            currentIdx = farthestVisible;
+        }
+
+        return smoothed;
+    }
+    hasDirectWalkablePath(fromPos, toPos, entityId = null) {
+        if (!this.initialized || !this.navMesh) return false;
+        
+        const fromGrid = this.worldToNavGrid(fromPos.x, fromPos.z);
+        const toGrid = this.worldToNavGrid(toPos.x, toPos.z);
+        
+        // Same grid cell = direct path
+        if (fromGrid.x === toGrid.x && fromGrid.z === toGrid.z) {
+            return true;
+        }
+        
+        // Bresenham's line algorithm to check every grid cell along the path
+        const dx = Math.abs(toGrid.x - fromGrid.x);
+        const dz = Math.abs(toGrid.z - fromGrid.z);
+        const sx = fromGrid.x < toGrid.x ? 1 : -1;
+        const sz = fromGrid.z < toGrid.z ? 1 : -1;
+        let err = dx - dz;
+        
+        let x = fromGrid.x;
+        let z = fromGrid.z;
+        let lastX = x;
+        let lastZ = z;
+        let lastTerrain = this.getTerrainAtNavGrid(x, z);
+
+        // If starting position isn't walkable, fail immediately
+        if (!this.isTerrainWalkable(lastTerrain)) {
+            return false;
+        }
+
+        while (true) {
+            // Reached destination
+            if (x === toGrid.x && z === toGrid.z) {
+                return true;
+            }
+
+            const currentTerrain = this.getTerrainAtNavGrid(x, z);
+
+            // Hit impassable terrain or out of bounds
+            if (currentTerrain === null || currentTerrain === 255) {
+                return false;
+            }
+
+            // Check if current terrain is walkable
+            if (!this.isTerrainWalkable(currentTerrain)) {
+                return false;
+            }
+
+            // Check if we can transition from last terrain to current terrain
+            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
+                return false;
+            }
+            
+            const e2 = 2 * err;
+            const willMoveX = e2 > -dz;
+            const willMoveZ = e2 < dx;
+            
+            // For diagonal movement, check both adjacent cells to prevent corner cutting
+            if (willMoveX && willMoveZ) {
+                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
+                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
+
+                // Both adjacent cells must be valid and walkable
+                if (terrainX === null || terrainX === 255 ||
+                    terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+
+                if (!this.isTerrainWalkable(terrainX) || !this.isTerrainWalkable(terrainZ)) {
+                    return false;
+                }
+
+                // Check terrain transitions for both adjacent cells
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
+                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
+                    return false;
+                }
+            }
+
+            lastTerrain = currentTerrain;
+            lastX = x;
+            lastZ = z;
+
+            // Move along the line
+            if (willMoveX) {
+                err -= dz;
+                x += sx;
+            }
+            if (willMoveZ) {
+                err += dx;
+                z += sz;
+            }
+        }
+    }
+    hasLineOfSight(from, to) {
+        const fromGrid = this.worldToNavGrid(from.x, from.z);
+        const toGrid = this.worldToNavGrid(to.x, to.z);
+        
+        const dx = Math.abs(toGrid.x - fromGrid.x);
+        const dz = Math.abs(toGrid.z - fromGrid.z);
+        const sx = fromGrid.x < toGrid.x ? 1 : -1;
+        const sz = fromGrid.z < toGrid.z ? 1 : -1;
+        let err = dx - dz;
+        
+        let x = fromGrid.x;
+        let z = fromGrid.z;
+        let lastX = x;
+        let lastZ = z;
+        let lastTerrain = this.getTerrainAtNavGrid(x, z);
+
+        while (true) {
+            if (x === toGrid.x && z === toGrid.z) return true;
+
+            const currentTerrain = this.getTerrainAtNavGrid(x, z);
+            if (currentTerrain === null || currentTerrain === 255) return false;
+
+            if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
+                return false;
+            }
+            
+            const e2 = 2 * err;
+            const willMoveX = e2 > -dz;
+            const willMoveZ = e2 < dx;
+            
+            // Check for diagonal movement (corner cutting)
+            if (willMoveX && willMoveZ) {
+                // We're moving diagonally - check both adjacent cells to prevent corner cutting
+                const terrainX = this.getTerrainAtNavGrid(x + sx, z);
+                const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
+                
+                // Both adjacent cells must be valid and walkable from current position
+                if (terrainX === null || terrainX === 255 ||
+                    terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+
+                if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainX, x, z, x + sx, z) ||
+                    !this.canWalkBetweenTerrainsWithRamps(currentTerrain, terrainZ, x, z, x, z + sz)) {
+                    return false;
+                }
+            }
+
+            lastTerrain = currentTerrain;
+            lastX = x;
+            lastZ = z;
+
+            if (willMoveX) {
+                err -= dz;
+                x += sx;
+            }
+            if (willMoveZ) {
+                err += dx;
+                z += sz;
+            }
+        }
+    }
+
+    heuristic(a, b) {
+        const dx = Math.abs(a.x - b.x);
+        const dz = Math.abs(a.z - b.z);
+        return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    addToCache(key, path) {
+        if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
+            const oldestKey = null;
+            let oldestTime = Infinity;
+            
+            for (const [k, v] of this.pathCache.entries()) {
+                if (v.timestamp < oldestTime) {
+                    oldestTime = v.timestamp;
+                    oldestKey = k;
+                }
+            }
+            
+            if (oldestKey) {
+                this.pathCache.delete(oldestKey);
+            }
+        }
+        
+        this.pathCache.set(key, {
+            path: path,
+            timestamp: this.game.state.now
+        });
+    }
+
+    clearPathCache() {
+        this.pathCache.clear();
+    }
+
+    update() {
+        if (!this.initialized) {
+            this.init();
+            return;
+        }
+        
+        const now = this.game.state.now;
+        const keysToDelete = [];
+        
+        for (const [key, data] of this.pathCache.entries()) {
+            if (now - data.timestamp > this.CACHE_EXPIRY_TIME) {
+                keysToDelete.push(key);
+            }
+        }
+        
+        keysToDelete.sort();
+        for (const key of keysToDelete) {
+            this.pathCache.delete(key);
+        }
+        
+        if (this.pathRequests.length === 0) return;
+        
+        this.pathRequests.sort((a, b) => {
+            if (b.priority !== a.priority) return b.priority - a.priority;
+            return String(a.entityId).localeCompare(String(b.entityId));
+        });
+        
+        const pathsToProcess = Math.min(this.MAX_PATHS_PER_FRAME, this.pathRequests.length);
+        
+        for (let i = 0; i < pathsToProcess; i++) {
+            const request = this.pathRequests.shift();
+            
+            const path = this.findPath(
+                request.startX,
+                request.startZ,
+                request.endX,
+                request.endZ,
+                request.cacheKey
+            );
+            
+            if (path && this.game.componentManager) {
+                const componentTypes = this.game.componentManager.getComponentTypes();
+                const aiState = this.game.getComponent(request.entityId, componentTypes.AI_STATE);
+                
+                if (aiState) {
+                    aiState.path = path;
+                    aiState.pathIndex = 0;
+                }
+            }
+        }
+    }
+
+    isGridPositionWalkable(gridPos) {
+        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z);
+        return this.isPositionWalkable(worldPos);
+    }
+
+    isPositionWalkable(pos) {
+        const grid = this.worldToNavGrid(pos.x, pos.z);
+        
+        // Check bounds
+        if (grid.x < 0 || grid.x >= this.navGridWidth || 
+            grid.z < 0 || grid.z >= this.navGridHeight) {
+            return false;
+        }
+        
+        const terrain = this.getTerrainAtNavGrid(grid.x, grid.z);
+        return this.isTerrainWalkable(terrain);
+    }
+
+    ping() {
+        console.log('pong');
+    }
+};
+
+// system: GoldMineSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['GoldMineSystem'] = class GoldMineSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.goldMineSystem = this;
+        this.goldVeinLocations = [];
+        this.claimedGoldMines = new Map();
+        
+        console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
+    }
+
+    init(params) {
+        this.params = params || {};
+
+        this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
+        this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
+        this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
+
+        this.findGoldVeinLocations();
+        console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
+    }
+
+    findGoldVeinLocations() {
+        const tileMap = this.game.terrainSystem?.tileMap;
+        if (!tileMap?.environmentObjects) {
+            console.warn('[GoldMineSystem] No environment objects found');
+            return;
+        }
+
+        const extensionSize = this.game.terrainSystem?.extensionSize || 0;
+        const extendedSize = this.game.terrainSystem?.extendedSize || 0;
+
+        this.goldVeinLocations = tileMap.environmentObjects
+            .filter(obj => obj.type === 'goldVein')
+            .map(obj => {
+                const worldX = (obj.x + extensionSize) - extendedSize / 2;
+                const worldZ = (obj.y + extensionSize) - extendedSize / 2;
+
+                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
+
+                // Gold veins use placementGridWidth which is already in placement grid units
+                // But we need to match how buildings calculate their cells (footprintWidth * 2)
+                // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
+                // we need to convert: footprintWidth * 2 = 2 * 2 = 4 placement grid cells
+                const veinPlacementGridWidth = obj.placementGridWidth || 2;
+                const veinPlacementGridHeight = obj.placementGridHeight || 2;
+                // Convert to match building footprint calculation
+                const gridWidth = veinPlacementGridWidth * 2;
+                const gridHeight = veinPlacementGridHeight * 2;
+
+                const cells = this.calculateGoldVeinCells(gridPos, gridWidth, gridHeight);
+
+                return {
+                    x: obj.x,
+                    y: obj.y,
+                    worldX: worldX,
+                    worldZ: worldZ,
+                    gridPos: gridPos,
+                    gridWidth: gridWidth,  // 4 (placement grid cells)
+                    gridHeight: gridHeight,  // 4 (placement grid cells)
+                    cells: cells,
+                    claimed: false,
+                    claimedBy: null,
+                    instanceIndex: null,
+                    originalIndex: tileMap.environmentObjects.indexOf(obj)
+                };
+            });
+
+        console.log('[GoldMineSystem] Found gold veins:', this.goldVeinLocations);
+
+        if (!this.game.isServer) {
+            this.mapGoldVeinInstances();
+        }
+    }
+
+    calculateGoldVeinCells(gridPos, gridWidth, gridHeight) {
+        const cells = [];
+        const startX = gridPos.x - Math.round(gridWidth / 2);
+        const startZ = gridPos.z - Math.round(gridHeight / 2);
+
+        for (let z = 0; z < gridHeight; z++) {
+            for (let x = 0; x < gridWidth; x++) {
+                cells.push({
+                    x: startX + x,
+                    z: startZ + z
+                });
+            }
+        }
+
+        return cells;
+    }
+
+    isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
+        const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
+
+        for (const vein of this.goldVeinLocations) {
+            if (vein.claimed) continue;
+
+            if (this.cellsMatch(buildingCells, vein.cells)) {
+                return { valid: true, vein: vein };
+            }
+        }
+
+        return { valid: false };
+    }
+
+    cellsMatch(cells1, cells2) {
+        if (cells1.length !== cells2.length) return false;
+
+        const cellSet = new Set(cells2.map(c => `${c.x},${c.z}`));
+        
+        for (const cell of cells1) {
+            if (!cellSet.has(`${cell.x},${cell.z}`)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    mapGoldVeinInstances() {
+        if (!this.game.gameManager.call('getWorldScene')) {
+            console.warn('[GoldMineSystem] No scene available for mapping instances');
+            return;
+        }
+
+        const goldVeinInstancedMeshes = [];
+        this.game.gameManager.call('getWorldScene').traverse(child => {
+            if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
+                goldVeinInstancedMeshes.push(child);
+            }
+        });
+
+        let globalIndex = 0;
+        for (const vein of this.goldVeinLocations) {
+            vein.instanceIndex = globalIndex;
+            vein.instancedMeshes = goldVeinInstancedMeshes;
+            globalIndex++;
+        }
+    }
+
+    buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
+
+        const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
+        if (!validation.valid) {
+            console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');
+            return { success: false, error: 'Must be placed on a gold vein' };
+        }
+
+        const vein = validation.vein;
+
+        vein.claimed = true;
+        vein.claimedBy = team;
+
+        let mineModel = null;
+        if (!this.game.isServer) {
+            mineModel = this.replaceVeinWithMine(vein);
+        }
+
+        this.claimedGoldMines.set(entityId, {
+            entityId: entityId,
+            position: { x: vein.x, z: vein.y },
+            worldPosition: { x: vein.worldX, z: vein.worldZ },
+            gridPos: vein.gridPos,
+            cells: vein.cells,
+            veinIndex: vein.originalIndex,
+            veinData: vein,
+            team: team,
+            model: mineModel
+        });
+
+        return { success: true };
+    }
+
+    destroyGoldMine(entityId) {
+        const goldMine = this.claimedGoldMines.get(entityId);
+        if (!goldMine) {
+            return { success: false, error: 'No gold mine to destroy' };
+        }
+
+        // Clear any miners targeting this mine
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        
+        for (const minerEntityId of miners) {
+            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            if (miningState && miningState.targetMineEntityId === entityId) {
+                miningState.targetMineEntityId = null;
+                miningState.targetMinePosition = null;
+                miningState.waitingPosition = null;
+                miningState.state = 'idle';
+            }
+        }
+
+        if (!this.game.isServer) {
+            console.log('[GoldMineSystem] CLIENT: Restoring vein');
+            this.restoreVein(goldMine.veinData);
+        } else {
+            console.log('[GoldMineSystem] SERVER: Releasing mine claim');
+            goldMine.veinData.claimed = false;
+            goldMine.veinData.claimedBy = null;
+        }
+        
+        this.claimedGoldMines.delete(entityId);
+
+        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', this.claimedGoldMines.size);
+        return { success: true };
+    }
+
+    // Check if a mine is currently occupied by looking at component states
+    isMineOccupied(mineEntityId) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        
+        for (const minerEntityId of miners) {
+            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            if (miningState && 
+                miningState.targetMineEntityId === mineEntityId && 
+                miningState.state === 'mining') {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // Get the current miner at a mine by checking component states
+    getCurrentMiner(mineEntityId) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        
+        for (const minerEntityId of miners) {
+            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            if (miningState && 
+                miningState.targetMineEntityId === mineEntityId && 
+                miningState.state === 'mining') {
+                return minerEntityId;
+            }
+        }
+        
+        return null;
+    }
+
+    // Get all miners in queue (waiting_at_mine state) for a specific mine
+    getMinersInQueue(mineEntityId) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        const queuedMiners = [];
+        
+        for (const minerEntityId of miners) {
+            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            if (miningState && 
+                miningState.targetMineEntityId === mineEntityId && 
+                miningState.state === 'waiting_at_mine') {
+                queuedMiners.push(minerEntityId);
+            }
+        }
+        
+        return queuedMiners;
+    }
+
+    // Get queue position for a specific miner
+    getQueuePosition(mineEntityId, minerEntityId) {
+        const queue = this.getMinersInQueue(mineEntityId);
+        return queue.indexOf(minerEntityId);
+    }
+
+    // Check if a miner is next in queue
+    isNextInQueue(mineEntityId, minerEntityId) {
+        const queue = this.getMinersInQueue(mineEntityId);
+        return queue.length > 0 && queue[0] === minerEntityId;
+    }
+
+    // Process next miner in queue when mine becomes available
+    processNextInQueue(mineEntityId) {
+        const queue = this.getMinersInQueue(mineEntityId);
+        
+        if (queue.length === 0) {
+            return;
+        }
+        
+        const nextMinerId = queue[0];
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
+        
+        if (miningState && miningState.state === 'waiting_at_mine') {
+            const aiState = this.game.getComponent(nextMinerId, ComponentTypes.AI_STATE);
+            const pos = this.game.getComponent(nextMinerId, ComponentTypes.POSITION);
+            const vel = this.game.getComponent(nextMinerId, ComponentTypes.VELOCITY);
+            
+            if (pos && vel && miningState.targetMinePosition) {
+                miningState.waitingPosition = null;
+                
+                pos.x = miningState.targetMinePosition.x;
+                pos.z = miningState.targetMinePosition.z;
+                vel.vx = 0;
+                vel.vz = 0;
+                
+                miningState.state = 'mining';
+                miningState.miningStartTime = this.game.state.now;
+                
+                if (aiState) {
+                    aiState.state = 'idle';
+                    aiState.targetPosition = null;
+                }
+            }
+        }
+    }
+
+    replaceVeinWithMine(vein) {
+        return;
+        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
+        //     vein.instancedMeshes.forEach(mesh => {
+        //         const matrix = new THREE.Matrix4();
+        //         const position = new THREE.Vector3(0, -10000, 0);
+        //         matrix.makeTranslation(position.x, position.y, position.z);
+        //         matrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
+        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
+        //         mesh.instanceMatrix.needsUpdate = true;
+        //     });
+        // } 
+    }
+
+    restoreVein(vein) {
+        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
+        //     const extensionSize = this.game.terrainSystem?.extensionSize || 0;
+        //     const extendedSize = this.game.terrainSystem?.extendedSize || 0;
+        //     const heightMapSettings = this.game.worldSystem?.heightMapSettings;
+            
+        //     let height = 0;
+        //     if (heightMapSettings?.enabled) {
+        //         height = heightMapSettings.heightStep * this.game.terrainSystem.tileMap.extensionTerrainType;
+        //     }
+
+        //     const worldX = (vein.x + extensionSize) - extendedSize / 2;
+        //     const worldZ = (vein.y + extensionSize) - extendedSize / 2;
+
+        //     const dummy = new THREE.Object3D();
+        //     dummy.position.set(worldX, height, worldZ);
+        //     dummy.rotation.y = Math.random() * Math.PI * 2;
+        //     dummy.scale.set(50, 50, 50);
+        //     dummy.updateMatrix();
+
+        //     vein.instancedMeshes.forEach(mesh => {
+        //         const matrix = new THREE.Matrix4();
+        //         matrix.copy(dummy.matrix);
+        //         if (mesh.userData.relativeMatrix) {
+        //             matrix.multiply(mesh.userData.relativeMatrix);
+        //         }
+        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
+        //         mesh.instanceMatrix.needsUpdate = true;
+        //     });            
+        // }
+
+        vein.claimed = false;
+        vein.claimedBy = null;
+    }
+
+    
+    onBattleEnd() {
+        const entities = this.game.getEntitiesWith(this.game.componentTypes.MINING_STATE);        
+        entities.forEach(entityId => {
+            const miningState = this.game.getComponent(entityId, this.game.componentTypes.MINING_STATE);
+            if (miningState) {
+                miningState.miningStartTime = 0;
+                miningState.depositStartTime = 0;
+            }
+        });
+    }
+
+    onDestroyBuilding(entityId){
+        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        if (unitType.id === 'goldMine') {
+            this.game.goldMineSystem.destroyGoldMine(entityId);
+        } 
+    }
+
+    reset() {
+        
+        if (!this.game.isServer) {
+            for (const [entityId, goldMine] of this.claimedGoldMines) {
+                this.restoreVein(goldMine.veinData, goldMine.model);
+            }
+        } else {
+            for (const [entityId, goldMine] of this.claimedGoldMines) {
+                goldMine.veinData.claimed = false;
+                goldMine.veinData.claimedBy = null;
+            }
+        }
+        
+        this.claimedGoldMines.clear();
+        
+    }
+};
+
+// system: VisionSystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['VisionSystem'] = class VisionSystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.visionSystem = this;
+
+        // Default unit height for line of sight calculations
+        this.DEFAULT_UNIT_HEIGHT = 25;
+    }
+
+    init() {
+        this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
+    }
+
+
+    hasLineOfSight(from, to, unitType, viewerEntityId = null) {
+        const dx = to.x - from.x;
+        const dz = to.z - from.z;
+        const distanceSq = dx * dx + dz * dz;
+        const distance = Math.sqrt(distanceSq);
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+
+        if (distance < gridSize*2) return true;
+
+        const terrainSystem = this.game.terrainSystem;
+        if (!terrainSystem) {
+            console.warn('[hasLineOfSight] No terrain system found!');
+            return true;
+        }
+
+        // Get discrete heightmap levels for from and to positions
+        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
+
+        const fromHeightLevel = terrainSystem.getHeightLevelAtGridPosition(fromGridX, fromGridZ);
+        const toHeightLevel = terrainSystem.getHeightLevelAtGridPosition(toGridX, toGridZ);
+
+        // Cannot see up to tiles with higher heightmap values
+        if (toHeightLevel > fromHeightLevel) {
+            return false;
+        }
+
+        const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
+        const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
+
+        // Use unit height from unitType, or fall back to default if not available
+        const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
+
+        const fromEyeHeight = fromTerrainHeight + unitHeight;
+        const toEyeHeight = toTerrainHeight + unitHeight;
+
+        // Check for terrain blocking along the path (for same-level or downward vision)
+        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel)) {
+            return false;
+        }
+        
+        let nearbyTrees = [];
+
+        const midX = (from.x + to.x) / 2;
+        const midZ = (from.z + to.z) / 2;
+        const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
+        nearbyTrees = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ} , distance / 2 + unitSize, viewerEntityId, 'worldObjects');
+
+
+        if (nearbyTrees.length > 0) {
+            const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
+            const stepX = dx / numSamples;
+            const stepZ = dz / numSamples;
+            
+            for (let i = 1; i < numSamples; i++) {
+                const t = i / numSamples;
+                const sampleX = from.x + stepX * i;
+                const sampleZ = from.z + stepZ * i;
+                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
+                
+                for (const unit of nearbyTrees) {                    
+                    const dx = sampleX - unit.x;
+                    const dz = sampleZ - unit.z;
+                    const distSq = dx * dx + dz * dz;
+                    if(!unit.size) unit.size = gridSize;
+                    if (distSq < unit.size * unit.size) {            
+                        if (rayHeight < unit.y+unit.height) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+
+    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
+        const terrainSystem = this.game.terrainSystem;
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+
+        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
+
+        const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
+
+        // Check intermediate tiles along the path
+        for (let i = 1; i < tiles.length - 1; i++) {
+            const tile = tiles[i];
+
+            // Check if this intermediate tile has a higher heightmap level than the viewer
+            const tileHeightLevel = terrainSystem.getHeightLevelAtGridPosition(tile.x, tile.z);
+            if (tileHeightLevel > fromHeightLevel) {
+                // Cannot see through a tile with higher elevation
+                return false;
+            }
+
+            // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
+            const t = i / (tiles.length - 1);
+            const worldX = tile.x * gridSize - terrainSystem.terrainSize / 2;
+            const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
+            const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
+            const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
+
+            if (rayHeight <= terrainHeight) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bresenhamLine(x0, z0, x1, z1) {
+        const tiles = [];
+        
+        const dx = Math.abs(x1 - x0);
+        const dz = Math.abs(z1 - z0);
+        const sx = x0 < x1 ? 1 : -1;
+        const sz = z0 < z1 ? 1 : -1;
+        let err = dx - dz;
+        
+        let x = x0;
+        let z = z0;
+        
+        while (true) {
+            tiles.push({ x, z });
+            
+            if (x === x1 && z === z1) break;
+            
+            const e2 = 2 * err;
+            if (e2 > -dz) {
+                err -= dz;
+                x += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                z += sz;
+            }
+        }
+        
+        return tiles;
+    }
+};
+
+// system: SupplySystem
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['SupplySystem'] = class SupplySystem extends engine.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.supplySystem = this;
+        this.supplyElement = null;
+    }
+
+    init() {
+        this.game.gameManager.register('getCurrentSupply', this.getCurrentSupply.bind(this));
+        this.game.gameManager.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
+        this.game.gameManager.register('canAffordSupply', this.canAffordSupply.bind(this));
+        if(!this.game.isServer){
+            this.supplyElement = document.getElementById('playerSupplies');
+        }
+        
+    }
+
+    updateSupplyDisplay() {
+        if (!this.supplyElement) return;
+
+        const team = this.game.state.mySide;
+        if (!team) return;
+
+        const currentPop = this.getCurrentPopulation(team);
+        const currentSupply = this.getCurrentSupply(team);
+
+        const isAtLimit = currentPop >= currentSupply;
+
+        this.supplyElement.innerHTML = `${currentPop}/${currentSupply}`;
+    }
+
+    update() {
+        if(this.game.isServer) return;
+        if (this.game.state.phase === 'placement') {
+            this.updateSupplyDisplay();
+        }
+    }
+
+    getCurrentSupply(team) {
+        const placements = this.game.gameManager.call('getPlacementsForSide', team);
+        if (!placements) return 0;
+
+        let totalSupply = 0;
+
+        placements.forEach(placement => {     
+            if(placement.unitType.supplyProvided){      
+                totalSupply += placement.unitType.supplyProvided;            
+            }
+        });
+        return totalSupply;
+    }
+
+
+    getCurrentPopulation(team) {
+        const placements = this.game.gameManager.call('getPlacementsForSide', team);
+        if (!placements) return 0;
+
+        let totalPopulation = 0;
+
+        placements.forEach(placement => {     
+            if(placement.unitType.supplyCost){      
+                totalPopulation += placement.unitType.supplyCost;            
+            }
+        });
+        return totalPopulation;
+    }
+
+    canAffordSupply(team, unitType) {
+        const currentPop = this.getCurrentPopulation(team);
+        const currentSupply = this.getCurrentSupply(team);
+        const supplyCost = unitType.supplyCost || 0;
+
+        return (currentPop + supplyCost) <= currentSupply;
+    }
+
+
+};
 
 // ========== Abilities ==========
 
