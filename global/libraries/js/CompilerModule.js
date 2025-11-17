@@ -51,8 +51,9 @@ class CompilerModule {
             } : null;
             
             const result = await this.compiler.compile(
-                projectName, 
+                projectName,
                 this.app.getCollections(),
+                this.app.getCollectionDefs(),
                 enginePaths
             );
             
