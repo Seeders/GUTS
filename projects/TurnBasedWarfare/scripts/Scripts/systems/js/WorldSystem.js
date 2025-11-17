@@ -1129,7 +1129,7 @@ class WorldSystem extends engine.BaseSystem {
         geometry.computeVertexNormals();
 
         // Decimate the mesh to reduce vertex count
-        this.decimateMesh(geometry);
+      //  this.decimateMesh(geometry);
 
         // Rebuild BVH tree after geometry modification for accurate raycasting
         if (geometry.boundsTree) {

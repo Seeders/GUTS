@@ -241,13 +241,18 @@ class ServerPlacementSystem extends engine.BaseSystem {
             // Store target position in placement data
             placement.targetPosition = targetPosition;
             placement.squadUnits.forEach((unitId) => {
-                if(targetPosition){
-                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                    currentOrderAI.targetPosition = targetPosition;
-                    currentOrderAI.path = [];
-                    currentOrderAI.meta = meta;
-                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
-                }
+                   
+                this.game.gameManager.call('clearCommands', unitId);
+                this.game.gameManager.call('queueCommand', unitId, {
+                    type: 'move',
+                    controllerId: "UnitOrderSystem",
+                    targetPosition: targetPosition,
+                    target: null,
+                    meta: meta,
+                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                    interruptible: true
+                }, true); // true = interrupt current command
+            
             });
                     
                
@@ -326,13 +331,17 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Store target position in placement data
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    if(targetPosition){
-                        let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                        currentOrderAI.targetPosition = targetPosition;
-                        currentOrderAI.path = [];
-                        currentOrderAI.meta = meta;
-                        this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
-                    }
+                    this.game.gameManager.call('clearCommands', unitId);
+                    this.game.gameManager.call('queueCommand', unitId, {
+                        type: 'move',
+                        controllerId: "UnitOrderSystem",
+                        targetPosition: targetPosition,
+                        target: null,
+                        meta: meta,
+                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                        interruptible: true
+                    }, true); // true = interrupt current command
+                
                 });
                         
 

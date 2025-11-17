@@ -381,25 +381,17 @@ class UnitOrderSystem extends engine.BaseSystem {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
-                                // Use command queue system for move orders
-                                if (this.game.commandQueueSystem) {
-                                    this.game.gameManager.call('queueCommand', unitId, {
-                                        type: 'move',
-                                        controllerId: "UnitOrderSystem",
-                                        targetPosition: targetPosition,
-                                        target: null,
-                                        meta: meta,
-                                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                        interruptible: true
-                                    }, true); // true = interrupt current command
-                                } else {
-                                    // Fallback to old method
-                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                                    currentOrderAI.targetPosition = targetPosition;
-                                    currentOrderAI.path = [];
-                                    currentOrderAI.meta = meta;
-                                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
-                                }
+                                this.game.gameManager.call('clearCommands', unitId);
+                                this.game.gameManager.call('queueCommand', unitId, {
+                                    type: 'move',
+                                    controllerId: "UnitOrderSystem",
+                                    targetPosition: targetPosition,
+                                    target: null,
+                                    meta: meta,
+                                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                                    interruptible: true
+                                }, true); // true = interrupt current command
+                            
                             }
                         });
 
