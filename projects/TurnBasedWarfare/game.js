@@ -1,7 +1,7 @@
 /**
  * Compiled Game Bundle
  * Project: TurnBasedWarfare
- * Generated: 2025-11-17T18:46:33.592Z
+ * Generated: 2025-11-17T19:25:25.699Z
  */
 
 window.engine = {
@@ -11,7 +11,7 @@ window.engine = {
 // Global bundle namespace
 window.COMPILED_GAME = {
     projectName: "TurnBasedWarfare",
-    version: "2025-11-17T18:46:33.592Z",
+    version: "2025-11-17T19:25:25.699Z",
     classRegistry: {},
     libraryClasses: {},
     collections: {
@@ -24,33 +24,33 @@ window.COMPILED_GAME = {
       "filePath": "/global/components/js/ArrayTracker.js",
       "fileName": "ArrayTracker"
     },
-    "Collider": {
-      "filePath": "/global/components/js/Collider.js",
-      "fileName": "Collider"
-    },
     "AudioManager": {
       "filePath": "/global/components/js/AudioManager.js",
       "fileName": "AudioManager"
+    },
+    "Collider": {
+      "filePath": "/global/components/js/Collider.js",
+      "fileName": "Collider"
     },
     "Effect": {
       "filePath": "/global/components/js/Effect.js",
       "fileName": "Effect"
     },
-    "PlayerController": {
-      "filePath": "/global/components/js/PlayerController.js",
-      "fileName": "PlayerController"
-    },
     "MapManager": {
       "filePath": "/global/components/js/MapManager.js",
       "fileName": "MapManager"
     },
-    "Projectile": {
-      "filePath": "/global/components/js/Projectile.js",
-      "fileName": "Projectile"
-    },
     "Physics": {
       "filePath": "/global/components/js/Physics.js",
       "fileName": "Physics"
+    },
+    "PlayerController": {
+      "filePath": "/global/components/js/PlayerController.js",
+      "fileName": "PlayerController"
+    },
+    "Projectile": {
+      "filePath": "/global/components/js/Projectile.js",
+      "fileName": "Projectile"
     },
     "Stats": {
       "filePath": "/global/components/js/Stats.js",
@@ -66,13 +66,13 @@ window.COMPILED_GAME = {
       "updateInEditor": true,
       "filePath": "/global/components/js/InfiniWorld.js"
     },
-    "Transform": {
-      "fileName": "Transform",
-      "filePath": "/global/components/js/Transform.js"
-    },
     "MultiplayerManager": {
       "fileName": "MultiplayerManager",
       "filePath": "/global/components/js/MultiplayerManager.js"
+    },
+    "Transform": {
+      "fileName": "Transform",
+      "filePath": "/global/components/js/Transform.js"
     }
   },
   "editorModules": {
@@ -164,6 +164,19 @@ window.COMPILED_GAME = {
       "loadHook": "renderSceneObject",
       "saveHook": "saveSceneObject"
     },
+    "scriptModule": {
+      "title": "Script Editor",
+      "container": "script-editor-container",
+      "interface": "scriptEditor",
+      "inputElement": "textarea",
+      "inputDataType": "string",
+      "libraries": [
+        "ScriptEditor"
+      ],
+      "propertyNames": "[\"script\", \"html\", \"css\"]",
+      "loadHook": "editScript",
+      "saveHook": "saveScript"
+    },
     "terrainModule": {
       "title": "Terrain Editor",
       "container": "level-editor-container",
@@ -195,19 +208,6 @@ window.COMPILED_GAME = {
       "inputDataType": "string",
       "loadHook": "editTexture",
       "saveHook": "saveTexture"
-    },
-    "scriptModule": {
-      "title": "Script Editor",
-      "container": "script-editor-container",
-      "interface": "scriptEditor",
-      "inputElement": "textarea",
-      "inputDataType": "string",
-      "libraries": [
-        "ScriptEditor"
-      ],
-      "propertyNames": "[\"script\", \"html\", \"css\"]",
-      "loadHook": "editScript",
-      "saveHook": "saveScript"
     }
   },
   "interfaces": {
@@ -227,13 +227,12 @@ window.COMPILED_GAME = {
       ],
       "css": ".compiler-modal {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    z-index: 10000;\n}\n\n.compiler-modal .modal-content {\n    background: #2d2d30;\n    border-radius: 8px;\n    width: 600px;\n    max-width: 90%;\n    max-height: 90vh;\n    overflow-y: auto;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);\n}\n\n.compiler-modal .modal-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 20px;\n    border-bottom: 1px solid #3e3e42;\n}\n\n.compiler-modal .modal-header h2 {\n    margin: 0;\n    color: #fff;\n}\n\n.compiler-modal .close-btn {\n    background: none;\n    border: none;\n    color: #999;\n    font-size: 24px;\n    cursor: pointer;\n    padding: 0;\n    width: 30px;\n    height: 30px;\n    line-height: 30px;\n    text-align: center;\n}\n\n.compiler-modal .close-btn:hover {\n    color: #fff;\n}\n\n.compiler-modal .modal-body {\n    padding: 20px;\n}\n\n.compiler-modal .form-group {\n    margin-bottom: 15px;\n}\n\n.compiler-modal .form-group label {\n    display: block;\n    margin-bottom: 5px;\n    color: #d4d4d4;\n    font-size: 14px;\n}\n\n.compiler-modal .form-group input[type=\"text\"] {\n    width: 100%;\n    padding: 10px;\n    background: #3c3c3c;\n    border: 1px solid #555;\n    border-radius: 4px;\n    color: #d4d4d4;\n    font-size: 14px;\n}\n\n.compiler-modal .form-group input[type=\"checkbox\"] {\n    margin-right: 8px;\n}\n\n.compiler-modal .compilation-output {\n    background: #1e1e1e;\n    border: 1px solid #3e3e42;\n    border-radius: 4px;\n    padding: 10px;\n    margin-top: 15px;\n}\n\n.compiler-modal .compilation-output h3 {\n    margin: 0 0 10px 0;\n    color: #fff;\n    font-size: 14px;\n}\n\n.compiler-modal .compilation-output pre {\n    margin: 0;\n    color: #d4d4d4;\n    font-family: 'Courier New', monospace;\n    font-size: 12px;\n    white-space: pre-wrap;\n    max-height: 200px;\n    overflow-y: auto;\n}\n\n.compiler-modal .downloads-section {\n    background: #1e1e1e;\n    border: 1px solid #3e3e42;\n    border-radius: 4px;\n    padding: 15px;\n    margin-bottom: 15px;\n}\n\n.compiler-modal .downloads-section h3 {\n    margin: 0 0 10px 0;\n    color: #fff;\n    font-size: 14px;\n}\n\n.compiler-modal .download-link {\n    display: inline-block;\n    padding: 8px 12px;\n    background: #007acc;\n    color: white;\n    text-decoration: none;\n    border-radius: 4px;\n    margin-right: 10px;\n    margin-bottom: 10px;\n    font-size: 14px;\n}\n\n.compiler-modal .download-link:hover {\n    background: #005a9e;\n}\n\n.compiler-modal .modal-footer {\n    padding: 20px;\n    border-top: 1px solid #3e3e42;\n    display: flex;\n    justify-content: flex-end;\n    gap: 10px;\n}\n\n.compiler-modal .btn {\n    padding: 10px 20px;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n    font-size: 14px;\n    font-weight: 600;\n}\n\n.compiler-modal .btn-primary {\n    background: #007acc;\n    color: white;\n}\n\n.compiler-modal .btn-primary:hover {\n    background: #005a9e;\n}\n\n.compiler-modal .btn-secondary {\n    background: #3e3e42;\n    color: #d4d4d4;\n}\n\n.compiler-modal .btn-secondary:hover {\n    background: #505053;\n}\n\n.toolbar-btn {\n    padding: 8px 16px;\n    background: #007acc;\n    color: white;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n    font-size: 14px;\n    margin-left: 10px;\n}\n\n.toolbar-btn:hover {\n    background: #005a9e;\n}\n"
     },
-    "sceneEditor": {
-      "title": "Scene Editor",
-      "modals": [],
-      "fileName": "sceneEditor",
-      "css": "/* =============================================================================\r\n   SCENE EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Scene view */\r\n.scene-editor__scene-view {\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden;\r\n}\r\n\r\n#scene-canvas-container {\r\n    width: 100%;\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n#scene-editor-canvas {\r\n    cursor: crosshair;\r\n    outline: none;\r\n}\r\n\r\n/* No selection message */\r\n.scene-editor__no-selection {\r\n    text-align: center;\r\n    padding: var(--editor-spacing-xl);\r\n    color: var(--editor-text-muted);\r\n    font-style: italic;\r\n}\r\n\r\n/* Hierarchy item */\r\n.scene-editor__hierarchy-item {\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    cursor: pointer;\r\n    border-left: 2px solid transparent;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.scene-editor__hierarchy-item:hover {\r\n    background-color: rgba(255, 255, 255, 0.05);\r\n}\r\n\r\n.scene-editor__hierarchy-item--selected {\r\n    background-color: var(--editor-primary);\r\n    border-left-color: var(--editor-primary-hover);\r\n    color: white;\r\n}\r\n\r\n/* Component styling */\r\n.scene-editor__component {\r\n    background-color: var(--editor-bg-light);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    margin-bottom: var(--editor-spacing-md);\r\n    padding: var(--editor-spacing-md);\r\n}\r\n\r\n.scene-editor__component-header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    margin-bottom: var(--editor-spacing-sm);\r\n    font-weight: 600;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
-      "filePath": "/global/interfaces/html/sceneEditor.html",
-      "html": "<div id=\"scene-editor-container\" class=\"editor-module\">\r\n   <div id=\"scene-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n      <h2 class=\"editor-module__panel-title\">Hierarchy</h2>\r\n      <div id=\"scene-hierarchy\" class=\"editor-module__list editor-module__scroll-y\">\r\n        <!-- Entities will be populated here -->\r\n      </div>\r\n      <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n        <select id=\"scene-addPrefabSelect\" class=\"editor-module__select\"></select>\r\n        <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"scene-addPrefabBtn\">+ Add Prefab</button>\r\n        <button class=\"editor-module__btn editor-module__btn--danger\" id=\"scene-removePrefabBtn\">Remove Selected Prefab</button>\r\n      </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area\">\r\n      <div class=\"editor-module__toolbar\">\r\n        <button id=\"scene-translate-tool\" class=\"editor-module__btn editor-module__btn--active\" title=\"Translate (G)\">\r\n            <span>Move</span>\r\n        </button>\r\n        <button id=\"scene-rotate-tool\" class=\"editor-module__btn\" title=\"Rotate (R)\">\r\n            <span>Rotate</span>\r\n        </button>\r\n        <button id=\"scene-scale-tool\" class=\"editor-module__btn\" title=\"Scale (S)\">\r\n            <span>Scale</span>\r\n        </button>\r\n      </div>\r\n      <div id=\"scene-view\" class=\"scene-editor__scene-view\">\r\n         <div id=\"scene-canvas-container\" class=\"editor-module__grid-background\">\r\n            <canvas id=\"scene-editor-canvas\" class=\"editor-module__canvas\"></canvas>\r\n         </div>\r\n      </div>\r\n   </div>\r\n\r\n   <div id=\"scene-inspector\" class=\"editor-module__sidebar editor-module__sidebar--right\">\r\n      <h2 class=\"editor-module__panel-title\">Inspector</h2>\r\n      <div class=\"editor-module__scroll-y\">\r\n        <div class=\"scene-editor__no-selection\" id=\"scene-noSelection\">\r\n          No entity selected\r\n        </div>\r\n        <div id=\"scene-entityInspector\" style=\"display: none;\">\r\n          <div id=\"scene-components\">\r\n            <!-- Components will be added here dynamically -->\r\n          </div>\r\n          <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"addComponentBtn\">+ Add Component</button>\r\n        </div>\r\n      </div>\r\n   </div>\r\n</div>\r\n"
+    "audioEditor": {
+      "title": "Audio Editor",
+      "fileName": "audioEditor",
+      "css": "/* =============================================================================\r\n   AUDIO EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Value display for sliders */\r\n.audio-editor__value-display {\r\n    float: right;\r\n    font-weight: 600;\r\n    color: var(--editor-primary);\r\n    font-size: 12px;\r\n}\r\n\r\n/* Waveform display area */\r\n.audio-editor__waveform-display {\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: var(--editor-bg-dark);\r\n    position: relative;\r\n}\r\n\r\n.audio-editor__waveform-display::before {\r\n    content: '🎵 Waveform Visualization';\r\n    color: var(--editor-text-muted);\r\n    font-size: 24px;\r\n}\r\n\r\n/* Status container */\r\n#status-container {\r\n    background-color: var(--editor-bg-light);\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    text-align: center;\r\n    font-size: 12px;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
+      "filePath": "/global/interfaces/html/audioEditor.html",
+      "html": "<div id=\"audio-editor-container\" class=\"editor-module\">\r\n    <div class=\"editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y\">\r\n        <div id=\"status-container\" class=\"editor-module__status-bar\">\r\n            <span id=\"status-message\">Ready</span>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n                <button id=\"playBtn\" class=\"editor-module__btn editor-module__btn--primary\">Play</button>\r\n                <button id=\"exportBtn\" class=\"editor-module__btn editor-module__btn--success\">Save</button>\r\n                <button id=\"randomSoundBtn\" class=\"editor-module__btn editor-module__btn--secondary\">🎲 Randomize Sound</button>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Basic Parameters</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Waveform:</label>\r\n                <select id=\"waveform\" class=\"editor-module__select\">\r\n                    <option value=\"sine\">Sine</option>\r\n                    <option value=\"square\">Square</option>\r\n                    <option value=\"sawtooth\">Sawtooth</option>\r\n                    <option value=\"triangle\">Triangle</option>\r\n                    <option value=\"noise\">Noise</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Frequency: <span class=\"audio-editor__value-display\">440 Hz</span></label>\r\n                <input type=\"range\" id=\"frequency\" class=\"editor-module__range\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Duration: <span class=\"audio-editor__value-display\">1.00 s</span></label>\r\n                <input type=\"range\" id=\"duration\" class=\"editor-module__range\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Volume: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"volume\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Noise Generator</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Type:</label>\r\n                <select id=\"noiseType\" class=\"editor-module__select\">\r\n                    <option value=\"white\">White</option>\r\n                    <option value=\"pink\">Pink</option>\r\n                    <option value=\"brown\">Brown</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Amount: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"noiseAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter:</label>\r\n                <select id=\"noiseFilterType\" class=\"editor-module__select\">\r\n                    <option value=\"none\">None</option>\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter Freq: <span class=\"audio-editor__value-display\">2000 Hz</span></label>\r\n                <input type=\"range\" id=\"noiseFilterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Envelope (ADSR)</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Attack: <span class=\"audio-editor__value-display\">0.010 s</span></label>\r\n                <input type=\"range\" id=\"attack\" class=\"editor-module__range\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Decay: <span class=\"audio-editor__value-display\">0.10 s</span></label>\r\n                <input type=\"range\" id=\"decay\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Sustain: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"sustain\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Release: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"release\" class=\"editor-module__range\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Pitch Envelope</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Start: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvStart\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">End: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvEnd\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Effects</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Type:</label>\r\n                <select id=\"filterType\" class=\"editor-module__select\">\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                    <option value=\"notch\">Notch</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Frequency: <span class=\"audio-editor__value-display\">1000 Hz</span></label>\r\n                <input type=\"range\" id=\"filterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Q: <span class=\"audio-editor__value-display\">Q: 1.0</span></label>\r\n                <input type=\"range\" id=\"filterQ\" class=\"editor-module__range\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Distortion: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"distortion\" class=\"editor-module__range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Time: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"delayTime\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Feedback: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"delayFeedback\" class=\"editor-module__range\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Reverb: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"reverbAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Bitcrusher: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"bitcrusher\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Panning: <span class=\"audio-editor__value-display\">Center</span></label>\r\n                <input type=\"range\" id=\"panning\" class=\"editor-module__range\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"editor-module__canvas-area audio-editor__waveform-display\">\r\n        <!-- Waveform visualization will go here -->\r\n    </div>\r\n</div>\r\n"
     },
     "graphicsEditor": {
       "title": "Graphics Editor",
@@ -247,6 +246,13 @@ window.COMPILED_GAME = {
       "filePath": "/global/interfaces/html/graphicsEditor.html",
       "html": "<div id=\"graphics-editor-container\" class=\"editor-module\">\r\n   <div id=\"graphics-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n\r\n      <!-- Standard Graphics Editor Toolbar -->\r\n      <div id=\"toolbar\" class=\"editor-module__toolbar\">\r\n         <div id=\"graphics-toolbar\" class=\"editor-module__toolbar-group editor-module__flex-col editor-module__gap-sm\">\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"add-animation\" class=\"editor-module__btn editor-module__btn--secondary editor-module__btn--small\" title=\"Add Animation\">+A</button>\r\n               <button id=\"delete-animation\" class=\"editor-module__btn editor-module__btn--danger editor-module__btn--small\" title=\"Delete Animation\">-A</button>\r\n            </div>\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"add-frame\" class=\"editor-module__btn editor-module__btn--secondary editor-module__btn--small\" title=\"Add Frame\">+F</button>\r\n               <button id=\"delete-frame\" class=\"editor-module__btn editor-module__btn--danger editor-module__btn--small\" title=\"Delete Frame\">-F</button>\r\n            </div>\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"create-group\" class=\"editor-module__btn editor-module__btn--secondary editor-module__btn--small\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"editor-module__btn editor-module__btn--danger editor-module__btn--small\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"add-shape\" class=\"editor-module__btn editor-module__btn--secondary editor-module__btn--small\" title=\"Add Shape\">+S</button>\r\n               <button id=\"delete-shape\" class=\"editor-module__btn editor-module__btn--danger editor-module__btn--small\" title=\"Delete Shape\">-S</button>\r\n            </div>\r\n         </div>\r\n         <div id=\"graphics-toolbar-right\" class=\"editor-module__toolbar-group\">\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"preview-animation\" class=\"editor-module__btn editor-module__btn--primary editor-module__btn--small\" title=\"Preview Animation\">▶</button>\r\n               <button id=\"generate-isometric\" class=\"editor-module__btn editor-module__btn--primary editor-module__btn--small\" title=\"Generate Isometric Sprites\">Iso</button>\r\n            </div>\r\n         </div>\r\n\r\n         <!-- Equipment Toolbar -->\r\n         <div id=\"equipment-toolbar\" class=\"editor-module__toolbar-group\">\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"equipment-add-btn\" class=\"editor-module__btn editor-module__btn--secondary editor-module__btn--small\" title=\"Add Equipment\">+E</button>\r\n               <button id=\"equipment-remove-btn\" class=\"editor-module__btn editor-module__btn--danger editor-module__btn--small\" title=\"Remove Equipment\">-E</button>\r\n               <button id=\"equipment-reset-btn\" class=\"editor-module__btn editor-module__btn--primary editor-module__btn--small\" title=\"Reset Position\">↻</button>\r\n            </div>\r\n            <div class=\"editor-module__flex editor-module__gap-sm\">\r\n               <button id=\"equipment-mode-toggle\" class=\"editor-module__btn editor-module__btn--primary editor-module__btn--small\" title=\"Toggle Equipment Mode\">⚔</button>\r\n               <button id=\"equipment-save-btn\" class=\"editor-module__btn editor-module__btn--primary editor-module__btn--small\" title=\"Save Equipment\">💾</button>\r\n            </div>\r\n         </div>\r\n      </div>\r\n\r\n      <!-- Standard Graphics Editor Lists -->\r\n      <div id=\"graphics-lists\" class=\"editor-module__scroll-y\">\r\n         <div id=\"frame-list\" class=\"editor-module__list\"></div>\r\n         <div id=\"group-list\" class=\"editor-module__list\"></div>\r\n         <div id=\"shape-list\" class=\"editor-module__list\"></div>\r\n      </div>\r\n\r\n      <!-- Equipment Controls -->\r\n      <div id=\"equipment-controls\">\r\n\r\n         <!-- Add Equipment Section -->\r\n         <div class=\"editor-module__panel\">\r\n            <h4 class=\"editor-module__panel-title\">Add Equipment</h4>\r\n            <div class=\"editor-module__form-row\">\r\n               <label class=\"editor-module__label\">Item:</label>\r\n               <select id=\"equipment-item-selector\" class=\"editor-module__select\">\r\n                  <option value=\"\">Select Item...</option>\r\n               </select>\r\n            </div>\r\n            <div class=\"editor-module__form-row\">\r\n               <label class=\"editor-module__label\">Slot:</label>\r\n               <select id=\"equipment-slot-selector\" class=\"editor-module__select\">\r\n                  <option value=\"\">Select Slot...</option>\r\n                  <option value=\"mainHand\">Main Hand</option>\r\n                  <option value=\"offHand\">Off Hand</option>\r\n                  <option value=\"head\">Head</option>\r\n                  <option value=\"chest\">Chest</option>\r\n                  <option value=\"back\">Back</option>\r\n                  <option value=\"legs\">Legs</option>\r\n                  <option value=\"feet\">Feet</option>\r\n               </select>\r\n            </div>\r\n         </div>\r\n\r\n         <!-- Equipment List -->\r\n         <div class=\"editor-module__panel\">\r\n            <h4 class=\"editor-module__panel-title\">Equipment List</h4>\r\n            <div id=\"equipment-list\" class=\"graphics-editor__equipment-list editor-module__scroll-y\">\r\n               <div class=\"graphics-editor__no-equipment\">No equipment loaded</div>\r\n            </div>\r\n         </div>\r\n\r\n      </div>\r\n   </div>\r\n\r\n   <!-- Canvas Container -->\r\n   <div id=\"canvas-container\" class=\"editor-module__canvas-area editor-module__grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\" class=\"editor-module__canvas\"></canvas>\r\n      <div class=\"editor-module__info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div id=\"equipment-info\">Equipment: <span id=\"equipment-count\">0</span></div>\r\n         <div id=\"selected-equipment-info\">Selected: <span id=\"selected-equipment\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n\r\n   <!-- Right Sidebar -->\r\n   <div id=\"graphics-rightbar\" class=\"editor-module__sidebar editor-module__sidebar--right\">\r\n\r\n      <!-- Standard Inspector -->\r\n      <div id=\"inspector\" class=\"editor-module__scroll-y\"></div>\r\n\r\n      <!-- Equipment Inspector -->\r\n      <div id=\"equipment-inspector\">\r\n         <div class=\"editor-module__panel\">\r\n            <h4 class=\"editor-module__panel-title\">Equipment Attachment</h4>\r\n\r\n            <div class=\"editor-module__form-row\">\r\n               <label class=\"editor-module__label\">Bone:</label>\r\n               <select id=\"equipment-bone-selector\" class=\"editor-module__select\">\r\n                  <option value=\"\">Auto-detect</option>\r\n               </select>\r\n            </div>\r\n\r\n            <h5 class=\"editor-module__section-title\">Position Offset</h5>\r\n            <div class=\"editor-module__form-row editor-module__form-row--compact\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">X:</label>\r\n               <input type=\"number\" id=\"equipment-offset-x\" class=\"editor-module__input\" step=\"0.01\" value=\"0\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">Y:</label>\r\n               <input type=\"number\" id=\"equipment-offset-y\" class=\"editor-module__input\" step=\"0.01\" value=\"0\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">Z:</label>\r\n               <input type=\"number\" id=\"equipment-offset-z\" class=\"editor-module__input\" step=\"0.01\" value=\"0\">\r\n            </div>\r\n\r\n            <h5 class=\"editor-module__section-title\">Rotation (degrees)</h5>\r\n            <div class=\"editor-module__form-row editor-module__form-row--compact\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">X:</label>\r\n               <input type=\"number\" id=\"equipment-rotation-x\" class=\"editor-module__input\" step=\"1\" value=\"0\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">Y:</label>\r\n               <input type=\"number\" id=\"equipment-rotation-y\" class=\"editor-module__input\" step=\"1\" value=\"0\">\r\n               <label class=\"editor-module__label editor-module__label--compact\">Z:</label>\r\n               <input type=\"number\" id=\"equipment-rotation-z\" class=\"editor-module__input\" step=\"1\" value=\"0\">\r\n            </div>\r\n\r\n            <div class=\"editor-module__message editor-module__message--warning\">\r\n               Select equipment to adjust positioning. Changes apply in real-time.\r\n            </div>\r\n         </div>\r\n\r\n         <!-- Equipment Properties -->\r\n         <div class=\"editor-module__panel\">\r\n            <h4 class=\"editor-module__panel-title\">Equipment Properties</h4>\r\n            <div id=\"equipment-property-list\">\r\n               <div class=\"graphics-editor__no-equipment\">Select equipment to view properties</div>\r\n            </div>\r\n         </div>\r\n      </div>\r\n\r\n      <!-- JSON Editor -->\r\n      <div id=\"json-editor\" style=\"display: none;\">\r\n        <textarea id=\"json-content\" class=\"editor-module__textarea editor-module__input\" placeholder=\"Edit JSON here...\"></textarea>\r\n      </div>\r\n   </div>\r\n</div>\r\n"
     },
+    "scriptEditor": {
+      "title": "Script Editor",
+      "fileName": "scriptEditor",
+      "css": "/* =============================================================================\r\n   SCRIPT EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Code container */\r\n.script-editor__code-container {\r\n    position: relative;\r\n    height: 100%;\r\n    width: 100%;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n.script-editor__code {\r\n    flex: 1;\r\n    height: 100%;\r\n    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;\r\n    font-size: 14px;\r\n    line-height: 1.5;\r\n}\r\n\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important;\r\n    -ms-overflow-style: auto !important;\r\n    scrollbar-width: auto !important;\r\n    height: 100%;\r\n    font-size: 14px;\r\n}",
+      "filePath": "/global/interfaces/html/scriptEditor.html",
+      "html": "<div id=\"script-editor-container\" class=\"editor-module\">\r\n    <div id=\"script-editor-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Script Editor</h3>\r\n            <button id=\"save-script-btn\" class=\"editor-module__btn editor-module__btn--primary\">Save Script</button>\r\n        </div>\r\n    </div>\r\n    <div class=\"editor-module__canvas-area editor-module__grid-background\">\r\n        <div class=\"script-editor__code-container\">\r\n            <textarea id=\"script-editor\" class=\"editor-module__textarea editor-module__input script-editor__code\" placeholder=\"Enter your script here...\"></textarea>\r\n            <div class=\"handle\"></div>\r\n        </div>\r\n    </div>\r\n</div>\r\n"
+    },
     "terrainEditor": {
       "title": "Terrain Editor",
       "modals": [
@@ -258,19 +264,13 @@ window.COMPILED_GAME = {
       "filePath": "/global/interfaces/html/terrainEditor.html",
       "html": "<div id=\"level-editor-container\" class=\"editor-module\">\r\n   <div class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n     <div class=\"editor-module__toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"editor-module__btn editor-module__btn--active\">Tiles</button>\r\n       <button id=\"heightsBtn\" class=\"editor-module__btn\">Heights</button>\r\n       <button id=\"environmentBtn\" class=\"editor-module__btn\">Env</button>\r\n       <button id=\"rampsBtn\" class=\"editor-module__btn\">Ramps</button>\r\n       <button id=\"placementsBtn\" class=\"editor-module__btn\">Entities</button>\r\n     </div>\r\n\r\n     <div class=\"editor-module__scroll-y\">\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Map Settings</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label for=\"terrainMapSize\" class=\"editor-module__label\">Map Size:</label>\r\n             <input type=\"number\" id=\"terrainMapSize\" class=\"editor-module__input\" value=\"48\" step=\"1\" min=\"1\">\r\n           </div>\r\n           <div class=\"editor-module__form-row\">\r\n              <label for=\"extensionTerrainType\" class=\"editor-module__label\">Surrounding Type:</label>\r\n              <select id=\"extensionTerrainType\" class=\"editor-module__select extensionTerrainType\"></select>\r\n            </div>\r\n            <div class=\"editor-module__form-row\">\r\n              <button id=\"saveMapBtn\" class=\"editor-module__btn editor-module__btn--success terrain-editor__save-btn\">💾 Save Map</button>\r\n            </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Tools</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label class=\"editor-module__label\">Tool:</label>\r\n             <div class=\"terrain-editor__tool-buttons\">\r\n               <button id=\"terrainBrushBtn\" class=\"editor-module__btn editor-module__btn--small editor-module__btn--active\">Brush</button>\r\n               <button id=\"terrainFillBtn\" class=\"editor-module__btn editor-module__btn--small\">Fill</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"editor-module__form-row\" id=\"terrainBrushSizeRow\">\r\n             <label for=\"terrainBrushSize\" class=\"editor-module__label\">Brush Size:</label>\r\n             <input type=\"range\" id=\"terrainBrushSize\" class=\"editor-module__slider\" value=\"1\" step=\"1\" min=\"1\" max=\"5\">\r\n             <span id=\"terrainBrushSizeValue\" class=\"editor-module__value-display\">1</span>\r\n           </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Terrain Types</h3>\r\n           <div class=\"terrain-editor__terrain-list\">\r\n             <!-- Terrain items will be dynamically populated here -->\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"environmentPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Environment Objects</h3>\r\n           <div class=\"terrain-editor__object-controls\">\r\n             <button class=\"editor-module__btn editor-module__btn--small\" id=\"clear-selection-btn\">Clear Selection</button>\r\n             <button class=\"editor-module__btn editor-module__btn--small editor-module__btn--danger\" id=\"delete-mode-btn\">Delete Mode</button>\r\n           </div>\r\n           <div class=\"terrain-editor__environment-objects\"></div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"rampsPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Ramp Placement</h3>\r\n           <div class=\"editor-module__info-box\">\r\n             <p>Click on tiles to place/remove ramps. Ramps allow units to walk between different terrain heights.</p>\r\n             <p><strong>Current ramps:</strong> <span id=\"rampCount\">0</span></p>\r\n           </div>\r\n           <div class=\"terrain-editor__object-controls\">\r\n             <button class=\"editor-module__btn editor-module__btn--small editor-module__btn--danger\" id=\"clear-all-ramps-btn\">Clear All Ramps</button>\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"heightsPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Height Map Editor</h3>\r\n           <div class=\"editor-module__info-box\">\r\n             <p>Paint height levels on the map. Heights are independent of terrain types.</p>\r\n             <p>Click on tiles to paint the selected height level.</p>\r\n           </div>\r\n           <div class=\"editor-module__form-row\">\r\n             <label for=\"heightLevel\" class=\"editor-module__label\">Height Level:</label>\r\n             <input type=\"number\" id=\"heightLevel\" class=\"editor-module__input\" value=\"0\" step=\"1\" min=\"0\" max=\"10\">\r\n           </div>\r\n           <div class=\"editor-module__section\">\r\n             <h4 class=\"editor-module__section-title\">Quick Select</h4>\r\n             <div class=\"terrain-editor__height-levels\" id=\"heightLevelButtons\">\r\n               <!-- Height level buttons will be dynamically populated here -->\r\n             </div>\r\n           </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Tools</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label class=\"editor-module__label\">Tool:</label>\r\n             <div class=\"terrain-editor__tool-buttons\">\r\n               <button id=\"heightBrushBtn\" class=\"editor-module__btn editor-module__btn--small editor-module__btn--active\">Brush</button>\r\n               <button id=\"heightFillBtn\" class=\"editor-module__btn editor-module__btn--small\">Fill</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"editor-module__form-row\" id=\"heightBrushSizeRow\">\r\n             <label for=\"heightBrushSize\" class=\"editor-module__label\">Brush Size:</label>\r\n             <input type=\"range\" id=\"heightBrushSize\" class=\"editor-module__slider\" value=\"1\" step=\"1\" min=\"1\" max=\"5\">\r\n             <span id=\"heightBrushSizeValue\" class=\"editor-module__value-display\">1</span>\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"placementsPanel\" style=\"display: none;\">\r\n         <!-- Panel content will be dynamically generated by setupPlacementsPanel() -->\r\n       </div>\r\n     </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area editor-module__grid-background\">\r\n     <canvas id=\"grid\" class=\"editor-module__canvas\"></canvas>\r\n\r\n     <div class=\"editor-module__status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>\r\n"
     },
-    "scriptEditor": {
-      "title": "Script Editor",
-      "fileName": "scriptEditor",
-      "css": "/* =============================================================================\r\n   SCRIPT EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Code container */\r\n.script-editor__code-container {\r\n    position: relative;\r\n    height: 100%;\r\n    width: 100%;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n.script-editor__code {\r\n    flex: 1;\r\n    height: 100%;\r\n    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;\r\n    font-size: 14px;\r\n    line-height: 1.5;\r\n}\r\n\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important;\r\n    -ms-overflow-style: auto !important;\r\n    scrollbar-width: auto !important;\r\n    height: 100%;\r\n    font-size: 14px;\r\n}",
-      "filePath": "/global/interfaces/html/scriptEditor.html",
-      "html": "<div id=\"script-editor-container\" class=\"editor-module\">\r\n    <div id=\"script-editor-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Script Editor</h3>\r\n            <button id=\"save-script-btn\" class=\"editor-module__btn editor-module__btn--primary\">Save Script</button>\r\n        </div>\r\n    </div>\r\n    <div class=\"editor-module__canvas-area editor-module__grid-background\">\r\n        <div class=\"script-editor__code-container\">\r\n            <textarea id=\"script-editor\" class=\"editor-module__textarea editor-module__input script-editor__code\" placeholder=\"Enter your script here...\"></textarea>\r\n            <div class=\"handle\"></div>\r\n        </div>\r\n    </div>\r\n</div>\r\n"
-    },
-    "audioEditor": {
-      "title": "Audio Editor",
-      "fileName": "audioEditor",
-      "css": "/* =============================================================================\r\n   AUDIO EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Value display for sliders */\r\n.audio-editor__value-display {\r\n    float: right;\r\n    font-weight: 600;\r\n    color: var(--editor-primary);\r\n    font-size: 12px;\r\n}\r\n\r\n/* Waveform display area */\r\n.audio-editor__waveform-display {\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: var(--editor-bg-dark);\r\n    position: relative;\r\n}\r\n\r\n.audio-editor__waveform-display::before {\r\n    content: '🎵 Waveform Visualization';\r\n    color: var(--editor-text-muted);\r\n    font-size: 24px;\r\n}\r\n\r\n/* Status container */\r\n#status-container {\r\n    background-color: var(--editor-bg-light);\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    text-align: center;\r\n    font-size: 12px;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
-      "filePath": "/global/interfaces/html/audioEditor.html",
-      "html": "<div id=\"audio-editor-container\" class=\"editor-module\">\r\n    <div class=\"editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y\">\r\n        <div id=\"status-container\" class=\"editor-module__status-bar\">\r\n            <span id=\"status-message\">Ready</span>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n                <button id=\"playBtn\" class=\"editor-module__btn editor-module__btn--primary\">Play</button>\r\n                <button id=\"exportBtn\" class=\"editor-module__btn editor-module__btn--success\">Save</button>\r\n                <button id=\"randomSoundBtn\" class=\"editor-module__btn editor-module__btn--secondary\">🎲 Randomize Sound</button>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Basic Parameters</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Waveform:</label>\r\n                <select id=\"waveform\" class=\"editor-module__select\">\r\n                    <option value=\"sine\">Sine</option>\r\n                    <option value=\"square\">Square</option>\r\n                    <option value=\"sawtooth\">Sawtooth</option>\r\n                    <option value=\"triangle\">Triangle</option>\r\n                    <option value=\"noise\">Noise</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Frequency: <span class=\"audio-editor__value-display\">440 Hz</span></label>\r\n                <input type=\"range\" id=\"frequency\" class=\"editor-module__range\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Duration: <span class=\"audio-editor__value-display\">1.00 s</span></label>\r\n                <input type=\"range\" id=\"duration\" class=\"editor-module__range\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Volume: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"volume\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Noise Generator</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Type:</label>\r\n                <select id=\"noiseType\" class=\"editor-module__select\">\r\n                    <option value=\"white\">White</option>\r\n                    <option value=\"pink\">Pink</option>\r\n                    <option value=\"brown\">Brown</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Amount: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"noiseAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter:</label>\r\n                <select id=\"noiseFilterType\" class=\"editor-module__select\">\r\n                    <option value=\"none\">None</option>\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter Freq: <span class=\"audio-editor__value-display\">2000 Hz</span></label>\r\n                <input type=\"range\" id=\"noiseFilterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Envelope (ADSR)</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Attack: <span class=\"audio-editor__value-display\">0.010 s</span></label>\r\n                <input type=\"range\" id=\"attack\" class=\"editor-module__range\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Decay: <span class=\"audio-editor__value-display\">0.10 s</span></label>\r\n                <input type=\"range\" id=\"decay\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Sustain: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"sustain\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Release: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"release\" class=\"editor-module__range\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Pitch Envelope</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Start: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvStart\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">End: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvEnd\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Effects</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Type:</label>\r\n                <select id=\"filterType\" class=\"editor-module__select\">\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                    <option value=\"notch\">Notch</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Frequency: <span class=\"audio-editor__value-display\">1000 Hz</span></label>\r\n                <input type=\"range\" id=\"filterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Q: <span class=\"audio-editor__value-display\">Q: 1.0</span></label>\r\n                <input type=\"range\" id=\"filterQ\" class=\"editor-module__range\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Distortion: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"distortion\" class=\"editor-module__range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Time: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"delayTime\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Feedback: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"delayFeedback\" class=\"editor-module__range\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Reverb: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"reverbAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Bitcrusher: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"bitcrusher\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Panning: <span class=\"audio-editor__value-display\">Center</span></label>\r\n                <input type=\"range\" id=\"panning\" class=\"editor-module__range\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"editor-module__canvas-area audio-editor__waveform-display\">\r\n        <!-- Waveform visualization will go here -->\r\n    </div>\r\n</div>\r\n"
+    "sceneEditor": {
+      "title": "Scene Editor",
+      "modals": [],
+      "fileName": "sceneEditor",
+      "css": "/* =============================================================================\r\n   SCENE EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Scene view */\r\n.scene-editor__scene-view {\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden;\r\n}\r\n\r\n#scene-canvas-container {\r\n    width: 100%;\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n#scene-editor-canvas {\r\n    cursor: crosshair;\r\n    outline: none;\r\n}\r\n\r\n/* No selection message */\r\n.scene-editor__no-selection {\r\n    text-align: center;\r\n    padding: var(--editor-spacing-xl);\r\n    color: var(--editor-text-muted);\r\n    font-style: italic;\r\n}\r\n\r\n/* Hierarchy item */\r\n.scene-editor__hierarchy-item {\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    cursor: pointer;\r\n    border-left: 2px solid transparent;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.scene-editor__hierarchy-item:hover {\r\n    background-color: rgba(255, 255, 255, 0.05);\r\n}\r\n\r\n.scene-editor__hierarchy-item--selected {\r\n    background-color: var(--editor-primary);\r\n    border-left-color: var(--editor-primary-hover);\r\n    color: white;\r\n}\r\n\r\n/* Component styling */\r\n.scene-editor__component {\r\n    background-color: var(--editor-bg-light);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    margin-bottom: var(--editor-spacing-md);\r\n    padding: var(--editor-spacing-md);\r\n}\r\n\r\n.scene-editor__component-header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    margin-bottom: var(--editor-spacing-sm);\r\n    font-weight: 600;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
+      "filePath": "/global/interfaces/html/sceneEditor.html",
+      "html": "<div id=\"scene-editor-container\" class=\"editor-module\">\r\n   <div id=\"scene-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n      <h2 class=\"editor-module__panel-title\">Hierarchy</h2>\r\n      <div id=\"scene-hierarchy\" class=\"editor-module__list editor-module__scroll-y\">\r\n        <!-- Entities will be populated here -->\r\n      </div>\r\n      <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n        <select id=\"scene-addPrefabSelect\" class=\"editor-module__select\"></select>\r\n        <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"scene-addPrefabBtn\">+ Add Prefab</button>\r\n        <button class=\"editor-module__btn editor-module__btn--danger\" id=\"scene-removePrefabBtn\">Remove Selected Prefab</button>\r\n      </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area\">\r\n      <div class=\"editor-module__toolbar\">\r\n        <button id=\"scene-translate-tool\" class=\"editor-module__btn editor-module__btn--active\" title=\"Translate (G)\">\r\n            <span>Move</span>\r\n        </button>\r\n        <button id=\"scene-rotate-tool\" class=\"editor-module__btn\" title=\"Rotate (R)\">\r\n            <span>Rotate</span>\r\n        </button>\r\n        <button id=\"scene-scale-tool\" class=\"editor-module__btn\" title=\"Scale (S)\">\r\n            <span>Scale</span>\r\n        </button>\r\n      </div>\r\n      <div id=\"scene-view\" class=\"scene-editor__scene-view\">\r\n         <div id=\"scene-canvas-container\" class=\"editor-module__grid-background\">\r\n            <canvas id=\"scene-editor-canvas\" class=\"editor-module__canvas\"></canvas>\r\n         </div>\r\n      </div>\r\n   </div>\r\n\r\n   <div id=\"scene-inspector\" class=\"editor-module__sidebar editor-module__sidebar--right\">\r\n      <h2 class=\"editor-module__panel-title\">Inspector</h2>\r\n      <div class=\"editor-module__scroll-y\">\r\n        <div class=\"scene-editor__no-selection\" id=\"scene-noSelection\">\r\n          No entity selected\r\n        </div>\r\n        <div id=\"scene-entityInspector\" style=\"display: none;\">\r\n          <div id=\"scene-components\">\r\n            <!-- Components will be added here dynamically -->\r\n          </div>\r\n          <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"addComponentBtn\">+ Add Component</button>\r\n        </div>\r\n      </div>\r\n   </div>\r\n</div>\r\n"
     },
     "TextureEditor": {
       "title": "Texture Editor",
@@ -369,14 +369,6 @@ window.COMPILED_GAME = {
       "importName": "PointerLockControls",
       "fileName": "three_PointerLockControls"
     },
-    "BaseECSGame": {
-      "filePath": "/global/libraries/js/BaseECSGame.js",
-      "fileName": "BaseECSGame"
-    },
-    "BaseSystem": {
-      "filePath": "/global/libraries/js/BaseSystem.js",
-      "fileName": "BaseSystem"
-    },
     "three_RenderPixelatedPass": {
       "title": "THREE.RenderPixelatedPass",
       "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/RenderPixelatedPass.js",
@@ -386,25 +378,33 @@ window.COMPILED_GAME = {
       "importName": "RenderPixelatedPass",
       "fileName": "three_RenderPixelatedPass"
     },
+    "BaseECSGame": {
+      "filePath": "/global/libraries/js/BaseECSGame.js",
+      "fileName": "BaseECSGame"
+    },
+    "BaseSystem": {
+      "filePath": "/global/libraries/js/BaseSystem.js",
+      "fileName": "BaseSystem"
+    },
     "ClientNetworkManager": {
       "filePath": "/global/libraries/js/ClientNetworkManager.js",
       "fileName": "ClientNetworkManager"
-    },
-    "Compiler": {
-      "filePath": "/global/libraries/js/Compiler.js",
-      "fileName": "Compiler"
     },
     "CompilerModule": {
       "filePath": "/global/libraries/js/CompilerModule.js",
       "fileName": "CompilerModule"
     },
-    "ECSGame": {
-      "filePath": "/global/libraries/js/ECSGame.js",
-      "fileName": "ECSGame"
+    "Compiler": {
+      "filePath": "/global/libraries/js/Compiler.js",
+      "fileName": "Compiler"
     },
     "ECGame": {
       "filePath": "/global/libraries/js/ECGame.js",
       "fileName": "ECGame"
+    },
+    "ECSGame": {
+      "filePath": "/global/libraries/js/ECSGame.js",
+      "fileName": "ECSGame"
     },
     "GameLoader": {
       "filePath": "/global/libraries/js/GameLoader.js",
@@ -418,13 +418,21 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/InputManager.js",
       "fileName": "InputManager"
     },
+    "InstancePool": {
+      "filePath": "/global/libraries/js/InstancePool.js",
+      "fileName": "InstancePool"
+    },
     "MultiplayerECSGame": {
       "filePath": "/global/libraries/js/MultiplayerECSGame.js",
       "fileName": "MultiplayerECSGame"
     },
-    "InstancePool": {
-      "filePath": "/global/libraries/js/InstancePool.js",
-      "fileName": "InstancePool"
+    "PerformanceProfiler": {
+      "filePath": "/global/libraries/js/PerformanceProfiler.js",
+      "fileName": "PerformanceProfiler"
+    },
+    "SceneEditor": {
+      "filePath": "/global/libraries/js/SceneEditor.js",
+      "fileName": "SceneEditor"
     },
     "SceneManager": {
       "filePath": "/global/libraries/js/SceneManager.js",
@@ -466,17 +474,13 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/SE_GizmoManager.js",
       "fileName": "SE_GizmoManager"
     },
-    "PerformanceProfiler": {
-      "filePath": "/global/libraries/js/PerformanceProfiler.js",
-      "fileName": "PerformanceProfiler"
-    },
-    "SceneEditor": {
-      "filePath": "/global/libraries/js/SceneEditor.js",
-      "fileName": "SceneEditor"
-    },
     "AIPromptPanel": {
       "fileName": "AIPromptPanel",
       "filePath": "/global/libraries/js/AIPromptPanel.js"
+    },
+    "AudioEditor": {
+      "fileName": "AudioEditor",
+      "filePath": "/global/libraries/js/AudioEditor.js"
     },
     "BufferGeometryUtils": {
       "title": "THREE.BufferGeometryUtils",
@@ -487,26 +491,44 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/BufferGeometryUtils.js",
       "fileName": "BufferGeometryUtils"
     },
-    "ExportScripts": {
-      "fileName": "ExportScripts",
-      "filePath": "/global/libraries/js/ExportScripts.js"
+    "AmmoWorker": {
+      "fileName": "AmmoWorker",
+      "filePath": "/global/libraries/js/AmmoWorker.js"
     },
     "CanvasUtility": {
       "fileName": "CanvasUtility",
       "filePath": "/global/libraries/js/CanvasUtility.js"
     },
-    "AudioEditor": {
-      "fileName": "AudioEditor",
-      "filePath": "/global/libraries/js/AudioEditor.js"
-    },
-    "GE_GroupManager": {
-      "title": "GE_GroupManager",
-      "fileName": "GE_GroupManager",
-      "filePath": "/global/libraries/js/GE_GroupManager.js"
-    },
     "Component": {
       "fileName": "Component",
       "filePath": "/global/libraries/js/Component.js"
+    },
+    "CoordinateTranslator": {
+      "fileName": "CoordinateTranslator",
+      "filePath": "/global/libraries/js/CoordinateTranslator.js"
+    },
+    "Entity": {
+      "fileName": "Entity",
+      "filePath": "/global/libraries/js/Entity.js"
+    },
+    "ExportScripts": {
+      "fileName": "ExportScripts",
+      "filePath": "/global/libraries/js/ExportScripts.js"
+    },
+    "GE_GizmoManager": {
+      "title": "GE_GizmoManager",
+      "fileName": "GE_GizmoManager",
+      "filePath": "/global/libraries/js/GE_GizmoManager.js"
+    },
+    "GE_AnimationManager": {
+      "title": "GE_AnimationManager",
+      "fileName": "GE_AnimationManager",
+      "filePath": "/global/libraries/js/GE_AnimationManager.js"
+    },
+    "GE_EventManager": {
+      "title": "GE_EventManager",
+      "fileName": "GE_EventManager",
+      "filePath": "/global/libraries/js/GE_EventManager.js"
     },
     "GE_EquipmentEditor": {
       "title": "GE_EquipmentEditor",
@@ -518,56 +540,47 @@ window.COMPILED_GAME = {
       "fileName": "GE_RotationUtils",
       "filePath": "/global/libraries/js/GE_RotationUtils.js"
     },
-    "GE_SceneRenderer": {
-      "title": "GE_SceneRenderer",
-      "fileName": "GE_SceneRenderer",
-      "filePath": "/global/libraries/js/GE_SceneRenderer.js"
-    },
-    "GE_EventManager": {
-      "title": "GE_EventManager",
-      "fileName": "GE_EventManager",
-      "filePath": "/global/libraries/js/GE_EventManager.js"
+    "GameState": {
+      "fileName": "GameState",
+      "filePath": "/global/libraries/js/GameState.js"
     },
     "GE_ShapeManager": {
       "title": "GE_ShapeManager",
       "fileName": "GE_ShapeManager",
       "filePath": "/global/libraries/js/GE_ShapeManager.js"
     },
-    "GE_GizmoManager": {
-      "title": "GE_GizmoManager",
-      "fileName": "GE_GizmoManager",
-      "filePath": "/global/libraries/js/GE_GizmoManager.js"
-    },
-    "AmmoWorker": {
-      "fileName": "AmmoWorker",
-      "filePath": "/global/libraries/js/AmmoWorker.js"
-    },
-    "GE_AnimationManager": {
-      "title": "GE_AnimationManager",
-      "fileName": "GE_AnimationManager",
-      "filePath": "/global/libraries/js/GE_AnimationManager.js"
+    "GE_SceneRenderer": {
+      "title": "GE_SceneRenderer",
+      "fileName": "GE_SceneRenderer",
+      "filePath": "/global/libraries/js/GE_SceneRenderer.js"
     },
     "GE_UIManager": {
       "title": "GE_UIManager",
       "fileName": "GE_UIManager",
       "filePath": "/global/libraries/js/GE_UIManager.js"
     },
-    "Entity": {
-      "fileName": "Entity",
-      "filePath": "/global/libraries/js/Entity.js"
+    "GE_GroupManager": {
+      "title": "GE_GroupManager",
+      "fileName": "GE_GroupManager",
+      "filePath": "/global/libraries/js/GE_GroupManager.js"
     },
-    "GameState": {
-      "fileName": "GameState",
-      "filePath": "/global/libraries/js/GameState.js"
+    "RapierWorker": {
+      "fileName": "RapierWorker",
+      "script": "",
+      "filePath": "/global/libraries/js/RapierWorker.js"
     },
-    "CoordinateTranslator": {
-      "fileName": "CoordinateTranslator",
-      "filePath": "/global/libraries/js/CoordinateTranslator.js"
+    "NetworkManager": {
+      "fileName": "NetworkManager",
+      "filePath": "/global/libraries/js/NetworkManager.js"
     },
     "GraphicsEditor": {
       "fileName": "GraphicsEditor",
       "title": "GraphicsEditor",
       "filePath": "/global/libraries/js/GraphicsEditor.js"
+    },
+    "ImageManager": {
+      "fileName": "ImageManager",
+      "filePath": "/global/libraries/js/ImageManager.js"
     },
     "GLTFLoader": {
       "title": "GLTF Loader",
@@ -578,18 +591,10 @@ window.COMPILED_GAME = {
       "fileName": "GLTFLoader",
       "filePath": "/global/libraries/js/GLTFLoader.js"
     },
-    "ImageManager": {
-      "fileName": "ImageManager",
-      "filePath": "/global/libraries/js/ImageManager.js"
-    },
     "ModelManager": {
       "title": "ModelManager",
       "fileName": "ModelManager",
       "filePath": "/global/libraries/js/ModelManager.js"
-    },
-    "NetworkManager": {
-      "fileName": "NetworkManager",
-      "filePath": "/global/libraries/js/NetworkManager.js"
     },
     "PhysicsEngine": {
       "title": "PhysicsEngine",
@@ -600,32 +605,36 @@ window.COMPILED_GAME = {
       "fileName": "ShapeFactory",
       "filePath": "/global/libraries/js/ShapeFactory.js"
     },
-    "RapierWorker": {
-      "fileName": "RapierWorker",
-      "script": "",
-      "filePath": "/global/libraries/js/RapierWorker.js"
+    "TextureEditor": {
+      "title": "TextureEditor",
+      "fileName": "TextureEditor",
+      "filePath": "/global/libraries/js/TextureEditor.js"
     },
-    "ScriptEditor": {
-      "fileName": "ScriptEditor",
-      "filePath": "/global/libraries/js/ScriptEditor.js"
+    "TerrainImageProcessor": {
+      "fileName": "TerrainImageProcessor",
+      "filePath": "/global/libraries/js/TerrainImageProcessor.js"
+    },
+    "SpatialGrid": {
+      "fileName": "SpatialGrid",
+      "filePath": "/global/libraries/js/SpatialGrid.js"
+    },
+    "TerrainGenerator": {
+      "title": "TerrainGenerator",
+      "fileName": "TerrainGenerator",
+      "filePath": "/global/libraries/js/TerrainGenerator.js"
     },
     "SimplexNoise": {
       "title": "SimplexNoise",
       "fileName": "SimplexNoise",
       "filePath": "/global/libraries/js/SimplexNoise.js"
     },
-    "SpatialGrid": {
-      "fileName": "SpatialGrid",
-      "filePath": "/global/libraries/js/SpatialGrid.js"
-    },
     "TerrainMapEditor": {
       "fileName": "TerrainMapEditor",
       "filePath": "/global/libraries/js/TerrainMapEditor.js"
     },
-    "TextureEditor": {
-      "title": "TextureEditor",
-      "fileName": "TextureEditor",
-      "filePath": "/global/libraries/js/TextureEditor.js"
+    "ScriptEditor": {
+      "fileName": "ScriptEditor",
+      "filePath": "/global/libraries/js/ScriptEditor.js"
     },
     "three-nebula": {
       "fileName": "three-nebula",
@@ -658,15 +667,6 @@ window.COMPILED_GAME = {
       "fileName": "ZipExporter",
       "filePath": "/global/libraries/js/ZipExporter.js"
     },
-    "TerrainImageProcessor": {
-      "fileName": "TerrainImageProcessor",
-      "filePath": "/global/libraries/js/TerrainImageProcessor.js"
-    },
-    "TerrainGenerator": {
-      "title": "TerrainGenerator",
-      "fileName": "TerrainGenerator",
-      "filePath": "/global/libraries/js/TerrainGenerator.js"
-    },
     "DesyncDebugger": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/DesyncDebugger.js",
       "fileName": "DesyncDebugger"
@@ -691,13 +691,13 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
       "fileName": "MinHeap"
     },
-    "PlacementPreview": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
-      "fileName": "PlacementPreview"
-    },
     "NotificationSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/NotificationSystem.js",
       "fileName": "NotificationSystem"
+    },
+    "PlacementPreview": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
+      "fileName": "PlacementPreview"
     },
     "UIComponents": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/UIComponents.js",
@@ -711,23 +711,17 @@ window.COMPILED_GAME = {
       "html": "\r\n<h4 id=\"formTitle\">Add Terrain Type</h4>\r\n<input type=\"hidden\" id=\"editingType\" value=\"\">\r\n<div class=\"form-group\">\r\n    <label for=\"terrainType\">Type:</label>\r\n    <input type=\"text\" id=\"terrainType\" placeholder=\"grass, water, etc.\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainColor\">Color:</label>\r\n    <input type=\"text\" id=\"terrainColorText\">\r\n    <input type=\"color\" id=\"terrainColor\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainImage\">Sprite Sheet:</label>\r\n    <input type=\"textarea\" id=\"terrainImage\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainTexture\">Texture:</label>\r\n    <select id=\"terrainTexture\"></select>\r\n</div>\r\n<div class=\"form-group\">\r\n    <img id=\"terrain-image-display\" alt=\"Terrain Image\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainBuildable\">Buildable:</label>\r\n    <input type=\"checkbox\" id=\"terrainBuildable\">\r\n</div>\r\n<div class=\"form-actions\">\r\n    <button id=\"saveTerrainBtn\" class=\"primary\">Save</button>\r\n    <button id=\"cancelTerrainBtn\">Cancel</button>\r\n</div>\r\n<input type=\"hidden\" id=\"editingId\">\r\n",
       "filePath": "/global/modals/html/addTerrainType.html"
     },
-    "compilerModal": {
-      "title": "Compiler Modal",
-      "fileName": "compilerModal",
-      "filePath": "/global/modals/html/compilerModal.html",
-      "html": "\n<div class=\"modal-header\">\n    <h2>Compile Game</h2>\n</div>\n<div class=\"modal-body\">\n    <div class=\"form-group\">\n        <label>\n            <input type=\"checkbox\" id=\"compileIncludeMetadata\" />\n            Include metadata file\n        </label>\n    </div>\n    <div class=\"form-group\">\n        <label>\n            <input type=\"checkbox\" id=\"compileCreateZip\" />\n            Download as zip file\n        </label>\n    </div>\n    <div class=\"compilation-output\" id=\"compilationOutput\" style=\"display: none;\">\n        <h3>Output:</h3>\n        <pre id=\"compilationLog\"></pre>\n    </div>\n</div>\n<div class=\"modal-footer\">\n    <button class=\"btn btn-primary\" onclick=\"window.compilerModule.compile()\">\n        Compile\n    </button>\n    <button class=\"btn btn-secondary\" onclick=\"this.closest('.modal').classList.remove('show')\">\n        Cancel\n    </button>\n</div>"
-    },
     "aiPromptPanel": {
       "title": "AI Prompt Panel",
       "fileName": "aiPromptPanel",
       "html": "<h2>AI Object Generator</h2>\r\n                <div class=\"form-group\">\r\n                    <label for=\"ai-prompt-textarea\">Prompt:</label>\r\n                    <textarea id=\"ai-prompt-textarea\" rows=\"6\" placeholder=\"Enter your AI generation prompt\"></textarea>\r\n                    <textarea id=\"ai-pre-prompt-textarea\" rows=\"6\" placeholder=\"context\"></textarea>\r\n                </div>\r\n                <div class=\"actions\">\r\n                    <button id=\"send-ai-prompt-btn\" class=\"primary\">Send to AI</button>\r\n                    <button id=\"close-ai-prompt-modal\">Cancel</button>\r\n                </div>\r\n                <div class=\"preview-section\">\r\n                    <h3>AI Response Preview</h3>\r\n                    <textarea id=\"ai-response-preview\" rows=\"6\"></textarea>\r\n                    <div class=\"preview-actions\">\r\n                        <button id=\"apply-ai-response-btn\" class=\"primary\" style=\"display:none;\">Apply Response</button>\r\n                    </div>\r\n                </div>",
       "filePath": "/global/modals/html/aiPromptPanel.html"
     },
-    "moveAllShapes": {
-      "title": "Move All Shapes",
-      "fileName": "moveAllShapes",
-      "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n",
-      "filePath": "/global/modals/html/moveAllShapes.html"
+    "compilerModal": {
+      "title": "Compiler Modal",
+      "fileName": "compilerModal",
+      "filePath": "/global/modals/html/compilerModal.html",
+      "html": "\n<div class=\"modal-header\">\n    <h2>Compile Game</h2>\n</div>\n<div class=\"modal-body\">\n    <div class=\"form-group\">\n        <label>\n            <input type=\"checkbox\" id=\"compileIncludeMetadata\" />\n            Include metadata file\n        </label>\n    </div>\n    <div class=\"form-group\">\n        <label>\n            <input type=\"checkbox\" id=\"compileCreateZip\" />\n            Download as zip file\n        </label>\n    </div>\n    <div class=\"compilation-output\" id=\"compilationOutput\" style=\"display: none;\">\n        <h3>Output:</h3>\n        <pre id=\"compilationLog\"></pre>\n    </div>\n</div>\n<div class=\"modal-footer\">\n    <button class=\"btn btn-primary\" onclick=\"window.compilerModule.compile()\">\n        Compile\n    </button>\n    <button class=\"btn btn-secondary\" onclick=\"this.closest('.modal').classList.remove('show')\">\n        Cancel\n    </button>\n</div>"
     },
     "generateIsometric": {
       "title": "Generate Isometric Sprites",
@@ -735,23 +729,33 @@ window.COMPILED_GAME = {
       "html": " <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>                 <div class=\"form-row\">                     <label for=\"iso-frustum\">Frustum Size:</label>                     <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">                 </div>                 <div class=\"form-row\">                     <label for=\"iso-distance\">Distance:</label>                     <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">                 </div>                 <div class=\"form-row\">                     <label for=\"iso-size\">Sprite Size:</label>                     <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">                 </div>                 <div style=\"display: flex; gap: 10px; margin-top: 20px;\">                     <button id=\"iso-cancel\">Cancel</button>                     <button id=\"iso-generate\">Generate</button>                 </div>           ",
       "filePath": "/global/modals/html/generateIsometric.html"
     },
+    "generateIsoSprites": {
+      "title": "Generate Spritesheet",
+      "fileName": "generateIsoSprites",
+      "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n",
+      "filePath": "/global/modals/html/generateIsoSprites.html"
+    },
     "rotateShapes": {
       "title": "Rotate Shapes",
       "fileName": "rotateShapes",
       "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n",
       "filePath": "/global/modals/html/rotateShapes.html"
     },
-    "generateIsoSprites": {
-      "title": "Generate Spritesheet",
-      "fileName": "generateIsoSprites",
-      "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n",
-      "filePath": "/global/modals/html/generateIsoSprites.html"
+    "moveAllShapes": {
+      "title": "Move All Shapes",
+      "fileName": "moveAllShapes",
+      "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n",
+      "filePath": "/global/modals/html/moveAllShapes.html"
     }
   },
   "renderers": {
     "MapRenderer": {
       "filePath": "/global/renderers/js/MapRenderer.js",
       "fileName": "MapRenderer"
+    },
+    "Health": {
+      "fileName": "Health",
+      "filePath": "/global/renderers/js/Health.js"
     },
     "ModelRenderer": {
       "title": "Model Renderer",
@@ -762,18 +766,14 @@ window.COMPILED_GAME = {
     "Renderer": {
       "fileName": "Renderer",
       "filePath": "/global/renderers/js/Renderer.js"
-    },
-    "Health": {
-      "fileName": "Health",
-      "filePath": "/global/renderers/js/Health.js"
     }
   },
   "themes": {
-    "codeMirrorTheme": {
-      "title": "Code - Ez On Eyes",
-      "fileName": "codeMirrorTheme",
-      "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/codeMirrorTheme.css"
+    "aurora": {
+      "title": "Aurora",
+      "fileName": "aurora",
+      "css": "/* Aurora Theme - Modern gradient-based design for GUTS Editor */\r\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');\r\n\r\n:root {\r\n  /* Override editor module variables with Aurora theme */\r\n  --editor-primary: #10b981;\r\n  --editor-primary-hover: #059669;\r\n  --editor-secondary: #3b82f6;\r\n  --editor-secondary-hover: #2563eb;\r\n  --editor-danger: #f43f5e;\r\n  --editor-danger-hover: #e11d48;\r\n  --editor-success: #10b981;\r\n  --editor-warning: #f59e0b;\r\n\r\n  /* Aurora-specific colors */\r\n  --aurora-teal: #14b8a6;\r\n  --aurora-blue: #0ea5e9;\r\n  --aurora-purple: #8b5cf6;\r\n  --aurora-pink: #ec4899;\r\n\r\n  /* Background layers - darker for comfort */\r\n  --editor-bg-dark: #050810;\r\n  --editor-bg-medium: #0a0e1a;\r\n  --editor-bg-light: #0f172a;\r\n  --editor-bg-lighter: #1e293b;\r\n\r\n  /* Text colors - softer for eyes */\r\n  --editor-text-primary: #cbd5e1;\r\n  --editor-text-secondary: #94a3b8;\r\n  --editor-text-muted: #64748b;\r\n\r\n  /* Borders */\r\n  --editor-border-color: rgba(20, 184, 166, 0.12);\r\n  --editor-border-color-hover: rgba(20, 184, 166, 0.25);\r\n\r\n  /* Shadows with aurora glow - softer */\r\n  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);\r\n  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);\r\n  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);\r\n  --aurora-glow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  --aurora-glow-strong: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Base body with aurora gradient background - darker and subtle */\r\nbody {\r\n  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\r\n  background-color: var(--editor-bg-dark);\r\n  color: var(--editor-text-primary);\r\n  background-image:\r\n    radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 60%);\r\n  background-attachment: fixed;\r\n}\r\n\r\n/* Monospace font for code */\r\ninput[type=\"text\"],\r\ntextarea,\r\n.editor-module__textarea,\r\n.script-editor__code {\r\n  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;\r\n}\r\n\r\n/* Force dark backgrounds on all inputs - easy on the eyes */\r\ninput,\r\ntextarea,\r\nselect,\r\n.editor-module__input,\r\n.editor-module__textarea,\r\n.editor-module__select,\r\ninput[type=\"text\"],\r\ninput[type=\"number\"],\r\ninput[type=\"email\"],\r\ninput[type=\"password\"],\r\ninput[type=\"search\"],\r\ninput[type=\"url\"] {\r\n  background-color: var(--editor-bg-dark) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n/* Darker background for color pickers */\r\ninput[type=\"color\"],\r\n.editor-module__color-picker {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n}\r\n\r\n/* Sidebar styling with aurora glow */\r\n.sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Main editor area */\r\n.editor {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n/* Object items in sidebar - softer colors */\r\n.object-item {\r\n  background-color: transparent;\r\n  border-left: 2px solid transparent;\r\n  color: var(--editor-text-muted);\r\n  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\r\n}\r\n\r\n.object-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.05);\r\n  border-left-color: rgba(16, 185, 129, 0.5);\r\n  color: var(--editor-text-secondary);\r\n  transform: translateX(3px);\r\n}\r\n\r\n.object-item.selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);\r\n  border-left-color: var(--editor-primary);\r\n  color: var(--editor-text-primary);\r\n  box-shadow: var(--aurora-glow);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Buttons with aurora styling - much darker and easier on eyes */\r\nbutton {\r\n  font-family: 'Inter', sans-serif;\r\n  font-weight: 500;\r\n  text-transform: none;\r\n  letter-spacing: 0.02em;\r\n  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\nbutton:hover {\r\n  transform: translateY(-1px);\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\nbutton:active {\r\n  transform: translateY(0);\r\n}\r\n\r\nbutton.primary {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\nbutton.primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.18) !important;\r\n  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\nbutton.danger {\r\n  background-color: rgba(244, 63, 94, 0.08) !important;\r\n  border-color: rgba(244, 63, 94, 0.3) !important;\r\n  color: rgba(244, 63, 94, 0.75) !important;\r\n}\r\n\r\nbutton.danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n/* Editor module buttons - much darker with !important to override base styles */\r\n.editor-module__btn {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n.editor-module__btn--primary {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.editor-module__btn--primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--secondary {\r\n  background-color: rgba(59, 130, 246, 0.12) !important;\r\n  border-color: rgba(59, 130, 246, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--secondary:hover {\r\n  background-color: rgba(59, 130, 246, 0.18) !important;\r\n  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--active {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.5) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;\r\n}\r\n\r\n.editor-module__btn--danger {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  border-color: rgba(244, 63, 94, 0.35) !important;\r\n  color: rgba(244, 63, 94, 0.85) !important;\r\n}\r\n\r\n.editor-module__btn--danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.18) !important;\r\n  border-color: rgba(244, 63, 94, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--success {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--success:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--warning {\r\n  background-color: rgba(245, 158, 11, 0.12) !important;\r\n  border-color: rgba(245, 158, 11, 0.35) !important;\r\n  color: rgba(245, 158, 11, 0.9) !important;\r\n}\r\n\r\n.editor-module__btn--warning:hover {\r\n  background-color: rgba(245, 158, 11, 0.18) !important;\r\n  border-color: rgba(245, 158, 11, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--small {\r\n  background-color: rgba(15, 23, 42, 0.5) !important;\r\n}\r\n\r\n.editor-module__btn--small:hover {\r\n  background-color: rgba(15, 23, 42, 0.7) !important;\r\n}\r\n\r\n.editor-module__btn--icon {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn--icon:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n/* Form inputs with aurora accent - soft glow on focus */\r\ninput:focus,\r\ntextarea:focus,\r\nselect:focus,\r\n.editor-module__input:focus,\r\n.editor-module__select:focus,\r\n.editor-module__textarea:focus {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border-color: var(--editor-primary) !important;\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;\r\n  outline: none !important;\r\n}\r\n\r\n/* Range sliders - darker */\r\n.editor-module__range::-webkit-slider-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n.editor-module__range::-moz-range-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Modal styling */\r\n.modal {\r\n  background-color: rgba(10, 14, 26, 0.75);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n.modal-content {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-lg), var(--aurora-glow);\r\n}\r\n\r\n/* Property list and panels */\r\n.property-list {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n}\r\n\r\n.editor-module__panel {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n\r\n/* Section titles with aurora accent - softer */\r\n.editor-module__section-title,\r\n.editor-module__panel-title {\r\n  color: var(--editor-text-primary);\r\n  position: relative;\r\n  padding-bottom: 8px;\r\n}\r\n\r\n.editor-module__section-title::after,\r\n.editor-module__panel-title::after {\r\n  content: '';\r\n  position: absolute;\r\n  bottom: 0;\r\n  left: 0;\r\n  width: 40px;\r\n  height: 2px;\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), transparent);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n/* Items with aurora hover effect - subtle */\r\n.editor-module__item:hover {\r\n  background-color: rgba(16, 185, 129, 0.04);\r\n  border-color: var(--editor-border-color-hover);\r\n  box-shadow: none;\r\n}\r\n\r\n.editor-module__item--active,\r\n.editor-module__item--selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Toolbar styling */\r\n.toolbar,\r\n.editor-module__toolbar {\r\n  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.8));\r\n  border-bottom: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Grid background with aurora tint */\r\n.grid-background,\r\n.editor-module__grid-background {\r\n  background-image:\r\n    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),\r\n    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);\r\n  background-size: 20px 20px;\r\n}\r\n\r\n/* Status bar */\r\n.editor-module__status-bar {\r\n  background: linear-gradient(90deg, rgba(10, 14, 26, 0.9), rgba(15, 23, 42, 0.9));\r\n  border-top: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n/* Success messages */\r\n.success-message,\r\n.editor-module__message--success {\r\n  color: var(--editor-primary);\r\n  background-color: rgba(16, 185, 129, 0.1);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Warning messages */\r\n.warning,\r\n.editor-module__message--warning {\r\n  color: var(--editor-warning);\r\n  background-color: rgba(245, 158, 11, 0.1);\r\n  border-color: var(--editor-warning);\r\n}\r\n\r\n/* Instructions */\r\n.instructions {\r\n  background-color: rgba(59, 130, 246, 0.08);\r\n  border-left: 3px solid var(--editor-secondary);\r\n}\r\n\r\n/* Scrollbar styling - darker */\r\n::-webkit-scrollbar {\r\n  width: 8px;\r\n  height: 8px;\r\n}\r\n\r\n::-webkit-scrollbar-track {\r\n  background: var(--editor-bg-dark);\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n  background: rgba(16, 185, 129, 0.25);\r\n  border-radius: 4px;\r\n  box-shadow: none;\r\n}\r\n\r\n::-webkit-scrollbar-thumb:hover {\r\n  background: rgba(16, 185, 129, 0.35);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Canvas containers */\r\n#three-js-container,\r\n.preview-canvas-container {\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Camera controls */\r\n.camera-controls {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Content sidebars */\r\n.content-sidebar,\r\n.editor-module__sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n.editor-module__sidebar--right {\r\n  border-right: none;\r\n  border-left: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset 1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Shape list items */\r\n.shape-item,\r\n.graphics-editor__shape-item,\r\n.graphics-editor__group-item {\r\n  border-left-color: rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n.shape-item:hover,\r\n.graphics-editor__shape-item:hover,\r\n.graphics-editor__group-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.08);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Active/selected state - Aurora theme colors (teal/green glow) */\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),\r\n.terrain-editor__environment-item.active,\r\n.terrain-editor__environment-item--active,\r\n.editor-module__selectable-item.active,\r\n.editor-module__selectable-item--active {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.4) !important;\r\n  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;\r\n}\r\n\r\n.terrain-editor__color-option.active,\r\n.terrain-editor__color-option--active {\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;\r\n}\r\n\r\n/* Audio editor value displays */\r\n.audio-editor__value-display {\r\n  color: var(--editor-primary);\r\n  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);\r\n}\r\n\r\n/* Animations - disabled pulsing for comfort */\r\n@keyframes aurora-pulse {\r\n  0%, 100% {\r\n    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  }\r\n  50% {\r\n    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);\r\n  }\r\n}\r\n\r\n/* Removed automatic pulsing animation for eye comfort */\r\n/* .editor-module__btn--primary:hover,\r\n.editor-module__item--active,\r\n.object-item.selected {\r\n  animation: aurora-pulse 2s ease-in-out infinite;\r\n} */\r\n\r\n/* Typography enhancements */\r\nh1, h2, h3, h4 {\r\n  color: var(--editor-text-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n/* Labels */\r\nlabel,\r\n.editor-module__label {\r\n  color: var(--editor-text-secondary);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Info boxes */\r\n.editor-module__info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Scene info */\r\n.scene-info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n",
+      "filePath": "/global/themes/css/aurora.css"
     },
     "claude2": {
       "title": "Claude 2",
@@ -781,17 +781,23 @@ window.COMPILED_GAME = {
       "css": "/* Professional Theme - Clean UI */ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');  :root {   --bg-primary: #16192e;   --bg-secondary: #1d2035;   --bg-tertiary: #252a43;   --accent-primary: #4d7cff;   --accent-muted: rgba(77, 124, 255, 0.15);   --text-primary: #e9edf5;   --text-secondary: #a9b1c3;   --border-color: rgba(108, 123, 163, 0.25);   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25); }  body {   font-family: 'Inter', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6; }  /* Sidebar styling */ .sidebar {   background-color: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: none;   letter-spacing: 0.2px;   color: var(--text-secondary);   font-weight: 400;   transition: all 0.2s ease;   padding: 10px 14px;   margin-bottom: 2px; }  .object-item:hover {   background-color: var(--bg-tertiary);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary); }  .object-item.selected {   background-color: var(--accent-muted);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   font-weight: 500; }  /* Editor area */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #three-js-container {   border: 1px solid var(--border-color);   border-radius: 4px;   background: var(--bg-primary); }  .preview-canvas-container {   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-color);   border-radius: 2px; }  /* Camera controls */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px; }  .camera-controls button {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   color: var(--text-primary);   border-radius: 3px;   padding: 8px 12px;   transition: all 0.2s ease; }  .camera-controls button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .camera-controls .color-picker {   border: 1px solid var(--border-color);   border-radius: 3px; }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-color);   border-radius: 3px;   height: 5px; }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   border-radius: 50%;   cursor: pointer; }  /* Form elements */ label {   font-weight: 500;   color: var(--text-primary);   margin-bottom: 6px;   display: block;   font-size: 0.875rem; }  input, textarea, select {   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   border-radius: 3px;   width: calc(100% - 24px);  padding: 8px 12px;   transition: all 0.2s ease;   font-family: 'IBM Plex Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 2px var(--accent-muted); }  /* Button styles */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease; }  button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  button.primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  button.primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6;   box-shadow: var(--shadow-sm); }  button.danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  button.danger:hover {   background-color: rgba(235, 68, 68, 0.25);   box-shadow: var(--shadow-sm); }  button.active {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  /* Modal styling */ .modal {   background-color: rgba(22, 25, 46, 0.8); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-md);   border-radius: 4px; }  .property-list {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   border-radius: 4px; }  /* Tab navigation */ .tab-navigation {   border-bottom: 1px solid var(--border-color);   display: flex;   padding: 0 4px; }  .tab {   padding: 10px 16px;   color: var(--text-secondary);   transition: all 0.2s ease; }  .tab:hover {   background-color: var(--bg-tertiary);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 500;   border-bottom: 2px solid var(--accent-primary); }  /* Info and warning boxes */ .instructions {   background-color: var(--bg-tertiary);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .success-message {   color: #34c79a;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(235, 68, 68, 0.1);   border-left: 3px solid #eb4444;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  /* Main containers */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  #graphics-rightbar {   background: var(--bg-secondary);   border-left: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(108, 123, 163, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(108, 123, 163, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar */ .toolbar {   background: var(--bg-secondary);   border-bottom: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations */ .btn {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease;   font-size: 0.875rem; }  .btn:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  .btn-primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6; }  .btn-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  .btn-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  .btn-secondary {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color); }  .btn-secondary:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-special {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  .btn-special:hover {   background-color: rgba(52, 199, 154, 0.25); }  /* Shape list */ #shape-list {   border-bottom: 1px solid var(--border-color);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 3px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.2s ease;   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .shape-item.active {   background-color: rgba(52, 199, 154, 0.1);   border-color: #34c79a;   color: #34c79a;   font-weight: 500; }  /* Inspector panel */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-color);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--text-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   padding: 8px 12px;   border-radius: 3px; }  /* Scene info */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px 16px;   margin-bottom: 16px; }  .button-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444;   padding: 8px 14px;   border-radius: 3px;   font-weight: 500;   transition: all 0.2s ease; }  .button-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  /* Typography */ h2, h3 {   color: var(--text-primary);   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-color);   font-weight: 600; }  /* Scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(108, 123, 163, 0.5);   border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {   background: rgba(108, 123, 163, 0.7); }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/claude2.css"
     },
-    "aurora": {
-      "title": "Aurora",
-      "fileName": "aurora",
-      "css": "/* Aurora Theme - Modern gradient-based design for GUTS Editor */\r\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');\r\n\r\n:root {\r\n  /* Override editor module variables with Aurora theme */\r\n  --editor-primary: #10b981;\r\n  --editor-primary-hover: #059669;\r\n  --editor-secondary: #3b82f6;\r\n  --editor-secondary-hover: #2563eb;\r\n  --editor-danger: #f43f5e;\r\n  --editor-danger-hover: #e11d48;\r\n  --editor-success: #10b981;\r\n  --editor-warning: #f59e0b;\r\n\r\n  /* Aurora-specific colors */\r\n  --aurora-teal: #14b8a6;\r\n  --aurora-blue: #0ea5e9;\r\n  --aurora-purple: #8b5cf6;\r\n  --aurora-pink: #ec4899;\r\n\r\n  /* Background layers - darker for comfort */\r\n  --editor-bg-dark: #050810;\r\n  --editor-bg-medium: #0a0e1a;\r\n  --editor-bg-light: #0f172a;\r\n  --editor-bg-lighter: #1e293b;\r\n\r\n  /* Text colors - softer for eyes */\r\n  --editor-text-primary: #cbd5e1;\r\n  --editor-text-secondary: #94a3b8;\r\n  --editor-text-muted: #64748b;\r\n\r\n  /* Borders */\r\n  --editor-border-color: rgba(20, 184, 166, 0.12);\r\n  --editor-border-color-hover: rgba(20, 184, 166, 0.25);\r\n\r\n  /* Shadows with aurora glow - softer */\r\n  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);\r\n  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);\r\n  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);\r\n  --aurora-glow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  --aurora-glow-strong: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Base body with aurora gradient background - darker and subtle */\r\nbody {\r\n  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\r\n  background-color: var(--editor-bg-dark);\r\n  color: var(--editor-text-primary);\r\n  background-image:\r\n    radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 60%);\r\n  background-attachment: fixed;\r\n}\r\n\r\n/* Monospace font for code */\r\ninput[type=\"text\"],\r\ntextarea,\r\n.editor-module__textarea,\r\n.script-editor__code {\r\n  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;\r\n}\r\n\r\n/* Force dark backgrounds on all inputs - easy on the eyes */\r\ninput,\r\ntextarea,\r\nselect,\r\n.editor-module__input,\r\n.editor-module__textarea,\r\n.editor-module__select,\r\ninput[type=\"text\"],\r\ninput[type=\"number\"],\r\ninput[type=\"email\"],\r\ninput[type=\"password\"],\r\ninput[type=\"search\"],\r\ninput[type=\"url\"] {\r\n  background-color: var(--editor-bg-dark) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n/* Darker background for color pickers */\r\ninput[type=\"color\"],\r\n.editor-module__color-picker {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n}\r\n\r\n/* Sidebar styling with aurora glow */\r\n.sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Main editor area */\r\n.editor {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n/* Object items in sidebar - softer colors */\r\n.object-item {\r\n  background-color: transparent;\r\n  border-left: 2px solid transparent;\r\n  color: var(--editor-text-muted);\r\n  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\r\n}\r\n\r\n.object-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.05);\r\n  border-left-color: rgba(16, 185, 129, 0.5);\r\n  color: var(--editor-text-secondary);\r\n  transform: translateX(3px);\r\n}\r\n\r\n.object-item.selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);\r\n  border-left-color: var(--editor-primary);\r\n  color: var(--editor-text-primary);\r\n  box-shadow: var(--aurora-glow);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Buttons with aurora styling - much darker and easier on eyes */\r\nbutton {\r\n  font-family: 'Inter', sans-serif;\r\n  font-weight: 500;\r\n  text-transform: none;\r\n  letter-spacing: 0.02em;\r\n  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\nbutton:hover {\r\n  transform: translateY(-1px);\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\nbutton:active {\r\n  transform: translateY(0);\r\n}\r\n\r\nbutton.primary {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\nbutton.primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.18) !important;\r\n  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\nbutton.danger {\r\n  background-color: rgba(244, 63, 94, 0.08) !important;\r\n  border-color: rgba(244, 63, 94, 0.3) !important;\r\n  color: rgba(244, 63, 94, 0.75) !important;\r\n}\r\n\r\nbutton.danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n/* Editor module buttons - much darker with !important to override base styles */\r\n.editor-module__btn {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n.editor-module__btn--primary {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.editor-module__btn--primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--secondary {\r\n  background-color: rgba(59, 130, 246, 0.12) !important;\r\n  border-color: rgba(59, 130, 246, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--secondary:hover {\r\n  background-color: rgba(59, 130, 246, 0.18) !important;\r\n  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--active {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.5) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;\r\n}\r\n\r\n.editor-module__btn--danger {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  border-color: rgba(244, 63, 94, 0.35) !important;\r\n  color: rgba(244, 63, 94, 0.85) !important;\r\n}\r\n\r\n.editor-module__btn--danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.18) !important;\r\n  border-color: rgba(244, 63, 94, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--success {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--success:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--warning {\r\n  background-color: rgba(245, 158, 11, 0.12) !important;\r\n  border-color: rgba(245, 158, 11, 0.35) !important;\r\n  color: rgba(245, 158, 11, 0.9) !important;\r\n}\r\n\r\n.editor-module__btn--warning:hover {\r\n  background-color: rgba(245, 158, 11, 0.18) !important;\r\n  border-color: rgba(245, 158, 11, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--small {\r\n  background-color: rgba(15, 23, 42, 0.5) !important;\r\n}\r\n\r\n.editor-module__btn--small:hover {\r\n  background-color: rgba(15, 23, 42, 0.7) !important;\r\n}\r\n\r\n.editor-module__btn--icon {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn--icon:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n/* Form inputs with aurora accent - soft glow on focus */\r\ninput:focus,\r\ntextarea:focus,\r\nselect:focus,\r\n.editor-module__input:focus,\r\n.editor-module__select:focus,\r\n.editor-module__textarea:focus {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border-color: var(--editor-primary) !important;\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;\r\n  outline: none !important;\r\n}\r\n\r\n/* Range sliders - darker */\r\n.editor-module__range::-webkit-slider-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n.editor-module__range::-moz-range-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Modal styling */\r\n.modal {\r\n  background-color: rgba(10, 14, 26, 0.75);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n.modal-content {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-lg), var(--aurora-glow);\r\n}\r\n\r\n/* Property list and panels */\r\n.property-list {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n}\r\n\r\n.editor-module__panel {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n\r\n/* Section titles with aurora accent - softer */\r\n.editor-module__section-title,\r\n.editor-module__panel-title {\r\n  color: var(--editor-text-primary);\r\n  position: relative;\r\n  padding-bottom: 8px;\r\n}\r\n\r\n.editor-module__section-title::after,\r\n.editor-module__panel-title::after {\r\n  content: '';\r\n  position: absolute;\r\n  bottom: 0;\r\n  left: 0;\r\n  width: 40px;\r\n  height: 2px;\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), transparent);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n/* Items with aurora hover effect - subtle */\r\n.editor-module__item:hover {\r\n  background-color: rgba(16, 185, 129, 0.04);\r\n  border-color: var(--editor-border-color-hover);\r\n  box-shadow: none;\r\n}\r\n\r\n.editor-module__item--active,\r\n.editor-module__item--selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Toolbar styling */\r\n.toolbar,\r\n.editor-module__toolbar {\r\n  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.8));\r\n  border-bottom: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Grid background with aurora tint */\r\n.grid-background,\r\n.editor-module__grid-background {\r\n  background-image:\r\n    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),\r\n    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);\r\n  background-size: 20px 20px;\r\n}\r\n\r\n/* Status bar */\r\n.editor-module__status-bar {\r\n  background: linear-gradient(90deg, rgba(10, 14, 26, 0.9), rgba(15, 23, 42, 0.9));\r\n  border-top: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n/* Success messages */\r\n.success-message,\r\n.editor-module__message--success {\r\n  color: var(--editor-primary);\r\n  background-color: rgba(16, 185, 129, 0.1);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Warning messages */\r\n.warning,\r\n.editor-module__message--warning {\r\n  color: var(--editor-warning);\r\n  background-color: rgba(245, 158, 11, 0.1);\r\n  border-color: var(--editor-warning);\r\n}\r\n\r\n/* Instructions */\r\n.instructions {\r\n  background-color: rgba(59, 130, 246, 0.08);\r\n  border-left: 3px solid var(--editor-secondary);\r\n}\r\n\r\n/* Scrollbar styling - darker */\r\n::-webkit-scrollbar {\r\n  width: 8px;\r\n  height: 8px;\r\n}\r\n\r\n::-webkit-scrollbar-track {\r\n  background: var(--editor-bg-dark);\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n  background: rgba(16, 185, 129, 0.25);\r\n  border-radius: 4px;\r\n  box-shadow: none;\r\n}\r\n\r\n::-webkit-scrollbar-thumb:hover {\r\n  background: rgba(16, 185, 129, 0.35);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Canvas containers */\r\n#three-js-container,\r\n.preview-canvas-container {\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Camera controls */\r\n.camera-controls {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Content sidebars */\r\n.content-sidebar,\r\n.editor-module__sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n.editor-module__sidebar--right {\r\n  border-right: none;\r\n  border-left: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset 1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Shape list items */\r\n.shape-item,\r\n.graphics-editor__shape-item,\r\n.graphics-editor__group-item {\r\n  border-left-color: rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n.shape-item:hover,\r\n.graphics-editor__shape-item:hover,\r\n.graphics-editor__group-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.08);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Active/selected state - Aurora theme colors (teal/green glow) */\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),\r\n.terrain-editor__environment-item.active,\r\n.terrain-editor__environment-item--active,\r\n.editor-module__selectable-item.active,\r\n.editor-module__selectable-item--active {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.4) !important;\r\n  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;\r\n}\r\n\r\n.terrain-editor__color-option.active,\r\n.terrain-editor__color-option--active {\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;\r\n}\r\n\r\n/* Audio editor value displays */\r\n.audio-editor__value-display {\r\n  color: var(--editor-primary);\r\n  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);\r\n}\r\n\r\n/* Animations - disabled pulsing for comfort */\r\n@keyframes aurora-pulse {\r\n  0%, 100% {\r\n    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  }\r\n  50% {\r\n    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);\r\n  }\r\n}\r\n\r\n/* Removed automatic pulsing animation for eye comfort */\r\n/* .editor-module__btn--primary:hover,\r\n.editor-module__item--active,\r\n.object-item.selected {\r\n  animation: aurora-pulse 2s ease-in-out infinite;\r\n} */\r\n\r\n/* Typography enhancements */\r\nh1, h2, h3, h4 {\r\n  color: var(--editor-text-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n/* Labels */\r\nlabel,\r\n.editor-module__label {\r\n  color: var(--editor-text-secondary);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Info boxes */\r\n.editor-module__info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Scene info */\r\n.scene-info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n",
-      "filePath": "/global/themes/css/aurora.css"
-    },
     "cyberpunk": {
       "title": "Cyber Punk",
       "fileName": "cyberpunk",
       "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/cyberpunk.css"
+    },
+    "codeMirrorTheme": {
+      "title": "Code - Ez On Eyes",
+      "fileName": "codeMirrorTheme",
+      "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/codeMirrorTheme.css"
+    },
+    "Neon Dune": {
+      "title": "Neon Dune",
+      "fileName": "Neon Dune",
+      "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/Neon Dune.css"
     },
     "medieval": {
       "title": "Medieval",
@@ -811,29 +817,23 @@ window.COMPILED_GAME = {
       "css": "/* Professional Cyberpunk Variation - Warm Edition */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #2b1e1e; /* Deep reddish-brown */     color: #f4e1d2; /* Soft cream for text */     line-height: 1.6; }  .sidebar {     background-color: rgba(54, 36, 36, 0.95); /* Muted dark red */     border: 1px solid #7a4e4e; /* Subtle reddish-gray */     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.2); }  .object-item {     background-color: rgba(54, 36, 36, 0.8);     border-left: 2px solid #d97706; /* Warm amber */     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(217, 119, 6, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(217, 119, 6, 0.25);     border-left: 3px solid #d97706;     box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); }  .editor {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #three-js-container {     border: 1px solid rgba(122, 78, 78, 0.6); }  .preview-canvas-container {     border: 1px solid #d97706;     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1); }  .preview {     background-color: rgba(54, 36, 36, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(122, 78, 78, 0.5); }  .camera-controls {     background: rgba(46, 28, 28, 0.9); /* Darker reddish tint */     border: 1px solid #7a4e4e; }  .camera-controls button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .camera-controls .color-picker {     border: 1px solid #7a4e4e; }  .camera-controls .size-slider {     background: #3a2424;     border: 1px solid #7a4e4e; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #d97706; /* Amber for labels */ }  input, textarea, select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #d97706;     box-shadow: 0 0 8px rgba(217, 119, 6, 0.3); }  button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  button.primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  button.danger {     background-color: rgba(220, 38, 38, 0.3); /* Softer red */     border: 1px solid #dc2626;     color: #f4e1d2; }  button.danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  button.active {     border: 1px solid #10b981; /* Emerald green for active state */     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);     color: #10b981; }  .modal {     background-color: rgba(46, 28, 28, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 8px 24px rgba(122, 78, 78, 0.2); }  .property-list {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8); }  .tab-navigation {     border-bottom: 1px solid #7a4e4e; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(122, 78, 78, 0.2); }  .tab.active {     border-bottom: 2px solid #d97706;     box-shadow: 0 4px 8px -4px rgba(217, 119, 6, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(54, 36, 36, 0.8);     border-left: 3px solid #d97706;     box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }  #grid-display {     background-color: rgba(46, 28, 28, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .success-message {     color: #10b981; /* Emerald green for success */     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(220, 38, 38, 0.15);     border-left: 3px solid #dc2626;     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1); }  .main-content-container {     background-color: #332121; /* Slightly lighter reddish-brown */     color: #f4e1d2; }  .content-sidebar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-right: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-left: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .grid-background {     background: #2b1e1e;     background-image: radial-gradient(rgba(122, 78, 78, 0.15) 1px, transparent 1px);     background-size:30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-bottom: 1px solid #7a4e4e; }  .btn {     border: 1px solid #7a4e4e;     background-color: rgba(122, 78, 78, 0.3);     color: #f4e1d2;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  .btn-primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  .btn-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .btn-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  .btn-secondary {     background-color: rgba(122, 78, 78, 0.25);     border: 1px solid #7a4e4e; }  .btn-secondary:hover {     background-color: rgba(122, 78, 78, 0.4);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .btn-special {     background-color: rgba(16, 185, 129, 0.3);     border: 1px solid #10b981;     color: #f4e1d2; }  .btn-special:hover {     background-color: rgba(16, 185, 129, 0.5);     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(122, 78, 78, 0.3); }  .shape-item {     background-color: rgba(54, 36, 36, 0.8);     border: 1px solid #7a4e4e;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(122, 78, 78, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(16, 185, 129, 0.15);     border-color: #10b981;     color: #10b981;     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }  #inspector {     background: rgba(54, 36, 36, 0.95);     border-top: 1px solid #7a4e4e; }  .form-row label {     color: #d97706; }  .form-row input, .form-row select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1); }  .scene-info {     background: rgba(46, 28, 28, 0.9prisma);     color: #f4e1d2;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15);     border: 1px solid #7a4e4e; }  .button-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .button-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  h2, h3 {     color: #d97706;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #7a4e4e;     text-shadow: 0 0 4px rgba(217, 119, 6, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(54, 36, 36, 0.8); }  ::-webkit-scrollbar-thumb {     background: #7a4e4e;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #d97706; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/professional2.css"
     },
-    "Neon Dune": {
-      "title": "Neon Dune",
-      "fileName": "Neon Dune",
-      "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/Neon Dune.css"
-    },
     "professional3": {
       "title": "Claude",
       "fileName": "professional3",
       "css": "/* Eclipse Theme - A premium dark UI experience */ @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');  :root {   --bg-primary: #0f111a;   --bg-secondary: #141725;   --bg-tertiary: #1a1d2d;   --accent-primary: #7c4dff;   --accent-secondary: #00bcd4;   --accent-tertiary: #ff4081;   --text-primary: #eceff1;   --text-secondary: #b0bec5;   --border-light: rgba(99, 114, 166, 0.25);   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);   --gradient-bg: linear-gradient(135deg, rgba(20, 23, 37, 0.95), rgba(15, 17, 26, 0.95));   --gradient-accent: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }  body {   font-family: 'Space Grotesk', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6;   transition: background-color 0.3s ease;   background-image:      radial-gradient(circle at 15% 15%, rgba(124, 77, 255, 0.08) 0%, transparent 25%),     radial-gradient(circle at 85% 85%, rgba(0, 188, 212, 0.08) 0%, transparent 25%); }  /* Modern sidebar with glassmorphism effect */ .sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--text-secondary);   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   margin-bottom: 4px;   border-radius: 0 4px 4px 0; }  .object-item:hover {   background-color: rgba(124, 77, 255, 0.1);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   transform: translateX(2px); }  .object-item.selected {   background: linear-gradient(90deg, rgba(124, 77, 255, 0.15), rgba(124, 77, 255, 0.05));   border-left: 3px solid var(--accent-primary);   color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   font-weight: 600; }  /* Editor area with polished look */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  #three-js-container {   border: 1px solid var(--border-light);   border-radius: 6px;   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.2);   background: rgba(15, 17, 26, 0.5); }  .preview-canvas-container {   border: 1px solid var(--accent-primary);   box-shadow: 0 0 16px rgba(124, 77, 255, 0.15);   border-radius: 6px;   overflow: hidden; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-light);   border-radius: 4px; }  /* Enhanced camera controls with dynamic hover effects */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px;   box-shadow: var(--shadow-sm); }  .camera-controls button {   background-color: rgba(99, 114, 166, 0.15);   border: 1px solid var(--border-light);   color: var(--text-primary);   border-radius: 4px;   padding: 8px 12px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .camera-controls button:hover {   background-color: rgba(124, 77, 255, 0.15);   border-color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   transform: translateY(-2px) scale(1.02); }  .camera-controls button:active {   transform: translateY(1px); }  .camera-controls .color-picker {   border: 1px solid var(--border-light);   border-radius: 4px;   overflow: hidden;   box-shadow: var(--shadow-sm); }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-light);   border-radius: 4px;   height: 6px;   box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2); }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.4);   border-radius: 50%;   cursor: pointer;   transition: all 0.2s ease; }  .camera-controls .size-slider::-webkit-slider-thumb:hover {   transform: scale(1.2); }  /* Form elements with attractive focus states */ label {   font-weight: 500;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--accent-primary);   margin-bottom: 6px;   display: block;   font-size: 0.85rem; }  input, textarea, select {   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   border-radius: 4px;   padding: 10px 12px;   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);   transition: all 0.3s ease;   font-family: 'JetBrains Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);   background-color: rgba(20, 23, 37, 0.8); }  /* Modern button styles with micro-interactions */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden; }  button:hover {   background-color: rgba(99, 114, 166, 0.2);   border-color: var(--border-light);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);   transform: translateY(-2px); }  button:active {   transform: translateY(1px); }  button::after {   content: '';   position: absolute;   top: 50%;   left: 50%;   width: 100%;   height: 100%;   background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);   transform: scale(0);   opacity: 0;   transition: transform 0.5s, opacity 0.3s;   pointer-events: none; }  button:active::after {   transform: scale(2);   opacity: 1;   transition: 0s; }  button.primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  button.primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.3); }  button.primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  button.primary:hover::before {   opacity: 0.1; }  button.danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  button.danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  button.active {   border: 1px solid var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.3);   color: var(--accent-secondary);   background-color: rgba(0, 188, 212, 0.15); }  /* Modal with glassmorphism effect */ .modal {   background-color: rgba(15, 17, 26, 0.7);   backdrop-filter: blur(8px);   -webkit-backdrop-filter: blur(8px); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-lg);   border-radius: 8px;   overflow: hidden;   animation: modalAppear 0.3s ease; }  @keyframes modalAppear {   from {     opacity: 0;     transform: scale(0.95) translateY(-10px);   }   to {     opacity: 1;     transform: scale(1) translateY(0);   } }  .property-list {   border: 1px solid var(--border-light);   background-color: var(--bg-tertiary);   border-radius: 6px;   overflow: hidden; }  /* Tab navigation with smooth transitions */ .tab-navigation {   border-bottom: 1px solid var(--border-light);   display: flex;   gap: 4px;   padding: 0 6px; }  .tab {   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   color: var(--text-secondary);   position: relative;   transition: all 0.3s ease;   border-radius: 4px 4px 0 0; }  .tab:hover {   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 600;   background-color: rgba(124, 77, 255, 0.05); }  .tab.active::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   right: 0;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Stylized instructions and warnings */ .instructions {   background-color: rgba(124, 77, 255, 0.05);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .instructions::before {   content: 'i';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: var(--accent-primary);   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   font-style: italic;   color: white;   font-size: 14px; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  .success-message {   color: #4caf50;   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px;   background-color: rgba(76, 175, 80, 0.1);   border-radius: 4px;   display: inline-block; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(244, 67, 54, 0.1);   border-left: 3px solid #f44336;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .warning::before {   content: '!';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: #f44336;   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   color: white;   font-size: 14px; }  /* Content containers with subtle gradients */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  #graphics-rightbar {   background: var(--gradient-bg);   border-left: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(99, 114, 166, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(99, 114, 166, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar with subtle glassmorphism */ .toolbar {   background: var(--gradient-bg);   border-bottom: 1px solid var(--border-light);   box-shadow: var(--shadow-sm);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations with consistent styling */ .btn {   border: 1px solid var(--border-light);   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 8px 14px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden;   font-size: 0.85rem; }  .btn:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);   transform: translateY(-2px); }  .btn:active {   transform: translateY(1px); }  .btn-primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  .btn-primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.2); }  .btn-primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  .btn-primary:hover::before {   opacity: 0.1; }  .btn-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  .btn-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  .btn-secondary {   background-color: rgba(99, 114, 166, 0.1);   border: 1px solid var(--border-light); }  .btn-secondary:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }  .btn-special {   background-color: rgba(0, 188, 212, 0.15);   border: 1px solid var(--accent-secondary);   color: var(--accent-secondary); }  .btn-special:hover {   background-color: rgba(0, 188, 212, 0.25);   box-shadow: 0 4px 16px rgba(0, 188, 212, 0.2); }  /* Shape list with improved visual hierarchy */ #shape-list {   border-bottom: 1px solid var(--border-light);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 4px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: rgba(99, 114, 166, 0.15);   transform: translateX(3px);   border-color: var(--border-light); }  .shape-item.active {   background-color: rgba(0, 188, 212, 0.1);   border-color: var(--accent-secondary);   color: var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.15);   font-weight: 500; }  /* Inspector panel with clean design */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-light);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--accent-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   padding: 10px 12px;   border-radius: 4px; }  /* Scene info with modern styling */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px 16px;   margin-bottom: 16px;   box-shadow: var(--shadow-sm); }  .button-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336;   padding: 10px 16px;   border-radius: 4px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .button-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2);   transform: translateY(-2px); }  /* Typography improvements */ h2, h3 {   color: var(--accent-primary);   text-transform: uppercase;   letter-spacing: 1px;   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-light);   font-weight: 600;   text-shadow: 0 0 20px rgba(124, 77, 255, 0.3);   position: relative; }  h2::after, h3::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   width: 50px;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Sleek scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(124, 77, 255, 0.3);   border-radius: 3px;   border: 1px solid var(--bg-tertiary); }  ::-webkit-scrollbar-thumb:hover {   background: var(--accent-primary); }  /* Animations and transitions */ @keyframes pulse {   0% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.4); }   70% { box-shadow: 0 0 0 10px rgba(124, 77, 255, 0); }   100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0); } }  .pulse-animation {   animation: pulse 2s infinite; }  /* Tooltips */ [data-tooltip] {   position: relative; }  [data-tooltip]::after {   content: attr(data-tooltip);   position: absolute;   bottom: 125%;   left: 50%;   transform: translateX(-50%);   padding: 6px 10px;   background: var(--bg-tertiary);   color: var(--text-primary);   border-radius: 4px;   font-size: 0.75rem;   white-space: nowrap;   opacity: 0;   visibility: hidden;   transition: all 0.3s ease;   z-index: 100;   box-shadow: var(--shadow-md);   border: 1px solid var(--border-light); }  [data-tooltip]:hover::after {   opacity: 1;   visibility: visible; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/professional3.css"
     },
-    "scifi2": {
-      "title": "SciFi2.0",
-      "fileName": "scifi2",
-      "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/scifi2.css"
-    },
     "videogame": {
       "title": "Video Game",
       "fileName": "videogame",
       "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');  body {     font-family: 'Orbitron', 'Share Tech Mono', sans-serif;     background-color: #0a0a0a; /* Deep black */     color: #00d4ff; /* Neon blue */     overflow: hidden; }  .sidebar {     background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(155, 0, 255, 0.1)); /* Black to purple fade */     border: 1px solid #ff007a; /* Hot pink */     box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(155, 0, 255, 0.3); }  .inventory-item {     background-color: rgba(12, 12, 12, 0.7);     border-left: 3px solid #9b00ff; /* Electric purple */     text-transform: uppercase;     letter-spacing: 2px;     transition: all 0.2s ease; }  .inventory-item:hover {     background-color: rgba(0, 212, 255, 0.2);     transform: scale(1.03);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }  .inventory-item.active {     background-color: rgba(255, 0, 122, 0.3); /* Pink glow */     border-left: 5px solid #ff007a;     box-shadow: 0 0 15px rgba(255, 0, 122, 0.8); }  .hud {     background: rgba(10, 10, 10, 0.8);     border: 1px solid #00d4ff;     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }  #game-canvas {     border: 1px dashed #c0c0c0; /* Silver dashed */     background: radial-gradient(circle, rgba(155, 0, 255, 0.1), transparent); }  .hologram-display {     border: 2px solid #9b00ff;     box-shadow: 0 0 25px rgba(155, 0, 255, 0.6);     animation: pulseGlow 2s infinite alternate; }  @keyframes pulseGlow {     0% { box-shadow: 0 0 25px rgba(155, 0, 255, 0.6); }     100% { box-shadow: 0 0 35px rgba(155, 0, 255, 0.9); } }  .control-panel {     background: rgba(0, 0, 0, 0.85);     border: 1px solid #c0c0c0; }  .control-panel button {     background-color: rgba(0, 212, 255, 0.2);     border: 1px solid #00d4ff;     color: #fff;     text-transform: uppercase;     transition: all 0.3s ease; }  .control-panel button:hover {     background-color: rgba(0, 212, 255, 0.4);     box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);     transform: translateY(-3px); }  label {     color: #ff007a; /* Hot pink */     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1.5px; }  input, textarea, select {     border: 1px solid #9b00ff;     background-color: rgba(10, 10, 10, 0.7);     color: #00d4ff;     box-shadow: 0 0 8px rgba(155, 0, 255, 0.4); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #ff007a;     box-shadow: 0 0 12px rgba(255, 0, 122, 0.7); }  button {     background-color: rgba(155, 0, 255, 0.2);     border: 1px solid #9b00ff;     color: #fff;     text-transform: uppercase;     letter-spacing: 1px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(155, 0, 255, 0.4);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.7);     transform: translateY(-2px) scale(1.05); }  button.primary {     background-color: rgba(0, 212, 255, 0.3);     border: 1px solid #00d4ff;     color: #fff; }  button.primary:hover {     background-color: rgba(0, 212, 255, 0.5);     box-shadow: 0 0 20px rgba(0, 212, 255, 0.9); }  button.alert {     background-color: rgba(255, 0, 122, 0.2);     border: 1px solid #ff007a;     color: #fff; }  button.alert:hover {     background-color: rgba(255, 0, 122, 0.4);     box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }  .modal {     background: rgba(0, 0, 0, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background: linear-gradient(45deg, rgba(10, 10, 10, 0.9), rgba(0, 212, 255, 0.1));     border: 1px solid #00d4ff;     box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }  .notification {     background-color: rgba(155, 0, 255, 0.3);     border-left: 4px solid #9b00ff;     color: #fff;     animation: slideIn 0.5s ease-out; }  @keyframes slideIn {     0% { transform: translateX(100%); opacity: 0; }     100% { transform: translateX(0); opacity: 1; } }  .main-content {     background: #0a0a0a;     animation: glitch 4s infinite; }   .grid-overlay {     background: repeating-linear-gradient(45deg, rgba(155, 0, 255, 0.05), rgba(155, 0, 255, 0.05) 10px, transparent 10px, transparent 20px); }  .btn {     border: 1px solid #c0c0c0;     background-color: rgba(0, 212, 255, 0.15);     color: #fff; }  .btn:hover {     background-color: rgba(0, 212, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }  .btn-primary {     background-color: rgba(9b, 0, 255, 0.25);     border: 1px solid #9b00ff; }  .btn-primary:hover {     background-color: rgba(155, 0, 255, 0.45);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.8); }  ::-webkit-scrollbar {     width: 6px; }  ::-webkit-scrollbar-track {     background: #0a0a0a; }  ::-webkit-scrollbar-thumb {     background: #00d4ff;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #ff007a; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/videogame.css"
+    },
+    "scifi2": {
+      "title": "SciFi2.0",
+      "fileName": "scifi2",
+      "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/scifi2.css"
     },
     "videoGame2": {
       "title": "Video Game 2",
@@ -843,40 +843,6 @@ window.COMPILED_GAME = {
     }
   },
   "attackSounds": {
-    "laser": {
-      "title": "Laser",
-      "audio": {
-        "waveform": "triangle",
-        "frequency": 197,
-        "duration": 0.1,
-        "envelope": {
-          "attack": 0.001,
-          "decay": 0.076,
-          "sustain": 0.5,
-          "release": 0.001
-        },
-        "pitchEnvelope": {
-          "start": 3.41,
-          "end": 0.23,
-          "time": 0.1
-        },
-        "effects": {
-          "filter": {
-            "type": "lowpass",
-            "frequency": 400,
-            "Q": 1
-          },
-          "distortion": 5,
-          "delay": {
-            "time": 0.27,
-            "feedback": 0.09
-          },
-          "reverb": 0,
-          "bitcrusher": 0,
-          "pan": 0
-        }
-      }
-    },
     "gunshot": {
       "title": "GunShot",
       "audio": {
@@ -961,8 +927,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "plasma": {
-      "title": "Plasma",
+    "laser": {
+      "title": "Laser",
       "audio": {
         "waveform": "triangle",
         "frequency": 197,
@@ -980,14 +946,14 @@ window.COMPILED_GAME = {
         },
         "effects": {
           "filter": {
-            "type": "highpass",
-            "frequency": 4000,
+            "type": "lowpass",
+            "frequency": 400,
             "Q": 1
           },
           "distortion": 5,
           "delay": {
-            "time": 0,
-            "feedback": 0
+            "time": 0.27,
+            "feedback": 0.09
           },
           "reverb": 0,
           "bitcrusher": 0,
@@ -1025,6 +991,40 @@ window.COMPILED_GAME = {
           },
           "reverb": 0.05,
           "bitcrusher": 0.5,
+          "pan": 0
+        }
+      }
+    },
+    "plasma": {
+      "title": "Plasma",
+      "audio": {
+        "waveform": "triangle",
+        "frequency": 197,
+        "duration": 0.1,
+        "envelope": {
+          "attack": 0.001,
+          "decay": 0.076,
+          "sustain": 0.5,
+          "release": 0.001
+        },
+        "pitchEnvelope": {
+          "start": 3.41,
+          "end": 0.23,
+          "time": 0.1
+        },
+        "effects": {
+          "filter": {
+            "type": "highpass",
+            "frequency": 4000,
+            "Q": 1
+          },
+          "distortion": 5,
+          "delay": {
+            "time": 0,
+            "feedback": 0
+          },
+          "reverb": 0,
+          "bitcrusher": 0,
           "pan": 0
         }
       }
@@ -1332,13 +1332,13 @@ window.COMPILED_GAME = {
     }
   },
   "animations": {
-    "1h_spell_throw": {
-      "title": "1h_spell_throw",
-      "file": "animations/1h_spell_throw.glb"
-    },
     "1h_axe_swing": {
       "title": "1h_axe_swing",
       "file": "animations/1h_axe_swing.glb"
+    },
+    "1h_spell_throw": {
+      "title": "1h_spell_throw",
+      "file": "animations/1h_spell_throw.glb"
     },
     "2h_slash": {
       "title": "2h_slash",
@@ -1348,25 +1348,25 @@ window.COMPILED_GAME = {
       "title": "2h_spell_blast",
       "file": "animations/2h_spell_blast.glb"
     },
-    "2h_spell_cast": {
-      "title": "2h_spell_cast",
-      "file": "animations/2h_spell_cast.glb"
-    },
     "2h_spell_calldown": {
       "title": "2h_spell_calldown",
       "file": "animations/2h_spell_calldown.glb"
+    },
+    "2h_spell_cast": {
+      "title": "2h_spell_cast",
+      "file": "animations/2h_spell_cast.glb"
     },
     "2h_spell_slam": {
       "title": "2h_spell_slam",
       "file": "animations/2h_spell_slam.glb"
     },
-    "dance_gangnamstyle": {
-      "title": "GangnamStyle",
-      "file": "animations/dance_gangnamstyle.glb"
-    },
     "2h_spell_summon": {
       "title": "2h_spell_summon",
       "file": "animations/2h_spell_summon.glb"
+    },
+    "dance_gangnamstyle": {
+      "title": "GangnamStyle",
+      "file": "animations/dance_gangnamstyle.glb"
     },
     "dance_thriller": {
       "title": "Dance Thriller",
@@ -1392,13 +1392,13 @@ window.COMPILED_GAME = {
       "title": "hovering",
       "file": "animations/hovering.glb"
     },
-    "idle": {
-      "title": "idle",
-      "file": "animations/idle.glb"
-    },
     "mutant_idle": {
       "title": "mutant_idle",
       "file": "animations/mutant_idle.glb"
+    },
+    "idle": {
+      "title": "idle",
+      "file": "animations/idle.glb"
     },
     "mutant_run": {
       "title": "mutant_run",
@@ -1412,13 +1412,13 @@ window.COMPILED_GAME = {
       "title": "mutant_walk",
       "file": "animations/mutant_walk.glb"
     },
-    "shooting_arrow": {
-      "title": "shooting_arrow",
-      "file": "animations/shooting_arrow.glb"
-    },
     "running_with_2h": {
       "title": "running_with_2h",
       "file": "animations/running_with_2h.glb"
+    },
+    "shooting_arrow": {
+      "title": "shooting_arrow",
+      "file": "animations/shooting_arrow.glb"
     },
     "swimming": {
       "title": "swimming",
@@ -1459,18 +1459,18 @@ window.COMPILED_GAME = {
       "stat": "speed",
       "lifeTime": 100
     },
+    "spellDamage": {
+      "title": "Spell Damage",
+      "description": "",
+      "type": "upgrade",
+      "value": 10
+    },
     "weaken": {
       "id": "weaken",
       "title": "Weakened",
       "desc": "Target's armor is reduced",
       "stat": "armor",
       "lifeTime": 100
-    },
-    "spellDamage": {
-      "title": "Spell Damage",
-      "description": "",
-      "type": "upgrade",
-      "value": 10
     }
   },
   "models": {
@@ -1856,79 +1856,6 @@ window.COMPILED_GAME = {
     }
   },
   "buildings": {
-    "sentryTower": {
-      "title": "Sentry Tower",
-      "info": "A structure that fires arrows.",
-      "value": 50,
-      "category": "attribute",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ],
-          "underConstruction": [
-            {
-              "shapes": {
-                "shapes": [
-                  {
-                    "color": {
-                      "paletteColor": "blueDColor"
-                    },
-                    "url": "models/underConstruction/underConstruction.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
-                "metalness": 0,
-                "roughness": 1,
-                "x": 0,
-                "z": 0,
-                "scaleX": 1,
-                "name": "foundation",
-                "url": "models/mage_tower/mage_tower.glb"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 2,
-              "y": 2,
-              "z": 2
-            }
-          }
-        }
-      },
-      "units": [],
-      "footprintWidth": 2,
-      "footprintHeight": 2,
-      "height": 100,
-      "size": 50,
-      "icon": "unit_archer",
-      "damage": 20,
-      "attackSpeed": 1,
-      "range": 300,
-      "projectile": "arrow",
-      "element": "physical",
-      "hp": 500
-    },
     "barracks": {
       "title": "Barracks",
       "info": "Strength based training.",
@@ -2230,6 +2157,77 @@ window.COMPILED_GAME = {
       },
       "size": 75
     },
+    "goldMine": {
+      "title": "Gold Mine",
+      "info": "Mine gold veins",
+      "value": 50,
+      "category": "attribute",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ],
+          "underConstruction": [
+            {
+              "shapes": {
+                "shapes": [
+                  {
+                    "color": {
+                      "paletteColor": "blueDColor"
+                    },
+                    "url": "models/underConstruction/underConstruction.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "metalness": 0,
+                "roughness": 1,
+                "x": 0,
+                "z": 0,
+                "scaleX": 1,
+                "name": "foundation",
+                "url": "models/goldmine/goldmine.glb"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.5,
+              "y": 1.5,
+              "z": 1.5
+            }
+          }
+        }
+      },
+      "upgrades": [
+        "peasantEfficiency"
+      ],
+      "units": [],
+      "footprintWidth": 2,
+      "footprintHeight": 2,
+      "size": 50,
+      "icon": "building_goldMine",
+      "hp": 2000,
+      "height": 100
+    },
     "cottage": {
       "title": "Cottage",
       "info": "A structure that fires arrows.",
@@ -2364,77 +2362,6 @@ window.COMPILED_GAME = {
       "size": 50,
       "icon": "building_fletchersHall",
       "hp": 1500
-    },
-    "goldMine": {
-      "title": "Gold Mine",
-      "info": "Mine gold veins",
-      "value": 50,
-      "category": "attribute",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ],
-          "underConstruction": [
-            {
-              "shapes": {
-                "shapes": [
-                  {
-                    "color": {
-                      "paletteColor": "blueDColor"
-                    },
-                    "url": "models/underConstruction/underConstruction.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
-                "metalness": 0,
-                "roughness": 1,
-                "x": 0,
-                "z": 0,
-                "scaleX": 1,
-                "name": "foundation",
-                "url": "models/goldmine/goldmine.glb"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1.5,
-              "y": 1.5,
-              "z": 1.5
-            }
-          }
-        }
-      },
-      "upgrades": [
-        "peasantEfficiency"
-      ],
-      "units": [],
-      "footprintWidth": 2,
-      "footprintHeight": 2,
-      "size": 50,
-      "icon": "building_goldMine",
-      "hp": 2000,
-      "height": 100
     },
     "keep": {
       "title": "Keep",
@@ -2733,6 +2660,58 @@ window.COMPILED_GAME = {
       "icon": "building_mageTower",
       "hp": 1500
     },
+    "underConstruction": {
+      "title": "Under Construction",
+      "info": "Under Construction",
+      "value": 50,
+      "category": "attribute",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "metalness": 0,
+                "roughness": 1,
+                "x": 0,
+                "z": 0,
+                "scaleX": 1,
+                "name": "foundation",
+                "url": "models/underConstruction/underConstruction.glb"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
+          }
+        }
+      },
+      "units": [],
+      "footprintWidth": 3,
+      "footprintHeight": 2,
+      "height": 100,
+      "size": 75,
+      "hp": 1000
+    },
     "townHall": {
       "title": "Town Hall",
       "category": "townhall",
@@ -2807,15 +2786,30 @@ window.COMPILED_GAME = {
       "visionRange": 2000,
       "supplyProvided": 10
     },
-    "underConstruction": {
-      "title": "Under Construction",
-      "info": "Under Construction",
+    "sentryTower": {
+      "title": "Sentry Tower",
+      "info": "A structure that fires arrows.",
       "value": 50,
       "category": "attribute",
       "render": {
         "animations": {
           "idle": [
             {}
+          ],
+          "underConstruction": [
+            {
+              "shapes": {
+                "shapes": [
+                  {
+                    "color": {
+                      "paletteColor": "blueDColor"
+                    },
+                    "url": "models/underConstruction/underConstruction.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
           ]
         },
         "model": {
@@ -2832,7 +2826,7 @@ window.COMPILED_GAME = {
                 "z": 0,
                 "scaleX": 1,
                 "name": "foundation",
-                "url": "models/underConstruction/underConstruction.glb"
+                "url": "models/mage_tower/mage_tower.glb"
               }
             ],
             "position": {
@@ -2853,11 +2847,17 @@ window.COMPILED_GAME = {
         }
       },
       "units": [],
-      "footprintWidth": 3,
+      "footprintWidth": 2,
       "footprintHeight": 2,
       "height": 100,
-      "size": 75,
-      "hp": 1000
+      "size": 50,
+      "icon": "unit_archer",
+      "damage": 20,
+      "attackSpeed": 1,
+      "range": 300,
+      "projectile": "arrow",
+      "element": "physical",
+      "hp": 500
     }
   },
   "cliffs": {
@@ -2906,8 +2906,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "atom_three": {
-      "title": "Atom Three",
+    "atom_one": {
+      "title": "Atom One",
       "render": {
         "animations": {
           "idle": [
@@ -2925,7 +2925,7 @@ window.COMPILED_GAME = {
                 "metalness": 0,
                 "roughness": 1,
                 "name": "main",
-                "url": "models/atom_three_grass/atom_three_grass.glb"
+                "url": "models/atom_one_grass/atom_one_grass.glb"
               }
             ],
             "position": {
@@ -2947,8 +2947,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "atom_one": {
-      "title": "Atom One",
+    "atom_three": {
+      "title": "Atom Three",
       "render": {
         "animations": {
           "idle": [
@@ -2966,7 +2966,7 @@ window.COMPILED_GAME = {
                 "metalness": 0,
                 "roughness": 1,
                 "name": "main",
-                "url": "models/atom_one_grass/atom_one_grass.glb"
+                "url": "models/atom_three_grass/atom_three_grass.glb"
               }
             ],
             "position": {
@@ -3511,6 +3511,57 @@ window.COMPILED_GAME = {
     }
   },
   "projectiles": {
+    "arrow": {
+      "damageType": "physical",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/projectile_arrow/projectile_arrow.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ],
+            "scale": {
+              "y": 0.5,
+              "x": 0.5,
+              "z": 0.5
+            }
+          }
+        }
+      },
+      "speed": 1000,
+      "title": "Arrow",
+      "attackSound": "plasma",
+      "hitSound": "plasma",
+      "homing": false,
+      "homingStrength": 0
+    },
     "bolt": {
       "damageType": "physical",
       "render": {
@@ -3558,57 +3609,6 @@ window.COMPILED_GAME = {
       },
       "speed": 1000,
       "title": "Bolt",
-      "attackSound": "plasma",
-      "hitSound": "plasma",
-      "homing": false,
-      "homingStrength": 0
-    },
-    "arrow": {
-      "damageType": "physical",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/projectile_arrow/projectile_arrow.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ],
-            "scale": {
-              "y": 0.5,
-              "x": 0.5,
-              "z": 0.5
-            }
-          }
-        }
-      },
-      "speed": 1000,
-      "title": "Arrow",
       "attackSound": "plasma",
       "hitSound": "plasma",
       "homing": false,
@@ -4646,164 +4646,6 @@ window.COMPILED_GAME = {
       "visionRange": 800,
       "supplyCost": 2
     },
-    "1_is_acolyte": {
-      "title": "Acolyte",
-      "size": 25,
-      "height": 50,
-      "value": 35,
-      "hp": 150,
-      "speed": 45,
-      "damage": 10,
-      "attackSpeed": 0.9,
-      "element": "divine",
-      "armor": 6,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_with_shield.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/sword_slash.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/acolyte/acolyte.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "offHand",
-            "item": "knightShield",
-            "attachmentData": {
-              "bone": "LeftHand",
-              "offset": {
-                "x": 5,
-                "y": 0,
-                "z": -2
-              },
-              "rotation": {
-                "x": 15,
-                "y": 0,
-                "z": 0
-              }
-            }
-          }
-        ]
-      },
-      "buyable": true,
-      "specUnits": [
-        "2_is_paladin",
-        "2_is_crusader",
-        "2_is_oathBreaker"
-      ],
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "abilities": [
-        "HealAbility"
-      ],
-      "icon": "unit_acolyte",
-      "visionRange": 500,
-      "supplyCost": 2
-    },
     "1_d_archer": {
       "title": "Archer",
       "size": 25,
@@ -4996,6 +4838,164 @@ window.COMPILED_GAME = {
       "abilities": [],
       "icon": "unit_archer",
       "visionRange": 650,
+      "supplyCost": 2
+    },
+    "1_is_acolyte": {
+      "title": "Acolyte",
+      "size": 25,
+      "height": 50,
+      "value": 35,
+      "hp": 150,
+      "speed": 45,
+      "damage": 10,
+      "attackSpeed": 0.9,
+      "element": "divine",
+      "armor": 6,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_with_shield.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/sword_slash.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/acolyte/acolyte.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "offHand",
+            "item": "knightShield",
+            "attachmentData": {
+              "bone": "LeftHand",
+              "offset": {
+                "x": 5,
+                "y": 0,
+                "z": -2
+              },
+              "rotation": {
+                "x": 15,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "buyable": true,
+      "specUnits": [
+        "2_is_paladin",
+        "2_is_crusader",
+        "2_is_oathBreaker"
+      ],
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "abilities": [
+        "HealAbility"
+      ],
+      "icon": "unit_acolyte",
+      "visionRange": 500,
       "supplyCost": 2
     },
     "1_i_apprentice": {
@@ -5356,6 +5356,298 @@ window.COMPILED_GAME = {
       "icon": "unit_soldier",
       "visionRange": 500,
       "supplyCost": 2
+    },
+    "1_s_barbarian": {
+      "title": "Barbarian",
+      "size": 25,
+      "height": 50,
+      "value": 35,
+      "hp": 300,
+      "speed": 40,
+      "damage": 10,
+      "attackSpeed": 1,
+      "element": "physical",
+      "armor": 8,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_steady_right_hand.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "models/sword_slash/sword_slash.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/barbarian/barbarian.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "mainHand",
+            "item": "knightSword",
+            "attachmentData": {
+              "bone": "RightHand",
+              "offset": {
+                "x": 0,
+                "y": 5,
+                "z": 5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "buyable": true,
+      "specUnits": [
+        "2_s_berserker",
+        "2_s_gladiator",
+        "2_s_warlord"
+      ],
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "abilities": [],
+      "range": 5,
+      "projectile": "arrow",
+      "icon": "unit_barbarian",
+      "visionRange": 500,
+      "supplyCost": 2
+    },
+    "2_di_goblinBomber": {
+      "title": "Goblin Bomber (2) [DI]",
+      "size": 25,
+      "height": 50,
+      "value": 120,
+      "hp": 450,
+      "speed": 60,
+      "damage": 40,
+      "attackSpeed": 1.2,
+      "element": "fire",
+      "armor": 1,
+      "fireResistance": 0.75,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_steady_right_hand.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/sword_slash.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 0.5,
+              "z": 0.5
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/goblin/goblin.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        }
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "abilities": [
+        "MeteorStrikeAbility"
+      ],
+      "range": 100,
+      "projectile": "fireball"
     },
     "2_di_shadowAssassin": {
       "title": "Shadow Assassin (2) [DI]",
@@ -6820,179 +7112,6 @@ window.COMPILED_GAME = {
         "SmiteAbility"
       ]
     },
-    "2_i_enchanter": {
-      "title": "Enchanter (2) [I]",
-      "size": 25,
-      "height": 50,
-      "value": 140,
-      "hp": 150,
-      "speed": 55,
-      "damage": 0,
-      "attackSpeed": 0,
-      "range": 160,
-      "armor": 2,
-      "fireResistance": 0.4,
-      "coldResistance": 0,
-      "lightningResistance": 0.2,
-      "abilities": [
-        "MindControlAbility"
-      ],
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_steady_right_hand.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/2h_spell_summon.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/evil_sorcerer/evil_sorcerer.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                }
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "mainHand",
-            "item": "staff_feathers",
-            "attachmentData": {
-              "bone": "RightHand",
-              "offset": {
-                "x": 0,
-                "y": 5,
-                "z": -8
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
-            }
-          }
-        ]
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1
-    },
     "2_i_elementalist": {
       "title": "Elementalist (2) [I]",
       "size": 25,
@@ -7155,6 +7274,179 @@ window.COMPILED_GAME = {
                 "x": 180,
                 "y": 0,
                 "z": 180
+              }
+            }
+          }
+        ]
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1
+    },
+    "2_i_enchanter": {
+      "title": "Enchanter (2) [I]",
+      "size": 25,
+      "height": 50,
+      "value": 140,
+      "hp": 150,
+      "speed": 55,
+      "damage": 0,
+      "attackSpeed": 0,
+      "range": 160,
+      "armor": 2,
+      "fireResistance": 0.4,
+      "coldResistance": 0,
+      "lightningResistance": 0.2,
+      "abilities": [
+        "MindControlAbility"
+      ],
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_steady_right_hand.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/2h_spell_summon.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/evil_sorcerer/evil_sorcerer.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                }
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "mainHand",
+            "item": "staff_feathers",
+            "attachmentData": {
+              "bone": "RightHand",
+              "offset": {
+                "x": 0,
+                "y": 5,
+                "z": -8
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
               }
             }
           }
@@ -8192,6 +8484,136 @@ window.COMPILED_GAME = {
         "ArenaPresenceAbility"
       ]
     },
+    "4_ancientTreant": {
+      "title": "Ancient Treant",
+      "size": 25,
+      "height": 100,
+      "value": 480,
+      "hp": 720,
+      "speed": 15,
+      "damage": 40,
+      "attackSpeed": 0.7,
+      "element": "physical",
+      "armor": 12,
+      "fireResistance": -0.2,
+      "coldResistance": 0.3,
+      "lightningResistance": 0.1,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_walk.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_swipe.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/treant/treant.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        }
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1
+    },
     "2_s_warlord": {
       "title": "Warlord (2) [S]",
       "size": 35,
@@ -8362,136 +8784,6 @@ window.COMPILED_GAME = {
       "abilities": [
         "BattleCryAbility"
       ]
-    },
-    "4_ancientTreant": {
-      "title": "Ancient Treant",
-      "size": 25,
-      "height": 100,
-      "value": 480,
-      "hp": 720,
-      "speed": 15,
-      "damage": 40,
-      "attackSpeed": 0.7,
-      "element": "physical",
-      "armor": 12,
-      "fireResistance": -0.2,
-      "coldResistance": 0.3,
-      "lightningResistance": 0.1,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_walk.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_swipe.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 2,
-              "y": 2,
-              "z": 2
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/treant/treant.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        }
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1
     },
     "4_archmage": {
       "title": "Archmage",
@@ -8970,298 +9262,6 @@ window.COMPILED_GAME = {
           }
         }
       }
-    },
-    "1_s_barbarian": {
-      "title": "Barbarian",
-      "size": 25,
-      "height": 50,
-      "value": 35,
-      "hp": 300,
-      "speed": 40,
-      "damage": 10,
-      "attackSpeed": 1,
-      "element": "physical",
-      "armor": 8,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_steady_right_hand.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "models/sword_slash/sword_slash.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/barbarian/barbarian.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "mainHand",
-            "item": "knightSword",
-            "attachmentData": {
-              "bone": "RightHand",
-              "offset": {
-                "x": 0,
-                "y": 5,
-                "z": 5
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              }
-            }
-          }
-        ]
-      },
-      "buyable": true,
-      "specUnits": [
-        "2_s_berserker",
-        "2_s_gladiator",
-        "2_s_warlord"
-      ],
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "abilities": [],
-      "range": 5,
-      "projectile": "arrow",
-      "icon": "unit_barbarian",
-      "visionRange": 500,
-      "supplyCost": 2
-    },
-    "2_di_goblinBomber": {
-      "title": "Goblin Bomber (2) [DI]",
-      "size": 25,
-      "height": 50,
-      "value": 120,
-      "hp": 450,
-      "speed": 60,
-      "damage": 40,
-      "attackSpeed": 1.2,
-      "element": "fire",
-      "armor": 1,
-      "fireResistance": 0.75,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_steady_right_hand.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/sword_slash.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 0.5,
-              "y": 0.5,
-              "z": 0.5
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/goblin/goblin.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        }
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "abilities": [
-        "MeteorStrikeAbility"
-      ],
-      "range": 100,
-      "projectile": "fireball"
     }
   },
   "visuals": {
@@ -9310,64 +9310,6 @@ window.COMPILED_GAME = {
     }
   },
   "worldObjects": {
-    "rock": {
-      "title": "Rock",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "tetrahedron",
-                "size": 16,
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
-                "x": 3.5,
-                "y": 2,
-                "z": 2.5,
-                "rotationX": 50,
-                "rotationY": 140,
-                "rotationZ": 10,
-                "scaleX": 1
-              },
-              {
-                "type": "tetrahedron",
-                "size": 12,
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
-                "x": 10.5,
-                "y": 2,
-                "z": 7.5,
-                "rotationX": 50,
-                "rotationY": 150,
-                "rotationZ": 10
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        }
-      }
-    },
     "goldVein": {
       "title": "Gold Vein",
       "render": {
@@ -9435,6 +9377,64 @@ window.COMPILED_GAME = {
       "snapToGrid": true,
       "height": 100
     },
+    "rock": {
+      "title": "Rock",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "tetrahedron",
+                "size": 16,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "x": 3.5,
+                "y": 2,
+                "z": 2.5,
+                "rotationX": 50,
+                "rotationY": 140,
+                "rotationZ": 10,
+                "scaleX": 1
+              },
+              {
+                "type": "tetrahedron",
+                "size": 12,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "x": 10.5,
+                "y": 2,
+                "z": 7.5,
+                "rotationX": 50,
+                "rotationY": 150,
+                "rotationZ": 10
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    },
     "tree": {
       "title": "Tree",
       "render": {
@@ -9478,10 +9478,6 @@ window.COMPILED_GAME = {
     }
   },
   "icons": {
-    "building_goldMine": {
-      "title": "Building Gold Mine",
-      "filePath": "resources/images/icons/building_goldMine.png"
-    },
     "building_barracks": {
       "title": "Building Barracks",
       "filePath": "resources/images/icons/building_barracks.png"
@@ -9493,6 +9489,10 @@ window.COMPILED_GAME = {
     "building_fletchersHall": {
       "title": "Building Fletchers Hall",
       "filePath": "resources/images/icons/building_fletchersHall.png"
+    },
+    "building_goldMine": {
+      "title": "Building Gold Mine",
+      "filePath": "resources/images/icons/building_goldMine.png"
     },
     "building_mageTower": {
       "title": "Building Mage Tower",
@@ -9506,13 +9506,13 @@ window.COMPILED_GAME = {
       "title": "Order Hold",
       "filePath": "resources/images/icons/order_hold.png"
     },
-    "order_move": {
-      "title": "Order Move",
-      "filePath": "resources/images/icons/order_move.png"
-    },
     "unit_acolyte": {
       "title": "Unit Acolyte",
       "filePath": "resources/images/icons/unit_acolyte.png"
+    },
+    "order_move": {
+      "title": "Order Move",
+      "filePath": "resources/images/icons/order_move.png"
     },
     "unit_apprentice": {
       "title": "Unit Apprentice",
@@ -9589,6 +9589,14 @@ window.COMPILED_GAME = {
     }
   },
   "textures": {
+    "background": {
+      "title": "background",
+      "image": ""
+    },
+    "end": {
+      "title": "End",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAlklEQVRoQ+3UIQ6AMBBEUeo5D56T4zlPPQTblNTt7zYfTTIwL7PlOvZnS/Scdy2JPnf4qSUbwPdHKyGkBFgJIS3AKgipAYYHdqIX/s6mAIFIPQQBAgF6Z1MAAYIbgOPaM+QCgkEECC68jRNAALgBON4FCAA3AMe7AAHgBuB4FyAA3AAc7wIEgBuA412AAHADcLwLmAzgBfVWYBnOEmyVAAAAAElFTkSuQmCC"
+    },
     "forest": {
       "title": "Forest",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwOEX1QMH0QuRwQqWXk7NdvLTHSwY3uy3Huz5boua9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAs/vWAZcNxDRQAAAABJRU5ErkJggg=="
@@ -9620,21 +9628,9 @@ window.COMPILED_GAME = {
     "water": {
       "title": "Water",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAlUlEQVRoQ+3UwQ2AIBBEUbEh27ME27MhNF4Jhtt+lnzPJqPzMlv26362RE89j5Loc4efWrIBfH+0EkJKgJUQ0gKsgpAaYHhgJ3rh72wKEIjUQxAgEKB3NgUQILgBOK49Qy4gGESA4MLbOAEEgBuA412AAHADcLwLEABuAI53AQLADcDxLkAAuAE43gUIADcAx7uAyQBeDUJgGasSxlsAAAAASUVORK5CYII="
-    },
-    "end": {
-      "title": "End",
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAlklEQVRoQ+3UIQ6AMBBEUeo5D56T4zlPPQTblNTt7zYfTTIwL7PlOvZnS/Scdy2JPnf4qSUbwPdHKyGkBFgJIS3AKgipAYYHdqIX/s6mAIFIPQQBAgF6Z1MAAYIbgOPaM+QCgkEECC68jRNAALgBON4FCAA3AMe7AAHgBuB4FyAA3AAc7wIEgBuA412AAHADcLwLmAzgBfVWYBnOEmyVAAAAAElFTkSuQmCC"
-    },
-    "background": {
-      "title": "background",
-      "image": ""
     }
   },
   "abilities": {
-    "ShieldWallAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js",
-      "fileName": "ShieldWallAbility"
-    },
     "ArenaPresenceAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js",
       "fileName": "ArenaPresenceAbility"
@@ -9647,6 +9643,10 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js",
       "fileName": "BloodlustAbility"
     },
+    "BuildAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js",
+      "fileName": "BuildAbility"
+    },
     "BurningAuraAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BurningAuraAbility.js",
       "fileName": "BurningAuraAbility"
@@ -9654,10 +9654,6 @@ window.COMPILED_GAME = {
     "ChargeAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChargeAbility.js",
       "fileName": "ChargeAbility"
-    },
-    "BuildAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js",
-      "fileName": "BuildAbility"
     },
     "ConsecrationAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ConsecrationAbility.js",
@@ -9679,9 +9675,17 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js",
       "fileName": "DrainLifeAbility"
     },
+    "EnchantWeaponAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js",
+      "fileName": "EnchantWeaponAbility"
+    },
     "ExplosiveTrapAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js",
       "fileName": "ExplosiveTrapAbility"
+    },
+    "FreezingAuraAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js",
+      "fileName": "FreezingAuraAbility"
     },
     "IceShardAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js",
@@ -9691,49 +9695,49 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js",
       "fileName": "InfernoAbility"
     },
-    "FreezingAuraAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js",
-      "fileName": "FreezingAuraAbility"
-    },
     "LightningBoltAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js",
       "fileName": "LightningBoltAbility"
-    },
-    "ShadowStrikeAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js",
-      "fileName": "ShadowStrikeAbility"
     },
     "MindControlAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js",
       "fileName": "MindControlAbility"
     },
-    "SmiteAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js",
-      "fileName": "SmiteAbility"
-    },
-    "MultiShotAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js",
-      "fileName": "MultiShotAbility"
-    },
     "MineGoldAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js",
       "fileName": "MineGoldAbility"
-    },
-    "EnchantWeaponAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js",
-      "fileName": "EnchantWeaponAbility"
     },
     "MirrorImagesAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js",
       "fileName": "MirrorImagesAbility"
     },
-    "TrackingMark": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js",
-      "fileName": "TrackingMark"
+    "MultiShotAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js",
+      "fileName": "MultiShotAbility"
     },
     "PhalanxFormationAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js",
       "fileName": "PhalanxFormationAbility"
+    },
+    "PiercingShotAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js",
+      "fileName": "PiercingShotAbility"
+    },
+    "RageAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js",
+      "fileName": "RageAbility"
+    },
+    "ShadowStrikeAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js",
+      "fileName": "ShadowStrikeAbility"
+    },
+    "ShieldWallAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js",
+      "fileName": "ShieldWallAbility"
+    },
+    "SmiteAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js",
+      "fileName": "SmiteAbility"
     },
     "SummonWolfAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js",
@@ -9743,17 +9747,13 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js",
       "fileName": "Tornado"
     },
+    "TrackingMark": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js",
+      "fileName": "TrackingMark"
+    },
     "WindShieldAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js",
       "fileName": "WindShieldAbility"
-    },
-    "RageAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js",
-      "fileName": "RageAbility"
-    },
-    "PiercingShotAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js",
-      "fileName": "PiercingShotAbility"
     },
     "BaseAbility": {
       "fileName": "BaseAbility",
@@ -9779,17 +9779,17 @@ window.COMPILED_GAME = {
       "fileName": "HealAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js"
     },
-    "RaiseDeadAbility": {
-      "fileName": "RaiseDeadAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js"
+    "MeteorStrikeAbility": {
+      "fileName": "MeteorStrikeAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
     },
     "MassHealAbility": {
       "fileName": "MassHealAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js"
     },
-    "MeteorStrikeAbility": {
-      "fileName": "MeteorStrikeAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
+    "RaiseDeadAbility": {
+      "fileName": "RaiseDeadAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js"
     }
   },
   "functions": {
@@ -9834,17 +9834,17 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/MultiplayerNetworkManager.js",
       "fileName": "MultiplayerNetworkManager"
     },
-    "ScreenManager": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ScreenManager.js",
-      "fileName": "ScreenManager"
+    "ResultsManager": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ResultsManager.js",
+      "fileName": "ResultsManager"
     },
     "SaveManager": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/SaveManager.js",
       "fileName": "SaveManager"
     },
-    "ResultsManager": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ResultsManager.js",
-      "fileName": "ResultsManager"
+    "ScreenManager": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ScreenManager.js",
+      "fileName": "ScreenManager"
     },
     "SquadManager": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/SquadManager.js",
@@ -9856,21 +9856,17 @@ window.COMPILED_GAME = {
     }
   },
   "systems": {
-    "GridSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/GridSystem.js",
-      "fileName": "GridSystem"
-    },
     "AbilitySystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AbilitySystem.js",
       "fileName": "AbilitySystem"
     },
-    "AnimationSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js",
-      "fileName": "AnimationSystem"
-    },
     "AISystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AISystem.js",
       "fileName": "AISystem"
+    },
+    "AnimationSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js",
+      "fileName": "AnimationSystem"
     },
     "ArmyDisplaySystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js",
@@ -9880,13 +9876,13 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CameraControlSystem.js",
       "fileName": "CameraControlSystem"
     },
-    "CommandQueueSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CommandQueueSystem.js",
-      "fileName": "CommandQueueSystem"
-    },
     "CombatAISystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CombatAISystem.js",
       "fileName": "CombatAISystem"
+    },
+    "CommandQueueSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CommandQueueSystem.js",
+      "fileName": "CommandQueueSystem"
     },
     "DamageNumberSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageNumberSystem.js",
@@ -9896,14 +9892,6 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageSystem.js",
       "fileName": "DamageSystem"
     },
-    "EquipmentSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EquipmentSystem.js",
-      "fileName": "EquipmentSystem"
-    },
-    "FogOfWarSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/FogOfWarSystem.js",
-      "fileName": "FogOfWarSystem"
-    },
     "DeathSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DeathSystem.js",
       "fileName": "DeathSystem"
@@ -9912,13 +9900,33 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EffectsSystem.js",
       "fileName": "EffectsSystem"
     },
+    "EquipmentSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EquipmentSystem.js",
+      "fileName": "EquipmentSystem"
+    },
+    "FogOfWarSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/FogOfWarSystem.js",
+      "fileName": "FogOfWarSystem"
+    },
     "GoldMineSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/GoldMineSystem.js",
       "fileName": "GoldMineSystem"
     },
+    "GridSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/GridSystem.js",
+      "fileName": "GridSystem"
+    },
+    "HealthBarSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/HealthBarSystem.js",
+      "fileName": "HealthBarSystem"
+    },
     "MiniMapSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MiniMapSystem.js",
       "fileName": "MiniMapSystem"
+    },
+    "LifetimeSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/LifetimeSystem.js",
+      "fileName": "LifetimeSystem"
     },
     "MovementSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MovementSystem.js",
@@ -9928,10 +9936,6 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerPlacementSystem.js",
       "fileName": "MultiplayerPlacementSystem"
     },
-    "PostProcessingSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
-      "fileName": "PostProcessingSystem"
-    },
     "MultiplayerUISystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
       "fileName": "MultiplayerUISystem"
@@ -9940,49 +9944,49 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PathfindingSystem.js",
       "fileName": "PathfindingSystem"
     },
+    "PostProcessingSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
+      "fileName": "PostProcessingSystem"
+    },
     "ProjectileSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ProjectileSystem.js",
       "fileName": "ProjectileSystem"
-    },
-    "RenderSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/RenderSystem.js",
-      "fileName": "RenderSystem"
     },
     "SchedulingSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SchedulingSystem.js",
       "fileName": "SchedulingSystem"
     },
-    "ServerBattlePhaseSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerBattlePhaseSystem.js",
-      "fileName": "ServerBattlePhaseSystem"
-    },
-    "ServerPlacementSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerPlacementSystem.js",
-      "fileName": "ServerPlacementSystem"
+    "RenderSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/RenderSystem.js",
+      "fileName": "RenderSystem"
     },
     "SelectedUnitSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SelectedUnitSystem.js",
       "fileName": "SelectedUnitSystem"
     },
+    "ServerPlacementSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerPlacementSystem.js",
+      "fileName": "ServerPlacementSystem"
+    },
     "ShopSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ShopSystem.js",
       "fileName": "ShopSystem"
-    },
-    "SquadExperienceSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SquadExperienceSystem.js",
-      "fileName": "SquadExperienceSystem"
-    },
-    "SupplySystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SupplySystem.js",
-      "fileName": "SupplySystem"
     },
     "StatisticsTrackingSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/StatisticsTrackingSystem.js",
       "fileName": "StatisticsTrackingSystem"
     },
+    "SupplySystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SupplySystem.js",
+      "fileName": "SupplySystem"
+    },
     "TeamHealthSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/TeamHealthSystem.js",
       "fileName": "TeamHealthSystem"
+    },
+    "TerrainSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/TerrainSystem.js",
+      "fileName": "TerrainSystem"
     },
     "UISystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UISystem.js",
@@ -9991,10 +9995,6 @@ window.COMPILED_GAME = {
     "UnitOrderSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UnitOrderSystem.js",
       "fileName": "UnitOrderSystem"
-    },
-    "TerrainSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/TerrainSystem.js",
-      "fileName": "TerrainSystem"
     },
     "UnitRadiusSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UnitRadiusSystem.js",
@@ -10008,13 +10008,13 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/WorldSystem.js",
       "fileName": "WorldSystem"
     },
-    "HealthBarSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/HealthBarSystem.js",
-      "fileName": "HealthBarSystem"
+    "ServerBattlePhaseSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerBattlePhaseSystem.js",
+      "fileName": "ServerBattlePhaseSystem"
     },
-    "LifetimeSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/LifetimeSystem.js",
-      "fileName": "LifetimeSystem"
+    "SquadExperienceSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SquadExperienceSystem.js",
+      "fileName": "SquadExperienceSystem"
     },
     "ParticleSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ParticleSystem.js",
@@ -10022,17 +10022,17 @@ window.COMPILED_GAME = {
     }
   },
   "configs": {
+    "codeMirror": {
+      "title": "Code Mirror",
+      "theme": "codeMirrorTheme",
+      "fileName": "codeMirror"
+    },
     "ai": {
       "title": "AI",
       "aiEndPoint": "http://localhost:11434/api/generate",
       "aiModel": "",
       "defaultPrompt": "I am developing a tower defense game featuring a simple 3d art style.  Generate a new object based on the following context.    Please provide ONLY a valid JSON object with keys MATCHING EXACTLY to the context above. It absolutely MUST have an appropriate 'id' field. Ensure all existing key types are maintained. Do not wrap the json object with any other text.",
       "fileName": "ai"
-    },
-    "codeMirror": {
-      "title": "Code Mirror",
-      "theme": "codeMirrorTheme",
-      "fileName": "codeMirror"
     },
     "editor": {
       "title": "Editor Config",
@@ -48895,6 +48895,24 @@ class NotificationSystem {
         return a + (b - a) * t;
     }    
 }
+
+
+if(typeof GameUtils != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.GameUtils = GameUtils;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = GameUtils;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = GameUtils;
+        exports.GameUtils = GameUtils;
+    }
+}
         
         // Explicitly register classes to window
         var className = "GameUtils";
@@ -55417,22 +55435,7 @@ window.engine.app.appClasses['TerrainSystem'] = class TerrainSystem extends engi
             console.log('TerrainSystem: Height map disabled, using flat terrain');
             return;
         }
-
-        // Check if we're running in a browser environment
-        const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
-        
-        if (isBrowser) {
-            // Create a small canvas for height map processing
-            this.heightMapCanvas = document.createElement('canvas');
-            this.heightMapCanvas.width = this.terrainSize;
-            this.heightMapCanvas.height = this.terrainSize;
-            this.heightMapCtx = this.heightMapCanvas.getContext('2d');
-            this.processHeightMapFromCanvas();
-        } else {
-            // For server-side, we'll work directly with the terrain data
-            console.log('TerrainSystem: Running in server mode, using data-only height processing');
-            this.processHeightMapFromData();
-        }
+        this.processHeightMapFromData();
     }
 
     processHeightMapFromData() {
@@ -55534,11 +55537,6 @@ window.engine.app.appClasses['TerrainSystem'] = class TerrainSystem extends engi
         }
     }
 
-    processHeightMapFromCanvas() {
-        // This method would be used if running client-side with canvas support
-        // For now, fall back to data processing
-        this.processHeightMapFromData();
-    }
 
     getTileMapTerrainType(terrainTypeId){
         if(this.tileMap.terrainTypes.length > terrainTypeId && terrainTypeId >= 0){
@@ -75812,245 +75810,6 @@ window.engine.app.appClasses['BaseAbility'] = class BaseAbility {
     execute(casterEntity, targetData = null) { console.log(`${this.name} executed by entity ${casterEntity}`); }
 };
 
-// ability: ShieldWallAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ShieldWallAbility'] = class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'shield_wall',
-            name: 'Shield Wall',
-            description: 'Form a defensive stance, reducing damage and taunting enemies',
-            cooldown: 12.0,
-            range: 0, // Self-buff with taunt radius
-            manaCost: 30,
-            targetType: 'self',
-            animation: 'cast',
-            priority: 4,
-            castTime: 1.0,
-            ...params
-        });
-        
-        this.wallDuration = 10.0;
-        this.damageReduction = 0.75; // 75% damage reduction
-        this.tauntRadius = 200;
-        this.originalArmorMultiplier = 1.0;
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x708090,
-                    colorRange: { start: 0x708090, end: 0xC0C0C0 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            shield_formation: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4682B4,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            defensive_stance: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 0.6
-                }
-            },
-            taunt_aura: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF6347,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Check if already has shield wall to prevent stacking
-        const existingWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        if (existingWall && existingWall.isActive) return false;
-        
-        // Use when enemies are nearby and threatening
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
-        
-        // Schedule the shield wall formation after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.formShieldWall(casterEntity);
-        }, this.castTime, casterEntity);
-    }
-    
-    formShieldWall(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
-        
-        if (!casterPos) return;
-        
-        // Create shield formation effect
-        this.createVisualEffect(casterPos, 'shield_formation');
-        
-        // Store original armor for restoration later
-        const originalArmor = casterCombat ? casterCombat.armor : 0;
-        
-        // Apply shield wall component with proper timing
-        const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.wallDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
-            Components.ShieldWall(
-                this.damageReduction,
-                endTime,
-                this.tauntRadius,
-                originalArmor
-            )
-        );
-        
-        // Schedule defensive stance visual effect
-        this.game.schedulingSystem.scheduleAction(() => {
-            const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-            if (pos) {
-                this.createVisualEffect(pos, 'defensive_stance');
-            }
-        }, 0.5, casterEntity);
-        
-        // Apply taunt effect to nearby enemies
-        this.applyTauntToEnemies(casterEntity);
-        
-        // Screen effects for dramatic formation
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.3, 1);
-        }
-        
-    
-      
-        
-        // Schedule shield wall expiration warning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.warnShieldWallEnding(casterEntity);
-        }, this.wallDuration - 1.5, casterEntity);
-        
-        // Schedule shield wall removal (failsafe)
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.removeShieldWall(casterEntity);
-        }, this.wallDuration, casterEntity);
-    }
-    
-    applyTauntToEnemies(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        if (enemies.length === 0) return;
-        
-        // Sort enemies deterministically for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let tauntedCount = 0;
-        
-        sortedEnemies.forEach((enemyId, index) => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyAI = this.game.getComponent(enemyId, this.componentTypes.AI_STATE);
-            
-            if (!enemyPos || !enemyAI) return;
-            
-            // Apply taunt component
-            const Components = this.game.componentManager.getComponents();
-            const currentTime = this.game.state.now || this.game.state.now || 0;
-            const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
-            
-            this.game.addComponent(enemyId, this.componentTypes.TAUNT, 
-                Components.Taunt(
-                    casterEntity,     // Taunter
-                    tauntEndTime,     // End time
-                    this.tauntRadius, // Radius
-                    true              // Is taunted
-                )
-            );
-            
-            // Force AI to target the shield wall user
-  
-            enemyAI.target = casterEntity;
-            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-            enemyAI.path = [];
-            enemyAI.meta = {};
-        
-            // Schedule staggered taunt effects for visual appeal
-            this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (pos) {
-                    this.createVisualEffect(pos, 'taunt_aura');
-                }
-            }, index * 0.1, enemyId);
-            
-            tauntedCount++;
-        });
-        
-        if (tauntedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Shield wall taunts ${tauntedCount} enemies to attack!`);
-        }
-    }
-    
-    // FIXED: Shield wall ending warning
-    warnShieldWallEnding(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        // Check if shield wall still exists and is active
-        if (!shieldWall || !shieldWall.isActive || !casterPos) return;
-        
-        // Create warning effect
-        this.createVisualEffect(casterPos, 'cast', { 
-            count: 4, 
-            color: 0x708090,
-            scaleMultiplier: 0.8 
-        });
-     
-    }
-    
-    // FIXED: Proper shield wall removal
-    removeShieldWall(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        if (!shieldWall) return;
-        
-        // Create dissolution effect
-        if (casterPos) {
-            this.createVisualEffect(casterPos, 'defensive_stance', { 
-                count: 6, 
-                scaleMultiplier: 0.6 
-            });
-        }
-        
-        // Remove shield wall component
-        this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        
-       
-    }
-};
-
 // ability: ArenaPresenceAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['ArenaPresenceAbility'] = class ArenaPresenceAbility extends engine.app.appClasses['BaseAbility'] {
@@ -76577,6 +76336,250 @@ window.engine.app.appClasses['BloodlustAbility'] = class BloodlustAbility extend
     }
 };
 
+// ability: BuildAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['BuildAbility'] = class BuildAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, abilityData) {
+        super(game, abilityData);
+        this.id = 'build';
+        this.name = 'Build';
+        this.description = 'Construct buildings';
+        this.isPassive = true;
+        this.autocast = false;
+        this.castTime = 0;
+        this.cooldown = 0;
+        this.priority = 0;
+        this.enabled = true;
+        this.meta = { preventEnemiesInRangeCheck: true };
+        this.buildRange = 50;
+    }
+
+    canExecute(entityId) {
+        if(!this.enabled){
+            return false;
+        }
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        let buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+        
+        if (!buildingState) {
+            return false;
+        }
+
+        return this.game.aiSystem.getCurrentAIControllerId(entityId) == ComponentTypes.BUILDING_STATE;
+    }
+    execute(entityId, targetData) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const buildState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+        const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
+        const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
+        
+        if (!buildState || !pos || !vel) {
+            return null;
+        }
+
+        this.updateBuilderState(entityId, buildState, pos, vel);
+        return null;
+    }
+
+    updateBuilderState(entityId, buildState, pos, vel) {
+        buildState.entityId = entityId;
+        
+        switch (buildState.state) {
+            case 'idle':
+                break;
+            case 'walking_to_construction':
+                this.walkToConstruction(buildState, pos, vel);
+                break;
+            case 'constructing':
+                this.constructBuilding(buildState);
+                break;
+        }
+    }
+
+    assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
+        const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
+
+        if (!buildingPos) return;
+
+        const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
+        const renderComponent = this.game.getComponent(buildingEntityId, ComponentTypes.RENDERABLE);
+        renderComponent.spawnType = 'underConstruction';
+
+        this.game.removeComponent(buildingEntityId, ComponentTypes.HEALTH);
+
+        const peasantId = peasantInfo.peasantId;
+        const buildTime = peasantInfo.buildTime;
+
+        if (buildingPlacement) {
+            buildingPlacement.isUnderConstruction = true;
+            buildingPlacement.buildTime = buildTime;
+            buildingPlacement.assignedBuilder = peasantId || null;
+        }
+
+        this.peasantId = peasantEntityId;
+        this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
+        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
+
+        // Use command queue system to issue build command
+        // This will properly interrupt current movement and clear the path
+        if (this.game.commandQueueSystem) {
+            this.game.gameManager.call('queueCommand', peasantEntityId, {
+                type: 'build',
+                controllerId: ComponentTypes.BUILDING_STATE,
+                targetPosition: buildingPos,
+                target: buildingEntityId,
+                meta: this.meta,
+                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
+                interruptible: true
+            }, true); // true = interrupt current command
+        } else {
+            // Fallback to old method if command queue system not available
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
+            currentBuildingStateAI.targetPosition = buildingPos;
+            currentBuildingStateAI.meta = this.meta;
+            this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
+        }
+
+        if (buildingPlacement) {
+            buildingPlacement.assignedBuilder = peasantEntityId;
+            buildingPlacement.isUnderConstruction = true;
+        }
+    }
+
+    walkToConstruction(buildState, pos, vel) {
+        
+        if (!buildState.targetBuildingPosition || !buildState.targetBuildingEntityId) {
+            buildState.state = 'idle';
+            return;
+        }
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
+        const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.BUILDING_STATE);
+        
+        if (!buildingPosition) {
+            buildState.targetBuildingEntityId = null;
+            buildState.targetBuildingPosition = null;
+            buildState.state = 'idle';
+            return;
+        }
+
+        const dx = buildState.targetBuildingPosition.x - pos.x;
+        const dz = buildState.targetBuildingPosition.z - pos.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < this.buildRange) {
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+            currentBuildingStateAI.targetPosition = null;
+            currentBuildingStateAI.state = 'idle';
+            currentBuildingStateAI.meta = this.meta;
+            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
+
+            pos.x = buildState.targetBuildingPosition.x + this.buildRange;
+            pos.z = buildState.targetBuildingPosition.z;
+            vel.vx = 0;
+            vel.vz = 0;
+
+            // Make the peasant face the building
+            const facing = this.game.getComponent(buildState.entityId, ComponentTypes.FACING);
+            if (facing) {
+                const dx = buildState.targetBuildingPosition.x - pos.x;
+                const dz = buildState.targetBuildingPosition.z - pos.z;
+                const angleToBuilding = Math.atan2(dz, dx);
+                facing.angle = angleToBuilding;
+            }
+
+            buildState.state = 'constructing';
+            buildState.constructionStartTime = this.game.state.round;
+            buildingBuildState.state = 'under_construction';
+            buildingBuildState.constructionStartTime = this.game.state.round;
+        } else {     
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+            if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
+                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;  
+                currentBuildingStateAI.state = 'chasing';                          
+                currentBuildingStateAI.meta = this.meta;
+                this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
+            }
+        }
+    }
+
+    constructBuilding(buildState) {
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
+        const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
+        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, Components.Health(unitType.hp));
+        
+
+        const elapsed = this.game.state.round - buildState.constructionStartTime;
+        const buildTime = buildingPlacement.buildTime || 1;
+        if (this.game.animationSystem) {
+            const animState = this.game.animationSystem.entityAnimationStates.get(buildState.entityId);
+            if(animState){
+                const finished = this.game.animationSystem.isAnimationFinished(buildState.entityId, animState.currentClip);
+                if(finished || animState.currentClip != 'attack'){
+                    this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
+                }
+            }
+        }
+
+        if (elapsed >= buildTime) {            
+            this.completeConstruction(buildState);
+        }
+    }
+
+    completeConstruction(buildState) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
+        const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
+        const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
+        renderComponent.spawnType = buildingPlacement.unitType.id;
+        this.game.renderSystem?.removeInstance(buildState.targetBuildingEntityId);
+        if (!buildingPlacement) {
+            buildState.state = 'idle';
+            return;
+        }
+        if(this.game.shopSystem){
+            this.game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
+        }
+
+        buildingPlacement.isUnderConstruction = false;
+        buildingPlacement.assignedBuilder = null;
+
+        if (this.game.animationSystem) {
+            this.game.animationSystem.changeAnimation(buildState.targetBuildingEntityId, 'idle', 1.0, 0);
+        }
+
+        buildState.targetBuildingEntityId = null;
+        buildState.targetBuildingPosition = null;
+        buildState.state = 'idle';
+
+        // Mark command as complete in command queue system
+        if (this.game.commandQueueSystem) {
+            this.game.gameManager.call('completeCurrentCommand', this.peasantId);
+        } else {
+            // Fallback to old method
+            this.game.aiSystem.removeCurrentAIController(this.peasantId);
+        }
+
+        this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
+    }
+    
+    onPlacementPhaseStart(entityId) {
+        if(this.canExecute(entityId)){
+            this.execute(entityId);
+        }
+    }
+    
+    logAbilityUsage(entityId) {
+    }
+};
+
 // ability: BurningAuraAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['BurningAuraAbility'] = class BurningAuraAbility extends engine.app.appClasses['BaseAbility'] {
@@ -76963,250 +76966,6 @@ window.engine.app.appClasses['ChargeAbility'] = class ChargeAbility extends engi
                 velocity.vz = 0;
             }
         }
-    }
-};
-
-// ability: BuildAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['BuildAbility'] = class BuildAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, abilityData) {
-        super(game, abilityData);
-        this.id = 'build';
-        this.name = 'Build';
-        this.description = 'Construct buildings';
-        this.isPassive = true;
-        this.autocast = false;
-        this.castTime = 0;
-        this.cooldown = 0;
-        this.priority = 0;
-        this.enabled = true;
-        this.meta = { preventEnemiesInRangeCheck: true };
-        this.buildRange = 50;
-    }
-
-    canExecute(entityId) {
-        if(!this.enabled){
-            return false;
-        }
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        let buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-        
-        if (!buildingState) {
-            return false;
-        }
-
-        return this.game.aiSystem.getCurrentAIControllerId(entityId) == ComponentTypes.BUILDING_STATE;
-    }
-    execute(entityId, targetData) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const buildState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-        const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-        const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
-        
-        if (!buildState || !pos || !vel) {
-            return null;
-        }
-
-        this.updateBuilderState(entityId, buildState, pos, vel);
-        return null;
-    }
-
-    updateBuilderState(entityId, buildState, pos, vel) {
-        buildState.entityId = entityId;
-        
-        switch (buildState.state) {
-            case 'idle':
-                break;
-            case 'walking_to_construction':
-                this.walkToConstruction(buildState, pos, vel);
-                break;
-            case 'constructing':
-                this.constructBuilding(buildState);
-                break;
-        }
-    }
-
-    assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-        const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
-        const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
-
-        if (!buildingPos) return;
-
-        const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
-        const renderComponent = this.game.getComponent(buildingEntityId, ComponentTypes.RENDERABLE);
-        renderComponent.spawnType = 'underConstruction';
-
-        this.game.removeComponent(buildingEntityId, ComponentTypes.HEALTH);
-
-        const peasantId = peasantInfo.peasantId;
-        const buildTime = peasantInfo.buildTime;
-
-        if (buildingPlacement) {
-            buildingPlacement.isUnderConstruction = true;
-            buildingPlacement.buildTime = buildTime;
-            buildingPlacement.assignedBuilder = peasantId || null;
-        }
-
-        this.peasantId = peasantEntityId;
-        this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
-        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
-
-        // Use command queue system to issue build command
-        // This will properly interrupt current movement and clear the path
-        if (this.game.commandQueueSystem) {
-            this.game.gameManager.call('queueCommand', peasantEntityId, {
-                type: 'build',
-                controllerId: ComponentTypes.BUILDING_STATE,
-                targetPosition: buildingPos,
-                target: buildingEntityId,
-                meta: this.meta,
-                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
-                interruptible: true
-            }, true); // true = interrupt current command
-        } else {
-            // Fallback to old method if command queue system not available
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
-            currentBuildingStateAI.targetPosition = buildingPos;
-            currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
-        }
-
-        if (buildingPlacement) {
-            buildingPlacement.assignedBuilder = peasantEntityId;
-            buildingPlacement.isUnderConstruction = true;
-        }
-    }
-
-    walkToConstruction(buildState, pos, vel) {
-        
-        if (!buildState.targetBuildingPosition || !buildState.targetBuildingEntityId) {
-            buildState.state = 'idle';
-            return;
-        }
-
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
-        const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.BUILDING_STATE);
-        
-        if (!buildingPosition) {
-            buildState.targetBuildingEntityId = null;
-            buildState.targetBuildingPosition = null;
-            buildState.state = 'idle';
-            return;
-        }
-
-        const dx = buildState.targetBuildingPosition.x - pos.x;
-        const dz = buildState.targetBuildingPosition.z - pos.z;
-        const dist = Math.sqrt(dx * dx + dz * dz);
-
-        if (dist < this.buildRange) {
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
-            currentBuildingStateAI.targetPosition = null;
-            currentBuildingStateAI.state = 'idle';
-            currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
-
-            pos.x = buildState.targetBuildingPosition.x + this.buildRange;
-            pos.z = buildState.targetBuildingPosition.z;
-            vel.vx = 0;
-            vel.vz = 0;
-
-            // Make the peasant face the building
-            const facing = this.game.getComponent(buildState.entityId, ComponentTypes.FACING);
-            if (facing) {
-                const dx = buildState.targetBuildingPosition.x - pos.x;
-                const dz = buildState.targetBuildingPosition.z - pos.z;
-                const angleToBuilding = Math.atan2(dz, dx);
-                facing.angle = angleToBuilding;
-            }
-
-            buildState.state = 'constructing';
-            buildState.constructionStartTime = this.game.state.round;
-            buildingBuildState.state = 'under_construction';
-            buildingBuildState.constructionStartTime = this.game.state.round;
-        } else {     
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
-            if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
-                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;  
-                currentBuildingStateAI.state = 'chasing';                          
-                currentBuildingStateAI.meta = this.meta;
-                this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
-            }
-        }
-    }
-
-    constructBuilding(buildState) {
-
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
-        const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
-        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, Components.Health(unitType.hp));
-        
-
-        const elapsed = this.game.state.round - buildState.constructionStartTime;
-        const buildTime = buildingPlacement.buildTime || 1;
-        if (this.game.animationSystem) {
-            const animState = this.game.animationSystem.entityAnimationStates.get(buildState.entityId);
-            if(animState){
-                const finished = this.game.animationSystem.isAnimationFinished(buildState.entityId, animState.currentClip);
-                if(finished || animState.currentClip != 'attack'){
-                    this.game.abilitySystem.startAbilityAnimation(buildState.entityId, { castTime: 1 });
-                }
-            }
-        }
-
-        if (elapsed >= buildTime) {            
-            this.completeConstruction(buildState);
-        }
-    }
-
-    completeConstruction(buildState) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
-        const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
-        const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
-        renderComponent.spawnType = buildingPlacement.unitType.id;
-        this.game.renderSystem?.removeInstance(buildState.targetBuildingEntityId);
-        if (!buildingPlacement) {
-            buildState.state = 'idle';
-            return;
-        }
-        if(this.game.shopSystem){
-            this.game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
-        }
-
-        buildingPlacement.isUnderConstruction = false;
-        buildingPlacement.assignedBuilder = null;
-
-        if (this.game.animationSystem) {
-            this.game.animationSystem.changeAnimation(buildState.targetBuildingEntityId, 'idle', 1.0, 0);
-        }
-
-        buildState.targetBuildingEntityId = null;
-        buildState.targetBuildingPosition = null;
-        buildState.state = 'idle';
-
-        // Mark command as complete in command queue system
-        if (this.game.commandQueueSystem) {
-            this.game.gameManager.call('completeCurrentCommand', this.peasantId);
-        } else {
-            // Fallback to old method
-            this.game.aiSystem.removeCurrentAIController(this.peasantId);
-        }
-
-        this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
-    }
-    
-    onPlacementPhaseStart(entityId) {
-        if(this.canExecute(entityId)){
-            this.execute(entityId);
-        }
-    }
-    
-    logAbilityUsage(entityId) {
     }
 };
 
@@ -78197,6 +77956,213 @@ window.engine.app.appClasses['DrainLifeAbility'] = class DrainLifeAbility extend
     }
 };
 
+// ability: EnchantWeaponAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['EnchantWeaponAbility'] = class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'enchant_weapon',
+            name: 'Enchant Weapon',
+            description: 'Enchant ally weapons with elemental damage (does not stack, refreshes duration)',
+            cooldown: 12.0,
+            range: 100,
+            manaCost: 35,
+            targetType: 'allies',
+            animation: 'cast',
+            priority: 5,
+            castTime: 1.5,
+            ...params
+        });
+        
+        this.elementalDamage = 15;
+        this.duration = 30.0; // 30 seconds
+        this.availableElements = ['fire', 'cold', 'lightning'];
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFFD700,
+                    colorRange: { start: 0xFFD700, end: 0xFFA500 },
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 1.5
+                }
+            },
+            enchant_fire: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFF4500,
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.2
+                }
+            },
+            enchant_cold: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x00BFFF,
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.2
+                }
+            },
+            enchant_lightning: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFFFF00,
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.2
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const allies = this.getAlliesInRange(casterEntity);
+        // Only use if there are allies to enchant (excluding self)
+        return allies.length >= 1;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Enchanter begins weaving magical enhancements!`);
+        
+        // DESYNC SAFE: Use scheduling system for enchantment application
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyWeaponEnchantments(casterEntity);
+        }, this.castTime, casterEntity);
+    }
+    
+    applyWeaponEnchantments(casterEntity) {
+        // Check if caster is still alive
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
+        
+        // DESYNC SAFE: Get and sort allies deterministically
+        const allies = this.getAlliesInRange(casterEntity);
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let enchantedCount = 0;
+        
+        sortedAllies.forEach((allyId, index) => {
+            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            const allyHealth = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            
+            // Only enchant living allies
+            if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
+            
+            // DESYNC SAFE: Check if already enchanted - don't stack enchantments
+            const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+            
+            // DESYNC SAFE: Select element deterministically based on ally index and game time
+            const selectedElement = this.selectDeterministicElement(allyId, index);
+            
+            if (existingBuff && existingBuff.buffType === 'enchant_weapon') {
+                // DESYNC SAFE: Refresh duration and update element
+                existingBuff.endTime = this.game.state.now + this.duration;
+                existingBuff.appliedTime = this.game.state.now;
+                existingBuff.modifiers.weaponElement = selectedElement;
+            } else {
+                // Apply new weapon enchantment
+                const Components = this.game.componentManager.getComponents();
+                this.game.addComponent(allyId, this.componentTypes.BUFF, 
+                    Components.Buff('enchant_weapon', { 
+                        weaponElement: selectedElement,
+                        elementalDamage: this.elementalDamage,
+                        glowing: true
+                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
+                
+                // DESYNC SAFE: Schedule enchantment removal
+                this.game.schedulingSystem.scheduleAction(() => {
+                    this.removeEnchantment(allyId);
+                }, this.duration, allyId);
+            }
+            
+            // Visual enchantment effect based on element
+            this.createVisualEffect(allyPos, `enchant_${selectedElement}`);
+            
+            enchantedCount++;
+        });
+        
+        // Screen effect for successful enchantment
+        if (this.game.effectsSystem && enchantedCount > 0) {
+            this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
+        }
+        
+     
+    }
+    
+    // DESYNC SAFE: Select element deterministically instead of randomly
+    selectDeterministicElement(allyId, allyIndex) {
+        // Create a deterministic "random" value based on ally ID, game time, and index
+        const seed = parseInt(allyId) + Math.floor(this.game.state.now * 100) + allyIndex;
+        const pseudoRandom = (seed * 9301 + 49297) % 233280; // Simple PRNG
+        const elementIndex = Math.floor((pseudoRandom / 233280) * this.availableElements.length);
+        
+        return this.availableElements[elementIndex];
+    }
+    
+    // Alternative deterministic selection method (cycle through elements)
+    selectCyclicElement(allyIndex) {
+        return this.availableElements[allyIndex % this.availableElements.length];
+    }
+    
+    // DESYNC SAFE: Remove enchantment effect
+    removeEnchantment(allyId) {
+        // Check if ally still exists and has the enchantment buff
+        if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
+            const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+            if (buff && buff.buffType === 'enchant_weapon') {
+                const element = buff.modifiers.weaponElement || 'fire';
+                
+                this.game.removeComponent(allyId, this.componentTypes.BUFF);
+                
+                // Visual effect when enchantment expires
+                const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+                if (allyPos) {
+                    this.createVisualEffect(allyPos, `enchant_${element}`, { 
+                        count: 3, 
+                        scaleMultiplier: 0.6,
+                        speedMultiplier: 0.8
+                    });
+                }
+                
+              
+            }
+        }
+    }
+    
+    // Helper method to get enchantment color for UI/effects
+    getElementColor(element) {
+        switch (element) {
+            case 'fire': return 0xFF4500;
+            case 'cold': return 0x00BFFF;
+            case 'lightning': return 0xFFFF00;
+            default: return 0xFFD700;
+        }
+    }
+    
+    // Helper method to get element damage type for combat system integration
+    getElementDamageType(element) {
+        switch (element) {
+            case 'fire': return 'fire';
+            case 'cold': return 'cold';
+            case 'lightning': return 'lightning';
+            default: return 'magic';
+        }
+    }
+};
+
 // ability: ExplosiveTrapAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['ExplosiveTrapAbility'] = class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
@@ -78502,6 +78468,153 @@ window.engine.app.appClasses['ExplosiveTrapAbility'] = class ExplosiveTrapAbilit
             const trap = this.game.getComponent(trapId, this.componentTypes.TRAP);
             return trap && trap.caster === trapperId && !trap.triggered;
         }).length;
+    }
+};
+
+// ability: FreezingAuraAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['FreezingAuraAbility'] = class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'freezing_aura',
+            name: 'Freezing Aura',
+            description: 'Emanate freezing cold',
+            cooldown: 0,
+            range: 100,
+            manaCost: 0,
+            targetType: 'area',
+            animation: 'cast',
+            priority: 6,
+            castTime: 0,
+            ...params
+        });
+        this.drainPerSecond = 8;
+        this.duration = 12.0; // 12 seconds instead of 1200 seconds
+        this.tickInterval = 1.0; // 1 second between ticks
+        this.hasActiveAura = false;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x4B0082,
+                    colorRange: { start: 0x4B0082, end: 0x000000 },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.8
+                }
+            },
+            freezing: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F4F4F,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            empowerment: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x8B0000,
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.2
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Only allow one active aura per caster
+        return !this.hasActiveAura;
+    }
+    
+    execute(casterEntity) {
+        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!pos) return;
+        
+        this.createVisualEffect(pos, 'cast');
+        // Mark aura as active
+        this.hasActiveAura = true;
+        
+        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
+        const totalTicks = Math.floor(this.duration / this.tickInterval);
+        
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
+            
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
+            }, tickDelay, casterEntity);
+        }
+        
+        // DESYNC SAFE: Schedule aura cleanup
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.hasActiveAura = false;
+        }, this.duration, casterEntity);
+    }
+    
+    // DESYNC SAFE: Execute a single aura tick deterministically
+    executeAuraTick(casterEntity, tickIndex, totalTicks) {
+        // Check if caster is still alive
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
+            // Caster is dead, end the aura early
+            this.hasActiveAura = false;
+            return;
+        }
+        
+        // DESYNC SAFE: Get enemies and allies deterministically
+        const allies = this.getAlliesInRange(casterEntity);
+        
+        // Sort for consistent processing order
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+
+        
+        // Process allies - empower undead
+        sortedAllies.forEach(allyId => {
+            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
+            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            
+            if (!unitType || !allyPos) return;
+            
+            // Check if this is an undead unit
+            const distance = Math.sqrt(
+                Math.pow(allyPos.x - casterPos.x, 2) + 
+                Math.pow(allyPos.z - casterPos.z, 2)
+            );
+            
+            if (distance <= this.range) {
+                // Check if already has empowerment buff
+                const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                
+                if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
+                    const Components = this.game.componentManager.getComponents();
+                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
+                        Components.Buff('ice_armor', { 
+                            armorMultiplier: 1.5
+                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
+                    
+                    // Visual empowerment effect
+                    this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
+                }
+            }
+            
+        });
+        
+        // Additional visual effects every few ticks
+        if (tickIndex % 3 === 0) {
+            this.createVisualEffect(casterPos, 'freezing', { 
+                count: 6, 
+                scaleMultiplier: 2.5,
+                heightOffset: 50 
+            });
+        }
     }
 };
 
@@ -78824,153 +78937,6 @@ window.engine.app.appClasses['InfernoAbility'] = class InfernoAbility extends en
     }
 };
 
-// ability: FreezingAuraAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['FreezingAuraAbility'] = class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'freezing_aura',
-            name: 'Freezing Aura',
-            description: 'Emanate freezing cold',
-            cooldown: 0,
-            range: 100,
-            manaCost: 0,
-            targetType: 'area',
-            animation: 'cast',
-            priority: 6,
-            castTime: 0,
-            ...params
-        });
-        this.drainPerSecond = 8;
-        this.duration = 12.0; // 12 seconds instead of 1200 seconds
-        this.tickInterval = 1.0; // 1 second between ticks
-        this.hasActiveAura = false;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x000000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            freezing: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            empowerment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Only allow one active aura per caster
-        return !this.hasActiveAura;
-    }
-    
-    execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        this.createVisualEffect(pos, 'cast');
-        // Mark aura as active
-        this.hasActiveAura = true;
-        
-        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
-        const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
-        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-            const tickDelay = this.tickInterval * tickIndex;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
-            }, tickDelay, casterEntity);
-        }
-        
-        // DESYNC SAFE: Schedule aura cleanup
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.hasActiveAura = false;
-        }, this.duration, casterEntity);
-    }
-    
-    // DESYNC SAFE: Execute a single aura tick deterministically
-    executeAuraTick(casterEntity, tickIndex, totalTicks) {
-        // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
-            // Caster is dead, end the aura early
-            this.hasActiveAura = false;
-            return;
-        }
-        
-        // DESYNC SAFE: Get enemies and allies deterministically
-        const allies = this.getAlliesInRange(casterEntity);
-        
-        // Sort for consistent processing order
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-
-        
-        // Process allies - empower undead
-        sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            
-            if (!unitType || !allyPos) return;
-            
-            // Check if this is an undead unit
-            const distance = Math.sqrt(
-                Math.pow(allyPos.x - casterPos.x, 2) + 
-                Math.pow(allyPos.z - casterPos.z, 2)
-            );
-            
-            if (distance <= this.range) {
-                // Check if already has empowerment buff
-                const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
-                
-                if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
-                    const Components = this.game.componentManager.getComponents();
-                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                        Components.Buff('ice_armor', { 
-                            armorMultiplier: 1.5
-                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
-                    
-                    // Visual empowerment effect
-                    this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
-                }
-            }
-            
-        });
-        
-        // Additional visual effects every few ticks
-        if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'freezing', { 
-                count: 6, 
-                scaleMultiplier: 2.5,
-                heightOffset: 50 
-            });
-        }
-    }
-};
-
 // ability: LightningBoltAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['LightningBoltAbility'] = class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
@@ -79109,192 +79075,6 @@ window.engine.app.appClasses['LightningBoltAbility'] = class LightningBoltAbilit
         });
         
         return strongest;
-    }
-};
-
-// ability: ShadowStrikeAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ShadowStrikeAbility'] = class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'shadow_strike',
-            name: 'Shadow Strike',
-            description: 'Teleport behind an enemy and deal critical damage',
-            cooldown: 9.0,
-            range: 120,
-            manaCost: 30,
-            targetType: 'enemy',
-            animation: 'attack',
-            priority: 8,
-            castTime: 0.5,
-            ...params
-        });
-        this.backstabDamage = 65;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F2F2F,
-                    colorRange: { start: 0x2F2F2F, end: 0x000000 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            teleport: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 3.0
-                }
-            },
-            backstab: {
-                type: 'damage',
-                options: {
-                    count: 3,
-                    color: 0xFF0000,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        // DESYNC SAFE: Get and sort enemies deterministically
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return;
-        
-        // DESYNC SAFE: Select target deterministically (closest enemy)
-        const target = this.findClosestEnemy(casterEntity, enemies);
-        if (!target) return;
-        
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-        if (!targetPos) return;
-        
-        // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
-        this.logAbilityUsage(casterEntity, "Rogue strikes from the shadows!");
-        
-        // DESYNC SAFE: Use scheduling system for teleport and attack
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.performShadowStrike(casterEntity, target);
-        }, this.castTime, casterEntity);
-    }
-    
-    // DESYNC SAFE: Find closest enemy deterministically
-    findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let closest = null;
-        let closestDistance = Infinity;
-        
-        sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            if (!enemyPos) return;
-            
-            const distance = Math.sqrt(
-                Math.pow(enemyPos.x - casterPos.x, 2) + 
-                Math.pow(enemyPos.z - casterPos.z, 2)
-            );
-            
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closest = enemyId;
-            }
-        });
-        
-        return closest;
-    }
-    
-    performShadowStrike(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        
-        if (!casterPos || !targetPos) return;
-        
-        // DESYNC SAFE: Calculate teleport position deterministically
-        const teleportPos = this.calculateTeleportPosition(targetPos);
-        
-        // Visual effect at original position before teleport
-        this.createVisualEffect(casterPos, 'teleport');
-        
-        // Teleport behind target
-        casterPos.x = teleportPos.x;
-        casterPos.z = teleportPos.z;
-        
-        // Visual effect at new position after teleport
-        this.createVisualEffect(teleportPos, 'teleport');
-        
-        // Deal critical backstab damage
-        this.dealDamageWithEffects(casterEntity, targetId, this.backstabDamage, 'physical', {
-            isCritical: true,
-            criticalMultiplier: 2.0,
-            isBackstab: true
-        });
-        
-        // Backstab effect
-        this.createVisualEffect(targetPos, 'backstab');
-        
-        // Screen effect for dramatic teleport
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.2, 1.5);
-        }
-    }
-    
-    // DESYNC SAFE: Calculate teleport position deterministically
-    calculateTeleportPosition(targetPos) {
-        // Try positions behind the target in a deterministic order
-        const offsets = [
-            { x: -25, z: -25 }, // Behind and to the left
-            { x: -25, z: 0 },   // Directly behind
-            { x: -25, z: 25 },  // Behind and to the right
-            { x: 0, z: -25 },   // To the left
-            { x: 0, z: 25 },    // To the right
-        ];
-        
-        // Use the first valid position
-        for (const offset of offsets) {
-            const testPos = {
-                x: targetPos.x + offset.x,
-                y: targetPos.y,
-                z: targetPos.z + offset.z
-            };
-            
-            if (this.isValidTeleportPosition(testPos)) {
-                return testPos;
-            }
-        }
-        
-        // Fallback position if no valid position found
-        return {
-            x: targetPos.x - 25,
-            y: targetPos.y,
-            z: targetPos.z - 25
-        };
-    }
-    
-    isValidTeleportPosition(pos) {
-        // Basic validation - ensure position is within reasonable bounds
-        // This could be enhanced with collision detection if needed
-        return pos.x >= -1000 && pos.x <= 1000 && pos.z >= -1000 && pos.z <= 1000;
     }
 };
 
@@ -79690,418 +79470,6 @@ window.engine.app.appClasses['MindControlAbility'] = class MindControlAbility ex
             this.clearAllBeamsForTarget(targetId);
         }
         this.beamRegistry.clear();
-    }
-};
-
-// ability: SmiteAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['SmiteAbility'] = class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'smite',
-            name: 'Divine Smite',
-            description: 'Calls down divine wrath upon the strongest enemy',
-            cooldown: 6.0,
-            range: 400,
-            manaCost: 65,
-            targetType: 'auto',
-            animation: 'cast',
-            priority: 9,
-            castTime: 1.8,
-            autoTrigger: 'strong_enemy',
-            ...params
-        });
-        
-        this.damage = 80;
-        this.bonusDamageVsUndead = 2.0; // Double damage vs undead
-        this.pillarDelay = 0.5; // Time between pillar and damage
-        this.element = 'divine';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFD700,
-                    colorRange: { start: 0xFFD700, end: 0xFFFACD },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.2
-                }
-            },
-            smite: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFF8DC,
-                    scaleMultiplier: 3.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            pillar: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xF0E68C,
-                    scaleMultiplier: 4.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            divine_judgment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFFFE0,
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length >= 1;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return null;
-        
-        // Target the strongest enemy (highest health) deterministically
-        const target = this.findHighestHealthEnemyDeterministic(enemies);
-        if (!target) return null;
-        
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-        if (!targetPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine judgment descends from the heavens!`);
-        
-        // Schedule the divine smite after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.performDivineSmite(casterEntity, target, targetPos);
-        }, this.castTime, casterEntity);
-    }
-    
-    performDivineSmite(casterEntity, targetId, originalTargetPos) {
-        // Get current target position (target may have moved)
-        const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
-        
-        // Create pillar of light effect
-        this.createVisualEffect(targetPos, 'pillar');
-        
-        // Create divine judgment aura effect
-        this.createVisualEffect(targetPos, 'divine_judgment');
-        
-        // Screen flash and shake
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#FFD700', 0.5);
-            this.game.effectsSystem.playScreenShake(0.3, 3);
-        }
-        
-        this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);
-        
-        // Schedule the actual damage after pillar effect
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.applySmiteDamage(casterEntity, targetId, targetPos);
-        }, this.pillarDelay, targetId);
-    }
-    
-    applySmiteDamage(casterEntity, targetId, targetPos) {
-        // Validate target still exists
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        if (!targetHealth || targetHealth.current <= 0) {
-            this.logAbilityUsage(casterEntity, `Divine judgment finds no target!`);
-            return;
-        }
-        
-        // Calculate damage (bonus vs undead)
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        let damage = this.damage;
-        let isUndeadTarget = false;
-        
-        if (targetUnitType && (
-            targetUnitType.title.includes('undead') || 
-            targetUnitType.title.includes('skeleton') ||
-            targetUnitType.title.includes('zombie') ||
-            targetUnitType.id.includes('undead')
-        )) {
-            damage = Math.floor(damage * this.bonusDamageVsUndead);
-            isUndeadTarget = true;
-        }
-        
-        // Apply divine damage
-        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
-            isSmite: true,
-            isCritical: true,
-            isAntiUndead: isUndeadTarget,
-            criticalMultiplier: 1.5
-        });
-        
-        // Create smite impact effect
-        this.createVisualEffect(targetPos, 'smite');
-      
-    
-    }
-    
-    // FIXED: Deterministic highest health enemy selection
-    findHighestHealthEnemyDeterministic(enemies) {
-        if (enemies.length === 0) return null;
-        
-        // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let strongest = null;
-        let highestHealth = 0;
-        
-        // Process enemies in deterministic order
-        sortedEnemies.forEach(enemyId => {
-            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            if (!health) return;
-            
-            // Use >= for consistent tie-breaking (first in sorted order wins when health is equal)
-            if (health.current >= highestHealth) {
-                highestHealth = health.current;
-                strongest = enemyId;
-            }
-        });
-        
-        return strongest;
-    }
-    
-    // Helper method to check if target is undead (for potential future use)
-    isUndeadTarget(targetId) {
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        if (!targetUnitType) return false;
-        
-        return targetUnitType.title.includes('undead') || 
-               targetUnitType.title.includes('skeleton') ||
-               targetUnitType.title.includes('zombie') ||
-               targetUnitType.id.includes('undead');
-    }
-    
-    // Helper method to get effective damage against target
-    getEffectiveDamage(targetId) {
-        let damage = this.damage;
-        
-        if (this.isUndeadTarget(targetId)) {
-            damage = Math.floor(damage * this.bonusDamageVsUndead);
-        }
-        
-        return damage;
-    }
-};
-
-// ability: MultiShotAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MultiShotAbility'] = class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'multi_shot',
-            name: 'Multi Shot',
-            description: 'Fire multiple arrows at different targets',
-            cooldown: 7.0,
-            range: 180,
-            manaCost: 25,
-            targetType: 'enemies',
-            animation: 'attack',
-            priority: 6,
-            castTime: 1.0,
-            ...params
-        });
-        
-        this.maxTargets = 3;
-        this.arrowDamage = 35;
-        this.shotInterval = 0.2; // Time between each arrow
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B4513,
-                    colorRange: { start: 0x8B4513, end: 0xDEB887 },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            arrow_launch: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xCD853F,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            volley: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xF4A460,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Need at least one enemy to shoot at
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return null;
-        
-        // Select targets deterministically
-        const targets = this.selectMultishotTargets(enemies);
-        if (targets.length === 0) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, 
-            `Archer prepares to fire ${targets.length} arrows...`);
-        
-        // Schedule the multishot volley after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.fireMultishotVolley(casterEntity, targets);
-        }, this.castTime, casterEntity);
-    }
-    
-    fireMultishotVolley(casterEntity, targets) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // Create volley effect
-        this.createVisualEffect(casterPos, 'volley');
-        
-        // Fire arrows at each target with staggered timing
-        targets.forEach((targetId, shotIndex) => {
-            const shotDelay = shotIndex * this.shotInterval;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.fireSingleArrow(casterEntity, targetId, shotIndex);
-            }, shotDelay, casterEntity);
-        });
-        
-        this.logAbilityUsage(casterEntity, 
-            `Archer fires volley of ${targets.length} arrows!`);
-    }
-    
-    fireSingleArrow(casterEntity, targetId, shotIndex) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        
-        // Validate target still exists
-        if (!casterPos || !targetPos) return;
-        
-        // Create arrow launch effect
-        this.createVisualEffect(casterPos, 'arrow_launch');
-        
-        // Fire projectile if system is available
-        if (this.game.projectileSystem) {
-            const projectileData = {
-                id: 'arrow',
-                title: `Arrow ${shotIndex + 1}`,
-                damage: this.arrowDamage,
-                speed: 120,
-                element: this.element,
-                ballistic: true,
-                onHit: (hitPos) => {
-                    // Impact effect
-                    this.createVisualEffect(hitPos, 'arrow_launch', { 
-                        count: 3, 
-                        scaleMultiplier: 0.8 
-                    });
-                },
-                onTravel: (currentPos) => {
-                    // Optional: trail effect during flight
-                    if (shotIndex === 0) { // Only show trail on first arrow to avoid spam
-                        this.createVisualEffect(currentPos, 'cast', { 
-                            count: 1, 
-                            scaleMultiplier: 0.5,
-                            heightOffset: 0 
-                        });
-                    }
-                }
-            };
-            
-            this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
-        } else {
-            // Fallback: direct damage if no projectile system
-            this.dealDamageWithEffects(casterEntity, targetId, this.arrowDamage, this.element, {
-                isArrow: true,
-                isMultishot: true,
-                shotIndex: shotIndex
-            });
-        }
-        
-    }
-    
-    // FIXED: Deterministic target selection
-    selectMultishotTargets(enemies) {
-        if (enemies.length === 0) return [];
-        
-        // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        // Take up to maxTargets, but prioritize by distance for tactical targeting
-        const casterPos = this.game.getComponent(this.getCasterFromContext(), this.componentTypes.POSITION);
-        if (!casterPos) {
-            // Fallback: just take first N enemies if no caster position
-            return sortedEnemies.slice(0, this.maxTargets);
-        }
-        
-        // Calculate distances and sort by distance (closest first), then by ID for tie-breaking
-        const enemiesWithDistance = sortedEnemies.map(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            let distance = Infinity;
-            
-            if (enemyPos) {
-                distance = Math.sqrt(
-                    Math.pow(enemyPos.x - casterPos.x, 2) + 
-                    Math.pow(enemyPos.z - casterPos.z, 2)
-                );
-            }
-            
-            return { enemyId, distance };
-        });
-        
-        // Sort by distance first, then by entity ID for deterministic tie-breaking
-        enemiesWithDistance.sort((a, b) => {
-            if (Math.abs(a.distance - b.distance) < 0.001) { // Nearly equal distances
-                return String(a.enemyId).localeCompare(String(b.enemyId));
-            }
-            return a.distance - b.distance;
-        });
-        
-        // Return up to maxTargets closest enemies
-        return enemiesWithDistance
-            .slice(0, this.maxTargets)
-            .map(item => item.enemyId);
-    }
-    
-    // Helper method to get caster in current context (if needed)
-    getCasterFromContext() {
-        // This is a fallback - in practice, the caster should be passed to selectMultishotTargets
-        // For now, we'll use a simple approach
-        return null; // Will trigger the simpler fallback logic
     }
 };
 
@@ -80541,213 +79909,6 @@ window.engine.app.appClasses['MineGoldAbility'] = class MineGoldAbility extends 
     }
 };
 
-// ability: EnchantWeaponAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['EnchantWeaponAbility'] = class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'enchant_weapon',
-            name: 'Enchant Weapon',
-            description: 'Enchant ally weapons with elemental damage (does not stack, refreshes duration)',
-            cooldown: 12.0,
-            range: 100,
-            manaCost: 35,
-            targetType: 'allies',
-            animation: 'cast',
-            priority: 5,
-            castTime: 1.5,
-            ...params
-        });
-        
-        this.elementalDamage = 15;
-        this.duration = 30.0; // 30 seconds
-        this.availableElements = ['fire', 'cold', 'lightning'];
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFD700,
-                    colorRange: { start: 0xFFD700, end: 0xFFA500 },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.5
-                }
-            },
-            enchant_fire: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF4500,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            },
-            enchant_cold: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x00BFFF,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            },
-            enchant_lightning: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFFF00,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const allies = this.getAlliesInRange(casterEntity);
-        // Only use if there are allies to enchant (excluding self)
-        return allies.length >= 1;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Enchanter begins weaving magical enhancements!`);
-        
-        // DESYNC SAFE: Use scheduling system for enchantment application
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.applyWeaponEnchantments(casterEntity);
-        }, this.castTime, casterEntity);
-    }
-    
-    applyWeaponEnchantments(casterEntity) {
-        // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
-        
-        // DESYNC SAFE: Get and sort allies deterministically
-        const allies = this.getAlliesInRange(casterEntity);
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let enchantedCount = 0;
-        
-        sortedAllies.forEach((allyId, index) => {
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            const allyHealth = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            
-            // Only enchant living allies
-            if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
-            
-            // DESYNC SAFE: Check if already enchanted - don't stack enchantments
-            const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
-            
-            // DESYNC SAFE: Select element deterministically based on ally index and game time
-            const selectedElement = this.selectDeterministicElement(allyId, index);
-            
-            if (existingBuff && existingBuff.buffType === 'enchant_weapon') {
-                // DESYNC SAFE: Refresh duration and update element
-                existingBuff.endTime = this.game.state.now + this.duration;
-                existingBuff.appliedTime = this.game.state.now;
-                existingBuff.modifiers.weaponElement = selectedElement;
-            } else {
-                // Apply new weapon enchantment
-                const Components = this.game.componentManager.getComponents();
-                this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                    Components.Buff('enchant_weapon', { 
-                        weaponElement: selectedElement,
-                        elementalDamage: this.elementalDamage,
-                        glowing: true
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
-                
-                // DESYNC SAFE: Schedule enchantment removal
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.removeEnchantment(allyId);
-                }, this.duration, allyId);
-            }
-            
-            // Visual enchantment effect based on element
-            this.createVisualEffect(allyPos, `enchant_${selectedElement}`);
-            
-            enchantedCount++;
-        });
-        
-        // Screen effect for successful enchantment
-        if (this.game.effectsSystem && enchantedCount > 0) {
-            this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
-        }
-        
-     
-    }
-    
-    // DESYNC SAFE: Select element deterministically instead of randomly
-    selectDeterministicElement(allyId, allyIndex) {
-        // Create a deterministic "random" value based on ally ID, game time, and index
-        const seed = parseInt(allyId) + Math.floor(this.game.state.now * 100) + allyIndex;
-        const pseudoRandom = (seed * 9301 + 49297) % 233280; // Simple PRNG
-        const elementIndex = Math.floor((pseudoRandom / 233280) * this.availableElements.length);
-        
-        return this.availableElements[elementIndex];
-    }
-    
-    // Alternative deterministic selection method (cycle through elements)
-    selectCyclicElement(allyIndex) {
-        return this.availableElements[allyIndex % this.availableElements.length];
-    }
-    
-    // DESYNC SAFE: Remove enchantment effect
-    removeEnchantment(allyId) {
-        // Check if ally still exists and has the enchantment buff
-        if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
-            if (buff && buff.buffType === 'enchant_weapon') {
-                const element = buff.modifiers.weaponElement || 'fire';
-                
-                this.game.removeComponent(allyId, this.componentTypes.BUFF);
-                
-                // Visual effect when enchantment expires
-                const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-                if (allyPos) {
-                    this.createVisualEffect(allyPos, `enchant_${element}`, { 
-                        count: 3, 
-                        scaleMultiplier: 0.6,
-                        speedMultiplier: 0.8
-                    });
-                }
-                
-              
-            }
-        }
-    }
-    
-    // Helper method to get enchantment color for UI/effects
-    getElementColor(element) {
-        switch (element) {
-            case 'fire': return 0xFF4500;
-            case 'cold': return 0x00BFFF;
-            case 'lightning': return 0xFFFF00;
-            default: return 0xFFD700;
-        }
-    }
-    
-    // Helper method to get element damage type for combat system integration
-    getElementDamageType(element) {
-        switch (element) {
-            case 'fire': return 'fire';
-            case 'cold': return 'cold';
-            case 'lightning': return 'lightning';
-            default: return 'magic';
-        }
-    }
-};
-
 // ability: MirrorImagesAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['MirrorImagesAbility'] = class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
@@ -80986,27 +80147,27 @@ window.engine.app.appClasses['MirrorImagesAbility'] = class MirrorImagesAbility 
     }
 };
 
-// ability: TrackingMark
+// ability: MultiShotAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['TrackingMark'] = class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
+window.engine.app.appClasses['MultiShotAbility'] = class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
-            id: 'tracking_mark',
-            name: 'Tracking Mark',
-            description: 'Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect',
-            cooldown: 8.0,
-            range: 200,
-            manaCost: 20,
-            targetType: 'enemy',
-            animation: 'cast',
-            priority: 7,
+            id: 'multi_shot',
+            name: 'Multi Shot',
+            description: 'Fire multiple arrows at different targets',
+            cooldown: 7.0,
+            range: 180,
+            manaCost: 25,
+            targetType: 'enemies',
+            animation: 'attack',
+            priority: 6,
             castTime: 1.0,
             ...params
         });
         
-        this.markDamageIncrease = 0.25; // 25% per mark
-        this.maxMarks = 4; // Cap at 4 marks (100% bonus)
-        this.markDuration = 15.0;
+        this.maxTargets = 3;
+        this.arrowDamage = 35;
+        this.shotInterval = 0.2; // Time between each arrow
         this.element = 'physical';
     }
     
@@ -81016,44 +80177,35 @@ window.engine.app.appClasses['TrackingMark'] = class TrackingMarkAbility extends
                 type: 'magic',
                 options: {
                     count: 3,
-                    color: 0xFF6347,
-                    colorRange: { start: 0xFF6347, end: 0xFF4500 },
+                    color: 0x8B4513,
+                    colorRange: { start: 0x8B4513, end: 0xDEB887 },
                     scaleMultiplier: 1.2,
                     speedMultiplier: 1.5
                 }
             },
-            mark_target: {
+            arrow_launch: {
                 type: 'magic',
                 options: {
                     count: 3,
-                    color: 0xDC143C,
-                    scaleMultiplier: 1.8,
+                    color: 0xCD853F,
+                    scaleMultiplier: 1.0,
                     speedMultiplier: 2.0
                 }
             },
-            tracking_beam: {
+            volley: {
                 type: 'magic',
                 options: {
                     count: 3,
-                    color: 0xFF0000,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 3.0
-                }
-            },
-            mark_stack: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
+                    color: 0xF4A460,
                     scaleMultiplier: 1.5,
-                    speedMultiplier: 1.8
+                    speedMultiplier: 1.2
                 }
             }
         };
     }
     
     canExecute(casterEntity) {
-        // Need at least one enemy to mark
+        // Need at least one enemy to shoot at
         const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length > 0;
     }
@@ -81065,223 +80217,139 @@ window.engine.app.appClasses['TrackingMark'] = class TrackingMarkAbility extends
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return null;
         
-        // Select target deterministically
-        const target = this.selectMarkTarget(enemies, casterEntity);
-        if (!target) return null;
+        // Select targets deterministically
+        const targets = this.selectMultishotTargets(enemies);
+        if (targets.length === 0) return null;
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Ranger takes aim at their prey...`);
+        this.logAbilityUsage(casterEntity, 
+            `Archer prepares to fire ${targets.length} arrows...`);
         
-        // Schedule the mark application after cast time
+        // Schedule the multishot volley after cast time
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyTrackingMark(casterEntity, target);
+            this.fireMultishotVolley(casterEntity, targets);
         }, this.castTime, casterEntity);
     }
     
-    applyTrackingMark(casterEntity, targetId) {
+    fireMultishotVolley(casterEntity, targets) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Create volley effect
+        this.createVisualEffect(casterPos, 'volley');
+        
+        // Fire arrows at each target with staggered timing
+        targets.forEach((targetId, shotIndex) => {
+            const shotDelay = shotIndex * this.shotInterval;
+            
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.fireSingleArrow(casterEntity, targetId, shotIndex);
+            }, shotDelay, casterEntity);
+        });
+        
+        this.logAbilityUsage(casterEntity, 
+            `Archer fires volley of ${targets.length} arrows!`);
+    }
+    
+    fireSingleArrow(casterEntity, targetId, shotIndex) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
         
         // Validate target still exists
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        if (!targetHealth || targetHealth.current <= 0 || !targetPos) {
-            this.logAbilityUsage(casterEntity, `Target has vanished from sight!`);
-            return;
-        }
+        if (!casterPos || !targetPos) return;
         
-        // Create marking beam effect if caster still exists
-        if (casterPos) {
-            this.createTrackingBeamEffect(casterPos, targetPos);
-        }
+        // Create arrow launch effect
+        this.createVisualEffect(casterPos, 'arrow_launch');
         
-        // Apply or stack the tracking mark
-        const markResult = this.applyOrStackMark(casterEntity, targetId);
-        
-        // Create appropriate visual effect based on result
-        if (markResult.isNewMark) {
-            this.createVisualEffect(targetPos, 'mark_target');
-        } else if (markResult.wasStacked) {
-            this.createVisualEffect(targetPos, 'mark_stack');
-        } else {
-            // Mark refreshed
-            this.createVisualEffect(targetPos, 'tracking_beam');
-        }
-        
-        // Enhanced logging
-        this.logMarkResult(casterEntity, targetId, markResult);
-    }
-    
-    applyOrStackMark(casterEntity, targetId) {
-        const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.markDuration;
-        
-        // Check for existing tracking mark
-        let existingMark = this.game.getComponent(targetId, this.componentTypes.BUFF);
-        
-        if (existingMark && existingMark.buffType === 'marked') {
-            // Stack the mark up to the maximum
-            if (existingMark.stacks < this.maxMarks) {
-                existingMark.stacks++;
-                existingMark.damageTakenMultiplier = 1 + (this.markDamageIncrease * existingMark.stacks);
-                existingMark.endTime = endTime; // Refresh duration
-                existingMark.appliedTime = currentTime; // Update applied time
-                
-                // Track who applied this stack (for potential future features)
-                if (!existingMark.appliedBy) {
-                    existingMark.appliedBy = [];
+        // Fire projectile if system is available
+        if (this.game.projectileSystem) {
+            const projectileData = {
+                id: 'arrow',
+                title: `Arrow ${shotIndex + 1}`,
+                damage: this.arrowDamage,
+                speed: 120,
+                element: this.element,
+                ballistic: true,
+                onHit: (hitPos) => {
+                    // Impact effect
+                    this.createVisualEffect(hitPos, 'arrow_launch', { 
+                        count: 3, 
+                        scaleMultiplier: 0.8 
+                    });
+                },
+                onTravel: (currentPos) => {
+                    // Optional: trail effect during flight
+                    if (shotIndex === 0) { // Only show trail on first arrow to avoid spam
+                        this.createVisualEffect(currentPos, 'cast', { 
+                            count: 1, 
+                            scaleMultiplier: 0.5,
+                            heightOffset: 0 
+                        });
+                    }
                 }
-                if (!existingMark.appliedBy.includes(casterEntity)) {
-                    existingMark.appliedBy.push(casterEntity);
-                }
-                
-                return {
-                    isNewMark: false,
-                    wasStacked: true,
-                    wasRefreshed: false,
-                    currentStacks: existingMark.stacks,
-                    damageMultiplier: existingMark.damageTakenMultiplier
-                };
-            } else {
-                // Just refresh duration if at max stacks
-                existingMark.endTime = endTime;
-                existingMark.appliedTime = currentTime;
-                
-                return {
-                    isNewMark: false,
-                    wasStacked: false,
-                    wasRefreshed: true,
-                    currentStacks: existingMark.stacks,
-                    damageMultiplier: existingMark.damageTakenMultiplier
-                };
-            }
-        } else {
-            // Apply new tracking mark
-            this.game.addComponent(targetId, this.componentTypes.BUFF, 
-                Components.Buff(
-                    'marked', 
-                    { 
-                        damageTakenMultiplier: 1 + this.markDamageIncrease,
-                        revealed: true,
-                        markedBy: casterEntity,
-                        appliedBy: [casterEntity]
-                    }, 
-                    endTime,      // End time
-                    true,         // Stackable
-                    1,            // Initial stack count
-                    currentTime   // Applied time
-                )
-            );
-            
-            return {
-                isNewMark: true,
-                wasStacked: false,
-                wasRefreshed: false,
-                currentStacks: 1,
-                damageMultiplier: 1 + this.markDamageIncrease
             };
+            
+            this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
+        } else {
+            // Fallback: direct damage if no projectile system
+            this.dealDamageWithEffects(casterEntity, targetId, this.arrowDamage, this.element, {
+                isArrow: true,
+                isMultishot: true,
+                shotIndex: shotIndex
+            });
         }
-    }
-    
-    createTrackingBeamEffect(casterPos, targetPos) {
-        // Create a visual connection between ranger and target
-        this.createVisualEffect(casterPos, 'tracking_beam');
-        this.createVisualEffect(targetPos, 'tracking_beam');
-        
-        // Create energy beam if effects system supports it
-        if (this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
-            this.game.effectsSystem.createEnergyBeam(
-                new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
-                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
-                {
-                    style: { color: 0xFF6347, linewidth: 3 },
-                    animation: { duration: 600, flickerCount: 2 }
-                }
-            );
-        }
-    }
-    
-    logMarkResult(casterEntity, targetId, markResult) {
-       
         
     }
     
     // FIXED: Deterministic target selection
-    selectMarkTarget(enemies, casterEntity) {
-        if (enemies.length === 0) return null;
+    selectMultishotTargets(enemies) {
+        if (enemies.length === 0) return [];
         
         // Sort enemies deterministically first for consistent processing
         const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
-        // Priority 1: Unmarked enemies (new marks are more valuable)
-        const unmarkedEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-            return !buff || buff.buffType !== 'marked';
-        });
-        
-        if (unmarkedEnemies.length > 0) {
-            // Among unmarked enemies, prioritize by distance (closest first)
-            return this.selectClosestEnemy(unmarkedEnemies, casterEntity);
+        // Take up to maxTargets, but prioritize by distance for tactical targeting
+        const casterPos = this.game.getComponent(this.getCasterFromContext(), this.componentTypes.POSITION);
+        if (!casterPos) {
+            // Fallback: just take first N enemies if no caster position
+            return sortedEnemies.slice(0, this.maxTargets);
         }
         
-        // Priority 2: Marked enemies that can be stacked further
-        const stackableEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-            return buff && buff.buffType === 'marked' && buff.stacks < this.maxMarks;
-        });
-        
-        if (stackableEnemies.length > 0) {
-            // Among stackable enemies, prioritize by current stacks (higher first for focused fire)
-            return this.selectHighestStackedEnemy(stackableEnemies);
-        }
-        
-        // Priority 3: Any marked enemy (for duration refresh)
-        return this.selectClosestEnemy(sortedEnemies, casterEntity);
-    }
-    
-    selectClosestEnemy(enemies, casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos || enemies.length === 0) return null;
-        
-        let closest = null;
-        let closestDistance = Infinity;
-        
-        enemies.forEach(enemyId => {
+        // Calculate distances and sort by distance (closest first), then by ID for tie-breaking
+        const enemiesWithDistance = sortedEnemies.map(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            if (!enemyPos) return;
+            let distance = Infinity;
             
-            const distance = Math.sqrt(
-                Math.pow(enemyPos.x - casterPos.x, 2) + 
-                Math.pow(enemyPos.z - casterPos.z, 2)
-            );
-            
-            // Use <= for consistent tie-breaking (first in sorted order wins)
-            if (distance <= closestDistance) {
-                closestDistance = distance;
-                closest = enemyId;
+            if (enemyPos) {
+                distance = Math.sqrt(
+                    Math.pow(enemyPos.x - casterPos.x, 2) + 
+                    Math.pow(enemyPos.z - casterPos.z, 2)
+                );
             }
+            
+            return { enemyId, distance };
         });
         
-        return closest;
+        // Sort by distance first, then by entity ID for deterministic tie-breaking
+        enemiesWithDistance.sort((a, b) => {
+            if (Math.abs(a.distance - b.distance) < 0.001) { // Nearly equal distances
+                return String(a.enemyId).localeCompare(String(b.enemyId));
+            }
+            return a.distance - b.distance;
+        });
+        
+        // Return up to maxTargets closest enemies
+        return enemiesWithDistance
+            .slice(0, this.maxTargets)
+            .map(item => item.enemyId);
     }
     
-    selectHighestStackedEnemy(enemies) {
-        let highestStacked = null;
-        let highestStacks = 0;
-        
-        enemies.forEach(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-            if (!buff || buff.buffType !== 'marked') return;
-            
-            // Use >= for consistent tie-breaking (first in sorted order wins)
-            if (buff.stacks >= highestStacks) {
-                highestStacks = buff.stacks;
-                highestStacked = enemyId;
-            }
-        });
-        
-        return highestStacked;
+    // Helper method to get caster in current context (if needed)
+    getCasterFromContext() {
+        // This is a fallback - in practice, the caster should be passed to selectMultishotTargets
+        // For now, we'll use a simple approach
+        return null; // Will trigger the simpler fallback logic
     }
 };
 
@@ -81493,6 +80561,1034 @@ window.engine.app.appClasses['PhalanxFormationAbility'] = class PhalanxFormation
             activeFormationMembers++;
         });
        
+    }
+};
+
+// ability: PiercingShotAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['PiercingShotAbility'] = class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'piercing_shot',
+            name: 'Piercing Shot',
+            description: 'Fire a bolt that pierces through multiple enemies',
+            cooldown: 6.0,
+            range: 200,
+            manaCost: 25,
+            targetType: 'line',
+            animation: 'attack',
+            priority: 6,
+            castTime: 1.5,
+            ...params
+        });
+        
+        this.piercingDamage = 45;
+        this.lineWidth = 20; // Width of the piercing line
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x4682B4,
+                    colorRange: { start: 0x4682B4, end: 0x87CEEB },
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 1.5
+                }
+            },
+            beam_charge: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x6495ED,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 0.8
+                }
+            },
+            piercing_beam: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xB0C4DE,
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 2.5
+                }
+            },
+            impact: {
+                type: 'damage',
+                options: {
+                    count: 3,
+                    color: 0x4169E1,
+                    scaleMultiplier: 1.0,
+                    speedMultiplier: 1.2
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Need at least one enemy in range to pierce
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterFacing = this.game.getComponent(casterEntity, this.componentTypes.FACING);
+        
+        if (!casterPos || !casterFacing) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Crossbow charges a piercing bolt...`);
+        
+        // Schedule the piercing shot after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.firePiercingShot(casterEntity, casterPos, casterFacing);
+        }, this.castTime, casterEntity);
+    }
+    
+    firePiercingShot(casterEntity, casterPos, casterFacing) {
+        // Calculate piercing line end position
+        const endPos = this.calculateLineEndPosition(casterPos, casterFacing);
+        
+        // Create beam charging effect
+        this.createVisualEffect(casterPos, 'beam_charge');
+        
+        // Schedule visual beam effect slightly before damage
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createPiercingBeamEffect(casterPos, endPos);
+        }, 0.2, casterEntity);
+        
+        // Schedule damage application
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyPiercingDamage(casterEntity, casterPos, endPos);
+        }, 0.3, casterEntity);
+    }
+    
+    createPiercingBeamEffect(startPos, endPos) {
+        // Create piercing beam visual effect
+        this.createVisualEffect(startPos, 'piercing_beam');
+        this.createVisualEffect(endPos, 'piercing_beam', { 
+            count: 6, 
+            scaleMultiplier: 1.5 
+        });
+        
+        // Create energy beam if effects system supports it
+        if (this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
+            this.game.effectsSystem.createEnergyBeam(
+                new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z),
+                new THREE.Vector3(endPos.x, endPos.y + 15, endPos.z),
+                {
+                    style: { color: 0x4682B4, linewidth: 4 },
+                    animation: { duration: 800, flickerCount: 2 }
+                }
+            );
+        }
+    }
+    
+    applyPiercingDamage(casterEntity, startPos, endPos) {
+        // Get all enemies in range and filter those hit by the line
+        const enemies = this.getEnemiesInRange(casterEntity, this.range);
+        const hitEnemies = this.getEnemiesInLine(enemies, startPos, endPos);
+        
+        if (hitEnemies.length === 0) {
+            this.logAbilityUsage(casterEntity, `Piercing bolt finds no targets!`);
+            return;
+        }
+        
+        // Sort hit enemies by distance along the line for consistent damage application
+        const sortedHitEnemies = this.sortEnemiesByDistanceAlongLine(hitEnemies, startPos, endPos);
+        
+        // Apply damage to each enemy in order
+        sortedHitEnemies.forEach((enemyData, index) => {
+            const { enemyId, position } = enemyData;
+            
+            // Apply piercing damage
+            this.dealDamageWithEffects(casterEntity, enemyId, this.piercingDamage, this.element, {
+                isPiercing: true,
+                piercingIndex: index,
+                totalPierced: sortedHitEnemies.length
+            });
+            
+            // Create impact effect at each enemy position
+            this.createVisualEffect(position, 'impact');
+            
+         
+        });
+        
+        // Screen effects for dramatic impact
+        if (this.game.effectsSystem && sortedHitEnemies.length > 1) {
+            this.game.effectsSystem.playScreenShake(0.4, 2);
+        }
+        
+        this.logAbilityUsage(casterEntity, 
+            `Crossbow bolt pierces through ${sortedHitEnemies.length} enemies!`);
+    }
+    
+    // FIXED: Deterministic line end position calculation
+    calculateLineEndPosition(startPos, facing) {
+        return {
+            x: startPos.x + Math.cos(facing.angle) * this.range,
+            y: startPos.y,
+            z: startPos.z + Math.sin(facing.angle) * this.range
+        };
+    }
+    
+    // FIXED: Deterministic enemy filtering in line
+    getEnemiesInLine(enemies, startPos, endPos) {
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        const hitEnemies = [];
+        
+        sortedEnemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            if (!enemyPos) return;
+            
+            if (this.isInLine(startPos, endPos, enemyPos, this.lineWidth)) {
+                hitEnemies.push({
+                    enemyId: enemyId,
+                    position: { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z }
+                });
+            }
+        });
+        
+        return hitEnemies;
+    }
+    
+    // FIXED: More precise and deterministic line-point distance calculation
+    isInLine(start, end, point, width) {
+        if (!point) return false;
+        
+        // Calculate line parameters more precisely
+        const lineLength = Math.sqrt(
+            Math.pow(end.x - start.x, 2) + Math.pow(end.z - start.z, 2)
+        );
+        
+        if (lineLength < 0.001) return false; // Avoid division by zero
+        
+        // Calculate perpendicular distance from point to line
+        const A = end.z - start.z;
+        const B = start.x - end.x;
+        const C = end.x * start.z - start.x * end.z;
+        
+        const distance = Math.abs(A * point.x + B * point.z + C) / Math.sqrt(A * A + B * B);
+        
+        // Also check if point is within the line segment bounds
+        const dotProduct = (point.x - start.x) * (end.x - start.x) + (point.z - start.z) * (end.z - start.z);
+        const projectionRatio = dotProduct / (lineLength * lineLength);
+        
+        // Point must be within line width and within line segment bounds
+        return distance <= width && projectionRatio >= 0 && projectionRatio <= 1;
+    }
+    
+    // FIXED: Sort enemies by distance along line for consistent ordering
+    sortEnemiesByDistanceAlongLine(hitEnemies, startPos, endPos) {
+        return hitEnemies.slice().sort((a, b) => {
+            // Calculate distance from start of line for each enemy
+            const distanceA = Math.sqrt(
+                Math.pow(a.position.x - startPos.x, 2) + 
+                Math.pow(a.position.z - startPos.z, 2)
+            );
+            const distanceB = Math.sqrt(
+                Math.pow(b.position.x - startPos.x, 2) + 
+                Math.pow(b.position.z - startPos.z, 2)
+            );
+            
+            // Sort by distance from caster, then by entity ID for tie-breaking
+            if (Math.abs(distanceA - distanceB) < 0.001) {
+                return String(a.enemyId).localeCompare(String(b.enemyId));
+            }
+            return distanceA - distanceB;
+        });
+    }
+};
+
+// ability: RageAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['RageAbility'] = class RageAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'raging_strike',
+            name: 'Raging Strike',
+            description: 'Unleash primal fury with increased damage and attack speed',
+            cooldown: 5.0,
+            range: 0, // Self-buff
+            manaCost: 20,
+            targetType: 'self',
+            animation: 'attack',
+            priority: 6,
+            castTime: 0.8,
+            ...params
+        });
+        
+        this.rageDuration = 8.0;
+        this.damageMultiplier = 1.5;
+        this.attackSpeedMultiplier = 1.3;
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xff4444, 
+                    colorRange: { start: 0xff4444, end: 0xff8800 },
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.5
+                }
+            },
+            rage: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xff0000, 
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 2.0
+                }
+            },
+            fury: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xcc0000, 
+                    scaleMultiplier: 2.2,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Check if there are enemies nearby to rage against
+        const enemies = this.getEnemiesInRange(casterEntity, 100);
+        if (enemies.length === 0) return false;
+        
+        // Don't stack rage buffs - check if already raged
+        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        if (existingBuff && existingBuff.buffType === 'rage') return false;
+        
+        return true;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Primal fury begins to build...`);
+        
+        // Schedule the rage activation after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.activateRage(casterEntity);
+        }, this.castTime, casterEntity);
+    }
+    
+    activateRage(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Create dramatic rage effects
+        this.createVisualEffect(casterPos, 'rage');
+        
+        // Schedule a secondary fury effect for visual impact
+        this.game.schedulingSystem.scheduleAction(() => {
+            if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {
+                const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+                if (pos) {
+                    this.createVisualEffect(pos, 'fury');
+                }
+            }
+        }, 0.5, casterEntity);
+        
+        // Apply rage buff with proper timing
+        const Components = this.game.componentManager.getComponents();
+        const currentTime = this.game.state.now || this.game.state.now || 0;
+        const endTime = currentTime + this.rageDuration;
+        
+        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
+            Components.Buff(
+                'rage', 
+                { 
+                    damageMultiplier: this.damageMultiplier, 
+                    attackSpeedMultiplier: this.attackSpeedMultiplier,
+                    moveSpeedMultiplier: 1.1 // Slight movement speed bonus
+                }, 
+                endTime,     // Proper end time
+                false,       // Not stackable
+                1,           // Single stack
+                currentTime  // Applied time
+            )
+        );
+        
+        // Screen effects for dramatic impact
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.3, 2);
+            this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
+        }
+    
+        
+        // Schedule buff expiration warning
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.warnRageEnding(casterEntity);
+        }, this.rageDuration - 1.0, casterEntity);
+    }
+    
+    // FIXED: Add rage ending warning for better gameplay feedback
+    warnRageEnding(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        // Check if entity still exists and has the buff
+        const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        if (!buff || buff.buffType !== 'rage') return;
+        
+        if (casterPos) {
+            // Create fading effect
+            this.createVisualEffect(casterPos, 'cast', { 
+                count: 5, 
+                color: 0x884444,
+                scaleMultiplier: 0.8 
+            });
+        }
+       
+    }
+};
+
+// ability: ShadowStrikeAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['ShadowStrikeAbility'] = class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'shadow_strike',
+            name: 'Shadow Strike',
+            description: 'Teleport behind an enemy and deal critical damage',
+            cooldown: 9.0,
+            range: 120,
+            manaCost: 30,
+            targetType: 'enemy',
+            animation: 'attack',
+            priority: 8,
+            castTime: 0.5,
+            ...params
+        });
+        this.backstabDamage = 65;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F2F2F,
+                    colorRange: { start: 0x2F2F2F, end: 0x000000 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 2.0
+                }
+            },
+            teleport: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x8B0000,
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 3.0
+                }
+            },
+            backstab: {
+                type: 'damage',
+                options: {
+                    count: 3,
+                    color: 0xFF0000,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!pos) return;
+        
+        // DESYNC SAFE: Get and sort enemies deterministically
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return;
+        
+        // DESYNC SAFE: Select target deterministically (closest enemy)
+        const target = this.findClosestEnemy(casterEntity, enemies);
+        if (!target) return;
+        
+        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        if (!targetPos) return;
+        
+        // Immediate cast effect
+        this.createVisualEffect(pos, 'cast');
+        this.logAbilityUsage(casterEntity, "Rogue strikes from the shadows!");
+        
+        // DESYNC SAFE: Use scheduling system for teleport and attack
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.performShadowStrike(casterEntity, target);
+        }, this.castTime, casterEntity);
+    }
+    
+    // DESYNC SAFE: Find closest enemy deterministically
+    findClosestEnemy(casterEntity, enemies) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let closest = null;
+        let closestDistance = Infinity;
+        
+        sortedEnemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            if (!enemyPos) return;
+            
+            const distance = Math.sqrt(
+                Math.pow(enemyPos.x - casterPos.x, 2) + 
+                Math.pow(enemyPos.z - casterPos.z, 2)
+            );
+            
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = enemyId;
+            }
+        });
+        
+        return closest;
+    }
+    
+    performShadowStrike(casterEntity, targetId) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        
+        if (!casterPos || !targetPos) return;
+        
+        // DESYNC SAFE: Calculate teleport position deterministically
+        const teleportPos = this.calculateTeleportPosition(targetPos);
+        
+        // Visual effect at original position before teleport
+        this.createVisualEffect(casterPos, 'teleport');
+        
+        // Teleport behind target
+        casterPos.x = teleportPos.x;
+        casterPos.z = teleportPos.z;
+        
+        // Visual effect at new position after teleport
+        this.createVisualEffect(teleportPos, 'teleport');
+        
+        // Deal critical backstab damage
+        this.dealDamageWithEffects(casterEntity, targetId, this.backstabDamage, 'physical', {
+            isCritical: true,
+            criticalMultiplier: 2.0,
+            isBackstab: true
+        });
+        
+        // Backstab effect
+        this.createVisualEffect(targetPos, 'backstab');
+        
+        // Screen effect for dramatic teleport
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.2, 1.5);
+        }
+    }
+    
+    // DESYNC SAFE: Calculate teleport position deterministically
+    calculateTeleportPosition(targetPos) {
+        // Try positions behind the target in a deterministic order
+        const offsets = [
+            { x: -25, z: -25 }, // Behind and to the left
+            { x: -25, z: 0 },   // Directly behind
+            { x: -25, z: 25 },  // Behind and to the right
+            { x: 0, z: -25 },   // To the left
+            { x: 0, z: 25 },    // To the right
+        ];
+        
+        // Use the first valid position
+        for (const offset of offsets) {
+            const testPos = {
+                x: targetPos.x + offset.x,
+                y: targetPos.y,
+                z: targetPos.z + offset.z
+            };
+            
+            if (this.isValidTeleportPosition(testPos)) {
+                return testPos;
+            }
+        }
+        
+        // Fallback position if no valid position found
+        return {
+            x: targetPos.x - 25,
+            y: targetPos.y,
+            z: targetPos.z - 25
+        };
+    }
+    
+    isValidTeleportPosition(pos) {
+        // Basic validation - ensure position is within reasonable bounds
+        // This could be enhanced with collision detection if needed
+        return pos.x >= -1000 && pos.x <= 1000 && pos.z >= -1000 && pos.z <= 1000;
+    }
+};
+
+// ability: ShieldWallAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['ShieldWallAbility'] = class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'shield_wall',
+            name: 'Shield Wall',
+            description: 'Form a defensive stance, reducing damage and taunting enemies',
+            cooldown: 12.0,
+            range: 0, // Self-buff with taunt radius
+            manaCost: 30,
+            targetType: 'self',
+            animation: 'cast',
+            priority: 4,
+            castTime: 1.0,
+            ...params
+        });
+        
+        this.wallDuration = 10.0;
+        this.damageReduction = 0.75; // 75% damage reduction
+        this.tauntRadius = 200;
+        this.originalArmorMultiplier = 1.0;
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x708090,
+                    colorRange: { start: 0x708090, end: 0xC0C0C0 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            shield_formation: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x4682B4,
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.8
+                }
+            },
+            defensive_stance: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F4F4F,
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 0.6
+                }
+            },
+            taunt_aura: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFF6347,
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 1.5
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Check if already has shield wall to prevent stacking
+        const existingWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        if (existingWall && existingWall.isActive) return false;
+        
+        // Use when enemies are nearby and threatening
+        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
+        
+        // Schedule the shield wall formation after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.formShieldWall(casterEntity);
+        }, this.castTime, casterEntity);
+    }
+    
+    formShieldWall(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
+        
+        if (!casterPos) return;
+        
+        // Create shield formation effect
+        this.createVisualEffect(casterPos, 'shield_formation');
+        
+        // Store original armor for restoration later
+        const originalArmor = casterCombat ? casterCombat.armor : 0;
+        
+        // Apply shield wall component with proper timing
+        const Components = this.game.componentManager.getComponents();
+        const currentTime = this.game.state.now || this.game.state.now || 0;
+        const endTime = currentTime + this.wallDuration;
+        
+        this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
+            Components.ShieldWall(
+                this.damageReduction,
+                endTime,
+                this.tauntRadius,
+                originalArmor
+            )
+        );
+        
+        // Schedule defensive stance visual effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            if (pos) {
+                this.createVisualEffect(pos, 'defensive_stance');
+            }
+        }, 0.5, casterEntity);
+        
+        // Apply taunt effect to nearby enemies
+        this.applyTauntToEnemies(casterEntity);
+        
+        // Screen effects for dramatic formation
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.3, 1);
+        }
+        
+    
+      
+        
+        // Schedule shield wall expiration warning
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.warnShieldWallEnding(casterEntity);
+        }, this.wallDuration - 1.5, casterEntity);
+        
+        // Schedule shield wall removal (failsafe)
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.removeShieldWall(casterEntity);
+        }, this.wallDuration, casterEntity);
+    }
+    
+    applyTauntToEnemies(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
+        if (enemies.length === 0) return;
+        
+        // Sort enemies deterministically for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let tauntedCount = 0;
+        
+        sortedEnemies.forEach((enemyId, index) => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyAI = this.game.getComponent(enemyId, this.componentTypes.AI_STATE);
+            
+            if (!enemyPos || !enemyAI) return;
+            
+            // Apply taunt component
+            const Components = this.game.componentManager.getComponents();
+            const currentTime = this.game.state.now || this.game.state.now || 0;
+            const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
+            
+            this.game.addComponent(enemyId, this.componentTypes.TAUNT, 
+                Components.Taunt(
+                    casterEntity,     // Taunter
+                    tauntEndTime,     // End time
+                    this.tauntRadius, // Radius
+                    true              // Is taunted
+                )
+            );
+            
+            // Force AI to target the shield wall user
+  
+            enemyAI.target = casterEntity;
+            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            enemyAI.path = [];
+            enemyAI.meta = {};
+        
+            // Schedule staggered taunt effects for visual appeal
+            this.game.schedulingSystem.scheduleAction(() => {
+                const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (pos) {
+                    this.createVisualEffect(pos, 'taunt_aura');
+                }
+            }, index * 0.1, enemyId);
+            
+            tauntedCount++;
+        });
+        
+        if (tauntedCount > 0) {
+            this.logAbilityUsage(casterEntity, 
+                `Shield wall taunts ${tauntedCount} enemies to attack!`);
+        }
+    }
+    
+    // FIXED: Shield wall ending warning
+    warnShieldWallEnding(casterEntity) {
+        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        // Check if shield wall still exists and is active
+        if (!shieldWall || !shieldWall.isActive || !casterPos) return;
+        
+        // Create warning effect
+        this.createVisualEffect(casterPos, 'cast', { 
+            count: 4, 
+            color: 0x708090,
+            scaleMultiplier: 0.8 
+        });
+     
+    }
+    
+    // FIXED: Proper shield wall removal
+    removeShieldWall(casterEntity) {
+        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        if (!shieldWall) return;
+        
+        // Create dissolution effect
+        if (casterPos) {
+            this.createVisualEffect(casterPos, 'defensive_stance', { 
+                count: 6, 
+                scaleMultiplier: 0.6 
+            });
+        }
+        
+        // Remove shield wall component
+        this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        
+       
+    }
+};
+
+// ability: SmiteAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['SmiteAbility'] = class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'smite',
+            name: 'Divine Smite',
+            description: 'Calls down divine wrath upon the strongest enemy',
+            cooldown: 6.0,
+            range: 400,
+            manaCost: 65,
+            targetType: 'auto',
+            animation: 'cast',
+            priority: 9,
+            castTime: 1.8,
+            autoTrigger: 'strong_enemy',
+            ...params
+        });
+        
+        this.damage = 80;
+        this.bonusDamageVsUndead = 2.0; // Double damage vs undead
+        this.pillarDelay = 0.5; // Time between pillar and damage
+        this.element = 'divine';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFFD700,
+                    colorRange: { start: 0xFFD700, end: 0xFFFACD },
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 1.2
+                }
+            },
+            smite: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFFF8DC,
+                    scaleMultiplier: 3.0,
+                    speedMultiplier: 0.8
+                }
+            },
+            pillar: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xF0E68C,
+                    scaleMultiplier: 4.0,
+                    speedMultiplier: 2.0
+                }
+            },
+            divine_judgment: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFFFFE0,
+                    scaleMultiplier: 2.5,
+                    speedMultiplier: 1.5
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length >= 1;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return null;
+        
+        // Target the strongest enemy (highest health) deterministically
+        const target = this.findHighestHealthEnemyDeterministic(enemies);
+        if (!target) return null;
+        
+        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        if (!targetPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Divine judgment descends from the heavens!`);
+        
+        // Schedule the divine smite after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.performDivineSmite(casterEntity, target, targetPos);
+        }, this.castTime, casterEntity);
+    }
+    
+    performDivineSmite(casterEntity, targetId, originalTargetPos) {
+        // Get current target position (target may have moved)
+        const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
+        
+        // Create pillar of light effect
+        this.createVisualEffect(targetPos, 'pillar');
+        
+        // Create divine judgment aura effect
+        this.createVisualEffect(targetPos, 'divine_judgment');
+        
+        // Screen flash and shake
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenFlash('#FFD700', 0.5);
+            this.game.effectsSystem.playScreenShake(0.3, 3);
+        }
+        
+        this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);
+        
+        // Schedule the actual damage after pillar effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applySmiteDamage(casterEntity, targetId, targetPos);
+        }, this.pillarDelay, targetId);
+    }
+    
+    applySmiteDamage(casterEntity, targetId, targetPos) {
+        // Validate target still exists
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        if (!targetHealth || targetHealth.current <= 0) {
+            this.logAbilityUsage(casterEntity, `Divine judgment finds no target!`);
+            return;
+        }
+        
+        // Calculate damage (bonus vs undead)
+        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        let damage = this.damage;
+        let isUndeadTarget = false;
+        
+        if (targetUnitType && (
+            targetUnitType.title.includes('undead') || 
+            targetUnitType.title.includes('skeleton') ||
+            targetUnitType.title.includes('zombie') ||
+            targetUnitType.id.includes('undead')
+        )) {
+            damage = Math.floor(damage * this.bonusDamageVsUndead);
+            isUndeadTarget = true;
+        }
+        
+        // Apply divine damage
+        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
+            isSmite: true,
+            isCritical: true,
+            isAntiUndead: isUndeadTarget,
+            criticalMultiplier: 1.5
+        });
+        
+        // Create smite impact effect
+        this.createVisualEffect(targetPos, 'smite');
+      
+    
+    }
+    
+    // FIXED: Deterministic highest health enemy selection
+    findHighestHealthEnemyDeterministic(enemies) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let strongest = null;
+        let highestHealth = 0;
+        
+        // Process enemies in deterministic order
+        sortedEnemies.forEach(enemyId => {
+            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            if (!health) return;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins when health is equal)
+            if (health.current >= highestHealth) {
+                highestHealth = health.current;
+                strongest = enemyId;
+            }
+        });
+        
+        return strongest;
+    }
+    
+    // Helper method to check if target is undead (for potential future use)
+    isUndeadTarget(targetId) {
+        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        if (!targetUnitType) return false;
+        
+        return targetUnitType.title.includes('undead') || 
+               targetUnitType.title.includes('skeleton') ||
+               targetUnitType.title.includes('zombie') ||
+               targetUnitType.id.includes('undead');
+    }
+    
+    // Helper method to get effective damage against target
+    getEffectiveDamage(targetId) {
+        let damage = this.damage;
+        
+        if (this.isUndeadTarget(targetId)) {
+            damage = Math.floor(damage * this.bonusDamageVsUndead);
+        }
+        
+        return damage;
     }
 };
 
@@ -81836,6 +81932,305 @@ window.engine.app.appClasses['Tornado'] = class CurseAbility extends engine.app.
 }
 ;
 
+// ability: TrackingMark
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['TrackingMark'] = class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'tracking_mark',
+            name: 'Tracking Mark',
+            description: 'Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect',
+            cooldown: 8.0,
+            range: 200,
+            manaCost: 20,
+            targetType: 'enemy',
+            animation: 'cast',
+            priority: 7,
+            castTime: 1.0,
+            ...params
+        });
+        
+        this.markDamageIncrease = 0.25; // 25% per mark
+        this.maxMarks = 4; // Cap at 4 marks (100% bonus)
+        this.markDuration = 15.0;
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFF6347,
+                    colorRange: { start: 0xFF6347, end: 0xFF4500 },
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 1.5
+                }
+            },
+            mark_target: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xDC143C,
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 2.0
+                }
+            },
+            tracking_beam: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFF0000,
+                    scaleMultiplier: 1.0,
+                    speedMultiplier: 3.0
+                }
+            },
+            mark_stack: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x8B0000,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.8
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Need at least one enemy to mark
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return null;
+        
+        // Select target deterministically
+        const target = this.selectMarkTarget(enemies, casterEntity);
+        if (!target) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Ranger takes aim at their prey...`);
+        
+        // Schedule the mark application after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyTrackingMark(casterEntity, target);
+        }, this.castTime, casterEntity);
+    }
+    
+    applyTrackingMark(casterEntity, targetId) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        
+        // Validate target still exists
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        if (!targetHealth || targetHealth.current <= 0 || !targetPos) {
+            this.logAbilityUsage(casterEntity, `Target has vanished from sight!`);
+            return;
+        }
+        
+        // Create marking beam effect if caster still exists
+        if (casterPos) {
+            this.createTrackingBeamEffect(casterPos, targetPos);
+        }
+        
+        // Apply or stack the tracking mark
+        const markResult = this.applyOrStackMark(casterEntity, targetId);
+        
+        // Create appropriate visual effect based on result
+        if (markResult.isNewMark) {
+            this.createVisualEffect(targetPos, 'mark_target');
+        } else if (markResult.wasStacked) {
+            this.createVisualEffect(targetPos, 'mark_stack');
+        } else {
+            // Mark refreshed
+            this.createVisualEffect(targetPos, 'tracking_beam');
+        }
+        
+        // Enhanced logging
+        this.logMarkResult(casterEntity, targetId, markResult);
+    }
+    
+    applyOrStackMark(casterEntity, targetId) {
+        const Components = this.game.componentManager.getComponents();
+        const currentTime = this.game.state.now || this.game.state.now || 0;
+        const endTime = currentTime + this.markDuration;
+        
+        // Check for existing tracking mark
+        let existingMark = this.game.getComponent(targetId, this.componentTypes.BUFF);
+        
+        if (existingMark && existingMark.buffType === 'marked') {
+            // Stack the mark up to the maximum
+            if (existingMark.stacks < this.maxMarks) {
+                existingMark.stacks++;
+                existingMark.damageTakenMultiplier = 1 + (this.markDamageIncrease * existingMark.stacks);
+                existingMark.endTime = endTime; // Refresh duration
+                existingMark.appliedTime = currentTime; // Update applied time
+                
+                // Track who applied this stack (for potential future features)
+                if (!existingMark.appliedBy) {
+                    existingMark.appliedBy = [];
+                }
+                if (!existingMark.appliedBy.includes(casterEntity)) {
+                    existingMark.appliedBy.push(casterEntity);
+                }
+                
+                return {
+                    isNewMark: false,
+                    wasStacked: true,
+                    wasRefreshed: false,
+                    currentStacks: existingMark.stacks,
+                    damageMultiplier: existingMark.damageTakenMultiplier
+                };
+            } else {
+                // Just refresh duration if at max stacks
+                existingMark.endTime = endTime;
+                existingMark.appliedTime = currentTime;
+                
+                return {
+                    isNewMark: false,
+                    wasStacked: false,
+                    wasRefreshed: true,
+                    currentStacks: existingMark.stacks,
+                    damageMultiplier: existingMark.damageTakenMultiplier
+                };
+            }
+        } else {
+            // Apply new tracking mark
+            this.game.addComponent(targetId, this.componentTypes.BUFF, 
+                Components.Buff(
+                    'marked', 
+                    { 
+                        damageTakenMultiplier: 1 + this.markDamageIncrease,
+                        revealed: true,
+                        markedBy: casterEntity,
+                        appliedBy: [casterEntity]
+                    }, 
+                    endTime,      // End time
+                    true,         // Stackable
+                    1,            // Initial stack count
+                    currentTime   // Applied time
+                )
+            );
+            
+            return {
+                isNewMark: true,
+                wasStacked: false,
+                wasRefreshed: false,
+                currentStacks: 1,
+                damageMultiplier: 1 + this.markDamageIncrease
+            };
+        }
+    }
+    
+    createTrackingBeamEffect(casterPos, targetPos) {
+        // Create a visual connection between ranger and target
+        this.createVisualEffect(casterPos, 'tracking_beam');
+        this.createVisualEffect(targetPos, 'tracking_beam');
+        
+        // Create energy beam if effects system supports it
+        if (this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
+            this.game.effectsSystem.createEnergyBeam(
+                new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
+                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
+                {
+                    style: { color: 0xFF6347, linewidth: 3 },
+                    animation: { duration: 600, flickerCount: 2 }
+                }
+            );
+        }
+    }
+    
+    logMarkResult(casterEntity, targetId, markResult) {
+       
+        
+    }
+    
+    // FIXED: Deterministic target selection
+    selectMarkTarget(enemies, casterEntity) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        // Priority 1: Unmarked enemies (new marks are more valuable)
+        const unmarkedEnemies = sortedEnemies.filter(enemyId => {
+            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            return !buff || buff.buffType !== 'marked';
+        });
+        
+        if (unmarkedEnemies.length > 0) {
+            // Among unmarked enemies, prioritize by distance (closest first)
+            return this.selectClosestEnemy(unmarkedEnemies, casterEntity);
+        }
+        
+        // Priority 2: Marked enemies that can be stacked further
+        const stackableEnemies = sortedEnemies.filter(enemyId => {
+            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            return buff && buff.buffType === 'marked' && buff.stacks < this.maxMarks;
+        });
+        
+        if (stackableEnemies.length > 0) {
+            // Among stackable enemies, prioritize by current stacks (higher first for focused fire)
+            return this.selectHighestStackedEnemy(stackableEnemies);
+        }
+        
+        // Priority 3: Any marked enemy (for duration refresh)
+        return this.selectClosestEnemy(sortedEnemies, casterEntity);
+    }
+    
+    selectClosestEnemy(enemies, casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos || enemies.length === 0) return null;
+        
+        let closest = null;
+        let closestDistance = Infinity;
+        
+        enemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            if (!enemyPos) return;
+            
+            const distance = Math.sqrt(
+                Math.pow(enemyPos.x - casterPos.x, 2) + 
+                Math.pow(enemyPos.z - casterPos.z, 2)
+            );
+            
+            // Use <= for consistent tie-breaking (first in sorted order wins)
+            if (distance <= closestDistance) {
+                closestDistance = distance;
+                closest = enemyId;
+            }
+        });
+        
+        return closest;
+    }
+    
+    selectHighestStackedEnemy(enemies) {
+        let highestStacked = null;
+        let highestStacks = 0;
+        
+        enemies.forEach(enemyId => {
+            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            if (!buff || buff.buffType !== 'marked') return;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins)
+            if (buff.stacks >= highestStacks) {
+                highestStacks = buff.stacks;
+                highestStacked = enemyId;
+            }
+        });
+        
+        return highestStacked;
+    }
+};
+
 // ability: WindShieldAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['WindShieldAbility'] = class WindShieldAbility extends engine.app.appClasses['BaseAbility'] {
@@ -81941,403 +82336,6 @@ window.engine.app.appClasses['WindShieldAbility'] = class WindShieldAbility exte
                     }
                 }
             }, this.shieldDuration, allyId);
-        });
-    }
-};
-
-// ability: RageAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['RageAbility'] = class RageAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'raging_strike',
-            name: 'Raging Strike',
-            description: 'Unleash primal fury with increased damage and attack speed',
-            cooldown: 5.0,
-            range: 0, // Self-buff
-            manaCost: 20,
-            targetType: 'self',
-            animation: 'attack',
-            priority: 6,
-            castTime: 0.8,
-            ...params
-        });
-        
-        this.rageDuration = 8.0;
-        this.damageMultiplier = 1.5;
-        this.attackSpeedMultiplier = 1.3;
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff4444, 
-                    colorRange: { start: 0xff4444, end: 0xff8800 },
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.5
-                }
-            },
-            rage: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff0000, 
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 2.0
-                }
-            },
-            fury: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xcc0000, 
-                    scaleMultiplier: 2.2,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Check if there are enemies nearby to rage against
-        const enemies = this.getEnemiesInRange(casterEntity, 100);
-        if (enemies.length === 0) return false;
-        
-        // Don't stack rage buffs - check if already raged
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
-        if (existingBuff && existingBuff.buffType === 'rage') return false;
-        
-        return true;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Primal fury begins to build...`);
-        
-        // Schedule the rage activation after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.activateRage(casterEntity);
-        }, this.castTime, casterEntity);
-    }
-    
-    activateRage(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // Create dramatic rage effects
-        this.createVisualEffect(casterPos, 'rage');
-        
-        // Schedule a secondary fury effect for visual impact
-        this.game.schedulingSystem.scheduleAction(() => {
-            if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {
-                const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-                if (pos) {
-                    this.createVisualEffect(pos, 'fury');
-                }
-            }
-        }, 0.5, casterEntity);
-        
-        // Apply rage buff with proper timing
-        const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.rageDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
-            Components.Buff(
-                'rage', 
-                { 
-                    damageMultiplier: this.damageMultiplier, 
-                    attackSpeedMultiplier: this.attackSpeedMultiplier,
-                    moveSpeedMultiplier: 1.1 // Slight movement speed bonus
-                }, 
-                endTime,     // Proper end time
-                false,       // Not stackable
-                1,           // Single stack
-                currentTime  // Applied time
-            )
-        );
-        
-        // Screen effects for dramatic impact
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.3, 2);
-            this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
-        }
-    
-        
-        // Schedule buff expiration warning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.warnRageEnding(casterEntity);
-        }, this.rageDuration - 1.0, casterEntity);
-    }
-    
-    // FIXED: Add rage ending warning for better gameplay feedback
-    warnRageEnding(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        // Check if entity still exists and has the buff
-        const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
-        if (!buff || buff.buffType !== 'rage') return;
-        
-        if (casterPos) {
-            // Create fading effect
-            this.createVisualEffect(casterPos, 'cast', { 
-                count: 5, 
-                color: 0x884444,
-                scaleMultiplier: 0.8 
-            });
-        }
-       
-    }
-};
-
-// ability: PiercingShotAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['PiercingShotAbility'] = class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'piercing_shot',
-            name: 'Piercing Shot',
-            description: 'Fire a bolt that pierces through multiple enemies',
-            cooldown: 6.0,
-            range: 200,
-            manaCost: 25,
-            targetType: 'line',
-            animation: 'attack',
-            priority: 6,
-            castTime: 1.5,
-            ...params
-        });
-        
-        this.piercingDamage = 45;
-        this.lineWidth = 20; // Width of the piercing line
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4682B4,
-                    colorRange: { start: 0x4682B4, end: 0x87CEEB },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            beam_charge: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x6495ED,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            piercing_beam: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xB0C4DE,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 2.5
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 3,
-                    color: 0x4169E1,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Need at least one enemy in range to pierce
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterFacing = this.game.getComponent(casterEntity, this.componentTypes.FACING);
-        
-        if (!casterPos || !casterFacing) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Crossbow charges a piercing bolt...`);
-        
-        // Schedule the piercing shot after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.firePiercingShot(casterEntity, casterPos, casterFacing);
-        }, this.castTime, casterEntity);
-    }
-    
-    firePiercingShot(casterEntity, casterPos, casterFacing) {
-        // Calculate piercing line end position
-        const endPos = this.calculateLineEndPosition(casterPos, casterFacing);
-        
-        // Create beam charging effect
-        this.createVisualEffect(casterPos, 'beam_charge');
-        
-        // Schedule visual beam effect slightly before damage
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.createPiercingBeamEffect(casterPos, endPos);
-        }, 0.2, casterEntity);
-        
-        // Schedule damage application
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.applyPiercingDamage(casterEntity, casterPos, endPos);
-        }, 0.3, casterEntity);
-    }
-    
-    createPiercingBeamEffect(startPos, endPos) {
-        // Create piercing beam visual effect
-        this.createVisualEffect(startPos, 'piercing_beam');
-        this.createVisualEffect(endPos, 'piercing_beam', { 
-            count: 6, 
-            scaleMultiplier: 1.5 
-        });
-        
-        // Create energy beam if effects system supports it
-        if (this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
-            this.game.effectsSystem.createEnergyBeam(
-                new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z),
-                new THREE.Vector3(endPos.x, endPos.y + 15, endPos.z),
-                {
-                    style: { color: 0x4682B4, linewidth: 4 },
-                    animation: { duration: 800, flickerCount: 2 }
-                }
-            );
-        }
-    }
-    
-    applyPiercingDamage(casterEntity, startPos, endPos) {
-        // Get all enemies in range and filter those hit by the line
-        const enemies = this.getEnemiesInRange(casterEntity, this.range);
-        const hitEnemies = this.getEnemiesInLine(enemies, startPos, endPos);
-        
-        if (hitEnemies.length === 0) {
-            this.logAbilityUsage(casterEntity, `Piercing bolt finds no targets!`);
-            return;
-        }
-        
-        // Sort hit enemies by distance along the line for consistent damage application
-        const sortedHitEnemies = this.sortEnemiesByDistanceAlongLine(hitEnemies, startPos, endPos);
-        
-        // Apply damage to each enemy in order
-        sortedHitEnemies.forEach((enemyData, index) => {
-            const { enemyId, position } = enemyData;
-            
-            // Apply piercing damage
-            this.dealDamageWithEffects(casterEntity, enemyId, this.piercingDamage, this.element, {
-                isPiercing: true,
-                piercingIndex: index,
-                totalPierced: sortedHitEnemies.length
-            });
-            
-            // Create impact effect at each enemy position
-            this.createVisualEffect(position, 'impact');
-            
-         
-        });
-        
-        // Screen effects for dramatic impact
-        if (this.game.effectsSystem && sortedHitEnemies.length > 1) {
-            this.game.effectsSystem.playScreenShake(0.4, 2);
-        }
-        
-        this.logAbilityUsage(casterEntity, 
-            `Crossbow bolt pierces through ${sortedHitEnemies.length} enemies!`);
-    }
-    
-    // FIXED: Deterministic line end position calculation
-    calculateLineEndPosition(startPos, facing) {
-        return {
-            x: startPos.x + Math.cos(facing.angle) * this.range,
-            y: startPos.y,
-            z: startPos.z + Math.sin(facing.angle) * this.range
-        };
-    }
-    
-    // FIXED: Deterministic enemy filtering in line
-    getEnemiesInLine(enemies, startPos, endPos) {
-        // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        const hitEnemies = [];
-        
-        sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            if (!enemyPos) return;
-            
-            if (this.isInLine(startPos, endPos, enemyPos, this.lineWidth)) {
-                hitEnemies.push({
-                    enemyId: enemyId,
-                    position: { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z }
-                });
-            }
-        });
-        
-        return hitEnemies;
-    }
-    
-    // FIXED: More precise and deterministic line-point distance calculation
-    isInLine(start, end, point, width) {
-        if (!point) return false;
-        
-        // Calculate line parameters more precisely
-        const lineLength = Math.sqrt(
-            Math.pow(end.x - start.x, 2) + Math.pow(end.z - start.z, 2)
-        );
-        
-        if (lineLength < 0.001) return false; // Avoid division by zero
-        
-        // Calculate perpendicular distance from point to line
-        const A = end.z - start.z;
-        const B = start.x - end.x;
-        const C = end.x * start.z - start.x * end.z;
-        
-        const distance = Math.abs(A * point.x + B * point.z + C) / Math.sqrt(A * A + B * B);
-        
-        // Also check if point is within the line segment bounds
-        const dotProduct = (point.x - start.x) * (end.x - start.x) + (point.z - start.z) * (end.z - start.z);
-        const projectionRatio = dotProduct / (lineLength * lineLength);
-        
-        // Point must be within line width and within line segment bounds
-        return distance <= width && projectionRatio >= 0 && projectionRatio <= 1;
-    }
-    
-    // FIXED: Sort enemies by distance along line for consistent ordering
-    sortEnemiesByDistanceAlongLine(hitEnemies, startPos, endPos) {
-        return hitEnemies.slice().sort((a, b) => {
-            // Calculate distance from start of line for each enemy
-            const distanceA = Math.sqrt(
-                Math.pow(a.position.x - startPos.x, 2) + 
-                Math.pow(a.position.z - startPos.z, 2)
-            );
-            const distanceB = Math.sqrt(
-                Math.pow(b.position.x - startPos.x, 2) + 
-                Math.pow(b.position.z - startPos.z, 2)
-            );
-            
-            // Sort by distance from caster, then by entity ID for tie-breaking
-            if (Math.abs(distanceA - distanceB) < 0.001) {
-                return String(a.enemyId).localeCompare(String(b.enemyId));
-            }
-            return distanceA - distanceB;
         });
     }
 };
@@ -83345,6 +83343,357 @@ window.engine.app.appClasses['HealAbility'] = class HealAbility extends engine.a
     }
 };
 
+// ability: MeteorStrikeAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['MeteorStrikeAbility'] = class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'meteor_strike',
+            name: 'Meteor Strike',
+            description: 'Devastating strike on the densest enemy formation',
+            cooldown: 5.0,
+            range: 300,
+            manaCost: 0,
+            targetType: 'enemies',
+            animation: 'cast',
+            priority: 10,
+            castTime: 1.0,
+            ...params
+        });
+        
+        this.damage = 200;
+        this.splashRadius = 120;
+        this.delay = 3.0;
+        this.element = 'fire';
+        this.minTargets = 0;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xff4400,
+                    colorRange: { start: 0xff4400, end: 0xffaa00 },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.5
+                }
+            },
+            warning: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xff0000,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            meteor_explosion: {
+                type: 'explosion',
+                options: {
+                    count: 3,
+                    color: 0xff2200,
+                    colorRange: { start: 0xff2200, end: 0xffaa00 },
+                    scaleMultiplier: 4.0,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);        
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
+        const targetPos = this.findBestClusterPosition(enemies, this.minTargets);
+        
+        if (!targetPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `A massive meteor approaches from the heavens!`);
+        
+        // Schedule warning indicator after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.createMeteorWarning(targetPos);
+        }, this.castTime, casterEntity);
+        
+        // Schedule meteor impact after cast time + delay
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.meteorImpact(casterEntity, targetPos);
+        }, this.castTime + this.delay, casterEntity);
+    }
+    
+    createMeteorWarning(position) {
+        // Create warning effect instead of entity for better desync safety
+        this.createVisualEffect(position, 'warning');
+        
+        // Schedule repeated warning effects during the delay period
+        const warningInterval = 0.5;
+        const warningCount = Math.floor(this.delay / warningInterval);
+        
+        for (let i = 1; i < warningCount; i++) {
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.createVisualEffect(position, 'warning');
+            }, i * warningInterval, null);
+        }
+        
+        this.logAbilityUsage(null, `The ground trembles as a meteor approaches!`);
+    }
+    
+    meteorImpact(casterEntity, position) {
+        // Create massive explosion effect
+        this.createVisualEffect(position, 'meteor_explosion');
+        
+        // Screen effects for dramatic impact
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.8, 4);
+            this.game.effectsSystem.playScreenFlash('#ff4400', 0.5);
+        }
+        
+        // Apply splash damage
+        if (this.game.damageSystem) {
+            const results = this.game.damageSystem.applySplashDamage(
+                casterEntity,
+                position,
+                this.damage,
+                this.element,
+                this.splashRadius,
+                { allowFriendlyFire: false, isSpell: true }
+            );
+         
+        }
+    }
+    
+    // FIXED: Deterministic cluster position finding
+    findBestClusterPosition(enemies, minTargets) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let bestPosition = null;
+        let maxTargetsHit = 0;
+        let bestScore = 0; // For tie-breaking: prefer positions with lower total distance
+        
+        // Check each enemy position as potential impact center
+        sortedEnemies.forEach(potentialCenter => {
+            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            if (!centerPos) return;
+            
+            let targetsInRange = 0;
+            let totalDistance = 0;
+            
+            // Count enemies within splash radius of this position
+            sortedEnemies.forEach(enemyId => {
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (!enemyPos) return;
+                
+                const distance = Math.sqrt(
+                    Math.pow(enemyPos.x - centerPos.x, 2) + 
+                    Math.pow(enemyPos.z - centerPos.z, 2)
+                );
+                
+                if (distance <= this.splashRadius) {
+                    targetsInRange++;
+                    totalDistance += distance;
+                }
+            });
+            
+            // Calculate score: prioritize more targets, then lower total distance for tie-breaking
+            const score = (targetsInRange * 1000) - totalDistance;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins when scores are equal)
+            if (targetsInRange > maxTargetsHit || 
+                (targetsInRange === maxTargetsHit && score >= bestScore)) {
+                maxTargetsHit = targetsInRange;
+                bestScore = score;
+                bestPosition = { x: centerPos.x, y: centerPos.y, z: centerPos.z };
+            }
+        });
+        
+        // If no good cluster found but we have enemies, target the first enemy deterministically
+        if (!bestPosition && sortedEnemies.length > 0) {
+            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], this.componentTypes.POSITION);
+            if (firstEnemyPos) {
+                bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
+            }
+        }
+        
+        return bestPosition;
+    }
+};
+
+// ability: MassHealAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['MassHealAbility'] = class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'mass_heal',
+            name: 'Mass Heal',
+            description: 'Heal all injured allies across the battlefield',
+            cooldown: 15.0,
+            range: 300,
+            manaCost: 60,
+            targetType: 'auto',
+            animation: 'cast',
+            priority: 9,
+            castTime: 2.0,
+            autoTrigger: 'low_team_health',
+            ...params
+        });
+        
+        this.healPercent = 0.4; // 40% of max health
+        this.minInjuredAllies = 3;
+        this.element = 'divine';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x88ff88,
+                    colorRange: { start: 0x88ff88, end: 0xffffaa },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            heal: {
+                type: 'heal',
+                options: {
+                    count: 3,
+                    color: 0x88ffaa,
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 0.8
+                }
+            },
+            mass_heal: {
+                type: 'heal',
+                options: {
+                    count: 3,
+                    color: 0xaaffaa,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 0.6
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const allies = this.getAlliesInRange(casterEntity);
+        const injuredAllies = this.getInjuredAllies(allies);
+        return injuredAllies.length >= this.minInjuredAllies;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const allies = this.getAlliesInRange(casterEntity);
+        const injuredAllies = this.getInjuredAllies(allies);
+        
+        if (injuredAllies.length < this.minInjuredAllies) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Divine energy gathers to heal the wounded!`);
+        
+        // Schedule the mass heal to trigger after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.performMassHeal(casterEntity, injuredAllies);
+        }, this.castTime, casterEntity);
+    }
+    
+    performMassHeal(casterEntity, targetAllies) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        let healedCount = 0;
+        let totalHealing = 0;
+        
+        // Sort allies deterministically for consistent processing order
+        const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        // Process each ally deterministically
+        sortedAllies.forEach(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            
+            if (!health || !allyPos) return;
+            
+            // Only heal if ally is still injured
+            if (health.current < health.max) {
+                const healAmount = Math.floor(health.max * this.healPercent);
+                const actualHeal = Math.min(healAmount, health.max - health.current);
+                
+                if (actualHeal > 0) {
+                    // Apply healing
+                    health.current += actualHeal;
+                    healedCount++;
+                    totalHealing += actualHeal;
+                    
+                    // Create heal effect on each ally
+                    this.createVisualEffect(allyPos, 'heal');
+                    
+                    // Show heal number
+                    if (this.game.effectsSystem) {
+                        this.game.effectsSystem.showDamageNumber(
+                            allyPos.x, allyPos.y + 50, allyPos.z,
+                            actualHeal, 'heal'
+                        );
+                    }
+                
+                }
+            }
+        });
+        
+        // Create major healing effect at caster position
+        if (casterPos && healedCount > 0) {
+            this.createVisualEffect(casterPos, 'mass_heal');
+        }
+        
+        // Screen effect for dramatic impact
+        if (this.game.effectsSystem && healedCount > 0) {
+            this.game.effectsSystem.playScreenFlash('#88ff88', 0.3);
+        }
+        
+        // Log final results
+        this.logAbilityUsage(casterEntity, 
+            `Mass heal restores ${healedCount} allies for ${totalHealing} total health!`);
+    }
+    
+    // FIXED: Deterministic injured ally detection
+    getInjuredAllies(allies) {
+        // Sort allies deterministically first for consistent processing
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        return sortedAllies.filter(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            // Check if ally is injured (below 80% health threshold)
+            return health && health.current < health.max * 0.8;
+        });
+    }
+    
+    // Helper method to get all valid heal targets (for future use)
+    getAllHealTargets(allies) {
+        // Sort allies deterministically first for consistent processing
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        return sortedAllies.filter(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            // Any ally that isn't at full health
+            return health && health.current < health.max;
+        });
+    }
+};
+
 // ability: RaiseDeadAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['RaiseDeadAbility'] = class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
@@ -83591,357 +83940,6 @@ window.engine.app.appClasses['RaiseDeadAbility'] = class RaiseDeadAbility extend
     
     logCorpseRaising(corpse, team) {
        
-    }
-};
-
-// ability: MassHealAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MassHealAbility'] = class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'mass_heal',
-            name: 'Mass Heal',
-            description: 'Heal all injured allies across the battlefield',
-            cooldown: 15.0,
-            range: 300,
-            manaCost: 60,
-            targetType: 'auto',
-            animation: 'cast',
-            priority: 9,
-            castTime: 2.0,
-            autoTrigger: 'low_team_health',
-            ...params
-        });
-        
-        this.healPercent = 0.4; // 40% of max health
-        this.minInjuredAllies = 3;
-        this.element = 'divine';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x88ff88,
-                    colorRange: { start: 0x88ff88, end: 0xffffaa },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0x88ffaa,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 0.8
-                }
-            },
-            mass_heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0xaaffaa,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const allies = this.getAlliesInRange(casterEntity);
-        const injuredAllies = this.getInjuredAllies(allies);
-        return injuredAllies.length >= this.minInjuredAllies;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const allies = this.getAlliesInRange(casterEntity);
-        const injuredAllies = this.getInjuredAllies(allies);
-        
-        if (injuredAllies.length < this.minInjuredAllies) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine energy gathers to heal the wounded!`);
-        
-        // Schedule the mass heal to trigger after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.performMassHeal(casterEntity, injuredAllies);
-        }, this.castTime, casterEntity);
-    }
-    
-    performMassHeal(casterEntity, targetAllies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        let healedCount = 0;
-        let totalHealing = 0;
-        
-        // Sort allies deterministically for consistent processing order
-        const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        // Process each ally deterministically
-        sortedAllies.forEach(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            
-            if (!health || !allyPos) return;
-            
-            // Only heal if ally is still injured
-            if (health.current < health.max) {
-                const healAmount = Math.floor(health.max * this.healPercent);
-                const actualHeal = Math.min(healAmount, health.max - health.current);
-                
-                if (actualHeal > 0) {
-                    // Apply healing
-                    health.current += actualHeal;
-                    healedCount++;
-                    totalHealing += actualHeal;
-                    
-                    // Create heal effect on each ally
-                    this.createVisualEffect(allyPos, 'heal');
-                    
-                    // Show heal number
-                    if (this.game.effectsSystem) {
-                        this.game.effectsSystem.showDamageNumber(
-                            allyPos.x, allyPos.y + 50, allyPos.z,
-                            actualHeal, 'heal'
-                        );
-                    }
-                
-                }
-            }
-        });
-        
-        // Create major healing effect at caster position
-        if (casterPos && healedCount > 0) {
-            this.createVisualEffect(casterPos, 'mass_heal');
-        }
-        
-        // Screen effect for dramatic impact
-        if (this.game.effectsSystem && healedCount > 0) {
-            this.game.effectsSystem.playScreenFlash('#88ff88', 0.3);
-        }
-        
-        // Log final results
-        this.logAbilityUsage(casterEntity, 
-            `Mass heal restores ${healedCount} allies for ${totalHealing} total health!`);
-    }
-    
-    // FIXED: Deterministic injured ally detection
-    getInjuredAllies(allies) {
-        // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            // Check if ally is injured (below 80% health threshold)
-            return health && health.current < health.max * 0.8;
-        });
-    }
-    
-    // Helper method to get all valid heal targets (for future use)
-    getAllHealTargets(allies) {
-        // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            // Any ally that isn't at full health
-            return health && health.current < health.max;
-        });
-    }
-};
-
-// ability: MeteorStrikeAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MeteorStrikeAbility'] = class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'meteor_strike',
-            name: 'Meteor Strike',
-            description: 'Devastating strike on the densest enemy formation',
-            cooldown: 5.0,
-            range: 300,
-            manaCost: 0,
-            targetType: 'enemies',
-            animation: 'cast',
-            priority: 10,
-            castTime: 1.0,
-            ...params
-        });
-        
-        this.damage = 200;
-        this.splashRadius = 120;
-        this.delay = 3.0;
-        this.element = 'fire';
-        this.minTargets = 0;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff4400,
-                    colorRange: { start: 0xff4400, end: 0xffaa00 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.5
-                }
-            },
-            warning: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff0000,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            meteor_explosion: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xff2200,
-                    colorRange: { start: 0xff2200, end: 0xffaa00 },
-                    scaleMultiplier: 4.0,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);        
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const enemies = this.getEnemiesInRange(casterEntity);
-        const targetPos = this.findBestClusterPosition(enemies, this.minTargets);
-        
-        if (!targetPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `A massive meteor approaches from the heavens!`);
-        
-        // Schedule warning indicator after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.createMeteorWarning(targetPos);
-        }, this.castTime, casterEntity);
-        
-        // Schedule meteor impact after cast time + delay
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.meteorImpact(casterEntity, targetPos);
-        }, this.castTime + this.delay, casterEntity);
-    }
-    
-    createMeteorWarning(position) {
-        // Create warning effect instead of entity for better desync safety
-        this.createVisualEffect(position, 'warning');
-        
-        // Schedule repeated warning effects during the delay period
-        const warningInterval = 0.5;
-        const warningCount = Math.floor(this.delay / warningInterval);
-        
-        for (let i = 1; i < warningCount; i++) {
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.createVisualEffect(position, 'warning');
-            }, i * warningInterval, null);
-        }
-        
-        this.logAbilityUsage(null, `The ground trembles as a meteor approaches!`);
-    }
-    
-    meteorImpact(casterEntity, position) {
-        // Create massive explosion effect
-        this.createVisualEffect(position, 'meteor_explosion');
-        
-        // Screen effects for dramatic impact
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.8, 4);
-            this.game.effectsSystem.playScreenFlash('#ff4400', 0.5);
-        }
-        
-        // Apply splash damage
-        if (this.game.damageSystem) {
-            const results = this.game.damageSystem.applySplashDamage(
-                casterEntity,
-                position,
-                this.damage,
-                this.element,
-                this.splashRadius,
-                { allowFriendlyFire: false, isSpell: true }
-            );
-         
-        }
-    }
-    
-    // FIXED: Deterministic cluster position finding
-    findBestClusterPosition(enemies, minTargets) {
-        if (enemies.length === 0) return null;
-        
-        // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let bestPosition = null;
-        let maxTargetsHit = 0;
-        let bestScore = 0; // For tie-breaking: prefer positions with lower total distance
-        
-        // Check each enemy position as potential impact center
-        sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
-            if (!centerPos) return;
-            
-            let targetsInRange = 0;
-            let totalDistance = 0;
-            
-            // Count enemies within splash radius of this position
-            sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (!enemyPos) return;
-                
-                const distance = Math.sqrt(
-                    Math.pow(enemyPos.x - centerPos.x, 2) + 
-                    Math.pow(enemyPos.z - centerPos.z, 2)
-                );
-                
-                if (distance <= this.splashRadius) {
-                    targetsInRange++;
-                    totalDistance += distance;
-                }
-            });
-            
-            // Calculate score: prioritize more targets, then lower total distance for tie-breaking
-            const score = (targetsInRange * 1000) - totalDistance;
-            
-            // Use >= for consistent tie-breaking (first in sorted order wins when scores are equal)
-            if (targetsInRange > maxTargetsHit || 
-                (targetsInRange === maxTargetsHit && score >= bestScore)) {
-                maxTargetsHit = targetsInRange;
-                bestScore = score;
-                bestPosition = { x: centerPos.x, y: centerPos.y, z: centerPos.z };
-            }
-        });
-        
-        // If no good cluster found but we have enemies, target the first enemy deterministically
-        if (!bestPosition && sortedEnemies.length > 0) {
-            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], this.componentTypes.POSITION);
-            if (firstEnemyPos) {
-                bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
-            }
-        }
-        
-        return bestPosition;
     }
 };
 

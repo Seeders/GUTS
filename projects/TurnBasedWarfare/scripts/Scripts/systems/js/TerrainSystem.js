@@ -79,22 +79,7 @@ class TerrainSystem extends engine.BaseSystem {
             console.log('TerrainSystem: Height map disabled, using flat terrain');
             return;
         }
-
-        // Check if we're running in a browser environment
-        const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
-        
-        if (isBrowser) {
-            // Create a small canvas for height map processing
-            this.heightMapCanvas = document.createElement('canvas');
-            this.heightMapCanvas.width = this.terrainSize;
-            this.heightMapCanvas.height = this.terrainSize;
-            this.heightMapCtx = this.heightMapCanvas.getContext('2d');
-            this.processHeightMapFromCanvas();
-        } else {
-            // For server-side, we'll work directly with the terrain data
-            console.log('TerrainSystem: Running in server mode, using data-only height processing');
-            this.processHeightMapFromData();
-        }
+        this.processHeightMapFromData();
     }
 
     processHeightMapFromData() {
@@ -196,11 +181,6 @@ class TerrainSystem extends engine.BaseSystem {
         }
     }
 
-    processHeightMapFromCanvas() {
-        // This method would be used if running client-side with canvas support
-        // For now, fall back to data processing
-        this.processHeightMapFromData();
-    }
 
     getTileMapTerrainType(terrainTypeId){
         if(this.tileMap.terrainTypes.length > terrainTypeId && terrainTypeId >= 0){

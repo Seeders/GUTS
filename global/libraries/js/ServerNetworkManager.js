@@ -1,4 +1,4 @@
-export default class ServerNetworkManager {
+class ServerNetworkManager {
     constructor(engine) {
         this.engine = engine;
         this.io = null;
@@ -277,5 +277,23 @@ export default class ServerNetworkManager {
     cleanup() {
         this.playerSockets.clear();
         console.log('ServerNetworkManager cleaned up');
+    }
+}
+
+      
+if(typeof ServerNetworkManager != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ServerNetworkManager = ServerNetworkManager;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ServerNetworkManager;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ServerNetworkManager;
+        exports.ServerNetworkManager = ServerNetworkManager;
     }
 }

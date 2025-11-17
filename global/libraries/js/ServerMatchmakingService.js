@@ -1,5 +1,5 @@
 // MatchmakingService.js - Server-level service (not a game system)
-export default class ServerMatchmakingService {
+class ServerMatchmakingService {
     constructor(engine) {
         this.engine = engine;
         
