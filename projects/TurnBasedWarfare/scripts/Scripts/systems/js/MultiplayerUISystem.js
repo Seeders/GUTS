@@ -33,13 +33,142 @@ class MultiplayerUISystem extends engine.BaseSystem {
                     </div>
                 </div>
             </div>
-            
+
             <div id="multiplayerNotifications" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 2000;">
                 <!-- Notifications appear here -->
             </div>
+
+            <!-- Game Menu Button -->
+            <button id="gameMenuBtn" style="display: none; position: fixed; top: 15px; right: 15px; z-index: 1500; background: rgba(50, 50, 50, 0.8); border: 2px solid #666; border-radius: 8px; width: 48px; height: 48px; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(70, 70, 70, 0.9)'; this.style.borderColor='#888';"
+                onmouseout="this.style.background='rgba(50, 50, 50, 0.8)'; this.style.borderColor='#666';">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;">
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <circle cx="12" cy="5" r="1"></circle>
+                    <circle cx="12" cy="19" r="1"></circle>
+                </svg>
+            </button>
+
+            <!-- Game Menu Modal -->
+            <div id="gameMenuModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 3000; justify-content: center; align-items: center;">
+                <div style="background: #1a1a1a; padding: 2rem; border: 2px solid #444; border-radius: 10px; color: white; min-width: 400px; max-width: 500px;">
+                    <h2 style="text-align: center; margin-bottom: 2rem; color: #fff;">Game Menu</h2>
+
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button id="gameMenuOptionsBtn" style="padding: 1rem; background: #444; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
+                            onmouseover="this.style.background='#555';"
+                            onmouseout="this.style.background='#444';">
+                            Options
+                        </button>
+
+                        <button id="gameMenuLeaveBtn" style="padding: 1rem; background: #cc3333; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
+                            onmouseover="this.style.background='#dd4444';"
+                            onmouseout="this.style.background='#cc3333';">
+                            Leave Game
+                        </button>
+
+                        <button id="gameMenuCancelBtn" style="padding: 1rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; transition: background 0.2s;"
+                            onmouseover="this.style.background='#777';"
+                            onmouseout="this.style.background='#666';">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', multiplayerHTML);
+        this.setupGameMenuEvents();
+    }
+
+    setupGameMenuEvents() {
+        const menuBtn = document.getElementById('gameMenuBtn');
+        const menuModal = document.getElementById('gameMenuModal');
+        const optionsBtn = document.getElementById('gameMenuOptionsBtn');
+        const leaveBtn = document.getElementById('gameMenuLeaveBtn');
+        const cancelBtn = document.getElementById('gameMenuCancelBtn');
+
+        // Open menu
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                menuModal.style.display = 'flex';
+            });
+        }
+
+        // Close menu
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                menuModal.style.display = 'none';
+            });
+        }
+
+        // Options (placeholder)
+        if (optionsBtn) {
+            optionsBtn.addEventListener('click', () => {
+                this.showNotification('Options menu coming soon!', 'info');
+                menuModal.style.display = 'none';
+            });
+        }
+
+        // Leave game
+        if (leaveBtn) {
+            leaveBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to leave the game?')) {
+                    this.leaveGame();
+                    menuModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Close on background click
+        menuModal.addEventListener('click', (e) => {
+            if (e.target === menuModal) {
+                menuModal.style.display = 'none';
+            }
+        });
+    }
+
+    leaveGame() {
+        // Send leave room event
+        if (this.game.networkManager && this.game.networkManager.socket) {
+            this.game.networkManager.socket.emit('LEAVE_ROOM', {});
+        }
+
+        // Hide game menu button
+        const menuBtn = document.getElementById('gameMenuBtn');
+        if (menuBtn) {
+            menuBtn.style.display = 'none';
+        }
+
+        // Hide multiplayer HUD
+        const hud = document.getElementById('multiplayerHUD');
+        if (hud) {
+            hud.style.display = 'none';
+        }
+
+        // Disconnect and reload to main menu
+        if (this.game.networkManager) {
+            this.game.networkManager.disconnect();
+        }
+
+        // Reload the page to return to main menu
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    }
+
+    showGameMenu() {
+        const menuBtn = document.getElementById('gameMenuBtn');
+        if (menuBtn) {
+            menuBtn.style.display = 'block';
+        }
+    }
+
+    hideGameMenu() {
+        const menuBtn = document.getElementById('gameMenuBtn');
+        if (menuBtn) {
+            menuBtn.style.display = 'none';
+        }
     }
 
     handleMultiplayerModeSelection(mode) {
@@ -309,12 +438,15 @@ class MultiplayerUISystem extends engine.BaseSystem {
     showLobby(gameState, roomId) {
         this.currentScreen = 'lobby';
         this.roomId = roomId;
-          
+
         // Show lobby screen
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
         document.getElementById('multiplayerLobby').classList.add('active');
+
+        // Show game menu button in lobby
+        this.showGameMenu();
 
         this.updateLobby(gameState);
     }
@@ -422,12 +554,13 @@ class MultiplayerUISystem extends engine.BaseSystem {
     onGameStarted(data) {
 
         this.currentScreen = 'game';
-        
+
         // Hide lobby, show game
         document.getElementById('multiplayerLobby')?.classList.remove('active');
         document.getElementById('gameScreen')?.classList.add('active');
-        
-        
+
+        // Show game menu button when game starts
+        this.showGameMenu();
     }
 
     showNotification(message, type = 'info', duration = 4000) {
@@ -470,6 +603,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
         this.roomId = null;
         this.isHost = false;
         this.gameState = null;
+
+        // Hide game menu button
+        this.hideGameMenu();
 
         if (this.game.screenManager?.showMainMenu) {
             this.game.screenManager.showMainMenu();
