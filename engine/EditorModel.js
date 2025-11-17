@@ -122,8 +122,12 @@ class EditorModel {
                 let libraryDef = this.state.project.objectTypes.libraries[library];
                 editorLibraries[library] = libraryDef;
             });
-        });    
-        const projectText = JSON.stringify(this.state.project);
+        });
+
+        // Strip scripts from collections before saving
+        const projectToSave = this.stripScriptsFromProject(this.state.project);
+
+        const projectText = JSON.stringify(projectToSave);
         for(const key in this.state.project.objectTypes){
             if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
                 console.log(`did not find ${key}`);
@@ -142,7 +146,7 @@ class EditorModel {
                 localStorage.setItem(this.state.currentProject, projectText);
             } else {
             // If server saving is enabled, send config to server
-            
+
                 fetch('/save-project', {
                     method: 'POST',
                     headers: {
@@ -158,6 +162,8 @@ class EditorModel {
                     return response.text();
                 })
                 .then(message => {
+                    // After saving project config, compile and save the game
+                    return this.compileAndSaveGame();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -169,6 +175,145 @@ class EditorModel {
         }
         
         return true;
+    }
+
+    /**
+     * Strip script text from collections to reduce config file size
+     * Scripts are stored in compiled game.js, not needed in config
+     * @param {Object} project - Project object with objectTypes and objectTypeDefinitions
+     * @returns {Object} - Project with scripts stripped from collections
+     */
+    stripScriptsFromProject(project) {
+        // Deep clone the project to avoid modifying the in-memory state
+        const stripped = JSON.parse(JSON.stringify(project));
+
+        // Find all collection types in the "Scripts" category
+        const scriptCollectionTypes = project.objectTypeDefinitions
+            .filter(def => def.category === 'Scripts')
+            .map(def => def.id);
+
+        // Strip script property from all items in Scripts category collections
+        scriptCollectionTypes.forEach(type => {
+            if (stripped.objectTypes[type]) {
+                Object.keys(stripped.objectTypes[type]).forEach(itemName => {
+                    if (stripped.objectTypes[type][itemName].script) {
+                        delete stripped.objectTypes[type][itemName].script;
+                    }
+                });
+            }
+        });
+
+        return stripped;
+    }
+
+    /**
+     * Compiles and saves the game bundle to the project directory
+     * Creates game.js, engine.js, and modules folder
+     * @returns {Promise<boolean>} Success status
+     */
+    async compileAndSaveGame() {
+        if (!this.state.currentProject) {
+            console.error('No project loaded');
+            return false;
+        }
+
+        try {
+            console.log('🔨 Compiling game bundle...');
+
+            // Get compiler instance from GUTS libraries
+            const Compiler = window.GUTS?.Compiler;
+            if (!Compiler) {
+                console.error('Compiler not available');
+                return false;
+            }
+
+            const compiler = new Compiler('game');
+
+            // Engine file paths (relative to the server)
+            const engineFilePaths = {
+                moduleManager: './engine/ModuleManager.js',
+                baseEngine: './engine/BaseEngine.js',
+                engine: './engine/Engine.js'
+            };
+
+            // Compile the client game (all classes)
+            const result = await compiler.compile(
+                this.state.currentProject,
+                this.getCollections(),
+                this.getCollectionDefs(),
+                engineFilePaths,
+                null // No scene filter - compile all classes
+            );
+
+            console.log('✅ Client compilation complete');
+
+            // Compile server game if server scene exists in collections
+            let serverResult = null;
+            const serverScene = this.getCollections().scenes?.server;
+            if (serverScene) {
+                console.log('🔨 Compiling server game bundle...');
+
+                // Compile with server scene filter
+                const serverCompiler = new Compiler('server');
+                serverResult = await serverCompiler.compile(
+                    this.state.currentProject,
+                    this.getCollections(),
+                    this.getCollectionDefs(),
+                    null, // No engine code for server
+                    serverScene // Scene filter
+                );
+
+                console.log('✅ Server compilation complete');
+            } else {
+                console.log('ℹ️ No server scene found, skipping server compilation');
+            }
+
+            // Fetch local module files
+            const modules = [];
+            if (result.localModuleFiles && result.localModuleFiles.length > 0) {
+                console.log(`📦 Fetching ${result.localModuleFiles.length} local modules...`);
+
+                for (const moduleInfo of result.localModuleFiles) {
+                    if (moduleInfo.libraryDef.isModule) {
+                        try {
+                            const response = await fetch(moduleInfo.path);
+                            const content = await response.text();
+                            const filename = moduleInfo.path.split('/').pop();
+
+                            modules.push({ filename, content });
+                        } catch (error) {
+                            console.error(`Failed to fetch module ${moduleInfo.name}:`, error);
+                        }
+                    }
+                }
+            }
+
+            // Send compiled files to server
+            const saveResponse = await fetch('/save-compiled-game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectName: this.state.currentProject,
+                    gameCode: result.code,
+                    serverGameCode: serverResult?.code || null,
+                    engineCode: result.engineCode,
+                    modules: modules
+                })
+            });
+
+            if (!saveResponse.ok) {
+                throw new Error('Failed to save compiled game files');
+            }
+
+            console.log('✅ Compiled game files saved to project directory');
+            return true;
+
+        } catch (error) {
+            console.error('Error compiling and saving game:', error);
+            return false;
+        }
     }
 
     /**

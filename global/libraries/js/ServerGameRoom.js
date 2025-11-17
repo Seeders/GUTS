@@ -1,6 +1,4 @@
-import GameRoom from './GameRoom.js';
-
-export default class ServerGameRoom extends GameRoom {
+class ServerGameRoom extends global.GameRoom {
     constructor(engine, roomId, gameInstance, maxPlayers = 2, gameConfig = {}) {
         super(engine, roomId, gameInstance, maxPlayers);
         
@@ -395,5 +393,22 @@ export default class ServerGameRoom extends GameRoom {
         } catch (error) {
             console.error('Error during room cleanup:', error);
         }
+    }
+}
+
+if(typeof ServerGameRoom != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ServerGameRoom = ServerGameRoom;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ServerGameRoom;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ServerGameRoom;
+        exports.ServerGameRoom = ServerGameRoom;
     }
 }

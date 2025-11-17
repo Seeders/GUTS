@@ -1,6 +1,6 @@
 class Compiler {
-    constructor(engine) {
-        this.engine = engine;
+    constructor(environment) {
+        this.environment = environment;
         this.collections = null;
         this.compiledBundle = null;
         this.compiledEngine = null;
@@ -10,11 +10,53 @@ class Compiler {
     }
 
     /**
+     * Extract all class references from a scene definition
+     * @param {Object} sceneData - Scene data from client.json or server.json
+     * @returns {Set} - Set of class names referenced in the scene
+     */
+    extractSceneClasses(sceneData) {
+        const classNames = new Set();
+
+        if (!sceneData || !sceneData.sceneData) return classNames;
+
+        sceneData.sceneData.forEach(entity => {
+            // Add managers
+            if (entity.managers) {
+                entity.managers.forEach(m => classNames.add(m.type));
+            }
+            // Add systems
+            if (entity.systems) {
+                entity.systems.forEach(s => classNames.add(s.type));
+            }
+            // Add components
+            if (entity.components) {
+                entity.components.forEach(c => classNames.add(c.type));
+            }
+            // Add classes (these reference entire collections)
+            if (entity.classes) {
+                entity.classes.forEach(cls => {
+                    // Add all classes from the referenced collection
+                    const collectionName = cls.collection;
+                    if (this.collections[collectionName]) {
+                        Object.keys(this.collections[collectionName]).forEach(className => {
+                            classNames.add(className);
+                        });
+                    }
+                });
+            }
+        });
+
+        return classNames;
+    }
+
+    /**
      * Initialize classRegistry based on objectTypeDefinitions
      * Creates a Map for each collection type in the Scripts category
+     * In server mode with scene filter, only includes classes referenced by the scene
      */
     initializeClassRegistry() {
         this.classRegistry = {};
+
         this.scriptCollectionTypes = this.objectTypeDefinitions
             .filter(def => def.category === 'Scripts')
             .map(def => def.id);
@@ -60,15 +102,25 @@ class Compiler {
      * @param {Object} collections - Project collections (objectTypes)
      * @param {Array} objectTypeDefinitions - Collection type definitions with categories
      * @param {Object} engineFilePaths - Optional paths to engine files
+     * @param {Object} sceneFilter - Optional scene data (e.g., server.json) to filter compiled classes
      * @returns {Object} - Compilation result with bundle code and metadata
      */
-    async compile(projectName, collections, objectTypeDefinitions, engineFilePaths) {
-        console.log(`Starting compilation for project: ${projectName}`);
+    async compile(projectName, collections, objectTypeDefinitions, engineFilePaths, sceneFilter = null) {
+        console.log(`Starting compilation for project: ${projectName}${sceneFilter ? ' (FILTERED BY SCENE)' : ''}`);
 
         this.collections = collections;
         this.objectTypeDefinitions = objectTypeDefinitions;
+        this.sceneFilter = sceneFilter;
+
         if (!this.collections) {
             throw new Error("Failed to load game configuration");
+        }
+
+        // If scene filter provided, extract which classes to compile
+        this.allowedClasses = null;
+        if (this.sceneFilter) {
+            this.allowedClasses = this.extractSceneClasses(this.sceneFilter);
+            console.log(`Scene filter: compiling ${this.allowedClasses.size} classes`);
         }
 
         // Initialize classRegistry dynamically based on objectTypeDefinitions
@@ -196,7 +248,7 @@ window.COMPILED_GAME_LOADED = true;`;
     }
 
 async buildLibraries(result) {
-    const projectConfig = this.collections.configs.game;
+    const projectConfig = this.collections.configs[this.environment];
     if (!projectConfig.libraries) {
         console.warn("No libraries defined in game config");
         return;
@@ -508,8 +560,12 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
             collectedClasses[type] = new Set();
         });
 
-        // Scan all scenes to find which classes are used
-        if (this.collections.scenes) {
+        // If scene filter is provided, collect classes from that scene only
+        if (this.sceneFilter) {
+            this.collectClassesFromScene(this.sceneFilter, collectedClasses);
+        }
+        // Otherwise, scan all scenes to find which classes are used
+        else if (this.collections.scenes) {
             for (const sceneName in this.collections.scenes) {
                 const scene = this.collections.scenes[sceneName];
                 this.collectClassesFromScene(scene, collectedClasses);
@@ -538,6 +594,11 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
             classesSection.push(`\n// ========== ${typeName} ==========`);
 
             for (const itemName of itemsToCompile) {
+                // Skip if scene filter is active and this class is not allowed
+                if (this.allowedClasses && !this.allowedClasses.has(itemName)) {
+                    continue;
+                }
+
                 const itemDef = this.collections[collectionType][itemName];
                 if (itemDef && itemDef.script) {
                     const singularName = typeDef?.singular || collectionType.slice(0, -1);

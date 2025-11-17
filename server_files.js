@@ -62,12 +62,70 @@ app.post('/save-project', async (req, res) => {
     try {
         if (!fsSync.existsSync(buildFolder)) {
             await fs.mkdir(buildFolder, { recursive: true });
-        }        
+        }
         await fs.writeFile(`${buildFilePath}`, `${JSON.stringify(project, null, 2)}`, 'utf8');
         res.status(200).send('Config saved successfully!');
     } catch (error) {
         console.error('Error saving config:', error);
         res.status(500).send('Error saving config');
+    }
+});
+
+// Endpoint to save compiled game files
+app.post('/save-compiled-game', async (req, res) => {
+    const { projectName, gameCode, serverGameCode, engineCode, modules } = req.body;
+    const projectFolder = path.join(PROJS_DIR, projectName);
+    const modulesFolder = path.join(projectFolder, 'modules');
+
+    console.log(`📦 Saving compiled files for ${projectName}:`);
+    console.log(`   - gameCode: ${gameCode ? `${(gameCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - serverGameCode: ${serverGameCode ? `${(serverGameCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - engineCode: ${engineCode ? `${(engineCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - modules: ${modules?.length || 0}`);
+
+    try {
+        // Ensure project folder exists
+        if (!fsSync.existsSync(projectFolder)) {
+            await fs.mkdir(projectFolder, { recursive: true });
+        }
+
+        // Save game.js (client version)
+        if (gameCode) {
+            await fs.writeFile(path.join(projectFolder, 'game.js'), gameCode, 'utf8');
+            console.log(`✓ Saved game.js for ${projectName}`);
+        }
+
+        // Save game_server.js (server version with filtered classes)
+        if (serverGameCode) {
+            await fs.writeFile(path.join(projectFolder, 'game_server.js'), serverGameCode, 'utf8');
+            console.log(`✓ Saved game_server.js for ${projectName}`);
+        } else {
+            console.log(`⚠️ No serverGameCode received - skipping game_server.js`);
+        }
+
+        // Save engine.js
+        if (engineCode) {
+            await fs.writeFile(path.join(projectFolder, 'engine.js'), engineCode, 'utf8');
+            console.log(`✓ Saved engine.js for ${projectName}`);
+        }
+
+        // Save modules if any
+        if (modules && modules.length > 0) {
+            if (!fsSync.existsSync(modulesFolder)) {
+                await fs.mkdir(modulesFolder, { recursive: true });
+            }
+
+            for (const module of modules) {
+                const modulePath = path.join(modulesFolder, module.filename);
+                await fs.writeFile(modulePath, module.content, 'utf8');
+                console.log(`✓ Saved module: ${module.filename}`);
+            }
+        }
+
+        res.status(200).send('Compiled game files saved successfully!');
+    } catch (error) {
+        console.error('Error saving compiled game files:', error);
+        res.status(500).send('Error saving compiled game files');
     }
 });
 
