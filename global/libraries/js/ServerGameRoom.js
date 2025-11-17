@@ -158,9 +158,45 @@ class ServerGameRoom extends global.GameRoom {
 
     handleLeaveRoom(eventData) {
         const { playerId } = eventData;
-        
-        // Use the same cleanup logic as disconnect
-        this.handlePlayerDisconnect(eventData);
+        console.log(`Player ${playerId} leaving room`);
+
+        // Get the room the player was in
+        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            const room = this.engine.gameRooms.get(roomId);
+            if (room) {
+                // Get player data before removing
+                const player = room.players.get(playerId);
+                const playerName = player?.name || 'Unknown';
+
+                // Notify other players
+                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
+                    playerId: playerId,
+                    playerName: playerName
+                });
+
+                // Clean up player state in the room
+                this.cleanupPlayerState(room, playerId);
+
+                // Remove from room
+                room.removePlayer(playerId);
+                this.serverNetworkManager.leaveRoom(playerId, roomId);
+
+                // Clean up empty rooms
+                if (room.players.size === 0) {
+                    this.cleanupRoom(room);
+                    this.engine.gameRooms.delete(roomId);
+                    console.log(`Removed empty room ${roomId}`);
+                } else {
+                    // If room still has players, reset their states for next game
+                    this.resetPlayersForNextGame(room);
+                }
+            }
+        }
+
+        // IMPORTANT: DO NOT delete socket here - player is still connected, just not in a room
+        // Only handlePlayerDisconnect should delete the socket
+        console.log(`Player ${playerId} left room successfully, socket preserved`);
     }
 
     cleanupPlayerState(room, playerId) {
