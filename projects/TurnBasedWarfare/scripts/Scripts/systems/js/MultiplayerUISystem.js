@@ -52,20 +52,23 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
         document.body.appendChild(setupDialog);
         this.setupMultiplayerDialogEvents(setupDialog, mode);
+
+        // Start fetching and displaying available rooms
+        this.startLobbyRefresh(setupDialog, mode);
     }
 
     setupMultiplayerDialogEvents(dialog, mode) {
         const playerNameInput = dialog.querySelector('#playerName');
         const quickMatchBtn = dialog.querySelector('#quickMatchBtn');
         const createRoomBtn = dialog.querySelector('#createRoomBtn');
-        const joinRoomBtn = dialog.querySelector('#joinRoomBtn');
-        const roomIdInput = dialog.querySelector('#roomIdInput');
+        const refreshRoomsBtn = dialog.querySelector('#refreshRoomsBtn');
         const cancelBtn = dialog.querySelector('#cancelMultiplayerBtn');
 
         const getPlayerName = () => playerNameInput.value.trim() || 'Player';
 
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
+                this.stopLobbyRefresh();
                 this.game.networkManager.startQuickMatch(getPlayerName());
                 dialog.remove();
             });
@@ -73,31 +76,143 @@ class MultiplayerUISystem extends engine.BaseSystem {
 
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => {
+                this.stopLobbyRefresh();
                 this.game.networkManager.createRoom(getPlayerName(), mode.maxPlayers);
                 dialog.remove();
             });
         }
 
-        if (joinRoomBtn) {
-            joinRoomBtn.addEventListener('click', () => {
-                const roomId = roomIdInput.value.trim().toUpperCase();
-                if (roomId) {
-                    this.game.networkManager.joinRoom(roomId, getPlayerName());
-                    dialog.remove();
-                } else {
-                    this.showNotification('Please enter a Room ID', 'error');
-                }
+        if (refreshRoomsBtn) {
+            refreshRoomsBtn.addEventListener('click', () => {
+                this.fetchAndDisplayRooms(dialog, mode, getPlayerName);
             });
         }
 
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => {
+                this.stopLobbyRefresh();
                 dialog.remove();
             });
         }
 
         playerNameInput.focus();
         playerNameInput.select();
+    }
+
+    startLobbyRefresh(dialog, mode) {
+        const playerNameInput = dialog.querySelector('#playerName');
+        const getPlayerName = () => playerNameInput.value.trim() || 'Player';
+
+        // Fetch rooms immediately
+        this.fetchAndDisplayRooms(dialog, mode, getPlayerName);
+
+        // Set up auto-refresh every 3 seconds
+        this.lobbyRefreshInterval = setInterval(() => {
+            this.fetchAndDisplayRooms(dialog, mode, getPlayerName);
+        }, 3000);
+    }
+
+    stopLobbyRefresh() {
+        if (this.lobbyRefreshInterval) {
+            clearInterval(this.lobbyRefreshInterval);
+            this.lobbyRefreshInterval = null;
+        }
+    }
+
+    async fetchAndDisplayRooms(dialog, mode, getPlayerName) {
+        const loadingIndicator = dialog.querySelector('#roomsLoadingIndicator');
+        const tableBody = dialog.querySelector('#roomsTableBody');
+
+        try {
+            // Show loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+
+            // Fetch rooms from server
+            const response = await fetch('/api/rooms');
+            if (!response.ok) {
+                throw new Error('Failed to fetch rooms');
+            }
+
+            const rooms = await response.json();
+
+            // Hide loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            // Clear existing rows
+            if (tableBody) {
+                tableBody.innerHTML = '';
+
+                // Filter for available rooms (waiting for players)
+                const availableRooms = rooms.filter(room =>
+                    room.playerCount < room.maxPlayers && room.isActive
+                );
+
+                if (availableRooms.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="padding: 2rem; text-align: center; color: #888;">
+                                No available games. Create one to get started!
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    // Add row for each available room
+                    availableRooms.forEach(room => {
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid #333';
+                        row.style.transition = 'background 0.2s';
+                        row.onmouseenter = () => row.style.background = '#2a2a2a';
+                        row.onmouseleave = () => row.style.background = 'transparent';
+
+                        const statusText = room.playerCount === 0 ? 'Waiting' : `${room.playerCount}/${room.maxPlayers} Players`;
+                        const statusColor = room.playerCount === 0 ? '#ffaa00' : '#00aaff';
+
+                        row.innerHTML = `
+                            <td style="padding: 1rem; color: #fff; font-weight: bold;">${room.id}</td>
+                            <td style="padding: 1rem; text-align: center; color: #aaa;">${room.playerCount}/${room.maxPlayers}</td>
+                            <td style="padding: 1rem; text-align: center; color: ${statusColor};">${statusText}</td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <button class="join-room-btn" data-room-id="${room.id}"
+                                    style="padding: 0.5rem 1.5rem; background: #00aa00; border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                                    Join
+                                </button>
+                            </td>
+                        `;
+
+                        tableBody.appendChild(row);
+                    });
+
+                    // Add event listeners to join buttons
+                    dialog.querySelectorAll('.join-room-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const roomId = btn.getAttribute('data-room-id');
+                            const playerName = getPlayerName();
+                            this.stopLobbyRefresh();
+                            this.game.networkManager.joinRoom(roomId, playerName);
+                            dialog.remove();
+                        });
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            if (tableBody) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="padding: 2rem; text-align: center; color: #ff4444;">
+                            Error loading rooms. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
     }
 
     toggleReady() {
