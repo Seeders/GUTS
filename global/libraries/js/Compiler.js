@@ -259,40 +259,7 @@ async buildLibraries(result) {
     const importMap = {};
     const localModuleFiles = [];
 
-    // Client-only libraries that should be skipped in server compilation
-    const clientOnlyLibraries = [
-        'threejs',
-        'three_MeshBVH',
-        'three_SkeletonUtils',
-        'three_OrbitControls',
-        'GLTFLoader',
-        'three_EffectComposer',
-        'three_RenderPixelatedPass',
-        'three_OutputPass',
-        'UIComponents',
-        'NotificationSystem',
-        'GameLoader',
-        'PlacementPreview',
-        'ClientNetworkManager',
-        'FantasyUIEnhancements',
-        'PerformanceProfiler',
-        'ModelManager',
-        'ImageManager',
-        'CanvasUtility',
-        'TerrainImageProcessor',
-        'TileMap',
-        'ShapeFactory',
-        'GameModeConfigs',
-        'SceneManager' // client SceneManager, server uses ServerSceneManager
-    ];
-
     for (const libraryName of projectConfig.libraries) {
-        // Skip client-only libraries when compiling for server
-        if (this.sceneFilter && clientOnlyLibraries.includes(libraryName)) {
-            console.log(`Skipping client-only library: ${libraryName}`);
-            continue;
-        }
-
         const libraryDef = this.collections.libraries[libraryName];
         if (!libraryDef) {
             console.warn(`Library ${libraryName} not found in collections`);
