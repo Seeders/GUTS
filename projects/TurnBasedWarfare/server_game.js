@@ -80,6 +80,8 @@ if (!global._io) {
 global.io = global._io; // also expose as global.io for convenience
 
 // Serve static files (your client game files)
+// First try compiled client, then fall back to source files
+app.use(express.static(path.join(__dirname, 'dist/client')));
 app.use(express.static(path.join(__dirname, './')));
 app.use('/engine', express.static(path.join(__dirname, '../../engine')));
 app.use('/global', express.static(path.join(__dirname, '../../global')));
