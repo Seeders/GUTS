@@ -170,7 +170,9 @@ class Compiler {
  * Generated: ${result.timestamp}
  */
 
-window.engine = {};
+window.engine = {
+        app: {}
+};
 
 // Global bundle namespace
 window.COMPILED_GAME = {
@@ -540,8 +542,8 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
                 if (itemDef && itemDef.script) {
                     const singularName = typeDef?.singular || collectionType.slice(0, -1);
                     classesSection.push(`\n// ${singularName}: ${itemName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.${collectionType} = window.COMPILED_GAME.classRegistry.${collectionType} || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.${collectionType}['${itemName}'] = ${itemDef.script};`);
+                    classesSection.push(`window.engine.app.appClasses = window.engine.app.appClasses || {};`);
+                    classesSection.push(`window.engine.app.appClasses['${itemName}'] = ${itemDef.script};`);
                     this.classRegistry[collectionType].set(itemName, true);
                     collectedClasses[collectionType].add(itemName);
                 }
@@ -614,7 +616,7 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
  * This replaces the ModuleManager.getCompiledScript method for compiled bundles
  */
 window.COMPILED_GAME.getClass = function(className, collectionType) {
-    const collection = window.COMPILED_GAME.classRegistry[collectionType];
+    const collection = window.engine.app[collectionType];
     if (!collection) {
         console.error(\`Collection \${collectionType} not found in compiled bundle\`);
         return null;
@@ -633,7 +635,7 @@ window.COMPILED_GAME.getClass = function(className, collectionType) {
  * Check if a class exists in the compiled bundle
  */
 window.COMPILED_GAME.hasClass = function(className, collectionType) {
-    const collection = window.COMPILED_GAME.classRegistry[collectionType];
+    const collection = window.engine.app[collectionType];
     return collection && collection[className] !== undefined;
 };`;
         result.sections.push(registrySection);
@@ -671,7 +673,7 @@ window.COMPILED_GAME.init = function(engine) {
 
     // Patch compileScript
     ModuleManager.prototype.compileScript = function(scriptText, typeName) {
-        for (const collectionType in window.COMPILED_GAME.classRegistry) {
+        for (const collectionType in window.engine.app) {
             if (window.COMPILED_GAME.hasClass(typeName, collectionType)) {
                 return window.COMPILED_GAME.getClass(typeName, collectionType);
             }

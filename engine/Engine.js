@@ -51,12 +51,17 @@ class Engine extends BaseEngine {
         return "resources/";
     }
 
-    async loadCollections() {        ;
+    async loadCollections() {        
+        
         let project = {};
 
         project = JSON.parse(localStorage.getItem(this.currentProjectName));
         
         if (!project) {
+
+            if(window.COMPILED_GAME?.collections){
+                return window.COMPILED_GAME.collections;
+            }
             const response = await window.fetch(`config/${this.currentProjectName.toUpperCase().replace(/ /g, '_')}.json`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
