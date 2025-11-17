@@ -27,7 +27,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
         if (!miningState) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-            
+
             this.game.addComponent(entityId, ComponentTypes.MINING_STATE, {
                 state: 'idle',
                 targetMineEntityId: null,
@@ -40,15 +40,36 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
                 team: team?.team,
                 entityId: entityId
             });
+            miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
         }
-        const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
 
-        if(currentAIController == null){
-            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
-            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI); 
+        // Autocast behavior: only activate mining if there's NO current command
+        const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
+
+        // If there's a current command, don't execute mining
+        if (currentCommand) {
+            return false;
         }
-        
-        return (currentAIController == ComponentTypes.MINING_STATE);
+
+        // No current command - activate mining (autocast)
+        // If we were interrupted (controller was changed), reset mining state to idle
+        const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
+        if(currentAIController !== ComponentTypes.MINING_STATE){
+            // Mining was interrupted, reset state to idle so it can start fresh
+            miningState.state = 'idle';
+            miningState.targetMineEntityId = null;
+            miningState.targetMinePosition = null;
+            miningState.targetTownHall = null;
+            miningState.waitingPosition = null;
+            miningState.miningStartTime = 0;
+            miningState.depositStartTime = 0;
+            // Note: Keep hasGold if they were carrying gold when interrupted
+
+            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
+            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI);
+        }
+
+        return true;
     }
 
     execute(entityId, targetData) {
