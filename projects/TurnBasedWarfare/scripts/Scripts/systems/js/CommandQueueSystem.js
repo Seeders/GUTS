@@ -33,7 +33,7 @@ class CommandQueueSystem extends engine.BaseSystem {
     queueCommand(entityId, commandData, interrupt = true) {
         const ComponentTypes = this.game.componentTypes;
         const Components = this.game.componentManager.getComponents();
-
+;
         // Ensure unit has a command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
         if (!commandQueue) {
@@ -214,6 +214,8 @@ class CommandQueueSystem extends engine.BaseSystem {
                 aiState.target = null;
                 aiState.path = [];
                 aiState.pathIndex = 0;
+                aiState.meta = {};
+                aiState.aiControllerId = "";
             }
         }
     }
@@ -238,7 +240,7 @@ class CommandQueueSystem extends engine.BaseSystem {
 
                 // However, we can check for some automatic completions:
                 // - If target position is reached and no special state
-                if (aiState.state === 'idle' && commandQueue.currentCommand.type === 'move') {
+                if (aiState.state === 'idle' && commandQueue.currentCommand.type === 'move' && this.game.state.phase == 'battle') {
                     // Move command completed
                     this.completeCurrentCommand(entityId);
                 }

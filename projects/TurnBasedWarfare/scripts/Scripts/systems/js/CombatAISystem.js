@@ -69,8 +69,8 @@ class CombatAISystem extends engine.BaseSystem {
             
             // DEBUG: Log combat range and position
             const preventEnemiesInRangeCheck = aiState.meta ? aiState.meta.preventEnemiesInRangeCheck : false; 
-            if (!aiState.aiBehavior.initialized) {
-                aiState.aiBehavior = {
+            if (!aiState.meta.initialized) {
+                aiState.meta = {
                     lastDecisionTime: 0,
                     targetLockTime: 0,
                     lastStateChange: 0,
@@ -78,7 +78,7 @@ class CombatAISystem extends engine.BaseSystem {
                     initialized: true
                 };
             }
-            const aiBehavior = aiState.aiBehavior;
+            const aiMeta = aiState.meta;
 
             const enemiesInVisionRange = preventEnemiesInRangeCheck ? [] : (this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || []);
             
@@ -119,12 +119,12 @@ class CombatAISystem extends engine.BaseSystem {
                 }   
             }
 
-            if (aiBehavior.nextMoveTime == null) aiBehavior.nextMoveTime = 0;
+            if (aiMeta.nextMoveTime == null) aiMeta.nextMoveTime = 0;
     
             if (aiState.state !== 'waiting') {
-                aiBehavior.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
+                aiMeta.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
                 this.makeAIDecision(entityId, pos, combat, team, aiState, enemiesInVisionRange, collision);
-                aiBehavior.lastDecisionTime = this.game.state.now;
+                aiMeta.lastDecisionTime = this.game.state.now;
             }
 
             this.handleCombat(entityId, pos, combat, aiState, collision);
@@ -159,25 +159,17 @@ class CombatAISystem extends engine.BaseSystem {
 
 
     changeAIState(aiState, newState) {
-        if (!aiState.aiBehavior) {
-            aiState.aiBehavior = {
-                lastDecisionTime: 0,
-                targetLockTime: 0,
-                lastStateChange: 0,
-                lastAttackStart: 0,
-                initialized: true
-            };
-        }
-        const aiBehavior = aiState.aiBehavior;
-        if (this.game.state.now - aiBehavior.lastStateChange < this.STATE_CHANGE_COOLDOWN) return false;
+
+        const aiMeta = aiState.meta;
+        if (this.game.state.now - aiMeta.lastStateChange < this.STATE_CHANGE_COOLDOWN) return false;
         if (aiState.state === 'attacking') {
-            const attackDuration = this.game.state.now - aiBehavior.lastAttackStart;
+            const attackDuration = this.game.state.now - aiMeta.lastAttackStart;
             if (attackDuration < this.MIN_ATTACK_ANIMATION_TIME) return false;
         }
         if (aiState.state !== newState) {
             aiState.state = newState;
-            aiBehavior.lastStateChange = this.game.state.now;
-            if (newState === 'attacking') aiBehavior.lastAttackStart = this.game.state.now;
+            aiMeta.lastStateChange = this.game.state.now;
+            if (newState === 'attacking') aiMeta.lastAttackStart = this.game.state.now;
             return true;
         }
         return false;
@@ -261,7 +253,7 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     findBestTarget(entityId, pos, range, enemiesInVisionRange, aiState) {
-        const aiBehavior = aiState.aiBehavior;
+        const aiMeta = aiState.meta;
         let bestTarget = null;
         let bestScore = -Infinity;
         
@@ -318,7 +310,7 @@ class CombatAISystem extends engine.BaseSystem {
         });
         
         if (bestTarget !== aiState.target) {
-            aiBehavior.targetLockTime = this.game.state.now;
+            aiMeta.targetLockTime = this.game.state.now;
         }
         
         return bestTarget;
@@ -358,7 +350,7 @@ class CombatAISystem extends engine.BaseSystem {
     }
 
     handleCombat(entityId, pos, combat, aiState, collision) {
-        const aiBehavior = aiState.aiBehavior;
+        const aiMeta = aiState.meta;
         if (!aiState.target || aiState.state !== 'attacking'){
            // console.log('no target or not attacking', aiState); 
             return;
@@ -386,7 +378,7 @@ class CombatAISystem extends engine.BaseSystem {
             if ((this.game.state.now - combat.lastAttack) >= 1 / effectiveAttackSpeed) {
                 this.initiateAttack(entityId, aiState.target, combat);
                 combat.lastAttack = this.game.state.now;
-                aiBehavior.lastAttackStart = this.game.state.now;
+                aiMeta.lastAttackStart = this.game.state.now;
             }
         }           
     }

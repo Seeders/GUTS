@@ -52,6 +52,7 @@ class AISystem extends engine.BaseSystem {
         aiState.path = [];
         aiState.pathIndex = 0;
         aiState.useDirectMovement = false;
+        console.log('setCurrentAIController:', entityId, data.targetPosition, aiState.targetPosition);
 
         // Update state based on new target
         if (data.targetPosition || data.target) {
