@@ -1,7 +1,6 @@
 class ServerECSGame extends global.BaseECSGame {
     constructor(app) {
         super(app);
-        console.log('SERVER ECS GAME:', global);
         this.state = new global.GUTS.GameState(this.getCollections());
         this.sceneManager = new global.GUTS.ServerSceneManager(this);
         this.moduleManager = app.moduleManager;
