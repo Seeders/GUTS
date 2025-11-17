@@ -12,23 +12,36 @@ import ServerEngine from '../../engine/ServerEngine.js';
 import ServerModuleManager from '../../engine/ServerModuleManager.js';
 import ServerMatchmakingService from '../../global/libraries/js/ServerMatchmakingService.js';
 
-// Import server libraries (from server.json config)
+// Import base classes first
 import BaseSystem from '../../global/libraries/js/BaseSystem.js';
-import GameRoom from '../../global/libraries/js/GameRoom.js';
-import ServerGameRoom from '../../global/libraries/js/ServerGameRoom.js';
 import GameState from '../../global/libraries/js/GameState.js';
 import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
 import GameUtils from './scripts/Scripts/libraries/js/GameUtils.js';
-import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
-import ServerEventManager from '../../global/libraries/js/ServerEventManager.js';
-import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
-import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
 import SeededRandom from '../../global/libraries/js/SeededRandom.js';
 import MinHeap from './scripts/Scripts/libraries/js/MinHeap.js';
 import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Set up global.GUTS with base classes before importing classes that depend on them
+global.GUTS = {
+    BaseSystem,
+    GameState,
+    BaseECSGame,
+    GameUtils,
+    SeededRandom,
+    MinHeap,
+    DesyncDebugger
+};
+
+// Now import classes that depend on global.GUTS
+import GameRoom from '../../global/libraries/js/GameRoom.js';
+import ServerGameRoom from '../../global/libraries/js/ServerGameRoom.js';
+import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
+import ServerEventManager from '../../global/libraries/js/ServerEventManager.js';
+import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
+import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
 
 // Load and execute compiled game files in Node.js context
 function loadCompiledGame() {
@@ -123,31 +136,24 @@ function loadCompiledGame() {
 
     console.log('✓ Loaded compiled game_server.js');
 
-    // Make server classes and game classes available via global.GUTS
-    global.GUTS = {
+    // Merge server classes and game classes into global.GUTS
+    Object.assign(global.GUTS, {
         // Server infrastructure
         ServerEngine,
         ServerModuleManager,
         ServerMatchmakingService,
-        // Server libraries (from server.json)
-        BaseSystem,
+        // Server libraries that depend on base classes (from server.json)
         GameRoom,
         ServerGameRoom,
-        GameState,
-        BaseECSGame,
-        GameUtils,
         ServerECSGame,
         ServerEventManager,
         ServerNetworkManager,
         ServerSceneManager,
-        SeededRandom,
-        MinHeap,
-        DesyncDebugger,
         // Game classes from compiled bundle
         ...global.engine?.app?.appClasses,
         // Collections available from compiled game
         getCollections: () => global.COMPILED_GAME?.collections
-    };
+    });
 
     console.log('✓ Game classes loaded and available in global.GUTS');
 }
