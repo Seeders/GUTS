@@ -44,14 +44,15 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
         this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
-
-        this.initializeSubsystems();
-        this.setupEventListeners();
         this.mouseWorldOffset = { x: this.game.getCollections().configs.game.gridSize / 4, z: this.game.getCollections().configs.game.gridSize / 4 };
+
     }
 
     setupEventListeners() {
-        this.initializeControls();
+        
+        this.elements.readyButton = document.getElementById('placementReadyBtn');
+        this.elements.undoButton = document.getElementById('undoBtn');
+
         this.elements.readyButton.addEventListener('click', () => {
             this.togglePlacementReady();
         });
@@ -83,6 +84,43 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 this.elements.undoButton.style.boxShadow = 'none';
             }
         });
+        if (this.config.enableUndo) {
+            document.addEventListener('keydown', (event) => {
+                if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                    event.preventDefault();
+                    this.undoLastPlacement();
+                }
+            });
+        }
+
+        if (this.config.enablePreview && this.placementPreview) {       
+            
+            this.canvas.addEventListener('mousemove', (event) => {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;    
+            });
+            
+            this.canvas.addEventListener('mouseleave', () => {                
+                this.placementPreview.clear();
+                this.cachedValidation = null;
+                this.cachedGridPos = null;
+                document.body.style.cursor = 'default';
+            });
+        }
+        
+        this.mouseRayCastInterval = setInterval(() => {                    
+            
+            this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);
+            this.mouseWorldPos.x += this.mouseWorldOffset.x;
+            this.mouseWorldPos.z += this.mouseWorldOffset.z;
+            if (this.game.state.phase === 'placement' && 
+                this.game.state.selectedUnitType) {
+                this.updatePlacementPreview();
+            }
+                            
+        }, 100);
+        
     }
 
     initializeSubsystems() {
@@ -98,6 +136,8 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     onGameStarted() {
+        this.initializeSubsystems();
+        this.setupEventListeners();
         this.getStartingState();
         this.onPlacementPhaseStart();
     }
@@ -438,20 +478,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             console.log('Not enough supply to place this unit');
             return;
         }
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPosition = this.getFlatWorldPositionFromMouse(event, mouseX, mouseY);
 
-        // Adjust world position to account for camera angle and cell centering        
-        const adjustedWorldPos = {
-            x: worldPosition.x + this.mouseWorldOffset.x,
-            z: worldPosition.z + this.mouseWorldOffset.z
-        };
+        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
 
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
-
-        let isValidPlacement = this.isValidGridPlacement(adjustedWorldPos);
+        let isValidPlacement = this.isValidGridPlacement(this.mouseWorldPos);
        
         if (!isValidPlacement) {
             return;
@@ -717,51 +747,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         return this.playerPlacements;
     }
 
-    initializeControls() {
-        this.elements.readyButton = document.getElementById('placementReadyBtn');
-        this.elements.undoButton = document.getElementById('undoBtn');
-
-        if (this.config.enableUndo) {
-            document.addEventListener('keydown', (event) => {
-                if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
-                    event.preventDefault();
-                    this.undoLastPlacement();
-                }
-            });
-        }
-
-        this.mouseRayCastInterval = setInterval(() => {                          
-        
-            this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);  
-            if (this.game.state.phase === 'placement' && 
-                this.game.state.selectedUnitType) {
-                this.updatePlacementPreview();
-            }
-                            
-        }, 100);
-
-        if (this.config.enablePreview && this.placementPreview) {       
-            
-            this.canvas.addEventListener('mousemove', (event) => {
-                const rect = this.canvas.getBoundingClientRect();
-                this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;    
-            });
-            
-            this.canvas.addEventListener('mouseleave', () => {                
-                this.placementPreview.clear();
-                this.cachedValidation = null;
-                this.cachedGridPos = null;
-                document.body.style.cursor = 'default';
-            });
-        }
-    }
-
+   
     updatePlacementPreview(event) {
         if (!this.placementPreview) return;
-        let worldPosition = this.mouseWorldPos; 
-        
-        if (!worldPosition) {
+    
+        if (!this.mouseWorldPos) {
             this.placementPreview.clear();
             document.body.style.cursor = 'not-allowed';
             return;
@@ -769,15 +759,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
         // Adjust world position to account for camera angle and cell centering
         // Add half cell size to snap to nearest cell center
-        const adjustedWorldPos = {
-            x: worldPosition.x + this.mouseWorldOffset.x,
-            z: worldPosition.z + this.mouseWorldOffset.z
-        };
 
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', adjustedWorldPos.x, adjustedWorldPos.z);
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
         const state = this.game.state;
         
-        let isValid = this.isValidGridPlacement(adjustedWorldPos);
+        let isValid = this.isValidGridPlacement(this.mouseWorldPos);
         let unitPositions = null;
         let isBuilding = state.selectedUnitType.collection === 'buildings';
 
@@ -822,6 +808,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 return intersects[0].point;
             }
         }
+        return { x: 0, y: 0, z: 0 };
     }
 
     getFlatWorldPositionFromMouse(event, mouseX, mouseY) {

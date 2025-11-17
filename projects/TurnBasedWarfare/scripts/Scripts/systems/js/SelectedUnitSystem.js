@@ -296,10 +296,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
     }
 
     checkUnitSelectionClick(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse', event, mouseX, mouseY);
+        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
     
         if (!worldPos) return;
     
