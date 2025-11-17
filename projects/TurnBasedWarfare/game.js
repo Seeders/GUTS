@@ -1,7 +1,7 @@
 /**
  * Compiled Game Bundle
  * Project: TurnBasedWarfare
- * Generated: 2025-11-17T19:25:25.699Z
+ * Generated: 2025-11-17T19:29:00.026Z
  */
 
 window.engine = {
@@ -11,18 +11,18 @@ window.engine = {
 // Global bundle namespace
 window.COMPILED_GAME = {
     projectName: "TurnBasedWarfare",
-    version: "2025-11-17T19:25:25.699Z",
+    version: "2025-11-17T19:29:00.026Z",
     classRegistry: {},
     libraryClasses: {},
     collections: {
   "components": {
-    "Animator": {
-      "filePath": "/global/components/js/Animator.js",
-      "fileName": "Animator"
-    },
     "ArrayTracker": {
       "filePath": "/global/components/js/ArrayTracker.js",
       "fileName": "ArrayTracker"
+    },
+    "Animator": {
+      "filePath": "/global/components/js/Animator.js",
+      "fileName": "Animator"
     },
     "AudioManager": {
       "filePath": "/global/components/js/AudioManager.js",
@@ -40,10 +40,6 @@ window.COMPILED_GAME = {
       "filePath": "/global/components/js/MapManager.js",
       "fileName": "MapManager"
     },
-    "Physics": {
-      "filePath": "/global/components/js/Physics.js",
-      "fileName": "Physics"
-    },
     "PlayerController": {
       "filePath": "/global/components/js/PlayerController.js",
       "fileName": "PlayerController"
@@ -51,6 +47,10 @@ window.COMPILED_GAME = {
     "Projectile": {
       "filePath": "/global/components/js/Projectile.js",
       "fileName": "Projectile"
+    },
+    "Physics": {
+      "filePath": "/global/components/js/Physics.js",
+      "fileName": "Physics"
     },
     "Stats": {
       "filePath": "/global/components/js/Stats.js",
@@ -234,6 +234,14 @@ window.COMPILED_GAME = {
       "filePath": "/global/interfaces/html/audioEditor.html",
       "html": "<div id=\"audio-editor-container\" class=\"editor-module\">\r\n    <div class=\"editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y\">\r\n        <div id=\"status-container\" class=\"editor-module__status-bar\">\r\n            <span id=\"status-message\">Ready</span>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n                <button id=\"playBtn\" class=\"editor-module__btn editor-module__btn--primary\">Play</button>\r\n                <button id=\"exportBtn\" class=\"editor-module__btn editor-module__btn--success\">Save</button>\r\n                <button id=\"randomSoundBtn\" class=\"editor-module__btn editor-module__btn--secondary\">🎲 Randomize Sound</button>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Basic Parameters</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Waveform:</label>\r\n                <select id=\"waveform\" class=\"editor-module__select\">\r\n                    <option value=\"sine\">Sine</option>\r\n                    <option value=\"square\">Square</option>\r\n                    <option value=\"sawtooth\">Sawtooth</option>\r\n                    <option value=\"triangle\">Triangle</option>\r\n                    <option value=\"noise\">Noise</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Frequency: <span class=\"audio-editor__value-display\">440 Hz</span></label>\r\n                <input type=\"range\" id=\"frequency\" class=\"editor-module__range\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Duration: <span class=\"audio-editor__value-display\">1.00 s</span></label>\r\n                <input type=\"range\" id=\"duration\" class=\"editor-module__range\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Volume: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"volume\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Noise Generator</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Type:</label>\r\n                <select id=\"noiseType\" class=\"editor-module__select\">\r\n                    <option value=\"white\">White</option>\r\n                    <option value=\"pink\">Pink</option>\r\n                    <option value=\"brown\">Brown</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Amount: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"noiseAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter:</label>\r\n                <select id=\"noiseFilterType\" class=\"editor-module__select\">\r\n                    <option value=\"none\">None</option>\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter Freq: <span class=\"audio-editor__value-display\">2000 Hz</span></label>\r\n                <input type=\"range\" id=\"noiseFilterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Envelope (ADSR)</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Attack: <span class=\"audio-editor__value-display\">0.010 s</span></label>\r\n                <input type=\"range\" id=\"attack\" class=\"editor-module__range\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Decay: <span class=\"audio-editor__value-display\">0.10 s</span></label>\r\n                <input type=\"range\" id=\"decay\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Sustain: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"sustain\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Release: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"release\" class=\"editor-module__range\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Pitch Envelope</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Start: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvStart\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">End: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvEnd\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Effects</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Type:</label>\r\n                <select id=\"filterType\" class=\"editor-module__select\">\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                    <option value=\"notch\">Notch</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Frequency: <span class=\"audio-editor__value-display\">1000 Hz</span></label>\r\n                <input type=\"range\" id=\"filterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Q: <span class=\"audio-editor__value-display\">Q: 1.0</span></label>\r\n                <input type=\"range\" id=\"filterQ\" class=\"editor-module__range\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Distortion: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"distortion\" class=\"editor-module__range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Time: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"delayTime\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Feedback: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"delayFeedback\" class=\"editor-module__range\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Reverb: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"reverbAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Bitcrusher: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"bitcrusher\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Panning: <span class=\"audio-editor__value-display\">Center</span></label>\r\n                <input type=\"range\" id=\"panning\" class=\"editor-module__range\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"editor-module__canvas-area audio-editor__waveform-display\">\r\n        <!-- Waveform visualization will go here -->\r\n    </div>\r\n</div>\r\n"
     },
+    "sceneEditor": {
+      "title": "Scene Editor",
+      "modals": [],
+      "fileName": "sceneEditor",
+      "css": "/* =============================================================================\r\n   SCENE EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Scene view */\r\n.scene-editor__scene-view {\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden;\r\n}\r\n\r\n#scene-canvas-container {\r\n    width: 100%;\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n#scene-editor-canvas {\r\n    cursor: crosshair;\r\n    outline: none;\r\n}\r\n\r\n/* No selection message */\r\n.scene-editor__no-selection {\r\n    text-align: center;\r\n    padding: var(--editor-spacing-xl);\r\n    color: var(--editor-text-muted);\r\n    font-style: italic;\r\n}\r\n\r\n/* Hierarchy item */\r\n.scene-editor__hierarchy-item {\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    cursor: pointer;\r\n    border-left: 2px solid transparent;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.scene-editor__hierarchy-item:hover {\r\n    background-color: rgba(255, 255, 255, 0.05);\r\n}\r\n\r\n.scene-editor__hierarchy-item--selected {\r\n    background-color: var(--editor-primary);\r\n    border-left-color: var(--editor-primary-hover);\r\n    color: white;\r\n}\r\n\r\n/* Component styling */\r\n.scene-editor__component {\r\n    background-color: var(--editor-bg-light);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    margin-bottom: var(--editor-spacing-md);\r\n    padding: var(--editor-spacing-md);\r\n}\r\n\r\n.scene-editor__component-header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    margin-bottom: var(--editor-spacing-sm);\r\n    font-weight: 600;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
+      "filePath": "/global/interfaces/html/sceneEditor.html",
+      "html": "<div id=\"scene-editor-container\" class=\"editor-module\">\r\n   <div id=\"scene-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n      <h2 class=\"editor-module__panel-title\">Hierarchy</h2>\r\n      <div id=\"scene-hierarchy\" class=\"editor-module__list editor-module__scroll-y\">\r\n        <!-- Entities will be populated here -->\r\n      </div>\r\n      <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n        <select id=\"scene-addPrefabSelect\" class=\"editor-module__select\"></select>\r\n        <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"scene-addPrefabBtn\">+ Add Prefab</button>\r\n        <button class=\"editor-module__btn editor-module__btn--danger\" id=\"scene-removePrefabBtn\">Remove Selected Prefab</button>\r\n      </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area\">\r\n      <div class=\"editor-module__toolbar\">\r\n        <button id=\"scene-translate-tool\" class=\"editor-module__btn editor-module__btn--active\" title=\"Translate (G)\">\r\n            <span>Move</span>\r\n        </button>\r\n        <button id=\"scene-rotate-tool\" class=\"editor-module__btn\" title=\"Rotate (R)\">\r\n            <span>Rotate</span>\r\n        </button>\r\n        <button id=\"scene-scale-tool\" class=\"editor-module__btn\" title=\"Scale (S)\">\r\n            <span>Scale</span>\r\n        </button>\r\n      </div>\r\n      <div id=\"scene-view\" class=\"scene-editor__scene-view\">\r\n         <div id=\"scene-canvas-container\" class=\"editor-module__grid-background\">\r\n            <canvas id=\"scene-editor-canvas\" class=\"editor-module__canvas\"></canvas>\r\n         </div>\r\n      </div>\r\n   </div>\r\n\r\n   <div id=\"scene-inspector\" class=\"editor-module__sidebar editor-module__sidebar--right\">\r\n      <h2 class=\"editor-module__panel-title\">Inspector</h2>\r\n      <div class=\"editor-module__scroll-y\">\r\n        <div class=\"scene-editor__no-selection\" id=\"scene-noSelection\">\r\n          No entity selected\r\n        </div>\r\n        <div id=\"scene-entityInspector\" style=\"display: none;\">\r\n          <div id=\"scene-components\">\r\n            <!-- Components will be added here dynamically -->\r\n          </div>\r\n          <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"addComponentBtn\">+ Add Component</button>\r\n        </div>\r\n      </div>\r\n   </div>\r\n</div>\r\n"
+    },
     "graphicsEditor": {
       "title": "Graphics Editor",
       "modals": [
@@ -263,14 +271,6 @@ window.COMPILED_GAME = {
       "css": "/* =============================================================================\r\n   TERRAIN EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Canvas specific styling */\r\n#grid {\r\n    display: block;\r\n    image-rendering: pixelated;\r\n}\r\n\r\n/* Save button styling */\r\n.terrain-editor__save-btn {\r\n    width: 100%;\r\n    font-weight: 600;\r\n}\r\n\r\n/* Terrain list */\r\n.terrain-editor__terrain-list {\r\n    display: flex;\r\n    flex-direction: column;\r\n    gap: var(--editor-spacing-md);\r\n}\r\n\r\n.terrain-editor__terrain-item {\r\n    display: flex;\r\n    align-items: center;\r\n    gap: var(--editor-spacing-md);\r\n    padding: var(--editor-spacing-md);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    background-color: rgba(255, 255, 255, 0.03);\r\n    border: 1px solid var(--editor-border-color);\r\n    cursor: move;\r\n    user-select: none;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.terrain-editor__terrain-item:hover {\r\n    background-color: rgba(255, 255, 255, 0.05);\r\n    transform: translateY(-2px);\r\n}\r\n\r\n.terrain-editor__color-option {\r\n    width: 36px;\r\n    height: 36px;\r\n    min-width: 36px;\r\n    border-radius: var(--editor-border-radius-sm);\r\n    cursor: pointer;\r\n    border: 2px solid transparent;\r\n    flex-shrink: 0;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.terrain-editor__color-option--active {\r\n    border-color: var(--editor-primary);\r\n    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n}\r\n\r\n.terrain-editor__terrain-label {\r\n    flex-grow: 1;\r\n    font-weight: 500;\r\n}\r\n\r\n.terrain-editor__terrain-buttons {\r\n    display: flex;\r\n    gap: var(--editor-spacing-sm);\r\n}\r\n\r\n/* Object controls */\r\n.terrain-editor__object-controls {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    gap: var(--editor-spacing-sm);\r\n    margin-bottom: var(--editor-spacing-md);\r\n}\r\n\r\n.terrain-editor__object-controls button {\r\n    flex: 1;\r\n}\r\n\r\n/* Environment objects container */\r\n.terrain-editor__environment-objects {\r\n    display: flex;\r\n    flex-direction: column;\r\n    gap: var(--editor-spacing-md);\r\n}\r\n\r\n.terrain-editor__environment-type {\r\n    background-color: var(--editor-bg-light);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    overflow: hidden;\r\n    box-shadow: var(--editor-shadow-sm);\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.terrain-editor__environment-type:hover {\r\n    box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n.terrain-editor__environment-type-header {\r\n    padding: var(--editor-spacing-md);\r\n    font-weight: 500;\r\n    cursor: pointer;\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    background-color: var(--editor-bg-medium);\r\n    color: var(--editor-text-secondary);\r\n    text-transform: capitalize;\r\n}\r\n\r\n.terrain-editor__environment-type-header::after {\r\n    content: '▼';\r\n    font-size: 10px;\r\n    transition: transform 0.2s ease;\r\n}\r\n\r\n.terrain-editor__environment-type-header.open::after {\r\n    transform: rotate(180deg);\r\n}\r\n\r\n.terrain-editor__environment-items {\r\n    padding: var(--editor-spacing-md);\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: var(--editor-spacing-xs);\r\n}\r\n\r\n.terrain-editor__environment-item {\r\n    width: 128px;\r\n    height: 128px;\r\n    border: 2px solid var(--editor-border-color);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    cursor: pointer;\r\n    padding: 2px;\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: var(--editor-bg-light);\r\n    transition: var(--editor-transition);\r\n    position: relative;\r\n}\r\n\r\n.terrain-editor__environment-item:hover {\r\n    border-color: var(--editor-border-color-hover);\r\n    transform: translateY(-2px);\r\n}\r\n\r\n.terrain-editor__environment-item--active {\r\n    border-color: var(--editor-primary);\r\n    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n}\r\n\r\n.terrain-editor__environment-item canvas {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n    object-fit: contain;\r\n}\r\n\r\n/* Tooltip for environment items */\r\n.terrain-editor__environment-item::before {\r\n    content: attr(data-name);\r\n    position: absolute;\r\n    bottom: calc(100% + 5px);\r\n    left: 50%;\r\n    transform: translateX(-50%);\r\n    background-color: var(--editor-bg-dark);\r\n    color: var(--editor-text-primary);\r\n    text-align: center;\r\n    border-radius: var(--editor-border-radius-sm);\r\n    padding: var(--editor-spacing-xs) var(--editor-spacing-sm);\r\n    font-size: 12px;\r\n    white-space: nowrap;\r\n    visibility: hidden;\r\n    opacity: 0;\r\n    transition: var(--editor-transition);\r\n    z-index: 10;\r\n    pointer-events: none;\r\n    box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n.terrain-editor__environment-item:hover::before {\r\n    visibility: visible;\r\n    opacity: 1;\r\n}\r\n\r\n/* Object preview canvas (dragging) */\r\n#object-preview-canvas {\r\n    transition: transform 0.05s ease-out;\r\n    will-change: transform;\r\n    image-rendering: pixelated;\r\n    position: absolute;\r\n    pointer-events: none;\r\n    z-index: 9999;\r\n    opacity: 0.7;\r\n}\r\n\r\n/* Delete mode indicator */\r\n.terrain-editor--delete-mode .editor-module__canvas-area {\r\n    cursor: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"red\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg>'), auto;\r\n}\r\n\r\n/* Height level selector */\r\n.terrain-editor__height-levels {\r\n    display: grid;\r\n    grid-template-columns: repeat(3, 1fr);\r\n    gap: var(--editor-spacing-sm);\r\n    margin-top: var(--editor-spacing-md);\r\n}\r\n\r\n.terrain-editor__height-btn {\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    background-color: var(--editor-bg-medium);\r\n    border: 1px solid var(--editor-border-color);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    color: var(--editor-text-secondary);\r\n    cursor: pointer;\r\n    transition: var(--editor-transition);\r\n    font-size: 12px;\r\n    font-weight: 500;\r\n}\r\n\r\n.terrain-editor__height-btn:hover {\r\n    background-color: var(--editor-bg-light);\r\n    border-color: var(--editor-border-color-hover);\r\n    transform: translateY(-1px);\r\n}\r\n\r\n.terrain-editor__height-btn.active {\r\n    background-color: var(--editor-primary);\r\n    border-color: var(--editor-primary);\r\n    color: white;\r\n    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n}\r\n\r\n/* Tool buttons */\r\n.terrain-editor__tool-buttons {\r\n    display: flex;\r\n    gap: var(--editor-spacing-sm);\r\n    margin-top: var(--editor-spacing-xs);\r\n}\r\n\r\n.terrain-editor__tool-buttons button {\r\n    flex: 1;\r\n}\r\n\r\n/* Slider styling */\r\n.editor-module__slider {\r\n    flex: 1;\r\n    height: 4px;\r\n    border-radius: 2px;\r\n    background: var(--editor-bg-medium);\r\n    outline: none;\r\n    -webkit-appearance: none;\r\n    margin: 0 var(--editor-spacing-sm);\r\n}\r\n\r\n.editor-module__slider::-webkit-slider-thumb {\r\n    -webkit-appearance: none;\r\n    appearance: none;\r\n    width: 16px;\r\n    height: 16px;\r\n    border-radius: 50%;\r\n    background: var(--editor-primary);\r\n    cursor: pointer;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.editor-module__slider::-moz-range-thumb {\r\n    width: 16px;\r\n    height: 16px;\r\n    border-radius: 50%;\r\n    background: var(--editor-primary);\r\n    cursor: pointer;\r\n    border: none;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.editor-module__slider::-webkit-slider-thumb:hover {\r\n    background: var(--editor-primary-hover);\r\n    transform: scale(1.2);\r\n}\r\n\r\n.editor-module__slider::-moz-range-thumb:hover {\r\n    background: var(--editor-primary-hover);\r\n    transform: scale(1.2);\r\n}\r\n\r\n.editor-module__value-display {\r\n    min-width: 20px;\r\n    text-align: center;\r\n    font-weight: 500;\r\n    color: var(--editor-text-primary);\r\n}\r\n\r\n/* Responsive adjustments */\r\n@media (max-width: 768px) {\r\n    .terrain-editor__environment-items {\r\n        justify-content: center;\r\n    }\r\n\r\n    .terrain-editor__environment-item {\r\n        width: 80px;\r\n        height: 80px;\r\n    }\r\n\r\n    .terrain-editor__height-levels {\r\n        grid-template-columns: repeat(2, 1fr);\r\n    }\r\n}\r\n",
       "filePath": "/global/interfaces/html/terrainEditor.html",
       "html": "<div id=\"level-editor-container\" class=\"editor-module\">\r\n   <div class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n     <div class=\"editor-module__toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"editor-module__btn editor-module__btn--active\">Tiles</button>\r\n       <button id=\"heightsBtn\" class=\"editor-module__btn\">Heights</button>\r\n       <button id=\"environmentBtn\" class=\"editor-module__btn\">Env</button>\r\n       <button id=\"rampsBtn\" class=\"editor-module__btn\">Ramps</button>\r\n       <button id=\"placementsBtn\" class=\"editor-module__btn\">Entities</button>\r\n     </div>\r\n\r\n     <div class=\"editor-module__scroll-y\">\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Map Settings</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label for=\"terrainMapSize\" class=\"editor-module__label\">Map Size:</label>\r\n             <input type=\"number\" id=\"terrainMapSize\" class=\"editor-module__input\" value=\"48\" step=\"1\" min=\"1\">\r\n           </div>\r\n           <div class=\"editor-module__form-row\">\r\n              <label for=\"extensionTerrainType\" class=\"editor-module__label\">Surrounding Type:</label>\r\n              <select id=\"extensionTerrainType\" class=\"editor-module__select extensionTerrainType\"></select>\r\n            </div>\r\n            <div class=\"editor-module__form-row\">\r\n              <button id=\"saveMapBtn\" class=\"editor-module__btn editor-module__btn--success terrain-editor__save-btn\">💾 Save Map</button>\r\n            </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Tools</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label class=\"editor-module__label\">Tool:</label>\r\n             <div class=\"terrain-editor__tool-buttons\">\r\n               <button id=\"terrainBrushBtn\" class=\"editor-module__btn editor-module__btn--small editor-module__btn--active\">Brush</button>\r\n               <button id=\"terrainFillBtn\" class=\"editor-module__btn editor-module__btn--small\">Fill</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"editor-module__form-row\" id=\"terrainBrushSizeRow\">\r\n             <label for=\"terrainBrushSize\" class=\"editor-module__label\">Brush Size:</label>\r\n             <input type=\"range\" id=\"terrainBrushSize\" class=\"editor-module__slider\" value=\"1\" step=\"1\" min=\"1\" max=\"5\">\r\n             <span id=\"terrainBrushSizeValue\" class=\"editor-module__value-display\">1</span>\r\n           </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Terrain Types</h3>\r\n           <div class=\"terrain-editor__terrain-list\">\r\n             <!-- Terrain items will be dynamically populated here -->\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"environmentPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Environment Objects</h3>\r\n           <div class=\"terrain-editor__object-controls\">\r\n             <button class=\"editor-module__btn editor-module__btn--small\" id=\"clear-selection-btn\">Clear Selection</button>\r\n             <button class=\"editor-module__btn editor-module__btn--small editor-module__btn--danger\" id=\"delete-mode-btn\">Delete Mode</button>\r\n           </div>\r\n           <div class=\"terrain-editor__environment-objects\"></div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"rampsPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Ramp Placement</h3>\r\n           <div class=\"editor-module__info-box\">\r\n             <p>Click on tiles to place/remove ramps. Ramps allow units to walk between different terrain heights.</p>\r\n             <p><strong>Current ramps:</strong> <span id=\"rampCount\">0</span></p>\r\n           </div>\r\n           <div class=\"terrain-editor__object-controls\">\r\n             <button class=\"editor-module__btn editor-module__btn--small editor-module__btn--danger\" id=\"clear-all-ramps-btn\">Clear All Ramps</button>\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"heightsPanel\" style=\"display: none;\">\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Height Map Editor</h3>\r\n           <div class=\"editor-module__info-box\">\r\n             <p>Paint height levels on the map. Heights are independent of terrain types.</p>\r\n             <p>Click on tiles to paint the selected height level.</p>\r\n           </div>\r\n           <div class=\"editor-module__form-row\">\r\n             <label for=\"heightLevel\" class=\"editor-module__label\">Height Level:</label>\r\n             <input type=\"number\" id=\"heightLevel\" class=\"editor-module__input\" value=\"0\" step=\"1\" min=\"0\" max=\"10\">\r\n           </div>\r\n           <div class=\"editor-module__section\">\r\n             <h4 class=\"editor-module__section-title\">Quick Select</h4>\r\n             <div class=\"terrain-editor__height-levels\" id=\"heightLevelButtons\">\r\n               <!-- Height level buttons will be dynamically populated here -->\r\n             </div>\r\n           </div>\r\n         </div>\r\n\r\n         <div class=\"editor-module__section\">\r\n           <h3 class=\"editor-module__section-title\">Tools</h3>\r\n           <div class=\"editor-module__form-row\">\r\n             <label class=\"editor-module__label\">Tool:</label>\r\n             <div class=\"terrain-editor__tool-buttons\">\r\n               <button id=\"heightBrushBtn\" class=\"editor-module__btn editor-module__btn--small editor-module__btn--active\">Brush</button>\r\n               <button id=\"heightFillBtn\" class=\"editor-module__btn editor-module__btn--small\">Fill</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"editor-module__form-row\" id=\"heightBrushSizeRow\">\r\n             <label for=\"heightBrushSize\" class=\"editor-module__label\">Brush Size:</label>\r\n             <input type=\"range\" id=\"heightBrushSize\" class=\"editor-module__slider\" value=\"1\" step=\"1\" min=\"1\" max=\"5\">\r\n             <span id=\"heightBrushSizeValue\" class=\"editor-module__value-display\">1</span>\r\n           </div>\r\n         </div>\r\n       </div>\r\n\r\n       <div id=\"placementsPanel\" style=\"display: none;\">\r\n         <!-- Panel content will be dynamically generated by setupPlacementsPanel() -->\r\n       </div>\r\n     </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area editor-module__grid-background\">\r\n     <canvas id=\"grid\" class=\"editor-module__canvas\"></canvas>\r\n\r\n     <div class=\"editor-module__status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>\r\n"
-    },
-    "sceneEditor": {
-      "title": "Scene Editor",
-      "modals": [],
-      "fileName": "sceneEditor",
-      "css": "/* =============================================================================\r\n   SCENE EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Scene view */\r\n.scene-editor__scene-view {\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden;\r\n}\r\n\r\n#scene-canvas-container {\r\n    width: 100%;\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n#scene-editor-canvas {\r\n    cursor: crosshair;\r\n    outline: none;\r\n}\r\n\r\n/* No selection message */\r\n.scene-editor__no-selection {\r\n    text-align: center;\r\n    padding: var(--editor-spacing-xl);\r\n    color: var(--editor-text-muted);\r\n    font-style: italic;\r\n}\r\n\r\n/* Hierarchy item */\r\n.scene-editor__hierarchy-item {\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    cursor: pointer;\r\n    border-left: 2px solid transparent;\r\n    transition: var(--editor-transition);\r\n}\r\n\r\n.scene-editor__hierarchy-item:hover {\r\n    background-color: rgba(255, 255, 255, 0.05);\r\n}\r\n\r\n.scene-editor__hierarchy-item--selected {\r\n    background-color: var(--editor-primary);\r\n    border-left-color: var(--editor-primary-hover);\r\n    color: white;\r\n}\r\n\r\n/* Component styling */\r\n.scene-editor__component {\r\n    background-color: var(--editor-bg-light);\r\n    border-radius: var(--editor-border-radius-sm);\r\n    margin-bottom: var(--editor-spacing-md);\r\n    padding: var(--editor-spacing-md);\r\n}\r\n\r\n.scene-editor__component-header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    margin-bottom: var(--editor-spacing-sm);\r\n    font-weight: 600;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
-      "filePath": "/global/interfaces/html/sceneEditor.html",
-      "html": "<div id=\"scene-editor-container\" class=\"editor-module\">\r\n   <div id=\"scene-sidebar\" class=\"editor-module__sidebar editor-module__sidebar--left\">\r\n      <h2 class=\"editor-module__panel-title\">Hierarchy</h2>\r\n      <div id=\"scene-hierarchy\" class=\"editor-module__list editor-module__scroll-y\">\r\n        <!-- Entities will be populated here -->\r\n      </div>\r\n      <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n        <select id=\"scene-addPrefabSelect\" class=\"editor-module__select\"></select>\r\n        <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"scene-addPrefabBtn\">+ Add Prefab</button>\r\n        <button class=\"editor-module__btn editor-module__btn--danger\" id=\"scene-removePrefabBtn\">Remove Selected Prefab</button>\r\n      </div>\r\n   </div>\r\n\r\n   <div class=\"editor-module__canvas-area\">\r\n      <div class=\"editor-module__toolbar\">\r\n        <button id=\"scene-translate-tool\" class=\"editor-module__btn editor-module__btn--active\" title=\"Translate (G)\">\r\n            <span>Move</span>\r\n        </button>\r\n        <button id=\"scene-rotate-tool\" class=\"editor-module__btn\" title=\"Rotate (R)\">\r\n            <span>Rotate</span>\r\n        </button>\r\n        <button id=\"scene-scale-tool\" class=\"editor-module__btn\" title=\"Scale (S)\">\r\n            <span>Scale</span>\r\n        </button>\r\n      </div>\r\n      <div id=\"scene-view\" class=\"scene-editor__scene-view\">\r\n         <div id=\"scene-canvas-container\" class=\"editor-module__grid-background\">\r\n            <canvas id=\"scene-editor-canvas\" class=\"editor-module__canvas\"></canvas>\r\n         </div>\r\n      </div>\r\n   </div>\r\n\r\n   <div id=\"scene-inspector\" class=\"editor-module__sidebar editor-module__sidebar--right\">\r\n      <h2 class=\"editor-module__panel-title\">Inspector</h2>\r\n      <div class=\"editor-module__scroll-y\">\r\n        <div class=\"scene-editor__no-selection\" id=\"scene-noSelection\">\r\n          No entity selected\r\n        </div>\r\n        <div id=\"scene-entityInspector\" style=\"display: none;\">\r\n          <div id=\"scene-components\">\r\n            <!-- Components will be added here dynamically -->\r\n          </div>\r\n          <button class=\"editor-module__btn editor-module__btn--secondary\" id=\"addComponentBtn\">+ Add Component</button>\r\n        </div>\r\n      </div>\r\n   </div>\r\n</div>\r\n"
     },
     "TextureEditor": {
       "title": "Texture Editor",
@@ -324,15 +324,6 @@ window.COMPILED_GAME = {
       "href": "https://cdn.socket.io/4.7.2/socket.io.min.js",
       "isModule": true
     },
-    "threejs": {
-      "title": "THREE",
-      "filePath": "/node_modules/three/build/three.module.min.js",
-      "requireName": "THREE",
-      "importName": "three",
-      "fileName": "threejs",
-      "windowName": "THREE",
-      "isModule": true
-    },
     "three_EffectComposer": {
       "title": "THREE.EffectComposer",
       "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/EffectComposer.js",
@@ -342,6 +333,15 @@ window.COMPILED_GAME = {
       "importName": "EffectComposer",
       "fileName": "three_EffectComposer"
     },
+    "threejs": {
+      "title": "THREE",
+      "filePath": "/node_modules/three/build/three.module.min.js",
+      "requireName": "THREE",
+      "importName": "three",
+      "fileName": "threejs",
+      "windowName": "THREE",
+      "isModule": true
+    },
     "three_OrbitControls": {
       "title": "THREE.OrbitControls",
       "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js",
@@ -350,15 +350,6 @@ window.COMPILED_GAME = {
       "requireName": "OrbitControls",
       "importName": "OrbitControls",
       "fileName": "three_OrbitControls"
-    },
-    "three_OutputPass": {
-      "title": "THREE.OutputPass",
-      "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js",
-      "isModule": true,
-      "windowContext": "THREE_",
-      "requireName": "OutputPass",
-      "importName": "OutputPass",
-      "fileName": "three_OutputPass"
     },
     "three_PointerLockControls": {
       "title": "THREE.PointerLockControls",
@@ -378,6 +369,15 @@ window.COMPILED_GAME = {
       "importName": "RenderPixelatedPass",
       "fileName": "three_RenderPixelatedPass"
     },
+    "three_OutputPass": {
+      "title": "THREE.OutputPass",
+      "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js",
+      "isModule": true,
+      "windowContext": "THREE_",
+      "requireName": "OutputPass",
+      "importName": "OutputPass",
+      "fileName": "three_OutputPass"
+    },
     "BaseECSGame": {
       "filePath": "/global/libraries/js/BaseECSGame.js",
       "fileName": "BaseECSGame"
@@ -390,10 +390,6 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/ClientNetworkManager.js",
       "fileName": "ClientNetworkManager"
     },
-    "CompilerModule": {
-      "filePath": "/global/libraries/js/CompilerModule.js",
-      "fileName": "CompilerModule"
-    },
     "Compiler": {
       "filePath": "/global/libraries/js/Compiler.js",
       "fileName": "Compiler"
@@ -402,25 +398,29 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/ECGame.js",
       "fileName": "ECGame"
     },
+    "CompilerModule": {
+      "filePath": "/global/libraries/js/CompilerModule.js",
+      "fileName": "CompilerModule"
+    },
     "ECSGame": {
       "filePath": "/global/libraries/js/ECSGame.js",
       "fileName": "ECSGame"
-    },
-    "GameLoader": {
-      "filePath": "/global/libraries/js/GameLoader.js",
-      "fileName": "GameLoader"
     },
     "GameRoom": {
       "filePath": "/global/libraries/js/GameRoom.js",
       "fileName": "GameRoom"
     },
-    "InputManager": {
-      "filePath": "/global/libraries/js/InputManager.js",
-      "fileName": "InputManager"
+    "GameLoader": {
+      "filePath": "/global/libraries/js/GameLoader.js",
+      "fileName": "GameLoader"
     },
     "InstancePool": {
       "filePath": "/global/libraries/js/InstancePool.js",
       "fileName": "InstancePool"
+    },
+    "InputManager": {
+      "filePath": "/global/libraries/js/InputManager.js",
+      "fileName": "InputManager"
     },
     "MultiplayerECSGame": {
       "filePath": "/global/libraries/js/MultiplayerECSGame.js",
@@ -450,10 +450,6 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/ServerEventManager.js",
       "fileName": "ServerEventManager"
     },
-    "ServerGameLoader": {
-      "filePath": "/global/libraries/js/ServerGameLoader.js",
-      "fileName": "ServerGameLoader"
-    },
     "ServerGameRoom": {
       "filePath": "/global/libraries/js/ServerGameRoom.js",
       "fileName": "ServerGameRoom"
@@ -461,6 +457,10 @@ window.COMPILED_GAME = {
     "ServerMatchmakingService": {
       "filePath": "/global/libraries/js/ServerMatchmakingService.js",
       "fileName": "ServerMatchmakingService"
+    },
+    "ServerGameLoader": {
+      "filePath": "/global/libraries/js/ServerGameLoader.js",
+      "fileName": "ServerGameLoader"
     },
     "ServerNetworkManager": {
       "filePath": "/global/libraries/js/ServerNetworkManager.js",
@@ -478,6 +478,10 @@ window.COMPILED_GAME = {
       "fileName": "AIPromptPanel",
       "filePath": "/global/libraries/js/AIPromptPanel.js"
     },
+    "AmmoWorker": {
+      "fileName": "AmmoWorker",
+      "filePath": "/global/libraries/js/AmmoWorker.js"
+    },
     "AudioEditor": {
       "fileName": "AudioEditor",
       "filePath": "/global/libraries/js/AudioEditor.js"
@@ -491,17 +495,9 @@ window.COMPILED_GAME = {
       "filePath": "/global/libraries/js/BufferGeometryUtils.js",
       "fileName": "BufferGeometryUtils"
     },
-    "AmmoWorker": {
-      "fileName": "AmmoWorker",
-      "filePath": "/global/libraries/js/AmmoWorker.js"
-    },
     "CanvasUtility": {
       "fileName": "CanvasUtility",
       "filePath": "/global/libraries/js/CanvasUtility.js"
-    },
-    "Component": {
-      "fileName": "Component",
-      "filePath": "/global/libraries/js/Component.js"
     },
     "CoordinateTranslator": {
       "fileName": "CoordinateTranslator",
@@ -511,76 +507,62 @@ window.COMPILED_GAME = {
       "fileName": "Entity",
       "filePath": "/global/libraries/js/Entity.js"
     },
+    "Component": {
+      "fileName": "Component",
+      "filePath": "/global/libraries/js/Component.js"
+    },
     "ExportScripts": {
       "fileName": "ExportScripts",
       "filePath": "/global/libraries/js/ExportScripts.js"
-    },
-    "GE_GizmoManager": {
-      "title": "GE_GizmoManager",
-      "fileName": "GE_GizmoManager",
-      "filePath": "/global/libraries/js/GE_GizmoManager.js"
     },
     "GE_AnimationManager": {
       "title": "GE_AnimationManager",
       "fileName": "GE_AnimationManager",
       "filePath": "/global/libraries/js/GE_AnimationManager.js"
     },
-    "GE_EventManager": {
-      "title": "GE_EventManager",
-      "fileName": "GE_EventManager",
-      "filePath": "/global/libraries/js/GE_EventManager.js"
+    "GameState": {
+      "fileName": "GameState",
+      "filePath": "/global/libraries/js/GameState.js"
     },
     "GE_EquipmentEditor": {
       "title": "GE_EquipmentEditor",
       "fileName": "GE_EquipmentEditor",
       "filePath": "/global/libraries/js/GE_EquipmentEditor.js"
     },
-    "GE_RotationUtils": {
-      "title": "GE_RotationUtils",
-      "fileName": "GE_RotationUtils",
-      "filePath": "/global/libraries/js/GE_RotationUtils.js"
+    "GE_EventManager": {
+      "title": "GE_EventManager",
+      "fileName": "GE_EventManager",
+      "filePath": "/global/libraries/js/GE_EventManager.js"
     },
-    "GameState": {
-      "fileName": "GameState",
-      "filePath": "/global/libraries/js/GameState.js"
-    },
-    "GE_ShapeManager": {
-      "title": "GE_ShapeManager",
-      "fileName": "GE_ShapeManager",
-      "filePath": "/global/libraries/js/GE_ShapeManager.js"
-    },
-    "GE_SceneRenderer": {
-      "title": "GE_SceneRenderer",
-      "fileName": "GE_SceneRenderer",
-      "filePath": "/global/libraries/js/GE_SceneRenderer.js"
-    },
-    "GE_UIManager": {
-      "title": "GE_UIManager",
-      "fileName": "GE_UIManager",
-      "filePath": "/global/libraries/js/GE_UIManager.js"
+    "GE_GizmoManager": {
+      "title": "GE_GizmoManager",
+      "fileName": "GE_GizmoManager",
+      "filePath": "/global/libraries/js/GE_GizmoManager.js"
     },
     "GE_GroupManager": {
       "title": "GE_GroupManager",
       "fileName": "GE_GroupManager",
       "filePath": "/global/libraries/js/GE_GroupManager.js"
     },
-    "RapierWorker": {
-      "fileName": "RapierWorker",
-      "script": "",
-      "filePath": "/global/libraries/js/RapierWorker.js"
+    "GE_RotationUtils": {
+      "title": "GE_RotationUtils",
+      "fileName": "GE_RotationUtils",
+      "filePath": "/global/libraries/js/GE_RotationUtils.js"
     },
-    "NetworkManager": {
-      "fileName": "NetworkManager",
-      "filePath": "/global/libraries/js/NetworkManager.js"
+    "GE_SceneRenderer": {
+      "title": "GE_SceneRenderer",
+      "fileName": "GE_SceneRenderer",
+      "filePath": "/global/libraries/js/GE_SceneRenderer.js"
     },
-    "GraphicsEditor": {
-      "fileName": "GraphicsEditor",
-      "title": "GraphicsEditor",
-      "filePath": "/global/libraries/js/GraphicsEditor.js"
+    "GE_ShapeManager": {
+      "title": "GE_ShapeManager",
+      "fileName": "GE_ShapeManager",
+      "filePath": "/global/libraries/js/GE_ShapeManager.js"
     },
-    "ImageManager": {
-      "fileName": "ImageManager",
-      "filePath": "/global/libraries/js/ImageManager.js"
+    "GE_UIManager": {
+      "title": "GE_UIManager",
+      "fileName": "GE_UIManager",
+      "filePath": "/global/libraries/js/GE_UIManager.js"
     },
     "GLTFLoader": {
       "title": "GLTF Loader",
@@ -591,28 +573,46 @@ window.COMPILED_GAME = {
       "fileName": "GLTFLoader",
       "filePath": "/global/libraries/js/GLTFLoader.js"
     },
+    "ImageManager": {
+      "fileName": "ImageManager",
+      "filePath": "/global/libraries/js/ImageManager.js"
+    },
+    "GraphicsEditor": {
+      "fileName": "GraphicsEditor",
+      "title": "GraphicsEditor",
+      "filePath": "/global/libraries/js/GraphicsEditor.js"
+    },
     "ModelManager": {
       "title": "ModelManager",
       "fileName": "ModelManager",
       "filePath": "/global/libraries/js/ModelManager.js"
+    },
+    "NetworkManager": {
+      "fileName": "NetworkManager",
+      "filePath": "/global/libraries/js/NetworkManager.js"
     },
     "PhysicsEngine": {
       "title": "PhysicsEngine",
       "fileName": "PhysicsEngine",
       "filePath": "/global/libraries/js/PhysicsEngine.js"
     },
+    "RapierWorker": {
+      "fileName": "RapierWorker",
+      "script": "",
+      "filePath": "/global/libraries/js/RapierWorker.js"
+    },
     "ShapeFactory": {
       "fileName": "ShapeFactory",
       "filePath": "/global/libraries/js/ShapeFactory.js"
     },
-    "TextureEditor": {
-      "title": "TextureEditor",
-      "fileName": "TextureEditor",
-      "filePath": "/global/libraries/js/TextureEditor.js"
+    "ScriptEditor": {
+      "fileName": "ScriptEditor",
+      "filePath": "/global/libraries/js/ScriptEditor.js"
     },
-    "TerrainImageProcessor": {
-      "fileName": "TerrainImageProcessor",
-      "filePath": "/global/libraries/js/TerrainImageProcessor.js"
+    "SimplexNoise": {
+      "title": "SimplexNoise",
+      "fileName": "SimplexNoise",
+      "filePath": "/global/libraries/js/SimplexNoise.js"
     },
     "SpatialGrid": {
       "fileName": "SpatialGrid",
@@ -623,18 +623,13 @@ window.COMPILED_GAME = {
       "fileName": "TerrainGenerator",
       "filePath": "/global/libraries/js/TerrainGenerator.js"
     },
-    "SimplexNoise": {
-      "title": "SimplexNoise",
-      "fileName": "SimplexNoise",
-      "filePath": "/global/libraries/js/SimplexNoise.js"
+    "TerrainImageProcessor": {
+      "fileName": "TerrainImageProcessor",
+      "filePath": "/global/libraries/js/TerrainImageProcessor.js"
     },
     "TerrainMapEditor": {
       "fileName": "TerrainMapEditor",
       "filePath": "/global/libraries/js/TerrainMapEditor.js"
-    },
-    "ScriptEditor": {
-      "fileName": "ScriptEditor",
-      "filePath": "/global/libraries/js/ScriptEditor.js"
     },
     "three-nebula": {
       "fileName": "three-nebula",
@@ -643,12 +638,10 @@ window.COMPILED_GAME = {
       "requireName": "Nebula",
       "filePath": "/global/libraries/js/three-nebula.js"
     },
-    "three_MeshBVH": {
-      "title": "THREE MeshBVH",
-      "isModule": true,
-      "windowContext": "THREE_",
-      "fileName": "three_MeshBVH",
-      "filePath": "/global/libraries/js/three_MeshBVH.js"
+    "TextureEditor": {
+      "title": "TextureEditor",
+      "fileName": "TextureEditor",
+      "filePath": "/global/libraries/js/TextureEditor.js"
     },
     "three_SkeletonUtils": {
       "title": "THREE SkeletonUtils",
@@ -658,6 +651,13 @@ window.COMPILED_GAME = {
       "importName": "SkeletonUtils",
       "fileName": "three_SkeletonUtils",
       "filePath": "/global/libraries/js/three_SkeletonUtils.js"
+    },
+    "three_MeshBVH": {
+      "title": "THREE MeshBVH",
+      "isModule": true,
+      "windowContext": "THREE_",
+      "fileName": "three_MeshBVH",
+      "filePath": "/global/libraries/js/three_MeshBVH.js"
     },
     "TileMap": {
       "fileName": "TileMap",
@@ -671,10 +671,6 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/DesyncDebugger.js",
       "fileName": "DesyncDebugger"
     },
-    "EnemyStrategy": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/EnemyStrategy.js",
-      "fileName": "EnemyStrategy"
-    },
     "FantasyUIEnhancements": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/FantasyUIEnhancements.js",
       "fileName": "FantasyUIEnhancements"
@@ -683,17 +679,21 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameModeConfigs.js",
       "fileName": "GameModeConfigs"
     },
+    "EnemyStrategy": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/EnemyStrategy.js",
+      "fileName": "EnemyStrategy"
+    },
     "GameUtils": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameUtils.js",
       "fileName": "GameUtils"
     },
-    "MinHeap": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
-      "fileName": "MinHeap"
-    },
     "NotificationSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/NotificationSystem.js",
       "fileName": "NotificationSystem"
+    },
+    "MinHeap": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
+      "fileName": "MinHeap"
     },
     "PlacementPreview": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
@@ -735,17 +735,17 @@ window.COMPILED_GAME = {
       "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n",
       "filePath": "/global/modals/html/generateIsoSprites.html"
     },
-    "rotateShapes": {
-      "title": "Rotate Shapes",
-      "fileName": "rotateShapes",
-      "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n",
-      "filePath": "/global/modals/html/rotateShapes.html"
-    },
     "moveAllShapes": {
       "title": "Move All Shapes",
       "fileName": "moveAllShapes",
       "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n",
       "filePath": "/global/modals/html/moveAllShapes.html"
+    },
+    "rotateShapes": {
+      "title": "Rotate Shapes",
+      "fileName": "rotateShapes",
+      "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n",
+      "filePath": "/global/modals/html/rotateShapes.html"
     }
   },
   "renderers": {
@@ -781,29 +781,29 @@ window.COMPILED_GAME = {
       "css": "/* Professional Theme - Clean UI */ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');  :root {   --bg-primary: #16192e;   --bg-secondary: #1d2035;   --bg-tertiary: #252a43;   --accent-primary: #4d7cff;   --accent-muted: rgba(77, 124, 255, 0.15);   --text-primary: #e9edf5;   --text-secondary: #a9b1c3;   --border-color: rgba(108, 123, 163, 0.25);   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25); }  body {   font-family: 'Inter', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6; }  /* Sidebar styling */ .sidebar {   background-color: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: none;   letter-spacing: 0.2px;   color: var(--text-secondary);   font-weight: 400;   transition: all 0.2s ease;   padding: 10px 14px;   margin-bottom: 2px; }  .object-item:hover {   background-color: var(--bg-tertiary);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary); }  .object-item.selected {   background-color: var(--accent-muted);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   font-weight: 500; }  /* Editor area */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #three-js-container {   border: 1px solid var(--border-color);   border-radius: 4px;   background: var(--bg-primary); }  .preview-canvas-container {   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-color);   border-radius: 2px; }  /* Camera controls */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px; }  .camera-controls button {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   color: var(--text-primary);   border-radius: 3px;   padding: 8px 12px;   transition: all 0.2s ease; }  .camera-controls button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .camera-controls .color-picker {   border: 1px solid var(--border-color);   border-radius: 3px; }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-color);   border-radius: 3px;   height: 5px; }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   border-radius: 50%;   cursor: pointer; }  /* Form elements */ label {   font-weight: 500;   color: var(--text-primary);   margin-bottom: 6px;   display: block;   font-size: 0.875rem; }  input, textarea, select {   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   border-radius: 3px;   width: calc(100% - 24px);  padding: 8px 12px;   transition: all 0.2s ease;   font-family: 'IBM Plex Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 2px var(--accent-muted); }  /* Button styles */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease; }  button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  button.primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  button.primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6;   box-shadow: var(--shadow-sm); }  button.danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  button.danger:hover {   background-color: rgba(235, 68, 68, 0.25);   box-shadow: var(--shadow-sm); }  button.active {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  /* Modal styling */ .modal {   background-color: rgba(22, 25, 46, 0.8); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-md);   border-radius: 4px; }  .property-list {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   border-radius: 4px; }  /* Tab navigation */ .tab-navigation {   border-bottom: 1px solid var(--border-color);   display: flex;   padding: 0 4px; }  .tab {   padding: 10px 16px;   color: var(--text-secondary);   transition: all 0.2s ease; }  .tab:hover {   background-color: var(--bg-tertiary);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 500;   border-bottom: 2px solid var(--accent-primary); }  /* Info and warning boxes */ .instructions {   background-color: var(--bg-tertiary);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .success-message {   color: #34c79a;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(235, 68, 68, 0.1);   border-left: 3px solid #eb4444;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  /* Main containers */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  #graphics-rightbar {   background: var(--bg-secondary);   border-left: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(108, 123, 163, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(108, 123, 163, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar */ .toolbar {   background: var(--bg-secondary);   border-bottom: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations */ .btn {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease;   font-size: 0.875rem; }  .btn:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  .btn-primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6; }  .btn-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  .btn-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  .btn-secondary {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color); }  .btn-secondary:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-special {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  .btn-special:hover {   background-color: rgba(52, 199, 154, 0.25); }  /* Shape list */ #shape-list {   border-bottom: 1px solid var(--border-color);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 3px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.2s ease;   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .shape-item.active {   background-color: rgba(52, 199, 154, 0.1);   border-color: #34c79a;   color: #34c79a;   font-weight: 500; }  /* Inspector panel */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-color);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--text-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   padding: 8px 12px;   border-radius: 3px; }  /* Scene info */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px 16px;   margin-bottom: 16px; }  .button-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444;   padding: 8px 14px;   border-radius: 3px;   font-weight: 500;   transition: all 0.2s ease; }  .button-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  /* Typography */ h2, h3 {   color: var(--text-primary);   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-color);   font-weight: 600; }  /* Scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(108, 123, 163, 0.5);   border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {   background: rgba(108, 123, 163, 0.7); }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/claude2.css"
     },
-    "cyberpunk": {
-      "title": "Cyber Punk",
-      "fileName": "cyberpunk",
-      "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/cyberpunk.css"
-    },
     "codeMirrorTheme": {
       "title": "Code - Ez On Eyes",
       "fileName": "codeMirrorTheme",
       "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/codeMirrorTheme.css"
     },
-    "Neon Dune": {
-      "title": "Neon Dune",
-      "fileName": "Neon Dune",
-      "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/Neon Dune.css"
+    "cyberpunk": {
+      "title": "Cyber Punk",
+      "fileName": "cyberpunk",
+      "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/cyberpunk.css"
     },
     "medieval": {
       "title": "Medieval",
       "fileName": "medieval",
       "css": "/* Medieval Theme */ @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English&display=swap');  body {     font-family: 'Cinzel', 'IM Fell English', serif;     background-color: #2b1e12; /* Dark brown, earthy tone */     color: #d4b98a; /* Parchment-like beige */ }  .sidebar {     background-color: rgba(50, 40, 30, 0.8); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), inset 0 0 20px rgba(50, 40, 30, 0.3); }  .object-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .editor {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #b8860b;     box-shadow: 0 0 15px rgba(184, 134, 11, 0.3); }  #three-js-container {     border: 1px solid rgba(138, 92, 46, 0.5); /* Bronze edge */ }  .preview-canvas-container {     border: 1px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.3); }  .preview {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(138, 92, 46, 0.5); }  .camera-controls {     background: rgba(40, 30, 20, 0.7); /* Dark stone */     border: 1px solid #8a5c2e; }  .camera-controls button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a; }  .camera-controls .color-picker {     border: 1px solid #8a5c2e; }  .camera-controls .size-slider {     background: #3c2f1e; /* Darker wood */     border: 1px solid #8a5c2e; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #b8860b; /* Gold text */ }  input, textarea, select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  button:hover {     background-color: rgba(138, 92, 46, 0.3);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), 0 0 20px rgba(138, 92, 46, 0.2);     transform: translateY(-2px); }  button.primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  button.primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5), 0 0 20px rgba(184, 134, 11, 0.2); }  button.danger {     background-color: rgba(139, 0, 0, 0.2); /* Crimson */     border: 1px solid #8b0000;     color: #ff4040; }  button.danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5), 0 0 20px rgba(139, 0, 0, 0.2); }  button.active {     border: 1px solid #228b22; /* Forest green */     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5);     color: #228b22; }  .modal {     background-color: rgba(40, 30, 20, 0.85); /* Stone texture */     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(50, 40, 30, 0.9);     border: 1px solid #8a5c2e;     box-shadow: 0 0 30px rgba(138, 92, 46, 0.3), 0 0 60px rgba(138, 92, 46, 0.1); }  .property-list {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6); }  .tab-navigation {     border-bottom: 1px solid #8a5c2e; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(138, 92, 46, 0.1); }  .tab.active {     border-bottom: 3px solid #b8860b;     box-shadow: 0 5px 10px -5px rgba(184, 134, 11, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(60, 50, 40, 0.6);     border-left: 4px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.2); }  #grid-display {     background-color: rgba(40, 30, 20, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 10px rgba(138, 92, 46, 0.3); }  .success-message {     color: #228b22; /* Forest green */     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(139, 0, 0, 0.1);     border-left: 4px solid #8b0000;     box-shadow: 0 0 10px rgba(139, 0, 0, 0.2); }  .main-content-container {     background-color: #251a10; /* Darker brown */     color: #d4b98a; }  .content-sidebar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-right: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-left: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  .grid-background {     background: #1e150d;     background-image: radial-gradient(rgba(138, 92, 46, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-bottom: 1px solid #8a5c2e; }  .btn {     border: 1px solid #8a5c2e;     background-color: rgba(138, 92, 46, 0.1);     color: #d4b98a;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(138, 92, 46, 0.2);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  .btn-primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  .btn-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .btn-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  .btn-secondary {     background-color: rgba(138, 92, 46, 0.15);     border: 1px solid #8a5c2e; }  .btn-secondary:hover {     background-color: rgba(138, 92, 46, 0.25);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .btn-special {     background-color: rgba(34, 139, 34, 0.2); /* Forest green */     border: 1px solid #228b22;     color: #228b22; }  .btn-special:hover {     background-color: rgba(34, 139, 34, 0.3);     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(138, 92, 46, 0.2); }  .shape-item {     background-color: rgba(60, 50, 40, 0.6);     border: 1px solid #8a5c2e; }  .shape-item:hover {     background-color: rgba(138, 92, 46, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(34, 139, 34, 0.1);     border-color: #228b22;     color: #228b22;     box-shadow: 0 0 10px rgba(34, 139, 34, 0.3); }  #inspector {     background: rgba(60, 50, 40, 0.8);     border-top: 1px solid #8a5c2e; }  .form-row label {     color: #b8860b; }  .form-row input, .form-row select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  .scene-info {     background: rgba(40, 30, 20, 0.8);     color: #d4b98a;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3);     border: 1px solid #8a5c2e; }  .button-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .button-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  h2, h3 {     color: #b8860b;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #8a5c2e;     text-shadow: 0 0 5px rgba(184, 134, 11, 0.7); }   .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(138, 92, 46, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(138, 92, 46, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(60, 50, 40, 0.8);     border: 1px solid #8a5c2e;     color: #228b22; /* Green ink */     font-family: 'IM Fell English', serif;     padding: 15px;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.2), inset 0 0 30px rgba(60, 50, 40, 0.5); }  .ref-value-item {     background-color: #4a3a2a; /* Darker wood */ }  .remove-ref-btn {     background: none;     border: none;     color: #ff4040;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(60, 50, 40, 0.6); }  ::-webkit-scrollbar-thumb {     background: #8a5c2e;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #b8860b; }  /* Category Styling for Medieval Theme */ .type-selector {     background-color: rgba(50, 40, 30, 0.7); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: inset 0 0 10px rgba(138, 92, 46, 0.3); }  .category-header {     background-color: rgba(60, 50, 40, 0.8); /* Aged wood */     border: 1px solid #8a5c2e;     color: #d4b98a; /* Parchment beige */     text-transform: uppercase;     letter-spacing: 1px;     font-weight: bold; }  .category-header:hover {     background-color: rgba(138, 92, 46, 0.2); /* Bronze hover */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .category-types {     background-color: rgba(40, 30, 20, 0.6); /* Dark stone */ }  .object-type-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  .object-type-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-type-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .object-list {     background-color: rgba(50, 40, 30, 0.5); /* Slightly lighter wood */ }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/medieval.css"
+    },
+    "Neon Dune": {
+      "title": "Neon Dune",
+      "fileName": "Neon Dune",
+      "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/Neon Dune.css"
     },
     "professional": {
       "title": "Professional",
@@ -817,6 +817,12 @@ window.COMPILED_GAME = {
       "css": "/* Professional Cyberpunk Variation - Warm Edition */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #2b1e1e; /* Deep reddish-brown */     color: #f4e1d2; /* Soft cream for text */     line-height: 1.6; }  .sidebar {     background-color: rgba(54, 36, 36, 0.95); /* Muted dark red */     border: 1px solid #7a4e4e; /* Subtle reddish-gray */     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.2); }  .object-item {     background-color: rgba(54, 36, 36, 0.8);     border-left: 2px solid #d97706; /* Warm amber */     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(217, 119, 6, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(217, 119, 6, 0.25);     border-left: 3px solid #d97706;     box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); }  .editor {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #three-js-container {     border: 1px solid rgba(122, 78, 78, 0.6); }  .preview-canvas-container {     border: 1px solid #d97706;     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1); }  .preview {     background-color: rgba(54, 36, 36, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(122, 78, 78, 0.5); }  .camera-controls {     background: rgba(46, 28, 28, 0.9); /* Darker reddish tint */     border: 1px solid #7a4e4e; }  .camera-controls button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .camera-controls .color-picker {     border: 1px solid #7a4e4e; }  .camera-controls .size-slider {     background: #3a2424;     border: 1px solid #7a4e4e; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #d97706; /* Amber for labels */ }  input, textarea, select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #d97706;     box-shadow: 0 0 8px rgba(217, 119, 6, 0.3); }  button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  button.primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  button.danger {     background-color: rgba(220, 38, 38, 0.3); /* Softer red */     border: 1px solid #dc2626;     color: #f4e1d2; }  button.danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  button.active {     border: 1px solid #10b981; /* Emerald green for active state */     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);     color: #10b981; }  .modal {     background-color: rgba(46, 28, 28, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 8px 24px rgba(122, 78, 78, 0.2); }  .property-list {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8); }  .tab-navigation {     border-bottom: 1px solid #7a4e4e; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(122, 78, 78, 0.2); }  .tab.active {     border-bottom: 2px solid #d97706;     box-shadow: 0 4px 8px -4px rgba(217, 119, 6, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(54, 36, 36, 0.8);     border-left: 3px solid #d97706;     box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }  #grid-display {     background-color: rgba(46, 28, 28, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .success-message {     color: #10b981; /* Emerald green for success */     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(220, 38, 38, 0.15);     border-left: 3px solid #dc2626;     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1); }  .main-content-container {     background-color: #332121; /* Slightly lighter reddish-brown */     color: #f4e1d2; }  .content-sidebar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-right: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-left: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .grid-background {     background: #2b1e1e;     background-image: radial-gradient(rgba(122, 78, 78, 0.15) 1px, transparent 1px);     background-size:30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-bottom: 1px solid #7a4e4e; }  .btn {     border: 1px solid #7a4e4e;     background-color: rgba(122, 78, 78, 0.3);     color: #f4e1d2;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  .btn-primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  .btn-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .btn-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  .btn-secondary {     background-color: rgba(122, 78, 78, 0.25);     border: 1px solid #7a4e4e; }  .btn-secondary:hover {     background-color: rgba(122, 78, 78, 0.4);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .btn-special {     background-color: rgba(16, 185, 129, 0.3);     border: 1px solid #10b981;     color: #f4e1d2; }  .btn-special:hover {     background-color: rgba(16, 185, 129, 0.5);     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(122, 78, 78, 0.3); }  .shape-item {     background-color: rgba(54, 36, 36, 0.8);     border: 1px solid #7a4e4e;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(122, 78, 78, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(16, 185, 129, 0.15);     border-color: #10b981;     color: #10b981;     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }  #inspector {     background: rgba(54, 36, 36, 0.95);     border-top: 1px solid #7a4e4e; }  .form-row label {     color: #d97706; }  .form-row input, .form-row select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1); }  .scene-info {     background: rgba(46, 28, 28, 0.9prisma);     color: #f4e1d2;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15);     border: 1px solid #7a4e4e; }  .button-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .button-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  h2, h3 {     color: #d97706;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #7a4e4e;     text-shadow: 0 0 4px rgba(217, 119, 6, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(54, 36, 36, 0.8); }  ::-webkit-scrollbar-thumb {     background: #7a4e4e;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #d97706; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/professional2.css"
     },
+    "scifi2": {
+      "title": "SciFi2.0",
+      "fileName": "scifi2",
+      "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/scifi2.css"
+    },
     "professional3": {
       "title": "Claude",
       "fileName": "professional3",
@@ -828,12 +834,6 @@ window.COMPILED_GAME = {
       "fileName": "videogame",
       "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');  body {     font-family: 'Orbitron', 'Share Tech Mono', sans-serif;     background-color: #0a0a0a; /* Deep black */     color: #00d4ff; /* Neon blue */     overflow: hidden; }  .sidebar {     background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(155, 0, 255, 0.1)); /* Black to purple fade */     border: 1px solid #ff007a; /* Hot pink */     box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(155, 0, 255, 0.3); }  .inventory-item {     background-color: rgba(12, 12, 12, 0.7);     border-left: 3px solid #9b00ff; /* Electric purple */     text-transform: uppercase;     letter-spacing: 2px;     transition: all 0.2s ease; }  .inventory-item:hover {     background-color: rgba(0, 212, 255, 0.2);     transform: scale(1.03);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }  .inventory-item.active {     background-color: rgba(255, 0, 122, 0.3); /* Pink glow */     border-left: 5px solid #ff007a;     box-shadow: 0 0 15px rgba(255, 0, 122, 0.8); }  .hud {     background: rgba(10, 10, 10, 0.8);     border: 1px solid #00d4ff;     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }  #game-canvas {     border: 1px dashed #c0c0c0; /* Silver dashed */     background: radial-gradient(circle, rgba(155, 0, 255, 0.1), transparent); }  .hologram-display {     border: 2px solid #9b00ff;     box-shadow: 0 0 25px rgba(155, 0, 255, 0.6);     animation: pulseGlow 2s infinite alternate; }  @keyframes pulseGlow {     0% { box-shadow: 0 0 25px rgba(155, 0, 255, 0.6); }     100% { box-shadow: 0 0 35px rgba(155, 0, 255, 0.9); } }  .control-panel {     background: rgba(0, 0, 0, 0.85);     border: 1px solid #c0c0c0; }  .control-panel button {     background-color: rgba(0, 212, 255, 0.2);     border: 1px solid #00d4ff;     color: #fff;     text-transform: uppercase;     transition: all 0.3s ease; }  .control-panel button:hover {     background-color: rgba(0, 212, 255, 0.4);     box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);     transform: translateY(-3px); }  label {     color: #ff007a; /* Hot pink */     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1.5px; }  input, textarea, select {     border: 1px solid #9b00ff;     background-color: rgba(10, 10, 10, 0.7);     color: #00d4ff;     box-shadow: 0 0 8px rgba(155, 0, 255, 0.4); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #ff007a;     box-shadow: 0 0 12px rgba(255, 0, 122, 0.7); }  button {     background-color: rgba(155, 0, 255, 0.2);     border: 1px solid #9b00ff;     color: #fff;     text-transform: uppercase;     letter-spacing: 1px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(155, 0, 255, 0.4);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.7);     transform: translateY(-2px) scale(1.05); }  button.primary {     background-color: rgba(0, 212, 255, 0.3);     border: 1px solid #00d4ff;     color: #fff; }  button.primary:hover {     background-color: rgba(0, 212, 255, 0.5);     box-shadow: 0 0 20px rgba(0, 212, 255, 0.9); }  button.alert {     background-color: rgba(255, 0, 122, 0.2);     border: 1px solid #ff007a;     color: #fff; }  button.alert:hover {     background-color: rgba(255, 0, 122, 0.4);     box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }  .modal {     background: rgba(0, 0, 0, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background: linear-gradient(45deg, rgba(10, 10, 10, 0.9), rgba(0, 212, 255, 0.1));     border: 1px solid #00d4ff;     box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }  .notification {     background-color: rgba(155, 0, 255, 0.3);     border-left: 4px solid #9b00ff;     color: #fff;     animation: slideIn 0.5s ease-out; }  @keyframes slideIn {     0% { transform: translateX(100%); opacity: 0; }     100% { transform: translateX(0); opacity: 1; } }  .main-content {     background: #0a0a0a;     animation: glitch 4s infinite; }   .grid-overlay {     background: repeating-linear-gradient(45deg, rgba(155, 0, 255, 0.05), rgba(155, 0, 255, 0.05) 10px, transparent 10px, transparent 20px); }  .btn {     border: 1px solid #c0c0c0;     background-color: rgba(0, 212, 255, 0.15);     color: #fff; }  .btn:hover {     background-color: rgba(0, 212, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }  .btn-primary {     background-color: rgba(9b, 0, 255, 0.25);     border: 1px solid #9b00ff; }  .btn-primary:hover {     background-color: rgba(155, 0, 255, 0.45);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.8); }  ::-webkit-scrollbar {     width: 6px; }  ::-webkit-scrollbar-track {     background: #0a0a0a; }  ::-webkit-scrollbar-thumb {     background: #00d4ff;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #ff007a; }",
       "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/videogame.css"
-    },
-    "scifi2": {
-      "title": "SciFi2.0",
-      "fileName": "scifi2",
-      "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/scifi2.css"
     },
     "videoGame2": {
       "title": "Video Game 2",
@@ -885,6 +885,40 @@ window.COMPILED_GAME = {
         }
       }
     },
+    "laser": {
+      "title": "Laser",
+      "audio": {
+        "waveform": "triangle",
+        "frequency": 197,
+        "duration": 0.1,
+        "envelope": {
+          "attack": 0.001,
+          "decay": 0.076,
+          "sustain": 0.5,
+          "release": 0.001
+        },
+        "pitchEnvelope": {
+          "start": 3.41,
+          "end": 0.23,
+          "time": 0.1
+        },
+        "effects": {
+          "filter": {
+            "type": "lowpass",
+            "frequency": 400,
+            "Q": 1
+          },
+          "distortion": 5,
+          "delay": {
+            "time": 0.27,
+            "feedback": 0.09
+          },
+          "reverb": 0,
+          "bitcrusher": 0,
+          "pan": 0
+        }
+      }
+    },
     "missileLaunch": {
       "title": "Missile Launch",
       "audio": {
@@ -927,8 +961,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "laser": {
-      "title": "Laser",
+    "plasma": {
+      "title": "Plasma",
       "audio": {
         "waveform": "triangle",
         "frequency": 197,
@@ -946,14 +980,14 @@ window.COMPILED_GAME = {
         },
         "effects": {
           "filter": {
-            "type": "lowpass",
-            "frequency": 400,
+            "type": "highpass",
+            "frequency": 4000,
             "Q": 1
           },
           "distortion": 5,
           "delay": {
-            "time": 0.27,
-            "feedback": 0.09
+            "time": 0,
+            "feedback": 0
           },
           "reverb": 0,
           "bitcrusher": 0,
@@ -991,40 +1025,6 @@ window.COMPILED_GAME = {
           },
           "reverb": 0.05,
           "bitcrusher": 0.5,
-          "pan": 0
-        }
-      }
-    },
-    "plasma": {
-      "title": "Plasma",
-      "audio": {
-        "waveform": "triangle",
-        "frequency": 197,
-        "duration": 0.1,
-        "envelope": {
-          "attack": 0.001,
-          "decay": 0.076,
-          "sustain": 0.5,
-          "release": 0.001
-        },
-        "pitchEnvelope": {
-          "start": 3.41,
-          "end": 0.23,
-          "time": 0.1
-        },
-        "effects": {
-          "filter": {
-            "type": "highpass",
-            "frequency": 4000,
-            "Q": 1
-          },
-          "distortion": 5,
-          "delay": {
-            "time": 0,
-            "feedback": 0
-          },
-          "reverb": 0,
-          "bitcrusher": 0,
           "pan": 0
         }
       }
@@ -1286,15 +1286,15 @@ window.COMPILED_GAME = {
       "actionSet": "peasant_buildings",
       "ability": "BuildAbility"
     },
-    "hold": {
-      "title": "Hold",
-      "icon": "order_hold",
-      "order": "holdPosition"
-    },
     "mineGold": {
       "title": "Peasant Mine Gold",
       "icon": "building_goldMine",
       "ability": "MineGoldAbility"
+    },
+    "hold": {
+      "title": "Hold",
+      "icon": "order_hold",
+      "order": "holdPosition"
     },
     "move": {
       "title": "Force Move",
@@ -1340,13 +1340,13 @@ window.COMPILED_GAME = {
       "title": "1h_spell_throw",
       "file": "animations/1h_spell_throw.glb"
     },
-    "2h_slash": {
-      "title": "2h_slash",
-      "file": "animations/2h_slash.glb"
-    },
     "2h_spell_blast": {
       "title": "2h_spell_blast",
       "file": "animations/2h_spell_blast.glb"
+    },
+    "2h_slash": {
+      "title": "2h_slash",
+      "file": "animations/2h_slash.glb"
     },
     "2h_spell_calldown": {
       "title": "2h_spell_calldown",
@@ -1392,13 +1392,13 @@ window.COMPILED_GAME = {
       "title": "hovering",
       "file": "animations/hovering.glb"
     },
-    "mutant_idle": {
-      "title": "mutant_idle",
-      "file": "animations/mutant_idle.glb"
-    },
     "idle": {
       "title": "idle",
       "file": "animations/idle.glb"
+    },
+    "mutant_idle": {
+      "title": "mutant_idle",
+      "file": "animations/mutant_idle.glb"
     },
     "mutant_run": {
       "title": "mutant_run",
@@ -1452,18 +1452,18 @@ window.COMPILED_GAME = {
       "type": "upgrade",
       "value": 5
     },
+    "spellDamage": {
+      "title": "Spell Damage",
+      "description": "",
+      "type": "upgrade",
+      "value": 10
+    },
     "slow": {
       "id": "slow",
       "title": "Slow",
       "desc": "Target is slowed",
       "stat": "speed",
       "lifeTime": 100
-    },
-    "spellDamage": {
-      "title": "Spell Damage",
-      "description": "",
-      "type": "upgrade",
-      "value": 10
     },
     "weaken": {
       "id": "weaken",
@@ -2157,77 +2157,6 @@ window.COMPILED_GAME = {
       },
       "size": 75
     },
-    "goldMine": {
-      "title": "Gold Mine",
-      "info": "Mine gold veins",
-      "value": 50,
-      "category": "attribute",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ],
-          "underConstruction": [
-            {
-              "shapes": {
-                "shapes": [
-                  {
-                    "color": {
-                      "paletteColor": "blueDColor"
-                    },
-                    "url": "models/underConstruction/underConstruction.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
-                "metalness": 0,
-                "roughness": 1,
-                "x": 0,
-                "z": 0,
-                "scaleX": 1,
-                "name": "foundation",
-                "url": "models/goldmine/goldmine.glb"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1.5,
-              "y": 1.5,
-              "z": 1.5
-            }
-          }
-        }
-      },
-      "upgrades": [
-        "peasantEfficiency"
-      ],
-      "units": [],
-      "footprintWidth": 2,
-      "footprintHeight": 2,
-      "size": 50,
-      "icon": "building_goldMine",
-      "hp": 2000,
-      "height": 100
-    },
     "cottage": {
       "title": "Cottage",
       "info": "A structure that fires arrows.",
@@ -2361,6 +2290,152 @@ window.COMPILED_GAME = {
       "height": 100,
       "size": 50,
       "icon": "building_fletchersHall",
+      "hp": 1500
+    },
+    "goldMine": {
+      "title": "Gold Mine",
+      "info": "Mine gold veins",
+      "value": 50,
+      "category": "attribute",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ],
+          "underConstruction": [
+            {
+              "shapes": {
+                "shapes": [
+                  {
+                    "color": {
+                      "paletteColor": "blueDColor"
+                    },
+                    "url": "models/underConstruction/underConstruction.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "metalness": 0,
+                "roughness": 1,
+                "x": 0,
+                "z": 0,
+                "scaleX": 1,
+                "name": "foundation",
+                "url": "models/goldmine/goldmine.glb"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.5,
+              "y": 1.5,
+              "z": 1.5
+            }
+          }
+        }
+      },
+      "upgrades": [
+        "peasantEfficiency"
+      ],
+      "units": [],
+      "footprintWidth": 2,
+      "footprintHeight": 2,
+      "size": 50,
+      "icon": "building_goldMine",
+      "hp": 2000,
+      "height": 100
+    },
+    "mageTower": {
+      "title": "Mage Tower",
+      "info": "Intelligence based training.",
+      "value": 50,
+      "category": "attribute",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ],
+          "underConstruction": [
+            {
+              "shapes": {
+                "shapes": [
+                  {
+                    "color": {
+                      "paletteColor": "blueDColor"
+                    },
+                    "url": "models/underConstruction/underConstruction.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "metalness": 0,
+                "roughness": 1,
+                "x": 0,
+                "z": 0,
+                "scaleX": 1,
+                "name": "foundation",
+                "url": "models/mage_tower/mage_tower.glb"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
+          }
+        }
+      },
+      "upgrades": [
+        "spellDamage"
+      ],
+      "units": [
+        "1_is_acolyte",
+        "1_i_apprentice"
+      ],
+      "footprintWidth": 2,
+      "footprintHeight": 2,
+      "height": 100,
+      "anchored": true,
+      "size": 50,
+      "icon": "building_mageTower",
       "hp": 1500
     },
     "keep": {
@@ -2585,9 +2660,9 @@ window.COMPILED_GAME = {
       },
       "size": 75
     },
-    "mageTower": {
-      "title": "Mage Tower",
-      "info": "Intelligence based training.",
+    "sentryTower": {
+      "title": "Sentry Tower",
+      "info": "A structure that fires arrows.",
       "value": 50,
       "category": "attribute",
       "render": {
@@ -2645,72 +2720,18 @@ window.COMPILED_GAME = {
           }
         }
       },
-      "upgrades": [
-        "spellDamage"
-      ],
-      "units": [
-        "1_is_acolyte",
-        "1_i_apprentice"
-      ],
+      "units": [],
       "footprintWidth": 2,
       "footprintHeight": 2,
       "height": 100,
-      "anchored": true,
       "size": 50,
-      "icon": "building_mageTower",
-      "hp": 1500
-    },
-    "underConstruction": {
-      "title": "Under Construction",
-      "info": "Under Construction",
-      "value": 50,
-      "category": "attribute",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
-                "metalness": 0,
-                "roughness": 1,
-                "x": 0,
-                "z": 0,
-                "scaleX": 1,
-                "name": "foundation",
-                "url": "models/underConstruction/underConstruction.glb"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 2,
-              "y": 2,
-              "z": 2
-            }
-          }
-        }
-      },
-      "units": [],
-      "footprintWidth": 3,
-      "footprintHeight": 2,
-      "height": 100,
-      "size": 75,
-      "hp": 1000
+      "icon": "unit_archer",
+      "damage": 20,
+      "attackSpeed": 1,
+      "range": 300,
+      "projectile": "arrow",
+      "element": "physical",
+      "hp": 500
     },
     "townHall": {
       "title": "Town Hall",
@@ -2786,30 +2807,15 @@ window.COMPILED_GAME = {
       "visionRange": 2000,
       "supplyProvided": 10
     },
-    "sentryTower": {
-      "title": "Sentry Tower",
-      "info": "A structure that fires arrows.",
+    "underConstruction": {
+      "title": "Under Construction",
+      "info": "Under Construction",
       "value": 50,
       "category": "attribute",
       "render": {
         "animations": {
           "idle": [
             {}
-          ],
-          "underConstruction": [
-            {
-              "shapes": {
-                "shapes": [
-                  {
-                    "color": {
-                      "paletteColor": "blueDColor"
-                    },
-                    "url": "models/underConstruction/underConstruction.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
           ]
         },
         "model": {
@@ -2826,7 +2832,7 @@ window.COMPILED_GAME = {
                 "z": 0,
                 "scaleX": 1,
                 "name": "foundation",
-                "url": "models/mage_tower/mage_tower.glb"
+                "url": "models/underConstruction/underConstruction.glb"
               }
             ],
             "position": {
@@ -2847,17 +2853,11 @@ window.COMPILED_GAME = {
         }
       },
       "units": [],
-      "footprintWidth": 2,
+      "footprintWidth": 3,
       "footprintHeight": 2,
       "height": 100,
-      "size": 50,
-      "icon": "unit_archer",
-      "damage": 20,
-      "attackSpeed": 1,
-      "range": 300,
-      "projectile": "arrow",
-      "element": "physical",
-      "hp": 500
+      "size": 75,
+      "hp": 1000
     }
   },
   "cliffs": {
@@ -2906,8 +2906,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "atom_one": {
-      "title": "Atom One",
+    "atom_three": {
+      "title": "Atom Three",
       "render": {
         "animations": {
           "idle": [
@@ -2925,7 +2925,7 @@ window.COMPILED_GAME = {
                 "metalness": 0,
                 "roughness": 1,
                 "name": "main",
-                "url": "models/atom_one_grass/atom_one_grass.glb"
+                "url": "models/atom_three_grass/atom_three_grass.glb"
               }
             ],
             "position": {
@@ -2947,8 +2947,8 @@ window.COMPILED_GAME = {
         }
       }
     },
-    "atom_three": {
-      "title": "Atom Three",
+    "atom_one": {
+      "title": "Atom One",
       "render": {
         "animations": {
           "idle": [
@@ -2966,7 +2966,7 @@ window.COMPILED_GAME = {
                 "metalness": 0,
                 "roughness": 1,
                 "name": "main",
-                "url": "models/atom_three_grass/atom_three_grass.glb"
+                "url": "models/atom_one_grass/atom_one_grass.glb"
               }
             ],
             "position": {
@@ -3041,6 +3041,46 @@ window.COMPILED_GAME = {
     }
   },
   "items": {
+    "knightShield": {
+      "title": "Knight Shield",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/item_shield_knight/item_shield_knight.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        }
+      }
+    },
     "axe1h": {
       "title": "Axe 1H",
       "render": {
@@ -3064,46 +3104,6 @@ window.COMPILED_GAME = {
               {
                 "type": "gltf",
                 "url": "models/item_axe_1h/item_axe_1h.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        }
-      }
-    },
-    "knightShield": {
-      "title": "Knight Shield",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/item_shield_knight/item_shield_knight.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
@@ -4466,186 +4466,6 @@ window.COMPILED_GAME = {
       "placementGridWidth": 1,
       "placementGridHeight": 1
     },
-    "1_di_scout": {
-      "title": "Rogue",
-      "size": 25,
-      "height": 50,
-      "value": 35,
-      "hp": 150,
-      "speed": 60,
-      "damage": 40,
-      "attackSpeed": 1.2,
-      "range": 100,
-      "projectile": "arrow",
-      "element": "physical",
-      "armor": 0,
-      "fireResistance": 0.25,
-      "coldResistance": 0.25,
-      "lightningResistance": 0.25,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_bow.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/shooting_arrow.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/rogue/rogue.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                }
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "mainHand",
-            "item": "woodBow",
-            "attachmentData": {
-              "bone": "LeftHand",
-              "offset": {
-                "x": 0,
-                "y": 3,
-                "z": 5
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 90
-              }
-            }
-          }
-        ]
-      },
-      "buyable": true,
-      "specUnits": [
-        "2_di_shadowAssassin",
-        "2_di_trickster",
-        "2_di_goblinBomber"
-      ],
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "icon": "unit_rogue",
-      "visionRange": 800,
-      "supplyCost": 2
-    },
     "1_d_archer": {
       "title": "Archer",
       "size": 25,
@@ -4838,6 +4658,186 @@ window.COMPILED_GAME = {
       "abilities": [],
       "icon": "unit_archer",
       "visionRange": 650,
+      "supplyCost": 2
+    },
+    "1_di_scout": {
+      "title": "Rogue",
+      "size": 25,
+      "height": 50,
+      "value": 35,
+      "hp": 150,
+      "speed": 60,
+      "damage": 40,
+      "attackSpeed": 1.2,
+      "range": 100,
+      "projectile": "arrow",
+      "element": "physical",
+      "armor": 0,
+      "fireResistance": 0.25,
+      "coldResistance": 0.25,
+      "lightningResistance": 0.25,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_bow.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/shooting_arrow.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/rogue/rogue.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                }
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "mainHand",
+            "item": "woodBow",
+            "attachmentData": {
+              "bone": "LeftHand",
+              "offset": {
+                "x": 0,
+                "y": 3,
+                "z": 5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 90
+              }
+            }
+          }
+        ]
+      },
+      "buyable": true,
+      "specUnits": [
+        "2_di_shadowAssassin",
+        "2_di_trickster",
+        "2_di_goblinBomber"
+      ],
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "icon": "unit_rogue",
+      "visionRange": 800,
       "supplyCost": 2
     },
     "1_is_acolyte": {
@@ -5515,140 +5515,6 @@ window.COMPILED_GAME = {
       "visionRange": 500,
       "supplyCost": 2
     },
-    "2_di_goblinBomber": {
-      "title": "Goblin Bomber (2) [DI]",
-      "size": 25,
-      "height": 50,
-      "value": 120,
-      "hp": 450,
-      "speed": 60,
-      "damage": 40,
-      "attackSpeed": 1.2,
-      "element": "fire",
-      "armor": 1,
-      "fireResistance": 0.75,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_steady_right_hand.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/sword_slash.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 0.5,
-              "y": 0.5,
-              "z": 0.5
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/goblin/goblin.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        }
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "abilities": [
-        "MeteorStrikeAbility"
-      ],
-      "range": 100,
-      "projectile": "fireball"
-    },
     "2_di_shadowAssassin": {
       "title": "Shadow Assassin (2) [DI]",
       "size": 25,
@@ -5852,6 +5718,332 @@ window.COMPILED_GAME = {
       "abilities": [
         "ShadowStrikeAbility"
       ]
+    },
+    "2_d_beastMaster": {
+      "title": "Beast Master (2) [D]",
+      "size": 25,
+      "height": 50,
+      "value": 35,
+      "hp": 140,
+      "speed": 55,
+      "damage": 16,
+      "attackSpeed": 1.1,
+      "range": 200,
+      "projectile": "arrow",
+      "element": "physical",
+      "fireResistance": 0.5,
+      "coldResistance": 0.5,
+      "lightningResistance": 0.5,
+      "armor": 1,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "models/idle/idle.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_bow.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/shooting_arrow.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "cast": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "models/2h_spell_summon/2h_spell_summon.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/beastmaster/beastmaster.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                }
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "offHand",
+            "item": "woodBow",
+            "attachmentData": {
+              "bone": "",
+              "offset": {
+                "x": 0,
+                "y": 0,
+                "z": 5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 90
+              }
+            }
+          }
+        ]
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "abilities": [
+        "SummonWolfAbility"
+      ]
+    },
+    "2_di_goblinBomber": {
+      "title": "Goblin Bomber (2) [DI]",
+      "size": 25,
+      "height": 50,
+      "value": 120,
+      "hp": 450,
+      "speed": 60,
+      "damage": 40,
+      "attackSpeed": 1.2,
+      "element": "fire",
+      "armor": 1,
+      "fireResistance": 0.75,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_steady_right_hand.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/sword_slash.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 0.5,
+              "y": 0.5,
+              "z": 0.5
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/goblin/goblin.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        }
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1,
+      "abilities": [
+        "MeteorStrikeAbility"
+      ],
+      "range": 100,
+      "projectile": "fireball"
     },
     "2_di_trickster": {
       "title": "Trickster (2) [DI]",
@@ -6060,198 +6252,6 @@ window.COMPILED_GAME = {
       "placementGridHeight": 1,
       "abilities": [
         "MirrorImagesAbility"
-      ]
-    },
-    "2_d_beastMaster": {
-      "title": "Beast Master (2) [D]",
-      "size": 25,
-      "height": 50,
-      "value": 35,
-      "hp": 140,
-      "speed": 55,
-      "damage": 16,
-      "attackSpeed": 1.1,
-      "range": 200,
-      "projectile": "arrow",
-      "element": "physical",
-      "fireResistance": 0.5,
-      "coldResistance": 0.5,
-      "lightningResistance": 0.5,
-      "armor": 1,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "models/idle/idle.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_bow.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/shooting_arrow.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "cast": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "models/2h_spell_summon/2h_spell_summon.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/beastmaster/beastmaster.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                }
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "offHand",
-            "item": "woodBow",
-            "attachmentData": {
-              "bone": "",
-              "offset": {
-                "x": 0,
-                "y": 0,
-                "z": 5
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 90
-              }
-            }
-          }
-        ]
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1,
-      "abilities": [
-        "SummonWolfAbility"
       ]
     },
     "2_d_ranger": {
@@ -7112,179 +7112,6 @@ window.COMPILED_GAME = {
         "SmiteAbility"
       ]
     },
-    "2_i_elementalist": {
-      "title": "Elementalist (2) [I]",
-      "size": 25,
-      "height": 50,
-      "value": 140,
-      "hp": 150,
-      "speed": 55,
-      "damage": 0,
-      "attackSpeed": 0,
-      "range": 160,
-      "armor": 2,
-      "fireResistance": 0.4,
-      "coldResistance": 0,
-      "lightningResistance": 0.2,
-      "abilities": [
-        "ChainLightningAbility"
-      ],
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/idle.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/walk_steady_right_hand.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/2h_spell_summon.glb",
-                    "scale": {
-                      "z": 1,
-                      "y": 1,
-                      "x": 1
-                    },
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/archmage/archmage.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                }
-              }
-            ]
-          }
-        },
-        "equipment": [
-          {
-            "slot": "mainHand",
-            "item": "staff_feathers",
-            "attachmentData": {
-              "bone": "LeftHand",
-              "offset": {
-                "x": -10,
-                "y": 15,
-                "z": 0
-              },
-              "rotation": {
-                "x": 180,
-                "y": 0,
-                "z": 180
-              }
-            }
-          }
-        ]
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1
-    },
     "2_i_enchanter": {
       "title": "Enchanter (2) [I]",
       "size": 25,
@@ -7447,6 +7274,179 @@ window.COMPILED_GAME = {
                 "x": 0,
                 "y": 0,
                 "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1
+    },
+    "2_i_elementalist": {
+      "title": "Elementalist (2) [I]",
+      "size": 25,
+      "height": 50,
+      "value": 140,
+      "hp": 150,
+      "speed": 55,
+      "damage": 0,
+      "attackSpeed": 0,
+      "range": 160,
+      "armor": 2,
+      "fireResistance": 0.4,
+      "coldResistance": 0,
+      "lightningResistance": 0.2,
+      "abilities": [
+        "ChainLightningAbility"
+      ],
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/idle.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/walk_steady_right_hand.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/2h_spell_summon.glb",
+                    "scale": {
+                      "z": 1,
+                      "y": 1,
+                      "x": 1
+                    },
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/archmage/archmage.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                }
+              }
+            ]
+          }
+        },
+        "equipment": [
+          {
+            "slot": "mainHand",
+            "item": "staff_feathers",
+            "attachmentData": {
+              "bone": "LeftHand",
+              "offset": {
+                "x": -10,
+                "y": 15,
+                "z": 0
+              },
+              "rotation": {
+                "x": 180,
+                "y": 0,
+                "z": 180
               }
             }
           }
@@ -8484,136 +8484,6 @@ window.COMPILED_GAME = {
         "ArenaPresenceAbility"
       ]
     },
-    "4_ancientTreant": {
-      "title": "Ancient Treant",
-      "size": 25,
-      "height": 100,
-      "value": 480,
-      "hp": 720,
-      "speed": 15,
-      "damage": 40,
-      "attackSpeed": 0.7,
-      "element": "physical",
-      "armor": 12,
-      "fireResistance": -0.2,
-      "coldResistance": 0.3,
-      "lightningResistance": 0.1,
-      "render": {
-        "animations": {
-          "idle": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_idle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "walk": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_walk.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "attack": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/mutant_swipe.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "death": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/death_fallback.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ],
-          "celebrate": [
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_gangnamstyle.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            },
-            {
-              "main": {
-                "shapes": [
-                  {
-                    "url": "animations/dance_thriller.glb",
-                    "id": 0
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "model": {
-          "main": {
-            "position": {
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 2,
-              "y": 2,
-              "z": 2
-            },
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "models/treant/treant.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1"
-              }
-            ]
-          }
-        }
-      },
-      "buyable": false,
-      "squadWidth": 1,
-      "squadHeight": 1,
-      "placementGridWidth": 1,
-      "placementGridHeight": 1
-    },
     "2_s_warlord": {
       "title": "Warlord (2) [S]",
       "size": 35,
@@ -8940,6 +8810,290 @@ window.COMPILED_GAME = {
       "placementGridWidth": 1,
       "placementGridHeight": 1
     },
+    "4_ancientTreant": {
+      "title": "Ancient Treant",
+      "size": 25,
+      "height": 100,
+      "value": 480,
+      "hp": 720,
+      "speed": 15,
+      "damage": 40,
+      "attackSpeed": 0.7,
+      "element": "physical",
+      "armor": 12,
+      "fireResistance": -0.2,
+      "coldResistance": 0.3,
+      "lightningResistance": 0.1,
+      "render": {
+        "animations": {
+          "idle": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_idle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "walk": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_walk.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "attack": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/mutant_swipe.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "death": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/death_fallback.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "celebrate": [
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_gangnamstyle.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            },
+            {
+              "main": {
+                "shapes": [
+                  {
+                    "url": "animations/dance_thriller.glb",
+                    "id": 0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "model": {
+          "main": {
+            "position": {
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            },
+            "shapes": [
+              {
+                "type": "gltf",
+                "url": "models/treant/treant.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1"
+              }
+            ]
+          }
+        }
+      },
+      "buyable": false,
+      "squadWidth": 1,
+      "squadHeight": 1,
+      "placementGridWidth": 1,
+      "placementGridHeight": 1
+    },
+    "sentry": {
+      "title": "Sentry Tower",
+      "info": "Defensive sentry tower",
+      "value": 250,
+      "range": 4,
+      "damage": 10,
+      "attackSpeed": 0.5,
+      "projectile": "arrow",
+      "render": {
+        "animations": {
+          "idle": [
+            {}
+          ]
+        },
+        "model": {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "cylinder",
+                "size": 20,
+                "height": 4,
+                "color": "#78909c",
+                "x": 0,
+                "y": 2,
+                "z": 0,
+                "name": "base",
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1
+              },
+              {
+                "type": "cylinder",
+                "size": 14,
+                "height": 26,
+                "color": "#78909c",
+                "x": 0,
+                "y": 17,
+                "z": 0,
+                "name": "body"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "rampart": {
+            "shapes": [
+              {
+                "type": "cylinder",
+                "size": 12,
+                "height": 8,
+                "color": "#3e4f57",
+                "x": 0,
+                "y": 30,
+                "z": 0,
+                "name": "rampartbase"
+              },
+              {
+                "type": "box",
+                "width": 3,
+                "height": 5,
+                "depth": 3,
+                "color": "#3e4f57",
+                "x": 4,
+                "y": 34,
+                "z": 4,
+                "name": "rampartblock1"
+              },
+              {
+                "type": "box",
+                "width": 3,
+                "height": 5,
+                "depth": 3,
+                "color": "#3e4f57",
+                "x": -4,
+                "y": 34,
+                "z": 4,
+                "name": "rampartblock2"
+              },
+              {
+                "type": "box",
+                "width": 3,
+                "height": 5,
+                "depth": 3,
+                "color": "#3e4f57",
+                "x": 4,
+                "y": 34,
+                "z": -4,
+                "name": "rampartblock3"
+              },
+              {
+                "type": "box",
+                "width": 3,
+                "height": 5,
+                "depth": 3,
+                "color": "#3e4f57",
+                "x": -4,
+                "y": 34,
+                "z": -4,
+                "name": "rampartblock4"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1.5,
+              "y": 1,
+              "z": 1.5
+            }
+          },
+          "attacker": {
+            "shapes": [],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    },
     "peasant": {
       "title": "Peasant",
       "size": 25,
@@ -9108,160 +9262,6 @@ window.COMPILED_GAME = {
       "actionSet": "peasant_actions",
       "visionRange": 400,
       "supplyCost": 1
-    },
-    "sentry": {
-      "title": "Sentry Tower",
-      "info": "Defensive sentry tower",
-      "value": 250,
-      "range": 4,
-      "damage": 10,
-      "attackSpeed": 0.5,
-      "projectile": "arrow",
-      "render": {
-        "animations": {
-          "idle": [
-            {}
-          ]
-        },
-        "model": {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "cylinder",
-                "size": 20,
-                "height": 4,
-                "color": "#78909c",
-                "x": 0,
-                "y": 2,
-                "z": 0,
-                "name": "base",
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "scaleX": 1,
-                "scaleY": 1,
-                "scaleZ": 1
-              },
-              {
-                "type": "cylinder",
-                "size": 14,
-                "height": 26,
-                "color": "#78909c",
-                "x": 0,
-                "y": 17,
-                "z": 0,
-                "name": "body"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "rampart": {
-            "shapes": [
-              {
-                "type": "cylinder",
-                "size": 12,
-                "height": 8,
-                "color": "#3e4f57",
-                "x": 0,
-                "y": 30,
-                "z": 0,
-                "name": "rampartbase"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "color": "#3e4f57",
-                "x": 4,
-                "y": 34,
-                "z": 4,
-                "name": "rampartblock1"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "color": "#3e4f57",
-                "x": -4,
-                "y": 34,
-                "z": 4,
-                "name": "rampartblock2"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "color": "#3e4f57",
-                "x": 4,
-                "y": 34,
-                "z": -4,
-                "name": "rampartblock3"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "color": "#3e4f57",
-                "x": -4,
-                "y": 34,
-                "z": -4,
-                "name": "rampartblock4"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1.5,
-              "y": 1,
-              "z": 1.5
-            }
-          },
-          "attacker": {
-            "shapes": [],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        }
-      }
     }
   },
   "visuals": {
@@ -9478,13 +9478,13 @@ window.COMPILED_GAME = {
     }
   },
   "icons": {
-    "building_barracks": {
-      "title": "Building Barracks",
-      "filePath": "resources/images/icons/building_barracks.png"
-    },
     "building_cottage": {
       "title": "Building Cottage",
       "filePath": "resources/images/icons/building_cottage.png"
+    },
+    "building_barracks": {
+      "title": "Building Barracks",
+      "filePath": "resources/images/icons/building_barracks.png"
     },
     "building_fletchersHall": {
       "title": "Building Fletchers Hall",
@@ -9498,25 +9498,25 @@ window.COMPILED_GAME = {
       "title": "Building Mage Tower",
       "filePath": "resources/images/icons/building_mageTower.png"
     },
-    "building_townHall": {
-      "title": "Building Town Hall",
-      "filePath": "resources/images/icons/building_townHall.png"
-    },
     "order_hold": {
       "title": "Order Hold",
       "filePath": "resources/images/icons/order_hold.png"
-    },
-    "unit_acolyte": {
-      "title": "Unit Acolyte",
-      "filePath": "resources/images/icons/unit_acolyte.png"
     },
     "order_move": {
       "title": "Order Move",
       "filePath": "resources/images/icons/order_move.png"
     },
+    "building_townHall": {
+      "title": "Building Town Hall",
+      "filePath": "resources/images/icons/building_townHall.png"
+    },
     "unit_apprentice": {
       "title": "Unit Apprentice",
       "filePath": "resources/images/icons/unit_apprentice.png"
+    },
+    "unit_acolyte": {
+      "title": "Unit Acolyte",
+      "filePath": "resources/images/icons/unit_acolyte.png"
     },
     "unit_archer": {
       "title": "Unit Archer",
@@ -9573,19 +9573,19 @@ window.COMPILED_GAME = {
     }
   },
   "shaders": {
-    "grass": {
-      "title": "Grass",
-      "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\nuniform vec3 fogColor;\nuniform float fogDensity;\nuniform vec3 directionalLightColor; // DirectionalLight color\nuniform float directionalLightIntensity; // DirectionalLight intensity\nuniform vec3 directionalLightDirection; // DirectionalLight direction (world space)\nuniform vec3 ambientLightColor; // AmbientLight color\nuniform float ambientLightIntensity; // AmbientLight intensity\nuniform vec3 skyColor; // HemisphereLight sky color\nuniform vec3 groundColor; // HemisphereLight ground color\nuniform float hemisphereIntensity; // HemisphereLight intensity\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    vec3 color = texColor.rgb;\n\n    // Directional light (Lambertian diffuse)\n    vec3 lightDir = normalize(directionalLightDirection); // Ensure direction is normalized\n    float diff = max(dot(vNormal, lightDir), 0.0);\n    vec3 diffuse = directionalLightColor * directionalLightIntensity * diff * color;\n\n    // Ambient light\n    vec3 ambient = ambientLightColor * ambientLightIntensity * color;\n\n    // Hemisphere light\n    vec3 hemiDir = vec3(0.0, 1.0, 0.0); // Up direction for hemisphere\n    float hemiDot = dot(vNormal, hemiDir) * 0.5 + 0.5; // Remap to 0-1\n    vec3 hemi = mix(groundColor, skyColor, hemiDot) * hemisphereIntensity * color;\n\n    // Combine lighting contributions\n    vec3 litColor = diffuse + ambient + hemi;\n\n    // Apply fog\n    float fogDistance = length(vWorldPosition - cameraPosition);\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695);\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n\n    vec3 finalColor = mix(fogColor, litColor, fogFactor);\n\n    gl_FragColor = vec4(finalColor, texColor.a);\n}",
-      "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal; // Add for lighting\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    // Compute world position in world space\n    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    vWorldPosition = worldPosition.xyz; // Store correct world position\n  \n    vec3 normal = normalize(normal); // Assuming grass geometry has normals\n    vNormal = normalize((modelMatrix * instanceMatrix * vec4(normal, 0.0)).xyz);\n\n    // Compute view position for gl_Position\n    vec4 mvPosition = viewMatrix * worldPosition;\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
-      "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
-      "vectors": "[\"windDirection\"]"
-    },
     "water": {
       "title": "Water",
       "fragmentScript": "uniform float time;\nuniform float waveHeight;\nuniform vec3 liquidColor;\nuniform vec3 foamColor;\nuniform float waveFrequency;\nuniform float fresnelPower;\nuniform vec3 lightDirection;\nuniform float ambientIntensity;\nuniform float specularIntensity;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\nvarying vec3 vWorldPosition;\nuniform vec3 fogColor;\nuniform float fogDensity;\n\nvoid main() {\n    vec2 uv = vUv;\n    vec3 normal = normalize(vNormal);\n    vec3 viewDir = normalize(vViewPosition);\n    vec3 lightDir = normalize(lightDirection);\n\n    // Fresnel effect for edge transparency\n    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);\n\n    // Diffuse lighting\n    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;\n\n    // Specular (Blinn-Phong)\n    vec3 halfwayDir = normalize(lightDir + viewDir);\n    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;\n\n    // Base color with subtle wave height modulation\n    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation\n\n    // Foam effect based on normalized wave height\n    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks\n    vec3 color = mix(baseColor, foamColor, foamFactor);\n  \n    float fogDistance = length(vWorldPosition - cameraPosition); // Distance from fragment to camera\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695); // 1.442695 = ln(2)\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n    // Combine lighting components\n    vec3 lightColor = color * (ambientIntensity + diffuse) + vec3(specular);\n\t\tvec3 finalColor = mix(fogColor, lightColor, fogFactor);\n    // Apply fresnel for transparency at edges\n    float alpha = mix(0.6, 1.0, fresnel);\n\n    gl_FragColor = vec4(finalColor, alpha);\n}",
       "vertexScript": " uniform float time;\nuniform float waveHeight;\nuniform float waveFrequency;\nuniform float waveSpeed;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\nvarying vec3 vWorldPosition;\n// Simple noise function for wave variation\nfloat snoise(vec2 co) {\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid main() {\n    vUv = uv;\n\n    // Combine multiple waves for more natural movement\n    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;\n    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;\n    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;\n    float displacementY = (wave1 + wave2 + wave3) * 0.5;\n\n    // Store wave height for fragment shader\n    vWaveHeight = displacementY;\n\n    // Normalize wave height based on maximum possible displacement\n    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes\n    vNormalizedWaveHeight = displacementY / maxWaveHeight;\n\n    // Update position with displacement\n    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);\n\n    // Compute normal for lighting\n    float offset = 0.01;\n    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));\n    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));\n    vNormal = normalize(cross(tangent, bitangent));\n\n    // Pass view position for fresnel and lighting\n    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);\n    vViewPosition = (cameraPosition - worldPosition.xyz);\n    vWorldPosition = worldPosition.xyz;\n    // Apply projection and model-view transforms\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}",
       "uniforms": "{\"time\":{\"value\":0},\"waveHeight\":{\"value\":3},\"waveFrequency\":{\"value\":5},\"waveSpeed\":{\"value\":0.25},\"liquidColor\":{\"value\":\"\"},\"foamColor\":{\"value\":\"\"},\"fresnelPower\":{\"value\":0},\"lightDirection\":{\"value\":[0.5,0.5,0.5]},\"ambientIntensity\":{\"value\":1},\"specularIntensity\":{\"value\":1}}",
       "vectors": "[\"foamColor\",\"liquidColor\",\"lightDirection\"]"
+    },
+    "grass": {
+      "title": "Grass",
+      "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\nuniform vec3 fogColor;\nuniform float fogDensity;\nuniform vec3 directionalLightColor; // DirectionalLight color\nuniform float directionalLightIntensity; // DirectionalLight intensity\nuniform vec3 directionalLightDirection; // DirectionalLight direction (world space)\nuniform vec3 ambientLightColor; // AmbientLight color\nuniform float ambientLightIntensity; // AmbientLight intensity\nuniform vec3 skyColor; // HemisphereLight sky color\nuniform vec3 groundColor; // HemisphereLight ground color\nuniform float hemisphereIntensity; // HemisphereLight intensity\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    vec3 color = texColor.rgb;\n\n    // Directional light (Lambertian diffuse)\n    vec3 lightDir = normalize(directionalLightDirection); // Ensure direction is normalized\n    float diff = max(dot(vNormal, lightDir), 0.0);\n    vec3 diffuse = directionalLightColor * directionalLightIntensity * diff * color;\n\n    // Ambient light\n    vec3 ambient = ambientLightColor * ambientLightIntensity * color;\n\n    // Hemisphere light\n    vec3 hemiDir = vec3(0.0, 1.0, 0.0); // Up direction for hemisphere\n    float hemiDot = dot(vNormal, hemiDir) * 0.5 + 0.5; // Remap to 0-1\n    vec3 hemi = mix(groundColor, skyColor, hemiDot) * hemisphereIntensity * color;\n\n    // Combine lighting contributions\n    vec3 litColor = diffuse + ambient + hemi;\n\n    // Apply fog\n    float fogDistance = length(vWorldPosition - cameraPosition);\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695);\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n\n    vec3 finalColor = mix(fogColor, litColor, fogFactor);\n\n    gl_FragColor = vec4(finalColor, texColor.a);\n}",
+      "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal; // Add for lighting\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    // Compute world position in world space\n    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    vWorldPosition = worldPosition.xyz; // Store correct world position\n  \n    vec3 normal = normalize(normal); // Assuming grass geometry has normals\n    vNormal = normalize((modelMatrix * instanceMatrix * vec4(normal, 0.0)).xyz);\n\n    // Compute view position for gl_Position\n    vec4 mvPosition = viewMatrix * worldPosition;\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
+      "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
+      "vectors": "[\"windDirection\"]"
     }
   },
   "textures": {
@@ -9601,13 +9601,13 @@ window.COMPILED_GAME = {
       "title": "Forest",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwOEX1QMH0QuRwQqWXk7NdvLTHSwY3uy3Huz5boua9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAs/vWAZcNxDRQAAAABJRU5ErkJggg=="
     },
-    "grass": {
-      "title": "Grass",
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAwCAYAAADuFn/PAAAAAXNSR0IArs4c6QAAFepJREFUeF7dnGusZFlZht+1b3Wvc++Znu6BQTQS/amJ/HAQQXBgMIDGGCBRE6KSiJFI1DhgCNEIxgAaY8IfiJJ4wRguigwzDsMEBjSK/BBNCAkRZprp6du51L323msv83yrqi+nh992zZ7L6TqnTtWqb63v/d7v/d7d7qd//t5QLoLmk0a97UShkTr9TE5SuWxUV0FSULefaTatJZeoWnjlLaduL36v00s1n3p7zMX3sjRRmjr5RioXtZKMV4xXCJKv4x+ck5pG9nrxh/FLXQdbQ6udaLlo5HiinJ74zNM3Xuj6K27uH9wrXn8+eB80Own22Yd7iQWUB4t5UGBHVleXQM9qheDUKlItyxh025ibrvX3ynlQ3nZqd1IdXy7t9QfbucqyseAmCf+TvUZVelW22VLKZgVnP+e5TR3U1E51JXWG0uOfuvC82QT3steeCw0bMJbOvqjQfBXMyXGj2SSo3WFT0uvhJRDjY6+8kHbO5FrOPQfztmsxjac2K5yd8hCCOt1MJ4eV+mzCzKvdTVXXjeRi4MkMruVEcllQ8EH97UyLqVdVBrX77Fi8ni+b4F7+M+dtA7pbmQVlHUw2YD7x2jnIlGScSslXUlYkKheNneTJVadi4FW0k+sbx2m+eqnUYJhpMfHKWs6Cn+bxVPf6mcZHlVzuVJeNgpdanVSVb+QXwaCq1ZYWi2CwRPZMTryy4kamsAGjQ69//fwzG58J7sE332cbMD6utXc2s9Pd7iZazBr7L01cxOjCCajq9lMtZl6Nl53OumrUaqcGQwT/6HJpmxmqIL+CmaaSfBNUtFf7S2Zkqe31+KRWkjgtF14uccpzykwiX8f3yH7olxS++TGDMtvcZ0t7PzbKKRhcbsL6v/S57z7nYXGvfOP5wEdpQtD0uNHBuVzTiVenk2o69mrqRlkr1dGVWtt7qcEJV9ME2xhKhJ3wLMIN0LOcN+oOUgVqtkuVFo0Gu5kSJyvWrSKzjIpFXRofSr1Boqpu1OokBmu8Lq9fVkH9Ad9rtLWX6dLTpTr9xOApzRLltqmbsf4vP3r7Jrgff9W5UPScDi959YdO2/uFDi+XekO/1CNqaXYiFUVibAg46W+ncmmwYuyXTp1uqsmoNsYzOvbKcqeilSjLpXoJbueajSv5Urrn+1oKauy9gP29s4Vmk8qYDgU/cYk9t7uVa3ZS2aHIgLexV6vrFKpESqgLqRZzrySVFqOgTVr/Fx+5lcW5173lvnB4pTb8h/i1u7IAUg/5gONDgpqoaElp4bR3d6Yr362NJXHySX8wnN/hdBdtp7yV6alvLnTX+Uw1BKmRat9YXchbqXoDWUZ1erltANd8FCzgiWODvTqDXHkRNB55BR+zqjNItXNANgJusSZwbdL6T5MH2wCKHGlfL4J27ykUGvoCr/lEVoB3zqTGRMBqgrRmpmRERbFsU1CDev1UtScDoIyNbU6eZ9YHQGZhUHkr0f7ZROXMaTKpdPVCozP3JkZB+1u5xkeNpqNSSZKot01BpgjTR8SAs+nA1s19xyat/zN//e1baoFtAFjsy0RJGmKD5GJj1m47be1nVgvAeIpk03jrA9YnkN/Nc6feMNHhpVrLRdDBPbkxnvFRrazILJMS1xizCXVQu5cohFRbe4kOr5Tqd3Mty1p5kWo6qVUvpEXpNdxJ7X3ZZCWNiiLTgmJ900dY9xysP82D6pLMbDSbNup2kjtu/Q9//Du3bsAr3nA+5Hmik2ve6B8ws72f6uoztdqdzPj4ctZYVgAfaRqMk+/fk+nqxch8ukPFP/c5wVUsyKCDc8aiwCsY1HQUlMipNZCqudTuueu0l2fZ7x+zAY3qJmjrTKbgnSYnwFTQR151pF99Yu96u9zpZUZ/W63EIK3VdrFObaU6ulyr3c2sXt1J6//+d8xu3YAH33RfGB3X6nQj+7gZZuDuvl51Ryt5AIq6lg/iSeTnznqBaknzJXnv1O1majz1I1VZer2mN9QXv31VF0Kq/k6iVgGtzDWbxhrQbmd65sJS3U6mNJGWyzrC0k4qehKYT7WkAUzkVn1hbwAFdUZlyUL6ilvWD3Vedde8B/LG//f6n3zk1t7F3f/AubC1l2sKk7kJZppm3cFKNZKEA+uhocEK7vGL3in31T+2k561EmNDZElVNWq3cutqgav1RQYoZKoWUqvPvnkVeaqqptYEJXnUh7a36fqcsaxWK2ZiZ0s6ueK1dRA7YbJuufR2OICn51p/aGJ2sY47af23FeFXvvFcgOUQBIILzCRJhBlO3XzcxMLrnTVjrR4g4jQbeXmUNhfUG6LlNKYPJVmi2aRWUwYT0cgMXocL1jMZxYLf6jhVy5UE4aGSvK4lk10EjoLLVyjubNIY1BD4tfhHp8yaWf9iZr9wAyaXQZ1Botnozlr/Y5966lYIQoqAuxNAPmwJd+84jQ6Dtg8S02umR41SkxQaTU9o1iJTohlDMe3TdFk753T54lJpklrRRWkrutBZMMNbbJuVEkpydKkBkqolzZpXu5VpPq9WwZcV0HImTawwNwZ2MKvtfeirsQX79/r6obs1tDixdfa377z1P/nIrc2Y+4kHz4V1MUsB3xWqc+rrZaOig/wMuwhWoHkKhe7as157d0cwhq1cuVCpO0hULgm4UwJTShI5RLheojk6T9Ko9kEZek8rNTxfzrw6fbruyhgUdaecNVagwfP5nI43yJdkpdTqcRBkkDcbw8h4/ViMeT4CIG9tcLgMKsi0O2j9X/6XUxsAC1qntK8oonSljTi0v/8bD+l9H36f1QZOLN9HIiZwFFweDLZlgaHr5fv8R1Ysp5zM2MxlbXIhtZM6GcOcbhRgoKjx8fdGx6U63VwvHZ/o8bSjXp9aEnR0tY4U2dODIOjFGQEbgfxxev38jHXeiet/8uFTRfgnX38+wFxodGhoQGKwnqYI+seJbHUyLee1ZieNuluJQp1oNq+0vZebMMcJrav4e3xwmMlbHvxFffrJv1U5r9Xu5RqflDZzaPWd2jbMya0R4/nkXdHNjbGA6eDKdFpp9yAz6kpA6TeoAeg/ZE1VB23twrDiUGdT1v+Ff7p1lnG9EUugnAsUy9ROmm8a9XqRSqLTrIsjDITOlEEJbIhhiTVoAXYUq2iWJfrtt75Lf/ax9xvt8146uVZaFiFbMMihyfvQe/5Kv/v+t1qGTUaV2u1Ui2Uc7pj0kA+Udhaaz5E+aALDSgrPNDmutXNXbPjYnE1Z/xOnN+C1b3phQNgynrykjEoupfGSjq94/eCPtDU5aSyIFGoqIewD1ROe/t6XjvUH/z4wOEKzBzbAc5Orh8wbU5OiwemTw9IYTZqlWi5qMTEDRugLqDHw+8zGmPH9q0WirN1YzWAaxvsNtjLj/UgdbC7zgk1a/xf/+VQGvOrnXhAorqQ1Em+SJppNvVyTqCEQqJYrAW64nxrW0/B0hyikskD42inNZUIcs2MK4louiPpN1IrIHCgjG8UAtMihiV7tfibPDhsBCMbzkSR6W6lCBRzVYm5Nc4dkDWyhVSFpAEmbtP5HP3FKivipnz0fOIlgauKccXZ0eD+XlpVXd5gaHPCh1zzdRLZ2YoE6fLa2Zmqwk14PPpIGbIjNkPNaziKvhxq2isi0OM15h4451YzNb4JtjPULXTrk0qSQqxcr7d5VmEyNzjPYox41xnTopn3dWCZtyvpvY0EMZAg4ciWFjLktKW4nrsfMNna0PEaH96UzfQgWRPtfLpAeGJxL/d0bM9t1MSWgiHNXnqmMwYS6ka+Quxk/Sr/3tnfrfR/+Qyv2dLbUICZdBJTXWIwZh8YaxIZNDpvYsSvOiB1Ff4PW//gnT0HQK15/LljHO41dKUGlCzbJd4QgllvBA1KidSRYd9nposEgAySG0cslSmqc464vpOVOLzZoFGoG8IsJcBWbpE4n0zsHqT5wsdQsiRaU2bi2ZssyhvdnCpfK9KC8RTedaTaqtHN3YTNn1rNJ6//Ko6doKEW4v+109WKUB4x99DKNDisL6HIu03tcLnW7iW0QtBDM50oTRokrSWE1noSOouHs7OfR5uOoLYijQSdXg1pt6kJtcwOTHGhoaZ58HHVSJ5g9U4uAscUMZRNLjFeeRWsMp571UoQ3af1f+PSpDLj/1edDZ+hMjsZqglQAu6Bo0gss5rUmx94G8AQQGGFj6DiBnisv+R090Puq/uvrT1gRf+evvEMf+OifWs9gDZwa5RkKqrPX2b0rs9+nSWMCNzryOjhb6OhKaboRjgs0HCCPbALaTP0081Zi2YhxjP6j3UkM/zdp/Y/+wykt6P4Hzpsjiw9LQNMcR0JjBRl8Ve00L320lAyREBjQ1BZEAkzGcOLpSDnGzI/JjulJHOgXNHHYXQALdJtUxnqgmcgSTdUYNAFTSBy8bn8Y0+vkGrOFOFfg+fQd5cJrMQ3q7URZHHV1k9b/2CdPbUCcCZfm+cFoNTqq7IMyv+UTWrp7eD/yrzTYZYOQI6IsDGT8lo70J822qZyG0SaURdaETMGGAkUEFjgxvYb5bxYhhPFifxgddlgagRZmCjH7GjsIvSFpECnqzU48Y2IbtP7nnAnzgZolKltj7KbVTaSQCD/PYlErz5yKbvSN2uk+CkrTVO1hUG9AwCujjK2OdHwt4vXoKDolOu1UJ8fVdUixeTE1IyhS3JlX0WKWfMMCySYig8QN8wZdvS3qQgz+DU9q9LBu0vpvmwkjxq29mZx4xnfgcKuLpCxtn8k0Poz+HYY03U6qKxcrDXcTkx+ADgI1NXdDdDUAKcgZBI6BPlo+NQVstx6gjIWWggN8mRglBvjRG4QmhI0FecF6c9fYyHP/bPY9vah4Szdh/bdlABtgQZnFLjgpZDQTaRlYAAYQzoAiijCQgo4Dth8+W1pW4PWsytpgxvQjbCbT2uRi6C2Qde8PFLr63Upn7i3sxIba2byWue3/vPiDevHXf/O6RxSpmblEhSvaxpONSRS9rcwcdM91bcr6H/67U50wNeDZp5faOcgNagjiyREMA1roTHuZmSM6uuAYfAMZ5RItHtEs6jO4FWyCZdMs/EIUzqDhdq4ZtpSbZsvTEdOt1GoDhqtogaTRilMx2A6SNu8zulapqqWDszCy293YZO8mrf+2DFjPhCm+fHqaI4YYFEbGkUjAW/vRwQZS3GoJyTUelZH9ZIltApo/np5rl0rtnc3t9P/C3cf6y2/1I1NazXQvfntpj6G8MB2aL1gQQSdz8Bpd+k6l3f1ClY8uvP1zkR1R+NejSpgSM+FNWf9tNYCRpE2XJrXJAQS4aGU6/OE/0l3feJc9ns3rqJLieFjVSmNCDNVxKrSd0U4mY/QRrTzVosRpkenC6AVaPv0NHTzwkIpvfsAasukosp7DK3EewDBG3pmmhLxggp9Heo7vGWluzMD1HBkx0DbDr6ZjG7L+Lz18aiL2stecD4PtTM3K7sZYDx/oM/pR3V3/hwbb8fTDXN79Y8f60NcPNF9iZaQ7DuoUmZ16jFVI0RRmhjdI0DY6HDhd/o5Xkq+G92C4cza2XN8Og77EfQPDvcy67emUvgOlNWhevEA7+YXoimMeUFaqlk7AGIyKYr5J6//s6RrwstecC6Q+NBIpoG68cXG7cQK/z2oixiYQXIxWZAHBQGYGPrIkStjtbrSyR9mU4X4m31Q6uhyVTvg/tNWyilubME5hBKiwpvjYeU9jbcGmYj83nxFTsRX+r3qMyRE2dtzUsYHblPXfDkGvuzcQTD4khXA6dto9Q7da6NfqQ/3bvNDXirbNiuHq+PoJGM81Vwr3ceWplnW0lF83bSXxjpjjy7WUwjijbMxsgW7XHBiLYHT36BJ3zaTWY5TzOPRB4+f3OQg2CLJ7DVBLsbnTpHmbJaCebtL6H/vEKQi6/9XnIO+mtyAEO5gQ94fZwIMUd1aYcbfh66cApkViLgWCv6zqeEMdfUIFg4Eq1kqLoJLblBI2joxBcogdNNx+OeN1pP17gDiaNmwuTg2wM8UdgXUx2kpoxkypNSmCU58aRWU+gNyxSet/5OOnpIh1H8CIsdN3yhwz2zgSRCrAMW0+nFUhno9wIsSKnGVBk7G0tctWcFckJihpaYF3RiWzxClZuaWNufAYw21FB7yaHwA5aESdVJef8rZ5bLR1v9zAV8Us6A9TjQ5rO/Wja7V27o7DGa5NWf8/fuxUH/Dgm18YwOZ2T7r4VKXhVh6bnZWtDzgg5aGJqGnoPVDFziCyoGuXS5OIsRuyDXg8TczLEdNqM0nR3RLI+ZQOOQ5v+AqTMjYTlQnLIoprVTr1B9F/xAVUUXBtqN+OdsbrckQXu+TmrP+Jz5weyLzhfBjuMuuN7gKCiuOBs7l9kOrkKq7pXEeXF+rvtpS4WCyno+hggxZi4KJZYiz5ywcDfeSZkWXCWpHD+IuWvxg3WixltzqZvWQBvXUGRVBhTvf+OepGhBybDRRO42ukI6Je0NZ+GkXAEK5D0yat/z+fvHi7PX3dHLEB1TzaTNgACmGxuh8YLr6cBG2fibIEOhHuBm6mW0zwBUmdLfqBxqADCsk/T3+j0r0vyW2jmHiRFdhWgDv2iBPNhv/Fez6st7/3bWp8o94wj3ddughLNGYTPJ6Yd89wH3Mc/N98rTPiTl//175yaiJGDaDQcQEd3CWJFM1Xs5yXjB9TkxLwh37woT/Xrz/0drUHTuUkqOhj1G3MgogVPW0xzgy69FSkpZ1hYjoOp5uiqgYbfK1lKZ17EYFmvuzVanY116G2d3PN59wxuZqSBawumW06zR4KqhXkYjU6BfY2ZP2fPzUP5nM4RpIMWrgdiRN5fLWyYXzAXLsy3AIFa72e0w42u5BYFviksQAt7MRyp6VT0Yt3tkMVt3dSTad4eJz1Ge1eqsG20//+d6n20EWfUBr1IHQhLjphGrX5rNHbt2f6qO9HDxG9BbI4e7xKZDJkE9Z/ehS5zl734FvuC6Qz0IHvh0ZouF2Y8smpU0gNknA3W3DmDEu4cToztmLzgHFlVBB3M6OXI1RSszhGoy4q5lq3b3dhvdhOahv6A3OAETYXlwS12wSYTre23gRZ5MK3SruvrI8wOPF2SyuTu8/+za2M4hZM2pAH7uWvOx+wh8xp7fHprKyHw/2Iw3anSyOTGkoG9Dif6cISr26XoXtsquiE9+7iPoNVMWd4TlGHydxSduIkDbvhgjkBg6A0ft06uBE1yEB3AJNqbEA/Pq6sT7ArOH3pc8+Pv7TDIIjbPMFw4+VJLHzc+4v0bPIySiVBTyM80CeAu9zMbTaS1V/yAGPhJg0yp2SgYp6doN0zhZbcVwxlj97beJcLN+0F7jGIKur6Z2QZ9kizuecr58Wi0bMXKuukn/wed51vyKG/ZZmOIhx5dvzrZQgGqqjdD4BgRtxTJAIaguhkwFxFsA1esBGuGAnshDOKrdAvmGpSC5LVVCyyGgt86W3qhVuCb0JH7a+zMQ3IaX4S+xDeH3Gwy3waEPRej/z98+Pkr3fh/wAwjitsSv4ZrwAAAABJRU5ErkJggg=="
-    },
     "lava": {
       "title": "Lava",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAkUlEQVRoQ+3UQQ6AIAxEUXpnj8GdMW4Jhl0/Jd+1yei8TGP0NlqhJ54WhT53+6lRDeD7o5sQSgLchFAW4BaE0gDbA3vQC39nU4BEpBWCAIkAq7MpgADJDcBx8xlyAckgAiQXPscJIADcABzvAgSAG4DjXYAAcANwvAsQAG4AjncBAsANwPEuQAC4ATjeBRwG8AKHQEgZvHpI7AAAAABJRU5ErkJggg=="
+    },
+    "grass": {
+      "title": "Grass",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAwCAYAAADuFn/PAAAAAXNSR0IArs4c6QAAFepJREFUeF7dnGusZFlZht+1b3Wvc++Znu6BQTQS/amJ/HAQQXBgMIDGGCBRE6KSiJFI1DhgCNEIxgAaY8IfiJJ4wRguigwzDsMEBjSK/BBNCAkRZprp6du51L323msv83yrqi+nh992zZ7L6TqnTtWqb63v/d7v/d7d7qd//t5QLoLmk0a97UShkTr9TE5SuWxUV0FSULefaTatJZeoWnjlLaduL36v00s1n3p7zMX3sjRRmjr5RioXtZKMV4xXCJKv4x+ck5pG9nrxh/FLXQdbQ6udaLlo5HiinJ74zNM3Xuj6K27uH9wrXn8+eB80Own22Yd7iQWUB4t5UGBHVleXQM9qheDUKlItyxh025ibrvX3ynlQ3nZqd1IdXy7t9QfbucqyseAmCf+TvUZVelW22VLKZgVnP+e5TR3U1E51JXWG0uOfuvC82QT3steeCw0bMJbOvqjQfBXMyXGj2SSo3WFT0uvhJRDjY6+8kHbO5FrOPQfztmsxjac2K5yd8hCCOt1MJ4eV+mzCzKvdTVXXjeRi4MkMruVEcllQ8EH97UyLqVdVBrX77Fi8ni+b4F7+M+dtA7pbmQVlHUw2YD7x2jnIlGScSslXUlYkKheNneTJVadi4FW0k+sbx2m+eqnUYJhpMfHKWs6Cn+bxVPf6mcZHlVzuVJeNgpdanVSVb+QXwaCq1ZYWi2CwRPZMTryy4kamsAGjQ69//fwzG58J7sE332cbMD6utXc2s9Pd7iZazBr7L01cxOjCCajq9lMtZl6Nl53OumrUaqcGQwT/6HJpmxmqIL+CmaaSfBNUtFf7S2Zkqe31+KRWkjgtF14uccpzykwiX8f3yH7olxS++TGDMtvcZ0t7PzbKKRhcbsL6v/S57z7nYXGvfOP5wEdpQtD0uNHBuVzTiVenk2o69mrqRlkr1dGVWtt7qcEJV9ME2xhKhJ3wLMIN0LOcN+oOUgVqtkuVFo0Gu5kSJyvWrSKzjIpFXRofSr1Boqpu1OokBmu8Lq9fVkH9Ad9rtLWX6dLTpTr9xOApzRLltqmbsf4vP3r7Jrgff9W5UPScDi959YdO2/uFDi+XekO/1CNqaXYiFUVibAg46W+ncmmwYuyXTp1uqsmoNsYzOvbKcqeilSjLpXoJbueajSv5Urrn+1oKauy9gP29s4Vmk8qYDgU/cYk9t7uVa3ZS2aHIgLexV6vrFKpESqgLqRZzrySVFqOgTVr/Fx+5lcW5173lvnB4pTb8h/i1u7IAUg/5gONDgpqoaElp4bR3d6Yr362NJXHySX8wnN/hdBdtp7yV6alvLnTX+Uw1BKmRat9YXchbqXoDWUZ1erltANd8FCzgiWODvTqDXHkRNB55BR+zqjNItXNANgJusSZwbdL6T5MH2wCKHGlfL4J27ykUGvoCr/lEVoB3zqTGRMBqgrRmpmRERbFsU1CDev1UtScDoIyNbU6eZ9YHQGZhUHkr0f7ZROXMaTKpdPVCozP3JkZB+1u5xkeNpqNSSZKot01BpgjTR8SAs+nA1s19xyat/zN//e1baoFtAFjsy0RJGmKD5GJj1m47be1nVgvAeIpk03jrA9YnkN/Nc6feMNHhpVrLRdDBPbkxnvFRrazILJMS1xizCXVQu5cohFRbe4kOr5Tqd3Mty1p5kWo6qVUvpEXpNdxJ7X3ZZCWNiiLTgmJ900dY9xysP82D6pLMbDSbNup2kjtu/Q9//Du3bsAr3nA+5Hmik2ve6B8ws72f6uoztdqdzPj4ctZYVgAfaRqMk+/fk+nqxch8ukPFP/c5wVUsyKCDc8aiwCsY1HQUlMipNZCqudTuueu0l2fZ7x+zAY3qJmjrTKbgnSYnwFTQR151pF99Yu96u9zpZUZ/W63EIK3VdrFObaU6ulyr3c2sXt1J6//+d8xu3YAH33RfGB3X6nQj+7gZZuDuvl51Ryt5AIq6lg/iSeTnznqBaknzJXnv1O1majz1I1VZer2mN9QXv31VF0Kq/k6iVgGtzDWbxhrQbmd65sJS3U6mNJGWyzrC0k4qehKYT7WkAUzkVn1hbwAFdUZlyUL6ilvWD3Vedde8B/LG//f6n3zk1t7F3f/AubC1l2sKk7kJZppm3cFKNZKEA+uhocEK7vGL3in31T+2k561EmNDZElVNWq3cutqgav1RQYoZKoWUqvPvnkVeaqqptYEJXnUh7a36fqcsaxWK2ZiZ0s6ueK1dRA7YbJuufR2OICn51p/aGJ2sY47af23FeFXvvFcgOUQBIILzCRJhBlO3XzcxMLrnTVjrR4g4jQbeXmUNhfUG6LlNKYPJVmi2aRWUwYT0cgMXocL1jMZxYLf6jhVy5UE4aGSvK4lk10EjoLLVyjubNIY1BD4tfhHp8yaWf9iZr9wAyaXQZ1Botnozlr/Y5966lYIQoqAuxNAPmwJd+84jQ6Dtg8S02umR41SkxQaTU9o1iJTohlDMe3TdFk753T54lJpklrRRWkrutBZMMNbbJuVEkpydKkBkqolzZpXu5VpPq9WwZcV0HImTawwNwZ2MKvtfeirsQX79/r6obs1tDixdfa377z1P/nIrc2Y+4kHz4V1MUsB3xWqc+rrZaOig/wMuwhWoHkKhe7as157d0cwhq1cuVCpO0hULgm4UwJTShI5RLheojk6T9Ko9kEZek8rNTxfzrw6fbruyhgUdaecNVagwfP5nI43yJdkpdTqcRBkkDcbw8h4/ViMeT4CIG9tcLgMKsi0O2j9X/6XUxsAC1qntK8oonSljTi0v/8bD+l9H36f1QZOLN9HIiZwFFweDLZlgaHr5fv8R1Ysp5zM2MxlbXIhtZM6GcOcbhRgoKjx8fdGx6U63VwvHZ/o8bSjXp9aEnR0tY4U2dODIOjFGQEbgfxxev38jHXeiet/8uFTRfgnX38+wFxodGhoQGKwnqYI+seJbHUyLee1ZieNuluJQp1oNq+0vZebMMcJrav4e3xwmMlbHvxFffrJv1U5r9Xu5RqflDZzaPWd2jbMya0R4/nkXdHNjbGA6eDKdFpp9yAz6kpA6TeoAeg/ZE1VB23twrDiUGdT1v+Ff7p1lnG9EUugnAsUy9ROmm8a9XqRSqLTrIsjDITOlEEJbIhhiTVoAXYUq2iWJfrtt75Lf/ax9xvt8146uVZaFiFbMMihyfvQe/5Kv/v+t1qGTUaV2u1Ui2Uc7pj0kA+Udhaaz5E+aALDSgrPNDmutXNXbPjYnE1Z/xOnN+C1b3phQNgynrykjEoupfGSjq94/eCPtDU5aSyIFGoqIewD1ROe/t6XjvUH/z4wOEKzBzbAc5Orh8wbU5OiwemTw9IYTZqlWi5qMTEDRugLqDHw+8zGmPH9q0WirN1YzWAaxvsNtjLj/UgdbC7zgk1a/xf/+VQGvOrnXhAorqQ1Em+SJppNvVyTqCEQqJYrAW64nxrW0/B0hyikskD42inNZUIcs2MK4louiPpN1IrIHCgjG8UAtMihiV7tfibPDhsBCMbzkSR6W6lCBRzVYm5Nc4dkDWyhVSFpAEmbtP5HP3FKivipnz0fOIlgauKccXZ0eD+XlpVXd5gaHPCh1zzdRLZ2YoE6fLa2Zmqwk14PPpIGbIjNkPNaziKvhxq2isi0OM15h4451YzNb4JtjPULXTrk0qSQqxcr7d5VmEyNzjPYox41xnTopn3dWCZtyvpvY0EMZAg4ciWFjLktKW4nrsfMNna0PEaH96UzfQgWRPtfLpAeGJxL/d0bM9t1MSWgiHNXnqmMwYS6ka+Quxk/Sr/3tnfrfR/+Qyv2dLbUICZdBJTXWIwZh8YaxIZNDpvYsSvOiB1Ff4PW//gnT0HQK15/LljHO41dKUGlCzbJd4QgllvBA1KidSRYd9nposEgAySG0cslSmqc464vpOVOLzZoFGoG8IsJcBWbpE4n0zsHqT5wsdQsiRaU2bi2ZssyhvdnCpfK9KC8RTedaTaqtHN3YTNn1rNJ6//Ko6doKEW4v+109WKUB4x99DKNDisL6HIu03tcLnW7iW0QtBDM50oTRokrSWE1noSOouHs7OfR5uOoLYijQSdXg1pt6kJtcwOTHGhoaZ58HHVSJ5g9U4uAscUMZRNLjFeeRWsMp571UoQ3af1f+PSpDLj/1edDZ+hMjsZqglQAu6Bo0gss5rUmx94G8AQQGGFj6DiBnisv+R090Puq/uvrT1gRf+evvEMf+OifWs9gDZwa5RkKqrPX2b0rs9+nSWMCNzryOjhb6OhKaboRjgs0HCCPbALaTP0081Zi2YhxjP6j3UkM/zdp/Y/+wykt6P4Hzpsjiw9LQNMcR0JjBRl8Ve00L320lAyREBjQ1BZEAkzGcOLpSDnGzI/JjulJHOgXNHHYXQALdJtUxnqgmcgSTdUYNAFTSBy8bn8Y0+vkGrOFOFfg+fQd5cJrMQ3q7URZHHV1k9b/2CdPbUCcCZfm+cFoNTqq7IMyv+UTWrp7eD/yrzTYZYOQI6IsDGT8lo70J822qZyG0SaURdaETMGGAkUEFjgxvYb5bxYhhPFifxgddlgagRZmCjH7GjsIvSFpECnqzU48Y2IbtP7nnAnzgZolKltj7KbVTaSQCD/PYlErz5yKbvSN2uk+CkrTVO1hUG9AwCujjK2OdHwt4vXoKDolOu1UJ8fVdUixeTE1IyhS3JlX0WKWfMMCySYig8QN8wZdvS3qQgz+DU9q9LBu0vpvmwkjxq29mZx4xnfgcKuLpCxtn8k0Poz+HYY03U6qKxcrDXcTkx+ADgI1NXdDdDUAKcgZBI6BPlo+NQVstx6gjIWWggN8mRglBvjRG4QmhI0FecF6c9fYyHP/bPY9vah4Szdh/bdlABtgQZnFLjgpZDQTaRlYAAYQzoAiijCQgo4Dth8+W1pW4PWsytpgxvQjbCbT2uRi6C2Qde8PFLr63Upn7i3sxIba2byWue3/vPiDevHXf/O6RxSpmblEhSvaxpONSRS9rcwcdM91bcr6H/67U50wNeDZp5faOcgNagjiyREMA1roTHuZmSM6uuAYfAMZ5RItHtEs6jO4FWyCZdMs/EIUzqDhdq4ZtpSbZsvTEdOt1GoDhqtogaTRilMx2A6SNu8zulapqqWDszCy293YZO8mrf+2DFjPhCm+fHqaI4YYFEbGkUjAW/vRwQZS3GoJyTUelZH9ZIltApo/np5rl0rtnc3t9P/C3cf6y2/1I1NazXQvfntpj6G8MB2aL1gQQSdz8Bpd+k6l3f1ClY8uvP1zkR1R+NejSpgSM+FNWf9tNYCRpE2XJrXJAQS4aGU6/OE/0l3feJc9ns3rqJLieFjVSmNCDNVxKrSd0U4mY/QRrTzVosRpkenC6AVaPv0NHTzwkIpvfsAasukosp7DK3EewDBG3pmmhLxggp9Heo7vGWluzMD1HBkx0DbDr6ZjG7L+Lz18aiL2stecD4PtTM3K7sZYDx/oM/pR3V3/hwbb8fTDXN79Y8f60NcPNF9iZaQ7DuoUmZ16jFVI0RRmhjdI0DY6HDhd/o5Xkq+G92C4cza2XN8Og77EfQPDvcy67emUvgOlNWhevEA7+YXoimMeUFaqlk7AGIyKYr5J6//s6RrwstecC6Q+NBIpoG68cXG7cQK/z2oixiYQXIxWZAHBQGYGPrIkStjtbrSyR9mU4X4m31Q6uhyVTvg/tNWyilubME5hBKiwpvjYeU9jbcGmYj83nxFTsRX+r3qMyRE2dtzUsYHblPXfDkGvuzcQTD4khXA6dto9Q7da6NfqQ/3bvNDXirbNiuHq+PoJGM81Vwr3ceWplnW0lF83bSXxjpjjy7WUwjijbMxsgW7XHBiLYHT36BJ3zaTWY5TzOPRB4+f3OQg2CLJ7DVBLsbnTpHmbJaCebtL6H/vEKQi6/9XnIO+mtyAEO5gQ94fZwIMUd1aYcbfh66cApkViLgWCv6zqeEMdfUIFg4Eq1kqLoJLblBI2joxBcogdNNx+OeN1pP17gDiaNmwuTg2wM8UdgXUx2kpoxkypNSmCU58aRWU+gNyxSet/5OOnpIh1H8CIsdN3yhwz2zgSRCrAMW0+nFUhno9wIsSKnGVBk7G0tctWcFckJihpaYF3RiWzxClZuaWNufAYw21FB7yaHwA5aESdVJef8rZ5bLR1v9zAV8Us6A9TjQ5rO/Wja7V27o7DGa5NWf8/fuxUH/Dgm18YwOZ2T7r4VKXhVh6bnZWtDzgg5aGJqGnoPVDFziCyoGuXS5OIsRuyDXg8TczLEdNqM0nR3RLI+ZQOOQ5v+AqTMjYTlQnLIoprVTr1B9F/xAVUUXBtqN+OdsbrckQXu+TmrP+Jz5weyLzhfBjuMuuN7gKCiuOBs7l9kOrkKq7pXEeXF+rvtpS4WCyno+hggxZi4KJZYiz5ywcDfeSZkWXCWpHD+IuWvxg3WixltzqZvWQBvXUGRVBhTvf+OepGhBybDRRO42ukI6Je0NZ+GkXAEK5D0yat/z+fvHi7PX3dHLEB1TzaTNgACmGxuh8YLr6cBG2fibIEOhHuBm6mW0zwBUmdLfqBxqADCsk/T3+j0r0vyW2jmHiRFdhWgDv2iBPNhv/Fez6st7/3bWp8o94wj3ddughLNGYTPJ6Yd89wH3Mc/N98rTPiTl//175yaiJGDaDQcQEd3CWJFM1Xs5yXjB9TkxLwh37woT/Xrz/0drUHTuUkqOhj1G3MgogVPW0xzgy69FSkpZ1hYjoOp5uiqgYbfK1lKZ17EYFmvuzVanY116G2d3PN59wxuZqSBawumW06zR4KqhXkYjU6BfY2ZP2fPzUP5nM4RpIMWrgdiRN5fLWyYXzAXLsy3AIFa72e0w42u5BYFviksQAt7MRyp6VT0Yt3tkMVt3dSTad4eJz1Ge1eqsG20//+d6n20EWfUBr1IHQhLjphGrX5rNHbt2f6qO9HDxG9BbI4e7xKZDJkE9Z/ehS5zl734FvuC6Qz0IHvh0ZouF2Y8smpU0gNknA3W3DmDEu4cToztmLzgHFlVBB3M6OXI1RSszhGoy4q5lq3b3dhvdhOahv6A3OAETYXlwS12wSYTre23gRZ5MK3SruvrI8wOPF2SyuTu8/+za2M4hZM2pAH7uWvOx+wh8xp7fHprKyHw/2Iw3anSyOTGkoG9Dif6cISr26XoXtsquiE9+7iPoNVMWd4TlGHydxSduIkDbvhgjkBg6A0ft06uBE1yEB3AJNqbEA/Pq6sT7ArOH3pc8+Pv7TDIIjbPMFw4+VJLHzc+4v0bPIySiVBTyM80CeAu9zMbTaS1V/yAGPhJg0yp2SgYp6doN0zhZbcVwxlj97beJcLN+0F7jGIKur6Z2QZ9kizuecr58Wi0bMXKuukn/wed51vyKG/ZZmOIhx5dvzrZQgGqqjdD4BgRtxTJAIaguhkwFxFsA1esBGuGAnshDOKrdAvmGpSC5LVVCyyGgt86W3qhVuCb0JH7a+zMQ3IaX4S+xDeH3Gwy3waEPRej/z98+Pkr3fh/wAwjitsSv4ZrwAAAABJRU5ErkJggg=="
     },
     "path": {
       "title": "Path",
@@ -9663,10 +9663,6 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js",
       "fileName": "CorruptingAuraAbility"
     },
-    "CurseAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js",
-      "fileName": "CurseAbility"
-    },
     "DisruptionBombAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js",
       "fileName": "DisruptionBombAbility"
@@ -9679,25 +9675,25 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js",
       "fileName": "EnchantWeaponAbility"
     },
+    "CurseAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js",
+      "fileName": "CurseAbility"
+    },
     "ExplosiveTrapAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js",
       "fileName": "ExplosiveTrapAbility"
-    },
-    "FreezingAuraAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js",
-      "fileName": "FreezingAuraAbility"
     },
     "IceShardAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js",
       "fileName": "IceShardAbility"
     },
-    "InfernoAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js",
-      "fileName": "InfernoAbility"
-    },
     "LightningBoltAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js",
       "fileName": "LightningBoltAbility"
+    },
+    "InfernoAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js",
+      "fileName": "InfernoAbility"
     },
     "MindControlAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js",
@@ -9706,6 +9702,10 @@ window.COMPILED_GAME = {
     "MineGoldAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js",
       "fileName": "MineGoldAbility"
+    },
+    "FreezingAuraAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js",
+      "fileName": "FreezingAuraAbility"
     },
     "MirrorImagesAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js",
@@ -9719,21 +9719,21 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js",
       "fileName": "PhalanxFormationAbility"
     },
-    "PiercingShotAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js",
-      "fileName": "PiercingShotAbility"
-    },
     "RageAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js",
       "fileName": "RageAbility"
     },
-    "ShadowStrikeAbility": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js",
-      "fileName": "ShadowStrikeAbility"
-    },
     "ShieldWallAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js",
       "fileName": "ShieldWallAbility"
+    },
+    "PiercingShotAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js",
+      "fileName": "PiercingShotAbility"
+    },
+    "ShadowStrikeAbility": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js",
+      "fileName": "ShadowStrikeAbility"
     },
     "SmiteAbility": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js",
@@ -9755,10 +9755,6 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js",
       "fileName": "WindShieldAbility"
     },
-    "BaseAbility": {
-      "fileName": "BaseAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js"
-    },
     "BattleCryAbility": {
       "fileName": "BattleCryAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js"
@@ -9767,25 +9763,29 @@ window.COMPILED_GAME = {
       "fileName": "ChainLightningAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js"
     },
-    "FireBallAbility": {
-      "fileName": "FireBallAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js"
-    },
-    "FireStormAbility": {
-      "fileName": "FireStormAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js"
+    "BaseAbility": {
+      "fileName": "BaseAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js"
     },
     "HealAbility": {
       "fileName": "HealAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js"
     },
-    "MeteorStrikeAbility": {
-      "fileName": "MeteorStrikeAbility",
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
+    "FireStormAbility": {
+      "fileName": "FireStormAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js"
+    },
+    "FireBallAbility": {
+      "fileName": "FireBallAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js"
     },
     "MassHealAbility": {
       "fileName": "MassHealAbility",
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js"
+    },
+    "MeteorStrikeAbility": {
+      "fileName": "MeteorStrikeAbility",
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
     },
     "RaiseDeadAbility": {
       "fileName": "RaiseDeadAbility",
@@ -9868,33 +9868,33 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js",
       "fileName": "AnimationSystem"
     },
-    "ArmyDisplaySystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js",
-      "fileName": "ArmyDisplaySystem"
-    },
     "CameraControlSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CameraControlSystem.js",
       "fileName": "CameraControlSystem"
     },
-    "CombatAISystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CombatAISystem.js",
-      "fileName": "CombatAISystem"
+    "ArmyDisplaySystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js",
+      "fileName": "ArmyDisplaySystem"
     },
     "CommandQueueSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CommandQueueSystem.js",
       "fileName": "CommandQueueSystem"
     },
+    "CombatAISystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CombatAISystem.js",
+      "fileName": "CombatAISystem"
+    },
     "DamageNumberSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageNumberSystem.js",
       "fileName": "DamageNumberSystem"
     },
-    "DamageSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageSystem.js",
-      "fileName": "DamageSystem"
-    },
     "DeathSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DeathSystem.js",
       "fileName": "DeathSystem"
+    },
+    "DamageSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageSystem.js",
+      "fileName": "DamageSystem"
     },
     "EffectsSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EffectsSystem.js",
@@ -9916,6 +9916,10 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/GridSystem.js",
       "fileName": "GridSystem"
     },
+    "LifetimeSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/LifetimeSystem.js",
+      "fileName": "LifetimeSystem"
+    },
     "HealthBarSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/HealthBarSystem.js",
       "fileName": "HealthBarSystem"
@@ -9923,10 +9927,6 @@ window.COMPILED_GAME = {
     "MiniMapSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MiniMapSystem.js",
       "fileName": "MiniMapSystem"
-    },
-    "LifetimeSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/LifetimeSystem.js",
-      "fileName": "LifetimeSystem"
     },
     "MovementSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MovementSystem.js",
@@ -9936,29 +9936,33 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerPlacementSystem.js",
       "fileName": "MultiplayerPlacementSystem"
     },
-    "MultiplayerUISystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
-      "fileName": "MultiplayerUISystem"
-    },
     "PathfindingSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PathfindingSystem.js",
       "fileName": "PathfindingSystem"
     },
-    "PostProcessingSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
-      "fileName": "PostProcessingSystem"
+    "MultiplayerUISystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
+      "fileName": "MultiplayerUISystem"
     },
     "ProjectileSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ProjectileSystem.js",
       "fileName": "ProjectileSystem"
     },
-    "SchedulingSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SchedulingSystem.js",
-      "fileName": "SchedulingSystem"
+    "PostProcessingSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
+      "fileName": "PostProcessingSystem"
     },
     "RenderSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/RenderSystem.js",
       "fileName": "RenderSystem"
+    },
+    "SchedulingSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SchedulingSystem.js",
+      "fileName": "SchedulingSystem"
+    },
+    "ServerBattlePhaseSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerBattlePhaseSystem.js",
+      "fileName": "ServerBattlePhaseSystem"
     },
     "SelectedUnitSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SelectedUnitSystem.js",
@@ -9972,17 +9976,21 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ShopSystem.js",
       "fileName": "ShopSystem"
     },
+    "SquadExperienceSystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SquadExperienceSystem.js",
+      "fileName": "SquadExperienceSystem"
+    },
     "StatisticsTrackingSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/StatisticsTrackingSystem.js",
       "fileName": "StatisticsTrackingSystem"
     },
-    "SupplySystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SupplySystem.js",
-      "fileName": "SupplySystem"
-    },
     "TeamHealthSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/TeamHealthSystem.js",
       "fileName": "TeamHealthSystem"
+    },
+    "SupplySystem": {
+      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SupplySystem.js",
+      "fileName": "SupplySystem"
     },
     "TerrainSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/TerrainSystem.js",
@@ -10008,25 +10016,12 @@ window.COMPILED_GAME = {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/WorldSystem.js",
       "fileName": "WorldSystem"
     },
-    "ServerBattlePhaseSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerBattlePhaseSystem.js",
-      "fileName": "ServerBattlePhaseSystem"
-    },
-    "SquadExperienceSystem": {
-      "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SquadExperienceSystem.js",
-      "fileName": "SquadExperienceSystem"
-    },
     "ParticleSystem": {
       "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ParticleSystem.js",
       "fileName": "ParticleSystem"
     }
   },
   "configs": {
-    "codeMirror": {
-      "title": "Code Mirror",
-      "theme": "codeMirrorTheme",
-      "fileName": "codeMirror"
-    },
     "ai": {
       "title": "AI",
       "aiEndPoint": "http://localhost:11434/api/generate",
@@ -10051,6 +10046,11 @@ window.COMPILED_GAME = {
       ],
       "path": "/",
       "fileName": "editor"
+    },
+    "codeMirror": {
+      "title": "Code Mirror",
+      "theme": "codeMirrorTheme",
+      "fileName": "codeMirror"
     },
     "game": {
       "gridSize": 48,
@@ -10108,13 +10108,6 @@ window.COMPILED_GAME = {
       "appLoaderLibrary": "GameLoader",
       "initialScene": "client"
     },
-    "multiplayer": {
-      "title": "Multiplayer",
-      "serverUrl": "http://localhost:3000",
-      "maxReconnectAttempts": 5,
-      "reconnectDelay": 3000,
-      "enabled": true
-    },
     "server": {
       "title": "Server Game",
       "projectName": "TurnBasedWarfare",
@@ -10138,6 +10131,13 @@ window.COMPILED_GAME = {
         "MinHeap",
         "DesyncDebugger"
       ]
+    },
+    "multiplayer": {
+      "title": "Multiplayer",
+      "serverUrl": "http://localhost:3000",
+      "maxReconnectAttempts": 5,
+      "reconnectDelay": 3000,
+      "enabled": true
     },
     "state": {
       "level": "level1",
@@ -23390,2916 +23390,6 @@ window.COMPILED_GAME = {
           }
         ],
         "entityPlacements": []
-      },
-      "world": "shire",
-      "grassShader": "grass",
-      "waterShader": "water"
-    },
-    "level32": {
-      "title": "Level 32x32",
-      "tileMap": {
-        "size": 32,
-        "terrainTypes": [
-          {
-            "type": "water",
-            "texture": "water",
-            "color": "#0288d1",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAB3DPyFhLWYbAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAqaOi/9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgAM+S8hyaxkaAAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAqaOi/+pEUz/KvSxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANMJUBkDDfPEAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFPRvwp9Rpr5AGQ4KPxoYgHMcJpYgGw4yAIAIvU/Ia+PZCwAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
-            ],
-            "walkableNeighbors": [
-              "water",
-              "grass",
-              "forest"
-            ],
-            "buildable": false
-          },
-          {
-            "type": "lava",
-            "texture": "lava",
-            "color": "#ff8c00",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2P838Pwn4GKgLGEgRHZOEZqWwAyHNkSmliAbAnNLIBZQlMLwJbQIg5oHsmjFpCULUcjmWBwjQbRaBARDAGCCkZT0QgIIgCvLT7h9ff/qwAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPElEQVRIS+3SsQkAMAwDQXn/7OyM8JUa866FBYcm5Zvy/xwo2JdtMo0FxCsRCUUiiVAAA65IIhTAQH1FHxXSMuGNrO/rAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAARklEQVRIS2NkoDFgpLH5DMPAgv89DP+pEUyMJdhDg5FaFoAcic0SqlqAzZJRCzDSB3o8jAbRaBCRXoiMpiKCYTYaRCMwiADWkTwZ+w+X6QAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFMRYwkDI818ADIcFH40sQBmOE0sQDYcZAEAtXs+4XbNSVcAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgARdTLhxToLvQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2P838Pwn4GKgLGEgRHZOMZRC9BDdzSICKa30SAaDSKCIUBQwWgqGg0igiGAVwF6CgIpplqNhs1wsAWUuZmw7lELCIYRAMvmPBmZFN13AAAAAElFTkSuQmCC"
-            ],
-            "buildable": false
-          },
-          {
-            "type": "grass",
-            "texture": "grass",
-            "color": "#5a8a4f",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABTRJREFUSEtdljuPZEcVx3+nqu7t7ts9PT2e2cXeGWAd8QFICHiusUBe0NogAmOJhJgIkYAIEIEhJCMmISYkJ0J8AkIE2Luznpmeft1HVR106u7sriippb63q+qc+r+q5Ts/+rz2rXLYZuYrh2aYLQIC9F0mDgoozSKw30UQx9AmqonQzMd3s7nnsEvl2Ya9C97hvSCPnlxoSsp+rdhWy1NXFthDe1DUKr4YjW20j6gKk9rT9eOmpfBr4+5df1Dk6++da7YCG3jr7ZrDi8nbm8x+q0xnVtS/XJ6jsLlJVDWc3K/oDoly3P8b7S4jIsg3v39RCjTHgX7/arIVOGwTJ/cCLoAPkAYItaNvM0eriu1zoT5K1FP3sjHr/vnTnqNloN0m5PGPH5YCm5vI6VuhdDdtHO0+l493Qs5Q1YJB2Sw87T6REyxWgThkJlNfYLLNr5/1pVkdlATIOx9cqCBkVXY3mXvnFbttYjbz7DaJHDNh4rm+jKxOPfICjpy1FDaKVBUfhFALBk13yDRHHjVNfPXdc63nwtXTxGIprM5qrp71vL/o+SsT9muoa1fUFCbCYuURr4Xs1AmzxrO9jUUxtzeJUAn1xBEqiJ0i3/vooV5dxoK/IkwbygRTlPOwubJFjnoCvhZO3wxc/icWlVnnBu9k5ssak2o9FapJ4F//bPncRRgLbNepqCG2yhsPajSbLxKHLYXgk/uedpdwxodqgcWGnWholWoqxF6ZLzwx2QmkcGPFSwEjKPUO55VkkpbReNOpcHwWCheGsRTCU/GBjTu9V5UwXzqunka6Vrn3oAIVNtcRefT+hVaVY/1ZYjIdYVideZ7/NzKdBSQo3T6XU1UTj/fK0CtnDwLPPxmV0ywZvy8qNtfDSLiZ2nzw+MOHensTmTWuwPQ6DL4SUjQ2xhGjFgmbkkxBo6LsdyleGDozF6QkNE0gp4R87bvnenxasTMlvAZDzlImq0K0yBDD2mSqhdCbt3+O/OP3pdMwcUVNdsphyEwnVVlncMo7H5yrqeSw1bLYYHBuhGG2cBw2eSQ2STHbZO4w3+xvEynZMZT5MjD0ueSTC479NpJ7pWvzGBWmXZtgVfvO8ke4vVJW9xzTxrO7zviJlODbrc2Mo9LMbJa4CzNVsavw7JMO7zxOTGoO+cbjc53NQ8kS713B2lC1rmOXqWcWz1pkaAKwKSbPzz5NnL45huDyxHP574HmyNF35h/BmdKcG1V0l+dpMJIc7SHjPfz6Z7/k4z9+XLix7LH3zlkujYTaw9EKhn50rb23j52q21HcLN96cqFGphnKDGcIG9aL44rtesCUNJkFukNkv840xw6Njv1hYHValeDzQYnDuM4ayEn46PFP+Mvf/vzKaM4k2Sr11JfUTDkzn49Ss4vnLvNN99t1pO9zUVOOOhpQTV0GmHnA8Yuf/oo//Ol3yHsfflFbuzRM553RBOLNWHBzmfjSl6ds15mUDAqLTsp1aak5DMpvvrLht38/KnCFGuaLit1mGON8Kci7P/yCGnmdhV1SnHfsdwnJjpxHZd0F3PLMF6xjn2mWlrCUzElR8BUl6OzuNsHcxbp8+wcXanfnEBUnUrRvLk0H6IZEs/Ql3w3bYlxzcTLTuRITV59Ghpg4OvEvN7fIMTVZsXLh2IaYKALMmsDGMG4Vu+RjHB1pz3YXpF5KPpmKLOT61qIhkyMs3hhlXvqQMULk0ZNzLY7djZlji8zF1unhVjm+X7G9GY9s2BsJ+9vMrBE2a+X41BGC0HWWxJYEr/4BbK4z/wPLjQ+N1hSpygAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABW1JREFUSEtNlkuPXUcVhb96nNd9+Ha77YSE7tiBGb8gEx6Wk0g2scEIAhICBiDEnAFCQmISKZkgpkwYwC9gwJQoYsJ/YIQUyyF00933de55VNVGu46dUNJ9nVNn79prr7X2NW9/944MXcB6w4slAjEAIhgDKUFRPb8v064QBL1S1Za+SxjdiOGjv378eSC9cu9bp1I3juv/DOizy6OCYUj5YWv1DWZzzzhExnGK7vQwYvJ93ZuCkIIhjNDcgA//8vSzJObr75yKJhcRmplnfTmy0CRtpJ45QkhgpsBama5+B8YLEoXFkafbR8ZBqBd6omm9SGLuPToVDe6K6VTzhWd7NWIKQxgSEqFqHGNMxE4ylFUNXScZNq1+t4748vNKNcHmMvKPvz0z5v6TM0kjxCSUtaKowBm8d/n7dh2w1tB3EWMNRQHGWmKIpAj+Kz9B/vlnitpkKC/+PVDVLh/EIJivvv2auDKxvOmxBg77SFV6nId2H3LG7SXMl5YxJKrG0h8ikqbmD6OwWOq1xOrE8+nHA83CZvict5g3n9yVdjsSB3j1SxVC4vLTmGE/eaWk3Y2ZKd1BsMaie2ergnY9kkTwteWwjVQzg4wWrPbF0R0i1imLHp9pTEJMLG94isoxX8LVeaCZFzmBrsNGckBrHMZFmmVBUQrbTURiyhU0S8fxbcfVeczPKGTm4fdfzzpIkKlWVJZbr1iG1rDbjVw8Tbx0ZjNFF6uC7VVivxmw1jI/0oZrk1VHU0AljMKqUOcEb33nrmgp1qTMDAlCPbeIOFYnlsvzgcWsoB8CRenY7wKhg26I3Dh2WRNjJ2ATZenplAz/JzXz4N07AkKMwn4jWAzVEsYD1HPznFbTx2xRsL3WBImQhNVLHomG3VphFP741hU//+gkf9fVaAWPfvi6DEPkwfwGf//XBU/FsTi2VKXSrqDdTz2oa8+zpz2zxuMs9H2YYDt27K5TZs7YR4rSYtwktvnSYR68+1pOpxUgnrGDaqGHiJSFYwyRw06wxeRPR0cenOHQBqrKcfEs0KxgfR5Z3Z6UrNj3fSSqX33j4alo9qmkgt0mZp5XjWHsn1tEFMq5gpf97DPb0IZqT50ztLtEVdkcuJm73GRVurn/7TOxTmuK+dn03ElVpTPtATD2DldG6spzOIw5qL5WtzxDC7vc+JSRT1E4uqX0Vjs2mDcf35Fmbjmoz9hEiIJXv6lcxrNvI83Csd+O9N3kWUObMgHUQg4HVawQB2EcoJqbnLyZOdptxNz75pn4Wl3Z4QvDbhvyyV80WKFK0eZkm+uBZlbwxnbNh65hvigy768uAtZNTJSkhjnNiCwJbXI9L9iuB9q1UC0MdTUlUKGp52uHyllBHHUAKRCG/X7k5m2fqa3B1Le0B+o/WvUYhNVNh/nez74sMcL6v0N2R7XmfojUteH3v/0Tv/rgp1lMu81IXTu6XrFlsoZiiWs6DoeQrT4lYegSyyPP7jpw/HKBeecHd0WtWkWxvhwyI5x39F1gOEwsUV2EQTK/vTPElLKbjp3F1yn3TKeZ6mK58tniw5ioZxbz+Ed3RUSHi2RP8YXNw0MQysLSbiL1whO1zKxRyTxXy5ivHDIqXIGhE2Yzny1dYT3sYrYc8+jHZ9K3E+3260RVTprQ0xSNYaZsaNX/JSfOepmpwgfqxnPxycjNl8ts42GA5YnP8Ikhu4G5/+RUbr9acP5szAyQkIijzSdVh/z1L37D+394L9NTlVnWOukkN1Eb3m31T8DkoHqg3WXKPdM9OqPN1x5+UfSnjkMd8N3O4IrE4sjSNJ5fLh2/+2SgtdNflHYbsphyxRthdaLzgexHRTUZXLsZOf5CSbeL/A8UowBANo0cZAAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABH5JREFUSEvdljmPHEUUx3+vqo+ZntnZtdfm8K7ARHwAEgIQh7GEMIgrAiQSYiJEAiJABIaQjJiEmJCcCPEJCBEI8MLuzs7R091V9dCrxhg+AAkttTRdU8d7/6tb+I8v+Y/3539wwK03r2uKyuo8cPhgweo8Mmkcu23Kt3dCSlBWQoxKM/fstpEUYX5QEIZEPfFsN4FmVnB2p6fZL9BBiYDcePVYBSGpsjlPXD0q2awj06lns4qkkChqz9lJ4ODQI3+BmpLmg9VuVXwhFJWw2yS6NtHseTSAPHHzSKuZcPpbZL4QDq5UnN7peWXe8w012yVUlSMMSlEL8wOPeKXdBmInTBvP+iLgvXBxHilKoaodRQmhU+TFt67r6Umg30YUYdKQJyjgPKxObZGjqsFXwuEDBSc/B2yCVW7w1lOf17SbSDURyrrgxx923H9cjAesl5GujYSdcvlahSalXUfaNbgCLt3n2W0izvhQzbDYZR0NO6WcCKFXZnNPiNaBZG7s8HyAERR7hy+V0Ftlie0m0Uwd+1eKzIVhLJnwiOpIhJFqa8tSmC0cp78Fup1y9VoJKqzOAvLsK8da1y6TWE9kxHnfc3YnMGmKjHe3TbmrsvZ4rwy9cuVawe+/jMppFoy/5yWrs2EkvDAJCWIyXS3HKkKf/gWDYR4HY2O8QtAsYVOSKWhUlP0vVBPH0KU8FqPQNAUpRuTJ5490/7BkY0r4JwxJbB2qEFpFxbA2mWom9PyR95DvP8uVFrXLarIuhyExqcu8zuCUG68eqalkt82yuAdDp0z3HNuLNBIbJZutnjnMN9uLSIzWhjJbFAx9oq48rnBs14HUK90uIU+/dKymXZtg6jAY6qljs0zMDxyTxrM5S/haMvk2fvVoVJqZre8SczNVtqtw55cO7zxOTGoOeerWkU5nBe0mZPxFxAQwttsp1XSUosnQOPFulOcfv0YOH/CZm8Ulz8lPA82eo+/MP4KzTZwbVTSd+WySOBhJLrfmHHz07gfc/uJ25sayZ9eO42U1EmoPewcw9KNrbdxu66rbkN0sz7x8rMa8GcoMZwgb1vP9kvVywJdCPS3o2sB2mWj2HRoc23bg4LDMwecLJQzjOisgReGtW2/z9bdf3TOaK4W4U6qJz6kZU2I2G6W2azUr6q651stA36esphR0NKCaumyGecDx/jsf8vmXnyIvvPGw7loLVmvTaALxI+HnJ5FHH5uwXiZiNCgsOqGsx9QcBuXjx1d88t1ehquoYDYv2ayGMc4Xgtx8/SE18joLu6g479huIpIcKaWs57sBt7jiM9ZmyGZhCUvOnBgEX5KDrpmPgrkb6/Lca8fat8oQFCfCdG4bQ2yhGyLNwud8N2wzSubiaKZzOSZOfw0MIbJ3yf+9eT0hq8kOyy8c2xATRQHTpsCio98pzcwTwuhIe7Z3QewFKUzCKcdLv7NoSKQA88vu71gxx1s18uzLR2pVt5sxc2yRhZlV2l4o+/eVrM/Hlg17I8HcPW2E1VLZP3QUhdB1SgyWBPe+I1ZniT8BAUyY7AWxio0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABGFJREFUSEvdlTuvVFUUx3/7cV7zYHgbkIugVn4CG40EMAGFiImPxKiFFpYmFsbExMZEG2NrY6GJhY2SqEHQoEHwQ1ihIsTcK5e5M3PmzDl772X2HizuhZbG3ZyTyZz1X2v9H1txj4+6x/X5HwAcPbMioQMfhLxkOZJSWGvS+2Ts0FqxaDxKK7IMlNZ45wke7COvIr99zi/f/3XXbajHnjwoJg8Md1q0gvnMU+QWY6GeuYQ4uQn9oaZzgaLSLOYeCRACtJ0wGMbfAlcu3Amijp05JPWkw7ew/8ECIXDzb48S2LUvp552FKWmmQtaaeJ/e6OMetwRRLClZj7xFD2FdJpL5//cNIk6cnol1sT5wHCbJSsM/SGsrzqqfpYA4plvSCqolUEZTzXMyHJhsuERH9IE1dBw8ey1zQAnXzgsbeMiBsEpskKze5+mrRXTacfatcDeFU0XVzHKmKwHZhstWmv62xVFaZhGniz0+pZvv7i6GeD4s4dEG9Aq0DSCOKHsa0QMo12am6stg17GonVkuWE2dbgGmtazbYfBWEXXCOhAnlvOffn7ZoATzz8gIHgvzDYEjaIYQjeHsq9uy2r56A0yJrciQMAFYbTXIl4xHcc1Cp8eX+fhN+vNAKdeOixt6znR38alq2tcE8Ngh6bIFb3IwWzJQVlarl9b0KssRsNi4ZZr22GY3gpUA0238Fw+f33rBAclFogTIJaugWIQG/LkmaFznvlU0Bl4B9u3WzCKee0oCsPadUc1gvGqZ7RH30nyEycPSESPJ6pmuuGTzotK0S0SNuKFvB+XF024TC+J/YikpzGKehooCs2PZ//YPMHRZ1ZEGxNnSN8GWXYaXdqLHADdwmByT1lY5vPudnEY7ba0NUwT8YHYzuXzm82mjp1+QKq+Zt4IWgecF6xVafws1yxqTzUwzCYdi0YwmaKtQxJAjJD5XDBW8K3QtXDlhy0AR55aEVuCxmAzxXTiUuf/ERxXFbxOYBu3WqpexqOTMRdNRX+QpTWtrzm0WSrx8rm7kFz2MybjlnosFANFWSwBotG0juCQ9zJ8J6iYIShms46de2yS9qIJKbciBz99s8XJz73+kHgP43/atPeiMixaT1kqPn7vM97+8LVkpulGR1kamoVLvKRoyIaYqmE+dyCKEISftwI8/eIhiVFd9S3jm21ShLGGReNo50uVRF+4VlAGrFH4EFKado3GliFx5jqSLy59t2WC0y8fEhGVCsRMsZnG5tGXQp5p6g1PObD4OGbyq6TMiZHRHxmki+tytI3Q61kufLUlKk69siKLeqnr2ThQ5EtPxG6yStHrGeo65r8k4OSXXnR4S1lZ1m507LwvTzHu7qaio2cOyJ79GavXOyQoxAV8p1OnMSHfeeNdPvjk/SRP7+KtF286oXNLwpsJSabRRLGhi19vWdHjJ+8XhUrXoXOBZqowWWCwXVNVlreGho9utNSadPHUE0fwS26igka74v1AyqOsgF8vbJbpv+r5WjcY8taYAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABUtJREFUSEtFljuvJFcVhb99zqlXd9++PXfujEFzkR0ikSIRjTUisGw8SKTghAQRQIBAIjDEJAiw5Bh+CyESiAAnxEaasT1zX/2qrqrzQHuXMdVqdVerzn6stfbaLd/74ZtltRFev0w0nTD0mW4Z2N5MpFgYeggBpILFwlFVwnDK+Aq7vHNMsdj3kqGUQlULr19EHlxWyNN3rkq3Fu6vE1UNuUC7cMSxsDqvOPWR/V1itQmIFEoWSywipJR59c1f8+7yH/zrk79SUuFXP/kFf/jLRxzvMz4I8vTdq0KBqpkP+MqRYsaJIA6IQj8mKMJyLTRN4LCLlkQDaMdacagFRKhrZ90d7hM5ZuT5B2+Vm1cjaYIHjyu2txN14zhbKy5Cf4zkJJwOiRTh7EILwLpdLAM5F37JLb/PG4Y+GbzHfTTIRN+a4HiI5MFByExDplk4KI48wekUqYJQL5xhbNXdFrz3tOvC8kwDTrRdoOng7jrSLjzb24j3gnz3B1dFK5kUBhGGY2Y8aRKPE9g8DuxuopWTs7DoPK9eTqwvHLkUBGG1rjjsJ6UZJ54YMykV484SaDvTseC8w9Vw3GYWZ47VOhjJi2VlUCnJ0whtK9Rd4Oaz0bpabSqmMSqVLBU2oD9Ejrs0Q/TZfwYePKoMCn3o/jbRdlCScHYeOB4jpcwybDR44xmHZL8NfbFnTie9N73Yp/JWclEVPSnnD2dyFYauC9Sd0B8S/S7TNI7zy9pwllkoX13a2W47zuoJzpKESnDOcf35yMOvV8iz71+VbuGNeV+JBaibwM23fscb//6N3R/7OCtCIGn/MCup8kxDomrFZLl+4G2OmspzGiPdIiBvv3dVzjaBrP0DzglxKrzg23wt/p2zzVx9jIXffueOP33yiH6IjEed7kJXB6t6GCPLVWXED30k5WIQytvvPSmhEZNZSRBzInhnSlDM6kpoulmKetg7sS4U31IEHyA4x/GQaBdCno+ZojSmPHv+jaIPq6y8g8NOuHgM7armp/GGv/U1/6xbRBwxZULwjFOyZzWRxlJIhphMBAqjJhFXZoievvNExYt48KpqVVKB0z7RLsXaV+LHMdHU8+T62pFGnQEYpmjwWeBJLScwnCK+LoyH/P85OB0y3UoI4hnGbNW4IMRTYXNZfUV0v4VQz4yHUNjv4PxCUzm8z0byoIGdMA4Zef9HbxZ1xnYJLz+dWJ9XDCedatWzQWnGl5MOgppbsjnozmYVXX8xUgVPs5rhatswm2UF99dx7mB94YmDoJ6kh8Yxo0a6eeS5f51o2orbL06sLhqcJLPxw3ayAqahEIfMpEb4wPPjR2f8+cXWOjHD+59VqB9pgqkv1p4m8LXar0Kmu0IY9oXN49k21Kd88KSYOO0LcYLuXOchszx3JnV9WQJ1v3l4Mru7ZFatn3XrmMaMDmJW/2+EP374MT/78Oe0Z8K4L9QrMe+SUgiVxzcq/sLnn86yFV2Zukj6vcHN3euJxdJTRMWuXqnaLmZ82qFWq3MjxVkXyWWWq8DpoI5bONwJ9bKQo3DqE/L+B28VdT5tbX3pbbGsN7U5p0JB8QYZJOsy9rr5EqEOJkXbB7tJlUDbqJMWbtVlEVtK8uz5VXEB+m02k1Mu9veR9WVllrtYqPYxKxj1D4AXs3VcYrGoDGclWyf54RuOfv+lWIK38wbRzatoGOqqVHbbzrPfRrNmU2oqZh94iEOxOVHeus5z3EWzEL10Lze1t87HUX3tSxWNpzm4rjj1eXVV/Veh95rQexh7HQjlSSgxWzDnxRbMQfEH28cK5mEfSSfduoX/Anzv+uUrk2PPAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABUBJREFUSEtlVkuPVFUQ/uqccx99u6fnwfAYmEYJGl2auCGaACEgJExAEgkbFi5dkLh3Y/wBujNxZVy58AcYXOs/UBNjQhSBIAPDvLr7Ps6jTNVlMMaadO7cvueeU/XV933VdH5jwiCGsQARY/cZoygdmAPygsAMMMkzgCOQEsNlBtXIYj6LqEYOzTygrCzqeUTm5BqQElAMCHTm4hpnzoCIMN2JWDnqEINsAjAIe9sRh9dybD/tkJcGXZMwWJArIysIKQBkASQgKwymOwEDPTSiHBjQxRsnuZ1HSEimzgLlyIETECIj+YQQEggEV5AePhpnun53y8M6aHmyPi/k4IhmxhguS9IAnbu6zjEkMKAvSrlSDTPDOEI5sKhnEaOxw3wW4KzR0mMkNHXAdCeBDDAcSxmMativOwi6eutV3t3xL0sW3EMQ4IFqbCHV5YVFiOnlS4Ohw3TXv0goKrTDRelLv/nBIbKOLt+c8HyaEDpWbCV81zcSiZHlBJZawcgyAx8SomfEDjCZACc4JDx7HLC65v5fwVtn1jgGYPJ6jmePPI5Mcs2CA4Eso6wcfj39BU7//DGEbRKDyqJrGb7p4WnbBGcJw0WHtun7+RKia7dP8bwJSALLi5jtJRSFhfSmqAjNPMEaIBNWoGdL1yaFbm/Lwwfg8FqGpo7/r+DyzVf41rEdfHNvBJfL69BFj/9s9b6sjDIlRVYWyabz/YisJDy577GymsPHgNgSVk/07BKtiH6sJdDb75/j9sFvOHzlE+S/f66Cm+31rHn+1MNI5rkBIsGHiHJkEFpWCndNL0Dpk8uhVPVtj0Q17vtJ1z48yZv3I0zGGI4dvGBIBGP7xkrEjrD73GN8yKGqDGazqI+CZ9T5SSxnD7VqToyu8/AtQWAWRtLG7XXe3mTNQPg/XHCalTR6UDnta+cj6mnEaDFDM4tavsmk2f3aGFmbq/Sc9hqYbgNkEujclQnDCiMTuppx6FhvFbKJ2EFRWWw/8RgtWdgM6Oqk2duc9ABRue96jRjDyEsHQyLCiPleBJ29ss5BKk5iCYInlNvtnGFzYPV4rllZy0iJkASWGeth5dCoyYnvSCi7moRiYJXCoROruLzORtTrU995Q2oR3ouC+0ZJxtJ8sY3NvyJsLodxr96hg/d9FaOxxd7zgLwU+gYsHxMlf3CSRZ2ysJ4lxJjUIeUqAlQ29M6heEvzfEcYLUBpKyFQSkNTBIrSKtsO7IIuXJ/woDLq5c1+QtMCS4csrDNom6BwCVSiXslu9YTDzmYPic6GnLC/lQBhcmAsrlrdPDErdPTaG0d58mam/C1Kg92tAOcMBiPSrCWjrkv48tOvcOezj5BiwnCcoRbHpB42Ed50r6986YiBmJw+l6rPbqyz+IhkJ01DMmjrgLYDTpySjRi+jSjSCmo8x9JKhrqO6kE65RgYjpxOsdluVAfWhuekpkmXbkx4NksoK9KRWA4tFpYIf/zSoRyTyl0+4kfiSxKiZBFiPU+4szTH13GkFJc/sRY5VA1YKji/sc7ignIv4iorhqFM/6/3hKrSBUZWGpBhlKVsIEoNKrC8cHh4r8PqmsFoUYQWMVwwsJnB99/eJ7pwfV1G739CGVUHNDInWgPY/rp4+N9lWWZRLcjYTPoDYH/Hq056WhN+vPtAb+id947zypEc7TxAh5bysXfUthFFM7o2wmUCeP8s1DIrksIklmGNUWH9/dCrE/x099HLlOndSxNePmJ7DznYuIs6teTXhnwpdBXxqeAyQr0rhtjbsTGEaiyTX7QT8cN3feYH8Q9oQd+uVhh0EQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABIpJREFUSEvtlbmrZEUUxn+nqu7W2+v3ZlGZJxoKpoLRiBgMLiOYqomJGGggCgajsYm4gLH+LYaCYuAkxiPM6My8vbvvVoucujiGRmZW09y+TdU55/vOd76SV998Ki3WwsN7gaoR+jbSzB3nxyPBJ/oWnAMpYDYzFIXQdxFbkJc1htGn/DtFSClRlMLDu579ywVy/cZhalbC2VGgKCEmqGcGPyQWewVd69mcBhZrh0giRcmJRYQQIg+e+YSX5z/z6+0fSCHx8bsf8uX337A7i1gnyPWXDxMJimo6YAtD8BEjghjAC+0QIAnzlVBVju2Fz0k0gCLWil0pIEJZmoxuexaIPiI33346HT8YCCPsXy04PxkpK8NypbwI7c4Tg9BtA8HD8kALIKOdzR0xJj7ihC/imr4Nmd7dxmfKRL+aYLf1xN6Ai4x9pJoZSIY4Qtd5CieUM5M5ztWdJKy11KvEfKkBR+rGUTVweuSpZ5bzE4+1grz0xmHSSkalQYR+Fxk6TWIxAuurjotjn8uJUZg1lgf3RlYHhpgSgrBYFWw3o7YZIxbvIyGk3LucQOGMu4SxBlPC7jwyWxoWK5ebPJsXmSpt8jhAXQtl4zj+Y8ioFuuCcfDaSuZKG9BuPbuLMFH0x+89+1eKTIVuOjsJ1A2kICz3HLudJ6VJhpUGryxDH/J/fZvynq7T96yX/NS+pZhURdfS3qWpuUpD0zjKRmi3gfYiUlWGvctl5lkmoTxaiuzifJjU40xO4grBGMPRnwOXniiQF18/TM3M5s7bQnKAsnIcP/s5j/32aX7ftX5ShEBQ/DApqbCMfaCoJctytW/zHFWFpRs8zcwhL7xymJZrR1T8gDGCHxN3eY7H/U8s11P13ic+e/6Ur29foe09w06nO9GULlfdD575osiN71tPiClTKC+8ci25SrLMUgAfA86arATlrCyEqpmkqIetkYxC+U1JsA6cMey2gXomxOlYVpTGlBdvPpl0s8rKGtheCAdXoV6UvOeP+bEt+aWsETH4EHHOMowh79VEGksp6X3IIlAaNYmYNFF0/cY1FS9iwaqqVUkJuk2gnkuGr40fhkBVTpNrS0MYdAagH32mLwce1XIcfeexZWLYxn/moNtGmoXgxNIPMVdjnOC7xPpy8ajR7Tm4cuq4c4nNBewdaCqDtTE3udfARhj6iLz21lNJnbGew707I6u9gr7TqVY9Zyqz8cWgg6DmFvIcNMtJRUf3BwpnqRYTXXXtJrMs4OzITwhWBxbfC+pJemgYImqk6yuWs4eBqi44ud+xOKgwErKNb8/HXMDYJ3wfGdUI9y3vXFny3d3zjCQb3t9WoX6kCcY2ZXiawJZqv0qZ3hVCv0msr062oT5lnSX4QLdJ+BGaPZ2HyHzPZKnrJydQ95uGJ3JxGrJV67OsDeMQ0UGM6v+V8NWtb3n/1gfUS2HYJMqFZO+SlHCFxVYq/sSfdybZil6ZepG0m0w3pw9HZnNLEhW7eqVqO2XjU4Rarc6NJJNRBBOZLxzdVh03sT0VynkieqFrwzQS/+X6P8G/svsXXBt/Z1jfQFwAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABFtJREFUSEvtVUuLXEUYPfW4j759pzPOw2TM9GiIokvBTVYZkcgMZFADhmyycOkikL0b8QfoTnAlIggKYlSCQYkPUNzpRgURxExMDJlknun7rMcnX90Y0j0LNy4taLqbW7e+75zvnFPi6bUhQRCkAoQg7N4mJKkGkUWcCBABJPgZQA7wnqAjiSxXKAuHLNeoS4s0U6hKh68/uSZw3xLHTixQpCWEEBjtOMwc1HCWDwEIAnvbDvMLMbZvtYhTibb26E3xNyFKBLwFhALggSiR+OLDq+MFTpxaoqZ0oSZ3qhWQ5hrkAesI3nhY6yEgoBMRiueDKOzf3TRQGgEe748TicsXJgosn1wkZz0ICC8yXEZDRJBaIO0pVIVDPtAoCwutJJKegHMCdWUx2vEQEugPGAbhq48nKDp55hHa3TH3IDPv1jLxQDZQYHRxomCdv8dsr68x2jV3G3KB2v4BnovGxfeujFO0cnpI5cjDthS45WXabpDwhCgWIJ4wCFEkYayHMwTXAjJi4lgBHrdvWMwt6P0Injy2QM4Cw8di3L5u8OAwDlSQFRCKkGYavxx9A0d/Og9WG69eptA2BFN39DSNh1YC/QMal95fH0fw3NkjVNYWnmm5u4o9jyRR4NkkmUBdeigJRD3J/Qa1tI0P1O1tGhgLzC9EqCu3H8HK6YfpzKEdvPN7Dh13xbO+xo0rTfifZjIoxTsKKuJDyzsOUSpwc91gZi6GcRauEZg7HO2fwVMvLFPz56+YX30F8W+vB8MVe51qtm4ZSO48loATMNYhzSVsQ0HCbd0ZkOekYwSpfnvp+gRFLy3RxrqDjAj9gYapXXhLqm6wvFwrsLtlMJjVyDKJonDhkTWEKl7CA9G1gJo84bPJGaydXaTtDQodsP77Uzp0xYPuZTrMtTUO1cghPxChLlyIDxnxsLu9zhGa2oUi+2S6vDokKFakR1sRZg91UcGHcBwkmcL2TYN8WkFFQFv50L2KRSjALjdt5xEpCZc/mqDo+OoiWUbsORKYTwRtNyVBxcDcQzHKkYVSBO8FPNNSUCiW9mUIufpu1LC6Pv9gMipWFkmye40PXSspQkQYww7ujMcd8/A5NjauOqiYi1Hn3r6GMR2KfKDw6bsTPlh5cYnYnbyxKjyc8yEh+ZsNmA1kKMDjZr7ZI6YVyKcQZMuLqeSI8Q745uJEFj3z/JB6mQxZXt/xqBtgelZBaYmmtoEupordu7dlMXdYY2ejS99wN8QCdzY9wEq2hB++uzEu00cfP0jDJyKYhi8aid1NC60lerkIXSepQtt6vPnqWzj32svwzqM/iFAVfBF0tLHxRnsd8h+//2u8wPG1ReIc4e54aPASTWXRtMDhI3wQwTQOiZ9BhS1Mz0SoKhcyKNxyBPRzjaq0+PLCOD2MUjx7akhF4ZFmIlyJaV9halrgj59bpAMBpboP5xHnEi92MhuxKj3OTZd42+X7rsp/cm0Mzv136X/1+/8C/8rk3zEjOzeChQgxAAAAAElFTkSuQmCC"
-            ],
-            "walkableNeighbors": [
-              "grass",
-              "water",
-              "forest"
-            ],
-            "buildable": true
-          },
-          {
-            "type": "forest",
-            "texture": "forest",
-            "color": "#2f4a29",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAM7AMK06eeZJAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAn0vzf+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBaCoaDSKCIUBQAc1TEQC2nSCt0Vf5ogAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAn0vzf/UCKaL265jDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAFc5UBlc2SShAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoY2qno4rbrjDTzAchwUPjRxAKY4TSxANlwkAUA6tgwrW9iQGUAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgfSoi6AQKFTBSqJ+g9qFvAQAZ2yCt7eMyfAAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAJ5QUBlAsncEAAAAAElFTkSuQmCC"
-            ],
-            "walkableNeighbors": [
-              "forest",
-              "grass",
-              "water"
-            ],
-            "buildable": true
-          },
-          {
-            "type": "cliff",
-            "texture": "rock",
-            "color": "#3e4f57",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
-            ],
-            "buildable": false
-          },
-          {
-            "type": "cliff",
-            "texture": "rock",
-            "color": "#3e4f57",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
-            ],
-            "buildable": false
-          },
-          {
-            "type": "cliff",
-            "texture": "rock",
-            "color": "#3e4f57",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
-            ],
-            "buildable": false
-          },
-          {
-            "type": "rock",
-            "texture": "rock",
-            "color": "#3e4f57",
-            "image": [
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
-              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
-            ],
-            "walkableNeighbors": [
-              "rock"
-            ],
-            "buildable": false
-          }
-        ],
-        "terrainMap": [
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            7,
-            7,
-            7,
-            7,
-            7
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7,
-            7
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            7,
-            7,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            0,
-            0,
-            0,
-            0,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2,
-            2
-          ]
-        ],
-        "terrainBGColor": {
-          "paletteColor": "greenMColor"
-        },
-        "environmentObjects": [
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 707,
-            "y": 23.21875
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 932,
-            "y": 24.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 645,
-            "y": 291.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 846,
-            "y": 282.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 838,
-            "y": 196.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 904,
-            "y": 102.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 654,
-            "y": 213.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 702,
-            "y": 81.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 475,
-            "y": 168.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 584,
-            "y": 328.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 585,
-            "y": 328.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 387,
-            "y": 343.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 387,
-            "y": 342.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 162,
-            "y": 362.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 56,
-            "y": 347.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 55,
-            "y": 347.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 14,
-            "y": 48.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": -7,
-            "y": 343.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": -7,
-            "y": 344.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 350,
-            "y": 98.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 549,
-            "y": 137.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 468,
-            "y": 388.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 511,
-            "y": 283.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 73,
-            "y": 266.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 375,
-            "y": 196.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 533,
-            "y": 72.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 126,
-            "y": 50.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 8,
-            "y": 135.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 399,
-            "y": 125.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 601,
-            "y": 80.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 577,
-            "y": 215.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 432,
-            "y": 274.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 54,
-            "y": 190.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 416,
-            "y": 61.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 205,
-            "y": 48.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 996,
-            "y": 222.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 884,
-            "y": 346.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 992,
-            "y": 355.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1095,
-            "y": 351.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1234,
-            "y": 320.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 941,
-            "y": 281.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1020,
-            "y": 149.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1094,
-            "y": 255.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1258,
-            "y": 242.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1442,
-            "y": 334.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1504,
-            "y": 315.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1504,
-            "y": 314.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1193,
-            "y": 196.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1020,
-            "y": 244.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 919,
-            "y": 230.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 963,
-            "y": 109.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1043,
-            "y": 66.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1313,
-            "y": 78.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1519,
-            "y": 55.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1518,
-            "y": 166.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1517,
-            "y": 166.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1431,
-            "y": 255.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1074,
-            "y": 180.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1074,
-            "y": 179.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1136,
-            "y": 286.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1056,
-            "y": 333.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1127,
-            "y": 119.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1114,
-            "y": 76.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1233,
-            "y": 76.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1423,
-            "y": 67.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1469,
-            "y": 248.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1551,
-            "y": 331.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1182,
-            "y": 326.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1229,
-            "y": 177.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1134,
-            "y": 220.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1168,
-            "y": 72.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1538,
-            "y": 263.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1490,
-            "y": 110.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 940,
-            "y": 182.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1351,
-            "y": 50.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 714,
-            "y": 1547.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 714,
-            "y": 1546.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 701,
-            "y": 1497.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 700,
-            "y": 1497.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 746,
-            "y": 1393.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 926,
-            "y": 1424.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 926,
-            "y": 1423.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 946,
-            "y": 1544.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 945,
-            "y": 1544.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1008,
-            "y": 1407.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 957,
-            "y": 1238.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 956,
-            "y": 1236.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 903,
-            "y": 1145.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 730,
-            "y": 1304.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 691,
-            "y": 1200.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 631,
-            "y": 1192.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 644,
-            "y": 1428.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 643,
-            "y": 1428.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 617,
-            "y": 1538.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 615,
-            "y": 1538.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 454,
-            "y": 1528.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 453,
-            "y": 1528.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 148,
-            "y": 1534.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 147,
-            "y": 1534.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": -15,
-            "y": 1535.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": -15,
-            "y": 1536.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": -6,
-            "y": 1371.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 61,
-            "y": 1355.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 33,
-            "y": 1470.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 232,
-            "y": 1450.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 435,
-            "y": 1448.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 576,
-            "y": 1405.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 374,
-            "y": 1297.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 8,
-            "y": 1223.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 2,
-            "y": 1304.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 70,
-            "y": 1226.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 516,
-            "y": 1211.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 516,
-            "y": 1210.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 656,
-            "y": 1266.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 504,
-            "y": 1332.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 304,
-            "y": 1405.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 292,
-            "y": 1523.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 291,
-            "y": 1523.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 125,
-            "y": 1398.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 406,
-            "y": 1357.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 584,
-            "y": 1324.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1029,
-            "y": 1525.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1029,
-            "y": 1524.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1338,
-            "y": 1524.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1516,
-            "y": 1350.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1482,
-            "y": 1175.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 998,
-            "y": 1147.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1055,
-            "y": 1271.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1093,
-            "y": 1394.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1145,
-            "y": 1498.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1145,
-            "y": 1497.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1221,
-            "y": 1529.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1179,
-            "y": 1321.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1106,
-            "y": 1197.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1205,
-            "y": 1405.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1493,
-            "y": 1242.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1214,
-            "y": 1202.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1077,
-            "y": 1154.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1076,
-            "y": 1154.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 356,
-            "y": 1191.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 160,
-            "y": 1154.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 6,
-            "y": 1150.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 435,
-            "y": 1135.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 418,
-            "y": 1231.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 646,
-            "y": 1126.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1214,
-            "y": 1272.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1398,
-            "y": 1146.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 214,
-            "y": 1128.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 511,
-            "y": 1499.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 476,
-            "y": 1416.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1201,
-            "y": 1447.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1258,
-            "y": 1458.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 1093,
-            "y": 1338.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 669,
-            "y": 1366.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 668,
-            "y": 1366.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 352,
-            "y": 1487.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 180,
-            "y": 1517.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 163,
-            "y": 1399.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 0,
-            "x": 72,
-            "y": 1528.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 94,
-            "y": 264.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 341,
-            "y": 251.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 88,
-            "y": 358.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 494,
-            "y": 258.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 619,
-            "y": 136.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 679,
-            "y": 141.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 689,
-            "y": 223.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 667,
-            "y": 335.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 603,
-            "y": 386.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 589,
-            "y": 482.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 717,
-            "y": 528.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 744,
-            "y": 385.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 782,
-            "y": 226.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 861,
-            "y": 58.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 818,
-            "y": 134.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 652,
-            "y": 596.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 641,
-            "y": 662.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 681,
-            "y": 835.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 752,
-            "y": 806.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 752,
-            "y": 805.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 799,
-            "y": 919.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 752,
-            "y": 1122.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 780,
-            "y": 1324.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 920,
-            "y": 1335.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 862,
-            "y": 1408.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 747,
-            "y": 1497.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 867,
-            "y": 1539.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 843,
-            "y": 1293.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 876,
-            "y": 1206.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 827,
-            "y": 1078.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 714,
-            "y": 994.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 797,
-            "y": 881.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 739,
-            "y": 740.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 726,
-            "y": 926.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 799,
-            "y": 1066.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 832,
-            "y": 1270.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 945,
-            "y": 1317.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 784,
-            "y": 1467.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 865,
-            "y": 1533.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 723,
-            "y": 671.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 723,
-            "y": 670.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 604,
-            "y": 468.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 686,
-            "y": 483.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 711,
-            "y": 306.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 805,
-            "y": 94.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 727,
-            "y": 148.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 719,
-            "y": 637.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 5,
-            "x": 727,
-            "y": 1250.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 752,
-            "y": 1468.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 904,
-            "y": 1502.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 762,
-            "y": 1222.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 786,
-            "y": 1009.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 800,
-            "y": 853.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 687,
-            "y": 791.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 673,
-            "y": 421.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 600,
-            "y": 575.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 744,
-            "y": 51.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 744,
-            "y": 50.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 883,
-            "y": 67.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 369,
-            "y": 1110.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 369,
-            "y": 1109.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 102,
-            "y": 1414.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 521,
-            "y": 1466.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 1328,
-            "y": 1511.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 1049,
-            "y": 1315.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 1091,
-            "y": 1499.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 120,
-            "y": 1224.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 597,
-            "y": 1467.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 345,
-            "y": 1532.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 549,
-            "y": 1278.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 1234,
-            "y": 272.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 1117,
-            "y": 137.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 4,
-            "x": 944,
-            "y": 335.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 4,
-            "x": 1409,
-            "y": 305.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 4,
-            "x": 998,
-            "y": 301.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 4,
-            "x": 195,
-            "y": 323.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 318,
-            "y": 98.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 501,
-            "y": 84.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1227,
-            "y": 141.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1175,
-            "y": 278.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1176,
-            "y": 276.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1118,
-            "y": 1459.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1391,
-            "y": 1537.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1391,
-            "y": 1536.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1528,
-            "y": 1435.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1144,
-            "y": 1260.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 173,
-            "y": 1351.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 132,
-            "y": 1482.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 672,
-            "y": 1062.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 711,
-            "y": 837.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 682,
-            "y": 689.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 757,
-            "y": 583.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 758,
-            "y": 583.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 758,
-            "y": 711.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 855,
-            "y": 1084.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 93,
-            "y": 971.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 347,
-            "y": 685.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 6,
-            "x": 550,
-            "y": 925.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 6,
-            "x": 550,
-            "y": 924.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 2,
-            "x": 1239,
-            "y": 935.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 3,
-            "x": 1194,
-            "y": 642.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 7,
-            "x": 915,
-            "y": 633.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 0,
-            "x": 1369,
-            "y": 486.8125
-          },
-          {
-            "type": "rock",
-            "imageIndex": 4,
-            "x": 98,
-            "y": 534.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 4,
-            "x": 1432,
-            "y": 683.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 4,
-            "x": 1432,
-            "y": 682.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 408,
-            "y": 602.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 1298,
-            "y": 915.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 347,
-            "y": 820.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 1206,
-            "y": 514.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 451,
-            "y": 1038.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 450,
-            "y": 1037.8125
-          },
-          {
-            "type": "tree",
-            "imageIndex": 2,
-            "x": 86,
-            "y": 612.8125
-          },
-          {
-            "type": "goldVein",
-            "imageIndex": 0,
-            "x": 1440,
-            "y": 1440
-          },
-          {
-            "type": "goldVein",
-            "imageIndex": 0,
-            "x": 96,
-            "y": 96
-          },
-          {
-            "type": "goldVein",
-            "imageIndex": 0,
-            "x": 144,
-            "y": 1296
-          },
-          {
-            "type": "goldVein",
-            "imageIndex": 0,
-            "x": 1392,
-            "y": 144
-          }
-        ],
-        "extensionTerrainType": 3,
-        "ramps": []
       },
       "world": "shire",
       "grassShader": "grass",
@@ -43043,6 +40133,2916 @@ window.COMPILED_GAME = {
       "world": "shire",
       "grassShader": "grass",
       "waterShader": "water"
+    },
+    "level32": {
+      "title": "Level 32x32",
+      "tileMap": {
+        "size": 32,
+        "terrainTypes": [
+          {
+            "type": "water",
+            "texture": "water",
+            "color": "#0288d1",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAB3DPyFhLWYbAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAqaOi/9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgAM+S8hyaxkaAAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAqaOi/+pEUz/KvSxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANMJUBkDDfPEAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFPRvwp9Rpr5AGQ4KPxoYgHMcJpYgGw4yAIAIvU/Ia+PZCwAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
+            ],
+            "walkableNeighbors": [
+              "water",
+              "grass",
+              "forest"
+            ],
+            "buildable": false
+          },
+          {
+            "type": "lava",
+            "texture": "lava",
+            "color": "#ff8c00",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2P838Pwn4GKgLGEgRHZOEZqWwAyHNkSmliAbAnNLIBZQlMLwJbQIg5oHsmjFpCULUcjmWBwjQbRaBARDAGCCkZT0QgIIgCvLT7h9ff/qwAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPElEQVRIS+3SsQkAMAwDQXn/7OyM8JUa866FBYcm5Zvy/xwo2JdtMo0FxCsRCUUiiVAAA65IIhTAQH1FHxXSMuGNrO/rAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAARklEQVRIS2NkoDFgpLH5DMPAgv89DP+pEUyMJdhDg5FaFoAcic0SqlqAzZJRCzDSB3o8jAbRaBCRXoiMpiKCYTYaRCMwiADWkTwZ+w+X6QAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFMRYwkDI818ADIcFH40sQBmOE0sQDYcZAEAtXs+4XbNSVcAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgARdTLhxToLvQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2P838Pwn4GKgLGEgRHZOMZRC9BDdzSICKa30SAaDSKCIUBQwWgqGg0igiGAVwF6CgIpplqNhs1wsAWUuZmw7lELCIYRAMvmPBmZFN13AAAAAElFTkSuQmCC"
+            ],
+            "buildable": false
+          },
+          {
+            "type": "grass",
+            "texture": "grass",
+            "color": "#5a8a4f",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABTRJREFUSEtdljuPZEcVx3+nqu7t7ts9PT2e2cXeGWAd8QFICHiusUBe0NogAmOJhJgIkYAIEIEhJCMmISYkJ0J8AkIE2Luznpmeft1HVR106u7sriippb63q+qc+r+q5Ts/+rz2rXLYZuYrh2aYLQIC9F0mDgoozSKw30UQx9AmqonQzMd3s7nnsEvl2Ya9C97hvSCPnlxoSsp+rdhWy1NXFthDe1DUKr4YjW20j6gKk9rT9eOmpfBr4+5df1Dk6++da7YCG3jr7ZrDi8nbm8x+q0xnVtS/XJ6jsLlJVDWc3K/oDoly3P8b7S4jIsg3v39RCjTHgX7/arIVOGwTJ/cCLoAPkAYItaNvM0eriu1zoT5K1FP3sjHr/vnTnqNloN0m5PGPH5YCm5vI6VuhdDdtHO0+l493Qs5Q1YJB2Sw87T6REyxWgThkJlNfYLLNr5/1pVkdlATIOx9cqCBkVXY3mXvnFbttYjbz7DaJHDNh4rm+jKxOPfICjpy1FDaKVBUfhFALBk13yDRHHjVNfPXdc63nwtXTxGIprM5qrp71vL/o+SsT9muoa1fUFCbCYuURr4Xs1AmzxrO9jUUxtzeJUAn1xBEqiJ0i3/vooV5dxoK/IkwbygRTlPOwubJFjnoCvhZO3wxc/icWlVnnBu9k5ssak2o9FapJ4F//bPncRRgLbNepqCG2yhsPajSbLxKHLYXgk/uedpdwxodqgcWGnWholWoqxF6ZLzwx2QmkcGPFSwEjKPUO55VkkpbReNOpcHwWCheGsRTCU/GBjTu9V5UwXzqunka6Vrn3oAIVNtcRefT+hVaVY/1ZYjIdYVideZ7/NzKdBSQo3T6XU1UTj/fK0CtnDwLPPxmV0ywZvy8qNtfDSLiZ2nzw+MOHensTmTWuwPQ6DL4SUjQ2xhGjFgmbkkxBo6LsdyleGDozF6QkNE0gp4R87bvnenxasTMlvAZDzlImq0K0yBDD2mSqhdCbt3+O/OP3pdMwcUVNdsphyEwnVVlncMo7H5yrqeSw1bLYYHBuhGG2cBw2eSQ2STHbZO4w3+xvEynZMZT5MjD0ueSTC479NpJ7pWvzGBWmXZtgVfvO8ke4vVJW9xzTxrO7zviJlODbrc2Mo9LMbJa4CzNVsavw7JMO7zxOTGoO+cbjc53NQ8kS713B2lC1rmOXqWcWz1pkaAKwKSbPzz5NnL45huDyxHP574HmyNF35h/BmdKcG1V0l+dpMJIc7SHjPfz6Z7/k4z9+XLix7LH3zlkujYTaw9EKhn50rb23j52q21HcLN96cqFGphnKDGcIG9aL44rtesCUNJkFukNkv840xw6Njv1hYHValeDzQYnDuM4ayEn46PFP+Mvf/vzKaM4k2Sr11JfUTDkzn49Ss4vnLvNN99t1pO9zUVOOOhpQTV0GmHnA8Yuf/oo//Ol3yHsfflFbuzRM553RBOLNWHBzmfjSl6ds15mUDAqLTsp1aak5DMpvvrLht38/KnCFGuaLit1mGON8Kci7P/yCGnmdhV1SnHfsdwnJjpxHZd0F3PLMF6xjn2mWlrCUzElR8BUl6OzuNsHcxbp8+wcXanfnEBUnUrRvLk0H6IZEs/Ql3w3bYlxzcTLTuRITV59Ghpg4OvEvN7fIMTVZsXLh2IaYKALMmsDGMG4Vu+RjHB1pz3YXpF5KPpmKLOT61qIhkyMs3hhlXvqQMULk0ZNzLY7djZlji8zF1unhVjm+X7G9GY9s2BsJ+9vMrBE2a+X41BGC0HWWxJYEr/4BbK4z/wPLjQ+N1hSpygAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABW1JREFUSEtNlkuPXUcVhb96nNd9+Ha77YSE7tiBGb8gEx6Wk0g2scEIAhICBiDEnAFCQmISKZkgpkwYwC9gwJQoYsJ/YIQUyyF00933de55VNVGu46dUNJ9nVNn79prr7X2NW9/944MXcB6w4slAjEAIhgDKUFRPb8v064QBL1S1Za+SxjdiOGjv378eSC9cu9bp1I3juv/DOizy6OCYUj5YWv1DWZzzzhExnGK7vQwYvJ93ZuCkIIhjNDcgA//8vSzJObr75yKJhcRmplnfTmy0CRtpJ45QkhgpsBama5+B8YLEoXFkafbR8ZBqBd6omm9SGLuPToVDe6K6VTzhWd7NWIKQxgSEqFqHGNMxE4ylFUNXScZNq1+t4748vNKNcHmMvKPvz0z5v6TM0kjxCSUtaKowBm8d/n7dh2w1tB3EWMNRQHGWmKIpAj+Kz9B/vlnitpkKC/+PVDVLh/EIJivvv2auDKxvOmxBg77SFV6nId2H3LG7SXMl5YxJKrG0h8ikqbmD6OwWOq1xOrE8+nHA83CZvict5g3n9yVdjsSB3j1SxVC4vLTmGE/eaWk3Y2ZKd1BsMaie2ergnY9kkTwteWwjVQzg4wWrPbF0R0i1imLHp9pTEJMLG94isoxX8LVeaCZFzmBrsNGckBrHMZFmmVBUQrbTURiyhU0S8fxbcfVeczPKGTm4fdfzzpIkKlWVJZbr1iG1rDbjVw8Tbx0ZjNFF6uC7VVivxmw1jI/0oZrk1VHU0AljMKqUOcEb33nrmgp1qTMDAlCPbeIOFYnlsvzgcWsoB8CRenY7wKhg26I3Dh2WRNjJ2ATZenplAz/JzXz4N07AkKMwn4jWAzVEsYD1HPznFbTx2xRsL3WBImQhNVLHomG3VphFP741hU//+gkf9fVaAWPfvi6DEPkwfwGf//XBU/FsTi2VKXSrqDdTz2oa8+zpz2zxuMs9H2YYDt27K5TZs7YR4rSYtwktvnSYR68+1pOpxUgnrGDaqGHiJSFYwyRw06wxeRPR0cenOHQBqrKcfEs0KxgfR5Z3Z6UrNj3fSSqX33j4alo9qmkgt0mZp5XjWHsn1tEFMq5gpf97DPb0IZqT50ztLtEVdkcuJm73GRVurn/7TOxTmuK+dn03ElVpTPtATD2DldG6spzOIw5qL5WtzxDC7vc+JSRT1E4uqX0Vjs2mDcf35Fmbjmoz9hEiIJXv6lcxrNvI83Csd+O9N3kWUObMgHUQg4HVawQB2EcoJqbnLyZOdptxNz75pn4Wl3Z4QvDbhvyyV80WKFK0eZkm+uBZlbwxnbNh65hvigy768uAtZNTJSkhjnNiCwJbXI9L9iuB9q1UC0MdTUlUKGp52uHyllBHHUAKRCG/X7k5m2fqa3B1Le0B+o/WvUYhNVNh/nez74sMcL6v0N2R7XmfojUteH3v/0Tv/rgp1lMu81IXTu6XrFlsoZiiWs6DoeQrT4lYegSyyPP7jpw/HKBeecHd0WtWkWxvhwyI5x39F1gOEwsUV2EQTK/vTPElLKbjp3F1yn3TKeZ6mK58tniw5ioZxbz+Ed3RUSHi2RP8YXNw0MQysLSbiL1whO1zKxRyTxXy5ivHDIqXIGhE2Yzny1dYT3sYrYc8+jHZ9K3E+3260RVTprQ0xSNYaZsaNX/JSfOepmpwgfqxnPxycjNl8ts42GA5YnP8Ikhu4G5/+RUbr9acP5szAyQkIijzSdVh/z1L37D+394L9NTlVnWOukkN1Eb3m31T8DkoHqg3WXKPdM9OqPN1x5+UfSnjkMd8N3O4IrE4sjSNJ5fLh2/+2SgtdNflHYbsphyxRthdaLzgexHRTUZXLsZOf5CSbeL/A8UowBANo0cZAAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABH5JREFUSEvdljmPHEUUx3+vqo+ZntnZtdfm8K7ARHwAEgIQh7GEMIgrAiQSYiJEAiJABIaQjJiEmJCcCPEJCBEI8MLuzs7R091V9dCrxhg+AAkttTRdU8d7/6tb+I8v+Y/3539wwK03r2uKyuo8cPhgweo8Mmkcu23Kt3dCSlBWQoxKM/fstpEUYX5QEIZEPfFsN4FmVnB2p6fZL9BBiYDcePVYBSGpsjlPXD0q2awj06lns4qkkChqz9lJ4ODQI3+BmpLmg9VuVXwhFJWw2yS6NtHseTSAPHHzSKuZcPpbZL4QDq5UnN7peWXe8w012yVUlSMMSlEL8wOPeKXdBmInTBvP+iLgvXBxHilKoaodRQmhU+TFt67r6Umg30YUYdKQJyjgPKxObZGjqsFXwuEDBSc/B2yCVW7w1lOf17SbSDURyrrgxx923H9cjAesl5GujYSdcvlahSalXUfaNbgCLt3n2W0izvhQzbDYZR0NO6WcCKFXZnNPiNaBZG7s8HyAERR7hy+V0Ftlie0m0Uwd+1eKzIVhLJnwiOpIhJFqa8tSmC0cp78Fup1y9VoJKqzOAvLsK8da1y6TWE9kxHnfc3YnMGmKjHe3TbmrsvZ4rwy9cuVawe+/jMppFoy/5yWrs2EkvDAJCWIyXS3HKkKf/gWDYR4HY2O8QtAsYVOSKWhUlP0vVBPH0KU8FqPQNAUpRuTJ5490/7BkY0r4JwxJbB2qEFpFxbA2mWom9PyR95DvP8uVFrXLarIuhyExqcu8zuCUG68eqalkt82yuAdDp0z3HNuLNBIbJZutnjnMN9uLSIzWhjJbFAx9oq48rnBs14HUK90uIU+/dKymXZtg6jAY6qljs0zMDxyTxrM5S/haMvk2fvVoVJqZre8SczNVtqtw55cO7zxOTGoOeerWkU5nBe0mZPxFxAQwttsp1XSUosnQOPFulOcfv0YOH/CZm8Ulz8lPA82eo+/MP4KzTZwbVTSd+WySOBhJLrfmHHz07gfc/uJ25sayZ9eO42U1EmoPewcw9KNrbdxu66rbkN0sz7x8rMa8GcoMZwgb1vP9kvVywJdCPS3o2sB2mWj2HRoc23bg4LDMwecLJQzjOisgReGtW2/z9bdf3TOaK4W4U6qJz6kZU2I2G6W2azUr6q651stA36esphR0NKCaumyGecDx/jsf8vmXnyIvvPGw7loLVmvTaALxI+HnJ5FHH5uwXiZiNCgsOqGsx9QcBuXjx1d88t1ehquoYDYv2ayGMc4Xgtx8/SE18joLu6g479huIpIcKaWs57sBt7jiM9ZmyGZhCUvOnBgEX5KDrpmPgrkb6/Lca8fat8oQFCfCdG4bQ2yhGyLNwud8N2wzSubiaKZzOSZOfw0MIbJ3yf+9eT0hq8kOyy8c2xATRQHTpsCio98pzcwTwuhIe7Z3QewFKUzCKcdLv7NoSKQA88vu71gxx1s18uzLR2pVt5sxc2yRhZlV2l4o+/eVrM/Hlg17I8HcPW2E1VLZP3QUhdB1SgyWBPe+I1ZniT8BAUyY7AWxio0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABGFJREFUSEvdlTuvVFUUx3/7cV7zYHgbkIugVn4CG40EMAGFiImPxKiFFpYmFsbExMZEG2NrY6GJhY2SqEHQoEHwQ1ihIsTcK5e5M3PmzDl772X2HizuhZbG3ZyTyZz1X2v9H1txj4+6x/X5HwAcPbMioQMfhLxkOZJSWGvS+2Ts0FqxaDxKK7IMlNZ45wke7COvIr99zi/f/3XXbajHnjwoJg8Md1q0gvnMU+QWY6GeuYQ4uQn9oaZzgaLSLOYeCRACtJ0wGMbfAlcu3Amijp05JPWkw7ew/8ECIXDzb48S2LUvp552FKWmmQtaaeJ/e6OMetwRRLClZj7xFD2FdJpL5//cNIk6cnol1sT5wHCbJSsM/SGsrzqqfpYA4plvSCqolUEZTzXMyHJhsuERH9IE1dBw8ey1zQAnXzgsbeMiBsEpskKze5+mrRXTacfatcDeFU0XVzHKmKwHZhstWmv62xVFaZhGniz0+pZvv7i6GeD4s4dEG9Aq0DSCOKHsa0QMo12am6stg17GonVkuWE2dbgGmtazbYfBWEXXCOhAnlvOffn7ZoATzz8gIHgvzDYEjaIYQjeHsq9uy2r56A0yJrciQMAFYbTXIl4xHcc1Cp8eX+fhN+vNAKdeOixt6znR38alq2tcE8Ngh6bIFb3IwWzJQVlarl9b0KssRsNi4ZZr22GY3gpUA0238Fw+f33rBAclFogTIJaugWIQG/LkmaFznvlU0Bl4B9u3WzCKee0oCsPadUc1gvGqZ7RH30nyEycPSESPJ6pmuuGTzotK0S0SNuKFvB+XF024TC+J/YikpzGKehooCs2PZ//YPMHRZ1ZEGxNnSN8GWXYaXdqLHADdwmByT1lY5vPudnEY7ba0NUwT8YHYzuXzm82mjp1+QKq+Zt4IWgecF6xVafws1yxqTzUwzCYdi0YwmaKtQxJAjJD5XDBW8K3QtXDlhy0AR55aEVuCxmAzxXTiUuf/ERxXFbxOYBu3WqpexqOTMRdNRX+QpTWtrzm0WSrx8rm7kFz2MybjlnosFANFWSwBotG0juCQ9zJ8J6iYIShms46de2yS9qIJKbciBz99s8XJz73+kHgP43/atPeiMixaT1kqPn7vM97+8LVkpulGR1kamoVLvKRoyIaYqmE+dyCKEISftwI8/eIhiVFd9S3jm21ShLGGReNo50uVRF+4VlAGrFH4EFKado3GliFx5jqSLy59t2WC0y8fEhGVCsRMsZnG5tGXQp5p6g1PObD4OGbyq6TMiZHRHxmki+tytI3Q61kufLUlKk69siKLeqnr2ThQ5EtPxG6yStHrGeo65r8k4OSXXnR4S1lZ1m507LwvTzHu7qaio2cOyJ79GavXOyQoxAV8p1OnMSHfeeNdPvjk/SRP7+KtF286oXNLwpsJSabRRLGhi19vWdHjJ+8XhUrXoXOBZqowWWCwXVNVlreGho9utNSadPHUE0fwS26igka74v1AyqOsgF8vbJbpv+r5WjcY8taYAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABUtJREFUSEtFljuvJFcVhb99zqlXd9++PXfujEFzkR0ikSIRjTUisGw8SKTghAQRQIBAIjDEJAiw5Bh+CyESiAAnxEaasT1zX/2qrqrzQHuXMdVqdVerzn6stfbaLd/74ZtltRFev0w0nTD0mW4Z2N5MpFgYeggBpILFwlFVwnDK+Aq7vHNMsdj3kqGUQlULr19EHlxWyNN3rkq3Fu6vE1UNuUC7cMSxsDqvOPWR/V1itQmIFEoWSywipJR59c1f8+7yH/zrk79SUuFXP/kFf/jLRxzvMz4I8vTdq0KBqpkP+MqRYsaJIA6IQj8mKMJyLTRN4LCLlkQDaMdacagFRKhrZ90d7hM5ZuT5B2+Vm1cjaYIHjyu2txN14zhbKy5Cf4zkJJwOiRTh7EILwLpdLAM5F37JLb/PG4Y+GbzHfTTIRN+a4HiI5MFByExDplk4KI48wekUqYJQL5xhbNXdFrz3tOvC8kwDTrRdoOng7jrSLjzb24j3gnz3B1dFK5kUBhGGY2Y8aRKPE9g8DuxuopWTs7DoPK9eTqwvHLkUBGG1rjjsJ6UZJ54YMykV484SaDvTseC8w9Vw3GYWZ47VOhjJi2VlUCnJ0whtK9Rd4Oaz0bpabSqmMSqVLBU2oD9Ejrs0Q/TZfwYePKoMCn3o/jbRdlCScHYeOB4jpcwybDR44xmHZL8NfbFnTie9N73Yp/JWclEVPSnnD2dyFYauC9Sd0B8S/S7TNI7zy9pwllkoX13a2W47zuoJzpKESnDOcf35yMOvV8iz71+VbuGNeV+JBaibwM23fscb//6N3R/7OCtCIGn/MCup8kxDomrFZLl+4G2OmspzGiPdIiBvv3dVzjaBrP0DzglxKrzg23wt/p2zzVx9jIXffueOP33yiH6IjEed7kJXB6t6GCPLVWXED30k5WIQytvvPSmhEZNZSRBzInhnSlDM6kpoulmKetg7sS4U31IEHyA4x/GQaBdCno+ZojSmPHv+jaIPq6y8g8NOuHgM7armp/GGv/U1/6xbRBwxZULwjFOyZzWRxlJIhphMBAqjJhFXZoievvNExYt48KpqVVKB0z7RLsXaV+LHMdHU8+T62pFGnQEYpmjwWeBJLScwnCK+LoyH/P85OB0y3UoI4hnGbNW4IMRTYXNZfUV0v4VQz4yHUNjv4PxCUzm8z0byoIGdMA4Zef9HbxZ1xnYJLz+dWJ9XDCedatWzQWnGl5MOgppbsjnozmYVXX8xUgVPs5rhatswm2UF99dx7mB94YmDoJ6kh8Yxo0a6eeS5f51o2orbL06sLhqcJLPxw3ayAqahEIfMpEb4wPPjR2f8+cXWOjHD+59VqB9pgqkv1p4m8LXar0Kmu0IY9oXN49k21Kd88KSYOO0LcYLuXOchszx3JnV9WQJ1v3l4Mru7ZFatn3XrmMaMDmJW/2+EP374MT/78Oe0Z8K4L9QrMe+SUgiVxzcq/sLnn86yFV2Zukj6vcHN3euJxdJTRMWuXqnaLmZ82qFWq3MjxVkXyWWWq8DpoI5bONwJ9bKQo3DqE/L+B28VdT5tbX3pbbGsN7U5p0JB8QYZJOsy9rr5EqEOJkXbB7tJlUDbqJMWbtVlEVtK8uz5VXEB+m02k1Mu9veR9WVllrtYqPYxKxj1D4AXs3VcYrGoDGclWyf54RuOfv+lWIK38wbRzatoGOqqVHbbzrPfRrNmU2oqZh94iEOxOVHeus5z3EWzEL10Lze1t87HUX3tSxWNpzm4rjj1eXVV/Veh95rQexh7HQjlSSgxWzDnxRbMQfEH28cK5mEfSSfduoX/Anzv+uUrk2PPAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABUBJREFUSEtlVkuPVFUQ/uqccx99u6fnwfAYmEYJGl2auCGaACEgJExAEgkbFi5dkLh3Y/wBujNxZVy58AcYXOs/UBNjQhSBIAPDvLr7Ps6jTNVlMMaadO7cvueeU/XV933VdH5jwiCGsQARY/cZoygdmAPygsAMMMkzgCOQEsNlBtXIYj6LqEYOzTygrCzqeUTm5BqQElAMCHTm4hpnzoCIMN2JWDnqEINsAjAIe9sRh9dybD/tkJcGXZMwWJArIysIKQBkASQgKwymOwEDPTSiHBjQxRsnuZ1HSEimzgLlyIETECIj+YQQEggEV5AePhpnun53y8M6aHmyPi/k4IhmxhguS9IAnbu6zjEkMKAvSrlSDTPDOEI5sKhnEaOxw3wW4KzR0mMkNHXAdCeBDDAcSxmMativOwi6eutV3t3xL0sW3EMQ4IFqbCHV5YVFiOnlS4Ohw3TXv0goKrTDRelLv/nBIbKOLt+c8HyaEDpWbCV81zcSiZHlBJZawcgyAx8SomfEDjCZACc4JDx7HLC65v5fwVtn1jgGYPJ6jmePPI5Mcs2CA4Eso6wcfj39BU7//DGEbRKDyqJrGb7p4WnbBGcJw0WHtun7+RKia7dP8bwJSALLi5jtJRSFhfSmqAjNPMEaIBNWoGdL1yaFbm/Lwwfg8FqGpo7/r+DyzVf41rEdfHNvBJfL69BFj/9s9b6sjDIlRVYWyabz/YisJDy577GymsPHgNgSVk/07BKtiH6sJdDb75/j9sFvOHzlE+S/f66Cm+31rHn+1MNI5rkBIsGHiHJkEFpWCndNL0Dpk8uhVPVtj0Q17vtJ1z48yZv3I0zGGI4dvGBIBGP7xkrEjrD73GN8yKGqDGazqI+CZ9T5SSxnD7VqToyu8/AtQWAWRtLG7XXe3mTNQPg/XHCalTR6UDnta+cj6mnEaDFDM4tavsmk2f3aGFmbq/Sc9hqYbgNkEujclQnDCiMTuppx6FhvFbKJ2EFRWWw/8RgtWdgM6Oqk2duc9ABRue96jRjDyEsHQyLCiPleBJ29ss5BKk5iCYInlNvtnGFzYPV4rllZy0iJkASWGeth5dCoyYnvSCi7moRiYJXCoROruLzORtTrU995Q2oR3ouC+0ZJxtJ8sY3NvyJsLodxr96hg/d9FaOxxd7zgLwU+gYsHxMlf3CSRZ2ysJ4lxJjUIeUqAlQ29M6heEvzfEcYLUBpKyFQSkNTBIrSKtsO7IIuXJ/woDLq5c1+QtMCS4csrDNom6BwCVSiXslu9YTDzmYPic6GnLC/lQBhcmAsrlrdPDErdPTaG0d58mam/C1Kg92tAOcMBiPSrCWjrkv48tOvcOezj5BiwnCcoRbHpB42Ed50r6986YiBmJw+l6rPbqyz+IhkJ01DMmjrgLYDTpySjRi+jSjSCmo8x9JKhrqO6kE65RgYjpxOsdluVAfWhuekpkmXbkx4NksoK9KRWA4tFpYIf/zSoRyTyl0+4kfiSxKiZBFiPU+4szTH13GkFJc/sRY5VA1YKji/sc7ignIv4iorhqFM/6/3hKrSBUZWGpBhlKVsIEoNKrC8cHh4r8PqmsFoUYQWMVwwsJnB99/eJ7pwfV1G739CGVUHNDInWgPY/rp4+N9lWWZRLcjYTPoDYH/Hq056WhN+vPtAb+id947zypEc7TxAh5bysXfUthFFM7o2wmUCeP8s1DIrksIklmGNUWH9/dCrE/x099HLlOndSxNePmJ7DznYuIs6teTXhnwpdBXxqeAyQr0rhtjbsTGEaiyTX7QT8cN3feYH8Q9oQd+uVhh0EQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABIpJREFUSEvtlbmrZEUUxn+nqu7W2+v3ZlGZJxoKpoLRiBgMLiOYqomJGGggCgajsYm4gLH+LYaCYuAkxiPM6My8vbvvVoucujiGRmZW09y+TdU55/vOd76SV998Ki3WwsN7gaoR+jbSzB3nxyPBJ/oWnAMpYDYzFIXQdxFbkJc1htGn/DtFSClRlMLDu579ywVy/cZhalbC2VGgKCEmqGcGPyQWewVd69mcBhZrh0giRcmJRYQQIg+e+YSX5z/z6+0fSCHx8bsf8uX337A7i1gnyPWXDxMJimo6YAtD8BEjghjAC+0QIAnzlVBVju2Fz0k0gCLWil0pIEJZmoxuexaIPiI33346HT8YCCPsXy04PxkpK8NypbwI7c4Tg9BtA8HD8kALIKOdzR0xJj7ihC/imr4Nmd7dxmfKRL+aYLf1xN6Ai4x9pJoZSIY4Qtd5CieUM5M5ztWdJKy11KvEfKkBR+rGUTVweuSpZ5bzE4+1grz0xmHSSkalQYR+Fxk6TWIxAuurjotjn8uJUZg1lgf3RlYHhpgSgrBYFWw3o7YZIxbvIyGk3LucQOGMu4SxBlPC7jwyWxoWK5ebPJsXmSpt8jhAXQtl4zj+Y8ioFuuCcfDaSuZKG9BuPbuLMFH0x+89+1eKTIVuOjsJ1A2kICz3HLudJ6VJhpUGryxDH/J/fZvynq7T96yX/NS+pZhURdfS3qWpuUpD0zjKRmi3gfYiUlWGvctl5lkmoTxaiuzifJjU40xO4grBGMPRnwOXniiQF18/TM3M5s7bQnKAsnIcP/s5j/32aX7ftX5ShEBQ/DApqbCMfaCoJctytW/zHFWFpRs8zcwhL7xymJZrR1T8gDGCHxN3eY7H/U8s11P13ic+e/6Ur29foe09w06nO9GULlfdD575osiN71tPiClTKC+8ci25SrLMUgAfA86arATlrCyEqpmkqIetkYxC+U1JsA6cMey2gXomxOlYVpTGlBdvPpl0s8rKGtheCAdXoV6UvOeP+bEt+aWsETH4EHHOMowh79VEGksp6X3IIlAaNYmYNFF0/cY1FS9iwaqqVUkJuk2gnkuGr40fhkBVTpNrS0MYdAagH32mLwce1XIcfeexZWLYxn/moNtGmoXgxNIPMVdjnOC7xPpy8ajR7Tm4cuq4c4nNBewdaCqDtTE3udfARhj6iLz21lNJnbGew707I6u9gr7TqVY9Zyqz8cWgg6DmFvIcNMtJRUf3BwpnqRYTXXXtJrMs4OzITwhWBxbfC+pJemgYImqk6yuWs4eBqi44ud+xOKgwErKNb8/HXMDYJ3wfGdUI9y3vXFny3d3zjCQb3t9WoX6kCcY2ZXiawJZqv0qZ3hVCv0msr062oT5lnSX4QLdJ+BGaPZ2HyHzPZKnrJydQ95uGJ3JxGrJV67OsDeMQ0UGM6v+V8NWtb3n/1gfUS2HYJMqFZO+SlHCFxVYq/sSfdybZil6ZepG0m0w3pw9HZnNLEhW7eqVqO2XjU4Rarc6NJJNRBBOZLxzdVh03sT0VynkieqFrwzQS/+X6P8G/svsXXBt/Z1jfQFwAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAABFtJREFUSEvtVUuLXEUYPfW4j759pzPOw2TM9GiIokvBTVYZkcgMZFADhmyycOkikL0b8QfoTnAlIggKYlSCQYkPUNzpRgURxExMDJlknun7rMcnX90Y0j0LNy4taLqbW7e+75zvnFPi6bUhQRCkAoQg7N4mJKkGkUWcCBABJPgZQA7wnqAjiSxXKAuHLNeoS4s0U6hKh68/uSZw3xLHTixQpCWEEBjtOMwc1HCWDwEIAnvbDvMLMbZvtYhTibb26E3xNyFKBLwFhALggSiR+OLDq+MFTpxaoqZ0oSZ3qhWQ5hrkAesI3nhY6yEgoBMRiueDKOzf3TRQGgEe748TicsXJgosn1wkZz0ICC8yXEZDRJBaIO0pVIVDPtAoCwutJJKegHMCdWUx2vEQEugPGAbhq48nKDp55hHa3TH3IDPv1jLxQDZQYHRxomCdv8dsr68x2jV3G3KB2v4BnovGxfeujFO0cnpI5cjDthS45WXabpDwhCgWIJ4wCFEkYayHMwTXAjJi4lgBHrdvWMwt6P0Injy2QM4Cw8di3L5u8OAwDlSQFRCKkGYavxx9A0d/Og9WG69eptA2BFN39DSNh1YC/QMal95fH0fw3NkjVNYWnmm5u4o9jyRR4NkkmUBdeigJRD3J/Qa1tI0P1O1tGhgLzC9EqCu3H8HK6YfpzKEdvPN7Dh13xbO+xo0rTfifZjIoxTsKKuJDyzsOUSpwc91gZi6GcRauEZg7HO2fwVMvLFPz56+YX30F8W+vB8MVe51qtm4ZSO48loATMNYhzSVsQ0HCbd0ZkOekYwSpfnvp+gRFLy3RxrqDjAj9gYapXXhLqm6wvFwrsLtlMJjVyDKJonDhkTWEKl7CA9G1gJo84bPJGaydXaTtDQodsP77Uzp0xYPuZTrMtTUO1cghPxChLlyIDxnxsLu9zhGa2oUi+2S6vDokKFakR1sRZg91UcGHcBwkmcL2TYN8WkFFQFv50L2KRSjALjdt5xEpCZc/mqDo+OoiWUbsORKYTwRtNyVBxcDcQzHKkYVSBO8FPNNSUCiW9mUIufpu1LC6Pv9gMipWFkmye40PXSspQkQYww7ujMcd8/A5NjauOqiYi1Hn3r6GMR2KfKDw6bsTPlh5cYnYnbyxKjyc8yEh+ZsNmA1kKMDjZr7ZI6YVyKcQZMuLqeSI8Q745uJEFj3z/JB6mQxZXt/xqBtgelZBaYmmtoEupordu7dlMXdYY2ejS99wN8QCdzY9wEq2hB++uzEu00cfP0jDJyKYhi8aid1NC60lerkIXSepQtt6vPnqWzj32svwzqM/iFAVfBF0tLHxRnsd8h+//2u8wPG1ReIc4e54aPASTWXRtMDhI3wQwTQOiZ9BhS1Mz0SoKhcyKNxyBPRzjaq0+PLCOD2MUjx7akhF4ZFmIlyJaV9halrgj59bpAMBpboP5xHnEi92MhuxKj3OTZd42+X7rsp/cm0Mzv136X/1+/8C/8rk3zEjOzeChQgxAAAAAElFTkSuQmCC"
+            ],
+            "walkableNeighbors": [
+              "grass",
+              "water",
+              "forest"
+            ],
+            "buildable": true
+          },
+          {
+            "type": "forest",
+            "texture": "forest",
+            "color": "#2f4a29",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAM7AMK06eeZJAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAn0vzf+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBaCoaDSKCIUBQAc1TEQC2nSCt0Vf5ogAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAn0vzf/UCKaL265jDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAFc5UBlc2SShAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoY2qno4rbrjDTzAchwUPjRxAKY4TSxANlwkAUA6tgwrW9iQGUAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgfSoi6AQKFTBSqJ+g9qFvAQAZ2yCt7eMyfAAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAJ5QUBlAsncEAAAAAElFTkSuQmCC"
+            ],
+            "walkableNeighbors": [
+              "forest",
+              "grass",
+              "water"
+            ],
+            "buildable": true
+          },
+          {
+            "type": "cliff",
+            "texture": "rock",
+            "color": "#3e4f57",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+            ],
+            "buildable": false
+          },
+          {
+            "type": "cliff",
+            "texture": "rock",
+            "color": "#3e4f57",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+            ],
+            "buildable": false
+          },
+          {
+            "type": "cliff",
+            "texture": "rock",
+            "color": "#3e4f57",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+            ],
+            "buildable": false
+          },
+          {
+            "type": "rock",
+            "texture": "rock",
+            "color": "#3e4f57",
+            "image": [
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXUlEQVRIS2O08w//z0BDwDhqAaHQHaZBZOXoynBs/25CvidKfnAFETk+G1w+ICrQ0RSN+gBnqMESxGgQEUxYOIOInEyFzbahEwe4fDx0fIArtjF8QK3IhVlI8yACABTaP2GrGczwAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAc0lEQVRIS2O08w//z0BFcGjjSkZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFlCXwusHF0Zju3fTcU0RW8fUNXpUMPoGwejPsAWAqNxwEAoc2INIkKaSElto3FAMLToE0TUjFR0L5HlA2IdBFJHlgUEAx5JAQBSHEWVRFas9wAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2NkoDFgpLH5DMPAAjv/8P+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBwKciK0dXhmP7dxN0KS4FA+8Dsp0O1TjqA4IhCACSGijVPQJ64AAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAX0lEQVRIS2NkoDFgpLH5DMPAAjv/8P/UCKZDG1diDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMoJSkZWjK8Ox/btJDqMRFEQkhw1UA8VBRChuKLaAkM/QLQAAEzdWGaItYCUAAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2O08w//z0BDwIhugZWjK8Ox/bupZiWGBVQzGWrQ0LEAV9AOnA+oFdkD5wNqpaah6wNYHA5dH8DicIT5gJzMNzBBRI5LcWXMgfEBtYoJkDmjPiAYmjQPIgB29j9hRLICDQAAAABJRU5ErkJggg==",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeElEQVRIS2O08w//z0BDwEiOBVaOrgzH9u8m6CyQOrAFxGogaCIWBWT5gBSLRi0gGFpYg4iakU5xHBByDMUWEAqjUQsIhRCkqCCoigIFoxYQDDyUICKUaQiaNlpckxpEhzauZKRZMgUZDnIQTSyAGU4TC5ANB1kAAGFjRZXml4rsAAAAAElFTkSuQmCC",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATUlEQVRIS2O08w//z0BDwDhqAaHQHfggsnJ0ZTi2fzchh+KUH3gfkO10qMZRHxAMwdEgGg0igiFAUMFoKiIcRARVUKiAkUL9BLUPfQsAjkIo1UAR1E0AAAAASUVORK5CYII=",
+              "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYUlEQVRIS2O08w//z0BFcGjjSkZk4xhJtcDK0ZXh2P7dOJ1EsQWEPDuCLCAU1riCagQFEaHUMhpE5IYQw2gqIhh0o0E0sEGEHv4g15BcoxFbRMDUodSfBP1PhoJRCwgGGgACl1YZGweXngAAAABJRU5ErkJggg=="
+            ],
+            "walkableNeighbors": [
+              "rock"
+            ],
+            "buildable": false
+          }
+        ],
+        "terrainMap": [
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            7,
+            7,
+            7,
+            7,
+            7
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            7,
+            7,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            0,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        ],
+        "terrainBGColor": {
+          "paletteColor": "greenMColor"
+        },
+        "environmentObjects": [
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 707,
+            "y": 23.21875
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 932,
+            "y": 24.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 645,
+            "y": 291.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 846,
+            "y": 282.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 838,
+            "y": 196.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 904,
+            "y": 102.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 654,
+            "y": 213.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 702,
+            "y": 81.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 475,
+            "y": 168.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 584,
+            "y": 328.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 585,
+            "y": 328.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 387,
+            "y": 343.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 387,
+            "y": 342.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 162,
+            "y": 362.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 56,
+            "y": 347.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 55,
+            "y": 347.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 14,
+            "y": 48.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": -7,
+            "y": 343.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": -7,
+            "y": 344.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 350,
+            "y": 98.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 549,
+            "y": 137.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 468,
+            "y": 388.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 511,
+            "y": 283.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 73,
+            "y": 266.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 375,
+            "y": 196.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 533,
+            "y": 72.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 126,
+            "y": 50.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 8,
+            "y": 135.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 399,
+            "y": 125.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 601,
+            "y": 80.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 577,
+            "y": 215.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 432,
+            "y": 274.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 54,
+            "y": 190.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 416,
+            "y": 61.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 205,
+            "y": 48.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 996,
+            "y": 222.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 884,
+            "y": 346.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 992,
+            "y": 355.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1095,
+            "y": 351.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1234,
+            "y": 320.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 941,
+            "y": 281.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1020,
+            "y": 149.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1094,
+            "y": 255.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1258,
+            "y": 242.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1442,
+            "y": 334.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1504,
+            "y": 315.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1504,
+            "y": 314.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1193,
+            "y": 196.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1020,
+            "y": 244.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 919,
+            "y": 230.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 963,
+            "y": 109.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1043,
+            "y": 66.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1313,
+            "y": 78.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1519,
+            "y": 55.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1518,
+            "y": 166.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1517,
+            "y": 166.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1431,
+            "y": 255.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1074,
+            "y": 180.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1074,
+            "y": 179.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1136,
+            "y": 286.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1056,
+            "y": 333.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1127,
+            "y": 119.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1114,
+            "y": 76.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1233,
+            "y": 76.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1423,
+            "y": 67.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1469,
+            "y": 248.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1551,
+            "y": 331.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1182,
+            "y": 326.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1229,
+            "y": 177.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1134,
+            "y": 220.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1168,
+            "y": 72.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1538,
+            "y": 263.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1490,
+            "y": 110.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 940,
+            "y": 182.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1351,
+            "y": 50.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 714,
+            "y": 1547.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 714,
+            "y": 1546.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 701,
+            "y": 1497.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 700,
+            "y": 1497.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 746,
+            "y": 1393.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 926,
+            "y": 1424.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 926,
+            "y": 1423.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 946,
+            "y": 1544.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 945,
+            "y": 1544.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1008,
+            "y": 1407.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 957,
+            "y": 1238.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 956,
+            "y": 1236.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 903,
+            "y": 1145.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 730,
+            "y": 1304.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 691,
+            "y": 1200.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 631,
+            "y": 1192.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 644,
+            "y": 1428.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 643,
+            "y": 1428.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 617,
+            "y": 1538.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 615,
+            "y": 1538.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 454,
+            "y": 1528.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 453,
+            "y": 1528.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 148,
+            "y": 1534.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 147,
+            "y": 1534.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": -15,
+            "y": 1535.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": -15,
+            "y": 1536.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": -6,
+            "y": 1371.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 61,
+            "y": 1355.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 33,
+            "y": 1470.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 232,
+            "y": 1450.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 435,
+            "y": 1448.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 576,
+            "y": 1405.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 374,
+            "y": 1297.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 8,
+            "y": 1223.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 2,
+            "y": 1304.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 70,
+            "y": 1226.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 516,
+            "y": 1211.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 516,
+            "y": 1210.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 656,
+            "y": 1266.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 504,
+            "y": 1332.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 304,
+            "y": 1405.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 292,
+            "y": 1523.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 291,
+            "y": 1523.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 125,
+            "y": 1398.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 406,
+            "y": 1357.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 584,
+            "y": 1324.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1029,
+            "y": 1525.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1029,
+            "y": 1524.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1338,
+            "y": 1524.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1516,
+            "y": 1350.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1482,
+            "y": 1175.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 998,
+            "y": 1147.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1055,
+            "y": 1271.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1093,
+            "y": 1394.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1145,
+            "y": 1498.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1145,
+            "y": 1497.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1221,
+            "y": 1529.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1179,
+            "y": 1321.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1106,
+            "y": 1197.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1205,
+            "y": 1405.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1493,
+            "y": 1242.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1214,
+            "y": 1202.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1077,
+            "y": 1154.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1076,
+            "y": 1154.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 356,
+            "y": 1191.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 160,
+            "y": 1154.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 6,
+            "y": 1150.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 435,
+            "y": 1135.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 418,
+            "y": 1231.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 646,
+            "y": 1126.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1214,
+            "y": 1272.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1398,
+            "y": 1146.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 214,
+            "y": 1128.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 511,
+            "y": 1499.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 476,
+            "y": 1416.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1201,
+            "y": 1447.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1258,
+            "y": 1458.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 1093,
+            "y": 1338.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 669,
+            "y": 1366.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 668,
+            "y": 1366.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 352,
+            "y": 1487.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 180,
+            "y": 1517.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 163,
+            "y": 1399.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 0,
+            "x": 72,
+            "y": 1528.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 94,
+            "y": 264.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 341,
+            "y": 251.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 88,
+            "y": 358.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 494,
+            "y": 258.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 619,
+            "y": 136.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 679,
+            "y": 141.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 689,
+            "y": 223.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 667,
+            "y": 335.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 603,
+            "y": 386.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 589,
+            "y": 482.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 717,
+            "y": 528.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 744,
+            "y": 385.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 782,
+            "y": 226.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 861,
+            "y": 58.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 818,
+            "y": 134.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 652,
+            "y": 596.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 641,
+            "y": 662.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 681,
+            "y": 835.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 752,
+            "y": 806.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 752,
+            "y": 805.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 799,
+            "y": 919.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 752,
+            "y": 1122.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 780,
+            "y": 1324.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 920,
+            "y": 1335.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 862,
+            "y": 1408.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 747,
+            "y": 1497.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 867,
+            "y": 1539.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 843,
+            "y": 1293.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 876,
+            "y": 1206.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 827,
+            "y": 1078.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 714,
+            "y": 994.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 797,
+            "y": 881.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 739,
+            "y": 740.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 726,
+            "y": 926.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 799,
+            "y": 1066.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 832,
+            "y": 1270.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 945,
+            "y": 1317.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 784,
+            "y": 1467.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 865,
+            "y": 1533.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 723,
+            "y": 671.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 723,
+            "y": 670.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 604,
+            "y": 468.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 686,
+            "y": 483.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 711,
+            "y": 306.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 805,
+            "y": 94.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 727,
+            "y": 148.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 719,
+            "y": 637.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 5,
+            "x": 727,
+            "y": 1250.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 752,
+            "y": 1468.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 904,
+            "y": 1502.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 762,
+            "y": 1222.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 786,
+            "y": 1009.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 800,
+            "y": 853.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 687,
+            "y": 791.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 673,
+            "y": 421.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 600,
+            "y": 575.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 744,
+            "y": 51.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 744,
+            "y": 50.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 883,
+            "y": 67.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 369,
+            "y": 1110.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 369,
+            "y": 1109.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 102,
+            "y": 1414.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 521,
+            "y": 1466.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 1328,
+            "y": 1511.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 1049,
+            "y": 1315.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 1091,
+            "y": 1499.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 120,
+            "y": 1224.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 597,
+            "y": 1467.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 345,
+            "y": 1532.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 549,
+            "y": 1278.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 1234,
+            "y": 272.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 1117,
+            "y": 137.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 4,
+            "x": 944,
+            "y": 335.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 4,
+            "x": 1409,
+            "y": 305.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 4,
+            "x": 998,
+            "y": 301.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 4,
+            "x": 195,
+            "y": 323.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 318,
+            "y": 98.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 501,
+            "y": 84.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1227,
+            "y": 141.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1175,
+            "y": 278.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1176,
+            "y": 276.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1118,
+            "y": 1459.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1391,
+            "y": 1537.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1391,
+            "y": 1536.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1528,
+            "y": 1435.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1144,
+            "y": 1260.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 173,
+            "y": 1351.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 132,
+            "y": 1482.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 672,
+            "y": 1062.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 711,
+            "y": 837.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 682,
+            "y": 689.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 757,
+            "y": 583.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 758,
+            "y": 583.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 758,
+            "y": 711.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 855,
+            "y": 1084.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 93,
+            "y": 971.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 347,
+            "y": 685.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 6,
+            "x": 550,
+            "y": 925.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 6,
+            "x": 550,
+            "y": 924.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 2,
+            "x": 1239,
+            "y": 935.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 3,
+            "x": 1194,
+            "y": 642.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 7,
+            "x": 915,
+            "y": 633.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 0,
+            "x": 1369,
+            "y": 486.8125
+          },
+          {
+            "type": "rock",
+            "imageIndex": 4,
+            "x": 98,
+            "y": 534.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 4,
+            "x": 1432,
+            "y": 683.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 4,
+            "x": 1432,
+            "y": 682.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 408,
+            "y": 602.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 1298,
+            "y": 915.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 347,
+            "y": 820.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 1206,
+            "y": 514.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 451,
+            "y": 1038.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 450,
+            "y": 1037.8125
+          },
+          {
+            "type": "tree",
+            "imageIndex": 2,
+            "x": 86,
+            "y": 612.8125
+          },
+          {
+            "type": "goldVein",
+            "imageIndex": 0,
+            "x": 1440,
+            "y": 1440
+          },
+          {
+            "type": "goldVein",
+            "imageIndex": 0,
+            "x": 96,
+            "y": 96
+          },
+          {
+            "type": "goldVein",
+            "imageIndex": 0,
+            "x": 144,
+            "y": 1296
+          },
+          {
+            "type": "goldVein",
+            "imageIndex": 0,
+            "x": 1392,
+            "y": 144
+          }
+        ],
+        "extensionTerrainType": 3,
+        "ramps": []
+      },
+      "world": "shire",
+      "grassShader": "grass",
+      "waterShader": "water"
     }
   }
 },
@@ -55852,7 +55852,6 @@ window.engine.app.appClasses['WorldSystem'] = class WorldSystem extends engine.B
     init() {
         if (this.initialized) return;
 
-        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
         this.game.gameManager.register('getWorldScene', this.getScene.bind(this));
         this.game.gameManager.register('getWorldExtendedSize', () => this.extendedSize);
         this.game.gameManager.register('getGroundTexture', () => this.groundTexture);
@@ -57622,74 +57621,6 @@ window.engine.app.appClasses['WorldSystem'] = class WorldSystem extends engine.B
         this.composer = null;
 
         this.initialized = false;
-    }
-
-    // Add this method to the WorldSystem class
-
-    getTerrainHeightAtPosition(worldX, worldZ) {
-        // Check if height map is available and enabled
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
-            return 0; // Fallback to flat ground
-        }
-        
-        // Convert world coordinates to height map coordinates
-        // The ground is centered at origin, so we need to offset by half the extended size
-        const heightMapX = Math.floor(worldX + this.extendedSize / 2);
-        const heightMapZ = Math.floor(worldZ + this.extendedSize / 2);
-        
-        // Ensure coordinates are within bounds
-        if (heightMapX < 0 || heightMapX >= this.extendedSize || heightMapZ < 0 || heightMapZ >= this.extendedSize) {
-            // Outside terrain bounds, use extension terrain height
-            const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-            return extensionTerrainType * this.heightStep;
-        }
-        
-        // Get height from height map
-        const heightIndex = heightMapZ * this.extendedSize + heightMapX;
-        return this.heightMapData[heightIndex] || 0;
-    }
-
-    // Optional: Add bilinear interpolation for smoother height transitions
-    getTerrainHeightAtPositionSmooth(worldX, worldZ) {
-        // Check if height map is available and enabled
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
-            return 0; // Fallback to flat ground
-        }
-        
-        // Convert world coordinates to height map coordinates (with decimal precision)
-        const heightMapX = worldX + this.extendedSize / 2;
-        const heightMapZ = worldZ + this.extendedSize / 2;
-        
-        // Get the four surrounding grid points
-        const x0 = Math.floor(heightMapX);
-        const x1 = x0 + 1;
-        const z0 = Math.floor(heightMapZ);
-        const z1 = z0 + 1;
-        
-        // Get fractional parts for interpolation
-        const fx = heightMapX - x0;
-        const fz = heightMapZ - z0;
-        
-        // Helper function to get height at specific grid point
-        const getHeightAt = (x, z) => {
-            if (x < 0 || x >= this.extendedSize || z < 0 || z >= this.extendedSize) {
-                const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-                return extensionTerrainType * this.heightStep;
-            }
-            const heightIndex = z * this.extendedSize + x;
-            return this.heightMapData[heightIndex] || 0;
-        };
-        
-        // Get heights at the four corners
-        const h00 = getHeightAt(x0, z0);
-        const h10 = getHeightAt(x1, z0);
-        const h01 = getHeightAt(x0, z1);
-        const h11 = getHeightAt(x1, z1);
-        
-        // Bilinear interpolation
-        const h0 = h00 * (1 - fx) + h10 * fx;
-        const h1 = h01 * (1 - fx) + h11 * fx;
-        return h0 * (1 - fz) + h1 * fz;
     }
 };
 
@@ -77416,161 +77347,6 @@ window.engine.app.appClasses['CorruptingAuraAbility'] = class CorruptingAuraAbil
     }
 };
 
-// ability: CurseAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['CurseAbility'] = class CurseAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'curse',
-            name: 'Curse',
-            description: 'Curses enemies, reducing their damage and making them vulnerable',
-            cooldown: 7.0,
-            range: 180,
-            manaCost: 50,
-            targetType: 'auto',
-            animation: 'cast',
-            priority: 5,
-            castTime: 1.5,
-            autoTrigger: 'strong_enemies',
-            ...params
-        });
-        
-        this.curseRadius = 100;
-        this.damageReduction = 0.5; // Reduce enemy damage by 50%
-        this.vulnerabilityIncrease = 1.3; // 30% more damage taken
-        this.duration = 20.0;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    colorRange: { start: 0x2F4F4F, end: 0x000000 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            curse: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0x696969,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.5
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length >= 2;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // DESYNC SAFE: Get and sort enemies deterministically
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return;
-        
-        // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
-        
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.applyCurses(casterEntity, enemies);
-        }, this.castTime, casterEntity);
-    }
-    
-    applyCurses(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // DESYNC SAFE: Sort enemies for consistent processing order
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        const cursedEnemies = [];
-        
-        sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            
-            if (!enemyPos || !enemyCombat || !enemyHealth || enemyHealth.current <= 0) return;
-            
-            // Check if enemy is in curse radius
-            const distance = Math.sqrt(
-                Math.pow(enemyPos.x - casterPos.x, 2) + 
-                Math.pow(enemyPos.z - casterPos.z, 2)
-            );
-            
-            if (distance <= this.curseRadius) {
-                // Apply curse effect visually
-                this.createVisualEffect(enemyPos, 'curse');
-                
-                // DESYNC SAFE: Use buff system instead of directly modifying stats
-                const Components = this.game.componentManager.getComponents();
-                this.game.addComponent(enemyId, this.componentTypes.BUFF, 
-                    Components.Buff('curse', { 
-                        damageMultiplier: this.damageReduction,
-                        damageTakenMultiplier: this.vulnerabilityIncrease,
-                        isCursed: true
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
-                
-                // Create dark aura effect
-                if (this.game.effectsSystem) {
-                    this.game.effectsSystem.createAuraEffect(
-                        enemyPos.x, enemyPos.y, enemyPos.z,
-                        'magic',
-                        this.duration * 1000
-                    );
-                }
-                
-                cursedEnemies.push({
-                    id: enemyId,
-                    originalDamage: enemyCombat.damage,
-                    position: enemyPos
-                });
-                
-                // DESYNC SAFE: Schedule curse removal using scheduling system
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.removeCurse(enemyId);
-                }, this.duration, enemyId);
-            }
-        });
-        
-      
-    }
-    
-    // DESYNC SAFE: Remove curse effect
-    removeCurse(enemyId) {
-        // Check if enemy still exists and has the curse buff
-        if (this.game.hasComponent(enemyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
-            if (buff && buff.buffType === 'curse') {
-                this.game.removeComponent(enemyId, this.componentTypes.BUFF);
-                
-                // Visual effect when curse expires
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (enemyPos) {
-                    this.createVisualEffect(enemyPos, 'curse', { 
-                        count: 1, 
-                        scaleMultiplier: 0.8,
-                        color: 0x808080 
-                    });
-                }
-                
-            
-            }
-        }
-    }
-};
-
 // ability: DisruptionBombAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['DisruptionBombAbility'] = class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
@@ -78163,6 +77939,161 @@ window.engine.app.appClasses['EnchantWeaponAbility'] = class EnchantWeaponAbilit
     }
 };
 
+// ability: CurseAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['CurseAbility'] = class CurseAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'curse',
+            name: 'Curse',
+            description: 'Curses enemies, reducing their damage and making them vulnerable',
+            cooldown: 7.0,
+            range: 180,
+            manaCost: 50,
+            targetType: 'auto',
+            animation: 'cast',
+            priority: 5,
+            castTime: 1.5,
+            autoTrigger: 'strong_enemies',
+            ...params
+        });
+        
+        this.curseRadius = 100;
+        this.damageReduction = 0.5; // Reduce enemy damage by 50%
+        this.vulnerabilityIncrease = 1.3; // 30% more damage taken
+        this.duration = 20.0;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F4F4F,
+                    colorRange: { start: 0x2F4F4F, end: 0x000000 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 0.8
+                }
+            },
+            curse: {
+                type: 'magic',
+                options: {
+                    count: 2,
+                    color: 0x696969,
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.5
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length >= 2;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // DESYNC SAFE: Get and sort enemies deterministically
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return;
+        
+        // Immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
+        
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyCurses(casterEntity, enemies);
+        }, this.castTime, casterEntity);
+    }
+    
+    applyCurses(casterEntity, enemies) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // DESYNC SAFE: Sort enemies for consistent processing order
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        const cursedEnemies = [];
+        
+        sortedEnemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
+            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            
+            if (!enemyPos || !enemyCombat || !enemyHealth || enemyHealth.current <= 0) return;
+            
+            // Check if enemy is in curse radius
+            const distance = Math.sqrt(
+                Math.pow(enemyPos.x - casterPos.x, 2) + 
+                Math.pow(enemyPos.z - casterPos.z, 2)
+            );
+            
+            if (distance <= this.curseRadius) {
+                // Apply curse effect visually
+                this.createVisualEffect(enemyPos, 'curse');
+                
+                // DESYNC SAFE: Use buff system instead of directly modifying stats
+                const Components = this.game.componentManager.getComponents();
+                this.game.addComponent(enemyId, this.componentTypes.BUFF, 
+                    Components.Buff('curse', { 
+                        damageMultiplier: this.damageReduction,
+                        damageTakenMultiplier: this.vulnerabilityIncrease,
+                        isCursed: true
+                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
+                
+                // Create dark aura effect
+                if (this.game.effectsSystem) {
+                    this.game.effectsSystem.createAuraEffect(
+                        enemyPos.x, enemyPos.y, enemyPos.z,
+                        'magic',
+                        this.duration * 1000
+                    );
+                }
+                
+                cursedEnemies.push({
+                    id: enemyId,
+                    originalDamage: enemyCombat.damage,
+                    position: enemyPos
+                });
+                
+                // DESYNC SAFE: Schedule curse removal using scheduling system
+                this.game.schedulingSystem.scheduleAction(() => {
+                    this.removeCurse(enemyId);
+                }, this.duration, enemyId);
+            }
+        });
+        
+      
+    }
+    
+    // DESYNC SAFE: Remove curse effect
+    removeCurse(enemyId) {
+        // Check if enemy still exists and has the curse buff
+        if (this.game.hasComponent(enemyId, this.componentTypes.BUFF)) {
+            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            if (buff && buff.buffType === 'curse') {
+                this.game.removeComponent(enemyId, this.componentTypes.BUFF);
+                
+                // Visual effect when curse expires
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (enemyPos) {
+                    this.createVisualEffect(enemyPos, 'curse', { 
+                        count: 1, 
+                        scaleMultiplier: 0.8,
+                        color: 0x808080 
+                    });
+                }
+                
+            
+            }
+        }
+    }
+};
+
 // ability: ExplosiveTrapAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['ExplosiveTrapAbility'] = class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
@@ -78471,153 +78402,6 @@ window.engine.app.appClasses['ExplosiveTrapAbility'] = class ExplosiveTrapAbilit
     }
 };
 
-// ability: FreezingAuraAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['FreezingAuraAbility'] = class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'freezing_aura',
-            name: 'Freezing Aura',
-            description: 'Emanate freezing cold',
-            cooldown: 0,
-            range: 100,
-            manaCost: 0,
-            targetType: 'area',
-            animation: 'cast',
-            priority: 6,
-            castTime: 0,
-            ...params
-        });
-        this.drainPerSecond = 8;
-        this.duration = 12.0; // 12 seconds instead of 1200 seconds
-        this.tickInterval = 1.0; // 1 second between ticks
-        this.hasActiveAura = false;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x000000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            freezing: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            empowerment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Only allow one active aura per caster
-        return !this.hasActiveAura;
-    }
-    
-    execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        this.createVisualEffect(pos, 'cast');
-        // Mark aura as active
-        this.hasActiveAura = true;
-        
-        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
-        const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
-        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-            const tickDelay = this.tickInterval * tickIndex;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
-            }, tickDelay, casterEntity);
-        }
-        
-        // DESYNC SAFE: Schedule aura cleanup
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.hasActiveAura = false;
-        }, this.duration, casterEntity);
-    }
-    
-    // DESYNC SAFE: Execute a single aura tick deterministically
-    executeAuraTick(casterEntity, tickIndex, totalTicks) {
-        // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
-            // Caster is dead, end the aura early
-            this.hasActiveAura = false;
-            return;
-        }
-        
-        // DESYNC SAFE: Get enemies and allies deterministically
-        const allies = this.getAlliesInRange(casterEntity);
-        
-        // Sort for consistent processing order
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-
-        
-        // Process allies - empower undead
-        sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            
-            if (!unitType || !allyPos) return;
-            
-            // Check if this is an undead unit
-            const distance = Math.sqrt(
-                Math.pow(allyPos.x - casterPos.x, 2) + 
-                Math.pow(allyPos.z - casterPos.z, 2)
-            );
-            
-            if (distance <= this.range) {
-                // Check if already has empowerment buff
-                const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
-                
-                if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
-                    const Components = this.game.componentManager.getComponents();
-                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                        Components.Buff('ice_armor', { 
-                            armorMultiplier: 1.5
-                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
-                    
-                    // Visual empowerment effect
-                    this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
-                }
-            }
-            
-        });
-        
-        // Additional visual effects every few ticks
-        if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'freezing', { 
-                count: 6, 
-                scaleMultiplier: 2.5,
-                heightOffset: 50 
-            });
-        }
-    }
-};
-
 // ability: IceShardAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['IceShardAbility'] = class IceShardAbility extends engine.app.appClasses['BaseAbility'] {
@@ -78736,6 +78520,147 @@ window.engine.app.appClasses['IceShardAbility'] = class IceShardAbility extends 
                 this.createVisualEffect(currentTargetPos, 'shard', { count: 3 });
             }
         }, 0.3, casterEntity);
+    }
+};
+
+// ability: LightningBoltAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['LightningBoltAbility'] = class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'lightning_bolt',
+            name: 'Lightning Bolt',
+            description: 'Instantly strikes an enemy with pure lightning',
+            cooldown: 2.0,
+            range: 350,
+            manaCost: 30,
+            targetType: 'auto',
+            animation: 'cast',
+            priority: 7,
+            castTime: 0.5,
+            autoTrigger: 'enemy_in_range',
+            ...params
+        });
+        
+        this.damage = 55;
+        this.criticalChance = 0.3; // 30% crit chance
+        this.element = 'lightning';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 1,
+                    color: 0xffff44,
+                    colorRange: { start: 0xffff44, end: 0xffffff },
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 4.0
+                }
+            },
+            lightning: {
+                type: 'magic',
+                options: {
+                    count: 2,
+                    color: 0xffffaa,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 5.0
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length >= 1;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // DESYNC SAFE: Get and sort enemies deterministically
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return;
+        
+        // DESYNC SAFE: Find target with highest health deterministically
+        const target = this.findHighestHealthEnemy(enemies);
+        if (!target) return;
+        
+        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        if (!targetPos) return;
+        
+        // Immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Lightning crackles with divine fury!`, true);
+        
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.strikeLightning(casterEntity, target, targetPos);
+        }, this.castTime, casterEntity);
+    }
+    
+    strikeLightning(casterEntity, targetId, targetPos) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Create lightning bolt visual effect
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.createLightningBolt(
+                new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z),
+                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
+                {
+                    style: { color: 0xffffaa, linewidth: 6 },
+                    animation: { duration: 400, flickerCount: 3 }
+                }
+            );
+        }
+        
+        // Lightning effect at target
+        this.createVisualEffect(targetPos, 'lightning');
+        
+        // Screen flash
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenFlash('#ffffaa', 0.15);
+        }
+        
+        // DESYNC SAFE: Determine critical hit deterministically instead of random
+        const isCritical = this.isDeterministicCritical(casterEntity, targetId);
+        const damage = isCritical ? this.damage * 2 : this.damage;
+        
+        // Apply lightning damage
+        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
+            isCritical: isCritical,
+            isInstant: true
+        });
+    }
+    
+    // DESYNC SAFE: Deterministic critical hit calculation
+    isDeterministicCritical(casterId, targetId) {
+        // Create a deterministic "random" value based on entity IDs and game time
+        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.state.now * 100);
+        const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
+        
+        return pseudoRandom < this.criticalChance;
+    }
+    
+    // DESYNC SAFE: Deterministic highest health enemy finding
+    findHighestHealthEnemy(enemies) {
+        // Sort enemies deterministically first
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let strongest = null;
+        let highestHealth = 0;
+        
+        sortedEnemies.forEach(enemyId => {
+            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
+                highestHealth = health.current;
+                strongest = enemyId;
+            }
+        });
+        
+        return strongest;
     }
 };
 
@@ -78934,147 +78859,6 @@ window.engine.app.appClasses['InfernoAbility'] = class InfernoAbility extends en
         
         const enemyPos = this.game.getComponent(firstEnemy, this.componentTypes.POSITION);
         return enemyPos ? { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z } : casterPos;
-    }
-};
-
-// ability: LightningBoltAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['LightningBoltAbility'] = class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'lightning_bolt',
-            name: 'Lightning Bolt',
-            description: 'Instantly strikes an enemy with pure lightning',
-            cooldown: 2.0,
-            range: 350,
-            manaCost: 30,
-            targetType: 'auto',
-            animation: 'cast',
-            priority: 7,
-            castTime: 0.5,
-            autoTrigger: 'enemy_in_range',
-            ...params
-        });
-        
-        this.damage = 55;
-        this.criticalChance = 0.3; // 30% crit chance
-        this.element = 'lightning';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 1,
-                    color: 0xffff44,
-                    colorRange: { start: 0xffff44, end: 0xffffff },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 4.0
-                }
-            },
-            lightning: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0xffffaa,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 5.0
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length >= 1;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // DESYNC SAFE: Get and sort enemies deterministically
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return;
-        
-        // DESYNC SAFE: Find target with highest health deterministically
-        const target = this.findHighestHealthEnemy(enemies);
-        if (!target) return;
-        
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-        if (!targetPos) return;
-        
-        // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Lightning crackles with divine fury!`, true);
-        
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.strikeLightning(casterEntity, target, targetPos);
-        }, this.castTime, casterEntity);
-    }
-    
-    strikeLightning(casterEntity, targetId, targetPos) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // Create lightning bolt visual effect
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.createLightningBolt(
-                new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z),
-                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
-                {
-                    style: { color: 0xffffaa, linewidth: 6 },
-                    animation: { duration: 400, flickerCount: 3 }
-                }
-            );
-        }
-        
-        // Lightning effect at target
-        this.createVisualEffect(targetPos, 'lightning');
-        
-        // Screen flash
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenFlash('#ffffaa', 0.15);
-        }
-        
-        // DESYNC SAFE: Determine critical hit deterministically instead of random
-        const isCritical = this.isDeterministicCritical(casterEntity, targetId);
-        const damage = isCritical ? this.damage * 2 : this.damage;
-        
-        // Apply lightning damage
-        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
-            isCritical: isCritical,
-            isInstant: true
-        });
-    }
-    
-    // DESYNC SAFE: Deterministic critical hit calculation
-    isDeterministicCritical(casterId, targetId) {
-        // Create a deterministic "random" value based on entity IDs and game time
-        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.state.now * 100);
-        const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
-        
-        return pseudoRandom < this.criticalChance;
-    }
-    
-    // DESYNC SAFE: Deterministic highest health enemy finding
-    findHighestHealthEnemy(enemies) {
-        // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let strongest = null;
-        let highestHealth = 0;
-        
-        sortedEnemies.forEach(enemyId => {
-            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
-                highestHealth = health.current;
-                strongest = enemyId;
-            }
-        });
-        
-        return strongest;
     }
 };
 
@@ -79909,6 +79693,153 @@ window.engine.app.appClasses['MineGoldAbility'] = class MineGoldAbility extends 
     }
 };
 
+// ability: FreezingAuraAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['FreezingAuraAbility'] = class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'freezing_aura',
+            name: 'Freezing Aura',
+            description: 'Emanate freezing cold',
+            cooldown: 0,
+            range: 100,
+            manaCost: 0,
+            targetType: 'area',
+            animation: 'cast',
+            priority: 6,
+            castTime: 0,
+            ...params
+        });
+        this.drainPerSecond = 8;
+        this.duration = 12.0; // 12 seconds instead of 1200 seconds
+        this.tickInterval = 1.0; // 1 second between ticks
+        this.hasActiveAura = false;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x4B0082,
+                    colorRange: { start: 0x4B0082, end: 0x000000 },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.8
+                }
+            },
+            freezing: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F4F4F,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            empowerment: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x8B0000,
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.2
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Only allow one active aura per caster
+        return !this.hasActiveAura;
+    }
+    
+    execute(casterEntity) {
+        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!pos) return;
+        
+        this.createVisualEffect(pos, 'cast');
+        // Mark aura as active
+        this.hasActiveAura = true;
+        
+        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
+        const totalTicks = Math.floor(this.duration / this.tickInterval);
+        
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
+            
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
+            }, tickDelay, casterEntity);
+        }
+        
+        // DESYNC SAFE: Schedule aura cleanup
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.hasActiveAura = false;
+        }, this.duration, casterEntity);
+    }
+    
+    // DESYNC SAFE: Execute a single aura tick deterministically
+    executeAuraTick(casterEntity, tickIndex, totalTicks) {
+        // Check if caster is still alive
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
+            // Caster is dead, end the aura early
+            this.hasActiveAura = false;
+            return;
+        }
+        
+        // DESYNC SAFE: Get enemies and allies deterministically
+        const allies = this.getAlliesInRange(casterEntity);
+        
+        // Sort for consistent processing order
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+
+        
+        // Process allies - empower undead
+        sortedAllies.forEach(allyId => {
+            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
+            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            
+            if (!unitType || !allyPos) return;
+            
+            // Check if this is an undead unit
+            const distance = Math.sqrt(
+                Math.pow(allyPos.x - casterPos.x, 2) + 
+                Math.pow(allyPos.z - casterPos.z, 2)
+            );
+            
+            if (distance <= this.range) {
+                // Check if already has empowerment buff
+                const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                
+                if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
+                    const Components = this.game.componentManager.getComponents();
+                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
+                        Components.Buff('ice_armor', { 
+                            armorMultiplier: 1.5
+                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
+                    
+                    // Visual empowerment effect
+                    this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
+                }
+            }
+            
+        });
+        
+        // Additional visual effects every few ticks
+        if (tickIndex % 3 === 0) {
+            this.createVisualEffect(casterPos, 'freezing', { 
+                count: 6, 
+                scaleMultiplier: 2.5,
+                heightOffset: 50 
+            });
+        }
+    }
+};
+
 // ability: MirrorImagesAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['MirrorImagesAbility'] = class MirrorImagesAbility extends engine.app.appClasses['BaseAbility'] {
@@ -80564,6 +80495,398 @@ window.engine.app.appClasses['PhalanxFormationAbility'] = class PhalanxFormation
     }
 };
 
+// ability: RageAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['RageAbility'] = class RageAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'raging_strike',
+            name: 'Raging Strike',
+            description: 'Unleash primal fury with increased damage and attack speed',
+            cooldown: 5.0,
+            range: 0, // Self-buff
+            manaCost: 20,
+            targetType: 'self',
+            animation: 'attack',
+            priority: 6,
+            castTime: 0.8,
+            ...params
+        });
+        
+        this.rageDuration = 8.0;
+        this.damageMultiplier = 1.5;
+        this.attackSpeedMultiplier = 1.3;
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xff4444, 
+                    colorRange: { start: 0xff4444, end: 0xff8800 },
+                    scaleMultiplier: 1.3,
+                    speedMultiplier: 1.5
+                }
+            },
+            rage: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xff0000, 
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 2.0
+                }
+            },
+            fury: {
+                type: 'magic',
+                options: { 
+                    count: 3, 
+                    color: 0xcc0000, 
+                    scaleMultiplier: 2.2,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Check if there are enemies nearby to rage against
+        const enemies = this.getEnemiesInRange(casterEntity, 100);
+        if (enemies.length === 0) return false;
+        
+        // Don't stack rage buffs - check if already raged
+        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        if (existingBuff && existingBuff.buffType === 'rage') return false;
+        
+        return true;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Primal fury begins to build...`);
+        
+        // Schedule the rage activation after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.activateRage(casterEntity);
+        }, this.castTime, casterEntity);
+    }
+    
+    activateRage(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Create dramatic rage effects
+        this.createVisualEffect(casterPos, 'rage');
+        
+        // Schedule a secondary fury effect for visual impact
+        this.game.schedulingSystem.scheduleAction(() => {
+            if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {
+                const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+                if (pos) {
+                    this.createVisualEffect(pos, 'fury');
+                }
+            }
+        }, 0.5, casterEntity);
+        
+        // Apply rage buff with proper timing
+        const Components = this.game.componentManager.getComponents();
+        const currentTime = this.game.state.now || this.game.state.now || 0;
+        const endTime = currentTime + this.rageDuration;
+        
+        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
+            Components.Buff(
+                'rage', 
+                { 
+                    damageMultiplier: this.damageMultiplier, 
+                    attackSpeedMultiplier: this.attackSpeedMultiplier,
+                    moveSpeedMultiplier: 1.1 // Slight movement speed bonus
+                }, 
+                endTime,     // Proper end time
+                false,       // Not stackable
+                1,           // Single stack
+                currentTime  // Applied time
+            )
+        );
+        
+        // Screen effects for dramatic impact
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.3, 2);
+            this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
+        }
+    
+        
+        // Schedule buff expiration warning
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.warnRageEnding(casterEntity);
+        }, this.rageDuration - 1.0, casterEntity);
+    }
+    
+    // FIXED: Add rage ending warning for better gameplay feedback
+    warnRageEnding(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        // Check if entity still exists and has the buff
+        const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        if (!buff || buff.buffType !== 'rage') return;
+        
+        if (casterPos) {
+            // Create fading effect
+            this.createVisualEffect(casterPos, 'cast', { 
+                count: 5, 
+                color: 0x884444,
+                scaleMultiplier: 0.8 
+            });
+        }
+       
+    }
+};
+
+// ability: ShieldWallAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['ShieldWallAbility'] = class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'shield_wall',
+            name: 'Shield Wall',
+            description: 'Form a defensive stance, reducing damage and taunting enemies',
+            cooldown: 12.0,
+            range: 0, // Self-buff with taunt radius
+            manaCost: 30,
+            targetType: 'self',
+            animation: 'cast',
+            priority: 4,
+            castTime: 1.0,
+            ...params
+        });
+        
+        this.wallDuration = 10.0;
+        this.damageReduction = 0.75; // 75% damage reduction
+        this.tauntRadius = 200;
+        this.originalArmorMultiplier = 1.0;
+        this.element = 'physical';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x708090,
+                    colorRange: { start: 0x708090, end: 0xC0C0C0 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            shield_formation: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x4682B4,
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 0.8
+                }
+            },
+            defensive_stance: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0x2F4F4F,
+                    scaleMultiplier: 1.8,
+                    speedMultiplier: 0.6
+                }
+            },
+            taunt_aura: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xFF6347,
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 1.5
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        // Check if already has shield wall to prevent stacking
+        const existingWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        if (existingWall && existingWall.isActive) return false;
+        
+        // Use when enemies are nearby and threatening
+        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
+        
+        // Schedule the shield wall formation after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.formShieldWall(casterEntity);
+        }, this.castTime, casterEntity);
+    }
+    
+    formShieldWall(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
+        
+        if (!casterPos) return;
+        
+        // Create shield formation effect
+        this.createVisualEffect(casterPos, 'shield_formation');
+        
+        // Store original armor for restoration later
+        const originalArmor = casterCombat ? casterCombat.armor : 0;
+        
+        // Apply shield wall component with proper timing
+        const Components = this.game.componentManager.getComponents();
+        const currentTime = this.game.state.now || this.game.state.now || 0;
+        const endTime = currentTime + this.wallDuration;
+        
+        this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
+            Components.ShieldWall(
+                this.damageReduction,
+                endTime,
+                this.tauntRadius,
+                originalArmor
+            )
+        );
+        
+        // Schedule defensive stance visual effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            if (pos) {
+                this.createVisualEffect(pos, 'defensive_stance');
+            }
+        }, 0.5, casterEntity);
+        
+        // Apply taunt effect to nearby enemies
+        this.applyTauntToEnemies(casterEntity);
+        
+        // Screen effects for dramatic formation
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.playScreenShake(0.3, 1);
+        }
+        
+    
+      
+        
+        // Schedule shield wall expiration warning
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.warnShieldWallEnding(casterEntity);
+        }, this.wallDuration - 1.5, casterEntity);
+        
+        // Schedule shield wall removal (failsafe)
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.removeShieldWall(casterEntity);
+        }, this.wallDuration, casterEntity);
+    }
+    
+    applyTauntToEnemies(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
+        if (enemies.length === 0) return;
+        
+        // Sort enemies deterministically for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let tauntedCount = 0;
+        
+        sortedEnemies.forEach((enemyId, index) => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyAI = this.game.getComponent(enemyId, this.componentTypes.AI_STATE);
+            
+            if (!enemyPos || !enemyAI) return;
+            
+            // Apply taunt component
+            const Components = this.game.componentManager.getComponents();
+            const currentTime = this.game.state.now || this.game.state.now || 0;
+            const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
+            
+            this.game.addComponent(enemyId, this.componentTypes.TAUNT, 
+                Components.Taunt(
+                    casterEntity,     // Taunter
+                    tauntEndTime,     // End time
+                    this.tauntRadius, // Radius
+                    true              // Is taunted
+                )
+            );
+            
+            // Force AI to target the shield wall user
+  
+            enemyAI.target = casterEntity;
+            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            enemyAI.path = [];
+            enemyAI.meta = {};
+        
+            // Schedule staggered taunt effects for visual appeal
+            this.game.schedulingSystem.scheduleAction(() => {
+                const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (pos) {
+                    this.createVisualEffect(pos, 'taunt_aura');
+                }
+            }, index * 0.1, enemyId);
+            
+            tauntedCount++;
+        });
+        
+        if (tauntedCount > 0) {
+            this.logAbilityUsage(casterEntity, 
+                `Shield wall taunts ${tauntedCount} enemies to attack!`);
+        }
+    }
+    
+    // FIXED: Shield wall ending warning
+    warnShieldWallEnding(casterEntity) {
+        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        // Check if shield wall still exists and is active
+        if (!shieldWall || !shieldWall.isActive || !casterPos) return;
+        
+        // Create warning effect
+        this.createVisualEffect(casterPos, 'cast', { 
+            count: 4, 
+            color: 0x708090,
+            scaleMultiplier: 0.8 
+        });
+     
+    }
+    
+    // FIXED: Proper shield wall removal
+    removeShieldWall(casterEntity) {
+        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        
+        if (!shieldWall) return;
+        
+        // Create dissolution effect
+        if (casterPos) {
+            this.createVisualEffect(casterPos, 'defensive_stance', { 
+                count: 6, 
+                scaleMultiplier: 0.6 
+            });
+        }
+        
+        // Remove shield wall component
+        this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        
+       
+    }
+};
+
 // ability: PiercingShotAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['PiercingShotAbility'] = class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
@@ -80808,159 +81131,6 @@ window.engine.app.appClasses['PiercingShotAbility'] = class PiercingShotAbility 
     }
 };
 
-// ability: RageAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['RageAbility'] = class RageAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'raging_strike',
-            name: 'Raging Strike',
-            description: 'Unleash primal fury with increased damage and attack speed',
-            cooldown: 5.0,
-            range: 0, // Self-buff
-            manaCost: 20,
-            targetType: 'self',
-            animation: 'attack',
-            priority: 6,
-            castTime: 0.8,
-            ...params
-        });
-        
-        this.rageDuration = 8.0;
-        this.damageMultiplier = 1.5;
-        this.attackSpeedMultiplier = 1.3;
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff4444, 
-                    colorRange: { start: 0xff4444, end: 0xff8800 },
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.5
-                }
-            },
-            rage: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff0000, 
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 2.0
-                }
-            },
-            fury: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xcc0000, 
-                    scaleMultiplier: 2.2,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Check if there are enemies nearby to rage against
-        const enemies = this.getEnemiesInRange(casterEntity, 100);
-        if (enemies.length === 0) return false;
-        
-        // Don't stack rage buffs - check if already raged
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
-        if (existingBuff && existingBuff.buffType === 'rage') return false;
-        
-        return true;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Primal fury begins to build...`);
-        
-        // Schedule the rage activation after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.activateRage(casterEntity);
-        }, this.castTime, casterEntity);
-    }
-    
-    activateRage(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return;
-        
-        // Create dramatic rage effects
-        this.createVisualEffect(casterPos, 'rage');
-        
-        // Schedule a secondary fury effect for visual impact
-        this.game.schedulingSystem.scheduleAction(() => {
-            if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {
-                const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-                if (pos) {
-                    this.createVisualEffect(pos, 'fury');
-                }
-            }
-        }, 0.5, casterEntity);
-        
-        // Apply rage buff with proper timing
-        const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.rageDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
-            Components.Buff(
-                'rage', 
-                { 
-                    damageMultiplier: this.damageMultiplier, 
-                    attackSpeedMultiplier: this.attackSpeedMultiplier,
-                    moveSpeedMultiplier: 1.1 // Slight movement speed bonus
-                }, 
-                endTime,     // Proper end time
-                false,       // Not stackable
-                1,           // Single stack
-                currentTime  // Applied time
-            )
-        );
-        
-        // Screen effects for dramatic impact
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.3, 2);
-            this.game.effectsSystem.playScreenFlash('#ff4444', 0.4);
-        }
-    
-        
-        // Schedule buff expiration warning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.warnRageEnding(casterEntity);
-        }, this.rageDuration - 1.0, casterEntity);
-    }
-    
-    // FIXED: Add rage ending warning for better gameplay feedback
-    warnRageEnding(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        // Check if entity still exists and has the buff
-        const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
-        if (!buff || buff.buffType !== 'rage') return;
-        
-        if (casterPos) {
-            // Create fading effect
-            this.createVisualEffect(casterPos, 'cast', { 
-                count: 5, 
-                color: 0x884444,
-                scaleMultiplier: 0.8 
-            });
-        }
-       
-    }
-};
-
 // ability: ShadowStrikeAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['ShadowStrikeAbility'] = class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
@@ -81144,245 +81314,6 @@ window.engine.app.appClasses['ShadowStrikeAbility'] = class ShadowStrikeAbility 
         // Basic validation - ensure position is within reasonable bounds
         // This could be enhanced with collision detection if needed
         return pos.x >= -1000 && pos.x <= 1000 && pos.z >= -1000 && pos.z <= 1000;
-    }
-};
-
-// ability: ShieldWallAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['ShieldWallAbility'] = class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'shield_wall',
-            name: 'Shield Wall',
-            description: 'Form a defensive stance, reducing damage and taunting enemies',
-            cooldown: 12.0,
-            range: 0, // Self-buff with taunt radius
-            manaCost: 30,
-            targetType: 'self',
-            animation: 'cast',
-            priority: 4,
-            castTime: 1.0,
-            ...params
-        });
-        
-        this.wallDuration = 10.0;
-        this.damageReduction = 0.75; // 75% damage reduction
-        this.tauntRadius = 200;
-        this.originalArmorMultiplier = 1.0;
-        this.element = 'physical';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x708090,
-                    colorRange: { start: 0x708090, end: 0xC0C0C0 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            shield_formation: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4682B4,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            defensive_stance: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 0.6
-                }
-            },
-            taunt_aura: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF6347,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        // Check if already has shield wall to prevent stacking
-        const existingWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        if (existingWall && existingWall.isActive) return false;
-        
-        // Use when enemies are nearby and threatening
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        return enemies.length > 0;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
-        
-        // Schedule the shield wall formation after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.formShieldWall(casterEntity);
-        }, this.castTime, casterEntity);
-    }
-    
-    formShieldWall(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
-        
-        if (!casterPos) return;
-        
-        // Create shield formation effect
-        this.createVisualEffect(casterPos, 'shield_formation');
-        
-        // Store original armor for restoration later
-        const originalArmor = casterCombat ? casterCombat.armor : 0;
-        
-        // Apply shield wall component with proper timing
-        const Components = this.game.componentManager.getComponents();
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.wallDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
-            Components.ShieldWall(
-                this.damageReduction,
-                endTime,
-                this.tauntRadius,
-                originalArmor
-            )
-        );
-        
-        // Schedule defensive stance visual effect
-        this.game.schedulingSystem.scheduleAction(() => {
-            const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-            if (pos) {
-                this.createVisualEffect(pos, 'defensive_stance');
-            }
-        }, 0.5, casterEntity);
-        
-        // Apply taunt effect to nearby enemies
-        this.applyTauntToEnemies(casterEntity);
-        
-        // Screen effects for dramatic formation
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.3, 1);
-        }
-        
-    
-      
-        
-        // Schedule shield wall expiration warning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.warnShieldWallEnding(casterEntity);
-        }, this.wallDuration - 1.5, casterEntity);
-        
-        // Schedule shield wall removal (failsafe)
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.removeShieldWall(casterEntity);
-        }, this.wallDuration, casterEntity);
-    }
-    
-    applyTauntToEnemies(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        if (enemies.length === 0) return;
-        
-        // Sort enemies deterministically for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let tauntedCount = 0;
-        
-        sortedEnemies.forEach((enemyId, index) => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyAI = this.game.getComponent(enemyId, this.componentTypes.AI_STATE);
-            
-            if (!enemyPos || !enemyAI) return;
-            
-            // Apply taunt component
-            const Components = this.game.componentManager.getComponents();
-            const currentTime = this.game.state.now || this.game.state.now || 0;
-            const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
-            
-            this.game.addComponent(enemyId, this.componentTypes.TAUNT, 
-                Components.Taunt(
-                    casterEntity,     // Taunter
-                    tauntEndTime,     // End time
-                    this.tauntRadius, // Radius
-                    true              // Is taunted
-                )
-            );
-            
-            // Force AI to target the shield wall user
-  
-            enemyAI.target = casterEntity;
-            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-            enemyAI.path = [];
-            enemyAI.meta = {};
-        
-            // Schedule staggered taunt effects for visual appeal
-            this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (pos) {
-                    this.createVisualEffect(pos, 'taunt_aura');
-                }
-            }, index * 0.1, enemyId);
-            
-            tauntedCount++;
-        });
-        
-        if (tauntedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Shield wall taunts ${tauntedCount} enemies to attack!`);
-        }
-    }
-    
-    // FIXED: Shield wall ending warning
-    warnShieldWallEnding(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        // Check if shield wall still exists and is active
-        if (!shieldWall || !shieldWall.isActive || !casterPos) return;
-        
-        // Create warning effect
-        this.createVisualEffect(casterPos, 'cast', { 
-            count: 4, 
-            color: 0x708090,
-            scaleMultiplier: 0.8 
-        });
-     
-    }
-    
-    // FIXED: Proper shield wall removal
-    removeShieldWall(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
-        if (!shieldWall) return;
-        
-        // Create dissolution effect
-        if (casterPos) {
-            this.createVisualEffect(casterPos, 'defensive_stance', { 
-                count: 6, 
-                scaleMultiplier: 0.6 
-            });
-        }
-        
-        // Remove shield wall component
-        this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        
-       
     }
 };
 
@@ -82848,6 +82779,276 @@ window.engine.app.appClasses['ChainLightningAbility'] = class ChainLightningAbil
     }
 };
 
+// ability: HealAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['HealAbility'] = class HealAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'heal',
+            name: 'Heal',
+            description: 'Restores health to the most injured ally',
+            cooldown: 30,
+            range: 200,
+            manaCost: 40,
+            targetType: 'ally',
+            animation: 'cast',
+            priority: 8,
+            castTime: 1.0,
+            autoTrigger: 'injured_ally',
+            ...params
+        });
+        
+        this.healAmount = 80;
+        this.element = 'divine';
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 2,
+                    color: 0x88ff88,
+                    colorRange: { start: 0x88ff88, end: 0xffffaa },
+                    scaleMultiplier: 1.0,
+                    speedMultiplier: 1.0
+                }
+            },
+            heal: {
+                type: 'heal',
+                options: {
+                    count: 3,
+                    color: 0x88ffaa,
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 0.8
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const allies = this.getAlliesInRange(casterEntity);
+        return allies.some(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            return health && health.current < health.max; // Ally needs healing
+        });
+    }
+        
+    execute(casterEntity, targetData = null) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const allies = this.getAlliesInRange(casterEntity);
+        const target = this.findMostInjuredAlly(allies);
+        
+        if (!target) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
+        
+    
+        this.game.schedulingSystem.scheduleAction(() => {
+            const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+            if (targetPos) {
+                this.performHeal(casterEntity, target, targetPos);
+            }
+        }, this.castTime, casterEntity);
+    }
+    
+    performHeal(casterEntity, targetId, targetPos) {
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        if (!targetHealth) return;
+        // Heal effect
+        this.createVisualEffect(targetPos, 'heal');
+        
+        // Apply healing
+        const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
+        targetHealth.current += actualHeal;
+        
+        // Show heal number
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.showDamageNumber(
+                targetPos.x, targetPos.y + 50, targetPos.z,
+                actualHeal, 'heal'
+            );
+        }
+        
+    
+    }
+        
+    findMostInjuredAlly(allies) {
+        // Sort allies deterministically first
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let mostInjured = null;
+        let lowestHealthRatio = 1.0;
+        
+        sortedAllies.forEach(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            if (health && health.max > 0) {
+                const healthRatio = health.current / health.max;
+                // Use <= for consistent tie-breaking (first in sorted order wins)
+                if (healthRatio <= lowestHealthRatio) {
+                    lowestHealthRatio = healthRatio;
+                    mostInjured = allyId;
+                }
+            }
+        });
+        
+        return mostInjured;
+    }
+};
+
+// ability: FireStormAbility
+window.engine.app.appClasses = window.engine.app.appClasses || {};
+window.engine.app.appClasses['FireStormAbility'] = class FirestormAbility extends engine.app.appClasses['BaseAbility'] {
+    constructor(game, params = {}) {
+        super(game, {
+            id: 'fireStorm',
+            name: 'Fire Storm',
+            description: 'Rain fire on the largest enemy cluster',
+            cooldown: 12.0,
+            range: 200,
+            manaCost: 50,
+            targetType: 'auto',
+            animation: 'cast',
+            priority: 8,
+            castTime: 2.5,
+            autoTrigger: 'enemy_cluster',
+            ...params
+        });
+        
+        this.stormRadius = 90;
+        this.damage = 70;
+        this.element = 'fire';
+        this.minTargets = 3;
+    }
+    
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 3,
+                    color: 0xff2200,
+                    colorRange: { start: 0xff2200, end: 0xffaa00 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.0
+                }
+            },
+            firestorm: {
+                type: 'explosion',
+                options: {
+                    count: 3,
+                    color: 0xff4400,
+                    colorRange: { start: 0xff4400, end: 0xff0000 },
+                    scaleMultiplier: 2.5,
+                    speedMultiplier: 0.6
+                }
+            }
+        };
+    }
+    
+    canExecute(casterEntity) {
+        const enemies = this.getEnemiesInRange(casterEntity);
+        const clusterPos = this.findBestClusterPosition(enemies, this.minTargets);
+        return clusterPos !== null;
+    }
+    
+    execute(casterEntity) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
+        const clusterPos = this.findBestClusterPosition(enemies, this.minTargets);
+        
+        if (!clusterPos) return null;
+        
+        // Show immediate cast effect
+        this.createVisualEffect(casterPos, 'cast');
+        this.logAbilityUsage(casterEntity, `The sky darkens as firestorm approaches!`);
+        
+        // Schedule the firestorm to hit after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.performFirestorm(casterEntity, clusterPos);
+        }, this.castTime, casterEntity);
+    }
+    
+    performFirestorm(casterEntity, targetPos) {
+        // Create firestorm visual effect
+        this.createVisualEffect(targetPos, 'firestorm');
+        
+        // Apply fire damage to all enemies in storm area
+        if (this.game.damageSystem) {
+            const results = this.game.damageSystem.applySplashDamage(
+                casterEntity,
+                targetPos,
+                this.damage,
+                this.element,
+                this.stormRadius,
+                { allowFriendlyFire: false, isSpell: true }
+            );
+            
+            this.logAbilityUsage(casterEntity, 
+                `Firestorm engulfs ${results.length} enemies in flames!`);
+        }
+    }
+    
+    // FIXED: Deterministic cluster position finding
+    findBestClusterPosition(enemies, minTargets) {
+        if (enemies.length < minTargets) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        let bestPosition = null;
+        let maxTargetsHit = 0;
+        let bestScore = 0; // For tie-breaking: prefer positions with lower total distance
+        
+        // Check each enemy position as potential cluster center
+        sortedEnemies.forEach(potentialCenter => {
+            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            if (!centerPos) return;
+            
+            let targetsInRange = 0;
+            let totalDistance = 0;
+            
+            // Count enemies within storm radius of this position
+            sortedEnemies.forEach(enemyId => {
+                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                if (!enemyPos) return;
+                
+                const distance = Math.sqrt(
+                    Math.pow(enemyPos.x - centerPos.x, 2) + 
+                    Math.pow(enemyPos.z - centerPos.z, 2)
+                );
+                
+                if (distance <= this.stormRadius) {
+                    targetsInRange++;
+                    totalDistance += distance;
+                }
+            });
+            
+            // Only consider positions that hit minimum targets
+            if (targetsInRange >= minTargets) {
+                // Calculate score: prioritize more targets, then lower total distance for tie-breaking
+                const score = (targetsInRange * 1000) - totalDistance;
+                
+                // Use >= for consistent tie-breaking (first in sorted order wins when scores are equal)
+                if (targetsInRange > maxTargetsHit || 
+                    (targetsInRange === maxTargetsHit && score >= bestScore)) {
+                    maxTargetsHit = targetsInRange;
+                    bestScore = score;
+                    bestPosition = { x: centerPos.x, y: centerPos.y, z: centerPos.z };
+                }
+            }
+        });
+        
+        return bestPosition;
+    }
+};
+
 // ability: FireBallAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
 window.engine.app.appClasses['FireBallAbility'] = class FireballAbility extends engine.app.appClasses['BaseAbility'] {
@@ -83073,175 +83274,27 @@ window.engine.app.appClasses['FireBallAbility'] = class FireballAbility extends 
     }
 };
 
-// ability: FireStormAbility
+// ability: MassHealAbility
 window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['FireStormAbility'] = class FirestormAbility extends engine.app.appClasses['BaseAbility'] {
+window.engine.app.appClasses['MassHealAbility'] = class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
-            id: 'fireStorm',
-            name: 'Fire Storm',
-            description: 'Rain fire on the largest enemy cluster',
-            cooldown: 12.0,
-            range: 200,
-            manaCost: 50,
+            id: 'mass_heal',
+            name: 'Mass Heal',
+            description: 'Heal all injured allies across the battlefield',
+            cooldown: 15.0,
+            range: 300,
+            manaCost: 60,
             targetType: 'auto',
             animation: 'cast',
-            priority: 8,
-            castTime: 2.5,
-            autoTrigger: 'enemy_cluster',
+            priority: 9,
+            castTime: 2.0,
+            autoTrigger: 'low_team_health',
             ...params
         });
         
-        this.stormRadius = 90;
-        this.damage = 70;
-        this.element = 'fire';
-        this.minTargets = 3;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff2200,
-                    colorRange: { start: 0xff2200, end: 0xffaa00 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            firestorm: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xff4400,
-                    colorRange: { start: 0xff4400, end: 0xff0000 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
-        const clusterPos = this.findBestClusterPosition(enemies, this.minTargets);
-        return clusterPos !== null;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const enemies = this.getEnemiesInRange(casterEntity);
-        const clusterPos = this.findBestClusterPosition(enemies, this.minTargets);
-        
-        if (!clusterPos) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `The sky darkens as firestorm approaches!`);
-        
-        // Schedule the firestorm to hit after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.performFirestorm(casterEntity, clusterPos);
-        }, this.castTime, casterEntity);
-    }
-    
-    performFirestorm(casterEntity, targetPos) {
-        // Create firestorm visual effect
-        this.createVisualEffect(targetPos, 'firestorm');
-        
-        // Apply fire damage to all enemies in storm area
-        if (this.game.damageSystem) {
-            const results = this.game.damageSystem.applySplashDamage(
-                casterEntity,
-                targetPos,
-                this.damage,
-                this.element,
-                this.stormRadius,
-                { allowFriendlyFire: false, isSpell: true }
-            );
-            
-            this.logAbilityUsage(casterEntity, 
-                `Firestorm engulfs ${results.length} enemies in flames!`);
-        }
-    }
-    
-    // FIXED: Deterministic cluster position finding
-    findBestClusterPosition(enemies, minTargets) {
-        if (enemies.length < minTargets) return null;
-        
-        // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let bestPosition = null;
-        let maxTargetsHit = 0;
-        let bestScore = 0; // For tie-breaking: prefer positions with lower total distance
-        
-        // Check each enemy position as potential cluster center
-        sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
-            if (!centerPos) return;
-            
-            let targetsInRange = 0;
-            let totalDistance = 0;
-            
-            // Count enemies within storm radius of this position
-            sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                if (!enemyPos) return;
-                
-                const distance = Math.sqrt(
-                    Math.pow(enemyPos.x - centerPos.x, 2) + 
-                    Math.pow(enemyPos.z - centerPos.z, 2)
-                );
-                
-                if (distance <= this.stormRadius) {
-                    targetsInRange++;
-                    totalDistance += distance;
-                }
-            });
-            
-            // Only consider positions that hit minimum targets
-            if (targetsInRange >= minTargets) {
-                // Calculate score: prioritize more targets, then lower total distance for tie-breaking
-                const score = (targetsInRange * 1000) - totalDistance;
-                
-                // Use >= for consistent tie-breaking (first in sorted order wins when scores are equal)
-                if (targetsInRange > maxTargetsHit || 
-                    (targetsInRange === maxTargetsHit && score >= bestScore)) {
-                    maxTargetsHit = targetsInRange;
-                    bestScore = score;
-                    bestPosition = { x: centerPos.x, y: centerPos.y, z: centerPos.z };
-                }
-            }
-        });
-        
-        return bestPosition;
-    }
-};
-
-// ability: HealAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['HealAbility'] = class HealAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'heal',
-            name: 'Heal',
-            description: 'Restores health to the most injured ally',
-            cooldown: 30,
-            range: 200,
-            manaCost: 40,
-            targetType: 'ally',
-            animation: 'cast',
-            priority: 8,
-            castTime: 1.0,
-            autoTrigger: 'injured_ally',
-            ...params
-        });
-        
-        this.healAmount = 80;
+        this.healPercent = 0.4; // 40% of max health
+        this.minInjuredAllies = 3;
         this.element = 'divine';
     }
     
@@ -83250,10 +83303,10 @@ window.engine.app.appClasses['HealAbility'] = class HealAbility extends engine.a
             cast: {
                 type: 'magic',
                 options: {
-                    count: 2,
+                    count: 3,
                     color: 0x88ff88,
                     colorRange: { start: 0x88ff88, end: 0xffffaa },
-                    scaleMultiplier: 1.0,
+                    scaleMultiplier: 1.5,
                     speedMultiplier: 1.0
                 }
             },
@@ -83265,81 +83318,122 @@ window.engine.app.appClasses['HealAbility'] = class HealAbility extends engine.a
                     scaleMultiplier: 1.2,
                     speedMultiplier: 0.8
                 }
+            },
+            mass_heal: {
+                type: 'heal',
+                options: {
+                    count: 3,
+                    color: 0xaaffaa,
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 0.6
+                }
             }
         };
     }
     
     canExecute(casterEntity) {
         const allies = this.getAlliesInRange(casterEntity);
-        return allies.some(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            return health && health.current < health.max; // Ally needs healing
-        });
+        const injuredAllies = this.getInjuredAllies(allies);
+        return injuredAllies.length >= this.minInjuredAllies;
     }
-        
-    execute(casterEntity, targetData = null) {
+    
+    execute(casterEntity) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
-        const target = this.findMostInjuredAlly(allies);
+        const injuredAllies = this.getInjuredAllies(allies);
         
-        if (!target) return null;
+        if (injuredAllies.length < this.minInjuredAllies) return null;
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
+        this.logAbilityUsage(casterEntity, `Divine energy gathers to heal the wounded!`);
         
-    
+        // Schedule the mass heal to trigger after cast time
         this.game.schedulingSystem.scheduleAction(() => {
-            const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
-            if (targetPos) {
-                this.performHeal(casterEntity, target, targetPos);
-            }
+            this.performMassHeal(casterEntity, injuredAllies);
         }, this.castTime, casterEntity);
     }
     
-    performHeal(casterEntity, targetId, targetPos) {
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        if (!targetHealth) return;
-        // Heal effect
-        this.createVisualEffect(targetPos, 'heal');
+    performMassHeal(casterEntity, targetAllies) {
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        let healedCount = 0;
+        let totalHealing = 0;
         
-        // Apply healing
-        const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
-        targetHealth.current += actualHeal;
+        // Sort allies deterministically for consistent processing order
+        const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
-        // Show heal number
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.showDamageNumber(
-                targetPos.x, targetPos.y + 50, targetPos.z,
-                actualHeal, 'heal'
-            );
-        }
-        
-    
-    }
-        
-    findMostInjuredAlly(allies) {
-        // Sort allies deterministically first
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        let mostInjured = null;
-        let lowestHealthRatio = 1.0;
-        
+        // Process each ally deterministically
         sortedAllies.forEach(allyId => {
             const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            if (health && health.max > 0) {
-                const healthRatio = health.current / health.max;
-                // Use <= for consistent tie-breaking (first in sorted order wins)
-                if (healthRatio <= lowestHealthRatio) {
-                    lowestHealthRatio = healthRatio;
-                    mostInjured = allyId;
+            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            
+            if (!health || !allyPos) return;
+            
+            // Only heal if ally is still injured
+            if (health.current < health.max) {
+                const healAmount = Math.floor(health.max * this.healPercent);
+                const actualHeal = Math.min(healAmount, health.max - health.current);
+                
+                if (actualHeal > 0) {
+                    // Apply healing
+                    health.current += actualHeal;
+                    healedCount++;
+                    totalHealing += actualHeal;
+                    
+                    // Create heal effect on each ally
+                    this.createVisualEffect(allyPos, 'heal');
+                    
+                    // Show heal number
+                    if (this.game.effectsSystem) {
+                        this.game.effectsSystem.showDamageNumber(
+                            allyPos.x, allyPos.y + 50, allyPos.z,
+                            actualHeal, 'heal'
+                        );
+                    }
+                
                 }
             }
         });
         
-        return mostInjured;
+        // Create major healing effect at caster position
+        if (casterPos && healedCount > 0) {
+            this.createVisualEffect(casterPos, 'mass_heal');
+        }
+        
+        // Screen effect for dramatic impact
+        if (this.game.effectsSystem && healedCount > 0) {
+            this.game.effectsSystem.playScreenFlash('#88ff88', 0.3);
+        }
+        
+        // Log final results
+        this.logAbilityUsage(casterEntity, 
+            `Mass heal restores ${healedCount} allies for ${totalHealing} total health!`);
+    }
+    
+    // FIXED: Deterministic injured ally detection
+    getInjuredAllies(allies) {
+        // Sort allies deterministically first for consistent processing
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        return sortedAllies.filter(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            // Check if ally is injured (below 80% health threshold)
+            return health && health.current < health.max * 0.8;
+        });
+    }
+    
+    // Helper method to get all valid heal targets (for future use)
+    getAllHealTargets(allies) {
+        // Sort allies deterministically first for consistent processing
+        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        
+        return sortedAllies.filter(allyId => {
+            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            // Any ally that isn't at full health
+            return health && health.current < health.max;
+        });
     }
 };
 
@@ -83528,169 +83622,6 @@ window.engine.app.appClasses['MeteorStrikeAbility'] = class MeteorStrikeAbility 
         }
         
         return bestPosition;
-    }
-};
-
-// ability: MassHealAbility
-window.engine.app.appClasses = window.engine.app.appClasses || {};
-window.engine.app.appClasses['MassHealAbility'] = class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
-    constructor(game, params = {}) {
-        super(game, {
-            id: 'mass_heal',
-            name: 'Mass Heal',
-            description: 'Heal all injured allies across the battlefield',
-            cooldown: 15.0,
-            range: 300,
-            manaCost: 60,
-            targetType: 'auto',
-            animation: 'cast',
-            priority: 9,
-            castTime: 2.0,
-            autoTrigger: 'low_team_health',
-            ...params
-        });
-        
-        this.healPercent = 0.4; // 40% of max health
-        this.minInjuredAllies = 3;
-        this.element = 'divine';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x88ff88,
-                    colorRange: { start: 0x88ff88, end: 0xffffaa },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0x88ffaa,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 0.8
-                }
-            },
-            mass_heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0xaaffaa,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
-    }
-    
-    canExecute(casterEntity) {
-        const allies = this.getAlliesInRange(casterEntity);
-        const injuredAllies = this.getInjuredAllies(allies);
-        return injuredAllies.length >= this.minInjuredAllies;
-    }
-    
-    execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!casterPos) return null;
-        
-        const allies = this.getAlliesInRange(casterEntity);
-        const injuredAllies = this.getInjuredAllies(allies);
-        
-        if (injuredAllies.length < this.minInjuredAllies) return null;
-        
-        // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine energy gathers to heal the wounded!`);
-        
-        // Schedule the mass heal to trigger after cast time
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.performMassHeal(casterEntity, injuredAllies);
-        }, this.castTime, casterEntity);
-    }
-    
-    performMassHeal(casterEntity, targetAllies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        let healedCount = 0;
-        let totalHealing = 0;
-        
-        // Sort allies deterministically for consistent processing order
-        const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        // Process each ally deterministically
-        sortedAllies.forEach(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            
-            if (!health || !allyPos) return;
-            
-            // Only heal if ally is still injured
-            if (health.current < health.max) {
-                const healAmount = Math.floor(health.max * this.healPercent);
-                const actualHeal = Math.min(healAmount, health.max - health.current);
-                
-                if (actualHeal > 0) {
-                    // Apply healing
-                    health.current += actualHeal;
-                    healedCount++;
-                    totalHealing += actualHeal;
-                    
-                    // Create heal effect on each ally
-                    this.createVisualEffect(allyPos, 'heal');
-                    
-                    // Show heal number
-                    if (this.game.effectsSystem) {
-                        this.game.effectsSystem.showDamageNumber(
-                            allyPos.x, allyPos.y + 50, allyPos.z,
-                            actualHeal, 'heal'
-                        );
-                    }
-                
-                }
-            }
-        });
-        
-        // Create major healing effect at caster position
-        if (casterPos && healedCount > 0) {
-            this.createVisualEffect(casterPos, 'mass_heal');
-        }
-        
-        // Screen effect for dramatic impact
-        if (this.game.effectsSystem && healedCount > 0) {
-            this.game.effectsSystem.playScreenFlash('#88ff88', 0.3);
-        }
-        
-        // Log final results
-        this.logAbilityUsage(casterEntity, 
-            `Mass heal restores ${healedCount} allies for ${totalHealing} total health!`);
-    }
-    
-    // FIXED: Deterministic injured ally detection
-    getInjuredAllies(allies) {
-        // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            // Check if ally is injured (below 80% health threshold)
-            return health && health.current < health.max * 0.8;
-        });
-    }
-    
-    // Helper method to get all valid heal targets (for future use)
-    getAllHealTargets(allies) {
-        // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        
-        return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            // Any ally that isn't at full health
-            return health && health.current < health.max;
-        });
     }
 };
 
