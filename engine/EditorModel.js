@@ -142,7 +142,7 @@ class EditorModel {
                 localStorage.setItem(this.state.currentProject, projectText);
             } else {
             // If server saving is enabled, send config to server
-            
+
                 fetch('/save-project', {
                     method: 'POST',
                     headers: {
@@ -158,6 +158,8 @@ class EditorModel {
                     return response.text();
                 })
                 .then(message => {
+                    // After saving project config, compile and save the game
+                    return this.compileAndSaveGame();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -169,6 +171,93 @@ class EditorModel {
         }
         
         return true;
+    }
+
+    /**
+     * Compiles and saves the game bundle to the project directory
+     * Creates game.js, engine.js, and modules folder
+     * @returns {Promise<boolean>} Success status
+     */
+    async compileAndSaveGame() {
+        if (!this.state.currentProject) {
+            console.error('No project loaded');
+            return false;
+        }
+
+        try {
+            console.log('🔨 Compiling game bundle...');
+
+            // Get compiler instance from GUTS libraries
+            const Compiler = window.GUTS?.Compiler;
+            if (!Compiler) {
+                console.error('Compiler not available');
+                return false;
+            }
+
+            const compiler = new Compiler(this.core);
+
+            // Engine file paths (relative to the server)
+            const engineFilePaths = {
+                moduleManager: './engine/ModuleManager.js',
+                baseEngine: './engine/BaseEngine.js',
+                engine: './engine/Engine.js'
+            };
+
+            // Compile the game
+            const result = await compiler.compile(
+                this.state.currentProject,
+                this.getCollections(),
+                this.getCollectionDefs(),
+                engineFilePaths
+            );
+
+            console.log('✅ Compilation complete');
+
+            // Fetch local module files
+            const modules = [];
+            if (result.localModuleFiles && result.localModuleFiles.length > 0) {
+                console.log(`📦 Fetching ${result.localModuleFiles.length} local modules...`);
+
+                for (const moduleInfo of result.localModuleFiles) {
+                    if (moduleInfo.libraryDef.isModule) {
+                        try {
+                            const response = await fetch(moduleInfo.path);
+                            const content = await response.text();
+                            const filename = moduleInfo.path.split('/').pop();
+
+                            modules.push({ filename, content });
+                        } catch (error) {
+                            console.error(`Failed to fetch module ${moduleInfo.name}:`, error);
+                        }
+                    }
+                }
+            }
+
+            // Send compiled files to server
+            const saveResponse = await fetch('/save-compiled-game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectName: this.state.currentProject,
+                    gameCode: result.code,
+                    engineCode: result.engineCode,
+                    modules: modules
+                })
+            });
+
+            if (!saveResponse.ok) {
+                throw new Error('Failed to save compiled game files');
+            }
+
+            console.log('✅ Compiled game files saved to project directory');
+            return true;
+
+        } catch (error) {
+            console.error('Error compiling and saving game:', error);
+            return false;
+        }
     }
 
     /**
