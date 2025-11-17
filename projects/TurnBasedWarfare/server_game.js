@@ -97,12 +97,14 @@ app.get('/api/server-status', (req, res) => {
 });
 
 app.get('/api/rooms', (req, res) => {
-    const rooms = Array.from(gameServer.gameRooms.entries()).map(([id, room]) => ({
-        id,
-        playerCount: room.players.size,
-        maxPlayers: room.maxPlayers,
-        isActive: room.isActive
-    }));
+    const rooms = Array.from(gameServer.gameRooms.entries())
+        .filter(([id, room]) => room.players.size > 0) // Only return rooms with players
+        .map(([id, room]) => ({
+            id,
+            playerCount: room.players.size,
+            maxPlayers: room.maxPlayers,
+            isActive: room.isActive
+        }));
     res.json(rooms);
 });
 
