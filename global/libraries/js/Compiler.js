@@ -248,9 +248,20 @@ window.COMPILED_GAME_LOADED = true;`;
     }
 
 async buildLibraries(result) {
-    const projectConfig = this.collections.configs.game;
+    // Determine which config to use based on scene filter
+    let configName = 'game'; // Default to game config
+    if (this.sceneFilter && this.sceneFilter.title) {
+        // If scene has a title (e.g., "server"), try to use that config
+        const sceneTitle = this.sceneFilter.title;
+        if (this.collections.configs[sceneTitle]) {
+            configName = sceneTitle;
+            console.log(`Using ${sceneTitle} config for libraries`);
+        }
+    }
+
+    const projectConfig = this.collections.configs[configName];
     if (!projectConfig.libraries) {
-        console.warn("No libraries defined in game config");
+        console.warn(`No libraries defined in ${configName} config`);
         return;
     }
 
@@ -503,32 +514,36 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
     
     for (const lib of window.COMPILED_GAME.externalLibraries) {
         if (lib.isModule) {
-            // Import as ES module
-            const loadPromise = import(lib.url).then((module) => {
-                const libName = lib.requireName || lib.name;
-                const loadedModule = module[libName] || module.default || module;
-                
-                const libraryKey = libName.replace(/-/g, "__").replace(/\\./g, "_");
-                
-                if (lib.windowContext) {
-                    if (!window[lib.windowContext]) {
-                        window[lib.windowContext] = {};
+            // Import as ES module - wrap in try-catch for Node.js VM compatibility
+            try {
+                const loadPromise = import(lib.url).then((module) => {
+                    const libName = lib.requireName || lib.name;
+                    const loadedModule = module[libName] || module.default || module;
+
+                    const libraryKey = libName.replace(/-/g, "__").replace(/\\./g, "_");
+
+                    if (lib.windowContext) {
+                        if (!window[lib.windowContext]) {
+                            window[lib.windowContext] = {};
+                        }
+                        window[lib.windowContext][libName] = loadedModule;
+                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                        window.engine[libraryKey] = loadedModule;
+                    } else {
+                        window[libName] = loadedModule;
+                        window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
+                        window.engine[libraryKey] = loadedModule;
                     }
-                    window[lib.windowContext][libName] = loadedModule;
-                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    window.engine[libraryKey] = loadedModule;
-                } else {
-                    window[libName] = loadedModule;
-                    window.COMPILED_GAME.libraryClasses[libraryKey] = loadedModule;
-                    window.engine[libraryKey] = loadedModule;
-                }
-                
-                console.log(\`Loaded \${lib.isLocalModule ? 'bundled' : 'external'} module: \${lib.name}\`);
-            }).catch(error => {
+
+                    console.log(\`Loaded \${lib.isLocalModule ? 'bundled' : 'external'} module: \${lib.name}\`);
+                }).catch(error => {
+                    console.error(\`Failed to load module \${lib.name}:\`, error);
+                });
+
+                loadPromises.push(loadPromise);
+            } catch (error) {
                 console.error(\`Failed to load module \${lib.name}:\`, error);
-            });
-            
-            loadPromises.push(loadPromise);
+            }
         }
     }
     

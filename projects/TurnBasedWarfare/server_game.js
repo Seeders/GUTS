@@ -34,6 +34,13 @@ function loadCompiledGame() {
     global.window.removeEventListener = () => {};
     global.window.dispatchEvent = () => true;
 
+    // Mock dynamic imports globally to prevent browser module loading errors
+    const originalImport = global.import;
+    global.import = async (specifier) => {
+        console.log(`Skipping dynamic import: ${specifier}`);
+        return { default: {} };
+    };
+
     // Create comprehensive DOM mocks for client libraries
     const mockElement = {
         setAttribute: () => {},
@@ -103,13 +110,7 @@ function loadCompiledGame() {
     // Load game_server.js (contains server-only compiled classes and collections)
     const gamePath = path.join(__dirname, 'game_server.js');
     const gameCode = readFileSync(gamePath, 'utf8');
-    const gameScript = new vm.Script(gameCode, {
-        importModuleDynamically: async (specifier) => {
-            // Mock dynamic imports for modules we can't load in Node.js
-            console.log(`Skipping dynamic import: ${specifier}`);
-            return { default: {} };
-        }
-    });
+    const gameScript = new vm.Script(gameCode);
     gameScript.runInThisContext();
 
     console.log('✓ Loaded compiled game_server.js');
