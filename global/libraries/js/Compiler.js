@@ -15,6 +15,40 @@ class Compiler {
     }
 
     /**
+     * Strip script text from collections to reduce bundle size
+     * Scripts are already compiled in classRegistry, so we don't need them in collections
+     * @param {Object} collections - Original collections object
+     * @returns {Object} - Stripped collections without script text
+     */
+    stripScriptsFromCollections(collections) {
+        const stripped = JSON.parse(JSON.stringify(collections)); // Deep clone
+
+        // Collection types that contain script properties
+        const scriptCollectionTypes = ['systems', 'managers', 'components', 'functions', 'renderers', 'classes'];
+
+        scriptCollectionTypes.forEach(type => {
+            if (stripped[type]) {
+                Object.keys(stripped[type]).forEach(itemName => {
+                    if (stripped[type][itemName].script) {
+                        delete stripped[type][itemName].script;
+                    }
+                });
+            }
+        });
+
+        // Also strip script from libraries (inline scripts)
+        if (stripped.libraries) {
+            Object.keys(stripped.libraries).forEach(libName => {
+                if (stripped.libraries[libName].script) {
+                    delete stripped.libraries[libName].script;
+                }
+            });
+        }
+
+        return stripped;
+    }
+
+    /**
      * Main compile method - orchestrates the entire compilation process
      * @param {string} projectName - Name of the project to compile
      * @param {Object} collections - Project collections
@@ -113,6 +147,12 @@ class Compiler {
      * Build the header section with metadata and utility functions
      */
     buildHeader(result) {
+        // Strip scripts from collections
+        const strippedCollections = this.stripScriptsFromCollections(this.collections);
+
+        // Serialize collections to JSON string
+        const collectionsJSON = JSON.stringify(strippedCollections, null, 2);
+
         const header = `/**
  * Compiled Game Bundle
  * Project: ${result.projectName}
@@ -127,8 +167,14 @@ window.COMPILED_GAME = {
     version: "${result.timestamp}",
     classRegistry: {},
     libraryClasses: {},
+    collections: ${collectionsJSON},
     compiled: true,
     initialized: false
+};
+
+// Helper to get collections (replaces core.getCollections() at runtime)
+window.COMPILED_GAME.getCollections = function() {
+    return window.COMPILED_GAME.collections;
 };
 
 // FLAG TO PREVENT DUPLICATE LIBRARY LOADING
@@ -681,14 +727,14 @@ window.COMPILED_GAME.init = function(engine) {
         console.log('Compiled game bundle already initialized');
         return;
     }
-    
+
     console.log('Initializing compiled game bundle...');
-    
+
     // Store original methods
     const originalGetCompiledScript = ModuleManager.prototype.getCompiledScript;
     const originalCompileScript = ModuleManager.prototype.compileScript;
     const originalCompileFunction = ModuleManager.prototype.compileFunction;
-    
+
     // Patch getCompiledScript
     ModuleManager.prototype.getCompiledScript = function(typeName, collectionType) {
         if (window.COMPILED_GAME.hasClass(typeName, collectionType)) {
@@ -696,7 +742,7 @@ window.COMPILED_GAME.init = function(engine) {
         }
         return originalGetCompiledScript.call(this, typeName, collectionType);
     };
-    
+
     // Patch compileScript
     ModuleManager.prototype.compileScript = function(scriptText, typeName) {
         for (const collectionType in window.COMPILED_GAME.classRegistry) {
@@ -706,7 +752,7 @@ window.COMPILED_GAME.init = function(engine) {
         }
         return originalCompileScript.call(this, scriptText, typeName);
     };
-    
+
     // Patch compileFunction
     ModuleManager.prototype.compileFunction = function(scriptText, typeName) {
         if (window.COMPILED_GAME.hasClass(typeName, 'functions')) {
@@ -714,7 +760,18 @@ window.COMPILED_GAME.init = function(engine) {
         }
         return originalCompileFunction.call(this, scriptText, typeName);
     };
-    
+
+    // Patch core.getCollections() to return compiled collections
+    if (engine.core && typeof engine.core.getCollections === 'function') {
+        const originalGetCollections = engine.core.getCollections.bind(engine.core);
+        engine.core.getCollections = function() {
+            if (window.COMPILED_GAME?.collections) {
+                return window.COMPILED_GAME.collections;
+            }
+            return originalGetCollections();
+        };
+    }
+
     // Make library classes available
     if (engine.moduleManager) {
         engine.moduleManager.libraryClasses = {
@@ -723,7 +780,7 @@ window.COMPILED_GAME.init = function(engine) {
         };
         window.GUTS = engine.moduleManager.libraryClasses;
     }
-    
+
     window.COMPILED_GAME.initialized = true;
     console.log('Compiled game bundle initialized successfully');
 };

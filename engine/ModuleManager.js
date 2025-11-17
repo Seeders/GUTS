@@ -289,9 +289,11 @@ class ModuleManager {
   async checkCompiledScripts(modules) {
      if (window.COMPILED_GAME_LOADED) {
         console.log('📦 Compiled bundle detected - skipping library loading');
-        
+
+        // Use compiled collections if available, otherwise fall back to core.getCollections()
+        const collections = window.COMPILED_GAME?.collections || this.core.getCollections();
+
         // Still set up UI elements (needed for editor modules)
-        const collections = this.core.getCollections();
         Object.entries(modules).forEach(([moduleId, module]) => {
             let ui = collections.interfaces[module.interface];
             if (ui) {
@@ -317,7 +319,7 @@ class ModuleManager {
                 }
             }
         });
-        
+
         // Return compiled library classes immediately
         return Promise.resolve(window.COMPILED_GAME.libraryClasses);
     }
