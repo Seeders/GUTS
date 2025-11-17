@@ -53,30 +53,51 @@ class SceneManager {
                 if(baseClassId){
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
-                    this.game.addClass(baseClassId, BaseClassDef, params);
+                    if(engine?.app?.appClasses){
+                        const BaseClassDef = engine.app.appClasses[baseClassId];
+                        this.game.addClass(baseClassId, BaseClassDef, params);
+                    } else {
+                        const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
+                        this.game.addClass(baseClassId, BaseClassDef, params);
+                    }
                 }
                 for(const collectionClassId in classCollection) {    
                     if(baseClassId && collectionClassId == baseClassId) continue;                
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
-                    this.game.addClass(collectionClassId, ClassDef, params);
+                    if(engine?.app?.appClasses){
+                        const ClassDef = engine.app.appClasses[collectionClassId];
+                        this.game.addClass(collectionClassId, ClassDef, params);
+                    } else {
+                        const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
+                        this.game.addClass(collectionClassId, ClassDef, params);
+                    }
                 }
             });         
             
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
-                const ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
+                let ManagerClass = null;
+                if(engine?.app?.appClasses){
+                    ManagerClass = engine.app.appClasses[managerDef.type];        
+                } else {
+                    ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
+                }     
                 const managerInst = new ManagerClass(this.game, this);
                 if(managerInst.init){
                     managerInst.init(params);
-                }                
+                }  
             });   
 
             sceneEntity.systems.forEach((systemDef) => {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
-                const SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
+             
+                let SystemClass = null;
+                if(engine?.app?.appClasses){
+                    SystemClass = engine.app.appClasses[systemDef.type];            
+                } else {
+                    SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
+                }    
                 const systemInst = new SystemClass(this.game, this);
    
                 this.game.addSystem(systemInst, params);
