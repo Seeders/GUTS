@@ -1,6 +1,9 @@
 # Node.js dependencies
 node_modules/
 cache/
+
+*/**/dist/**/**
+
 # Logs
 logs
 *.log

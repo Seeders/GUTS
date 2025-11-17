@@ -271,7 +271,7 @@ async buildLibraries(result) {
         // Handle local files with filePath
         if (libraryDef.filePath && !libraryDef.href) {
             const path = libraryDef.filePath;
-            
+            console.log('external library', path);
             // Store local module info for bundling into zip
             localModuleFiles.push({
                 name: libraryName,

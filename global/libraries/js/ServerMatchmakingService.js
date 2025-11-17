@@ -319,3 +319,21 @@ class ServerMatchmakingService {
         console.log('MatchmakingService destroyed');
     }
 }
+
+      
+if(typeof ServerMatchmakingService != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ServerMatchmakingService = ServerMatchmakingService;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ServerMatchmakingService;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ServerMatchmakingService;
+        exports.ServerMatchmakingService = ServerMatchmakingService;
+    }
+}
