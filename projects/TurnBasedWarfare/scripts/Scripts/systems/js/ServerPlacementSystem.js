@@ -752,13 +752,34 @@ class ServerPlacementSystem extends engine.BaseSystem {
         return { success: false, error: "Not enough gold." };
     }
 
-    getStartingState(player){
-
-        let startPosition = { x: 10, z: 10 };
-        if(player.stats.side == 'right'){
-            startPosition = { x: 116, z: 116 };
+    getStartingPositionFromLevel(side) {
+        // Try to get level data from game collections
+        const level = this.game.getCollections().levels?.level;
+        if (!level || !level.tileMap || !level.tileMap.startingLocations) {
+            return null;
         }
-        
+
+        // Find starting location for this side
+        const startingLoc = level.tileMap.startingLocations.find(loc => loc.side === side);
+        if (startingLoc && startingLoc.gridPosition) {
+            return { x: startingLoc.gridPosition.x, z: startingLoc.gridPosition.z };
+        }
+
+        return null;
+    }
+
+    getStartingState(player){
+        // Get starting position from level data if available
+        let startPosition = this.getStartingPositionFromLevel(player.stats.side);
+
+        // Fallback to hardcoded positions if not found in level
+        if (!startPosition) {
+            startPosition = { x: 10, z: 10 };
+            if(player.stats.side == 'right'){
+                startPosition = { x: 116, z: 116 };
+            }
+        }
+
         // Find nearest unclaimed gold vein
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;

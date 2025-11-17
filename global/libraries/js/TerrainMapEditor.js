@@ -39,9 +39,15 @@ class TerrainMapEditor {
         this.environmentObjects = this.tileMap.environmentObjects || [];
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
-        this.placementMode = 'terrain'; // can be 'terrain', 'environment', 'ramp', or 'height'
+        this.placementMode = 'terrain'; // can be 'terrain', 'environment', 'ramp', 'height', or 'placements'
         this.terrainTool = 'brush'; // can be 'brush' or 'fill'
         this.brushSize = 1; // Default brush size (1x1)
+
+        // Entity placements (starting locations, units, buildings)
+        this.startingLocations = [];
+        this.entityPlacements = [];
+        this.selectedPlacementType = null; // 'startingLocation', 'unit', 'building'
+        this.selectedEntityType = null; // Specific unit/building type
         this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -244,6 +250,10 @@ class TerrainMapEditor {
                 this.tileMap.environmentObjects = [];
             }
 
+            // Load placements data
+            this.startingLocations = this.tileMap.startingLocations || [];
+            this.entityPlacements = this.tileMap.entityPlacements || [];
+
             // Load or initialize heightMap from objectData
             if (this.objectData.heightMap) {
                 this.tileMap.heightMap = this.objectData.heightMap;
@@ -410,10 +420,16 @@ class TerrainMapEditor {
             document.getElementById('heightsBtn').classList.remove('active');
             document.getElementById('environmentBtn').classList.remove('active');
             document.getElementById('rampsBtn').classList.add('active');
+            if (document.getElementById('placementsBtn')) {
+                document.getElementById('placementsBtn').classList.remove('active');
+            }
             document.getElementById('terrainsPanel').style.display = 'none';
             document.getElementById('heightsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'block';
+            if (document.getElementById('placementsPanel')) {
+                document.getElementById('placementsPanel').style.display = 'none';
+            }
             this.placementMode = 'ramp';
             this.previewCanvas.style.display = 'none';
 
@@ -433,6 +449,40 @@ class TerrainMapEditor {
                 this.placementModeIndicator.style.opacity = '0';
             }, 2000);
         });
+
+        // Placements button
+        if (document.getElementById('placementsBtn')) {
+            document.getElementById('placementsBtn').addEventListener('click', () => {
+                document.getElementById('terrainsBtn').classList.remove('active');
+                document.getElementById('heightsBtn').classList.remove('active');
+                document.getElementById('environmentBtn').classList.remove('active');
+                document.getElementById('rampsBtn').classList.remove('active');
+                document.getElementById('placementsBtn').classList.add('active');
+                document.getElementById('terrainsPanel').style.display = 'none';
+                document.getElementById('heightsPanel').style.display = 'none';
+                document.getElementById('environmentPanel').style.display = 'none';
+                document.getElementById('rampsPanel').style.display = 'none';
+                document.getElementById('placementsPanel').style.display = 'block';
+                this.placementMode = 'placements';
+                this.previewCanvas.style.display = 'none';
+
+                // Setup placements panel
+                this.setupPlacementsPanel();
+
+                // Trigger re-render
+                this.needsRender = true;
+                this.scheduleRender();
+
+                this.placementModeIndicator.textContent = 'Placement Mode: Entity Placements';
+                this.placementModeIndicator.style.opacity = '1';
+
+                // Hide indicator after a delay
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 2000);
+            });
+        }
 
         // Clear all ramps button
         document.getElementById('clear-all-ramps-btn').addEventListener('click', () => {
@@ -985,6 +1035,215 @@ class TerrainMapEditor {
 
             buttonsContainer.appendChild(button);
         }
+    }
+
+    setupPlacementsPanel() {
+        const placementsPanel = document.getElementById('placementsPanel');
+        if (!placementsPanel) return;
+
+        // Clear existing content
+        placementsPanel.innerHTML = '';
+
+        // Create Starting Locations section
+        const startingLocSection = document.createElement('div');
+        startingLocSection.className = 'editor-module__section';
+
+        const startingLocHeader = document.createElement('h3');
+        startingLocHeader.className = 'editor-module__section-title';
+        startingLocHeader.textContent = 'Starting Locations';
+        startingLocSection.appendChild(startingLocHeader);
+
+        const startingLocInfo = document.createElement('div');
+        startingLocInfo.className = 'editor-module__info-box';
+        startingLocInfo.innerHTML = '<p>Click on the map to place starting locations for each team.</p>';
+        startingLocSection.appendChild(startingLocInfo);
+
+        // Starting location buttons
+        const startingLocButtons = document.createElement('div');
+        startingLocButtons.className = 'terrain-editor__placement-buttons';
+
+        ['left', 'right'].forEach(side => {
+            const btn = document.createElement('button');
+            btn.className = 'editor-module__btn editor-module__btn--small';
+            btn.textContent = `${side.charAt(0).toUpperCase() + side.slice(1)} Team Start`;
+            btn.dataset.placementType = 'startingLocation';
+            btn.dataset.side = side;
+
+            btn.addEventListener('click', () => {
+                // Deselect all placement buttons
+                document.querySelectorAll('.terrain-editor__placement-buttons button').forEach(b => b.classList.remove('active'));
+
+                btn.classList.add('active');
+                this.selectedPlacementType = 'startingLocation';
+                this.selectedEntityType = side;
+
+                this.placementModeIndicator.textContent = `Placing: ${side} team starting location`;
+                this.placementModeIndicator.style.opacity = '1';
+
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 2000);
+            });
+
+            startingLocButtons.appendChild(btn);
+        });
+
+        startingLocSection.appendChild(startingLocButtons);
+
+        // Display current starting locations
+        const startingLocList = document.createElement('div');
+        startingLocList.className = 'terrain-editor__placement-list';
+        startingLocList.id = 'startingLocationsList';
+        this.updateStartingLocationsList(startingLocList);
+        startingLocSection.appendChild(startingLocList);
+
+        placementsPanel.appendChild(startingLocSection);
+
+        // Buildings section
+        const buildingsSection = document.createElement('div');
+        buildingsSection.className = 'editor-module__section';
+
+        const buildingsHeader = document.createElement('h3');
+        buildingsHeader.className = 'editor-module__section-title';
+        buildingsHeader.textContent = 'Buildings';
+        buildingsSection.appendChild(buildingsHeader);
+
+        const buildingsInfo = document.createElement('div');
+        buildingsInfo.className = 'editor-module__info-box';
+        buildingsInfo.innerHTML = '<p>Place buildings like Gold Mines on the map. Gold Mines must be placed on gold veins.</p>';
+        buildingsSection.appendChild(buildingsInfo);
+
+        // Building type buttons
+        const buildingButtons = document.createElement('div');
+        buildingButtons.className = 'terrain-editor__placement-buttons';
+
+        const buildingTypes = ['goldMine', 'townHall'];
+        buildingTypes.forEach(buildingType => {
+            const btn = document.createElement('button');
+            btn.className = 'editor-module__btn editor-module__btn--small';
+            btn.textContent = buildingType === 'goldMine' ? 'Gold Mine' : 'Town Hall';
+            btn.dataset.placementType = 'building';
+            btn.dataset.buildingType = buildingType;
+
+            btn.addEventListener('click', () => {
+                // Deselect all placement buttons
+                document.querySelectorAll('.terrain-editor__placement-buttons button').forEach(b => b.classList.remove('active'));
+
+                btn.classList.add('active');
+                this.selectedPlacementType = 'building';
+                this.selectedEntityType = buildingType;
+
+                this.placementModeIndicator.textContent = `Placing: ${buildingType}`;
+                this.placementModeIndicator.style.opacity = '1';
+
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 2000);
+            });
+
+            buildingButtons.appendChild(btn);
+        });
+
+        buildingsSection.appendChild(buildingButtons);
+        placementsPanel.appendChild(buildingsSection);
+
+        // Units section
+        const unitsSection = document.createElement('div');
+        unitsSection.className = 'editor-module__section';
+
+        const unitsHeader = document.createElement('h3');
+        unitsHeader.className = 'editor-module__section-title';
+        unitsHeader.textContent = 'Units';
+        unitsSection.appendChild(unitsHeader);
+
+        const unitsInfo = document.createElement('div');
+        unitsInfo.className = 'editor-module__info-box';
+        unitsInfo.innerHTML = '<p>Place starting units on the map.</p>';
+        unitsSection.appendChild(unitsInfo);
+
+        // Unit type buttons
+        const unitButtons = document.createElement('div');
+        unitButtons.className = 'terrain-editor__placement-buttons';
+
+        const unitTypes = ['peasant'];
+        unitTypes.forEach(unitType => {
+            const btn = document.createElement('button');
+            btn.className = 'editor-module__btn editor-module__btn--small';
+            btn.textContent = unitType.charAt(0).toUpperCase() + unitType.slice(1);
+            btn.dataset.placementType = 'unit';
+            btn.dataset.unitType = unitType;
+
+            btn.addEventListener('click', () => {
+                // Deselect all placement buttons
+                document.querySelectorAll('.terrain-editor__placement-buttons button').forEach(b => b.classList.remove('active'));
+
+                btn.classList.add('active');
+                this.selectedPlacementType = 'unit';
+                this.selectedEntityType = unitType;
+
+                this.placementModeIndicator.textContent = `Placing: ${unitType}`;
+                this.placementModeIndicator.style.opacity = '1';
+
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 2000);
+            });
+
+            unitButtons.appendChild(btn);
+        });
+
+        unitsSection.appendChild(unitButtons);
+        placementsPanel.appendChild(unitsSection);
+
+        // Clear all placements button
+        const clearAllBtn = document.createElement('button');
+        clearAllBtn.className = 'editor-module__btn editor-module__btn--danger';
+        clearAllBtn.textContent = 'Clear All Placements';
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all entity placements?')) {
+                this.startingLocations = [];
+                this.entityPlacements = [];
+                this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
+                this.needsRender = true;
+                this.scheduleRender();
+                this.exportMap();
+            }
+        });
+        placementsPanel.appendChild(clearAllBtn);
+    }
+
+    updateStartingLocationsList(listElement) {
+        if (!listElement) return;
+
+        listElement.innerHTML = '';
+
+        if (this.startingLocations.length === 0) {
+            listElement.innerHTML = '<p class="editor-module__info-text">No starting locations placed</p>';
+            return;
+        }
+
+        this.startingLocations.forEach((loc, index) => {
+            const item = document.createElement('div');
+            item.className = 'terrain-editor__placement-item';
+            item.innerHTML = `
+                <span>${loc.side} team at (${loc.gridPosition.x}, ${loc.gridPosition.z})</span>
+                <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" data-index="${index}">Remove</button>
+            `;
+
+            item.querySelector('button').addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                this.startingLocations.splice(idx, 1);
+                this.updateStartingLocationsList(listElement);
+                this.needsRender = true;
+                this.scheduleRender();
+                this.exportMap();
+            });
+
+            listElement.appendChild(item);
+        });
     }
 
     deleteEnvironmentObjectAt(e) {
@@ -1737,6 +1996,72 @@ class TerrainMapEditor {
                     this.scheduleRender();
                 }
             }
+        } else if (this.placementMode === 'placements' && this.selectedPlacementType) {
+            // Entity placement logic
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+
+            // Check if coordinates are within bounds
+            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
+                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+
+                if (this.selectedPlacementType === 'startingLocation') {
+                    // Place starting location
+                    const side = this.selectedEntityType;
+
+                    // Remove existing starting location for this side
+                    this.startingLocations = this.startingLocations.filter(loc => loc.side !== side);
+
+                    // Add new starting location
+                    this.startingLocations.push({
+                        side: side,
+                        gridPosition: { x: snappedGrid.x, z: snappedGrid.y }
+                    });
+
+                    // Update UI list
+                    this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
+
+                    this.placementModeIndicator.textContent = `Placed ${side} team start at (${snappedGrid.x}, ${snappedGrid.y})`;
+                    this.placementModeIndicator.style.opacity = '1';
+
+                    clearTimeout(this.indicatorTimeout);
+                    this.indicatorTimeout = setTimeout(() => {
+                        this.placementModeIndicator.style.opacity = '0';
+                    }, 2000);
+
+                    this.needsRender = true;
+                    this.scheduleRender();
+                    this.exportMap();
+
+                } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
+                    // Place building or unit
+                    const placement = {
+                        type: this.selectedPlacementType,
+                        entityType: this.selectedEntityType,
+                        gridPosition: { x: snappedGrid.x, z: snappedGrid.y }
+                    };
+
+                    // For gold mines, validate placement on gold veins (if we have that data)
+                    if (this.selectedEntityType === 'goldMine') {
+                        // TODO: Add validation for gold vein placement when gold vein data is available
+                        this.placementModeIndicator.textContent = `Note: Ensure this is placed on a gold vein!`;
+                    }
+
+                    this.entityPlacements.push(placement);
+
+                    this.placementModeIndicator.textContent = `Placed ${this.selectedEntityType} at (${snappedGrid.x}, ${snappedGrid.y})`;
+                    this.placementModeIndicator.style.opacity = '1';
+
+                    clearTimeout(this.indicatorTimeout);
+                    this.indicatorTimeout = setTimeout(() => {
+                        this.placementModeIndicator.style.opacity = '0';
+                    }, 2000);
+
+                    this.needsRender = true;
+                    this.scheduleRender();
+                    this.exportMap();
+                }
+            }
         }
     }
 
@@ -1959,6 +2284,135 @@ class TerrainMapEditor {
             }
         }
 
+        // Render entity placements
+        if (this.placementMode === 'placements' || this.placementMode === 'terrain') {
+            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
+            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+            // Render starting locations
+            this.startingLocations.forEach(loc => {
+                if (isIsometric) {
+                    const isoCoords = this.translator.gridToIso(loc.gridPosition.x, loc.gridPosition.z);
+                    const tileWidth = gridSize;
+                    const tileHeight = gridSize * 0.5;
+
+                    // Draw starting location marker
+                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(isoCoords.x, isoCoords.y + tileHeight / 2, gridSize / 3, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Draw border
+                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Draw label
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(loc.side.charAt(0).toUpperCase(), isoCoords.x, isoCoords.y + tileHeight / 2);
+                } else {
+                    const drawX = offsetX + loc.gridPosition.x * gridSize;
+                    const drawY = offsetY + loc.gridPosition.z * gridSize;
+
+                    // Draw starting location marker
+                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(drawX + gridSize / 2, drawY + gridSize / 2, gridSize / 3, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Draw border
+                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Draw label
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 14px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 3;
+                    ctx.strokeText(loc.side.charAt(0).toUpperCase(), drawX + gridSize / 2, drawY + gridSize / 2);
+                    ctx.fillText(loc.side.charAt(0).toUpperCase(), drawX + gridSize / 2, drawY + gridSize / 2);
+                }
+            });
+
+            // Render entity placements (buildings and units)
+            this.entityPlacements.forEach(placement => {
+                const color = placement.type === 'building' ? 'rgba(139, 69, 19, 0.7)' : 'rgba(0, 200, 0, 0.7)';
+                const label = placement.entityType === 'goldMine' ? 'GM' :
+                              placement.entityType === 'townHall' ? 'TH' :
+                              placement.entityType.charAt(0).toUpperCase();
+
+                if (isIsometric) {
+                    const isoCoords = this.translator.gridToIso(placement.gridPosition.x, placement.gridPosition.z);
+                    const tileWidth = gridSize;
+                    const tileHeight = gridSize * 0.5;
+
+                    // Draw placement marker
+                    ctx.fillStyle = color;
+                    ctx.fillRect(
+                        isoCoords.x - gridSize / 4,
+                        isoCoords.y + tileHeight / 4,
+                        gridSize / 2,
+                        gridSize / 2
+                    );
+
+                    // Draw border
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(
+                        isoCoords.x - gridSize / 4,
+                        isoCoords.y + tileHeight / 4,
+                        gridSize / 2,
+                        gridSize / 2
+                    );
+
+                    // Draw label
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, isoCoords.x, isoCoords.y + tileHeight / 2);
+                } else {
+                    const drawX = offsetX + placement.gridPosition.x * gridSize;
+                    const drawY = offsetY + placement.gridPosition.z * gridSize;
+
+                    // Draw placement marker
+                    ctx.fillStyle = color;
+                    ctx.fillRect(
+                        drawX + gridSize / 4,
+                        drawY + gridSize / 4,
+                        gridSize / 2,
+                        gridSize / 2
+                    );
+
+                    // Draw border
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(
+                        drawX + gridSize / 4,
+                        drawY + gridSize / 4,
+                        gridSize / 2,
+                        gridSize / 2
+                    );
+
+                    // Draw label
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(label, drawX + gridSize / 2, drawY + gridSize / 2);
+                    ctx.fillText(label, drawX + gridSize / 2, drawY + gridSize / 2);
+                }
+            });
+        }
+
         // Render brush/fill preview overlay
         if (this.hoverGridPosition &&
             (this.placementMode === 'terrain' || this.placementMode === 'height')) {
@@ -2082,10 +2536,14 @@ class TerrainMapEditor {
     }
 
     exportMap() {
+        // Add placements to tileMap before saving
+        this.tileMap.startingLocations = this.startingLocations;
+        this.tileMap.entityPlacements = this.entityPlacements;
+
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('saveTileMap', {
             detail: {
-                data: this.tileMap,  // tileMap now includes heightMap array
+                data: this.tileMap,  // tileMap now includes heightMap array, startingLocations, and entityPlacements
                 propertyName: this.savePropertyName,
                 refresh: false
             },
