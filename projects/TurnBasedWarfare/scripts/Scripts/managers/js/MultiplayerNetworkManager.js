@@ -94,8 +94,12 @@ class MultiplayerNetworkManager {
             }),
 
             nm.listen('GAME_END', (data) => {
-                this.syncWithServerState(data);        
+                this.syncWithServerState(data);
                 this.handleGameEnd(data);
+            }),
+
+            nm.listen('GAME_ENDED_ALL_PLAYERS_LEFT', (data) => {
+                this.handleAllPlayersLeft(data);
             })
         );
     }
@@ -378,7 +382,59 @@ class MultiplayerNetworkManager {
             this.game.uiSystem.showNotification('Game lost. Better luck next time!', 'warning');
         }
     }
- 
+
+    handleAllPlayersLeft(data) {
+        // Show modal that all players have left
+        this.showGameEndedModal(data.message || 'All other players have left the game.');
+    }
+
+    showGameEndedModal(message) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.id = 'gameEndedModal';
+        modal.style.cssText = `
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 5000;
+            justify-content: center;
+            align-items: center;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: #1a1a1a; padding: 2.5rem; border: 3px solid #cc3333; border-radius: 10px; color: white; min-width: 450px; text-align: center;">
+                <h2 style="color: #ff6666; margin-bottom: 1.5rem; font-size: 1.8rem;">Game Over</h2>
+                <p style="color: #ccc; font-size: 1.2rem; margin-bottom: 2rem;">${message}</p>
+                <button id="gameEndedLeaveBtn" style="padding: 1rem 2rem; background: #cc3333; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;">
+                    Leave Game
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add click handler to leave button
+        const leaveBtn = document.getElementById('gameEndedLeaveBtn');
+        leaveBtn.addEventListener('click', () => {
+            modal.remove();
+            if (this.game.uiSystem && this.game.uiSystem.leaveGame) {
+                this.game.uiSystem.leaveGame();
+            }
+        });
+
+        // Add hover effect
+        leaveBtn.addEventListener('mouseenter', () => {
+            leaveBtn.style.background = '#dd4444';
+        });
+        leaveBtn.addEventListener('mouseleave', () => {
+            leaveBtn.style.background = '#cc3333';
+        });
+    }
+
     handleRoundResult(roundResult) {
         const state = this.game.state;
         state.phase = 'ended';      
