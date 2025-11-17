@@ -29,9 +29,10 @@ function loadCompiledGame() {
     // Set up window-like global context for compiled code
     global.window = global;
 
-    // Add window.addEventListener mock
+    // Add window event handler mocks
     global.window.addEventListener = () => {};
     global.window.removeEventListener = () => {};
+    global.window.dispatchEvent = () => true;
 
     // Create comprehensive DOM mocks for client libraries
     const mockElement = {
