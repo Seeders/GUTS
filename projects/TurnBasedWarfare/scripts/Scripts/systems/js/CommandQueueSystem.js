@@ -224,7 +224,7 @@ class CommandQueueSystem extends engine.BaseSystem {
      * Update command queue system
      * Called every frame to check if commands need to be processed
      */
-    update(dt) {
+    onPlacementPhaseStart() {
         const ComponentTypes = this.game.componentTypes;
         const entities = this.game.getEntitiesWith(ComponentTypes.COMMAND_QUEUE, ComponentTypes.AI_STATE);
 
@@ -240,7 +240,7 @@ class CommandQueueSystem extends engine.BaseSystem {
 
                 // However, we can check for some automatic completions:
                 // - If target position is reached and no special state
-                if (aiState.state === 'idle' && commandQueue.currentCommand.type === 'move' && this.game.state.phase == 'battle') {
+                if (aiState.state === 'idle' && commandQueue.currentCommand.type === 'move') {
                     // Move command completed
                     this.completeCurrentCommand(entityId);
                 }
