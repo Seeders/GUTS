@@ -82,54 +82,67 @@ class MultiplayerUISystem extends engine.BaseSystem {
     }
 
     setupGameMenuEvents() {
+        // Only set up once to prevent duplicate event listeners
+        if (this.gameMenuEventsSetup) {
+            return;
+        }
+        this.gameMenuEventsSetup = true;
+
         const menuBtn = document.getElementById('gameMenuBtn');
         const menuModal = document.getElementById('gameMenuModal');
         const optionsBtn = document.getElementById('gameMenuOptionsBtn');
         const leaveBtn = document.getElementById('gameMenuLeaveBtn');
         const cancelBtn = document.getElementById('gameMenuCancelBtn');
 
-        // Open menu
-        if (menuBtn) {
-            menuBtn.addEventListener('click', () => {
+        // Store bound handlers for cleanup
+        this.gameMenuHandlers = {
+            openMenu: () => {
                 menuModal.style.display = 'flex';
-            });
-        }
-
-        // Close menu
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
+            },
+            closeMenu: () => {
                 menuModal.style.display = 'none';
-            });
-        }
-
-        // Options (placeholder)
-        if (optionsBtn) {
-            optionsBtn.addEventListener('click', () => {
+            },
+            showOptions: () => {
                 this.showNotification('Options menu coming soon!', 'info');
                 menuModal.style.display = 'none';
-            });
-        }
-
-        // Leave game
-        if (leaveBtn) {
-            leaveBtn.addEventListener('click', () => {
+            },
+            confirmLeave: () => {
                 if (confirm('Are you sure you want to leave the game?')) {
                     this.leaveGame();
                     menuModal.style.display = 'none';
                 }
-            });
+            },
+            closeOnBackground: (e) => {
+                if (e.target === menuModal) {
+                    menuModal.style.display = 'none';
+                }
+            }
+        };
+
+        // Add event listeners
+        if (menuBtn) {
+            menuBtn.addEventListener('click', this.gameMenuHandlers.openMenu);
         }
 
-        // Close on background click
-        menuModal.addEventListener('click', (e) => {
-            if (e.target === menuModal) {
-                menuModal.style.display = 'none';
-            }
-        });
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', this.gameMenuHandlers.closeMenu);
+        }
+
+        if (optionsBtn) {
+            optionsBtn.addEventListener('click', this.gameMenuHandlers.showOptions);
+        }
+
+        if (leaveBtn) {
+            leaveBtn.addEventListener('click', this.gameMenuHandlers.confirmLeave);
+        }
+
+        if (menuModal) {
+            menuModal.addEventListener('click', this.gameMenuHandlers.closeOnBackground);
+        }
     }
 
     leaveGame() {
-        // Send leave room event
+        // Send leave room event to server
         if (this.game.networkManager && this.game.networkManager.socket) {
             this.game.networkManager.socket.emit('LEAVE_ROOM', {});
         }
@@ -146,15 +159,27 @@ class MultiplayerUISystem extends engine.BaseSystem {
             hud.style.display = 'none';
         }
 
-        // Disconnect and reload to main menu
-        if (this.game.networkManager) {
-            this.game.networkManager.disconnect();
+        // Hide all game screens
+        const lobby = document.getElementById('multiplayerLobby');
+        const gameScreen = document.getElementById('gameScreen');
+        if (lobby) {
+            lobby.classList.remove('active');
+        }
+        if (gameScreen) {
+            gameScreen.classList.remove('active');
         }
 
-        // Reload the page to return to main menu
-        setTimeout(() => {
+        // Reset current screen state
+        this.currentScreen = null;
+        this.roomId = null;
+
+        // Return to main menu (stay connected to server)
+        if (this.game.screenManager?.showMainMenu) {
+            this.game.screenManager.showMainMenu();
+        } else {
+            // Fallback: reload page if screenManager not available
             window.location.reload();
-        }, 500);
+        }
     }
 
     showGameMenu() {
