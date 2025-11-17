@@ -51,6 +51,11 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
             return false;
         }
 
+        // Don't resume mining during battle phase - wait until next round
+        if (this.game.state.phase === 'battle') {
+            return false;
+        }
+
         // No current command - activate mining (autocast)
         // If we were interrupted (controller was changed), reset mining state to idle
         const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
