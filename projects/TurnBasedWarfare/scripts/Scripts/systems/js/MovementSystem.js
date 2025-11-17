@@ -666,32 +666,37 @@ class MovementSystem extends engine.BaseSystem {
         
         const newVx = this.lerp(vel.vx, targetVx, velocitySmoothing);
         const newVz = this.lerp(vel.vz, targetVz, velocitySmoothing);
-        
-        if (history && history.smoothedDirection) {
+
+        // Only apply direction smoothing if there's actual desired movement
+        // If targetVx and targetVz are both near zero, skip smoothing to preserve current facing
+        const targetSpeedSqrd = targetVx * targetVx + targetVz * targetVz;
+        const hasTargetMovement = targetSpeedSqrd > 0.01;
+
+        if (history && history.smoothedDirection && hasTargetMovement) {
             const targetDirection = Math.atan2(targetVz, targetVx);
-            
+
             let currentDirection;
             const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
-            
+
             if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
                 const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
                 currentDirection = facing ? facing.angle : 0;
             } else {
                 currentDirection = Math.atan2(vel.vz, vel.vx);
             }
-            
+
             let directionDiff = targetDirection - currentDirection;
             if (directionDiff > Math.PI) directionDiff -= 2 * Math.PI;
             if (directionDiff < -Math.PI) directionDiff += 2 * Math.PI;
-            
+
             if (Math.abs(directionDiff) > this.MIN_DIRECTION_CHANGE) {
                 const smoothedDirection = currentDirection + directionDiff * directionSmoothing;
                 const speed = Math.sqrt(newVx * newVx + newVz * newVz);
-                
+
                 if (speed > 0.1) {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
-                    
+
                     const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
                     if (facing) {
                         facing.angle = smoothedDirection;
