@@ -18,7 +18,7 @@ import GameRoom from '../../global/libraries/js/GameRoom.js';
 import ServerGameRoom from '../../global/libraries/js/ServerGameRoom.js';
 import GameState from '../../global/libraries/js/GameState.js';
 import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
-import GameUtils from '../../global/libraries/js/GameUtils.js';
+import GameUtils from './scripts/Scripts/libraries/js/GameUtils.js';
 import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
 import ServerEventManager from '../../global/libraries/js/ServerEventManager.js';
 import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
