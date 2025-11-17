@@ -117,6 +117,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
             clearInterval(this.lobbyRefreshInterval);
             this.lobbyRefreshInterval = null;
         }
+        // Reset flags for next time lobby is opened
+        this.hasLoadedRooms = false;
+        this.hasShownError = false;
     }
 
     async fetchAndDisplayRooms(dialog, mode, getPlayerName) {
@@ -124,8 +127,8 @@ class MultiplayerUISystem extends engine.BaseSystem {
         const tableBody = dialog.querySelector('#roomsTableBody');
 
         try {
-            // Show loading indicator
-            if (loadingIndicator) {
+            // Only show loading indicator on first load
+            if (loadingIndicator && !this.hasLoadedRooms) {
                 loadingIndicator.style.display = 'block';
             }
 
@@ -140,12 +143,10 @@ class MultiplayerUISystem extends engine.BaseSystem {
             // Hide loading indicator
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
+                this.hasLoadedRooms = true;
             }
 
-            // Clear existing rows
             if (tableBody) {
-                tableBody.innerHTML = '';
-
                 // Filter for available rooms (waiting for players)
                 // Show rooms that have space and haven't started yet (isActive = false means waiting)
                 const availableRooms = rooms.filter(room =>
@@ -153,49 +154,90 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 );
 
                 if (availableRooms.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="4" style="padding: 2rem; text-align: center; color: #888;">
-                                No available games. Create one to get started!
-                            </td>
-                        </tr>
-                    `;
+                    // Only update if content changed
+                    const emptyRow = tableBody.querySelector('.empty-room-row');
+                    if (!emptyRow) {
+                        tableBody.innerHTML = `
+                            <tr class="empty-room-row">
+                                <td colspan="4" style="padding: 2rem; text-align: center; color: #888;">
+                                    No available games. Create one to get started!
+                                </td>
+                            </tr>
+                        `;
+                    }
                 } else {
-                    // Add row for each available room
-                    availableRooms.forEach(room => {
-                        const row = document.createElement('tr');
-                        row.style.borderBottom = '1px solid #333';
-                        row.style.transition = 'background 0.2s';
-                        row.onmouseenter = () => row.style.background = '#2a2a2a';
-                        row.onmouseleave = () => row.style.background = 'transparent';
+                    // Remove empty row if it exists
+                    const emptyRow = tableBody.querySelector('.empty-room-row');
+                    if (emptyRow) {
+                        emptyRow.remove();
+                    }
 
+                    // Get existing room IDs
+                    const existingRows = new Map();
+                    tableBody.querySelectorAll('tr[data-room-id]').forEach(row => {
+                        existingRows.set(row.getAttribute('data-room-id'), row);
+                    });
+
+                    // Update or add rooms
+                    availableRooms.forEach(room => {
+                        const existingRow = existingRows.get(room.id);
                         const statusText = room.playerCount === 0 ? 'Waiting' : `${room.playerCount}/${room.maxPlayers} Players`;
                         const statusColor = room.playerCount === 0 ? '#ffaa00' : '#00aaff';
 
-                        row.innerHTML = `
-                            <td style="padding: 1rem; color: #fff; font-weight: bold;">${room.id}</td>
-                            <td style="padding: 1rem; text-align: center; color: #aaa;">${room.playerCount}/${room.maxPlayers}</td>
-                            <td style="padding: 1rem; text-align: center; color: ${statusColor};">${statusText}</td>
-                            <td style="padding: 1rem; text-align: center;">
-                                <button class="join-room-btn" data-room-id="${room.id}"
-                                    style="padding: 0.5rem 1.5rem; background: #00aa00; border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold;">
-                                    Join
-                                </button>
-                            </td>
-                        `;
+                        if (existingRow) {
+                            // Update existing row only if data changed
+                            const playerCountCell = existingRow.children[1];
+                            const statusCell = existingRow.children[2];
 
-                        tableBody.appendChild(row);
+                            if (playerCountCell.textContent !== `${room.playerCount}/${room.maxPlayers}`) {
+                                playerCountCell.textContent = `${room.playerCount}/${room.maxPlayers}`;
+                            }
+
+                            if (statusCell.textContent !== statusText) {
+                                statusCell.textContent = statusText;
+                                statusCell.style.color = statusColor;
+                            }
+
+                            // Mark as processed
+                            existingRows.delete(room.id);
+                        } else {
+                            // Add new room row
+                            const row = document.createElement('tr');
+                            row.setAttribute('data-room-id', room.id);
+                            row.style.borderBottom = '1px solid #333';
+                            row.style.transition = 'background 0.2s';
+                            row.onmouseenter = () => row.style.background = '#2a2a2a';
+                            row.onmouseleave = () => row.style.background = 'transparent';
+
+                            row.innerHTML = `
+                                <td style="padding: 1rem; color: #fff; font-weight: bold;">${room.id}</td>
+                                <td style="padding: 1rem; text-align: center; color: #aaa;">${room.playerCount}/${room.maxPlayers}</td>
+                                <td style="padding: 1rem; text-align: center; color: ${statusColor};">${statusText}</td>
+                                <td style="padding: 1rem; text-align: center;">
+                                    <button class="join-room-btn" data-room-id="${room.id}"
+                                        style="padding: 0.5rem 1.5rem; background: #00aa00; border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                                        Join
+                                    </button>
+                                </td>
+                            `;
+
+                            // Add click handler for join button
+                            const joinBtn = row.querySelector('.join-room-btn');
+                            joinBtn.addEventListener('click', () => {
+                                const roomId = joinBtn.getAttribute('data-room-id');
+                                const playerName = getPlayerName();
+                                this.stopLobbyRefresh();
+                                this.game.networkManager.joinRoom(roomId, playerName);
+                                dialog.remove();
+                            });
+
+                            tableBody.appendChild(row);
+                        }
                     });
 
-                    // Add event listeners to join buttons
-                    dialog.querySelectorAll('.join-room-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const roomId = btn.getAttribute('data-room-id');
-                            const playerName = getPlayerName();
-                            this.stopLobbyRefresh();
-                            this.game.networkManager.joinRoom(roomId, playerName);
-                            dialog.remove();
-                        });
+                    // Remove rows for rooms that no longer exist
+                    existingRows.forEach(row => {
+                        row.remove();
                     });
                 }
             }
@@ -204,7 +246,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
             }
-            if (tableBody) {
+            if (tableBody && !this.hasShownError) {
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="4" style="padding: 2rem; text-align: center; color: #ff4444;">
@@ -212,6 +254,7 @@ class MultiplayerUISystem extends engine.BaseSystem {
                         </td>
                     </tr>
                 `;
+                this.hasShownError = true;
             }
         }
     }
