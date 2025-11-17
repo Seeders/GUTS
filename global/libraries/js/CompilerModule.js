@@ -56,11 +56,15 @@ class CompilerModule {
                 this.app.getCollectionDefs(),
                 enginePaths
             );
-            
-            log.textContent += `✓ Compiled ${result.classRegistry.systems.length} systems\n`;
-            log.textContent += `✓ Compiled ${result.classRegistry.managers.length} managers\n`;
-            log.textContent += `✓ Compiled ${result.classRegistry.components.length} components\n`;
-            log.textContent += `✓ Compiled ${result.classRegistry.functions.length} functions\n`;
+
+            // Log compiled classes dynamically
+            for (const [collectionType, items] of Object.entries(result.classRegistry)) {
+                if (items.length > 0) {
+                    const typeDef = this.app.getCollectionDefs().find(def => def.id === collectionType);
+                    const typeName = typeDef ? typeDef.name.toLowerCase() : collectionType;
+                    log.textContent += `✓ Compiled ${items.length} ${typeName}\n`;
+                }
+            }
             log.textContent += `✓ Game bundle: ${Math.round(result.code.length / 1024)} KB\n`;
             
             if (result.engineCode) {

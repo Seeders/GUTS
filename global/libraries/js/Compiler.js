@@ -4,14 +4,25 @@ class Compiler {
         this.collections = null;
         this.compiledBundle = null;
         this.compiledEngine = null;
-        this.classRegistry = {
-            systems: new Map(),
-            managers: new Map(),
-            components: new Map(),
-            functions: new Map(),
-            renderers: new Map(),
-            classes: new Map()
-        };
+        this.objectTypeDefinitions = null;
+        this.classRegistry = null; // Will be initialized dynamically based on objectTypeDefinitions
+        this.scriptCollectionTypes = null; // Cache of script collection type IDs
+    }
+
+    /**
+     * Initialize classRegistry based on objectTypeDefinitions
+     * Creates a Map for each collection type in the Scripts category
+     */
+    initializeClassRegistry() {
+        this.classRegistry = {};
+        this.scriptCollectionTypes = this.objectTypeDefinitions
+            .filter(def => def.category === 'Scripts')
+            .map(def => def.id);
+
+        // Create a Map for each script collection type
+        this.scriptCollectionTypes.forEach(type => {
+            this.classRegistry[type] = new Map();
+        });
     }
 
     /**
@@ -59,6 +70,9 @@ class Compiler {
         if (!this.collections) {
             throw new Error("Failed to load game configuration");
         }
+
+        // Initialize classRegistry dynamically based on objectTypeDefinitions
+        this.initializeClassRegistry();
 
         const result = {
             projectName: projectName,
@@ -481,19 +495,16 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
 }
     /**
      * Build game classes section - compile all systems, managers, components, etc.
+     * Dynamically compiles all collection types in the Scripts category
      */
     async buildGameClasses(result) {
         const classesSection = ['// ========== GAME CLASSES =========='];
-        
-        // Collect all unique classes from all scenes
-        const collectedClasses = {
-            systems: new Set(),
-            managers: new Set(),
-            components: new Set(),
-            functions: new Set(),
-            renderers: new Set(),
-            classes: new Set()
-        };
+
+        // Dynamically create collectedClasses object based on script collection types
+        const collectedClasses = {};
+        this.scriptCollectionTypes.forEach(type => {
+            collectedClasses[type] = new Set();
+        });
 
         // Scan all scenes to find which classes are used
         if (this.collections.scenes) {
@@ -503,171 +514,89 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
             }
         }
 
-        // Compile functions first (they might be used by other classes)
-        if (this.collections.functions) {
-            classesSection.push('\n// ========== FUNCTIONS ==========');
-            for (const funcName in this.collections.functions) {
-                const funcDef = this.collections.functions[funcName];
-                if (funcDef.script) {
-                    classesSection.push(`\n// Function: ${funcName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.functions = window.COMPILED_GAME.classRegistry.functions || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.functions['${funcName}'] = ${funcDef.script};`);
-                    this.classRegistry.functions.set(funcName, true);
-                    collectedClasses.functions.add(funcName);
-                }
-            }
-        }
+        // Compile each script collection type dynamically
+        // Note: 'functions' are compiled first if they exist (they might be used by other classes)
+        const priorityOrder = ['functions', ...this.scriptCollectionTypes.filter(t => t !== 'functions')];
 
-        // Compile systems
-        if (this.collections.systems && collectedClasses.systems.size > 0) {
-            classesSection.push('\n// ========== SYSTEMS ==========');
-            for (const systemName of collectedClasses.systems) {
-                const systemDef = this.collections.systems[systemName];
-                if (systemDef && systemDef.script) {
-                    classesSection.push(`\n// System: ${systemName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.systems = window.COMPILED_GAME.classRegistry.systems || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.systems['${systemName}'] = ${systemDef.script};`);
-                    this.classRegistry.systems.set(systemName, true);
-                }
-            }
-        }
+        for (const collectionType of priorityOrder) {
+            if (!this.scriptCollectionTypes.includes(collectionType)) continue;
+            if (!this.collections[collectionType]) continue;
 
-        // Compile managers
-        if (this.collections.managers && collectedClasses.managers.size > 0) {
-            classesSection.push('\n// ========== MANAGERS ==========');
-            for (const managerName of collectedClasses.managers) {
-                const managerDef = this.collections.managers[managerName];
-                if (managerDef && managerDef.script) {
-                    classesSection.push(`\n// Manager: ${managerName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.managers = window.COMPILED_GAME.classRegistry.managers || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.managers['${managerName}'] = ${managerDef.script};`);
-                    this.classRegistry.managers.set(managerName, true);
-                }
-            }
-        }
+            const typeDef = this.objectTypeDefinitions.find(def => def.id === collectionType);
+            const typeName = typeDef ? typeDef.name : collectionType.toUpperCase();
 
-        // Compile components
-        if (this.collections.components && collectedClasses.components.size > 0) {
-            classesSection.push('\n// ========== COMPONENTS ==========');
-            for (const componentName of collectedClasses.components) {
-                const componentDef = this.collections.components[componentName];
-                if (componentDef && componentDef.script) {
-                    classesSection.push(`\n// Component: ${componentName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.components = window.COMPILED_GAME.classRegistry.components || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.components['${componentName}'] = ${componentDef.script};`);
-                    this.classRegistry.components.set(componentName, true);
-                }
-            }
-        }
+            // Check if we should compile all items or only collected ones
+            const shouldCompileAll = (collectionType === 'functions');
+            const itemsToCompile = shouldCompileAll
+                ? Object.keys(this.collections[collectionType])
+                : Array.from(collectedClasses[collectionType] || []);
 
-        // Compile renderers
-        if (this.collections.renderers && collectedClasses.renderers.size > 0) {
-            classesSection.push('\n// ========== RENDERERS ==========');
-            for (const rendererName of collectedClasses.renderers) {
-                const rendererDef = this.collections.renderers[rendererName];
-                if (rendererDef && rendererDef.script) {
-                    classesSection.push(`\n// Renderer: ${rendererName}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.renderers = window.COMPILED_GAME.classRegistry.renderers || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.renderers['${rendererName}'] = ${rendererDef.script};`);
-                    this.classRegistry.renderers.set(rendererName, true);
-                }
-            }
-        }
+            if (itemsToCompile.length === 0) continue;
 
-        // Compile other classes
-        if (this.collections.classes && collectedClasses.classes.size > 0) {
-            classesSection.push('\n// ========== OTHER CLASSES ==========');
-            for (const className of collectedClasses.classes) {
-                const classDef = this.collections.classes[className];
-                if (classDef && classDef.script) {
-                    classesSection.push(`\n// Class: ${className}`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.classes = window.COMPILED_GAME.classRegistry.classes || {};`);
-                    classesSection.push(`window.COMPILED_GAME.classRegistry.classes['${className}'] = ${classDef.script};`);
-                    this.classRegistry.classes.set(className, true);
+            classesSection.push(`\n// ========== ${typeName} ==========`);
+
+            for (const itemName of itemsToCompile) {
+                const itemDef = this.collections[collectionType][itemName];
+                if (itemDef && itemDef.script) {
+                    const singularName = typeDef?.singular || collectionType.slice(0, -1);
+                    classesSection.push(`\n// ${singularName}: ${itemName}`);
+                    classesSection.push(`window.COMPILED_GAME.classRegistry.${collectionType} = window.COMPILED_GAME.classRegistry.${collectionType} || {};`);
+                    classesSection.push(`window.COMPILED_GAME.classRegistry.${collectionType}['${itemName}'] = ${itemDef.script};`);
+                    this.classRegistry[collectionType].set(itemName, true);
+                    collectedClasses[collectionType].add(itemName);
                 }
             }
         }
 
         result.sections.push(classesSection.join('\n'));
-        result.classRegistry = {
-            systems: Array.from(collectedClasses.systems),
-            managers: Array.from(collectedClasses.managers),
-            components: Array.from(collectedClasses.components),
-            functions: Array.from(collectedClasses.functions),
-            renderers: Array.from(collectedClasses.renderers),
-            classes: Array.from(collectedClasses.classes)
-        };
+
+        // Build dynamic classRegistry result
+        result.classRegistry = {};
+        this.scriptCollectionTypes.forEach(type => {
+            result.classRegistry[type] = Array.from(collectedClasses[type] || []);
+        });
     }
 
     /**
      * Collect all classes referenced in a scene
+     * Dynamically collects classes from all script collection types
      */
     collectClassesFromScene(scene, collectedClasses) {
         if (!scene.sceneData || !Array.isArray(scene.sceneData)) return;
 
         scene.sceneData.forEach(sceneEntity => {
-            // Collect systems
-            if (sceneEntity.systems) {
-                sceneEntity.systems.forEach(systemDef => {
-                    if (systemDef.type) {
-                        collectedClasses.systems.add(systemDef.type);
-                    }
-                });
-            }
+            // Dynamically collect from script collection types
+            // Check if sceneEntity has properties matching our script collection types
+            this.scriptCollectionTypes.forEach(collectionType => {
+                if (sceneEntity[collectionType] && Array.isArray(sceneEntity[collectionType])) {
+                    sceneEntity[collectionType].forEach(itemDef => {
+                        if (itemDef.type && collectedClasses[collectionType]) {
+                            collectedClasses[collectionType].add(itemDef.type);
+                        }
+                    });
+                }
+            });
 
-            // Collect managers
-            if (sceneEntity.managers) {
-                sceneEntity.managers.forEach(managerDef => {
-                    if (managerDef.type) {
-                        collectedClasses.managers.add(managerDef.type);
-                    }
-                });
-            }
-
-            // Collect classes from ECS scenes
+            // Collect classes from ECS scenes (generic class definitions)
             if (sceneEntity.classes) {
                 sceneEntity.classes.forEach(classDef => {
                     const collectionName = classDef.collection;
                     const baseClassId = classDef.baseClass;
-                    
-                    if (baseClassId && this.collections[collectionName]) {
-                        if (collectionName === 'components') {
-                            collectedClasses.components.add(baseClassId);
-                        } else if (collectionName === 'systems') {
-                            collectedClasses.systems.add(baseClassId);
-                        } else if (collectionName === 'managers') {
-                            collectedClasses.managers.add(baseClassId);
-                        } else if (collectionName === 'renderers') {
-                            collectedClasses.renderers.add(baseClassId);
-                        } else {
-                            collectedClasses.classes.add(baseClassId);
+
+                    // Add baseClass if it exists and the collection is a script collection
+                    if (baseClassId && this.collections[collectionName] && this.scriptCollectionTypes.includes(collectionName)) {
+                        if (collectedClasses[collectionName]) {
+                            collectedClasses[collectionName].add(baseClassId);
                         }
                     }
 
-                    // Also collect all classes from the collection
-                    if (this.collections[collectionName]) {
+                    // Also collect all classes from the collection if it's a script collection
+                    if (this.collections[collectionName] && this.scriptCollectionTypes.includes(collectionName)) {
                         for (const classId in this.collections[collectionName]) {
-                            if (collectionName === 'components') {
-                                collectedClasses.components.add(classId);
-                            } else if (collectionName === 'systems') {
-                                collectedClasses.systems.add(classId);
-                            } else if (collectionName === 'managers') {
-                                collectedClasses.managers.add(classId);
-                            } else if (collectionName === 'renderers') {
-                                collectedClasses.renderers.add(classId);
-                            } else {
-                                collectedClasses.classes.add(classId);
+                            if (collectedClasses[collectionName]) {
+                                collectedClasses[collectionName].add(classId);
                             }
                         }
-                    }
-                });
-            }
-
-            // Collect components from non-ECS scenes
-            if (sceneEntity.components) {
-                sceneEntity.components.forEach(componentDef => {
-                    if (componentDef.type) {
-                        collectedClasses.components.add(componentDef.type);
                     }
                 });
             }
