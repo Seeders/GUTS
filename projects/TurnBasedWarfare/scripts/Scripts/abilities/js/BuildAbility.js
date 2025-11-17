@@ -132,16 +132,26 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.buildRange) {
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);            
-            currentBuildingStateAI.targetPosition = null;  
-            currentBuildingStateAI.state = 'idle';                                    
-            currentBuildingStateAI.meta = this.meta;            
-            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+            currentBuildingStateAI.targetPosition = null;
+            currentBuildingStateAI.state = 'idle';
+            currentBuildingStateAI.meta = this.meta;
+            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
 
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
             pos.z = buildState.targetBuildingPosition.z;
             vel.vx = 0;
             vel.vz = 0;
+
+            // Make the peasant face the building
+            const facing = this.game.getComponent(buildState.entityId, ComponentTypes.FACING);
+            if (facing) {
+                const dx = buildState.targetBuildingPosition.x - pos.x;
+                const dz = buildState.targetBuildingPosition.z - pos.z;
+                const angleToBuilding = Math.atan2(dz, dx);
+                facing.angle = angleToBuilding;
+            }
+
             buildState.state = 'constructing';
             buildState.constructionStartTime = this.game.state.round;
             buildingBuildState.state = 'under_construction';

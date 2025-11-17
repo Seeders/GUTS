@@ -710,9 +710,16 @@ class MovementSystem extends engine.BaseSystem {
         }
         
         vel.vy = desiredVelocity.vy;
-        
+
         const speedSqrd = vel.vx * vel.vx + vel.vz * vel.vz;
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
+            // Preserve facing direction before zeroing velocity
+            if (speedSqrd > 0.001) {
+                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                if (facing) {
+                    facing.angle = Math.atan2(vel.vz, vel.vx);
+                }
+            }
             vel.vx = 0;
             vel.vz = 0;
         }

@@ -393,13 +393,25 @@ class CombatAISystem extends engine.BaseSystem {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) return;
-        
+
+        // Make the attacker face the target
+        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const facing = this.game.getComponent(attackerId, this.componentTypes.FACING);
+
+        if (attackerPos && targetPos && facing) {
+            const dx = targetPos.x - attackerPos.x;
+            const dz = targetPos.z - attackerPos.z;
+            const angleToTarget = Math.atan2(dz, dx);
+            facing.angle = angleToTarget;
+        }
+
         if(this.game.gameManager.has('triggerSinglePlayAnimation')){
             const animationSpeed = this.calculateAnimationSpeed(attackerId, combat.attackSpeed);
             const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
             this.game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
         }
-        
+
         if (combat.projectile) {
             this.scheduleProjectileLaunch(attackerId, targetId, combat);
         } else {
