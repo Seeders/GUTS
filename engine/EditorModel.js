@@ -122,8 +122,12 @@ class EditorModel {
                 let libraryDef = this.state.project.objectTypes.libraries[library];
                 editorLibraries[library] = libraryDef;
             });
-        });    
-        const projectText = JSON.stringify(this.state.project);
+        });
+
+        // Strip scripts from collections before saving
+        const projectToSave = this.stripScriptsFromProject(this.state.project);
+
+        const projectText = JSON.stringify(projectToSave);
         for(const key in this.state.project.objectTypes){
             if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
                 console.log(`did not find ${key}`);
@@ -171,6 +175,35 @@ class EditorModel {
         }
         
         return true;
+    }
+
+    /**
+     * Strip script text from collections to reduce config file size
+     * Scripts are stored in compiled game.js, not needed in config
+     * @param {Object} project - Project object with objectTypes and objectTypeDefinitions
+     * @returns {Object} - Project with scripts stripped from collections
+     */
+    stripScriptsFromProject(project) {
+        // Deep clone the project to avoid modifying the in-memory state
+        const stripped = JSON.parse(JSON.stringify(project));
+
+        // Find all collection types in the "Scripts" category
+        const scriptCollectionTypes = project.objectTypeDefinitions
+            .filter(def => def.category === 'Scripts')
+            .map(def => def.id);
+
+        // Strip script property from all items in Scripts category collections
+        scriptCollectionTypes.forEach(type => {
+            if (stripped.objectTypes[type]) {
+                Object.keys(stripped.objectTypes[type]).forEach(itemName => {
+                    if (stripped.objectTypes[type][itemName].script) {
+                        delete stripped.objectTypes[type][itemName].script;
+                    }
+                });
+            }
+        });
+
+        return stripped;
     }
 
     /**
