@@ -52,11 +52,14 @@ class ServerNetworkManager {
             });
             // Catch ALL events and route to game systems
             socket.onAny((eventName, data) => {
-                // Skip internal socket.io events
-                if (eventName.startsWith('__') || eventName === 'disconnect') {
+                // Skip internal socket.io events and events with dedicated handlers
+                if (eventName.startsWith('__') ||
+                    eventName === 'disconnect' ||
+                    eventName === 'CREATE_ROOM' ||
+                    eventName === 'JOIN_ROOM') {
                     return;
                 }
-                
+
                 this.routeEventToEngine(socket, eventName, data);
             });
 
