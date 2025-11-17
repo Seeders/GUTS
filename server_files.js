@@ -77,6 +77,12 @@ app.post('/save-compiled-game', async (req, res) => {
     const projectFolder = path.join(PROJS_DIR, projectName);
     const modulesFolder = path.join(projectFolder, 'modules');
 
+    console.log(`📦 Saving compiled files for ${projectName}:`);
+    console.log(`   - gameCode: ${gameCode ? `${(gameCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - serverGameCode: ${serverGameCode ? `${(serverGameCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - engineCode: ${engineCode ? `${(engineCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
+    console.log(`   - modules: ${modules?.length || 0}`);
+
     try {
         // Ensure project folder exists
         if (!fsSync.existsSync(projectFolder)) {
@@ -93,6 +99,8 @@ app.post('/save-compiled-game', async (req, res) => {
         if (serverGameCode) {
             await fs.writeFile(path.join(projectFolder, 'game_server.js'), serverGameCode, 'utf8');
             console.log(`✓ Saved game_server.js for ${projectName}`);
+        } else {
+            console.log(`⚠️ No serverGameCode received - skipping game_server.js`);
         }
 
         // Save engine.js
