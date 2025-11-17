@@ -1,4 +1,4 @@
-export default class ServerEventManager {
+class ServerEventManager {
     constructor(engine) {
         this.engine = engine;
         this.listeners = new Map(); // eventType -> [callbacks]
@@ -24,5 +24,23 @@ export default class ServerEventManager {
             }
         }
         return results;
+    }
+}
+
+
+if(typeof ServerEventManager != 'undefined'){
+    if (typeof window !== 'undefined') {
+        window.ServerEventManager = ServerEventManager;
+    }
+
+    // Make available as ES module export (new for server)  
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ServerEventManager;
+    }
+
+    // Make available as ES6 export (also new for server)
+    if (typeof exports !== 'undefined') {
+        exports.default = ServerEventManager;
+        exports.ServerEventManager = ServerEventManager;
     }
 }
