@@ -18,14 +18,18 @@ class Compiler {
      * Strip script text from collections to reduce bundle size
      * Scripts are already compiled in classRegistry, so we don't need them in collections
      * @param {Object} collections - Original collections object
+     * @param {Array} objectTypeDefinitions - Array of collection type definitions with categories
      * @returns {Object} - Stripped collections without script text
      */
-    stripScriptsFromCollections(collections) {
+    stripScriptsFromCollections(collections, objectTypeDefinitions) {
         const stripped = JSON.parse(JSON.stringify(collections)); // Deep clone
 
-        // Collection types that contain script properties
-        const scriptCollectionTypes = ['systems', 'managers', 'components', 'functions', 'renderers', 'classes'];
+        // Find all collection types in the "Scripts" category
+        const scriptCollectionTypes = objectTypeDefinitions
+            .filter(def => def.category === 'Scripts')
+            .map(def => def.id);
 
+        // Strip script property from all items in Scripts category collections
         scriptCollectionTypes.forEach(type => {
             if (stripped[type]) {
                 Object.keys(stripped[type]).forEach(itemName => {
@@ -36,29 +40,22 @@ class Compiler {
             }
         });
 
-        // Also strip script from libraries (inline scripts)
-        if (stripped.libraries) {
-            Object.keys(stripped.libraries).forEach(libName => {
-                if (stripped.libraries[libName].script) {
-                    delete stripped.libraries[libName].script;
-                }
-            });
-        }
-
         return stripped;
     }
 
     /**
      * Main compile method - orchestrates the entire compilation process
      * @param {string} projectName - Name of the project to compile
-     * @param {Object} collections - Project collections
+     * @param {Object} collections - Project collections (objectTypes)
+     * @param {Array} objectTypeDefinitions - Collection type definitions with categories
      * @param {Object} engineFilePaths - Optional paths to engine files
      * @returns {Object} - Compilation result with bundle code and metadata
      */
-    async compile(projectName, collections, engineFilePaths) {
+    async compile(projectName, collections, objectTypeDefinitions, engineFilePaths) {
         console.log(`Starting compilation for project: ${projectName}`);
-        
+
         this.collections = collections;
+        this.objectTypeDefinitions = objectTypeDefinitions;
         if (!this.collections) {
             throw new Error("Failed to load game configuration");
         }
@@ -148,7 +145,7 @@ class Compiler {
      */
     buildHeader(result) {
         // Strip scripts from collections
-        const strippedCollections = this.stripScriptsFromCollections(this.collections);
+        const strippedCollections = this.stripScriptsFromCollections(this.collections, this.objectTypeDefinitions);
 
         // Serialize collections to JSON string
         const collectionsJSON = JSON.stringify(strippedCollections, null, 2);
