@@ -206,16 +206,29 @@ class CommandQueueSystem extends engine.BaseSystem {
             const nextCommand = commandQueue.commands.shift();
             this.executeCommand(entityId, nextCommand);
         } else {
-            // No more commands, return to idle
+            // No more commands, check if unit has passive abilities to restore
             const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
             if (aiState) {
-                aiState.state = 'idle';
-                aiState.targetPosition = null;
-                aiState.target = null;
-                aiState.path = [];
-                aiState.pathIndex = 0;
-                aiState.meta = {};
-                aiState.aiControllerId = "";
+                // Check if unit has mining capability - restore mining controller
+                const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+                if (miningState) {
+                    // Restore mining controller
+                    const Components = this.game.componentManager.getComponents();
+                    let miningControllerData = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
+                    if (!this.game.aiSystem.hasAIControllerData(entityId, ComponentTypes.MINING_STATE)) {
+                        miningControllerData = Components.AIState('idle');
+                    }
+                    this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, miningControllerData);
+                } else {
+                    // No passive abilities, return to idle
+                    aiState.state = 'idle';
+                    aiState.targetPosition = null;
+                    aiState.target = null;
+                    aiState.path = [];
+                    aiState.pathIndex = 0;
+                    aiState.meta = {};
+                    aiState.aiControllerId = null;
+                }
             }
         }
     }

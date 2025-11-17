@@ -27,7 +27,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
         if (!miningState) {
             const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-            
+
             this.game.addComponent(entityId, ComponentTypes.MINING_STATE, {
                 state: 'idle',
                 targetMineEntityId: null,
@@ -43,11 +43,12 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         }
         const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
 
-        if(currentAIController == null){
+        // If no controller is set (null or empty string), set mining as the controller
+        if(!currentAIController || currentAIController === ""){
             let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
-            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI); 
+            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI);
         }
-        
+
         return (currentAIController == ComponentTypes.MINING_STATE);
     }
 
