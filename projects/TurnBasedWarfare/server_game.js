@@ -7,17 +7,25 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import vm from 'vm';
 
-// Import server-specific classes (these are not in compiled game.js)
+// Import server infrastructure (not in compiled game.js)
 import ServerEngine from '../../engine/ServerEngine.js';
 import ServerModuleManager from '../../engine/ServerModuleManager.js';
-import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
-import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
-import GameState from '../../global/libraries/js/GameState.js';
-import GameRoom from '../../global/libraries/js/GameRoom.js';
-import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
-import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
 import ServerMatchmakingService from '../../global/libraries/js/ServerMatchmakingService.js';
+
+// Import server libraries (from server.json config)
+import BaseSystem from '../../global/libraries/js/BaseSystem.js';
+import GameRoom from '../../global/libraries/js/GameRoom.js';
+import ServerGameRoom from '../../global/libraries/js/ServerGameRoom.js';
+import GameState from '../../global/libraries/js/GameState.js';
+import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
+import GameUtils from '../../global/libraries/js/GameUtils.js';
+import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
+import ServerEventManager from '../../global/libraries/js/ServerEventManager.js';
+import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
+import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
+import SeededRandom from '../../global/libraries/js/SeededRandom.js';
 import MinHeap from './scripts/Scripts/libraries/js/MinHeap.js';
+import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,15 +125,22 @@ function loadCompiledGame() {
 
     // Make server classes and game classes available via global.GUTS
     global.GUTS = {
-        // Server infrastructure classes
+        // Server infrastructure
         ServerEngine,
         ServerModuleManager,
-        BaseECSGame,
-        ServerSceneManager,
-        GameState,
-        GameRoom,
-        ServerNetworkManager,
         ServerMatchmakingService,
+        // Server libraries (from server.json)
+        BaseSystem,
+        GameRoom,
+        ServerGameRoom,
+        GameState,
+        BaseECSGame,
+        GameUtils,
+        ServerECSGame,
+        ServerEventManager,
+        ServerNetworkManager,
+        ServerSceneManager,
+        SeededRandom,
         MinHeap,
         DesyncDebugger,
         // Game classes from compiled bundle
