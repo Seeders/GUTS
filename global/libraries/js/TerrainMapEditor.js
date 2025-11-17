@@ -1998,16 +1998,25 @@ class TerrainMapEditor {
             }
         } else if (this.placementMode === 'placements' && this.selectedPlacementType) {
             // Entity placement logic - uses PLACEMENT GRID coordinates (2x terrain grid)
+            // This allows placement at half the granularity of the terrain grid
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
 
-            // Check if coordinates are within bounds (terrain grid)
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+            // For placement grid, we need finer granularity - snap to half tiles
+            const terrainGridX = Math.floor(gridPos.x);
+            const terrainGridZ = Math.floor(gridPos.y);
 
-                // Convert terrain grid to placement grid (multiply by 2)
-                const placementGridX = snappedGrid.x * 2;
-                const placementGridZ = snappedGrid.y * 2;
+            // Calculate sub-grid position (which half of the tile we're in)
+            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
+            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
+
+            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
+            const placementGridX = terrainGridX * 2 + subX;
+            const placementGridZ = terrainGridZ * 2 + subZ;
+
+            // Check if coordinates are within bounds (placement grid)
+            const placementGridSize = this.mapSize * 2;
+            if (placementGridX >= 0 && placementGridX < placementGridSize &&
+                placementGridZ >= 0 && placementGridZ < placementGridSize) {
 
                 if (this.selectedPlacementType === 'startingLocation') {
                     // Place starting location
@@ -2134,6 +2143,34 @@ class TerrainMapEditor {
                     ctx.lineWidth = 1;
                     ctx.strokeRect(drawX, drawY, gridSize, gridSize);
                 }
+            }
+        }
+
+        // Placement grid overlay - show finer grid in placement mode
+        if (this.placementMode === 'placements' && !isIsometric) {
+            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+            const placementGridSize = gridSize / 2;
+
+            ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
+            ctx.lineWidth = 1;
+
+            // Draw placement grid lines (half the size of terrain grid)
+            const placementCells = this.mapSize * 2;
+            for (let i = 0; i <= placementCells; i++) {
+                // Vertical lines
+                const x = offsetX + i * placementGridSize;
+                ctx.beginPath();
+                ctx.moveTo(x, offsetY);
+                ctx.lineTo(x, offsetY + placementCells * placementGridSize);
+                ctx.stroke();
+
+                // Horizontal lines
+                const y = offsetY + i * placementGridSize;
+                ctx.beginPath();
+                ctx.moveTo(offsetX, y);
+                ctx.lineTo(offsetX + placementCells * placementGridSize, y);
+                ctx.stroke();
             }
         }
 
@@ -2296,8 +2333,9 @@ class TerrainMapEditor {
             // Render starting locations
             this.startingLocations.forEach(loc => {
                 // Convert placement grid coordinates to terrain grid for display
-                const terrainGridX = Math.floor(loc.gridPosition.x / 2);
-                const terrainGridZ = Math.floor(loc.gridPosition.z / 2);
+                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
+                const terrainGridX = loc.gridPosition.x / 2;
+                const terrainGridZ = loc.gridPosition.z / 2;
 
                 if (isIsometric) {
                     const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
@@ -2322,13 +2360,14 @@ class TerrainMapEditor {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(loc.side.charAt(0).toUpperCase(), isoCoords.x, isoCoords.y + tileHeight / 2);
                 } else {
-                    const drawX = offsetX + terrainGridX * gridSize;
-                    const drawY = offsetY + terrainGridZ * gridSize;
+                    // Calculate pixel position with sub-tile precision
+                    const drawX = offsetX + terrainGridX * gridSize + gridSize / 2;
+                    const drawY = offsetY + terrainGridZ * gridSize + gridSize / 2;
 
                     // Draw starting location marker
                     ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
                     ctx.beginPath();
-                    ctx.arc(drawX + gridSize / 2, drawY + gridSize / 2, gridSize / 3, 0, 2 * Math.PI);
+                    ctx.arc(drawX, drawY, gridSize / 3, 0, 2 * Math.PI);
                     ctx.fill();
 
                     // Draw border
@@ -2343,16 +2382,17 @@ class TerrainMapEditor {
                     ctx.textBaseline = 'middle';
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 3;
-                    ctx.strokeText(loc.side.charAt(0).toUpperCase(), drawX + gridSize / 2, drawY + gridSize / 2);
-                    ctx.fillText(loc.side.charAt(0).toUpperCase(), drawX + gridSize / 2, drawY + gridSize / 2);
+                    ctx.strokeText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
+                    ctx.fillText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
                 }
             });
 
             // Render entity placements (buildings and units)
             this.entityPlacements.forEach(placement => {
                 // Convert placement grid coordinates to terrain grid for display
-                const terrainGridX = Math.floor(placement.gridPosition.x / 2);
-                const terrainGridZ = Math.floor(placement.gridPosition.z / 2);
+                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
+                const terrainGridX = placement.gridPosition.x / 2;
+                const terrainGridZ = placement.gridPosition.z / 2;
 
                 const color = placement.type === 'building' ? 'rgba(139, 69, 19, 0.7)' : 'rgba(0, 200, 0, 0.7)';
                 const label = placement.entityType === 'goldMine' ? 'GM' :
@@ -2390,37 +2430,40 @@ class TerrainMapEditor {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(label, isoCoords.x, isoCoords.y + tileHeight / 2);
                 } else {
+                    // Calculate pixel position with sub-tile precision
+                    // Placement grid size is half of terrain grid size
+                    const placementPixelSize = gridSize / 2;
                     const drawX = offsetX + terrainGridX * gridSize;
                     const drawY = offsetY + terrainGridZ * gridSize;
 
-                    // Draw placement marker
+                    // Draw placement marker (smaller to show placement grid granularity)
                     ctx.fillStyle = color;
                     ctx.fillRect(
-                        drawX + gridSize / 4,
-                        drawY + gridSize / 4,
-                        gridSize / 2,
-                        gridSize / 2
+                        drawX + placementPixelSize / 4,
+                        drawY + placementPixelSize / 4,
+                        placementPixelSize - placementPixelSize / 2,
+                        placementPixelSize - placementPixelSize / 2
                     );
 
                     // Draw border
                     ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(
-                        drawX + gridSize / 4,
-                        drawY + gridSize / 4,
-                        gridSize / 2,
-                        gridSize / 2
+                        drawX + placementPixelSize / 4,
+                        drawY + placementPixelSize / 4,
+                        placementPixelSize - placementPixelSize / 2,
+                        placementPixelSize - placementPixelSize / 2
                     );
 
                     // Draw label
                     ctx.fillStyle = 'white';
-                    ctx.font = 'bold 12px monospace';
+                    ctx.font = 'bold 10px monospace';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 2;
-                    ctx.strokeText(label, drawX + gridSize / 2, drawY + gridSize / 2);
-                    ctx.fillText(label, drawX + gridSize / 2, drawY + gridSize / 2);
+                    ctx.strokeText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
+                    ctx.fillText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
                 }
             });
         }
