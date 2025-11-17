@@ -110,8 +110,7 @@ app.get('/api/rooms', (req, res) => {
     res.json(rooms);
 });
 
-// Initialize game server using compiled ServerEngine
-const ServerEngine = global.GUTS.ServerEngine;
+// Initialize game server
 const gameServer = new ServerEngine();
 global.serverEngine = gameServer;
 
