@@ -66,6 +66,7 @@ class TerrainMapEditor {
         this.previewCanvas = null;
         this.currentPreviewImage = null;
         this.hoverGridPosition = null; // Track mouse position for brush preview
+        this.hoverPlacementGridPosition = null; // Track mouse position for entity placement preview
 
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
@@ -211,7 +212,8 @@ class TerrainMapEditor {
         // Add mouse leave event to clear brush preview
         this.canvasEl.addEventListener('mouseleave', () => {
             this.hoverGridPosition = null;
-            if (this.placementMode === 'terrain' || this.placementMode === 'height') {
+            this.hoverPlacementGridPosition = null;
+            if (this.placementMode === 'terrain' || this.placementMode === 'height' || this.placementMode === 'placements') {
                 this.needsRender = true;
                 this.scheduleRender();
             }
@@ -679,39 +681,98 @@ class TerrainMapEditor {
     }
 
     updateBrushPreview(e) {
-        // Only show preview in terrain or height mode
-        if (this.placementMode !== 'terrain' && this.placementMode !== 'height') {
+        // Handle terrain/height mode brush preview
+        if (this.placementMode === 'terrain' || this.placementMode === 'height') {
+            // Get mouse position relative to canvas
+            const rect = this.canvasEl.getBoundingClientRect();
+            const scaleX = this.canvasEl.width / rect.width;
+            const scaleY = this.canvasEl.height / rect.height;
+            let mouseX = (e.clientX - rect.left) * scaleX;
+            let mouseY = (e.clientY - rect.top) * scaleY;
+
+            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
+                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
+            }
+
+            // Convert to grid coordinates
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+
+            // Update hover position if it changed
+            if (!this.hoverGridPosition ||
+                this.hoverGridPosition.x !== snappedGrid.x ||
+                this.hoverGridPosition.y !== snappedGrid.y) {
+                this.hoverGridPosition = { x: snappedGrid.x, y: snappedGrid.y };
+                this.needsRender = true;
+                this.scheduleRender();
+            }
+        } else {
+            // Clear terrain/height hover position if not in those modes
             if (this.hoverGridPosition !== null) {
                 this.hoverGridPosition = null;
                 this.needsRender = true;
                 this.scheduleRender();
             }
-            return;
         }
 
-        // Get mouse position relative to canvas
-        const rect = this.canvasEl.getBoundingClientRect();
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (e.clientX - rect.left) * scaleX;
-        let mouseY = (e.clientY - rect.top) * scaleY;
+        // Handle placements mode hover preview
+        if (this.placementMode === 'placements' && this.selectedPlacementType) {
+            // Get mouse position relative to canvas
+            const rect = this.canvasEl.getBoundingClientRect();
+            const scaleX = this.canvasEl.width / rect.width;
+            const scaleY = this.canvasEl.height / rect.height;
+            let mouseX = (e.clientX - rect.left) * scaleX;
+            let mouseY = (e.clientY - rect.top) * scaleY;
 
-        if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-            mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-        }
+            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
+                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
+            }
 
-        // Convert to grid coordinates
-        const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-        const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
+            // Convert to grid coordinates
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
 
-        // Update hover position if it changed
-        if (!this.hoverGridPosition ||
-            this.hoverGridPosition.x !== snappedGrid.x ||
-            this.hoverGridPosition.y !== snappedGrid.y) {
-            this.hoverGridPosition = { x: snappedGrid.x, y: snappedGrid.y };
-            this.needsRender = true;
-            this.scheduleRender();
+            // For placement grid, we need finer granularity - snap to half tiles
+            const terrainGridX = Math.floor(gridPos.x);
+            const terrainGridZ = Math.floor(gridPos.y);
+
+            // Calculate sub-grid position (which half of the tile we're in)
+            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
+            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
+
+            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
+            const placementGridX = terrainGridX * 2 + subX;
+            const placementGridZ = terrainGridZ * 2 + subZ;
+
+            // Check if coordinates are within bounds (placement grid)
+            const placementGridSize = this.mapSize * 2;
+            if (placementGridX >= 0 && placementGridX < placementGridSize &&
+                placementGridZ >= 0 && placementGridZ < placementGridSize) {
+
+                // Update hover position if it changed
+                if (!this.hoverPlacementGridPosition ||
+                    this.hoverPlacementGridPosition.x !== placementGridX ||
+                    this.hoverPlacementGridPosition.z !== placementGridZ) {
+                    this.hoverPlacementGridPosition = { x: placementGridX, z: placementGridZ };
+                    this.needsRender = true;
+                    this.scheduleRender();
+                }
+            } else {
+                // Clear hover position if out of bounds
+                if (this.hoverPlacementGridPosition !== null) {
+                    this.hoverPlacementGridPosition = null;
+                    this.needsRender = true;
+                    this.scheduleRender();
+                }
+            }
+        } else {
+            // Clear placements hover position if not in that mode
+            if (this.hoverPlacementGridPosition !== null) {
+                this.hoverPlacementGridPosition = null;
+                this.needsRender = true;
+                this.scheduleRender();
+            }
         }
     }
     setupTerrainImageProcessor() {
@@ -2171,6 +2232,69 @@ class TerrainMapEditor {
                 ctx.moveTo(offsetX, y);
                 ctx.lineTo(offsetX + placementCells * placementGridSize, y);
                 ctx.stroke();
+            }
+        }
+
+        // Hover preview for entity placement
+        if (this.hoverPlacementGridPosition && this.placementMode === 'placements' && this.selectedPlacementType) {
+            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
+            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+            // Convert placement grid coordinates to terrain grid for display
+            const terrainGridX = this.hoverPlacementGridPosition.x / 2;
+            const terrainGridZ = this.hoverPlacementGridPosition.z / 2;
+
+            // Choose color based on placement type
+            let fillColor, strokeColor;
+            if (this.selectedPlacementType === 'startingLocation') {
+                // Blue for left team, orange for right team
+                if (this.selectedEntityType === 'left') {
+                    fillColor = 'rgba(0, 100, 255, 0.4)';
+                    strokeColor = 'rgba(0, 100, 255, 0.8)';
+                } else {
+                    fillColor = 'rgba(255, 100, 0, 0.4)';
+                    strokeColor = 'rgba(255, 100, 0, 0.8)';
+                }
+            } else if (this.selectedPlacementType === 'building') {
+                // Brown for buildings
+                fillColor = 'rgba(139, 69, 19, 0.4)';
+                strokeColor = 'rgba(139, 69, 19, 0.8)';
+            } else if (this.selectedPlacementType === 'unit') {
+                // Green for units
+                fillColor = 'rgba(0, 200, 0, 0.4)';
+                strokeColor = 'rgba(0, 200, 0, 0.8)';
+            }
+
+            if (isIsometric) {
+                const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
+                const tileWidth = gridSize;
+                const tileHeight = gridSize * 0.5;
+
+                // Draw hover highlight
+                ctx.fillStyle = fillColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(isoCoords.x, isoCoords.y);
+                ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                // Calculate pixel position with sub-tile precision
+                const placementPixelSize = gridSize / 2;
+                const drawX = offsetX + terrainGridX * gridSize;
+                const drawY = offsetY + terrainGridZ * gridSize;
+
+                // Draw hover highlight (show the placement grid cell)
+                ctx.fillStyle = fillColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2;
+                ctx.fillRect(drawX, drawY, placementPixelSize, placementPixelSize);
+                ctx.strokeRect(drawX, drawY, placementPixelSize, placementPixelSize);
             }
         }
 
