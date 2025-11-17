@@ -7,6 +7,18 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import vm from 'vm';
 
+// Import server-specific classes (these are not in compiled game.js)
+import ServerEngine from '../../engine/ServerEngine.js';
+import ServerModuleManager from '../../engine/ServerModuleManager.js';
+import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
+import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
+import GameState from '../../global/libraries/js/GameState.js';
+import GameRoom from '../../global/libraries/js/GameRoom.js';
+import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
+import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
+import ServerMatchmakingService from '../../global/libraries/js/ServerMatchmakingService.js';
+import MinHeap from './scripts/Scripts/libraries/js/MinHeap.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -22,43 +34,31 @@ function loadCompiledGame() {
         querySelector: () => null
     };
 
-    // Load engine.js
-    const enginePath = path.join(__dirname, 'engine.js');
-    const engineCode = readFileSync(enginePath, 'utf8');
-    const engineScript = new vm.Script(engineCode);
-    engineScript.runInThisContext();
-
-    console.log('✓ Loaded engine.js');
-
-    // Load game.js (contains compiled classes and collections)
+    // Load game.js (contains compiled game classes and collections)
     const gamePath = path.join(__dirname, 'game.js');
     const gameCode = readFileSync(gamePath, 'utf8');
     const gameScript = new vm.Script(gameCode);
     gameScript.runInThisContext();
 
-    console.log('✓ Loaded game.js');
+    console.log('✓ Loaded compiled game.js');
 
-    // Initialize the compiled game
-    if (global.COMPILED_GAME && global.COMPILED_GAME.init) {
-        // Create a mock engine object for initialization
-        const mockEngine = {
-            core: {
-                getCollections: () => global.COMPILED_GAME.collections
-            },
-            moduleManager: {
-                libraryClasses: {}
-            }
-        };
-        global.COMPILED_GAME.init(mockEngine);
-        console.log('✓ Initialized compiled game');
-    }
-
-    // Make classes available via global.GUTS
+    // Make server classes and game classes available via global.GUTS
     global.GUTS = {
-        ...global.engine,
-        ...global.engine.app.appClasses,
+        // Server infrastructure classes
+        ServerEngine,
+        ServerModuleManager,
+        BaseECSGame,
+        ServerSceneManager,
+        GameState,
+        GameRoom,
+        ServerNetworkManager,
+        ServerMatchmakingService,
+        MinHeap,
+        DesyncDebugger,
+        // Game classes from compiled bundle
+        ...global.engine?.app?.appClasses,
         // Collections available from compiled game
-        getCollections: () => global.COMPILED_GAME.collections
+        getCollections: () => global.COMPILED_GAME?.collections
     };
 
     console.log('✓ Game classes loaded and available in global.GUTS');
@@ -69,7 +69,7 @@ try {
     loadCompiledGame();
 } catch (error) {
     console.error('Failed to load compiled game:', error);
-    console.error('Make sure game.js and engine.js exist in the project directory');
+    console.error('Make sure game.js exists in the project directory');
     process.exit(1);
 }
 
