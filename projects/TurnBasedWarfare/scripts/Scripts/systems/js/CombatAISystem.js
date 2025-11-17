@@ -159,7 +159,15 @@ class CombatAISystem extends engine.BaseSystem {
 
 
     changeAIState(aiState, newState) {
-
+        if (!aiState.aiBehavior) {
+            aiState.aiBehavior = {
+                lastDecisionTime: 0,
+                targetLockTime: 0,
+                lastStateChange: 0,
+                lastAttackStart: 0,
+                initialized: true
+            };
+        }
         const aiBehavior = aiState.aiBehavior;
         if (this.game.state.now - aiBehavior.lastStateChange < this.STATE_CHANGE_COOLDOWN) return false;
         if (aiState.state === 'attacking') {

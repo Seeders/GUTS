@@ -11964,7 +11964,24 @@
         4
       ]
     ],
-    "extensionHeight": 2
+    "extensionHeight": 2,
+    "startingLocations": [
+      {
+        "side": "right",
+        "gridPosition": {
+          "x": 116,
+          "z": 116
+        }
+      },
+      {
+        "side": "left",
+        "gridPosition": {
+          "x": 12,
+          "z": 12
+        }
+      }
+    ],
+    "entityPlacements": []
   },
   "world": "shire",
   "grassShader": "grass",

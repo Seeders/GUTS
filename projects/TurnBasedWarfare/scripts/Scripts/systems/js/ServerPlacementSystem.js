@@ -754,11 +754,11 @@ class ServerPlacementSystem extends engine.BaseSystem {
 
     getStartingPositionFromLevel(side) {
         // Try to get level data from game collections
-        const level = this.game.getCollections().levels?.level;
+        const level = this.game.getCollections().levels[this.game.state.level];
         if (!level || !level.tileMap || !level.tileMap.startingLocations) {
             return null;
         }
-
+        
         // Find starting location for this side
         const startingLoc = level.tileMap.startingLocations.find(loc => loc.side === side);
         if (startingLoc && startingLoc.gridPosition) {
@@ -771,14 +771,6 @@ class ServerPlacementSystem extends engine.BaseSystem {
     getStartingState(player){
         // Get starting position from level data if available
         let startPosition = this.getStartingPositionFromLevel(player.stats.side);
-
-        // Fallback to hardcoded positions if not found in level
-        if (!startPosition) {
-            startPosition = { x: 10, z: 10 };
-            if(player.stats.side == 'right'){
-                startPosition = { x: 116, z: 116 };
-            }
-        }
 
         // Find nearest unclaimed gold vein
         let nearestGoldVeinLocation = null;
