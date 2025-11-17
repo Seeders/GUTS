@@ -75,7 +75,10 @@ app.post('/save-project', async (req, res) => {
 app.post('/save-compiled-game', async (req, res) => {
     const { projectName, gameCode, serverGameCode, engineCode, modules } = req.body;
     const projectFolder = path.join(PROJS_DIR, projectName);
-    const modulesFolder = path.join(projectFolder, 'modules');
+    const distFolder = path.join(projectFolder, 'dist');
+    const serverDistFolder = path.join(distFolder, 'server');
+    const clientDistFolder = path.join(distFolder, 'client');
+    const modulesFolder = path.join(clientDistFolder, 'modules');
 
     console.log(`📦 Saving compiled files for ${projectName}:`);
     console.log(`   - gameCode: ${gameCode ? `${(gameCode.length / 1024).toFixed(1)}KB` : 'missing'}`);
@@ -88,16 +91,24 @@ app.post('/save-compiled-game', async (req, res) => {
         if (!fsSync.existsSync(projectFolder)) {
             await fs.mkdir(projectFolder, { recursive: true });
         }
-
+        if (!fsSync.existsSync(distFolder)) {
+            await fs.mkdir(distFolder, { recursive: true });
+        }
+        if (!fsSync.existsSync(serverDistFolder)) {
+            await fs.mkdir(serverDistFolder, { recursive: true });
+        }
+        if (!fsSync.existsSync(clientDistFolder)) {
+            await fs.mkdir(clientDistFolder, { recursive: true });
+        }
         // Save game.js (client version)
         if (gameCode) {
-            await fs.writeFile(path.join(projectFolder, 'game.js'), gameCode, 'utf8');
+            await fs.writeFile(path.join(clientDistFolder, 'game.js'), gameCode, 'utf8');
             console.log(`✓ Saved game.js for ${projectName}`);
         }
 
         // Save game_server.js (server version with filtered classes)
         if (serverGameCode) {
-            await fs.writeFile(path.join(projectFolder, 'game_server.js'), serverGameCode, 'utf8');
+            await fs.writeFile(path.join(serverDistFolder, 'game.js'), serverGameCode, 'utf8');
             console.log(`✓ Saved game_server.js for ${projectName}`);
         } else {
             console.log(`⚠️ No serverGameCode received - skipping game_server.js`);
@@ -105,7 +116,7 @@ app.post('/save-compiled-game', async (req, res) => {
 
         // Save engine.js
         if (engineCode) {
-            await fs.writeFile(path.join(projectFolder, 'engine.js'), engineCode, 'utf8');
+            await fs.writeFile(path.join(clientDistFolder, 'engine.js'), engineCode, 'utf8');
             console.log(`✓ Saved engine.js for ${projectName}`);
         }
 
