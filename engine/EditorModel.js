@@ -236,15 +236,42 @@ class EditorModel {
                 engine: './engine/Engine.js'
             };
 
-            // Compile the game
+            // Compile the client game (all classes)
             const result = await compiler.compile(
                 this.state.currentProject,
                 this.getCollections(),
                 this.getCollectionDefs(),
-                engineFilePaths
+                engineFilePaths,
+                null // No scene filter - compile all classes
             );
 
-            console.log('✅ Compilation complete');
+            console.log('✅ Client compilation complete');
+
+            // Compile server game if server.json exists
+            let serverResult = null;
+            try {
+                // Try to load server.json scene
+                const serverScenePath = `./projects/${this.state.currentProject}/scripts/Environment/scenes/server.json`;
+                const serverSceneResponse = await fetch(serverScenePath);
+                if (serverSceneResponse.ok) {
+                    const serverScene = await serverSceneResponse.json();
+                    console.log('🔨 Compiling server game bundle...');
+
+                    // Compile with server scene filter
+                    const serverCompiler = new Compiler(this.core);
+                    serverResult = await serverCompiler.compile(
+                        this.state.currentProject,
+                        this.getCollections(),
+                        this.getCollectionDefs(),
+                        null, // No engine code for server
+                        serverScene // Scene filter
+                    );
+
+                    console.log('✅ Server compilation complete');
+                }
+            } catch (error) {
+                console.log('ℹ️ No server scene found, skipping server compilation');
+            }
 
             // Fetch local module files
             const modules = [];
@@ -275,6 +302,7 @@ class EditorModel {
                 body: JSON.stringify({
                     projectName: this.state.currentProject,
                     gameCode: result.code,
+                    serverGameCode: serverResult?.code || null,
                     engineCode: result.engineCode,
                     modules: modules
                 })

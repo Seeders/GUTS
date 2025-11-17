@@ -73,7 +73,7 @@ app.post('/save-project', async (req, res) => {
 
 // Endpoint to save compiled game files
 app.post('/save-compiled-game', async (req, res) => {
-    const { projectName, gameCode, engineCode, modules } = req.body;
+    const { projectName, gameCode, serverGameCode, engineCode, modules } = req.body;
     const projectFolder = path.join(PROJS_DIR, projectName);
     const modulesFolder = path.join(projectFolder, 'modules');
 
@@ -83,10 +83,16 @@ app.post('/save-compiled-game', async (req, res) => {
             await fs.mkdir(projectFolder, { recursive: true });
         }
 
-        // Save game.js
+        // Save game.js (client version)
         if (gameCode) {
             await fs.writeFile(path.join(projectFolder, 'game.js'), gameCode, 'utf8');
             console.log(`✓ Saved game.js for ${projectName}`);
+        }
+
+        // Save game_server.js (server version with filtered classes)
+        if (serverGameCode) {
+            await fs.writeFile(path.join(projectFolder, 'game_server.js'), serverGameCode, 'utf8');
+            console.log(`✓ Saved game_server.js for ${projectName}`);
         }
 
         // Save engine.js
