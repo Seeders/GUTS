@@ -47,6 +47,7 @@ class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
         if(!currentAIController || currentAIController === ""){
             let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
             this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI);
+            return true; // We just became the active controller
         }
 
         return (currentAIController == ComponentTypes.MINING_STATE);

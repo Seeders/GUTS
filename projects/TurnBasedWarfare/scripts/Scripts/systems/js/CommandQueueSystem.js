@@ -108,6 +108,11 @@ class CommandQueueSystem extends engine.BaseSystem {
         const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
         if (!aiState) return;
 
+        // Store the current controller before switching (so we can restore it later)
+        if (!commandQueue.previousControllerId) {
+            commandQueue.previousControllerId = this.game.aiSystem.getCurrentAIControllerId(entityId);
+        }
+
         // CRITICAL: Always clear the path when executing a new command
         aiState.path = [];
         aiState.pathIndex = 0;
@@ -206,21 +211,20 @@ class CommandQueueSystem extends engine.BaseSystem {
             const nextCommand = commandQueue.commands.shift();
             this.executeCommand(entityId, nextCommand);
         } else {
-            // No more commands, check if unit has passive abilities to restore
+            // No more commands, restore previous controller or set to null
             const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
             if (aiState) {
-                // Check if unit has mining capability - restore mining controller
-                const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
-                if (miningState) {
-                    // Restore mining controller
+                if (commandQueue.previousControllerId) {
+                    // Restore the controller that was active before commands started
                     const Components = this.game.componentManager.getComponents();
-                    let miningControllerData = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
-                    if (!this.game.aiSystem.hasAIControllerData(entityId, ComponentTypes.MINING_STATE)) {
-                        miningControllerData = Components.AIState('idle');
+                    let previousControllerData = this.game.aiSystem.getAIControllerData(entityId, commandQueue.previousControllerId);
+                    if (!this.game.aiSystem.hasAIControllerData(entityId, commandQueue.previousControllerId)) {
+                        previousControllerData = Components.AIState('idle');
                     }
-                    this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, miningControllerData);
+                    this.game.aiSystem.setCurrentAIController(entityId, commandQueue.previousControllerId, previousControllerData);
+                    commandQueue.previousControllerId = null;
                 } else {
-                    // No passive abilities, return to idle
+                    // No previous controller, return to idle
                     aiState.state = 'idle';
                     aiState.targetPosition = null;
                     aiState.target = null;
