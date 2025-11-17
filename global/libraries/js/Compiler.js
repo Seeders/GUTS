@@ -248,6 +248,13 @@ window.COMPILED_GAME_LOADED = true;`;
     }
 
 async buildLibraries(result) {
+    // Skip library compilation for server - libraries are imported directly as ES modules
+    if (this.sceneFilter && this.sceneFilter.title === 'server') {
+        console.log('Server mode: Skipping library compilation (libraries loaded via ES imports)');
+        result.sections.push('// ========== LIBRARIES ==========\n// Server libraries loaded via ES module imports in server_game.js');
+        return;
+    }
+
     // Determine which config to use based on scene filter
     let configName = 'game'; // Default to game config
     if (this.sceneFilter && this.sceneFilter.title) {
