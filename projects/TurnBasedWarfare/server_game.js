@@ -64,9 +64,27 @@ function loadCompiledGame() {
         }
     };
 
-    // Mock other browser globals
-    global.navigator = { userAgent: 'Node.js Server' };
-    global.location = { href: '', pathname: '' };
+    // Mock other browser globals - use defineProperty to avoid read-only errors
+    try {
+        Object.defineProperty(global, 'navigator', {
+            value: { userAgent: 'Node.js Server' },
+            writable: true,
+            configurable: true
+        });
+    } catch (e) {
+        // navigator might already be defined, skip
+    }
+
+    try {
+        Object.defineProperty(global, 'location', {
+            value: { href: '', pathname: '' },
+            writable: true,
+            configurable: true
+        });
+    } catch (e) {
+        // location might already be defined, skip
+    }
+
     global.Image = class Image {};
     global.Audio = class Audio {};
     global.localStorage = {
