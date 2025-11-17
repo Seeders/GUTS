@@ -147,8 +147,9 @@ class MultiplayerUISystem extends engine.BaseSystem {
                 tableBody.innerHTML = '';
 
                 // Filter for available rooms (waiting for players)
+                // Show rooms that have space and haven't started yet (isActive = false means waiting)
                 const availableRooms = rooms.filter(room =>
-                    room.playerCount < room.maxPlayers && room.isActive
+                    room.playerCount < room.maxPlayers && !room.isActive
                 );
 
                 if (availableRooms.length === 0) {
