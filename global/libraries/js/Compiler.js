@@ -1,6 +1,6 @@
 class Compiler {
-    constructor(engine) {
-        this.engine = engine;
+    constructor(environment) {
+        this.environment = environment;
         this.collections = null;
         this.compiledBundle = null;
         this.compiledEngine = null;
@@ -248,7 +248,7 @@ window.COMPILED_GAME_LOADED = true;`;
     }
 
 async buildLibraries(result) {
-    const projectConfig = this.collections.configs.game;
+    const projectConfig = this.collections.configs[this.environment];
     if (!projectConfig.libraries) {
         console.warn("No libraries defined in game config");
         return;
