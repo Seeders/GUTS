@@ -28,19 +28,62 @@ function loadCompiledGame() {
 
     // Set up window-like global context for compiled code
     global.window = global;
-    global.document = {
-        createElement: () => ({ setAttribute: () => {}, textContent: null }),
-        head: { prepend: () => {}, append: () => {} },
-        querySelector: () => null
+
+    // Create comprehensive DOM mocks for client libraries
+    const mockElement = {
+        setAttribute: () => {},
+        getAttribute: () => null,
+        removeAttribute: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        appendChild: () => {},
+        removeChild: () => {},
+        innerHTML: '',
+        textContent: '',
+        style: {},
+        classList: {
+            add: () => {},
+            remove: () => {},
+            contains: () => false,
+            toggle: () => {}
+        }
     };
 
-    // Load game.js (contains compiled game classes and collections)
-    const gamePath = path.join(__dirname, 'game.js');
+    global.document = {
+        createElement: () => ({ ...mockElement }),
+        getElementById: () => mockElement,
+        querySelector: () => mockElement,
+        querySelectorAll: () => [],
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        body: mockElement,
+        head: {
+            prepend: () => {},
+            append: () => {},
+            appendChild: () => {}
+        }
+    };
+
+    // Mock other browser globals
+    global.navigator = { userAgent: 'Node.js Server' };
+    global.location = { href: '', pathname: '' };
+    global.Image = class Image {};
+    global.Audio = class Audio {};
+    global.localStorage = {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+        clear: () => {}
+    };
+    global.sessionStorage = global.localStorage;
+
+    // Load game_server.js (contains server-only compiled classes and collections)
+    const gamePath = path.join(__dirname, 'game_server.js');
     const gameCode = readFileSync(gamePath, 'utf8');
     const gameScript = new vm.Script(gameCode);
     gameScript.runInThisContext();
 
-    console.log('✓ Loaded compiled game.js');
+    console.log('✓ Loaded compiled game_server.js');
 
     // Make server classes and game classes available via global.GUTS
     global.GUTS = {
