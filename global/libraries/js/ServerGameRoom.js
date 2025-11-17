@@ -182,6 +182,15 @@ class ServerGameRoom extends global.GameRoom {
                 room.removePlayer(playerId);
                 this.serverNetworkManager.leaveRoom(playerId, roomId);
 
+                // Check if only one player remains and game was active
+                if (room.players.size === 1 && room.isActive) {
+                    // Notify the remaining player that the game is over
+                    this.serverNetworkManager.broadcastToRoom(roomId, 'GAME_ENDED_ALL_PLAYERS_LEFT', {
+                        message: 'All other players have left the game.'
+                    });
+                    console.log(`Game in room ${roomId} ended - only one player remains`);
+                }
+
                 // Clean up empty rooms
                 if (room.players.size === 0) {
                     this.cleanupRoom(room);
