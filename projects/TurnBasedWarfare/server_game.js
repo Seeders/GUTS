@@ -35,16 +35,8 @@ global.GUTS = {
     DesyncDebugger
 };
 
-// Now import classes that depend on global.GUTS
-import GameRoom from '../../global/libraries/js/GameRoom.js';
-import ServerGameRoom from '../../global/libraries/js/ServerGameRoom.js';
-import ServerECSGame from '../../global/libraries/js/ServerECSGame.js';
-import ServerEventManager from '../../global/libraries/js/ServerEventManager.js';
-import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
-import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
-
 // Load and execute compiled game files in Node.js context
-function loadCompiledGame() {
+async function loadCompiledGame() {
     console.log('Loading compiled game files...');
 
     // Set up window-like global context for compiled code
@@ -136,6 +128,14 @@ function loadCompiledGame() {
 
     console.log('✓ Loaded compiled game_server.js');
 
+    // Dynamically import classes that depend on global.GUTS
+    const GameRoom = (await import('../../global/libraries/js/GameRoom.js')).default;
+    const ServerGameRoom = (await import('../../global/libraries/js/ServerGameRoom.js')).default;
+    const ServerECSGame = (await import('../../global/libraries/js/ServerECSGame.js')).default;
+    const ServerEventManager = (await import('../../global/libraries/js/ServerEventManager.js')).default;
+    const ServerNetworkManager = (await import('../../global/libraries/js/ServerNetworkManager.js')).default;
+    const ServerSceneManager = (await import('../../global/libraries/js/ServerSceneManager.js')).default;
+
     // Merge server classes and game classes into global.GUTS
     Object.assign(global.GUTS, {
         // Server infrastructure
@@ -158,15 +158,6 @@ function loadCompiledGame() {
     console.log('✓ Game classes loaded and available in global.GUTS');
 }
 
-// Load compiled game
-try {
-    loadCompiledGame();
-} catch (error) {
-    console.error('Failed to load compiled game:', error);
-    console.error('Make sure game.js exists in the project directory');
-    process.exit(1);
-}
-
 // Set up Express server for serving client files (optional)
 const app = express();
 const server = createServer(app);
@@ -184,17 +175,23 @@ app.use(express.static(path.join(__dirname, './')));
 app.use('/engine', express.static(path.join(__dirname, '../../engine')));
 app.use('/global', express.static(path.join(__dirname, '../../global')));
 
+let gameServer; // Will be initialized after game loads
+
 // API endpoints
 app.get('/api/server-status', (req, res) => {
     res.json({
         status: 'running',
-        rooms: gameServer.gameRooms.size,
-        activePlayers: Array.from(gameServer.gameRooms.values())
-            .reduce((total, room) => total + room.players.size, 0)
+        rooms: gameServer?.gameRooms?.size || 0,
+        activePlayers: gameServer?.gameRooms ? Array.from(gameServer.gameRooms.values())
+            .reduce((total, room) => total + room.players.size, 0) : 0
     });
 });
 
 app.get('/api/rooms', (req, res) => {
+    if (!gameServer?.gameRooms) {
+        res.json([]);
+        return;
+    }
     const rooms = Array.from(gameServer.gameRooms.entries()).map(([id, room]) => ({
         id,
         playerCount: room.players.size,
@@ -204,12 +201,16 @@ app.get('/api/rooms', (req, res) => {
     res.json(rooms);
 });
 
-// Initialize game server
-const gameServer = new ServerEngine();
-global.serverEngine = gameServer;
-
-async function startServer() {
+// Load compiled game and start server (async wrapper)
+(async () => {
     try {
+        // Load the compiled game first
+        await loadCompiledGame();
+
+        // Initialize game server after game is loaded
+        gameServer = new ServerEngine();
+        global.serverEngine = gameServer;
+
         // ServerEngine/ServerNetworkManager will pick up global.io instead of creating a new listener
         await gameServer.init('TurnBasedWarfare');
         console.log('GUTS Multiplayer Server started successfully');
@@ -222,17 +223,15 @@ async function startServer() {
 
     } catch (error) {
         console.error('Failed to start server:', error);
+        console.error('Make sure game_server.js exists in the project directory');
         process.exit(1);
     }
-}
-
-// Start the server
-startServer();
+})();
 
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('Shutting down server...');
-    try { gameServer.stop?.(); } catch (e) { /* noop */ }
+    try { if (gameServer) gameServer.stop?.(); } catch (e) { /* noop */ }
     try { global._io?.close(); } catch (e) { /* noop */ }
     server.close(() => process.exit(0));
 });
