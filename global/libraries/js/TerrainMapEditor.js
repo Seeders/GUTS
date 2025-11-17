@@ -1997,13 +1997,17 @@ class TerrainMapEditor {
                 }
             }
         } else if (this.placementMode === 'placements' && this.selectedPlacementType) {
-            // Entity placement logic
+            // Entity placement logic - uses PLACEMENT GRID coordinates (2x terrain grid)
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
 
-            // Check if coordinates are within bounds
+            // Check if coordinates are within bounds (terrain grid)
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+
+                // Convert terrain grid to placement grid (multiply by 2)
+                const placementGridX = snappedGrid.x * 2;
+                const placementGridZ = snappedGrid.y * 2;
 
                 if (this.selectedPlacementType === 'startingLocation') {
                     // Place starting location
@@ -2012,16 +2016,16 @@ class TerrainMapEditor {
                     // Remove existing starting location for this side
                     this.startingLocations = this.startingLocations.filter(loc => loc.side !== side);
 
-                    // Add new starting location
+                    // Add new starting location (using placement grid coordinates)
                     this.startingLocations.push({
                         side: side,
-                        gridPosition: { x: snappedGrid.x, z: snappedGrid.y }
+                        gridPosition: { x: placementGridX, z: placementGridZ }
                     });
 
                     // Update UI list
                     this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
 
-                    this.placementModeIndicator.textContent = `Placed ${side} team start at (${snappedGrid.x}, ${snappedGrid.y})`;
+                    this.placementModeIndicator.textContent = `Placed ${side} team start at placement grid (${placementGridX}, ${placementGridZ})`;
                     this.placementModeIndicator.style.opacity = '1';
 
                     clearTimeout(this.indicatorTimeout);
@@ -2034,11 +2038,11 @@ class TerrainMapEditor {
                     this.exportMap();
 
                 } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
-                    // Place building or unit
+                    // Place building or unit (using placement grid coordinates)
                     const placement = {
                         type: this.selectedPlacementType,
                         entityType: this.selectedEntityType,
-                        gridPosition: { x: snappedGrid.x, z: snappedGrid.y }
+                        gridPosition: { x: placementGridX, z: placementGridZ }
                     };
 
                     // For gold mines, validate placement on gold veins (if we have that data)
@@ -2049,7 +2053,7 @@ class TerrainMapEditor {
 
                     this.entityPlacements.push(placement);
 
-                    this.placementModeIndicator.textContent = `Placed ${this.selectedEntityType} at (${snappedGrid.x}, ${snappedGrid.y})`;
+                    this.placementModeIndicator.textContent = `Placed ${this.selectedEntityType} at placement grid (${placementGridX}, ${placementGridZ})`;
                     this.placementModeIndicator.style.opacity = '1';
 
                     clearTimeout(this.indicatorTimeout);
@@ -2291,8 +2295,12 @@ class TerrainMapEditor {
 
             // Render starting locations
             this.startingLocations.forEach(loc => {
+                // Convert placement grid coordinates to terrain grid for display
+                const terrainGridX = Math.floor(loc.gridPosition.x / 2);
+                const terrainGridZ = Math.floor(loc.gridPosition.z / 2);
+
                 if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(loc.gridPosition.x, loc.gridPosition.z);
+                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
                     const tileWidth = gridSize;
                     const tileHeight = gridSize * 0.5;
 
@@ -2314,8 +2322,8 @@ class TerrainMapEditor {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(loc.side.charAt(0).toUpperCase(), isoCoords.x, isoCoords.y + tileHeight / 2);
                 } else {
-                    const drawX = offsetX + loc.gridPosition.x * gridSize;
-                    const drawY = offsetY + loc.gridPosition.z * gridSize;
+                    const drawX = offsetX + terrainGridX * gridSize;
+                    const drawY = offsetY + terrainGridZ * gridSize;
 
                     // Draw starting location marker
                     ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
@@ -2342,13 +2350,17 @@ class TerrainMapEditor {
 
             // Render entity placements (buildings and units)
             this.entityPlacements.forEach(placement => {
+                // Convert placement grid coordinates to terrain grid for display
+                const terrainGridX = Math.floor(placement.gridPosition.x / 2);
+                const terrainGridZ = Math.floor(placement.gridPosition.z / 2);
+
                 const color = placement.type === 'building' ? 'rgba(139, 69, 19, 0.7)' : 'rgba(0, 200, 0, 0.7)';
                 const label = placement.entityType === 'goldMine' ? 'GM' :
                               placement.entityType === 'townHall' ? 'TH' :
                               placement.entityType.charAt(0).toUpperCase();
 
                 if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(placement.gridPosition.x, placement.gridPosition.z);
+                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
                     const tileWidth = gridSize;
                     const tileHeight = gridSize * 0.5;
 
@@ -2378,8 +2390,8 @@ class TerrainMapEditor {
                     ctx.textBaseline = 'middle';
                     ctx.fillText(label, isoCoords.x, isoCoords.y + tileHeight / 2);
                 } else {
-                    const drawX = offsetX + placement.gridPosition.x * gridSize;
-                    const drawY = offsetY + placement.gridPosition.z * gridSize;
+                    const drawX = offsetX + terrainGridX * gridSize;
+                    const drawY = offsetY + terrainGridZ * gridSize;
 
                     // Draw placement marker
                     ctx.fillStyle = color;
