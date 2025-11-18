@@ -1167,8 +1167,8 @@ class WorldSystem extends engine.BaseSystem {
             }
         });
 
-        // After placing cliffs, add supporting textures on terrain
-        this.paintCliffSupportingTextures();
+        // Cliff supporting textures are now painted during terrain generation
+        // See TileMap.paintCliffSupportingTexturesForTile()
     }
 
     /**
