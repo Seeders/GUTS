@@ -101,8 +101,10 @@ class ShapeFactory {
 
             model.traverse(child => {
                 if (child.isMesh) {
-                    // Override material with skinning enabled
-                    let map = child.material.map;
+                    // Store original material properties
+                    const originalMaterial = child.material;
+                    let map = originalMaterial.map;
+
                     // Ensure texture has correct color space
                     if (map) {
                         map.colorSpace = THREE.SRGBColorSpace;
@@ -114,11 +116,30 @@ class ShapeFactory {
                         child.geometry.deleteAttribute('color');
                     }
 
+                    // Check for and remove any AO map that could be darkening the texture
+                    // AO maps often darken meshes significantly
+                    const hasAOMap = originalMaterial.aoMap;
+                    if (hasAOMap) {
+                        console.log('Removing AO map from GLTF material');
+                    }
+
+                    // Log original material color to debug 50% darkness issue
+                    if (originalMaterial.color) {
+                        const origColor = originalMaterial.color.getHex();
+                        if (origColor !== 0xffffff) {
+                            console.log(`GLTF material had non-white color: #${origColor.toString(16).padStart(6, '0')}`);
+                        }
+                    }
+
+                    // Use white color instead of preserving original to prevent darkening
+                    // Original GLTF materials might have gray colors that darken textures
                     child.material = new THREE.MeshStandardMaterial({
                         color: 0xffffff,
-                        metalness: shape.metalness || 0.5,
-                        roughness: shape.roughness || 0.5,
+                        metalness: shape.metalness !== undefined ? shape.metalness : (originalMaterial.metalness || 0.5),
+                        roughness: shape.roughness !== undefined ? shape.roughness : (originalMaterial.roughness || 0.5),
                         map: map,
+                        aoMap: null,  // Don't use AO map
+                        aoMapIntensity: 0,  // Disable AO
                         vertexColors: false
                     });
                     child.material.alphaTest = 0.1;
