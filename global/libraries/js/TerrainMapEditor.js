@@ -107,7 +107,18 @@ class TerrainMapEditor {
                 const collections = this.gameEditor.getCollections();
                 if (collections.terrainTypes && collections.terrainTypes[terrainTypeId]) {
                     collections.terrainTypes[terrainTypeId].texture = textureName;
-                    this.terrainImageProcessor.processImage(this.gameEditor.getCollections().textures[textureName].image);
+                    const texture = this.gameEditor.getCollections().textures[textureName];
+                    // Support both new imagePath format and old base64 image format
+                    let imageSrc = null;
+                    if (texture.imagePath) {
+                        const projectName = this.gameEditor.getCurrentProject();
+                        imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
+                    } else if (texture.image) {
+                        imageSrc = texture.image;
+                    }
+                    if (imageSrc) {
+                        this.terrainImageProcessor.processImage(imageSrc);
+                    }
                 }
             }
         });

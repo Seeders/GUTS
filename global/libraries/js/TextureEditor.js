@@ -400,7 +400,25 @@ class TextureEditor {
         }
     }
 
-    updateUIFromSettings(imageSrc) {
+    updateUIFromSettings(textureData) {
+        // Handle both old format (base64 string) and new format (object with imagePath)
+        let imageSrc = null;
+
+        if (typeof textureData === 'string') {
+            // Old format: base64 string
+            imageSrc = textureData;
+        } else if (typeof textureData === 'object' && textureData !== null) {
+            // New format: object with imagePath or image property
+            if (textureData.imagePath) {
+                // File path - construct full path
+                const projectName = this.gameEditor.getCurrentProject();
+                imageSrc = `/projects/${projectName}/resources/${textureData.imagePath}`;
+            } else if (textureData.image) {
+                // Fallback to base64 if imagePath is not present
+                imageSrc = textureData.image;
+            }
+        }
+
         if (!imageSrc) {
             document.getElementById('noTextureMessage').style.display = 'block';
             this.canvas.style.display = 'none';
@@ -413,28 +431,28 @@ class TextureEditor {
             // Set canvas dimensions to match image dimensions
             this.imageWidth = img.width;
             this.imageHeight = img.height;
-            
+
             // Update canvas size to match image size
             this.canvas.width = this.imageWidth;
             this.canvas.height = this.imageHeight;
-            
+
             // Update dimensions display
             this.updateDimensionsDisplay();
-            
+
             // Show canvas and hide message
             document.getElementById('noTextureMessage').style.display = 'none';
             this.canvas.style.display = 'block';
-            
+
             // Draw image on canvas with proper alpha support
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0, this.imageWidth, this.imageHeight);
-            
+
             // Reset zoom
             this.resetZoom();
-            
+
             // Save initial state to history
             this.saveToHistory();
-            
+
             // Apply initial render
             this.renderCanvas();
         };
@@ -863,23 +881,58 @@ class TextureEditor {
     getCurrentTexture() {
         // Save current state
         this.ctx.save();
-        
+
         // Reset transform to get the actual image data
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        
+
         // Make sure to use PNG format to preserve transparency
         const dataURL = this.canvas.toDataURL('image/png');
-        
+
         // Restore transform
         this.ctx.restore();
-        
+
         return dataURL;
     }
 
-    saveTexture(data) {
-        document.body.dispatchEvent(new CustomEvent('saveTexture', {
-            detail: { data: data, propertyName: 'image' },
-        }));
+    async saveTexture(data) {
+        try {
+            // Get the current project name
+            const projectName = this.gameEditor.getCurrentProject();
+
+            // Get the current texture name (selected object ID)
+            const textureName = this.gameEditor.getSelectedObject();
+
+            if (!projectName || !textureName) {
+                console.error('Cannot save texture: missing project name or texture name');
+                return;
+            }
+
+            // Send the texture to the server to save as a file
+            const response = await fetch('/api/save-texture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projectName: projectName,
+                    textureName: textureName,
+                    imageData: data
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Dispatch event with the filepath instead of base64 data
+                document.body.dispatchEvent(new CustomEvent('saveTexture', {
+                    detail: { data: result.filePath, propertyName: 'imagePath' },
+                }));
+            } else {
+                console.error('Failed to save texture:', result.error);
+            }
+        } catch (error) {
+            console.error('Error saving texture:', error);
+        }
     }
 
     handleImageUpload(event) {

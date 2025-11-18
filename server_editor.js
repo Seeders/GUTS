@@ -420,7 +420,7 @@ app.get('/api/cache/:prefix', async (req, res) => {
 app.post('/api/cache', async (req, res) => {
     const { prefix, images } = req.body;
     const cacheFile = path.join(CACHE_DIR, `${prefix}.json`);
-    
+
     try {
         await ensureCacheDir();
         await fs.writeFile(cacheFile, JSON.stringify({ images }, null, 2));
@@ -428,6 +428,39 @@ app.post('/api/cache', async (req, res) => {
     } catch (error) {
         console.error('Error saving cache:', error);
         res.status(500).json({ error: 'Failed to save cache' });
+    }
+});
+
+// Save texture image as PNG file
+app.post('/api/save-texture', async (req, res) => {
+    const { projectName, textureName, imageData } = req.body;
+
+    if (!projectName || !textureName || !imageData) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        // Create textures directory if it doesn't exist
+        const texturesFolder = path.join(PROJS_DIR, projectName, 'resources', 'textures');
+        if (!fsSync.existsSync(texturesFolder)) {
+            await fs.mkdir(texturesFolder, { recursive: true });
+        }
+
+        // Remove data URL prefix if present
+        const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        // Save as PNG file
+        const fileName = `${textureName}.png`;
+        const filePath = path.join(texturesFolder, fileName);
+        await fs.writeFile(filePath, buffer);
+
+        // Return relative path from resources folder (not project root)
+        const relativePath = `textures/${fileName}`;
+        res.json({ success: true, filePath: relativePath });
+    } catch (error) {
+        console.error('Error saving texture:', error);
+        res.status(500).json({ error: 'Failed to save texture' });
     }
 });
 

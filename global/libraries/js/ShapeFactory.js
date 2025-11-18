@@ -251,13 +251,23 @@ class ShapeFactory {
             // If a texture is specified, use it instead of the color
             // If a texture is specified, use it instead of the color
             const textureLoader = new THREE.TextureLoader();
-                
+
             const textureData = this.textures[shape.texture];
-            
+
             if( textureData ) {
+                // Support both new imagePath format and old base64 image format
+                let textureSrc = null;
+                if (textureData.imagePath) {
+                    // File path - use relative path from resources
+                    textureSrc = this.resourcesPath + textureData.imagePath;
+                } else if (textureData.image) {
+                    // Fallback to base64 if imagePath is not present
+                    textureSrc = textureData.image;
+                }
+
                 const texture = await new Promise((resolve, reject) => {
                     textureLoader.load(
-                        textureData.image,
+                        textureSrc,
                         (loadedTexture) => {
                             loadedTexture.wrapS = THREE.RepeatWrapping; // Use ClampToEdge instead of RepeatWrapping
                             loadedTexture.wrapT = THREE.RepeatWrapping; // Use RepeatWrapping for vertical repeat
