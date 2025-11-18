@@ -39,4 +39,3 @@ package-lock.json
 .idea/
 *.sublime-project
 *.sublime-workspace
-projects/TurnBasedWarfare/config/TURNBASEDWARFARE.json

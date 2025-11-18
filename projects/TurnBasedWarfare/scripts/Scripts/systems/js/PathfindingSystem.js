@@ -55,7 +55,6 @@ class PathfindingSystem extends engine.BaseSystem {
         }
         
         // Load terrain types from collections
-        const collections = this.game.getCollections();
         this.terrainTypesCollection = collections.terrainTypes;
         if (!this.terrainTypesCollection) {
             console.error('PathfindingSystem: No terrainTypes collection found');
