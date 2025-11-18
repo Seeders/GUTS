@@ -17,25 +17,52 @@ class PerformanceMonitor {
         this.overlay = null;
         this.createOverlay();
 
-        // Bind keyboard shortcut (Ctrl+Shift+P)
-        if (typeof document !== 'undefined') {
-            document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.shiftKey && e.key === 'P') {
-                    this.toggle();
+        // Expose console API
+        this.exposeConsoleAPI();
+    }
+
+    exposeConsoleAPI() {
+        if (typeof window !== 'undefined') {
+            window.PerformanceMonitor = {
+                enable: () => this.enable(),
+                disable: () => this.disable(),
+                toggle: () => this.toggle(),
+                reset: () => this.reset(),
+                isEnabled: () => this.enabled,
+                help: () => {
+                    console.log('%c Performance Monitor Commands:', 'color: #00ff00; font-weight: bold');
+                    console.log('%c PerformanceMonitor.enable()  %c - Enable the performance monitor', 'color: #00ffff', 'color: #ffffff');
+                    console.log('%c PerformanceMonitor.disable() %c - Disable the performance monitor', 'color: #00ffff', 'color: #ffffff');
+                    console.log('%c PerformanceMonitor.toggle()  %c - Toggle the performance monitor', 'color: #00ffff', 'color: #ffffff');
+                    console.log('%c PerformanceMonitor.reset()   %c - Clear all performance history', 'color: #00ffff', 'color: #ffffff');
+                    console.log('%c PerformanceMonitor.isEnabled() %c - Check if enabled', 'color: #00ffff', 'color: #ffffff');
                 }
-            });
+            };
+            console.log('%c Performance Monitor loaded! %c Type PerformanceMonitor.help() for commands', 'color: #00ff00; font-weight: bold', 'color: #ffff00');
         }
     }
 
-    toggle() {
-        this.enabled = !this.enabled;
+    enable() {
+        this.enabled = true;
         if (this.overlay) {
-            this.overlay.style.display = this.enabled ? 'block' : 'none';
+            this.overlay.style.display = 'block';
         }
+        console.log('%c✓ Performance Monitor enabled', 'color: #00ff00');
+    }
+
+    disable() {
+        this.enabled = false;
+        if (this.overlay) {
+            this.overlay.style.display = 'none';
+        }
+        console.log('%c✓ Performance Monitor disabled', 'color: #ffaa00');
+    }
+
+    toggle() {
         if (this.enabled) {
-            console.log('Performance Monitor enabled. Press Ctrl+Shift+P to toggle.');
+            this.disable();
         } else {
-            console.log('Performance Monitor disabled.');
+            this.enable();
         }
     }
 
@@ -167,7 +194,7 @@ class PerformanceMonitor {
         if (!this.enabled || !this.overlay) return;
 
         let html = '<div style="margin-bottom: 10px; border-bottom: 1px solid #00ff00; padding-bottom: 5px;">';
-        html += `<strong>PERFORMANCE MONITOR</strong> (Ctrl+Shift+P to toggle)<br>`;
+        html += `<strong>PERFORMANCE MONITOR</strong><br>`;
         html += `FPS: ${this.frameStats.fps.toFixed(1)} | Frame: ${this.frameStats.frameTime.toFixed(2)}ms`;
 
         if (this.memorySupported) {
