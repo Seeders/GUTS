@@ -1166,6 +1166,127 @@ class WorldSystem extends engine.BaseSystem {
                 this.placeCliffAtomsForTile(x, z, heightAnalysis, gridSize);
             }
         });
+
+        // After placing cliffs, add supporting textures on terrain
+        this.paintCliffSupportingTextures();
+    }
+
+    /**
+     * Paint supporting texture atoms around placed cliffs for blending
+     * Phase 1: Focus on atom_two cliffs (straight edges)
+     */
+    paintCliffSupportingTextures() {
+        if (!this.game.terrainTileMapper) return;
+
+        const cliffs = this.game.getEntitiesWith('cliff');
+        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const terrainMap = this.tileMap.terrainMap;
+        const rows = terrainMap.length;
+        const cols = terrainMap[0].length;
+
+        // Get grass terrain index
+        const terrainTypes = this.game.getCollections().terrainTypes;
+        const grassIndex = Object.keys(terrainTypes).findIndex(key => terrainTypes[key].type === 'grass');
+
+        if (grassIndex === -1) {
+            console.warn('Grass terrain type not found');
+            return;
+        }
+
+        cliffs.forEach(cliffEntity => {
+            const cliffComponent = this.game.getComponent(cliffEntity, 'cliff');
+            const positionComponent = this.game.getComponent(cliffEntity, 'Position');
+            const facingComponent = this.game.getComponent(cliffEntity, 'Facing');
+
+            // Only process atom_two cliffs (straight edges)
+            if (cliffComponent.type !== 'atom_two') {
+                return;
+            }
+
+            // Convert world position back to grid coordinates
+            const worldX = positionComponent.x;
+            const worldZ = positionComponent.z;
+
+            // Account for centering offset
+            const terrainWorldWidth = cols * gridSize;
+            const terrainWorldHeight = rows * gridSize;
+            const centerOffsetX = terrainWorldWidth / 2;
+            const centerOffsetZ = terrainWorldHeight / 2;
+
+            const gridX = Math.floor((worldX + centerOffsetX - this.extensionSize) / gridSize);
+            const gridZ = Math.floor((worldZ + centerOffsetZ - this.extensionSize) / gridSize);
+
+            const rotation = facingComponent.rotation;
+
+            // Determine cliff edge direction and upper neighbor tile
+            // Also determine which quadrants need texture atoms and their rotation
+            let upperTileX, upperTileZ;
+            let quadrants = [];
+            let atomRotation;
+
+            const PI = Math.PI;
+            const tolerance = 0.1; // For floating point comparison
+
+            // Top edge: cliff rotation = π/2, faces north, upper tile is (x, z-1)
+            if (Math.abs(rotation - PI / 2) < tolerance) {
+                upperTileX = gridX;
+                upperTileZ = gridZ - 1;
+                // Grass should face south (rotation -π/2) with transparent edges away from cliff
+                atomRotation = -PI / 2;
+                // Paint atoms on bottom quadrants of upper tile (adjacent to cliff)
+                quadrants = ['BL', 'BR'];
+            }
+            // Bottom edge: cliff rotation = -π/2, faces south, upper tile is (x, z+1)
+            else if (Math.abs(rotation + PI / 2) < tolerance) {
+                upperTileX = gridX;
+                upperTileZ = gridZ + 1;
+                // Grass should face north (rotation π/2)
+                atomRotation = PI / 2;
+                // Paint atoms on top quadrants of upper tile
+                quadrants = ['TL', 'TR'];
+            }
+            // Left edge: cliff rotation = 0, faces west, upper tile is (x-1, z)
+            else if (Math.abs(rotation) < tolerance) {
+                upperTileX = gridX - 1;
+                upperTileZ = gridZ;
+                // Grass should face east (rotation π)
+                atomRotation = PI;
+                // Paint atoms on right quadrants of upper tile
+                quadrants = ['TR', 'BR'];
+            }
+            // Right edge: cliff rotation = π, faces east, upper tile is (x+1, z)
+            else if (Math.abs(Math.abs(rotation) - PI) < tolerance) {
+                upperTileX = gridX + 1;
+                upperTileZ = gridZ;
+                // Grass should face west (rotation 0)
+                atomRotation = 0;
+                // Paint atoms on left quadrants of upper tile
+                quadrants = ['TL', 'BL'];
+            }
+            else {
+                console.warn(`Unexpected cliff rotation: ${rotation} at (${gridX}, ${gridZ})`);
+                return;
+            }
+
+            // Validate upper tile coordinates
+            if (upperTileX < 0 || upperTileX >= cols || upperTileZ < 0 || upperTileZ >= rows) {
+                return;
+            }
+
+            // Paint grass texture atoms on the appropriate quadrants
+            quadrants.forEach(quadrant => {
+                this.game.terrainTileMapper.paintAtomOnTile(
+                    upperTileX,
+                    upperTileZ,
+                    quadrant,
+                    grassIndex,
+                    atomRotation
+                );
+            });
+        });
+
+        // Update the ground texture to reflect the painted atoms
+        this.updateGroundTexture();
     }
 
     placeCliffAtomsForTile(x, z, heightAnalysis, gridSize) {
