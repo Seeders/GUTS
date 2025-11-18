@@ -56,9 +56,16 @@ class PathfindingSystem extends engine.BaseSystem {
         
         // Load terrain types from collections
         const collections = this.game.getCollections();
-        this.terrainTypes = collections.terrainTypes;
-        if (!this.terrainTypes) {
+        this.terrainTypesCollection = collections.terrainTypes;
+        if (!this.terrainTypesCollection) {
             console.error('PathfindingSystem: No terrainTypes collection found');
+            return;
+        }
+
+        // Get the terrain type IDs array from the level
+        this.terrainTypeIds = level.tileMap.terrainTypes;
+        if (!this.terrainTypeIds) {
+            console.error('PathfindingSystem: No terrainTypes array in tileMap');
             return;
         }
 
@@ -86,7 +93,7 @@ class PathfindingSystem extends engine.BaseSystem {
         console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
     }
 
-    canWalkBetweenTerrains(fromTerrainId, toTerrainId) {
+    canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
         // Use height-based walkability if heightMap is available
         if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
             // Always walkable between same terrain types
@@ -94,7 +101,7 @@ class PathfindingSystem extends engine.BaseSystem {
         }
 
         // Check if both terrains are walkable
-        return this.isTerrainWalkable(fromTerrainId) && this.isTerrainWalkable(toTerrainId);
+        return this.isTerrainWalkable(fromTerrainIndex) && this.isTerrainWalkable(toTerrainIndex);
     }
 
     // Convert nav grid coordinates to terrain grid coordinates
@@ -228,11 +235,15 @@ class PathfindingSystem extends engine.BaseSystem {
         console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
     }
     
-    isTerrainWalkable(terrainTypeId) {
+    isTerrainWalkable(terrainTypeIndex) {
+        if (terrainTypeIndex === null || terrainTypeIndex === undefined) return false;
+
+        // Get the terrain type ID from the array
+        const terrainTypeId = this.terrainTypeIds[terrainTypeIndex];
         if (!terrainTypeId) return false;
 
-        // Terrain type ID is a string reference to collections.terrainTypes
-        const terrainType = this.terrainTypes[terrainTypeId];
+        // Look up the terrain type from collections
+        const terrainType = this.terrainTypesCollection[terrainTypeId];
         if (!terrainType) return false;
 
         // Check walkable property (defaults to true if not specified)

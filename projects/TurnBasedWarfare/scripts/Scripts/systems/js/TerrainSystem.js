@@ -189,8 +189,12 @@ class TerrainSystem extends engine.BaseSystem {
     }
 
 
-    getTileMapTerrainType(terrainTypeId){
-        // Terrain type ID is a string reference to collections.terrainTypes
+    getTileMapTerrainType(terrainTypeIndex){
+        // Get the terrain type ID from the tileMap.terrainTypes array
+        const terrainTypeId = this.tileMap.terrainTypes?.[terrainTypeIndex];
+        if (!terrainTypeId) return null;
+
+        // Look up the full terrain type definition from collections
         return this.terrainTypes[terrainTypeId] || null;
     }
     /**
