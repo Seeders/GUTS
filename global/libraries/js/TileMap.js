@@ -1372,4 +1372,55 @@ class TileMap {
 
 		return rotatedCanvas;
 	}
+
+	/**
+	 * Batch paint multiple atoms at once for better performance
+	 * @param {Array} operations - Array of {upperTileX, upperTileZ, quadrant, terrainIndex, atomRotation}
+	 */
+	paintAtomsBatch(operations) {
+		if (!operations || operations.length === 0) return;
+
+		const atomSize = this.tileSize / 2;
+		const ctx = this.canvas.getContext('2d');
+
+		// Cache rotated atoms to avoid re-rotating the same angle multiple times
+		const rotatedAtomCache = new Map(); // key: "terrainIndex,rotation"
+
+		operations.forEach(op => {
+			const { upperTileX, upperTileZ, quadrant, terrainIndex, atomRotation } = op;
+
+			// Get the base atom
+			const atoms = this.baseAtoms[terrainIndex];
+			if (!atoms || !atoms.full) return;
+
+			// Check cache for rotated atom
+			const cacheKey = `${terrainIndex},${atomRotation}`;
+			let atomCanvas = rotatedAtomCache.get(cacheKey);
+
+			if (!atomCanvas) {
+				// Create and cache the rotated atom
+				atomCanvas = this.imageDataToCanvas(atoms.full);
+				if (atomRotation !== 0) {
+					atomCanvas = this.rotateCanvas(atomCanvas, atomRotation);
+				}
+				rotatedAtomCache.set(cacheKey, atomCanvas);
+			}
+
+			// Calculate pixel position
+			const pixelX = upperTileX * this.tileSize;
+			const pixelY = upperTileZ * this.tileSize;
+
+			// Determine quadrant offset
+			let offsetX = 0, offsetY = 0;
+			switch(quadrant) {
+				case 'TL': offsetX = 0; offsetY = 0; break;
+				case 'TR': offsetX = atomSize; offsetY = 0; break;
+				case 'BL': offsetX = 0; offsetY = atomSize; break;
+				case 'BR': offsetX = atomSize; offsetY = atomSize; break;
+			}
+
+			// Draw the atom
+			ctx.drawImage(atomCanvas, pixelX + offsetX, pixelY + offsetY, atomSize, atomSize);
+		});
+	}
 }
