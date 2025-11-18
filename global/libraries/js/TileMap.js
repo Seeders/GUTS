@@ -1288,8 +1288,8 @@ class TileMap {
 	 * @param {number} rotation - Rotation in radians for the atom
 	 */
 	paintAtomOnTile(tileX, tileZ, quadrant, terrainIndex, rotation = 0) {
-		const rows = this.terrainMap.length;
-		const cols = this.terrainMap[0].length;
+		const rows = this.tileMap.length;
+		const cols = this.tileMap[0].length;
 
 		// Validate coordinates
 		if (tileX < 0 || tileX >= cols || tileZ < 0 || tileZ >= rows) {
