@@ -491,7 +491,7 @@ class SelectedUnitSystem extends engine.BaseSystem {
 
             if(icon){
                 const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
+                img.src = `./resources/${icon.imagePath}`;
                 return img;
             }
         }

@@ -187,9 +187,9 @@ class ShopSystem extends engine.BaseSystem {
         iconEl.className = 'action-btn-icon';
         if(iconId){
             const icon = this.game.getCollections().icons[iconId];
-            if(icon && icon.filePath){
+            if(icon && icon.imagePath){
                 const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
+                img.src = `./resources/${icon.imagePath}`;
                 iconEl.append(img);
             } else {
                 iconEl.textContent =  '⚔️';

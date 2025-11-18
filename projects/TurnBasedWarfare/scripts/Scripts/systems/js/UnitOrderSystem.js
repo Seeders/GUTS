@@ -114,9 +114,9 @@ class UnitOrderSystem extends engine.BaseSystem {
         iconEl.className = 'action-btn-icon';
         if(action.icon){
             const icon = this.game.getCollections().icons[action.icon];
-            if(icon && icon.filePath){
+            if(icon && icon.imagePath){
                 const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
+                img.src = `./resources/${icon.imagePath}`;
                 iconEl.append(img);
             } else {
                 iconEl.textContent =  '🏛️';
@@ -153,9 +153,9 @@ class UnitOrderSystem extends engine.BaseSystem {
         iconEl.className = 'action-btn-icon';
         if(building.icon){
             const icon = this.game.getCollections().icons[building.icon];
-            if(icon && icon.filePath){
+            if(icon && icon.imagePath){
                 const img = document.createElement('img');
-                img.src = `./${icon.filePath}`;
+                img.src = `./resources/${icon.imagePath}`;
                 iconEl.append(img);
             } else {
                 iconEl.textContent =  '🏛️';
