@@ -810,6 +810,9 @@ class TileMap {
 		ctx.drawImage(atomCanvases.BL, 0, atomSize);
 		ctx.drawImage(atomCanvases.BR, atomSize, atomSize);
 
+		// Paint cliff-supporting textures if this tile is at the upper edge of a cliff
+		this.paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col);
+
 		// Apply coloring and corner graphics
 		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
 		imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
@@ -1241,6 +1244,62 @@ class TileMap {
 		}
 	}
 	
+	/**
+	 * Paint cliff-supporting texture atoms on a tile if it's at the upper edge of a cliff
+	 * This is called during terrain generation for each tile
+	 */
+	paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col) {
+		const heightAnalysis = tile.heightAnalysis;
+		const atomSize = this.tileSize / 2;
+
+		// Find grass terrain index (cache it if not already cached)
+		if (this.grassTerrainIndex === undefined) {
+			this.grassTerrainIndex = -1;
+			for (let i = 0; i < this.layerTextures.length; i++) {
+				// Check if this terrain type has 'grass' in a common property
+				// We'll need to pass this info, but for now try to detect it
+				// This is a simplification - ideally we'd get terrain type info passed in
+			}
+		}
+
+		// For now, assume grass is terrain index 0 (we'll need to make this configurable)
+		const grassIndex = 0;
+		const PI = Math.PI;
+
+		// Get grass atoms
+		const grassAtoms = this.baseAtoms[grassIndex];
+		if (!grassAtoms || !grassAtoms.full) return;
+
+		// Check each cardinal direction for lower neighbors and paint appropriate atoms
+		// Bottom neighbor is lower (we're at top of cliff edge)
+		if (heightAnalysis.botLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI / 2);
+			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Top neighbor is lower (we're at bottom of cliff edge)
+		if (heightAnalysis.topLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), -PI / 2);
+			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		// Right neighbor is lower (we're at left of cliff edge)
+		if (heightAnalysis.rightLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), 0);
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Left neighbor is lower (we're at right of cliff edge)
+		if (heightAnalysis.leftLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI);
+			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+	}
+
 	drawMap(analyzedMap) {
 		const ctx = this.canvas.getContext('2d');
 
