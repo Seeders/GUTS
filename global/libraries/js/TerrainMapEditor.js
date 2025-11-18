@@ -1546,7 +1546,6 @@ class TerrainMapEditor {
         document.getElementById('terrainType').value = '';
         document.getElementById('terrainColor').value = '#cccccc';
         document.getElementById('terrainColorText').value = '#cccccc';
-        document.getElementById('terrainImage').value = '[]';
         document.getElementById('terrainBuildable').checked = false;
         document.getElementById('terrainWalkable').checked = true;
     }
@@ -1568,7 +1567,6 @@ class TerrainMapEditor {
         document.getElementById('terrainType').value = terrain.type;
         document.getElementById('terrainColor').value = terrain.color;
         document.getElementById('terrainColorText').value = terrain.color;
-        document.getElementById('terrainImage').value = JSON.stringify(terrain.image || []);
         document.getElementById('terrainBuildable').checked = terrain.buildable;
         document.getElementById('terrainWalkable').checked = terrain.walkable !== false;
         const terrainTextureEl = document.getElementById('terrainTexture');
@@ -1595,15 +1593,6 @@ class TerrainMapEditor {
                 this.terrainImageProcessor.processImage(imageSrc);
             }
         }
-
-        // Create a custom event with data
-        const myCustomEvent = new CustomEvent('editTerrainImage', {
-            bubbles: true,
-            cancelable: true
-        });
-
-        // Dispatch the event
-        document.body.dispatchEvent(myCustomEvent);
     }
 
     hideTerrainForm() {
@@ -1614,7 +1603,6 @@ class TerrainMapEditor {
         const newType = document.getElementById('terrainType').value.trim();
         const newColor = document.getElementById('terrainColorText').value;
         const newTexture = document.getElementById('terrainTexture').value;
-        const newImage = JSON.parse(document.getElementById('terrainImage').value);
         const newBuildable = document.getElementById('terrainBuildable').checked;
         const newWalkable = document.getElementById('terrainWalkable').checked;
 
@@ -1663,7 +1651,6 @@ class TerrainMapEditor {
             type: newType,
             texture: newTexture,
             color: newColor,
-            image: newImage,
             buildable: newBuildable,
             walkable: newWalkable
         };
