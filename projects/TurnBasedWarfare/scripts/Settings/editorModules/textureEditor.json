@@ -2,7 +2,7 @@
   "title": "Texture Editor",
   "container": "texture-editor-container",
   "library": "TextureEditor",
-  "propertyName": "image",
+  "propertyName": "imagePath",
   "interface": "TextureEditor",
   "inputElement": "textarea",
   "inputDataType": "string",
