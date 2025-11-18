@@ -274,17 +274,43 @@ class ImageManager {
 
             if (imageSrc) {
                 const img = new Image();
-                const canvas = document.createElement('canvas');
-                canvas.width = canvas.height = tileWidth;
-                const ctx = canvas.getContext('2d');
 
                 img.src = imageSrc;
 
                 await new Promise((resolve, reject) => {
                     img.onload = () => {
-                        ctx.drawImage(img, 0, 0, tileWidth, tileWidth);
-                        // For terrain, we use a single sprite for all 8 directions
-                        const sprites = new Array(8).fill(canvas);
+                        // Get sprite dimensions from terrain type, default to tile size
+                        const spriteWidth = terrainType.spriteWidth || tileWidth;
+                        const spriteHeight = terrainType.spriteHeight || tileWidth;
+
+                        // Calculate how many sprites fit in the image
+                        const cols = Math.floor(img.width / spriteWidth);
+                        const rows = Math.floor(img.height / spriteHeight);
+                        const totalSprites = cols * rows;
+
+                        // Extract up to 8 sprites from the sprite sheet
+                        const sprites = [];
+                        for (let i = 0; i < 8; i++) {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = tileWidth;
+                            canvas.height = tileWidth;
+                            const ctx = canvas.getContext('2d');
+
+                            if (i < totalSprites) {
+                                // Calculate position in sprite sheet
+                                const col = i % cols;
+                                const row = Math.floor(i / cols);
+                                const sx = col * spriteWidth;
+                                const sy = row * spriteHeight;
+
+                                // Draw sprite scaled to tile size
+                                ctx.drawImage(img, sx, sy, spriteWidth, spriteHeight, 0, 0, tileWidth, tileWidth);
+                            }
+                            // If not enough sprites, canvas stays empty/transparent
+
+                            sprites.push(canvas);
+                        }
+
                         terrainTiles[terrainIndex] = {
                             type: terrainType.type,
                             sprites: sprites
@@ -293,8 +319,12 @@ class ImageManager {
                     };
                     img.onerror = () => {
                         console.error(`Failed to load texture image for ${terrainType.type}`);
-                        // Create empty canvas on error
-                        const sprites = new Array(8).fill(canvas);
+                        // Create empty canvases on error
+                        const sprites = new Array(8).fill().map(() => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = canvas.height = tileWidth;
+                            return canvas;
+                        });
                         terrainTiles[terrainIndex] = {
                             type: terrainType.type,
                             sprites: sprites
