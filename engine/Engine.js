@@ -99,6 +99,32 @@ class Engine extends BaseEngine {
             this.accumulator -= this.tickRate;
             ticksProcessed++;
         }
+
+        // Schedule next frame using requestAnimationFrame when tab is active
+        if (this.useRAF) {
+            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        }
+    }
+
+    handleVisibilityChange() {
+        if (document.hidden) {
+            // Tab is hidden - switch to setInterval
+            this.useRAF = false;
+            if (this.animationFrameId) {
+                cancelAnimationFrame(this.animationFrameId);
+                this.animationFrameId = null;
+            }
+            // Use setInterval to keep running in background
+            this.intervalId = setInterval(() => this.gameLoop(), 16);
+        } else {
+            // Tab is visible - switch to requestAnimationFrame
+            this.useRAF = true;
+            if (this.intervalId) {
+                clearInterval(this.intervalId);
+                this.intervalId = null;
+            }
+            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        }
     }
 
     async tick() {
@@ -111,9 +137,14 @@ class Engine extends BaseEngine {
     start() {
         super.start();
         this.lastTick = this.getCurrentTime();
-        // Use setInterval instead of requestAnimationFrame to keep running when tab is inactive
-        const intervalMs = this.tickRate * 1000; // Convert to milliseconds
-        this.intervalId = setInterval(() => this.gameLoop(), intervalMs);
+        this.useRAF = true;
+
+        // Listen for tab visibility changes
+        this.visibilityHandler = () => this.handleVisibilityChange();
+        document.addEventListener('visibilitychange', this.visibilityHandler);
+
+        // Start with requestAnimationFrame
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });
@@ -121,9 +152,17 @@ class Engine extends BaseEngine {
 
     stop() {
         super.stop();
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
         if (this.intervalId) {
             clearInterval(this.intervalId);
             this.intervalId = null;
+        }
+        if (this.visibilityHandler) {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = null;
         }
     }
     getCurrentTime() {

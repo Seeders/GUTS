@@ -219,14 +219,8 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
 
-        // Mark command as complete in command queue system
-        if (this.game.commandQueueSystem) {
-            this.game.gameManager.call('completeCurrentCommand', this.peasantId);
-        } else {
-            // Fallback to old method
-            this.game.aiSystem.removeCurrentAIController(this.peasantId);
-        }
-
+        // Mark command as complete in command queue system       
+        this.game.gameManager.call('completeCurrentCommand', this.peasantId);
         this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
     }
     

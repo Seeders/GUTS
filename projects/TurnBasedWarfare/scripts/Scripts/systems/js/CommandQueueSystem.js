@@ -21,6 +21,7 @@ class CommandQueueSystem extends engine.BaseSystem {
         this.game.gameManager.register('clearCommands', this.clearCommands.bind(this));
         this.game.gameManager.register('getCurrentCommand', this.getCurrentCommand.bind(this));
         this.game.gameManager.register('canInterruptCommand', this.canInterruptCommand.bind(this));
+        this.game.gameManager.register('completeCurrentCommand', this.completeCurrentCommand.bind(this));
     }
 
     /**
