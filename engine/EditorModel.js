@@ -125,7 +125,10 @@ class EditorModel {
         });
 
         // Strip scripts from collections before saving
-        const projectToSave = this.stripScriptsFromProject(this.state.project);
+        let projectToSave = this.stripScriptsFromProject(this.state.project);
+
+        // Sort objectTypes for deterministic output
+        projectToSave = this.sortObjectTypes(projectToSave);
 
         const projectText = JSON.stringify(projectToSave);
         for(const key in this.state.project.objectTypes){
@@ -204,6 +207,39 @@ class EditorModel {
         });
 
         return stripped;
+    }
+
+    /**
+     * Sort objectTypes keys alphabetically for deterministic config file output
+     * @param {Object} project - Project object with objectTypes
+     * @returns {Object} - Project with sorted objectTypes
+     */
+    sortObjectTypes(project) {
+        if (!project.objectTypes) return project;
+
+        // Sort the top-level objectTypes keys
+        const sortedObjectTypes = {};
+        const sortedKeys = Object.keys(project.objectTypes).sort();
+
+        for (const key of sortedKeys) {
+            const collection = project.objectTypes[key];
+
+            // Sort items within each collection
+            if (collection && typeof collection === 'object') {
+                const sortedCollection = {};
+                const sortedItemKeys = Object.keys(collection).sort();
+
+                for (const itemKey of sortedItemKeys) {
+                    sortedCollection[itemKey] = collection[itemKey];
+                }
+                sortedObjectTypes[key] = sortedCollection;
+            } else {
+                sortedObjectTypes[key] = collection;
+            }
+        }
+
+        project.objectTypes = sortedObjectTypes;
+        return project;
     }
 
     /**
