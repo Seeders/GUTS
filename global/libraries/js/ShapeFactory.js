@@ -103,12 +103,16 @@ class ShapeFactory {
                 if (child.isMesh) {
                     // Override material with skinning enabled
                     let map = child.material.map;
+                    // Ensure texture has correct color space
+                    if (map) {
+                        map.colorSpace = THREE.SRGBColorSpace;
+                    }
                     child.material = new THREE.MeshStandardMaterial({
                         color: 0xffffff,
                         metalness: shape.metalness || 0.5,
                         roughness: shape.roughness || 0.5,
                         map: map
-                    });                           
+                    });
                     child.material.alphaTest = 0.1;
                     child.material.needsUpdate = true;
                     child.castShadow = true;

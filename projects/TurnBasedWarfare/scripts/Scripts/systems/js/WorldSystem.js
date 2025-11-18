@@ -122,13 +122,15 @@ class WorldSystem extends engine.BaseSystem {
             this.camera.updateProjectionMatrix();
         }
 
-        this.renderer = new THREE.WebGLRenderer({ 
+        this.renderer = new THREE.WebGLRenderer({
             canvas: gameCanvas,
             antialias: false,
             alpha: true
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // Enable proper color management
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         
         window.addEventListener('resize', this.onWindowResizeHandler);
         
@@ -427,6 +429,7 @@ class WorldSystem extends engine.BaseSystem {
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
         this.groundTexture.minFilter = THREE.NearestFilter;
         this.groundTexture.magFilter = THREE.NearestFilter;
+        this.groundTexture.colorSpace = THREE.SRGBColorSpace;
 
         const segments = this.heightMapResolution || 1;
         const groundGeometry = new THREE.PlaneGeometry(
