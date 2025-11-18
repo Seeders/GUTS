@@ -809,19 +809,19 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Gold mine is to the EAST, place peasants on east side
                 // TownHall occupies x to x+1, so peasants start at x+2
                 peasantPositions = [
-                    { x: startPosition.x + 2, z: startPosition.z - 1 },
-                    { x: startPosition.x + 2, z: startPosition.z },
-                    { x: startPosition.x + 2, z: startPosition.z + 1 },
-                    { x: startPosition.x + 2, z: startPosition.z + 2 }
+                    { x: startPosition.x + 4, z: startPosition.z - 2 },
+                    { x: startPosition.x + 4, z: startPosition.z },
+                    { x: startPosition.x + 4, z: startPosition.z + 2 },
+                    { x: startPosition.x + 4, z: startPosition.z + 4 }
                 ];
             } else {
                 // Gold mine is to the WEST, place peasants on west side
                 // TownHall occupies x-1 to x, so peasants start at x-2
                 peasantPositions = [
-                    { x: startPosition.x - 2, z: startPosition.z - 1 },
-                    { x: startPosition.x - 2, z: startPosition.z },
-                    { x: startPosition.x - 2, z: startPosition.z + 1 },
-                    { x: startPosition.x - 2, z: startPosition.z + 2 }
+                    { x: startPosition.x - 4, z: startPosition.z - 2 },
+                    { x: startPosition.x - 4, z: startPosition.z },
+                    { x: startPosition.x - 4, z: startPosition.z + 2 },
+                    { x: startPosition.x - 4, z: startPosition.z + 4 }
                 ];
             }
         } else {
@@ -830,19 +830,19 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Gold mine is to the SOUTH, place peasants on south side
                 // TownHall occupies z to z+1, so peasants start at z+2
                 peasantPositions = [
-                    { x: startPosition.x - 1, z: startPosition.z + 2 },
-                    { x: startPosition.x, z: startPosition.z + 2 },
-                    { x: startPosition.x + 1, z: startPosition.z + 2 },
-                    { x: startPosition.x + 2, z: startPosition.z + 2 }
+                    { x: startPosition.x - 2, z: startPosition.z + 4 },
+                    { x: startPosition.x, z: startPosition.z + 4 },
+                    { x: startPosition.x + 2, z: startPosition.z + 4 },
+                    { x: startPosition.x + 4, z: startPosition.z + 4 }
                 ];
             } else {
                 // Gold mine is to the NORTH, place peasants on north side
                 // TownHall occupies z-1 to z, so peasants start at z-2
                 peasantPositions = [
-                    { x: startPosition.x - 1, z: startPosition.z - 2 },
-                    { x: startPosition.x, z: startPosition.z - 2 },
-                    { x: startPosition.x + 1, z: startPosition.z - 2 },
-                    { x: startPosition.x + 2, z: startPosition.z - 2 }
+                    { x: startPosition.x - 2, z: startPosition.z - 4 },
+                    { x: startPosition.x, z: startPosition.z - 4 },
+                    { x: startPosition.x + 2, z: startPosition.z - 4 },
+                    { x: startPosition.x + 4, z: startPosition.z - 4 }
                 ];
             }
         }
