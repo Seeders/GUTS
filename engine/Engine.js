@@ -84,21 +84,20 @@ class Engine extends BaseEngine {
         if (!this.running) return;
 
         const now = this.getCurrentTime();
-        let deltaTime = (now - this.lastTick) / 1000;
+        const deltaTime = (now - this.lastTick) / 1000;
         this.lastTick = now;
 
-        // Cap deltaTime to prevent catch-up issues when browser throttles setInterval
-        // (browsers throttle to ~1s when tab is inactive)
-        // Max 2 ticks worth to maintain determinism while allowing some flexibility
-        const maxDeltaTime = this.tickRate * 2;
-        if (deltaTime > maxDeltaTime) {
-            deltaTime = maxDeltaTime;
-        }
-
         this.accumulator += deltaTime;
-        while (this.accumulator >= this.tickRate) {
+
+        // Process ticks, but limit per frame to catch up gradually
+        // This prevents lag spikes while maintaining sync
+        const maxTicksPerFrame = 3;
+        let ticksProcessed = 0;
+
+        while (this.accumulator >= this.tickRate && ticksProcessed < maxTicksPerFrame) {
             await this.tick();
             this.accumulator -= this.tickRate;
+            ticksProcessed++;
         }
     }
 
