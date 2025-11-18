@@ -1263,7 +1263,7 @@ class TileMap {
 		}
 
 		// For now, assume grass is terrain index 0 (we'll need to make this configurable)
-		const grassIndex = 0;
+		const grassIndex = 4;
 		const PI = Math.PI;
 
 		// Get grass atoms
@@ -1275,34 +1275,96 @@ class TileMap {
 
 		// Bottom neighbor is lower: cliff meshes in BL, BR quadrants
 		// Paint grass on TOP quadrants (TL, TR) facing north (away from cliff)
-		if (heightAnalysis.botLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI / 2);
+		if (heightAnalysis.botLess && !heightAnalysis.leftLess && !heightAnalysis.rightLess && heightAnalysis.cornerBottomRightLess && heightAnalysis.cornerBottomLeftLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
 			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
 			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 
 		// Top neighbor is lower: cliff meshes in TL, TR quadrants
 		// Paint grass on BOTTOM quadrants (BL, BR) facing south (away from cliff)
-		if (heightAnalysis.topLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), -PI / 2);
-			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		if (heightAnalysis.topLess && !heightAnalysis.leftLess && !heightAnalysis.rightLess && heightAnalysis.cornerTopRightLess && heightAnalysis.cornerTopLeftLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
+			ctx.drawImage(rotatedGrass, 0, atomSize-2, atomSize, atomSize); // BL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize-2, atomSize, atomSize); // BR quadrant
 		}
 
 		// Right neighbor is lower: cliff meshes in TR, BR quadrants
 		// Paint grass on LEFT quadrants (TL, BL) facing west (away from cliff)
-		if (heightAnalysis.rightLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), 0);
-			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		if (heightAnalysis.rightLess && !heightAnalysis.botLess && !heightAnalysis.topLess && heightAnalysis.cornerTopRightLess && heightAnalysis.cornerBottomRightLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
+			ctx.drawImage(rotatedGrass, 2, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, 2, atomSize, atomSize, atomSize); // BL quadrant
 		}
 
 		// Left neighbor is lower: cliff meshes in TL, BL quadrants
 		// Paint grass on RIGHT quadrants (TR, BR) facing east (away from cliff)
-		if (heightAnalysis.leftLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI);
+		if (heightAnalysis.leftLess && !heightAnalysis.botLess && !heightAnalysis.topLess && heightAnalysis.cornerTopLeftLess && heightAnalysis.cornerBottomLeftLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
 			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		if (!heightAnalysis.topLess && !heightAnalysis.leftLess && heightAnalysis.cornerTopLeftLess) {
+			const bottomGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
+			ctx.drawImage(bottomGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			const rightGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
+			ctx.drawImage(rightGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBR), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // TR quadrant		
+		}
+
+		if (!heightAnalysis.topLess && !heightAnalysis.rightLess && heightAnalysis.cornerTopRightLess) {
+			const bottomGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
+			ctx.drawImage(bottomGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant			
+			const leftGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
+			ctx.drawImage(leftGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBL), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // TR quadrant
+		}
+
+		if (!heightAnalysis.botLess && !heightAnalysis.leftLess && heightAnalysis.cornerBottomLeftLess) {
+			const topGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
+			ctx.drawImage(topGrass, 0, 0, atomSize, atomSize); // BR quadrant			
+			const rightGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
+			ctx.drawImage(rightGrass, atomSize, atomSize, atomSize, atomSize); // TL quadrant
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTR), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		if (!heightAnalysis.botLess && !heightAnalysis.rightLess && heightAnalysis.cornerBottomRightLess) {
+			const topGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
+			ctx.drawImage(topGrass, 0, 0, atomSize, atomSize); // BR quadrant			
+			const leftGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
+			ctx.drawImage(leftGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTL), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TR quadrant
+		}
+
+
+
+		if (heightAnalysis.topLess && heightAnalysis.leftLess && !heightAnalysis.botLess && !heightAnalysis.rightLess && !heightAnalysis.cornerBottomRightLess) {
+
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // TR quadrant		
+		}
+
+		if (heightAnalysis.topLess && heightAnalysis.rightLess && !heightAnalysis.botLess && !heightAnalysis.leftLess && !heightAnalysis.cornerBottomLeftLess) {
+
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // TR quadrant
+		}
+
+		if (heightAnalysis.botLess && heightAnalysis.rightLess && !heightAnalysis.topLess && !heightAnalysis.leftLess && !heightAnalysis.cornerTopLeftLess) {
+
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		if (heightAnalysis.botLess && heightAnalysis.leftLess && !heightAnalysis.topLess && !heightAnalysis.rightLess && !heightAnalysis.cornerTopRightLess) {
+
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 	}
 
