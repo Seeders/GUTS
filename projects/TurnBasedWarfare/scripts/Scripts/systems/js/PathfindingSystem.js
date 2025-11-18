@@ -54,26 +54,12 @@ class PathfindingSystem extends engine.BaseSystem {
             return;
         }
         
-        // NEW: Load terrain types from collections if available, otherwise use level's terrainTypes
+        // Load terrain types from collections
         const collections = this.game.getCollections();
-        const collectionTerrainTypes = collections.terrainTypes || {};
-        const levelTerrainTypes = level.tileMap.terrainTypes || [];
-
-        // Build a unified array of terrain types for pathfinding
-        // If using collection-based system, convert to array format for compatibility
-        if (Object.keys(collectionTerrainTypes).length > 0) {
-            // Collection-based: Build array from the map stored in tileMap.terrainMap
-            this.terrainTypes = [];
-            this.terrainTypeMap = collectionTerrainTypes;
-            console.log('PathfindingSystem: Using collection-based terrain types');
-        } else {
-            // Old system: Use array directly
-            this.terrainTypes = levelTerrainTypes;
-            this.terrainTypeMap = null;
-            if (!this.terrainTypes || this.terrainTypes.length === 0) {
-                console.warn('PathfindingSystem: No terrain types found in level');
-                return;
-            }
+        this.terrainTypes = collections.terrainTypes;
+        if (!this.terrainTypes) {
+            console.error('PathfindingSystem: No terrainTypes collection found');
+            return;
         }
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
@@ -83,10 +69,9 @@ class PathfindingSystem extends engine.BaseSystem {
         // Load ramps data
         this.loadRamps(level.tileMap);
 
-        this.buildWalkabilityCache();
         this.bakeNavMesh();
         this.initialized = true;
-        console.log('PathfindingSystem: Initialized with', this.terrainTypes.length, 'terrain types');
+        console.log('PathfindingSystem: Initialized');
     }
 
     loadRamps(tileMap) {
@@ -101,34 +86,15 @@ class PathfindingSystem extends engine.BaseSystem {
         console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
     }
 
-    buildWalkabilityCache() {
-        // This cache is now deprecated in favor of height-based walkability
-        // Kept for backwards compatibility with old level data
-        this.walkabilityCache.clear();
-
-        for (let i = 0; i < this.terrainTypes.length; i++) {
-            const terrainType = this.terrainTypes[i];
-            const walkableNeighbors = terrainType.walkableNeighbors || [];
-
-            for (let j = 0; j < this.terrainTypes.length; j++) {
-                const targetType = this.terrainTypes[j].type;
-                const canWalk = walkableNeighbors.includes(targetType);
-
-                const key = `${i}-${j}`;
-                this.walkabilityCache.set(key, canWalk);
-            }
-        }
-    }
-
-    canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
-        // NEW: Use height-based walkability if heightMap is available
+    canWalkBetweenTerrains(fromTerrainId, toTerrainId) {
+        // Use height-based walkability if heightMap is available
         if (this.game.terrainSystem?.tileMap?.heightMap && this.game.terrainSystem.tileMap.heightMap.length > 0) {
             // Always walkable between same terrain types
             return true;
         }
 
         // Check if both terrains are walkable
-        return this.isTerrainWalkable(fromTerrainIndex) && this.isTerrainWalkable(toTerrainIndex);
+        return this.isTerrainWalkable(fromTerrainId) && this.isTerrainWalkable(toTerrainId);
     }
 
     // Convert nav grid coordinates to terrain grid coordinates
@@ -262,22 +228,14 @@ class PathfindingSystem extends engine.BaseSystem {
         console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
     }
     
-    isTerrainWalkable(terrainIndexOrId) {
-        if (terrainIndexOrId === null || terrainIndexOrId === 255) return false;
+    isTerrainWalkable(terrainTypeId) {
+        if (!terrainTypeId) return false;
 
-        // NEW: Support both collection-based (string ID) and old array-based (numeric index)
-        let terrainType;
-        if (typeof terrainIndexOrId === 'string' && this.terrainTypeMap) {
-            // Collection-based system
-            terrainType = this.terrainTypeMap[terrainIndexOrId];
-        } else {
-            // Old array-based system
-            terrainType = this.terrainTypes[terrainIndexOrId];
-        }
-
+        // Terrain type ID is a string reference to collections.terrainTypes
+        const terrainType = this.terrainTypes[terrainTypeId];
         if (!terrainType) return false;
 
-        // Default to true for backwards compatibility with old levels that don't have walkable property
+        // Check walkable property (defaults to true if not specified)
         return terrainType.walkable !== false;
     }
 
