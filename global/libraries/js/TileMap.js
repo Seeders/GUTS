@@ -1278,4 +1278,98 @@ class TileMap {
 		// Store terrain data for height mapping
 		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
 	}
+
+	/**
+	 * Paint a texture atom onto a specific quadrant of a tile for cliff blending
+	 * @param {number} tileX - Tile X coordinate in grid
+	 * @param {number} tileZ - Tile Z coordinate in grid
+	 * @param {string} quadrant - Which quadrant to paint: 'TL', 'TR', 'BL', 'BR'
+	 * @param {number} terrainIndex - Terrain type index (e.g., grass)
+	 * @param {number} rotation - Rotation in radians for the atom
+	 */
+	paintAtomOnTile(tileX, tileZ, quadrant, terrainIndex, rotation = 0) {
+		const rows = this.terrainMap.length;
+		const cols = this.terrainMap[0].length;
+
+		// Validate coordinates
+		if (tileX < 0 || tileX >= cols || tileZ < 0 || tileZ >= rows) {
+			return;
+		}
+
+		const atomSize = this.tileSize / 2;
+		const ctx = this.canvas.getContext('2d');
+
+		// Calculate pixel position on canvas
+		const pixelX = tileX * this.tileSize;
+		const pixelY = tileZ * this.tileSize;
+
+		// Get the appropriate base atom for the terrain type
+		const atoms = this.baseAtoms[terrainIndex];
+		if (!atoms) {
+			console.warn(`No atoms found for terrain index ${terrainIndex}`);
+			return;
+		}
+
+		// Use the 'full' atom as the base texture
+		let atomImageData = atoms.full;
+		if (!atomImageData) {
+			console.warn(`No full atom found for terrain index ${terrainIndex}`);
+			return;
+		}
+
+		// Convert to canvas for rotation if needed
+		let atomCanvas = this.imageDataToCanvas(atomImageData);
+
+		// Apply rotation if specified
+		if (rotation !== 0) {
+			atomCanvas = this.rotateCanvas(atomCanvas, rotation);
+		}
+
+		// Determine quadrant offset within the tile
+		let offsetX = 0;
+		let offsetY = 0;
+
+		switch(quadrant) {
+			case 'TL':
+				offsetX = 0;
+				offsetY = 0;
+				break;
+			case 'TR':
+				offsetX = atomSize;
+				offsetY = 0;
+				break;
+			case 'BL':
+				offsetX = 0;
+				offsetY = atomSize;
+				break;
+			case 'BR':
+				offsetX = atomSize;
+				offsetY = atomSize;
+				break;
+		}
+
+		// Draw the atom onto the canvas
+		ctx.drawImage(atomCanvas, pixelX + offsetX, pixelY + offsetY, atomSize, atomSize);
+	}
+
+	/**
+	 * Rotate a canvas by the specified angle
+	 */
+	rotateCanvas(sourceCanvas, angle) {
+		const size = sourceCanvas.width;
+		const rotatedCanvas = document.createElement('canvas');
+		rotatedCanvas.width = size;
+		rotatedCanvas.height = size;
+		const ctx = rotatedCanvas.getContext('2d');
+
+		// Translate to center, rotate, translate back
+		ctx.translate(size / 2, size / 2);
+		ctx.rotate(angle);
+		ctx.translate(-size / 2, -size / 2);
+
+		// Draw the source canvas
+		ctx.drawImage(sourceCanvas, 0, 0);
+
+		return rotatedCanvas;
+	}
 }
