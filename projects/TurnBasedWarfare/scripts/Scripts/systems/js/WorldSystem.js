@@ -1179,6 +1179,7 @@ class WorldSystem extends engine.BaseSystem {
         if (!this.game.terrainTileMapper) return;
 
         const cliffs = this.game.getEntitiesWith('cliff');
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
         const gridSize = this.game.getCollections().configs.game.gridSize;
         const terrainMap = this.tileMap.terrainMap;
         const rows = terrainMap.length;
@@ -1195,8 +1196,13 @@ class WorldSystem extends engine.BaseSystem {
 
         cliffs.forEach(cliffEntity => {
             const cliffComponent = this.game.getComponent(cliffEntity, 'cliff');
-            const positionComponent = this.game.getComponent(cliffEntity, 'Position');
-            const facingComponent = this.game.getComponent(cliffEntity, 'Facing');
+            const positionComponent = this.game.getComponent(cliffEntity, ComponentTypes.POSITION);
+            const facingComponent = this.game.getComponent(cliffEntity, ComponentTypes.FACING);
+
+            // Skip if components are missing
+            if (!cliffComponent || !positionComponent || !facingComponent) {
+                return;
+            }
 
             // Only process atom_two cliffs (straight edges)
             if (cliffComponent.type !== 'atom_two') {
