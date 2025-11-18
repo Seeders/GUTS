@@ -687,6 +687,10 @@
       "PlacementPreview": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
         "fileName": "PlacementPreview"
+      },
+      "PerformanceMonitor": {
+        "filePath": "/global/libraries/js/PerformanceMonitor.js",
+        "fileName": "PerformanceMonitor"
       }
     },
     "modals": {
@@ -3297,7 +3301,7 @@
                 "z": 0
               },
               "rotation": {
-                "x": -4.40619762898109e-16,
+                "x": -4.40619762898109E-16,
                 "z": -0.008513801229241034
               },
               "shapes": [

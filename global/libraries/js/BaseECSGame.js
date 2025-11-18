@@ -4,22 +4,27 @@ class BaseECSGame {
         this.state = null; // Will be set by subclasses
         this.sceneManager = null; // Will be set by subclasses
         this.moduleManager = app.moduleManager;
-        
+
         this.entityId = 0;
         this.entitiesToAdd = [];
         this.entities = new Map();
         this.components = new Map();
         this.classes = [];
         this.systems = [];
-        
+
         this.nextEntityId = 1;
         this.lastTime = 0;
         this.currentTime = 0;
         this.deltaTime = 0;
 
-        this.isServer = false;        
+        this.isServer = false;
 
         this.componentTypes = null;
+
+        // Performance monitoring
+        if (typeof PerformanceMonitor !== 'undefined') {
+            this.performanceMonitor = new PerformanceMonitor();
+        }
     }
     init() {
         if(document){
@@ -36,8 +41,13 @@ class BaseECSGame {
     }
 
     async update(deltaTime) {
-  
+
         if (!this.state.isPaused) {
+            // Start performance frame tracking
+            if (this.performanceMonitor) {
+                this.performanceMonitor.startFrame();
+            }
+
             this.currentTime = this.currentTime + deltaTime;
 
             // Only update if a reasonable amount of time has passed
@@ -50,19 +60,51 @@ class BaseECSGame {
             // }
             this.state.now = this.currentTime;
             this.state.deltaTime = deltaTime;
-            this.deltaTime = deltaTime;        
+            this.deltaTime = deltaTime;
 
-            this.systems.forEach(async system => {
+            for (const system of this.systems) {
+                const systemName = system.constructor.name;
+
+                // Start tracking this system
+                if (this.performanceMonitor) {
+                    this.performanceMonitor.startSystem(systemName);
+                }
+
                 if (system.update) {
                     await system.update();
                 }
-                if(system.render && !this.isServer){
-                    await system.render();
+
+                // End update tracking
+                if (this.performanceMonitor) {
+                    this.performanceMonitor.endSystemUpdate(systemName);
                 }
-            });
-            
+
+                if(system.render && !this.isServer){
+                    // Start render tracking
+                    if (this.performanceMonitor) {
+                        this.performanceMonitor.startSystemRender(systemName);
+                    }
+
+                    await system.render();
+
+                    // End render tracking
+                    if (this.performanceMonitor) {
+                        this.performanceMonitor.endSystemRender(systemName);
+                    }
+                } else if (this.performanceMonitor) {
+                    // If no render, still need to end the system tracking
+                    this.performanceMonitor.startSystemRender(systemName);
+                    this.performanceMonitor.endSystemRender(systemName);
+                }
+            }
+
+            // Update performance overlay
+            if (this.performanceMonitor) {
+                this.performanceMonitor.updateOverlay();
+            }
+
             this.postUpdate();
-        }     
+        }
     }
 
     postUpdate() {
