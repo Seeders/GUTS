@@ -31,6 +31,8 @@ class ParticleSystem extends engine.BaseSystem {
     this.game.gameManager.register('createParticles', this.createParticles.bind(this));
     this.game.gameManager.register('clearAllParticles', this.clearAllParticles.bind(this));
     this.game.gameManager.register('initializeParticleSystem', this.initialize.bind(this));
+    this.game.gameManager.register('createLayeredEffect', this.createLayeredEffect.bind(this));
+    this.game.gameManager.register('createParticlesWithEmitter', this.createParticlesWithEmitter.bind(this));
   }
 
   initialize() {
@@ -325,6 +327,189 @@ class ParticleSystem extends engine.BaseSystem {
     this.mesh.geometry.dispose();
     this.material.dispose();
     this.initialized = false;
+  }
+
+  // ===== Advanced Effect Methods =====
+
+  /**
+   * Create a multi-layered particle burst for complex effects like explosions
+   * @param {Object} config - Base configuration
+   * @param {Array} layers - Array of layer configs to spawn
+   */
+  createLayeredEffect(config) {
+    if (!this.initialized) {
+      this.initialize();
+      if (!this.initialized) return;
+    }
+
+    const {
+      position = new THREE.Vector3(0, 0, 0),
+      layers = []
+    } = config;
+
+    // Spawn each layer with its specific settings
+    layers.forEach(layer => {
+      const layerConfig = {
+        position: position.clone(),
+        count: layer.count || 5,
+        lifetime: layer.lifetime || 1.0,
+        visual: {
+          color: layer.color,
+          colorRange: layer.colorRange,
+          scale: layer.scale || 16,
+          scaleMultiplier: layer.scaleMultiplier || 1,
+          speedMultiplier: layer.speedMultiplier || 1,
+          fadeOut: layer.fadeOut !== false,
+          scaleOverTime: layer.scaleOverTime !== false,
+          blending: layer.blending || 'additive'
+        },
+        velocityRange: layer.velocityRange || { x: [-30, 30], y: [50, 120], z: [-30, 30] },
+        gravity: layer.gravity !== undefined ? layer.gravity : -100,
+        drag: layer.drag || 0.98,
+        heightOffset: layer.heightOffset || 0,
+        emitterShape: layer.emitterShape || 'point',
+        emitterRadius: layer.emitterRadius || 0
+      };
+
+      this.createParticlesWithEmitter(layerConfig);
+    });
+  }
+
+  /**
+   * Create particles with emitter shape support (sphere, ring, cone)
+   */
+  createParticlesWithEmitter(config) {
+    if (!this.initialized) {
+      this.initialize();
+      if (!this.initialized) return;
+    }
+
+    const {
+      position = new THREE.Vector3(0, 0, 0),
+      count = 10,
+      lifetime = 1.25,
+      visual = {},
+      velocityRange = { x: [-30, 30], y: [50, 120], z: [-30, 30] },
+      gravity = -100.0,
+      drag = 0.98,
+      speedMultiplier: speedMulTop = 1.0,
+      heightOffset = 0,
+      emitterShape = 'point',
+      emitterRadius = 0
+    } = config;
+
+    // Color resolution
+    const { startColorResolved, endColorResolved } = this._resolveColorPair(config, visual);
+
+    // Scale / Speed
+    const scaleMul = (visual.scaleMultiplier != null ? visual.scaleMultiplier : 1.0);
+    const initScale = ((visual.scale != null) ? visual.scale : 16.0) * scaleMul;
+
+    const speedMulVisual = (visual.speedMultiplier != null ? visual.speedMultiplier : 1.0);
+    const speedMul = speedMulTop * speedMulVisual;
+
+    const fadeOut = (visual.fadeOut === undefined) ? true : !!visual.fadeOut;
+    const scaleOverTime = (visual.scaleOverTime === undefined) ? true : !!visual.scaleOverTime;
+
+    // Per-effect blending
+    if (visual.blending) {
+      const b = String(visual.blending).toLowerCase();
+      const target =
+        b === 'additive' ? THREE.AdditiveBlending :
+        b === 'multiply' ? THREE.MultiplyBlending :
+                           THREE.NormalBlending;
+      if (this.material.blending !== target) {
+        this.material.blending = target;
+        this.material.needsUpdate = true;
+      }
+    }
+
+    const rv = (min, max) => min + Math.random() * (max - min);
+    const now = this._now();
+
+    let spawned = 0;
+    const want = Math.max(1, Math.floor(count));
+    while (spawned < want && this.freeList.length > 0) {
+      const i = this.freeList.pop();
+
+      // Calculate spawn position based on emitter shape
+      let px = position.x;
+      let py = position.y + heightOffset;
+      let pz = position.z;
+
+      if (emitterShape === 'sphere' && emitterRadius > 0) {
+        // Random point in sphere
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const r = emitterRadius * Math.cbrt(Math.random());
+        px += r * Math.sin(phi) * Math.cos(theta);
+        py += r * Math.sin(phi) * Math.sin(theta);
+        pz += r * Math.cos(phi);
+      } else if (emitterShape === 'ring' && emitterRadius > 0) {
+        // Random point on ring
+        const theta = Math.random() * Math.PI * 2;
+        px += emitterRadius * Math.cos(theta);
+        pz += emitterRadius * Math.sin(theta);
+      } else if (emitterShape === 'disk' && emitterRadius > 0) {
+        // Random point on disk
+        const theta = Math.random() * Math.PI * 2;
+        const r = emitterRadius * Math.sqrt(Math.random());
+        px += r * Math.cos(theta);
+        pz += r * Math.sin(theta);
+      }
+
+      this.positions[i].set(px, py, pz);
+      this._writeTranslation(i, px, py, pz);
+
+      // Calculate velocity - for sphere emitter, velocity can be outward
+      let vx, vy, vz;
+      if (emitterShape === 'sphere' && emitterRadius > 0 && velocityRange.outward) {
+        // Outward velocity from center
+        const dx = px - position.x;
+        const dy = py - (position.y + heightOffset);
+        const dz = pz - position.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const speed = rv(velocityRange.outward[0], velocityRange.outward[1]) * speedMul;
+        vx = (dx / dist) * speed;
+        vy = (dy / dist) * speed;
+        vz = (dz / dist) * speed;
+      } else {
+        vx = rv(velocityRange.x[0], velocityRange.x[1]) * speedMul;
+        vy = rv(velocityRange.y[0], velocityRange.y[1]) * speedMul;
+        vz = rv(velocityRange.z[0], velocityRange.z[1]) * speedMul;
+      }
+
+      this.velocities[i].set(vx, vy, vz);
+      this.gravityArr[i] = gravity;
+      this.dragArr[i] = drag;
+
+      // Write colors
+      const si = i * 3;
+      this.aColorStart[si    ] = startColorResolved.r;
+      this.aColorStart[si + 1] = startColorResolved.g;
+      this.aColorStart[si + 2] = startColorResolved.b;
+
+      this.aColorEnd[si    ] = endColorResolved.r;
+      this.aColorEnd[si + 1] = endColorResolved.g;
+      this.aColorEnd[si + 2] = endColorResolved.b;
+
+      this.aLifetime[i]  = lifetime;
+      this.aStartTime[i] = now;
+      this.aInitScale[i] = initScale;
+      this.aFlags[i * 2    ] = fadeOut ? 1.0 : 0.0;
+      this.aFlags[i * 2 + 1] = scaleOverTime ? 1.0 : 0.0;
+
+      spawned++;
+      this.activeCount++;
+    }
+
+    this.attrColorStart.needsUpdate = true;
+    this.attrColorEnd.needsUpdate   = true;
+    this.attrLifetime.needsUpdate   = true;
+    this.attrStartTime.needsUpdate  = true;
+    this.attrInitScale.needsUpdate  = true;
+    this.attrFlags.needsUpdate      = true;
+    this.mesh.instanceMatrix.needsUpdate = true;
   }
 
   // ===== helpers =====
