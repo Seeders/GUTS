@@ -1222,7 +1222,7 @@ class WorldSystem extends engine.BaseSystem {
             const gridX = Math.floor((worldX + centerOffsetX - this.extensionSize) / gridSize);
             const gridZ = Math.floor((worldZ + centerOffsetZ - this.extensionSize) / gridSize);
 
-            const rotation = facingComponent.rotation;
+            const rotation = facingComponent.angle;
 
             // Determine cliff edge direction and upper neighbor tile
             // Also determine which quadrants need texture atoms and their rotation
