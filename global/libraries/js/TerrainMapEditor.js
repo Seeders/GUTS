@@ -108,15 +108,9 @@ class TerrainMapEditor {
                 if (collections.terrainTypes && collections.terrainTypes[terrainTypeId]) {
                     collections.terrainTypes[terrainTypeId].texture = textureName;
                     const texture = this.gameEditor.getCollections().textures[textureName];
-                    // Support both new imagePath format and old base64 image format
-                    let imageSrc = null;
-                    if (texture.imagePath) {
+                    if (texture && texture.imagePath) {
                         const projectName = this.gameEditor.getCurrentProject();
-                        imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
-                    } else if (texture.image) {
-                        imageSrc = texture.image;
-                    }
-                    if (imageSrc) {
+                        const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
                         this.terrainImageProcessor.processImage(imageSrc);
                     }
                 }

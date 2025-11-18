@@ -254,16 +254,9 @@ class ShapeFactory {
 
             const textureData = this.textures[shape.texture];
 
-            if( textureData ) {
-                // Support both new imagePath format and old base64 image format
-                let textureSrc = null;
-                if (textureData.imagePath) {
-                    // File path - use relative path from resources
-                    textureSrc = this.resourcesPath + textureData.imagePath;
-                } else if (textureData.image) {
-                    // Fallback to base64 if imagePath is not present
-                    textureSrc = textureData.image;
-                }
+            if( textureData && textureData.imagePath ) {
+                // File path - use relative path from resources
+                const textureSrc = this.resourcesPath + textureData.imagePath;
 
                 const texture = await new Promise((resolve, reject) => {
                     textureLoader.load(
