@@ -246,9 +246,23 @@ class ImageManager {
         let terrainTiles = [];
         const tileWidth = 24;
 
+        // Get terrain type definitions from collections
+        const collections = this.app.getCollections();
+        if (!collections || !collections.terrainTypes) {
+            console.error('ImageManager: No terrainTypes collection found');
+            return terrainTiles;
+        }
+
         // Create a map of terrain type to its image data first
         const terrainMap = {};
-        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {
+        await Promise.all(config.tileMap.terrainTypes.map(async (terrainTypeId, terrainIndex) => {
+            // Look up the full terrain type definition from collections
+            const terrainType = collections.terrainTypes[terrainTypeId];
+            if (!terrainType) {
+                console.warn(`ImageManager: Terrain type "${terrainTypeId}" not found in collections`);
+                return;
+            }
+
             const pixelData = terrainType.image;
             if (pixelData && pixelData.length > 0) {
                 let sprites = new Array(8);
