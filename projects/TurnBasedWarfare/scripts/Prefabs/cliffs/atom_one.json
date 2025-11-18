@@ -14,8 +14,8 @@
             "color": {
               "paletteColor": "greyMColor"
             },
-            "metalness": 0,
             "roughness": 1,
+            "metalness": 0,
             "name": "main",
             "url": "models/atom_one_grass/atom_one_grass.glb"
           }

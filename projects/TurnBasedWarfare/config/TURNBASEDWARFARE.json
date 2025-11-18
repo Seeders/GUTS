@@ -21,13 +21,13 @@
         "filePath": "/global/components/js/Effect.js",
         "fileName": "Effect"
       },
-      "MapManager": {
-        "filePath": "/global/components/js/MapManager.js",
-        "fileName": "MapManager"
-      },
       "Physics": {
         "filePath": "/global/components/js/Physics.js",
         "fileName": "Physics"
+      },
+      "MapManager": {
+        "filePath": "/global/components/js/MapManager.js",
+        "fileName": "MapManager"
       },
       "PlayerController": {
         "filePath": "/global/components/js/PlayerController.js",
@@ -122,6 +122,19 @@
         "loadHook": "renderGraphicsObject",
         "saveHook": "saveGraphicsObject"
       },
+      "scriptModule": {
+        "title": "Script Editor",
+        "container": "script-editor-container",
+        "interface": "scriptEditor",
+        "inputElement": "textarea",
+        "inputDataType": "string",
+        "libraries": [
+          "ScriptEditor"
+        ],
+        "propertyNames": "[\"script\", \"html\", \"css\"]",
+        "loadHook": "editScript",
+        "saveHook": "saveScript"
+      },
       "sceneModule": {
         "title": "Scene Editor",
         "container": "scene-editor-container",
@@ -148,19 +161,6 @@
         "inputDataType": "array",
         "loadHook": "renderSceneObject",
         "saveHook": "saveSceneObject"
-      },
-      "scriptModule": {
-        "title": "Script Editor",
-        "container": "script-editor-container",
-        "interface": "scriptEditor",
-        "inputElement": "textarea",
-        "inputDataType": "string",
-        "libraries": [
-          "ScriptEditor"
-        ],
-        "propertyNames": "[\"script\", \"html\", \"css\"]",
-        "loadHook": "editScript",
-        "saveHook": "saveScript"
       },
       "terrainModule": {
         "title": "Terrain Editor",
@@ -327,15 +327,6 @@
         "importName": "EffectComposer",
         "fileName": "three_EffectComposer"
       },
-      "three_OrbitControls": {
-        "title": "THREE.OrbitControls",
-        "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js",
-        "isModule": true,
-        "windowContext": "THREE_",
-        "requireName": "OrbitControls",
-        "importName": "OrbitControls",
-        "fileName": "three_OrbitControls"
-      },
       "three_OutputPass": {
         "title": "THREE.OutputPass",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js",
@@ -344,6 +335,15 @@
         "requireName": "OutputPass",
         "importName": "OutputPass",
         "fileName": "three_OutputPass"
+      },
+      "three_OrbitControls": {
+        "title": "THREE.OrbitControls",
+        "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js",
+        "isModule": true,
+        "windowContext": "THREE_",
+        "requireName": "OrbitControls",
+        "importName": "OrbitControls",
+        "fileName": "three_OrbitControls"
       },
       "three_PointerLockControls": {
         "title": "THREE.PointerLockControls",
@@ -415,13 +415,13 @@
         "filePath": "/global/libraries/js/PerformanceProfiler.js",
         "fileName": "PerformanceProfiler"
       },
-      "SceneManager": {
-        "filePath": "/global/libraries/js/SceneManager.js",
-        "fileName": "SceneManager"
-      },
       "SceneEditor": {
         "filePath": "/global/libraries/js/SceneEditor.js",
         "fileName": "SceneEditor"
+      },
+      "SceneManager": {
+        "filePath": "/global/libraries/js/SceneManager.js",
+        "fileName": "SceneManager"
       },
       "SeededRandom": {
         "filePath": "/global/libraries/js/SeededRandom.js",
@@ -431,13 +431,13 @@
         "filePath": "/global/libraries/js/ServerECSGame.js",
         "fileName": "ServerECSGame"
       },
-      "ServerEventManager": {
-        "filePath": "/global/libraries/js/ServerEventManager.js",
-        "fileName": "ServerEventManager"
-      },
       "ServerGameLoader": {
         "filePath": "/global/libraries/js/ServerGameLoader.js",
         "fileName": "ServerGameLoader"
+      },
+      "ServerEventManager": {
+        "filePath": "/global/libraries/js/ServerEventManager.js",
+        "fileName": "ServerEventManager"
       },
       "ServerGameRoom": {
         "filePath": "/global/libraries/js/ServerGameRoom.js",
@@ -471,10 +471,6 @@
         "fileName": "AudioEditor",
         "filePath": "/global/libraries/js/AudioEditor.js"
       },
-      "CanvasUtility": {
-        "fileName": "CanvasUtility",
-        "filePath": "/global/libraries/js/CanvasUtility.js"
-      },
       "BufferGeometryUtils": {
         "title": "THREE.BufferGeometryUtils",
         "isModule": true,
@@ -483,6 +479,10 @@
         "importName": "BufferGeometryUtils",
         "filePath": "/global/libraries/js/BufferGeometryUtils.js",
         "fileName": "BufferGeometryUtils"
+      },
+      "CanvasUtility": {
+        "fileName": "CanvasUtility",
+        "filePath": "/global/libraries/js/CanvasUtility.js"
       },
       "Component": {
         "fileName": "Component",
@@ -509,15 +509,15 @@
         "fileName": "GE_AnimationManager",
         "filePath": "/global/libraries/js/GE_AnimationManager.js"
       },
-      "GE_EventManager": {
-        "title": "GE_EventManager",
-        "fileName": "GE_EventManager",
-        "filePath": "/global/libraries/js/GE_EventManager.js"
-      },
       "GE_EquipmentEditor": {
         "title": "GE_EquipmentEditor",
         "fileName": "GE_EquipmentEditor",
         "filePath": "/global/libraries/js/GE_EquipmentEditor.js"
+      },
+      "GE_EventManager": {
+        "title": "GE_EventManager",
+        "fileName": "GE_EventManager",
+        "filePath": "/global/libraries/js/GE_EventManager.js"
       },
       "GE_GizmoManager": {
         "title": "GE_GizmoManager",
@@ -549,11 +549,6 @@
         "fileName": "GE_UIManager",
         "filePath": "/global/libraries/js/GE_UIManager.js"
       },
-      "GraphicsEditor": {
-        "fileName": "GraphicsEditor",
-        "title": "GraphicsEditor",
-        "filePath": "/global/libraries/js/GraphicsEditor.js"
-      },
       "GLTFLoader": {
         "title": "GLTF Loader",
         "isModule": true,
@@ -562,6 +557,11 @@
         "importName": "GLTFLoader",
         "fileName": "GLTFLoader",
         "filePath": "/global/libraries/js/GLTFLoader.js"
+      },
+      "GraphicsEditor": {
+        "fileName": "GraphicsEditor",
+        "title": "GraphicsEditor",
+        "filePath": "/global/libraries/js/GraphicsEditor.js"
       },
       "ImageManager": {
         "fileName": "ImageManager",
@@ -590,14 +590,14 @@
         "fileName": "ScriptEditor",
         "filePath": "/global/libraries/js/ScriptEditor.js"
       },
-      "ShapeFactory": {
-        "fileName": "ShapeFactory",
-        "filePath": "/global/libraries/js/ShapeFactory.js"
-      },
       "SimplexNoise": {
         "title": "SimplexNoise",
         "fileName": "SimplexNoise",
         "filePath": "/global/libraries/js/SimplexNoise.js"
+      },
+      "ShapeFactory": {
+        "fileName": "ShapeFactory",
+        "filePath": "/global/libraries/js/ShapeFactory.js"
       },
       "SpatialGrid": {
         "fileName": "SpatialGrid",
@@ -660,25 +660,25 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/EnemyStrategy.js",
         "fileName": "EnemyStrategy"
       },
-      "GameUtils": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameUtils.js",
-        "fileName": "GameUtils"
-      },
-      "NotificationSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/NotificationSystem.js",
-        "fileName": "NotificationSystem"
-      },
-      "MinHeap": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
-        "fileName": "MinHeap"
+      "FantasyUIEnhancements": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/FantasyUIEnhancements.js",
+        "fileName": "FantasyUIEnhancements"
       },
       "GameModeConfigs": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameModeConfigs.js",
         "fileName": "GameModeConfigs"
       },
-      "FantasyUIEnhancements": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/FantasyUIEnhancements.js",
-        "fileName": "FantasyUIEnhancements"
+      "GameUtils": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameUtils.js",
+        "fileName": "GameUtils"
+      },
+      "MinHeap": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
+        "fileName": "MinHeap"
+      },
+      "NotificationSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/NotificationSystem.js",
+        "fileName": "NotificationSystem"
       },
       "PlacementPreview": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
@@ -720,17 +720,17 @@
         "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n",
         "filePath": "/global/modals/html/generateIsoSprites.html"
       },
-      "rotateShapes": {
-        "title": "Rotate Shapes",
-        "fileName": "rotateShapes",
-        "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n",
-        "filePath": "/global/modals/html/rotateShapes.html"
-      },
       "moveAllShapes": {
         "title": "Move All Shapes",
         "fileName": "moveAllShapes",
         "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n",
         "filePath": "/global/modals/html/moveAllShapes.html"
+      },
+      "rotateShapes": {
+        "title": "Rotate Shapes",
+        "fileName": "rotateShapes",
+        "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n",
+        "filePath": "/global/modals/html/rotateShapes.html"
       }
     },
     "renderers": {
@@ -754,12 +754,6 @@
       }
     },
     "themes": {
-      "aurora": {
-        "title": "Aurora",
-        "fileName": "aurora",
-        "css": "/* Aurora Theme - Modern gradient-based design for GUTS Editor */\r\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');\r\n\r\n:root {\r\n  /* Override editor module variables with Aurora theme */\r\n  --editor-primary: #10b981;\r\n  --editor-primary-hover: #059669;\r\n  --editor-secondary: #3b82f6;\r\n  --editor-secondary-hover: #2563eb;\r\n  --editor-danger: #f43f5e;\r\n  --editor-danger-hover: #e11d48;\r\n  --editor-success: #10b981;\r\n  --editor-warning: #f59e0b;\r\n\r\n  /* Aurora-specific colors */\r\n  --aurora-teal: #14b8a6;\r\n  --aurora-blue: #0ea5e9;\r\n  --aurora-purple: #8b5cf6;\r\n  --aurora-pink: #ec4899;\r\n\r\n  /* Background layers - darker for comfort */\r\n  --editor-bg-dark: #050810;\r\n  --editor-bg-medium: #0a0e1a;\r\n  --editor-bg-light: #0f172a;\r\n  --editor-bg-lighter: #1e293b;\r\n\r\n  /* Text colors - softer for eyes */\r\n  --editor-text-primary: #cbd5e1;\r\n  --editor-text-secondary: #94a3b8;\r\n  --editor-text-muted: #64748b;\r\n\r\n  /* Borders */\r\n  --editor-border-color: rgba(20, 184, 166, 0.12);\r\n  --editor-border-color-hover: rgba(20, 184, 166, 0.25);\r\n\r\n  /* Shadows with aurora glow - softer */\r\n  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);\r\n  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);\r\n  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);\r\n  --aurora-glow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  --aurora-glow-strong: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Base body with aurora gradient background - darker and subtle */\r\nbody {\r\n  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\r\n  background-color: var(--editor-bg-dark);\r\n  color: var(--editor-text-primary);\r\n  background-image:\r\n    radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 60%);\r\n  background-attachment: fixed;\r\n}\r\n\r\n/* Monospace font for code */\r\ninput[type=\"text\"],\r\ntextarea,\r\n.editor-module__textarea,\r\n.script-editor__code {\r\n  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;\r\n}\r\n\r\n/* Force dark backgrounds on all inputs - easy on the eyes */\r\ninput,\r\ntextarea,\r\nselect,\r\n.editor-module__input,\r\n.editor-module__textarea,\r\n.editor-module__select,\r\ninput[type=\"text\"],\r\ninput[type=\"number\"],\r\ninput[type=\"email\"],\r\ninput[type=\"password\"],\r\ninput[type=\"search\"],\r\ninput[type=\"url\"] {\r\n  background-color: var(--editor-bg-dark) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n/* Darker background for color pickers */\r\ninput[type=\"color\"],\r\n.editor-module__color-picker {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n}\r\n\r\n/* Sidebar styling with aurora glow */\r\n.sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Main editor area */\r\n.editor {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n/* Object items in sidebar - softer colors */\r\n.object-item {\r\n  background-color: transparent;\r\n  border-left: 2px solid transparent;\r\n  color: var(--editor-text-muted);\r\n  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\r\n}\r\n\r\n.object-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.05);\r\n  border-left-color: rgba(16, 185, 129, 0.5);\r\n  color: var(--editor-text-secondary);\r\n  transform: translateX(3px);\r\n}\r\n\r\n.object-item.selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);\r\n  border-left-color: var(--editor-primary);\r\n  color: var(--editor-text-primary);\r\n  box-shadow: var(--aurora-glow);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Buttons with aurora styling - much darker and easier on eyes */\r\nbutton {\r\n  font-family: 'Inter', sans-serif;\r\n  font-weight: 500;\r\n  text-transform: none;\r\n  letter-spacing: 0.02em;\r\n  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\nbutton:hover {\r\n  transform: translateY(-1px);\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\nbutton:active {\r\n  transform: translateY(0);\r\n}\r\n\r\nbutton.primary {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\nbutton.primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.18) !important;\r\n  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\nbutton.danger {\r\n  background-color: rgba(244, 63, 94, 0.08) !important;\r\n  border-color: rgba(244, 63, 94, 0.3) !important;\r\n  color: rgba(244, 63, 94, 0.75) !important;\r\n}\r\n\r\nbutton.danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n/* Editor module buttons - much darker with !important to override base styles */\r\n.editor-module__btn {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n.editor-module__btn--primary {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.editor-module__btn--primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--secondary {\r\n  background-color: rgba(59, 130, 246, 0.12) !important;\r\n  border-color: rgba(59, 130, 246, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--secondary:hover {\r\n  background-color: rgba(59, 130, 246, 0.18) !important;\r\n  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--active {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.5) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;\r\n}\r\n\r\n.editor-module__btn--danger {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  border-color: rgba(244, 63, 94, 0.35) !important;\r\n  color: rgba(244, 63, 94, 0.85) !important;\r\n}\r\n\r\n.editor-module__btn--danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.18) !important;\r\n  border-color: rgba(244, 63, 94, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--success {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--success:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--warning {\r\n  background-color: rgba(245, 158, 11, 0.12) !important;\r\n  border-color: rgba(245, 158, 11, 0.35) !important;\r\n  color: rgba(245, 158, 11, 0.9) !important;\r\n}\r\n\r\n.editor-module__btn--warning:hover {\r\n  background-color: rgba(245, 158, 11, 0.18) !important;\r\n  border-color: rgba(245, 158, 11, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--small {\r\n  background-color: rgba(15, 23, 42, 0.5) !important;\r\n}\r\n\r\n.editor-module__btn--small:hover {\r\n  background-color: rgba(15, 23, 42, 0.7) !important;\r\n}\r\n\r\n.editor-module__btn--icon {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn--icon:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n/* Form inputs with aurora accent - soft glow on focus */\r\ninput:focus,\r\ntextarea:focus,\r\nselect:focus,\r\n.editor-module__input:focus,\r\n.editor-module__select:focus,\r\n.editor-module__textarea:focus {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border-color: var(--editor-primary) !important;\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;\r\n  outline: none !important;\r\n}\r\n\r\n/* Range sliders - darker */\r\n.editor-module__range::-webkit-slider-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n.editor-module__range::-moz-range-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Modal styling */\r\n.modal {\r\n  background-color: rgba(10, 14, 26, 0.75);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n.modal-content {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-lg), var(--aurora-glow);\r\n}\r\n\r\n/* Property list and panels */\r\n.property-list {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n}\r\n\r\n.editor-module__panel {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n\r\n/* Section titles with aurora accent - softer */\r\n.editor-module__section-title,\r\n.editor-module__panel-title {\r\n  color: var(--editor-text-primary);\r\n  position: relative;\r\n  padding-bottom: 8px;\r\n}\r\n\r\n.editor-module__section-title::after,\r\n.editor-module__panel-title::after {\r\n  content: '';\r\n  position: absolute;\r\n  bottom: 0;\r\n  left: 0;\r\n  width: 40px;\r\n  height: 2px;\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), transparent);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n/* Items with aurora hover effect - subtle */\r\n.editor-module__item:hover {\r\n  background-color: rgba(16, 185, 129, 0.04);\r\n  border-color: var(--editor-border-color-hover);\r\n  box-shadow: none;\r\n}\r\n\r\n.editor-module__item--active,\r\n.editor-module__item--selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Toolbar styling */\r\n.toolbar,\r\n.editor-module__toolbar {\r\n  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.8));\r\n  border-bottom: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Grid background with aurora tint */\r\n.grid-background,\r\n.editor-module__grid-background {\r\n  background-image:\r\n    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),\r\n    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);\r\n  background-size: 20px 20px;\r\n}\r\n\r\n/* Status bar */\r\n.editor-module__status-bar {\r\n  background: linear-gradient(90deg, rgba(10, 14, 26, 0.9), rgba(15, 23, 42, 0.9));\r\n  border-top: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n/* Success messages */\r\n.success-message,\r\n.editor-module__message--success {\r\n  color: var(--editor-primary);\r\n  background-color: rgba(16, 185, 129, 0.1);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Warning messages */\r\n.warning,\r\n.editor-module__message--warning {\r\n  color: var(--editor-warning);\r\n  background-color: rgba(245, 158, 11, 0.1);\r\n  border-color: var(--editor-warning);\r\n}\r\n\r\n/* Instructions */\r\n.instructions {\r\n  background-color: rgba(59, 130, 246, 0.08);\r\n  border-left: 3px solid var(--editor-secondary);\r\n}\r\n\r\n/* Scrollbar styling - darker */\r\n::-webkit-scrollbar {\r\n  width: 8px;\r\n  height: 8px;\r\n}\r\n\r\n::-webkit-scrollbar-track {\r\n  background: var(--editor-bg-dark);\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n  background: rgba(16, 185, 129, 0.25);\r\n  border-radius: 4px;\r\n  box-shadow: none;\r\n}\r\n\r\n::-webkit-scrollbar-thumb:hover {\r\n  background: rgba(16, 185, 129, 0.35);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Canvas containers */\r\n#three-js-container,\r\n.preview-canvas-container {\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Camera controls */\r\n.camera-controls {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Content sidebars */\r\n.content-sidebar,\r\n.editor-module__sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n.editor-module__sidebar--right {\r\n  border-right: none;\r\n  border-left: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset 1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Shape list items */\r\n.shape-item,\r\n.graphics-editor__shape-item,\r\n.graphics-editor__group-item {\r\n  border-left-color: rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n.shape-item:hover,\r\n.graphics-editor__shape-item:hover,\r\n.graphics-editor__group-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.08);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Active/selected state - Aurora theme colors (teal/green glow) */\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),\r\n.terrain-editor__environment-item.active,\r\n.terrain-editor__environment-item--active,\r\n.editor-module__selectable-item.active,\r\n.editor-module__selectable-item--active {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.4) !important;\r\n  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;\r\n}\r\n\r\n.terrain-editor__color-option.active,\r\n.terrain-editor__color-option--active {\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;\r\n}\r\n\r\n/* Audio editor value displays */\r\n.audio-editor__value-display {\r\n  color: var(--editor-primary);\r\n  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);\r\n}\r\n\r\n/* Animations - disabled pulsing for comfort */\r\n@keyframes aurora-pulse {\r\n  0%, 100% {\r\n    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  }\r\n  50% {\r\n    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);\r\n  }\r\n}\r\n\r\n/* Removed automatic pulsing animation for eye comfort */\r\n/* .editor-module__btn--primary:hover,\r\n.editor-module__item--active,\r\n.object-item.selected {\r\n  animation: aurora-pulse 2s ease-in-out infinite;\r\n} */\r\n\r\n/* Typography enhancements */\r\nh1, h2, h3, h4 {\r\n  color: var(--editor-text-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n/* Labels */\r\nlabel,\r\n.editor-module__label {\r\n  color: var(--editor-text-secondary);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Info boxes */\r\n.editor-module__info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Scene info */\r\n.scene-info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n",
-        "filePath": "/global/themes/css/aurora.css"
-      },
       "claude2": {
         "title": "Claude 2",
         "fileName": "claude2",
@@ -771,6 +765,12 @@
         "fileName": "codeMirrorTheme",
         "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}",
         "filePath": "/projects/TurnBasedWarfare/scripts/Settings/themes/css/codeMirrorTheme.css"
+      },
+      "aurora": {
+        "title": "Aurora",
+        "fileName": "aurora",
+        "css": "/* Aurora Theme - Modern gradient-based design for GUTS Editor */\r\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');\r\n\r\n:root {\r\n  /* Override editor module variables with Aurora theme */\r\n  --editor-primary: #10b981;\r\n  --editor-primary-hover: #059669;\r\n  --editor-secondary: #3b82f6;\r\n  --editor-secondary-hover: #2563eb;\r\n  --editor-danger: #f43f5e;\r\n  --editor-danger-hover: #e11d48;\r\n  --editor-success: #10b981;\r\n  --editor-warning: #f59e0b;\r\n\r\n  /* Aurora-specific colors */\r\n  --aurora-teal: #14b8a6;\r\n  --aurora-blue: #0ea5e9;\r\n  --aurora-purple: #8b5cf6;\r\n  --aurora-pink: #ec4899;\r\n\r\n  /* Background layers - darker for comfort */\r\n  --editor-bg-dark: #050810;\r\n  --editor-bg-medium: #0a0e1a;\r\n  --editor-bg-light: #0f172a;\r\n  --editor-bg-lighter: #1e293b;\r\n\r\n  /* Text colors - softer for eyes */\r\n  --editor-text-primary: #cbd5e1;\r\n  --editor-text-secondary: #94a3b8;\r\n  --editor-text-muted: #64748b;\r\n\r\n  /* Borders */\r\n  --editor-border-color: rgba(20, 184, 166, 0.12);\r\n  --editor-border-color-hover: rgba(20, 184, 166, 0.25);\r\n\r\n  /* Shadows with aurora glow - softer */\r\n  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);\r\n  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);\r\n  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);\r\n  --aurora-glow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  --aurora-glow-strong: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Base body with aurora gradient background - darker and subtle */\r\nbody {\r\n  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\r\n  background-color: var(--editor-bg-dark);\r\n  color: var(--editor-text-primary);\r\n  background-image:\r\n    radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 60%);\r\n  background-attachment: fixed;\r\n}\r\n\r\n/* Monospace font for code */\r\ninput[type=\"text\"],\r\ntextarea,\r\n.editor-module__textarea,\r\n.script-editor__code {\r\n  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;\r\n}\r\n\r\n/* Force dark backgrounds on all inputs - easy on the eyes */\r\ninput,\r\ntextarea,\r\nselect,\r\n.editor-module__input,\r\n.editor-module__textarea,\r\n.editor-module__select,\r\ninput[type=\"text\"],\r\ninput[type=\"number\"],\r\ninput[type=\"email\"],\r\ninput[type=\"password\"],\r\ninput[type=\"search\"],\r\ninput[type=\"url\"] {\r\n  background-color: var(--editor-bg-dark) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n/* Darker background for color pickers */\r\ninput[type=\"color\"],\r\n.editor-module__color-picker {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border: 1px solid var(--editor-border-color) !important;\r\n}\r\n\r\n/* Sidebar styling with aurora glow */\r\n.sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Main editor area */\r\n.editor {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n}\r\n\r\n/* Object items in sidebar - softer colors */\r\n.object-item {\r\n  background-color: transparent;\r\n  border-left: 2px solid transparent;\r\n  color: var(--editor-text-muted);\r\n  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\r\n}\r\n\r\n.object-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.05);\r\n  border-left-color: rgba(16, 185, 129, 0.5);\r\n  color: var(--editor-text-secondary);\r\n  transform: translateX(3px);\r\n}\r\n\r\n.object-item.selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);\r\n  border-left-color: var(--editor-primary);\r\n  color: var(--editor-text-primary);\r\n  box-shadow: var(--aurora-glow);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Buttons with aurora styling - much darker and easier on eyes */\r\nbutton {\r\n  font-family: 'Inter', sans-serif;\r\n  font-weight: 500;\r\n  text-transform: none;\r\n  letter-spacing: 0.02em;\r\n  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\nbutton:hover {\r\n  transform: translateY(-1px);\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\nbutton:active {\r\n  transform: translateY(0);\r\n}\r\n\r\nbutton.primary {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\nbutton.primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.18) !important;\r\n  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\nbutton.danger {\r\n  background-color: rgba(244, 63, 94, 0.08) !important;\r\n  border-color: rgba(244, 63, 94, 0.3) !important;\r\n  color: rgba(244, 63, 94, 0.75) !important;\r\n}\r\n\r\nbutton.danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n/* Editor module buttons - much darker with !important to override base styles */\r\n.editor-module__btn {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n.editor-module__btn--primary {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.editor-module__btn--primary:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--secondary {\r\n  background-color: rgba(59, 130, 246, 0.12) !important;\r\n  border-color: rgba(59, 130, 246, 0.3) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--secondary:hover {\r\n  background-color: rgba(59, 130, 246, 0.18) !important;\r\n  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--active {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.5) !important;\r\n  color: var(--editor-text-primary) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;\r\n}\r\n\r\n.editor-module__btn--danger {\r\n  background-color: rgba(244, 63, 94, 0.12) !important;\r\n  border-color: rgba(244, 63, 94, 0.35) !important;\r\n  color: rgba(244, 63, 94, 0.85) !important;\r\n}\r\n\r\n.editor-module__btn--danger:hover {\r\n  background-color: rgba(244, 63, 94, 0.18) !important;\r\n  border-color: rgba(244, 63, 94, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--success {\r\n  background-color: rgba(16, 185, 129, 0.15) !important;\r\n  border-color: rgba(16, 185, 129, 0.35) !important;\r\n  color: var(--editor-text-primary) !important;\r\n}\r\n\r\n.editor-module__btn--success:hover {\r\n  background-color: rgba(16, 185, 129, 0.22) !important;\r\n  border-color: rgba(16, 185, 129, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--warning {\r\n  background-color: rgba(245, 158, 11, 0.12) !important;\r\n  border-color: rgba(245, 158, 11, 0.35) !important;\r\n  color: rgba(245, 158, 11, 0.9) !important;\r\n}\r\n\r\n.editor-module__btn--warning:hover {\r\n  background-color: rgba(245, 158, 11, 0.18) !important;\r\n  border-color: rgba(245, 158, 11, 0.45) !important;\r\n  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;\r\n}\r\n\r\n.editor-module__btn--small {\r\n  background-color: rgba(15, 23, 42, 0.5) !important;\r\n}\r\n\r\n.editor-module__btn--small:hover {\r\n  background-color: rgba(15, 23, 42, 0.7) !important;\r\n}\r\n\r\n.editor-module__btn--icon {\r\n  background-color: rgba(15, 23, 42, 0.6) !important;\r\n  border-color: rgba(20, 184, 166, 0.2) !important;\r\n}\r\n\r\n.editor-module__btn--icon:hover {\r\n  background-color: rgba(15, 23, 42, 0.8) !important;\r\n  border-color: rgba(20, 184, 166, 0.3) !important;\r\n}\r\n\r\n/* Form inputs with aurora accent - soft glow on focus */\r\ninput:focus,\r\ntextarea:focus,\r\nselect:focus,\r\n.editor-module__input:focus,\r\n.editor-module__select:focus,\r\n.editor-module__textarea:focus {\r\n  background-color: var(--editor-bg-medium) !important;\r\n  border-color: var(--editor-primary) !important;\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;\r\n  outline: none !important;\r\n}\r\n\r\n/* Range sliders - darker */\r\n.editor-module__range::-webkit-slider-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n.editor-module__range::-moz-range-thumb {\r\n  background: rgba(16, 185, 129, 0.6);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Modal styling */\r\n.modal {\r\n  background-color: rgba(10, 14, 26, 0.75);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n.modal-content {\r\n  background-color: var(--editor-bg-medium);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-lg), var(--aurora-glow);\r\n}\r\n\r\n/* Property list and panels */\r\n.property-list {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n}\r\n\r\n.editor-module__panel {\r\n  background-color: var(--editor-bg-light);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n\r\n/* Section titles with aurora accent - softer */\r\n.editor-module__section-title,\r\n.editor-module__panel-title {\r\n  color: var(--editor-text-primary);\r\n  position: relative;\r\n  padding-bottom: 8px;\r\n}\r\n\r\n.editor-module__section-title::after,\r\n.editor-module__panel-title::after {\r\n  content: '';\r\n  position: absolute;\r\n  bottom: 0;\r\n  left: 0;\r\n  width: 40px;\r\n  height: 2px;\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), transparent);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n/* Items with aurora hover effect - subtle */\r\n.editor-module__item:hover {\r\n  background-color: rgba(16, 185, 129, 0.04);\r\n  border-color: var(--editor-border-color-hover);\r\n  box-shadow: none;\r\n}\r\n\r\n.editor-module__item--active,\r\n.editor-module__item--selected {\r\n  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Toolbar styling */\r\n.toolbar,\r\n.editor-module__toolbar {\r\n  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.8));\r\n  border-bottom: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Grid background with aurora tint */\r\n.grid-background,\r\n.editor-module__grid-background {\r\n  background-image:\r\n    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),\r\n    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);\r\n  background-size: 20px 20px;\r\n}\r\n\r\n/* Status bar */\r\n.editor-module__status-bar {\r\n  background: linear-gradient(90deg, rgba(10, 14, 26, 0.9), rgba(15, 23, 42, 0.9));\r\n  border-top: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(8px);\r\n}\r\n\r\n/* Success messages */\r\n.success-message,\r\n.editor-module__message--success {\r\n  color: var(--editor-primary);\r\n  background-color: rgba(16, 185, 129, 0.1);\r\n  border-color: var(--editor-primary);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Warning messages */\r\n.warning,\r\n.editor-module__message--warning {\r\n  color: var(--editor-warning);\r\n  background-color: rgba(245, 158, 11, 0.1);\r\n  border-color: var(--editor-warning);\r\n}\r\n\r\n/* Instructions */\r\n.instructions {\r\n  background-color: rgba(59, 130, 246, 0.08);\r\n  border-left: 3px solid var(--editor-secondary);\r\n}\r\n\r\n/* Scrollbar styling - darker */\r\n::-webkit-scrollbar {\r\n  width: 8px;\r\n  height: 8px;\r\n}\r\n\r\n::-webkit-scrollbar-track {\r\n  background: var(--editor-bg-dark);\r\n}\r\n\r\n::-webkit-scrollbar-thumb {\r\n  background: rgba(16, 185, 129, 0.25);\r\n  border-radius: 4px;\r\n  box-shadow: none;\r\n}\r\n\r\n::-webkit-scrollbar-thumb:hover {\r\n  background: rgba(16, 185, 129, 0.35);\r\n  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);\r\n}\r\n\r\n/* Canvas containers */\r\n#three-js-container,\r\n.preview-canvas-container {\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Camera controls */\r\n.camera-controls {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Content sidebars */\r\n.content-sidebar,\r\n.editor-module__sidebar {\r\n  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);\r\n  border-right: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n.editor-module__sidebar--right {\r\n  border-right: none;\r\n  border-left: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md), inset 1px 0 0 rgba(16, 185, 129, 0.1);\r\n}\r\n\r\n/* Shape list items */\r\n.shape-item,\r\n.graphics-editor__shape-item,\r\n.graphics-editor__group-item {\r\n  border-left-color: rgba(16, 185, 129, 0.3);\r\n}\r\n\r\n.shape-item:hover,\r\n.graphics-editor__shape-item:hover,\r\n.graphics-editor__group-item:hover {\r\n  background-color: rgba(16, 185, 129, 0.08);\r\n  box-shadow: var(--aurora-glow);\r\n}\r\n\r\n/* Active/selected state - Aurora theme colors (teal/green glow) */\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),\r\n.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),\r\n.terrain-editor__environment-item.active,\r\n.terrain-editor__environment-item--active,\r\n.editor-module__selectable-item.active,\r\n.editor-module__selectable-item--active {\r\n  background-color: rgba(16, 185, 129, 0.12) !important;\r\n  border-color: rgba(16, 185, 129, 0.4) !important;\r\n  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;\r\n}\r\n\r\n.terrain-editor__color-option.active,\r\n.terrain-editor__color-option--active {\r\n  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;\r\n}\r\n\r\n/* Audio editor value displays */\r\n.audio-editor__value-display {\r\n  color: var(--editor-primary);\r\n  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);\r\n}\r\n\r\n/* Animations - disabled pulsing for comfort */\r\n@keyframes aurora-pulse {\r\n  0%, 100% {\r\n    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);\r\n  }\r\n  50% {\r\n    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);\r\n  }\r\n}\r\n\r\n/* Removed automatic pulsing animation for eye comfort */\r\n/* .editor-module__btn--primary:hover,\r\n.editor-module__item--active,\r\n.object-item.selected {\r\n  animation: aurora-pulse 2s ease-in-out infinite;\r\n} */\r\n\r\n/* Typography enhancements */\r\nh1, h2, h3, h4 {\r\n  color: var(--editor-text-primary);\r\n  font-weight: 600;\r\n}\r\n\r\n/* Labels */\r\nlabel,\r\n.editor-module__label {\r\n  color: var(--editor-text-secondary);\r\n  font-weight: 500;\r\n}\r\n\r\n/* Info boxes */\r\n.editor-module__info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-md);\r\n  backdrop-filter: blur(10px);\r\n}\r\n\r\n/* Scene info */\r\n.scene-info {\r\n  background: rgba(15, 23, 42, 0.9);\r\n  border: 1px solid var(--editor-border-color);\r\n  box-shadow: var(--editor-shadow-sm);\r\n}\r\n",
+        "filePath": "/global/themes/css/aurora.css"
       },
       "cyberpunk": {
         "title": "Cyber Punk",
@@ -828,40 +828,6 @@
       }
     },
     "attackSounds": {
-      "laser": {
-        "title": "Laser",
-        "audio": {
-          "waveform": "triangle",
-          "frequency": 197,
-          "duration": 0.1,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.076,
-            "sustain": 0.5,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 3.41,
-            "end": 0.23,
-            "time": 0.1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400,
-              "Q": 1
-            },
-            "distortion": 5,
-            "delay": {
-              "time": 0.27,
-              "feedback": 0.09
-            },
-            "reverb": 0,
-            "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
       "gunshot": {
         "title": "GunShot",
         "audio": {
@@ -900,6 +866,40 @@
             },
             "reverb": 0.4,
             "bitcrusher": 0.5,
+            "pan": 0
+          }
+        }
+      },
+      "laser": {
+        "title": "Laser",
+        "audio": {
+          "waveform": "triangle",
+          "frequency": 197,
+          "duration": 0.1,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.076,
+            "sustain": 0.5,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 3.41,
+            "end": 0.23,
+            "time": 0.1
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400,
+              "Q": 1
+            },
+            "distortion": 5,
+            "delay": {
+              "time": 0.27,
+              "feedback": 0.09
+            },
+            "reverb": 0,
+            "bitcrusher": 0,
             "pan": 0
           }
         }
@@ -1178,48 +1178,6 @@
           }
         }
       },
-      "placeTower": {
-        "title": "Place Tower",
-        "audio": {
-          "waveform": "sine",
-          "frequency": 20,
-          "duration": 0.2,
-          "noise": {
-            "type": "pink",
-            "amount": 0.8,
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400
-            }
-          },
-          "envelope": {
-            "attack": 0.01,
-            "decay": 0,
-            "sustain": 0.1,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 4,
-            "end": 4,
-            "time": 0.2
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 500,
-              "Q": 1
-            },
-            "distortion": 0,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.2
-            },
-            "reverb": 0.3,
-            "bitcrusher": 0.4,
-            "pan": 0
-          }
-        }
-      },
       "test": {
         "title": "test",
         "audio": {
@@ -1259,6 +1217,48 @@
             },
             "reverb": 0.15,
             "bitcrusher": 0,
+            "pan": 0
+          }
+        }
+      },
+      "placeTower": {
+        "title": "Place Tower",
+        "audio": {
+          "waveform": "sine",
+          "frequency": 20,
+          "duration": 0.2,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
+          "envelope": {
+            "attack": 0.01,
+            "decay": 0,
+            "sustain": 0.1,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 4,
+            "end": 4,
+            "time": 0.2
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 500,
+              "Q": 1
+            },
+            "distortion": 0,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.2
+            },
+            "reverb": 0.3,
+            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -1345,13 +1345,13 @@
         "title": "2h_spell_slam",
         "file": "animations/2h_spell_slam.glb"
       },
-      "2h_spell_summon": {
-        "title": "2h_spell_summon",
-        "file": "animations/2h_spell_summon.glb"
-      },
       "dance_gangnamstyle": {
         "title": "GangnamStyle",
         "file": "animations/dance_gangnamstyle.glb"
+      },
+      "2h_spell_summon": {
+        "title": "2h_spell_summon",
+        "file": "animations/2h_spell_summon.glb"
       },
       "dance_thriller": {
         "title": "Dance Thriller",
@@ -1377,13 +1377,13 @@
         "title": "hovering",
         "file": "animations/hovering.glb"
       },
-      "idle": {
-        "title": "idle",
-        "file": "animations/idle.glb"
-      },
       "mutant_run": {
         "title": "mutant_run",
         "file": "animations/mutant_run.glb"
+      },
+      "idle": {
+        "title": "idle",
+        "file": "animations/idle.glb"
       },
       "mutant_idle": {
         "title": "mutant_idle",
@@ -1393,13 +1393,13 @@
         "title": "mutant_swipe",
         "file": "animations/mutant_swipe.glb"
       },
-      "mutant_walk": {
-        "title": "mutant_walk",
-        "file": "animations/mutant_walk.glb"
-      },
       "running_with_2h": {
         "title": "running_with_2h",
         "file": "animations/running_with_2h.glb"
+      },
+      "mutant_walk": {
+        "title": "mutant_walk",
+        "file": "animations/mutant_walk.glb"
       },
       "shooting_arrow": {
         "title": "shooting_arrow",
@@ -2907,10 +2907,51 @@
                   "color": {
                     "paletteColor": "greyMColor"
                   },
+                  "roughness": 1,
+                  "metalness": 0,
+                  "name": "main",
+                  "url": "models/atom_one_grass/atom_one_grass.glb"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.375,
+                "y": 1.01,
+                "z": 0.375
+              }
+            }
+          }
+        }
+      },
+      "atom_three": {
+        "title": "Atom Three",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "metalness": 0,
                   "roughness": 1,
                   "name": "main",
-                  "url": "models/atom_one_grass/atom_one_grass.glb"
+                  "url": "models/atom_three_grass/atom_three_grass.glb"
                 }
               ],
               "position": {
@@ -2968,47 +3009,6 @@
                 "x": 0.375,
                 "z": 0.375,
                 "y": 1.01
-              }
-            }
-          }
-        }
-      },
-      "atom_three": {
-        "title": "Atom Three",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  },
-                  "metalness": 0,
-                  "roughness": 1,
-                  "name": "main",
-                  "url": "models/atom_three_grass/atom_three_grass.glb"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 0.375,
-                "y": 1.01,
-                "z": 0.375
               }
             }
           }
@@ -3496,6 +3496,57 @@
       }
     },
     "projectiles": {
+      "arrow": {
+        "damageType": "physical",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "position": {
+                "x": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "url": "models/projectile_arrow/projectile_arrow.glb",
+                  "width": 2,
+                  "height": 0.2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "color": "#FFFFFF",
+                  "metalness": "0",
+                  "roughness": "1"
+                }
+              ],
+              "scale": {
+                "y": 0.5,
+                "x": 0.5,
+                "z": 0.5
+              }
+            }
+          }
+        },
+        "speed": 1000,
+        "title": "Arrow",
+        "attackSound": "plasma",
+        "hitSound": "plasma",
+        "homing": false,
+        "homingStrength": 0
+      },
       "bolt": {
         "damageType": "physical",
         "render": {
@@ -3543,57 +3594,6 @@
         },
         "speed": 1000,
         "title": "Bolt",
-        "attackSound": "plasma",
-        "hitSound": "plasma",
-        "homing": false,
-        "homingStrength": 0
-      },
-      "arrow": {
-        "damageType": "physical",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "position": {
-                "x": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "url": "models/projectile_arrow/projectile_arrow.glb",
-                  "width": 2,
-                  "height": 0.2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 0,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "color": "#FFFFFF",
-                  "metalness": "0",
-                  "roughness": "1"
-                }
-              ],
-              "scale": {
-                "y": 0.5,
-                "x": 0.5,
-                "z": 0.5
-              }
-            }
-          }
-        },
-        "speed": 1000,
-        "title": "Arrow",
         "attackSound": "plasma",
         "hitSound": "plasma",
         "homing": false,
@@ -3729,58 +3729,6 @@
         "homing": true,
         "homingStrength": 0.5
       },
-      "huntingArrow": {
-        "damageType": "physical",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "position": {
-                "x": 0,
-                "y": 0.1
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "url": "models/projectile_arrow/projectile_arrow.glb",
-                  "width": 2,
-                  "height": 0.2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 0,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "color": "#FFFFFF",
-                  "metalness": "0",
-                  "roughness": "1"
-                }
-              ],
-              "scale": {
-                "z": 0.25,
-                "y": 0.25,
-                "x": 0.25
-              }
-            }
-          }
-        },
-        "speed": 1000,
-        "title": "Hunting Arrow",
-        "attackSound": "plasma",
-        "hitSound": "plasma",
-        "homing": true,
-        "homingStrength": 0.3
-      },
       "fireball": {
         "damageType": "fire",
         "render": {
@@ -3835,6 +3783,58 @@
         "shadows": false,
         "hitSound": "explosion",
         "attackSound": "missileLaunch"
+      },
+      "huntingArrow": {
+        "damageType": "physical",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "position": {
+                "x": 0,
+                "y": 0.1
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "url": "models/projectile_arrow/projectile_arrow.glb",
+                  "width": 2,
+                  "height": 0.2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "color": "#FFFFFF",
+                  "metalness": "0",
+                  "roughness": "1"
+                }
+              ],
+              "scale": {
+                "z": 0.25,
+                "y": 0.25,
+                "x": 0.25
+              }
+            }
+          }
+        },
+        "speed": 1000,
+        "title": "Hunting Arrow",
+        "attackSound": "plasma",
+        "hitSound": "plasma",
+        "homing": true,
+        "homingStrength": 0.3
       },
       "lightning": {
         "customRenderer": "",
@@ -4284,6 +4284,173 @@
         "placementGridHeight": 1,
         "icon": "unit_stoneGolem"
       },
+      "0_skeleton": {
+        "title": "Skeleton",
+        "size": 25,
+        "height": 50,
+        "value": -1,
+        "hp": 50,
+        "speed": 65,
+        "damage": 10,
+        "attackSpeed": 1,
+        "element": "physical",
+        "armor": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/idle.glb",
+                      "scale": {
+                        "z": 1,
+                        "y": 1,
+                        "x": 1
+                      },
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "walk": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/walk_bow.glb",
+                      "scale": {
+                        "z": 1,
+                        "y": 1,
+                        "x": 1
+                      },
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "attack": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/sword_slash.glb",
+                      "scale": {
+                        "z": 1,
+                        "y": 1,
+                        "x": 1
+                      },
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "death": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/death_fallback.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "celebrate": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_gangnamstyle.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_thriller.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "main": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "url": "models/skeleton/skeleton.glb",
+                  "width": 2,
+                  "height": 0.2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "color": "#FFFFFF",
+                  "metalness": "0",
+                  "roughness": "1",
+                  "scale": {
+                    "z": 1,
+                    "y": 1,
+                    "x": 1
+                  }
+                }
+              ]
+            }
+          },
+          "equipment": [
+            {
+              "slot": "mainHand",
+              "item": "knightSword",
+              "attachmentData": {
+                "bone": "RightHand",
+                "offset": {
+                  "x": -8,
+                  "y": -5,
+                  "z": 3
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            }
+          ]
+        },
+        "buyable": false,
+        "squadWidth": 1,
+        "squadHeight": 1,
+        "placementGridWidth": 1,
+        "placementGridHeight": 1
+      },
       "1_di_scout": {
         "title": "Rogue",
         "size": 25,
@@ -4464,17 +4631,17 @@
         "visionRange": 800,
         "supplyCost": 2
       },
-      "0_skeleton": {
-        "title": "Skeleton",
+      "1_is_acolyte": {
+        "title": "Acolyte",
         "size": 25,
         "height": 50,
-        "value": -1,
-        "hp": 50,
-        "speed": 65,
+        "value": 35,
+        "hp": 150,
+        "speed": 45,
         "damage": 10,
-        "attackSpeed": 1,
-        "element": "physical",
-        "armor": 5,
+        "attackSpeed": 0.9,
+        "element": "divine",
+        "armor": 6,
         "render": {
           "animations": {
             "idle": [
@@ -4483,11 +4650,6 @@
                   "shapes": [
                     {
                       "url": "animations/idle.glb",
-                      "scale": {
-                        "z": 1,
-                        "y": 1,
-                        "x": 1
-                      },
                       "id": 0
                     }
                   ]
@@ -4499,12 +4661,7 @@
                 "main": {
                   "shapes": [
                     {
-                      "url": "animations/walk_bow.glb",
-                      "scale": {
-                        "z": 1,
-                        "y": 1,
-                        "x": 1
-                      },
+                      "url": "animations/walk_with_shield.glb",
                       "id": 0
                     }
                   ]
@@ -4517,11 +4674,6 @@
                   "shapes": [
                     {
                       "url": "animations/sword_slash.glb",
-                      "scale": {
-                        "z": 1,
-                        "y": 1,
-                        "x": 1
-                      },
                       "id": 0
                     }
                   ]
@@ -4583,7 +4735,7 @@
               "shapes": [
                 {
                   "type": "gltf",
-                  "url": "models/skeleton/skeleton.glb",
+                  "url": "models/acolyte/acolyte.glb",
                   "width": 2,
                   "height": 0.2,
                   "depth": 1,
@@ -4595,29 +4747,24 @@
                   "rotationZ": 0,
                   "color": "#FFFFFF",
                   "metalness": "0",
-                  "roughness": "1",
-                  "scale": {
-                    "z": 1,
-                    "y": 1,
-                    "x": 1
-                  }
+                  "roughness": "1"
                 }
               ]
             }
           },
           "equipment": [
             {
-              "slot": "mainHand",
-              "item": "knightSword",
+              "slot": "offHand",
+              "item": "knightShield",
               "attachmentData": {
-                "bone": "RightHand",
+                "bone": "LeftHand",
                 "offset": {
-                  "x": -8,
-                  "y": -5,
-                  "z": 3
+                  "x": 5,
+                  "y": 0,
+                  "z": -2
                 },
                 "rotation": {
-                  "x": 0,
+                  "x": 15,
                   "y": 0,
                   "z": 0
                 }
@@ -4625,11 +4772,22 @@
             }
           ]
         },
-        "buyable": false,
+        "buyable": true,
+        "specUnits": [
+          "2_is_paladin",
+          "2_is_crusader",
+          "2_is_oathBreaker"
+        ],
         "squadWidth": 1,
         "squadHeight": 1,
         "placementGridWidth": 1,
-        "placementGridHeight": 1
+        "placementGridHeight": 1,
+        "abilities": [
+          "HealAbility"
+        ],
+        "icon": "unit_acolyte",
+        "visionRange": 500,
+        "supplyCost": 2
       },
       "1_d_archer": {
         "title": "Archer",
@@ -4823,164 +4981,6 @@
         "abilities": [],
         "icon": "unit_archer",
         "visionRange": 650,
-        "supplyCost": 2
-      },
-      "1_is_acolyte": {
-        "title": "Acolyte",
-        "size": 25,
-        "height": 50,
-        "value": 35,
-        "hp": 150,
-        "speed": 45,
-        "damage": 10,
-        "attackSpeed": 0.9,
-        "element": "divine",
-        "armor": 6,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/idle.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "walk": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/walk_with_shield.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "attack": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/sword_slash.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "death": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/death_fallback.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "celebrate": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_gangnamstyle.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              },
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_thriller.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "main": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              },
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "url": "models/acolyte/acolyte.glb",
-                  "width": 2,
-                  "height": 0.2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 0,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "color": "#FFFFFF",
-                  "metalness": "0",
-                  "roughness": "1"
-                }
-              ]
-            }
-          },
-          "equipment": [
-            {
-              "slot": "offHand",
-              "item": "knightShield",
-              "attachmentData": {
-                "bone": "LeftHand",
-                "offset": {
-                  "x": 5,
-                  "y": 0,
-                  "z": -2
-                },
-                "rotation": {
-                  "x": 15,
-                  "y": 0,
-                  "z": 0
-                }
-              }
-            }
-          ]
-        },
-        "buyable": true,
-        "specUnits": [
-          "2_is_paladin",
-          "2_is_crusader",
-          "2_is_oathBreaker"
-        ],
-        "squadWidth": 1,
-        "squadHeight": 1,
-        "placementGridWidth": 1,
-        "placementGridHeight": 1,
-        "abilities": [
-          "HealAbility"
-        ],
-        "icon": "unit_acolyte",
-        "visionRange": 500,
         "supplyCost": 2
       },
       "1_i_apprentice": {
@@ -5500,210 +5500,6 @@
         "visionRange": 500,
         "supplyCost": 2
       },
-      "2_di_shadowAssassin": {
-        "title": "Shadow Assassin (2) [DI]",
-        "size": 25,
-        "height": 50,
-        "value": 320,
-        "hp": 500,
-        "speed": 80,
-        "damage": 28,
-        "attackSpeed": 2,
-        "element": "physical",
-        "armor": 4,
-        "fireResistance": 0.1,
-        "coldResistance": 0.2,
-        "lightningResistance": 0.15,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "type": "gltf",
-                      "url": "animations/idle.glb",
-                      "width": 2,
-                      "height": 0.2,
-                      "depth": 1,
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "color": "#FFFFFF",
-                      "metalness": "0",
-                      "roughness": "1",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "walk": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "type": "gltf",
-                      "url": "animations/walk_bow.glb",
-                      "width": 2,
-                      "height": 0.2,
-                      "depth": 1,
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "color": "#FFFFFF",
-                      "metalness": "0",
-                      "roughness": "1",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "attack": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "type": "gltf",
-                      "url": "animations/sword_slash.glb",
-                      "width": 2,
-                      "height": 0.2,
-                      "depth": 1,
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "color": "#FFFFFF",
-                      "metalness": "0",
-                      "roughness": "1",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "death": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/death_fallback.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "celebrate": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_gangnamstyle.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              },
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_thriller.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "main": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "url": "models/assassin/assassin.glb",
-                  "width": 2,
-                  "height": 0.2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 0,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "color": "#FFFFFF",
-                  "metalness": "0",
-                  "roughness": "1"
-                }
-              ]
-            }
-          },
-          "equipment": [
-            {
-              "slot": "mainHand",
-              "item": "knightSword",
-              "attachmentData": {
-                "bone": "RightHand",
-                "offset": {
-                  "x": 0,
-                  "y": 0,
-                  "z": 0
-                },
-                "rotation": {
-                  "x": 0,
-                  "y": 20,
-                  "z": 0
-                }
-              }
-            },
-            {
-              "slot": "offHand",
-              "item": "knightSword",
-              "attachmentData": {
-                "bone": "LeftHand",
-                "offset": {
-                  "x": 0,
-                  "y": 0,
-                  "z": 0
-                },
-                "rotation": {
-                  "x": 0,
-                  "y": -20,
-                  "z": -910
-                }
-              }
-            }
-          ]
-        },
-        "buyable": false,
-        "squadWidth": 1,
-        "squadHeight": 1,
-        "placementGridWidth": 1,
-        "placementGridHeight": 1,
-        "abilities": [
-          "ShadowStrikeAbility"
-        ]
-      },
       "2_di_goblinBomber": {
         "title": "Goblin Bomber (2) [DI]",
         "size": 25,
@@ -6045,6 +5841,210 @@
         "placementGridHeight": 1,
         "abilities": [
           "MirrorImagesAbility"
+        ]
+      },
+      "2_di_shadowAssassin": {
+        "title": "Shadow Assassin (2) [DI]",
+        "size": 25,
+        "height": 50,
+        "value": 320,
+        "hp": 500,
+        "speed": 80,
+        "damage": 28,
+        "attackSpeed": 2,
+        "element": "physical",
+        "armor": 4,
+        "fireResistance": 0.1,
+        "coldResistance": 0.2,
+        "lightningResistance": 0.15,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "type": "gltf",
+                      "url": "animations/idle.glb",
+                      "width": 2,
+                      "height": 0.2,
+                      "depth": 1,
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "color": "#FFFFFF",
+                      "metalness": "0",
+                      "roughness": "1",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "walk": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "type": "gltf",
+                      "url": "animations/walk_bow.glb",
+                      "width": 2,
+                      "height": 0.2,
+                      "depth": 1,
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "color": "#FFFFFF",
+                      "metalness": "0",
+                      "roughness": "1",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "attack": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "type": "gltf",
+                      "url": "animations/sword_slash.glb",
+                      "width": 2,
+                      "height": 0.2,
+                      "depth": 1,
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "color": "#FFFFFF",
+                      "metalness": "0",
+                      "roughness": "1",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "death": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/death_fallback.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "celebrate": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_gangnamstyle.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_thriller.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "main": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "url": "models/assassin/assassin.glb",
+                  "width": 2,
+                  "height": 0.2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "color": "#FFFFFF",
+                  "metalness": "0",
+                  "roughness": "1"
+                }
+              ]
+            }
+          },
+          "equipment": [
+            {
+              "slot": "mainHand",
+              "item": "knightSword",
+              "attachmentData": {
+                "bone": "RightHand",
+                "offset": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 20,
+                  "z": 0
+                }
+              }
+            },
+            {
+              "slot": "offHand",
+              "item": "knightSword",
+              "attachmentData": {
+                "bone": "LeftHand",
+                "offset": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": -20,
+                  "z": -910
+                }
+              }
+            }
+          ]
+        },
+        "buyable": false,
+        "squadWidth": 1,
+        "squadHeight": 1,
+        "placementGridWidth": 1,
+        "placementGridHeight": 1,
+        "abilities": [
+          "ShadowStrikeAbility"
         ]
       },
       "2_d_beastMaster": {
@@ -6411,176 +6411,6 @@
         "placementGridWidth": 1,
         "placementGridHeight": 1,
         "abilities": []
-      },
-      "2_is_oathBreaker": {
-        "title": "Oathbreaker (2) [IS]",
-        "size": 25,
-        "height": 50,
-        "value": 110,
-        "hp": 200,
-        "speed": 35,
-        "damage": 14,
-        "attackSpeed": 1,
-        "element": "poison",
-        "armor": 6,
-        "fireResistance": 0.2,
-        "coldResistance": 0.2,
-        "lightningResistance": 0.2,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/idle.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "walk": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/walk_with_shield.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "attack": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/sword_slash.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "death": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/death_fallback.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ],
-            "celebrate": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_gangnamstyle.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              },
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "url": "animations/dance_thriller.glb",
-                      "id": 0
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "main": {
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              },
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "url": "models/oathbreaker/oathbreaker.glb",
-                  "width": 2,
-                  "height": 0.2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 0,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "color": "#FFFFFF",
-                  "metalness": "0",
-                  "roughness": "1"
-                }
-              ]
-            }
-          },
-          "equipment": [
-            {
-              "slot": "mainHand",
-              "item": "knightSword",
-              "attachmentData": {
-                "bone": "RightHand",
-                "offset": {
-                  "x": 0,
-                  "y": 15,
-                  "z": 0
-                },
-                "rotation": {
-                  "x": 0,
-                  "y": 8,
-                  "z": 0
-                }
-              }
-            },
-            {
-              "slot": "offHand",
-              "item": "knightShield",
-              "attachmentData": {
-                "bone": "LeftHand",
-                "offset": {
-                  "x": 0,
-                  "y": 10,
-                  "z": -10
-                },
-                "rotation": {
-                  "x": 15,
-                  "y": 0,
-                  "z": 0
-                }
-              }
-            }
-          ]
-        },
-        "buyable": false,
-        "squadWidth": 1,
-        "squadHeight": 1,
-        "placementGridWidth": 1,
-        "placementGridHeight": 1,
-        "abilities": [
-          "CurseAbility"
-        ]
       },
       "2_d_trapper": {
         "title": "Trapper (2) [D]",
@@ -7095,6 +6925,176 @@
         "placementGridHeight": 1,
         "abilities": [
           "SmiteAbility"
+        ]
+      },
+      "2_is_oathBreaker": {
+        "title": "Oathbreaker (2) [IS]",
+        "size": 25,
+        "height": 50,
+        "value": 110,
+        "hp": 200,
+        "speed": 35,
+        "damage": 14,
+        "attackSpeed": 1,
+        "element": "poison",
+        "armor": 6,
+        "fireResistance": 0.2,
+        "coldResistance": 0.2,
+        "lightningResistance": 0.2,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/idle.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "walk": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/walk_with_shield.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "attack": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/sword_slash.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "death": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/death_fallback.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "celebrate": [
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_gangnamstyle.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "main": {
+                  "shapes": [
+                    {
+                      "url": "animations/dance_thriller.glb",
+                      "id": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "main": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "url": "models/oathbreaker/oathbreaker.glb",
+                  "width": 2,
+                  "height": 0.2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "color": "#FFFFFF",
+                  "metalness": "0",
+                  "roughness": "1"
+                }
+              ]
+            }
+          },
+          "equipment": [
+            {
+              "slot": "mainHand",
+              "item": "knightSword",
+              "attachmentData": {
+                "bone": "RightHand",
+                "offset": {
+                  "x": 0,
+                  "y": 15,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 8,
+                  "z": 0
+                }
+              }
+            },
+            {
+              "slot": "offHand",
+              "item": "knightShield",
+              "attachmentData": {
+                "bone": "LeftHand",
+                "offset": {
+                  "x": 0,
+                  "y": 10,
+                  "z": -10
+                },
+                "rotation": {
+                  "x": 15,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            }
+          ]
+        },
+        "buyable": false,
+        "squadWidth": 1,
+        "squadHeight": 1,
+        "placementGridWidth": 1,
+        "placementGridHeight": 1,
+        "abilities": [
+          "CurseAbility"
         ]
       },
       "2_i_elementalist": {
@@ -9588,7 +9588,7 @@
       },
       "grass": {
         "title": "Grass",
-        "image": "data:image/png;base64,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"
+        "image": "data:image/png;base64,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"
       },
       "lava": {
         "title": "Lava",
@@ -9598,13 +9598,13 @@
         "title": "Path",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA+0lEQVRoQ+2UsRWDMAxEcZ8FskAmyIAMmAmyAAukJwlFCj+MfcLikCJqSzrdP5HmxzgPhr50H5MhuVWpyRqA70aeIJgE4AlCM4DndBlu11f1pEoP9tav9fVwCc0AxM5H4eJAKSxqADQSb53lGgQ1ANbN0tKfQxABiHTL8UAAwmi50aVKCED/8dExAJAzQAPg7Xcm3UcFgFQMOYyU8SoAKJtkQ0shOFs4NgFIxEpqzgCMpcHtBbAMRecGANSxz3vkymtvYQC1hoJ9fiWavffo0qyFAWiK+cfeLgFYuiSXAJBLYsPqCoC9DGL8EW9b/OgK4IilvM0IAGSiOYA3/xycGR8hN+EAAAAASUVORK5CYII="
       },
-      "rock": {
-        "title": "Rock",
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA40lEQVRoQ+3VPQ6DMAwFYHItBqQOzIw9I2PnDpUYeq2iTkgoyAnBvzzmyHn4syEN0/PXOXqW15wcxSWjJm8A/zeKhOASIBKCW4AoCK4ByA+soQNHn00ACCLlELIA/WPsvp/35dG46l4elLHgHgEbwNjsXOkmAExwu1YTQPv1qAAA5RkAAACUO6B8vdgG4IedlxYDUB40s9e7A4i2SSYAojW1Zt2KAe7cpJqG1p4tBqgtbPU81yCdrcsGcDaQVTiuXGwAXIGj1VUBwHZsY0QCWGhWaYbSc5JbRGUiASTD3vGuPcAKi06NGSIOm+IAAAAASUVORK5CYII="
-      },
       "scales": {
         "title": "Scales",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAQ0lEQVQYV2OM6vL/z4ADXD1wi4GRoAJ9L83/2g5qGGaAdIPEwSaAOOgApgnFCpguZMXEK4DpRjeFEeRIkJHIDkV2EwCeFirmzbH2AwAAAABJRU5ErkJggg=="
+      },
+      "rock": {
+        "title": "Rock",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA40lEQVRoQ+3VPQ6DMAwFYHItBqQOzIw9I2PnDpUYeq2iTkgoyAnBvzzmyHn4syEN0/PXOXqW15wcxSWjJm8A/zeKhOASIBKCW4AoCK4ByA+soQNHn00ACCLlELIA/WPsvp/35dG46l4elLHgHgEbwNjsXOkmAExwu1YTQPv1qAAA5RkAAACUO6B8vdgG4IedlxYDUB40s9e7A4i2SSYAojW1Zt2KAe7cpJqG1p4tBqgtbPU81yCdrcsGcDaQVTiuXGwAXIGj1VUBwHZsY0QCWGhWaYbSc5JbRGUiASTD3vGuPcAKi06NGSIOm+IAAAAASUVORK5CYII="
       },
       "start": {
         "title": "Start",
@@ -9616,13 +9616,13 @@
       }
     },
     "abilities": {
-      "BlizzardAbility": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js",
-        "fileName": "BlizzardAbility"
-      },
       "ArenaPresenceAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js",
         "fileName": "ArenaPresenceAbility"
+      },
+      "BlizzardAbility": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js",
+        "fileName": "BlizzardAbility"
       },
       "BloodlustAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js",
@@ -9648,13 +9648,13 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js",
         "fileName": "CorruptingAuraAbility"
       },
-      "DisruptionBombAbility": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js",
-        "fileName": "DisruptionBombAbility"
-      },
       "CurseAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js",
         "fileName": "CurseAbility"
+      },
+      "DisruptionBombAbility": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js",
+        "fileName": "DisruptionBombAbility"
       },
       "DrainLifeAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js",
@@ -9680,25 +9680,25 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js",
         "fileName": "InfernoAbility"
       },
-      "MindControlAbility": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js",
-        "fileName": "MindControlAbility"
-      },
       "LightningBoltAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js",
         "fileName": "LightningBoltAbility"
+      },
+      "MindControlAbility": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js",
+        "fileName": "MindControlAbility"
       },
       "MineGoldAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js",
         "fileName": "MineGoldAbility"
       },
-      "MirrorImagesAbility": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js",
-        "fileName": "MirrorImagesAbility"
-      },
       "MultiShotAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js",
         "fileName": "MultiShotAbility"
+      },
+      "MirrorImagesAbility": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js",
+        "fileName": "MirrorImagesAbility"
       },
       "PhalanxFormationAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js",
@@ -9728,21 +9728,17 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js",
         "fileName": "SummonWolfAbility"
       },
-      "TrackingMark": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js",
-        "fileName": "TrackingMark"
-      },
       "Tornado": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js",
         "fileName": "Tornado"
       },
+      "TrackingMark": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js",
+        "fileName": "TrackingMark"
+      },
       "WindShieldAbility": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js",
         "fileName": "WindShieldAbility"
-      },
-      "FireBallAbility": {
-        "fileName": "FireBallAbility",
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js"
       },
       "BaseAbility": {
         "fileName": "BaseAbility",
@@ -9756,6 +9752,10 @@
         "fileName": "ChainLightningAbility",
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js"
       },
+      "FireBallAbility": {
+        "fileName": "FireBallAbility",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js"
+      },
       "FireStormAbility": {
         "fileName": "FireStormAbility",
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js"
@@ -9764,13 +9764,13 @@
         "fileName": "HealAbility",
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js"
       },
-      "MeteorStrikeAbility": {
-        "fileName": "MeteorStrikeAbility",
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
-      },
       "MassHealAbility": {
         "fileName": "MassHealAbility",
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js"
+      },
+      "MeteorStrikeAbility": {
+        "fileName": "MeteorStrikeAbility",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js"
       },
       "RaiseDeadAbility": {
         "fileName": "RaiseDeadAbility",
@@ -9795,25 +9795,25 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ComponentManager.js",
         "fileName": "ComponentManager"
       },
+      "GameManager": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/GameManager.js",
+        "fileName": "GameManager"
+      },
       "GameModeManager": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/GameModeManager.js",
         "fileName": "GameModeManager"
-      },
-      "KeyboardManager": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/KeyboardManager.js",
-        "fileName": "KeyboardManager"
       },
       "InputManager": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/InputManager.js",
         "fileName": "InputManager"
       },
+      "KeyboardManager": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/KeyboardManager.js",
+        "fileName": "KeyboardManager"
+      },
       "LoadingManager": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/LoadingManager.js",
         "fileName": "LoadingManager"
-      },
-      "GameManager": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/GameManager.js",
-        "fileName": "GameManager"
       },
       "MultiplayerNetworkManager": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/MultiplayerNetworkManager.js",
@@ -9849,25 +9849,25 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AISystem.js",
         "fileName": "AISystem"
       },
-      "AnimationSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js",
-        "fileName": "AnimationSystem"
-      },
       "ArmyDisplaySystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js",
         "fileName": "ArmyDisplaySystem"
+      },
+      "AnimationSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js",
+        "fileName": "AnimationSystem"
       },
       "CameraControlSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CameraControlSystem.js",
         "fileName": "CameraControlSystem"
       },
-      "CommandQueueSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CommandQueueSystem.js",
-        "fileName": "CommandQueueSystem"
-      },
       "CombatAISystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CombatAISystem.js",
         "fileName": "CombatAISystem"
+      },
+      "CommandQueueSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CommandQueueSystem.js",
+        "fileName": "CommandQueueSystem"
       },
       "DamageNumberSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DamageNumberSystem.js",
@@ -9881,13 +9881,13 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/DeathSystem.js",
         "fileName": "DeathSystem"
       },
-      "EquipmentSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EquipmentSystem.js",
-        "fileName": "EquipmentSystem"
-      },
       "EffectsSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EffectsSystem.js",
         "fileName": "EffectsSystem"
+      },
+      "EquipmentSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EquipmentSystem.js",
+        "fileName": "EquipmentSystem"
       },
       "FogOfWarSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/FogOfWarSystem.js",
@@ -9921,13 +9921,13 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerPlacementSystem.js",
         "fileName": "MultiplayerPlacementSystem"
       },
-      "MultiplayerUISystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
-        "fileName": "MultiplayerUISystem"
-      },
       "PathfindingSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PathfindingSystem.js",
         "fileName": "PathfindingSystem"
+      },
+      "MultiplayerUISystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
+        "fileName": "MultiplayerUISystem"
       },
       "PostProcessingSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
@@ -9945,13 +9945,13 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SchedulingSystem.js",
         "fileName": "SchedulingSystem"
       },
-      "SelectedUnitSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SelectedUnitSystem.js",
-        "fileName": "SelectedUnitSystem"
-      },
       "ServerBattlePhaseSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerBattlePhaseSystem.js",
         "fileName": "ServerBattlePhaseSystem"
+      },
+      "SelectedUnitSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/SelectedUnitSystem.js",
+        "fileName": "SelectedUnitSystem"
       },
       "ServerPlacementSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ServerPlacementSystem.js",
@@ -10019,6 +10019,24 @@
         "theme": "codeMirrorTheme",
         "fileName": "codeMirror"
       },
+      "editor": {
+        "title": "Editor Config",
+        "editorCategories": "",
+        "theme": "claude2",
+        "editorModules": [
+          "terrainModule",
+          "sceneModule",
+          "graphicsModule",
+          "scriptModule",
+          "aiPromptModule",
+          "audioModule",
+          "exportScriptModule",
+          "textureEditor",
+          "compilerModule"
+        ],
+        "path": "/",
+        "fileName": "editor"
+      },
       "game": {
         "gridSize": 48,
         "imageSize": 128,
@@ -10075,23 +10093,12 @@
         "appLoaderLibrary": "GameLoader",
         "initialScene": "client"
       },
-      "editor": {
-        "title": "Editor Config",
-        "editorCategories": "",
-        "theme": "claude2",
-        "editorModules": [
-          "terrainModule",
-          "sceneModule",
-          "graphicsModule",
-          "scriptModule",
-          "aiPromptModule",
-          "audioModule",
-          "exportScriptModule",
-          "textureEditor",
-          "compilerModule"
-        ],
-        "path": "/",
-        "fileName": "editor"
+      "multiplayer": {
+        "title": "Multiplayer",
+        "serverUrl": "http://localhost:3000",
+        "maxReconnectAttempts": 5,
+        "reconnectDelay": 3000,
+        "enabled": true
       },
       "server": {
         "title": "Server Game",
@@ -10117,13 +10124,6 @@
           "DesyncDebugger"
         ]
       },
-      "multiplayer": {
-        "title": "Multiplayer",
-        "serverUrl": "http://localhost:3000",
-        "maxReconnectAttempts": 5,
-        "reconnectDelay": 3000,
-        "enabled": true
-      },
       "state": {
         "level": "level1",
         "mousePosition": "{ x: 0, y: 0, isoX: 0, isoY: 0, gridX: 0, gridY: 0 }",
@@ -10146,11 +10146,11 @@
       }
     },
     "inputDataTypes": {
-      "string": {
-        "title": "String"
-      },
       "json": {
         "title": "JSON"
+      },
+      "string": {
+        "title": "String"
       }
     },
     "inputElementTypes": {
@@ -24894,24 +24894,6 @@
         "buildable": false,
         "walkable": false
       },
-      "water": {
-        "title": "Water",
-        "type": "water",
-        "texture": "water",
-        "color": "#0288d1",
-        "image": [
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAB3DPyFhLWYbAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAqaOi/9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgAM+S8hyaxkaAAAAABJRU5ErkJggg==",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAqaOi/+pEUz/KvSxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANMJUBkDDfPEAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFPRvwp9Rpr5AGQ4KPxoYgHMcJpYgGw4yAIAIvU/Ia+PZCwAAAAASUVORK5CYII=",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
-        ],
-        "buildable": false,
-        "walkable": false
-      },
       "rock": {
         "title": "Rock",
         "type": "rock",
@@ -24929,6 +24911,24 @@
         ],
         "buildable": true,
         "walkable": true
+      },
+      "water": {
+        "title": "Water",
+        "type": "water",
+        "texture": "water",
+        "color": "#0288d1",
+        "image": [
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAB3DPyFhLWYbAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAqaOi/9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgAM+S8hyaxkaAAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAqaOi/+pEUz/KvSxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANMJUBkDDfPEAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFPRvwp9Rpr5AGQ4KPxoYgHMcJpYgGw4yAIAIvU/Ia+PZCwAAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
+        ],
+        "buildable": false,
+        "walkable": false
       }
     }
   },
@@ -25221,7 +25221,7 @@
       "id": "terrainTypes",
       "name": "TerrainTypes",
       "singular": "terrainType",
-      "category": "Uncategorized"
+      "category": "Terrain"
     }
   ]
 }

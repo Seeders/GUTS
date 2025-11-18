@@ -195,41 +195,40 @@ class PathfindingSystem extends engine.BaseSystem {
         // Create a copy to read from while we modify
         const originalNavMesh = new Uint8Array(this.navMesh);
         
-        // for (let z = 0; z < this.navGridHeight; z++) {
-        //     for (let x = 0; x < this.navGridWidth; x++) {
-        //         const idx = z * this.navGridWidth + x;
-        //         const currentTerrain = originalNavMesh[idx];
+        for (let z = 0; z < this.navGridHeight; z++) {
+            for (let x = 0; x < this.navGridWidth; x++) {
+                const idx = z * this.navGridWidth + x;
+                const currentTerrain = originalNavMesh[idx];
                 
-        //         // Check if this cell is walkable
-        //         if (this.isTerrainWalkable(currentTerrain)) {
-        //             // Check all 8 neighbors
-        //             const neighbors = [
-        //                 {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
-        //                 {dx: 0, dz: 1}, {dx: 0, dz: -1},
-        //                 {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
-        //                 {dx: 1, dz: -1}, {dx: -1, dz: -1}
-        //             ];
+                // Check if this cell is walkable
+                if (this.isTerrainWalkable(currentTerrain)) {
+                    // Check all 8 neighbors
+                    const neighbors = [
+                        {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
+                        {dx: 0, dz: 1}, {dx: 0, dz: -1},
+                        {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
+                        {dx: 1, dz: -1}, {dx: -1, dz: -1}
+                    ];
                     
-        //             for (const {dx, dz} of neighbors) {
-        //                 const nx = x + dx;
-        //                 const nz = z + dz;
+                    for (const {dx, dz} of neighbors) {
+                        const nx = x + dx;
+                        const nz = z + dz;
                         
-        //                 if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
-        //                     const neighborIdx = nz * this.navGridWidth + nx;
-        //                     const neighborTerrain = originalNavMesh[neighborIdx];
+                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                            const neighborIdx = nz * this.navGridWidth + nx;
+                            const neighborTerrain = originalNavMesh[neighborIdx];
                             
-        //                     // If neighbor is impassable or we can't walk to it
-        //                     if (!this.isTerrainWalkable(neighborTerrain) || 
-        //                         !this.canWalkBetweenTerrains(currentTerrain, neighborTerrain)) {
-        //                         // Mark this cell as impassable (use 255 as a special marker)
-        //                         this.navMesh[idx] = 255;
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+                            // If neighbor is impassable or we can't walk to it
+                            if (currentTerrain != neighborTerrain) {
+                                // Mark this cell as impassable (use 255 as a special marker)
+                                this.navMesh[idx] = 255;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
     }
