@@ -1522,7 +1522,15 @@ class TerrainMapEditor {
     }
 
     showTerrainEditForm(index) {
-        const terrain = this.tileMap.terrainTypes[index];
+        const terrainTypeId = this.tileMap.terrainTypes[index];
+        const collections = this.gameEditor.getCollections();
+        const terrain = collections.terrainTypes?.[terrainTypeId];
+
+        if (!terrain) {
+            alert('Terrain type not found in collections');
+            return;
+        }
+
         this.currentTerrainId = index; // Set current terrain ID for later use
         const form = document.getElementById(this.modalId);
         form.classList.add('show');
@@ -1536,8 +1544,8 @@ class TerrainMapEditor {
         const terrainTextureEl = document.getElementById('terrainTexture');
         terrainTextureEl.innerHTML = ''; // Clear existing options
 
-        for(let textureName in this.gameEditor.getCollections().textures){
-            const texture = this.gameEditor.getCollections().textures[textureName];
+        for(let textureName in collections.textures){
+            const texture = collections.textures[textureName];
             const option = document.createElement('option');
             option.value = textureName;
             option.textContent = texture.title;
@@ -1568,31 +1576,57 @@ class TerrainMapEditor {
         const newImage = JSON.parse(document.getElementById('terrainImage').value);
         const newBuildable = document.getElementById('terrainBuildable').checked;
         const newWalkable = document.getElementById('terrainWalkable').checked;
-    
+
         if (!newType) {
             alert('Terrain type cannot be empty');
             return;
         }
-    
+
+        // Get or create collections.terrainTypes
+        const collections = this.gameEditor.getCollections();
+        if (!collections.terrainTypes) {
+            collections.terrainTypes = {};
+        }
+
         if (this.currentTerrainId !== '') {
             // Editing existing terrain (using index as identifier)
             const index = this.currentTerrainId;
+            const oldTypeId = this.tileMap.terrainTypes[index];
+
             if (index >= 0 && index < this.tileMap.terrainTypes.length) {
-                if (this.tileMap.terrainTypes.some((t, i) => t.type === newType && i !== index)) {
+                // Check if changing to a different type name that already exists
+                if (newType !== oldTypeId && this.tileMap.terrainTypes.includes(newType)) {
                     alert('A terrain type with this name already exists');
                     return;
                 }
-                this.tileMap.terrainTypes[index] = { type: newType, texture: newTexture, color: newColor, image: newImage, buildable: newBuildable, walkable: newWalkable };
+
+                // If type name changed, update the ID in the array
+                this.tileMap.terrainTypes[index] = newType;
+
+                // Delete old entry if name changed
+                if (newType !== oldTypeId) {
+                    delete collections.terrainTypes[oldTypeId];
+                }
             }
         } else {
             // Adding new terrain
-            if (this.tileMap.terrainTypes.some(t => t.type === newType)) {
+            if (this.tileMap.terrainTypes.includes(newType)) {
                 alert('A terrain type with this name already exists');
                 return;
             }
-            this.tileMap.terrainTypes.push({ type: newType, texture: newTexture, color: newColor, image: newImage, buildable: newBuildable, walkable: newWalkable });
+            this.tileMap.terrainTypes.push(newType);
         }
-    
+
+        // Save the full terrain type definition to collections
+        collections.terrainTypes[newType] = {
+            type: newType,
+            texture: newTexture,
+            color: newColor,
+            image: newImage,
+            buildable: newBuildable,
+            walkable: newWalkable
+        };
+
         this.updateTerrainStyles();
         this.setupTerrainTypesUI();
         this.hideTerrainForm();
@@ -1605,15 +1639,21 @@ class TerrainMapEditor {
             alert('Cannot delete the last terrain type');
             return;
         }
-    
-        const terrainToDelete = this.tileMap.terrainTypes[indexToDelete];
-        if (!terrainToDelete) return;
-    
-        if (!confirm(`Are you sure you want to delete the "${terrainToDelete.type}" terrain type? All instances will be converted to the default terrain.`)) {
+
+        const terrainTypeId = this.tileMap.terrainTypes[indexToDelete];
+        if (!terrainTypeId) return;
+
+        if (!confirm(`Are you sure you want to delete the "${terrainTypeId}" terrain type? All instances will be converted to the default terrain.`)) {
             return;
         }
-    
-        const defaultTerrainIndex = this.tileMap.terrainTypes.findIndex(t => t.type === 'grass') || 0;
+
+        const defaultTerrainIndex = this.tileMap.terrainTypes.indexOf('grass') >= 0 ? this.tileMap.terrainTypes.indexOf('grass') : 0;
+
+        // Delete from collections
+        const collections = this.gameEditor.getCollections();
+        if (collections.terrainTypes && collections.terrainTypes[terrainTypeId]) {
+            delete collections.terrainTypes[terrainTypeId];
+        }
     
         // Remove from terrainTypes array
         this.tileMap.terrainTypes.splice(indexToDelete, 1);
