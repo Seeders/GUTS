@@ -400,9 +400,9 @@ class TextureEditor {
         }
     }
 
-    updateUIFromSettings(textureData) {
-        // Expect object with imagePath property
-        if (!textureData || !textureData.imagePath) {
+    updateUIFromSettings(imagePath) {
+        // Expect imagePath string (file path relative to resources)
+        if (!imagePath) {
             document.getElementById('noTextureMessage').style.display = 'block';
             this.canvas.style.display = 'none';
             return;
@@ -410,7 +410,7 @@ class TextureEditor {
 
         // File path - construct full path
         const projectName = this.gameEditor.getCurrentProject();
-        const imageSrc = `/projects/${projectName}/resources/${textureData.imagePath}`;
+        const imageSrc = `/projects/${projectName}/resources/${imagePath}`;
 
         // Load image onto canvas
         const img = new Image();
