@@ -464,6 +464,78 @@ app.post('/api/save-texture', async (req, res) => {
     }
 });
 
+// Migrate textures from base64 to file paths
+app.post('/api/migrate-textures', async (req, res) => {
+    const { projectName } = req.body;
+
+    if (!projectName) {
+        return res.status(400).json({ error: 'Missing project name' });
+    }
+
+    try {
+        // Load the project config
+        const configFolder = path.join(PROJS_DIR, projectName, 'config');
+        const fileName = projectName.toUpperCase().replace(/ /g, '_');
+        const configPath = path.join(configFolder, `${fileName}.json`);
+
+        if (!fsSync.existsSync(configPath)) {
+            return res.status(404).json({ error: 'Project config not found' });
+        }
+
+        const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
+
+        if (!config.textures) {
+            return res.status(400).json({ error: 'No textures collection found' });
+        }
+
+        // Create textures directory
+        const texturesFolder = path.join(PROJS_DIR, projectName, 'resources', 'textures');
+        if (!fsSync.existsSync(texturesFolder)) {
+            await fs.mkdir(texturesFolder, { recursive: true });
+        }
+
+        const migrated = [];
+        const errors = [];
+
+        // Process each texture
+        for (const [textureId, textureData] of Object.entries(config.textures)) {
+            if (textureData.image && textureData.image.startsWith('data:image/')) {
+                try {
+                    // Remove data URL prefix
+                    const base64Data = textureData.image.replace(/^data:image\/\w+;base64,/, '');
+                    const buffer = Buffer.from(base64Data, 'base64');
+
+                    // Save as PNG file
+                    const fileName = `${textureId}.png`;
+                    const filePath = path.join(texturesFolder, fileName);
+                    await fs.writeFile(filePath, buffer);
+
+                    // Update texture object
+                    delete textureData.image;
+                    textureData.imagePath = `textures/${fileName}`;
+
+                    migrated.push(textureId);
+                } catch (err) {
+                    errors.push({ textureId, error: err.message });
+                }
+            }
+        }
+
+        // Save updated config
+        await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
+
+        res.json({
+            success: true,
+            migrated: migrated,
+            errors: errors,
+            message: `Migrated ${migrated.length} textures`
+        });
+    } catch (error) {
+        console.error('Error migrating textures:', error);
+        res.status(500).json({ error: 'Failed to migrate textures' });
+    }
+});
+
 // Start the server
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
