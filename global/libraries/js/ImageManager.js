@@ -263,40 +263,45 @@ class ImageManager {
                 return;
             }
 
-            const pixelData = terrainType.image;
-            if (pixelData && pixelData.length > 0) {
-                let sprites = new Array(8);
-                
-                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {
-                    const img = new Image();
-                    const canvas = document.createElement('canvas');
-                    canvas.width = canvas.height = tileWidth;
-                    const ctx = canvas.getContext('2d');
+            // Get texture from the textures collection via terrain type's texture reference
+            let imageSrc = null;
+            if (terrainType.texture && collections.textures && collections.textures[terrainType.texture]) {
+                const texture = collections.textures[terrainType.texture];
+                if (texture.imagePath) {
+                    imageSrc = this.app.getResourcesPath() + texture.imagePath;
+                }
+            }
 
-                    if (!imagePixelData.startsWith('data:image/')) {
-                        imagePixelData = 'data:image/png;base64,' + imagePixelData;
-                    }
-                    img.src = imagePixelData;
+            if (imageSrc) {
+                const img = new Image();
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = tileWidth;
+                const ctx = canvas.getContext('2d');
 
-                    await new Promise((resolve, reject) => {
-                        img.onload = () => {
-                            ctx.drawImage(img, 0, 0);
-                            sprites[spriteIdx] = canvas;
-                            resolve();
+                img.src = imageSrc;
+
+                await new Promise((resolve, reject) => {
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, tileWidth, tileWidth);
+                        // For terrain, we use a single sprite for all 8 directions
+                        const sprites = new Array(8).fill(canvas);
+                        terrainTiles[terrainIndex] = {
+                            type: terrainType.type,
+                            sprites: sprites
                         };
-                        img.onerror = () => {
-                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);
-                            sprites[spriteIdx] = canvas; // Store empty canvas on error
-                            resolve(); // Don't reject, just move on
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.error(`Failed to load texture image for ${terrainType.type}`);
+                        // Create empty canvas on error
+                        const sprites = new Array(8).fill(canvas);
+                        terrainTiles[terrainIndex] = {
+                            type: terrainType.type,
+                            sprites: sprites
                         };
-                    });
-                }));
-
-                // Store by index and type for more reliable lookup
-                terrainTiles[terrainIndex] = { 
-                    type: terrainType.type,
-                    sprites: sprites 
-                };
+                        resolve();
+                    };
+                });
             } else {
                 // Create transparent placeholder for types without images
                 // Don't use terrainType.color as it causes color bleed at tile edges
