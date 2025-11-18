@@ -111,9 +111,8 @@ class PathfindingSystem extends engine.BaseSystem {
             return true;
         }
 
-        // OLD: Fall back to walkableNeighbors cache for backwards compatibility
-        const key = `${fromTerrainIndex}-${toTerrainIndex}`;
-        return this.walkabilityCache.get(key) === true;
+        // Check if both terrains are walkable
+        return this.isTerrainWalkable(fromTerrainIndex) && this.isTerrainWalkable(toTerrainIndex);
     }
 
     // Convert nav grid coordinates to terrain grid coordinates
@@ -249,11 +248,13 @@ class PathfindingSystem extends engine.BaseSystem {
     
     isTerrainWalkable(terrainIndex) {
         if (terrainIndex === null || terrainIndex === 255) return false;
-        
+
+        // A terrain is walkable if its walkable property is true
         const terrainType = this.terrainTypes[terrainIndex];
         if (!terrainType) return false;
-                
-        return terrainType.walkable;
+
+        // Default to true for backwards compatibility with old levels that don't have walkable property
+        return terrainType.walkable !== false;
     }
 
     worldToNavGrid(worldX, worldZ) {
