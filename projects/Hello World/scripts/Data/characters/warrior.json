@@ -1,0 +1,9 @@
+{
+  "title": "Brave Warrior",
+  "class": "warrior",
+  "health": 150,
+  "strength": 85,
+  "magic": 20,
+  "speed": 50,
+  "description": "A fearless fighter skilled in melee combat"
+}

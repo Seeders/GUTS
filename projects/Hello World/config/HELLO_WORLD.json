@@ -1066,6 +1066,24 @@
       "name": "Scenes",
       "singular": "scene",
       "category": "Scripts"
+    },
+    {
+      "id": "items",
+      "name": "Items",
+      "singular": "item",
+      "category": "Data"
+    },
+    {
+      "id": "characters",
+      "name": "Characters",
+      "singular": "character",
+      "category": "Data"
+    },
+    {
+      "id": "skills",
+      "name": "Skills",
+      "singular": "skill",
+      "category": "Data"
     }
   ]
 }

@@ -2,23 +2,418 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUTS Collections Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .collection-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .collection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .collection-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .collection-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .collection-title {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .collection-count {
+            font-size: 0.9em;
+            color: #888;
+            margin-left: auto;
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.2s ease;
+        }
+
+        .item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .item-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .item-property {
+            font-size: 0.9em;
+            color: #666;
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .property-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .property-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .info-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .info-box p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .code-snippet {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .ecs-demo {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .ecs-demo h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .entity-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .entity {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .entity-id {
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+
+        .components-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .component-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+    </style>
     <script src="./../../engine/ModuleManager.js"></script>
     <script src="./../../engine/Engine.js"></script>
 </head>
-<body style="background-color: black;">
-<div id="appContainer" style="display: none;">
-    
-</div>
-<script>    
-    const game = new Engine("appContainer");  
-    async function main() {  
-        await game.init("Hello World");
-    }
-    window.onload = main;
-</script>
-	
-	
-</body>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 GUTS Collections Showcase</h1>
+            <p class="subtitle">Demonstrating the ECS Architecture & Data-Driven Collections</p>
+        </header>
 
+        <div id="loading" class="loading">
+            Loading collections...
+        </div>
+
+        <div id="app" style="display: none;">
+            <div class="collections-grid" id="collections-grid"></div>
+
+            <div class="ecs-demo" id="ecs-demo">
+                <h3>🔧 ECS Entities</h3>
+                <p style="color: #666; margin-bottom: 15px;">Live entities created from collections using the Entity-Component-System architecture:</p>
+                <div class="entity-list" id="entity-list"></div>
+            </div>
+
+            <div class="info-box">
+                <h2>About This Project</h2>
+                <p>This is a demonstration of the <strong>GUTS (Gamedev Ultimate Toolkit System)</strong> ECS architecture and data-driven collections.</p>
+
+                <p><strong>What you're seeing:</strong></p>
+                <ul style="margin-left: 20px; line-height: 2;">
+                    <li>Collections defined in the GUTS editor are loaded and displayed</li>
+                    <li>Data is stored as JSON and can be edited in the editor</li>
+                    <li>The ECS (Entity-Component-System) architecture creates entities from collection data</li>
+                    <li>Everything is data-driven and customizable</li>
+                </ul>
+
+                <p><strong>How to extend this:</strong></p>
+                <div class="code-snippet">
+1. Open the GUTS editor (index.html)
+2. Select "Hello World" project
+3. Add new collection types or objects
+4. Refresh this page to see your changes!</div>
+
+                <p>The collections you see above are loaded from: <code>projects/Hello World/scripts/Data/</code></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const game = new Engine("app");
+
+        async function main() {
+            try {
+                await game.init("Hello World");
+
+                // Hide loading, show app
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+
+                // Display collections
+                displayCollections(game.collections);
+
+                // Display ECS entities if game has any
+                if (game.gameInstance) {
+                    displayEntities(game.gameInstance);
+                }
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                document.getElementById('loading').innerHTML =
+                    '<div style="color: #ff6b6b;">Failed to load: ' + error.message + '</div>';
+            }
+        }
+
+        function displayCollections(collections) {
+            const grid = document.getElementById('collections-grid');
+            grid.innerHTML = '';
+
+            // Filter out Settings and other non-data collections
+            const dataCollections = {};
+            const excludeTypes = ['components', 'editorModules', 'inputDataTypes', 'inputElementTypes',
+                                 'themes', 'configs', 'appPrefabs', 'entities', 'scenes'];
+
+            for (const [key, value] of Object.entries(collections)) {
+                if (!excludeTypes.includes(key) && typeof value === 'object' && value !== null) {
+                    dataCollections[key] = value;
+                }
+            }
+
+            // Display each collection type
+            for (const [collectionName, items] of Object.entries(dataCollections)) {
+                const card = createCollectionCard(collectionName, items);
+                grid.appendChild(card);
+            }
+
+            if (Object.keys(dataCollections).length === 0) {
+                grid.innerHTML = '<div class="empty-state">No data collections found. Create some in the GUTS editor!</div>';
+            }
+        }
+
+        function createCollectionCard(name, items) {
+            const card = document.createElement('div');
+            card.className = 'collection-card';
+
+            const icons = {
+                'items': '📦',
+                'characters': '👤',
+                'skills': '⚡',
+                'weapons': '⚔️',
+                'enemies': '👾',
+                'levels': '🗺️',
+                'quests': '📜',
+                'default': '📊'
+            };
+
+            const icon = icons[name.toLowerCase()] || icons.default;
+            const itemCount = Object.keys(items).length;
+
+            card.innerHTML = `
+                <div class="collection-header">
+                    <span class="collection-icon">${icon}</span>
+                    <span class="collection-title">${capitalizeFirst(name)}</span>
+                    <span class="collection-count">${itemCount} item${itemCount !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="items-list" id="${name}-items"></div>
+            `;
+
+            const itemsList = card.querySelector('.items-list');
+
+            for (const [itemKey, itemData] of Object.entries(items)) {
+                const itemEl = createItemElement(itemKey, itemData);
+                itemsList.appendChild(itemEl);
+            }
+
+            return card;
+        }
+
+        function createItemElement(key, data) {
+            const item = document.createElement('div');
+            item.className = 'item';
+
+            const title = data.title || data.name || capitalizeFirst(key);
+            let html = `<div class="item-title">${title}</div>`;
+
+            // Display properties (exclude title and name since we already show them)
+            for (const [propKey, propValue] of Object.entries(data)) {
+                if (propKey !== 'title' && propKey !== 'name' && typeof propValue !== 'object') {
+                    html += `
+                        <div class="item-property">
+                            <span class="property-label">${capitalizeFirst(propKey)}:</span>
+                            <span class="property-value">${propValue}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            item.innerHTML = html;
+            return item;
+        }
+
+        function displayEntities(gameInstance) {
+            const entityList = document.getElementById('entity-list');
+
+            if (!gameInstance.entities || gameInstance.entities.size === 0) {
+                entityList.innerHTML = '<div class="empty-state">No entities created yet</div>';
+                return;
+            }
+
+            entityList.innerHTML = '';
+
+            gameInstance.entities.forEach((components, entityId) => {
+                const entityEl = document.createElement('div');
+                entityEl.className = 'entity';
+
+                let componentsHTML = '';
+                components.forEach(componentType => {
+                    componentsHTML += `<span class="component-tag">${componentType}</span>`;
+                });
+
+                entityEl.innerHTML = `
+                    <div class="entity-id">Entity #${entityId}</div>
+                    <div class="components-list">${componentsHTML || '<em style="color: #999;">No components</em>'}</div>
+                `;
+
+                entityList.appendChild(entityEl);
+            });
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        window.onload = main;
+    </script>
+</body>
 </html>

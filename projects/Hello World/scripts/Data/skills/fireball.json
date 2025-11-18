@@ -1,0 +1,8 @@
+{
+  "title": "Fireball",
+  "element": "fire",
+  "damage": 60,
+  "manaCost": 30,
+  "cooldown": 5,
+  "description": "Launch a blazing fireball at your enemy"
+}

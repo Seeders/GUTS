@@ -1,0 +1,8 @@
+{
+  "title": "Backstab",
+  "element": "physical",
+  "damage": 75,
+  "manaCost": 20,
+  "cooldown": 3,
+  "description": "Strike from the shadows for critical damage"
+}

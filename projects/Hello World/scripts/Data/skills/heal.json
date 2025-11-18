@@ -1,0 +1,8 @@
+{
+  "title": "Healing Light",
+  "element": "holy",
+  "healing": 80,
+  "manaCost": 40,
+  "cooldown": 8,
+  "description": "Restore health with divine light"
+}

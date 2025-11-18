@@ -1,0 +1,8 @@
+{
+  "title": "Magic Shield",
+  "type": "armor",
+  "defense": 30,
+  "special": "Reflects 10% magic damage",
+  "rarity": "epic",
+  "value": 750
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Health Potion",
+  "type": "consumable",
+  "effect": "Restores 50 HP",
+  "rarity": "common",
+  "value": 25
+}

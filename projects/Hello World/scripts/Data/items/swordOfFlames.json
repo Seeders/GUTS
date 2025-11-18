@@ -1,0 +1,8 @@
+{
+  "title": "Sword of Flames",
+  "type": "weapon",
+  "damage": 45,
+  "element": "fire",
+  "rarity": "rare",
+  "value": 500
+}

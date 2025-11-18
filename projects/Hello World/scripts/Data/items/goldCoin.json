@@ -1,0 +1,7 @@
+{
+  "title": "Gold Coin",
+  "type": "currency",
+  "stackable": true,
+  "rarity": "common",
+  "value": 1
+}

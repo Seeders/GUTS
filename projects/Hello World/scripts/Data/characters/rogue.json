@@ -1,0 +1,9 @@
+{
+  "title": "Shadow Rogue",
+  "class": "rogue",
+  "health": 100,
+  "strength": 65,
+  "magic": 35,
+  "speed": 90,
+  "description": "Swift and stealthy assassin"
+}

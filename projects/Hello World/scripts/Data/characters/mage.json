@@ -1,0 +1,9 @@
+{
+  "title": "Arcane Mage",
+  "class": "mage",
+  "health": 80,
+  "strength": 25,
+  "magic": 95,
+  "speed": 60,
+  "description": "Master of arcane arts and elemental spells"
+}
