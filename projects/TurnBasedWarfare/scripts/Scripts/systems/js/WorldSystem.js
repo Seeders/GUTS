@@ -1506,7 +1506,11 @@ class WorldSystem extends engine.BaseSystem {
         vectorizeProps.forEach((prop => {
             if (this.uniforms[terrainType][prop]) {
                 if( prop.toLowerCase().endsWith("color")){
-                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;
+                    // Look up terrain type from collections
+                    const terrainTypeId = this.tileMap.terrainTypes[terrainType];
+                    const collections = this.game.getCollections();
+                    const terrainTypeDef = collections.terrainTypes?.[terrainTypeId];
+                    const colorToUse = terrainTypeDef?.color || '#0288d1'; // Default to water blue
                     const { r, g, b } = parseHexColor(colorToUse);
                     this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);
                 } else {

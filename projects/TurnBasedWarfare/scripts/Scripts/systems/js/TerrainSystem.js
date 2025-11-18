@@ -52,7 +52,7 @@ class TerrainSystem extends engine.BaseSystem {
 
         const currentLevel = this.game.state?.level || 'level1';
         this.level = collections.levels?.[currentLevel];
-        
+
         if (!this.level) {
             console.error(`TerrainSystem: Level '${currentLevel}' not found`);
             return;
@@ -67,6 +67,13 @@ class TerrainSystem extends engine.BaseSystem {
         this.heightMapSettings = collections.heightMaps?.[this.world.heightMap];
         this.heightStep = this.heightMapSettings?.heightStep || 10;
         this.tileMap = this.level.tileMap;
+
+        // Load terrain types from collections
+        this.terrainTypes = collections.terrainTypes;
+        if (!this.terrainTypes) {
+            console.error('TerrainSystem: No terrainTypes collection found');
+            return;
+        }
 
         // Calculate world dimensions
         this.terrainSize = this.tileMap.size * collections.configs.game.gridSize;
@@ -182,11 +189,13 @@ class TerrainSystem extends engine.BaseSystem {
     }
 
 
-    getTileMapTerrainType(terrainTypeId){
-        if(this.tileMap.terrainTypes.length > terrainTypeId && terrainTypeId >= 0){
-            return this.tileMap.terrainTypes[terrainTypeId];
-        }
-        return null;
+    getTileMapTerrainType(terrainTypeIndex){
+        // Get the terrain type ID from the tileMap.terrainTypes array
+        const terrainTypeId = this.tileMap.terrainTypes?.[terrainTypeIndex];
+        if (!terrainTypeId) return null;
+
+        // Look up the full terrain type definition from collections
+        return this.terrainTypes[terrainTypeId] || null;
     }
     /**
      * Get terrain height at world position
