@@ -401,29 +401,16 @@ class TextureEditor {
     }
 
     updateUIFromSettings(textureData) {
-        // Handle both old format (base64 string) and new format (object with imagePath)
-        let imageSrc = null;
-
-        if (typeof textureData === 'string') {
-            // Old format: base64 string
-            imageSrc = textureData;
-        } else if (typeof textureData === 'object' && textureData !== null) {
-            // New format: object with imagePath or image property
-            if (textureData.imagePath) {
-                // File path - construct full path
-                const projectName = this.gameEditor.getCurrentProject();
-                imageSrc = `/projects/${projectName}/resources/${textureData.imagePath}`;
-            } else if (textureData.image) {
-                // Fallback to base64 if imagePath is not present
-                imageSrc = textureData.image;
-            }
-        }
-
-        if (!imageSrc) {
+        // Expect object with imagePath property
+        if (!textureData || !textureData.imagePath) {
             document.getElementById('noTextureMessage').style.display = 'block';
             this.canvas.style.display = 'none';
             return;
         }
+
+        // File path - construct full path
+        const projectName = this.gameEditor.getCurrentProject();
+        const imageSrc = `/projects/${projectName}/resources/${textureData.imagePath}`;
 
         // Load image onto canvas
         const img = new Image();
