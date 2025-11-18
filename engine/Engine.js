@@ -84,23 +84,14 @@ class Engine extends BaseEngine {
         if (!this.running) return;
 
         const now = this.getCurrentTime();
-        let deltaTime = (now - this.lastTick) / 1000;
+        const deltaTime = (now - this.lastTick) / 1000;
         this.lastTick = now;
-
-        // Cap deltaTime to prevent catch-up lag when tab is inactive
-        // Max 0.25 seconds (5 ticks) to avoid processing too many missed frames
-        const maxDeltaTime = 0.25;
-        if (deltaTime > maxDeltaTime) {
-            deltaTime = maxDeltaTime;
-        }
 
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
             await this.tick();
             this.accumulator -= this.tickRate;
         }
-
-        requestAnimationFrame(() => this.gameLoop());
     }
 
     async tick() {
@@ -112,7 +103,10 @@ class Engine extends BaseEngine {
     }
     start() {
         super.start();
-        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        this.lastTick = this.getCurrentTime();
+        // Use setInterval instead of requestAnimationFrame to keep running when tab is inactive
+        const intervalMs = this.tickRate * 1000; // Convert to milliseconds
+        this.intervalId = setInterval(() => this.gameLoop(), intervalMs);
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });
@@ -120,9 +114,9 @@ class Engine extends BaseEngine {
 
     stop() {
         super.stop();
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
         }
     }
     getCurrentTime() {
