@@ -171,7 +171,9 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [],
+  "abilities": [
+    "FireBallAbility"
+  ],
   "icon": "unit_apprentice",
   "visionRange": 500,
   "supplyCost": 2

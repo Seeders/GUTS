@@ -6,10 +6,10 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             description: 'Launch a fiery projectile that explodes on impact',
             cooldown: 5.0,
             range: 150,
-            manaCost: 30,
+            manaCost: 0,
             targetType: 'enemy',
             animation: 'cast',
-            priority: 6,
+            priority: 1,
             castTime: 1.5,
             ...params
         });
@@ -151,6 +151,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
 
     // Create impressive charging effect at caster
     createCastEffect(casterPos) {
+        if (!this.game.effectsSystem) return;
         // Main cast particles
         this.createVisualEffect(casterPos, 'cast');
 
@@ -263,12 +264,13 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
                 this.createTrailEffect(currentPos);
             }
         };
-
+console.log('fire fireBall', projectileData);
         this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
     }
 
     // Create rich trail effect for projectile
     createTrailEffect(currentPos) {
+        if (!this.game.effectsSystem) return;
         // Fire trail
         this.createVisualEffect(currentPos, 'trail_fire', { heightOffset: 0 });
 
@@ -301,6 +303,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
 
     // Create epic multi-layered explosion effect
     createExplosionEffect(impactPos) {
+        if (!this.game.effectsSystem) return;
         // Standard explosion effects
         this.createVisualEffect(impactPos, 'explosion_core');
         this.createVisualEffect(impactPos, 'explosion_fire');
