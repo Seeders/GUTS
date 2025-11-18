@@ -54,10 +54,26 @@ class PathfindingSystem extends engine.BaseSystem {
             return;
         }
         
-        this.terrainTypes = level.tileMap.terrainTypes;
-        if (!this.terrainTypes) {
-            console.warn('PathfindingSystem: No terrain types found in level');
-            return;
+        // NEW: Load terrain types from collections if available, otherwise use level's terrainTypes
+        const collections = this.game.getCollections();
+        const collectionTerrainTypes = collections.terrainTypes || {};
+        const levelTerrainTypes = level.tileMap.terrainTypes || [];
+
+        // Build a unified array of terrain types for pathfinding
+        // If using collection-based system, convert to array format for compatibility
+        if (Object.keys(collectionTerrainTypes).length > 0) {
+            // Collection-based: Build array from the map stored in tileMap.terrainMap
+            this.terrainTypes = [];
+            this.terrainTypeMap = collectionTerrainTypes;
+            console.log('PathfindingSystem: Using collection-based terrain types');
+        } else {
+            // Old system: Use array directly
+            this.terrainTypes = levelTerrainTypes;
+            this.terrainTypeMap = null;
+            if (!this.terrainTypes || this.terrainTypes.length === 0) {
+                console.warn('PathfindingSystem: No terrain types found in level');
+                return;
+            }
         }
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
@@ -246,11 +262,19 @@ class PathfindingSystem extends engine.BaseSystem {
         console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
     }
     
-    isTerrainWalkable(terrainIndex) {
-        if (terrainIndex === null || terrainIndex === 255) return false;
+    isTerrainWalkable(terrainIndexOrId) {
+        if (terrainIndexOrId === null || terrainIndexOrId === 255) return false;
 
-        // A terrain is walkable if its walkable property is true
-        const terrainType = this.terrainTypes[terrainIndex];
+        // NEW: Support both collection-based (string ID) and old array-based (numeric index)
+        let terrainType;
+        if (typeof terrainIndexOrId === 'string' && this.terrainTypeMap) {
+            // Collection-based system
+            terrainType = this.terrainTypeMap[terrainIndexOrId];
+        } else {
+            // Old array-based system
+            terrainType = this.terrainTypes[terrainIndexOrId];
+        }
+
         if (!terrainType) return false;
 
         // Default to true for backwards compatibility with old levels that don't have walkable property
