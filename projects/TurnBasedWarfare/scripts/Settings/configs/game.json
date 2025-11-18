@@ -42,7 +42,8 @@
     "DesyncDebugger",
     "FantasyUIEnhancements",
     "MinHeap",
-    "PerformanceProfiler"
+    "PerformanceProfiler",
+    "PerformanceMonitor"
   ],
   "fileName": "game",
   "interface": "main",
