@@ -1585,6 +1585,17 @@ class TerrainMapEditor {
             }
             terrainTextureEl.appendChild(option);
         }
+
+        // Load the current texture image if the terrain has a texture assigned
+        if (terrain.texture && collections.textures[terrain.texture]) {
+            const texture = collections.textures[terrain.texture];
+            if (texture.imagePath) {
+                const projectName = this.gameEditor.getCurrentProject();
+                const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
+                this.terrainImageProcessor.processImage(imageSrc);
+            }
+        }
+
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('editTerrainImage', {
             bubbles: true,
