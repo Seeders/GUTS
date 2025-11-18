@@ -251,11 +251,6 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
                 // Epic explosion effect
                 this.createExplosionEffect(impactPos);
 
-                // Screen effects
-                if (this.game.effectsSystem) {
-                    this.game.effectsSystem.playScreenShake(0.5, 4);
-                }
-
                 // DESYNC SAFE: Handle splash damage deterministically
                 this.handleSplashDamage(casterEntity, impactPos);
             },

@@ -438,13 +438,13 @@ class ParticleSystem extends engine.BaseSystem {
       let pz = position.z;
 
       if (emitterShape === 'sphere' && emitterRadius > 0) {
-        // Random point in sphere
+        // Random point in sphere (Y-up coordinate system)
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
         const r = emitterRadius * Math.cbrt(Math.random());
         px += r * Math.sin(phi) * Math.cos(theta);
-        py += r * Math.sin(phi) * Math.sin(theta);
-        pz += r * Math.cos(phi);
+        py += r * Math.cos(phi);
+        pz += r * Math.sin(phi) * Math.sin(theta);
       } else if (emitterShape === 'ring' && emitterRadius > 0) {
         // Random point on ring
         const theta = Math.random() * Math.PI * 2;
