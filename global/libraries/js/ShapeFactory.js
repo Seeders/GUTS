@@ -107,11 +107,19 @@ class ShapeFactory {
                     if (map) {
                         map.colorSpace = THREE.SRGBColorSpace;
                     }
+
+                    // Remove vertex colors from geometry if present
+                    // Vertex colors can darken the texture
+                    if (child.geometry && child.geometry.attributes.color) {
+                        child.geometry.deleteAttribute('color');
+                    }
+
                     child.material = new THREE.MeshStandardMaterial({
                         color: 0xffffff,
                         metalness: shape.metalness || 0.5,
                         roughness: shape.roughness || 0.5,
-                        map: map
+                        map: map,
+                        vertexColors: false
                     });
                     child.material.alphaTest = 0.1;
                     child.material.needsUpdate = true;
