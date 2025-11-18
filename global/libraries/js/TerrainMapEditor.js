@@ -1,7 +1,7 @@
 class TerrainMapEditor {
-    constructor(gameEditor, config = {}, { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory }) {
+    constructor(gameEditor, config = {}, { TileMap, CoordinateTranslator, ImageManager, ShapeFactory }) {
         this.gameEditor = gameEditor;
-        this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };
+        this.engineClasses = { TileMap, CoordinateTranslator, ImageManager, ShapeFactory };
         this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };
         this.config = { ...this.defaultConfig, ...config };
     
@@ -87,7 +87,6 @@ class TerrainMapEditor {
 
     init() {
         this.setupTerrainTypesUI();
-        this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();
         this.createPreviewCanvas();
         this.setupEventListeners();
@@ -107,12 +106,6 @@ class TerrainMapEditor {
                 const collections = this.gameEditor.getCollections();
                 if (collections.terrainTypes && collections.terrainTypes[terrainTypeId]) {
                     collections.terrainTypes[terrainTypeId].texture = textureName;
-                    const texture = this.gameEditor.getCollections().textures[textureName];
-                    if (texture && texture.imagePath) {
-                        const projectName = this.gameEditor.getCurrentProject();
-                        const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
-                        this.terrainImageProcessor.processImage(imageSrc);
-                    }
                 }
             }
         });
@@ -793,13 +786,6 @@ class TerrainMapEditor {
                 this.scheduleRender();
             }
         }
-    }
-    setupTerrainImageProcessor() {
-        this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
-        this.terrainImageProcessor.initialize(
-            document.getElementById('terrainImage'),
-            document.getElementById('terrain-image-display')
-        );
     }
 
     setupTerrainTypesUI() {
@@ -1582,16 +1568,6 @@ class TerrainMapEditor {
                 option.selected = true; // Set the current terrain texture as selected
             }
             terrainTextureEl.appendChild(option);
-        }
-
-        // Load the current texture image if the terrain has a texture assigned
-        if (terrain.texture && collections.textures[terrain.texture]) {
-            const texture = collections.textures[terrain.texture];
-            if (texture.imagePath) {
-                const projectName = this.gameEditor.getCurrentProject();
-                const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
-                this.terrainImageProcessor.processImage(imageSrc);
-            }
         }
     }
 
