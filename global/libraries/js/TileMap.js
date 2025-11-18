@@ -1270,33 +1270,39 @@ class TileMap {
 		const grassAtoms = this.baseAtoms[grassIndex];
 		if (!grassAtoms || !grassAtoms.full) return;
 
-		// Check each cardinal direction for lower neighbors and paint appropriate atoms
-		// Bottom neighbor is lower (we're at top of cliff edge)
+		// Paint grass on quadrants OPPOSITE to where cliff meshes are placed
+		// This creates a transition on the higher terrain level next to the cliff edge
+
+		// Bottom neighbor is lower: cliff meshes in BL, BR quadrants
+		// Paint grass on TOP quadrants (TL, TR) facing north (away from cliff)
 		if (heightAnalysis.botLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI / 2);
-			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 
-		// Top neighbor is lower (we're at bottom of cliff edge)
+		// Top neighbor is lower: cliff meshes in TL, TR quadrants
+		// Paint grass on BOTTOM quadrants (BL, BR) facing south (away from cliff)
 		if (heightAnalysis.topLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), -PI / 2);
-			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
-		}
-
-		// Right neighbor is lower (we're at left of cliff edge)
-		if (heightAnalysis.rightLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), 0);
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 
-		// Left neighbor is lower (we're at right of cliff edge)
-		if (heightAnalysis.leftLess) {
-			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI);
+		// Right neighbor is lower: cliff meshes in TR, BR quadrants
+		// Paint grass on LEFT quadrants (TL, BL) facing west (away from cliff)
+		if (heightAnalysis.rightLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), 0);
 			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
 			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+
+		// Left neighbor is lower: cliff meshes in TL, BL quadrants
+		// Paint grass on RIGHT quadrants (TR, BR) facing east (away from cliff)
+		if (heightAnalysis.leftLess) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.full), PI);
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 	}
 
