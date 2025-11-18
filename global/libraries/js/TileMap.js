@@ -1252,19 +1252,9 @@ class TileMap {
 		const heightAnalysis = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 
-		// Find grass terrain index (cache it if not already cached)
-		if (this.grassTerrainIndex === undefined) {
-			this.grassTerrainIndex = -1;
-			for (let i = 0; i < this.layerTextures.length; i++) {
-				// Check if this terrain type has 'grass' in a common property
-				// We'll need to pass this info, but for now try to detect it
-				// This is a simplification - ideally we'd get terrain type info passed in
-			}
-		}
 
 		// For now, assume grass is terrain index 0 (we'll need to make this configurable)
-		const grassIndex = 4;
-		const PI = Math.PI;
+		const grassIndex = this.layerTextures.length - 1;
 
 		// Get grass atoms
 		const grassAtoms = this.baseAtoms[grassIndex];
@@ -1275,7 +1265,7 @@ class TileMap {
 
 		// Bottom neighbor is lower: cliff meshes in BL, BR quadrants
 		// Paint grass on TOP quadrants (TL, TR) facing north (away from cliff)
-		if (heightAnalysis.botLess && !heightAnalysis.leftLess && !heightAnalysis.rightLess && heightAnalysis.cornerBottomRightLess && heightAnalysis.cornerBottomLeftLess) {
+		if (heightAnalysis.botLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
 			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
 			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
@@ -1283,7 +1273,7 @@ class TileMap {
 
 		// Top neighbor is lower: cliff meshes in TL, TR quadrants
 		// Paint grass on BOTTOM quadrants (BL, BR) facing south (away from cliff)
-		if (heightAnalysis.topLess && !heightAnalysis.leftLess && !heightAnalysis.rightLess && heightAnalysis.cornerTopRightLess && heightAnalysis.cornerTopLeftLess) {
+		if (heightAnalysis.topLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
 			ctx.drawImage(rotatedGrass, 0, atomSize-2, atomSize, atomSize); // BL quadrant
 			ctx.drawImage(rotatedGrass, atomSize, atomSize-2, atomSize, atomSize); // BR quadrant
@@ -1291,7 +1281,7 @@ class TileMap {
 
 		// Right neighbor is lower: cliff meshes in TR, BR quadrants
 		// Paint grass on LEFT quadrants (TL, BL) facing west (away from cliff)
-		if (heightAnalysis.rightLess && !heightAnalysis.botLess && !heightAnalysis.topLess && heightAnalysis.cornerTopRightLess && heightAnalysis.cornerBottomRightLess) {
+		if (heightAnalysis.rightLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
 			ctx.drawImage(rotatedGrass, 2, 0, atomSize, atomSize); // TL quadrant
 			ctx.drawImage(rotatedGrass, 2, atomSize, atomSize, atomSize); // BL quadrant
@@ -1299,7 +1289,7 @@ class TileMap {
 
 		// Left neighbor is lower: cliff meshes in TL, BL quadrants
 		// Paint grass on RIGHT quadrants (TR, BR) facing east (away from cliff)
-		if (heightAnalysis.leftLess && !heightAnalysis.botLess && !heightAnalysis.topLess && heightAnalysis.cornerTopLeftLess && heightAnalysis.cornerBottomLeftLess) {
+		if (heightAnalysis.leftLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
 			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
@@ -1334,9 +1324,9 @@ class TileMap {
 
 		if (!heightAnalysis.botLess && !heightAnalysis.rightLess && heightAnalysis.cornerBottomRightLess) {
 			const topGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
-			ctx.drawImage(topGrass, 0, 0, atomSize, atomSize); // BR quadrant			
+			ctx.drawImage(topGrass, atomSize, 0, atomSize, atomSize); // BR quadrant			
 			const leftGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
-			ctx.drawImage(leftGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(leftGrass, 0, atomSize, atomSize, atomSize); // TL quadrant
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTL), 0);
 			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TR quadrant
 		}
