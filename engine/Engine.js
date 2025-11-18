@@ -82,18 +82,24 @@ class Engine extends BaseEngine {
 
     async gameLoop() {
         if (!this.running) return;
-        
+
         const now = this.getCurrentTime();
-        const deltaTime = (now - this.lastTick) / 1000;
+        let deltaTime = (now - this.lastTick) / 1000;
         this.lastTick = now;
-        
+
+        // Cap deltaTime to prevent catch-up lag when tab is inactive
+        // Max 0.25 seconds (5 ticks) to avoid processing too many missed frames
+        const maxDeltaTime = 0.25;
+        if (deltaTime > maxDeltaTime) {
+            deltaTime = maxDeltaTime;
+        }
+
         this.accumulator += deltaTime;
         while (this.accumulator >= this.tickRate) {
             await this.tick();
             this.accumulator -= this.tickRate;
         }
-        
-        // Use setImmediate for next tick (Node.js specific)
+
         requestAnimationFrame(() => this.gameLoop());
     }
 
