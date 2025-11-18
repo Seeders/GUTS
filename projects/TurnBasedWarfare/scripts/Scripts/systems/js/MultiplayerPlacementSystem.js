@@ -859,7 +859,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         let cells = [];
         let isValid = false;
         let gridValid = false;
-
         if (selectedUnitType.collection === 'buildings') {
             cells = this.calculateBuildingCells(gridPos, selectedUnitType);
 

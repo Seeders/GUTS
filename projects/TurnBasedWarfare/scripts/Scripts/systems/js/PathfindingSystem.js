@@ -250,12 +250,10 @@ class PathfindingSystem extends engine.BaseSystem {
     isTerrainWalkable(terrainIndex) {
         if (terrainIndex === null || terrainIndex === 255) return false;
         
-        // A terrain is walkable if it has at least one walkable neighbor defined
         const terrainType = this.terrainTypes[terrainIndex];
         if (!terrainType) return false;
-        
-        const walkableNeighbors = terrainType.walkableNeighbors || [];
-        return walkableNeighbors.length > 0;
+                
+        return terrainType.walkable;
     }
 
     worldToNavGrid(worldX, worldZ) {
@@ -731,6 +729,7 @@ class PathfindingSystem extends engine.BaseSystem {
         // Check bounds
         if (grid.x < 0 || grid.x >= this.navGridWidth || 
             grid.z < 0 || grid.z >= this.navGridHeight) {
+                console.log('FALSE: out of bounds');
             return false;
         }
         
