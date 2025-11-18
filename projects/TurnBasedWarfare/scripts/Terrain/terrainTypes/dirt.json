@@ -1,0 +1,8 @@
+{
+  "title": "Dirt",
+  "type": "dirt",
+  "texture": "dirt",
+  "color": "#d9b38c",
+  "buildable": true,
+  "walkable": true
+}
