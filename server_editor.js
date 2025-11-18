@@ -484,7 +484,9 @@ app.post('/api/migrate-textures', async (req, res) => {
 
         const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
 
-        if (!config.textures) {
+        // Textures are inside objectTypes
+        const textures = config.objectTypes?.textures;
+        if (!textures) {
             return res.status(400).json({ error: 'No textures collection found' });
         }
 
