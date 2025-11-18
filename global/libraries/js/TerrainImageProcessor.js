@@ -10,8 +10,7 @@ class TerrainImageProcessor {
     }
 
     // Initialize the processor with DOM elements
-    initialize(outputElement, displayImageElement) {
-        // outputElement kept for compatibility but no longer used
+    initialize(displayImageElement) {
         this.displayImage = displayImageElement;
     }
 
