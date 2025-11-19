@@ -19815,6 +19815,12 @@
                 "type": "SquadExperienceSystem"
               },
               {
+                "type": "CharacterClassSystem"
+              },
+              {
+                "type": "SkillTreeSystem"
+              },
+              {
                 "type": "ARPGGameSystem"
               },
               {
@@ -20200,6 +20206,14 @@
       "ARPGUISystem": {
         "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ARPGUISystem.js",
         "fileName": "ARPGUISystem"
+      },
+      "CharacterClassSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/CharacterClassSystem.js",
+        "fileName": "CharacterClassSystem"
+      },
+      "SkillTreeSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/SkillTreeSystem.js",
+        "fileName": "SkillTreeSystem"
       }
     },
     "terrainTypes": {

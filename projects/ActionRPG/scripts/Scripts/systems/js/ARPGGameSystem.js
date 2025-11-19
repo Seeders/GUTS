@@ -78,18 +78,37 @@ class ARPGGameSystem extends engine.BaseSystem {
         const playerEntityId = this.game.gameManager.call('getPlayerEntity');
 
         if (!playerEntityId) {
-            // Create a new player character
-            this.createPlayerCharacter();
+            // Use CharacterClassSystem to create player with selected class
+            if (this.game.characterClassSystem) {
+                const selectedClass = this.game.gameManager.call('getSelectedClass');
+                if (selectedClass) {
+                    this.game.gameManager.call('createPlayerWithClass', selectedClass);
+                } else {
+                    // Default to warrior if no class selected
+                    this.game.gameManager.call('selectClass', 'warrior');
+                    this.game.gameManager.call('createPlayerWithClass', 'warrior');
+                }
+            } else {
+                // Fallback if CharacterClassSystem not available
+                this.createPlayerCharacter();
+            }
         }
     }
 
     createPlayerCharacter() {
+        // Fallback method - use CharacterClassSystem if available
+        if (this.game.characterClassSystem) {
+            this.game.gameManager.call('selectClass', 'warrior');
+            this.game.gameManager.call('createPlayerWithClass', 'warrior');
+            return;
+        }
+
         const CT = this.componentTypes;
         const Components = this.game.componentManager.getComponents();
         const collections = this.game.getCollections();
 
-        // Default player unit type - could be configured
-        const playerUnitType = 'barbarian'; // or 'soldier', 'archer', etc.
+        // Default player unit type
+        const playerUnitType = 'barbarian';
         const unitData = collections.units[playerUnitType];
 
         if (!unitData) {
