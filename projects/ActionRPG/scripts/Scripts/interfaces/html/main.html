@@ -1,0 +1,190 @@
+<!-- Main Menu Screen -->
+<div id="mainMenu" class="screen active">
+    <div class="game-title">LEGENDS OF THE ARENA</div>
+    <div class="subtitle">Where Heroes Rise and Legends Are Forged</div>
+    <div class="main-menu-buttons">
+        <button id="mainMenu_PlayGameBtn" class="btn">⚔️ ENTER BATTLE</button>
+        <button id="mainMenu_SettingsBtn" class="btn btn-secondary">⚙️ SETTINGS</button>
+    </div>
+</div>
+
+<!-- Game Mode Selection Screen -->
+<div id="gameModeSelect" class="screen">
+    <div class="mode-selection">
+        <h2>🎯 CHOOSE YOUR DESTINY</h2>
+        <div class="mode-grid" id="modeGrid">
+            <!-- Game mode cards populated by GameModeManager -->
+        </div>
+        <div>
+            <button id="gameMode_BackBtn" class="btn btn-secondary">← RETURN</button>
+        </div>
+    </div>
+</div>
+
+<!-- Multiplayer Lobby -->
+<div id="multiplayerLobby" class="screen">
+    <div class="multiplayer-lobby-container">
+        <div class="lobby-header">
+            <h1 class="lobby-title">⚔️ WAR COUNCIL</h1>
+            <div class="room-info">
+                <div class="room-id-display">
+                    <span class="room-label">Battle Hall:</span>
+                    <span id="lobbyRoomId" class="room-id">------</span>
+                    <button id="copyRoomIdBtn" class="btn-small">📋 Copy</button>
+                </div>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-indicator">🔴 Summoning...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-content">
+            <div class="players-section">
+                <h2>⚔️ Warriors (<span id="playerCount">1</span>/2)</h2>
+                <div id="playersContainer" class="players-grid">
+                    <div class="player-card" id="player1Card">
+                        <div class="player-name" id="player1Name">You</div>
+                        <div class="player-status waiting" id="player1Status">🟡 Preparing...</div>
+                        <div class="player-stats">Ready to battle</div>
+                    </div>
+                    <div class="player-card empty" id="player2Card">
+                        <div class="player-name" id="player2Name">Waiting for opponent</div>
+                        <div class="player-status empty" id="player2Status">⚪ Empty slot</div>
+                        <div class="player-stats">Seeking worthy challenger</div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="lobby-status">
+                <div class="status-message" id="lobbyStatusMessage">Waiting for worthy opponents...</div>
+                <div class="game-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="gameProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="gameProgressText">Preparing battlefield...</div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h3>🏰 Battle Configuration</h3>
+                <div class="game-settings">
+                    <div class="setting">
+                        <span class="setting-label">🎯 Game Mode</span>
+                        <span class="setting-value" id="lobbyGameMode">Arena Combat</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">⏱️ Turn Timer</span>
+                        <span class="setting-value" id="lobbyTurnTimer">30 seconds</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">💰 Starting Gold</span>
+                        <span class="setting-value" id="lobbyStartGold">100 coins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="leaveLobbyBtn" class="btn btn-secondary">🚪 Retreat</button>
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="player1ReadyBtn" class="ready-btn">🛡️ READY FOR BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>🗡️ Prepare your strategies while waiting for opponents</p>
+                    <p>🏰 Victory requires both tactical skill and wise resource management</p>
+                    <p>⚡ The realm's fate lies in your hands, Commander</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Game Screen -->
+<div id="gameScreen" class="screen">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <div id="resourcesContainer" class="resources">
+            <div class="resource-item">
+                <span class="resource-label">💰</span>
+                <span class="resource-value" id="playerGold">--</span>
+            </div>
+            <div class="resource-item">
+                <span class="resource-label">👥</span>
+                <span class="resource-value" id="playerSupplies">0</span>
+            </div>
+            <div class="resource-item">
+                <span class="resource-label">🏆</span>
+                <span class="resource-value" id="currentRound">--</span>
+            </div>
+        </div>
+        <div id="unitPromotions" style="display: none"></div>  
+        <div id="gameControls">
+            <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">🚪 RETREAT</button>
+            <button id="undoBtn" class="btn btn-secondary">🤦‍♂️ Undo</button>
+            <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+        </div>
+        <div id="uiContainer">              
+            <div id="miniMapContainer"></div>
+            <div id="selectedUnits"></div>  
+            <div id="unitPortrait"></div>            
+            <div class="action-panel" id="actionPanel"></div>
+        </div>  
+    </div>
+</div>
+
+<!-- Victory Screen -->
+<div id="victoryScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title victory-title">🏆 GLORIOUS VICTORY! 🏆</div>
+        <div class="stats-grid" id="victoryStats">
+            <!-- Stats populated by ResultsManager -->
+        </div>
+        <div>
+            <button id="victory_NextRoundBtn" class="btn">⚡ NEXT CONQUEST</button>
+            <button id="victory_RestartBtn" class="btn btn-secondary">🔄 RETRY BATTLE</button>
+            <button id="victory_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
+        </div>
+    </div>
+</div>
+
+<!-- Defeat Screen -->
+<div id="defeatScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title defeat-title">💀 DEFEAT 💀</div>
+        <div class="stats-grid" id="defeatStats">
+            <!-- Stats populated by ResultsManager -->
+        </div>
+        <div>
+            <button id="defeat_RetryBtn" class="btn">⚡ SEEK REVENGE</button>
+            <button id="defeat_ChangeModeBtn" class="btn btn-secondary">🎯 CHANGE PATH</button>
+            <button id="defeat_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pause Menu (Overlay) -->
+<div id="pauseMenu" class="pause-overlay">
+    <div class="pause-content">
+        <h2>⏳ WAR COUNCIL RECESS</h2>
+        <button id="paused_ResumeBtn" class="btn">▶️ RETURN TO BATTLE</button>
+        <button id="paused_RestartBtn" class="btn btn-secondary">🔄 RESTART CAMPAIGN</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">🏰 RETURN HOME</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🔮 SUMMONING WARRIORS...</div>
+        <div class="loading-tip">Tip: Position ranged units behind your frontline for maximum effectiveness</div>
+    </div>
+</div>

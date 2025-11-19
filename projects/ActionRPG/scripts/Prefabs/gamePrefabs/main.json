@@ -1,0 +1,8 @@
+{
+  "title": "main",
+  "entity": "ECSGame",
+  "palette": "main",
+  "mapRenderer": "level1",
+  "mapManager": "level1",
+  "threeJsWorld": "level1"
+}

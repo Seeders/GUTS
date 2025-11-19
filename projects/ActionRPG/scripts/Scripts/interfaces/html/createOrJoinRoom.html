@@ -1,0 +1,57 @@
+<div class="setup-content" style="background: #1a1a1a; padding: 2rem; border: 2px solid #444; border-radius: 10px; color: white; max-width: 900px; margin: 0 auto;">
+    <h2 style="text-align: center; margin-bottom: 1.5rem;">⚔️ Game Lobby ⚔️</h2>
+
+    <div class="player-name-input" style="margin-bottom: 1.5rem; text-align: center;">
+        <label for="playerName">Your Name:</label>
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" value="Player"
+                style="padding: 0.5rem; margin-left: 0.5rem; border: 1px solid #666; background: #333; color: white; border-radius: 4px;">
+    </div>
+
+    <div class="lobby-actions" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; justify-content: center; align-items: center;">
+        <button id="createRoomBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; background: #00aa00; border: none; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
+            ➕ Create New Game
+        </button>
+        <button id="quickMatchBtn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; background: #0066cc; border: none; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
+            🎯 Quick Match
+        </button>
+        <button id="refreshRoomsBtn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">
+            🔄 Refresh
+        </button>
+    </div>
+
+    <div class="rooms-container" style="margin: 1.5rem 0;">
+        <h3 style="margin-bottom: 1rem; color: #aaa;">Available Games</h3>
+        <div id="roomsLoadingIndicator" style="text-align: center; padding: 2rem; color: #888; display: none;">
+            <p>Loading available games...</p>
+        </div>
+        <div id="roomsTableContainer" style="overflow-x: auto;">
+            <table id="roomsTable" style="width: 100%; border-collapse: collapse; background: #222;">
+                <thead>
+                    <tr style="background: #333; border-bottom: 2px solid #555;">
+                        <th style="padding: 0.75rem; text-align: left; color: #aaa;">Room ID</th>
+                        <th style="padding: 0.75rem; text-align: center; color: #aaa;">Players</th>
+                        <th style="padding: 0.75rem; text-align: center; color: #aaa;">Status</th>
+                        <th style="padding: 0.75rem; text-align: center; color: #aaa;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="roomsTableBody">
+                    <tr>
+                        <td colspan="4" style="padding: 2rem; text-align: center; color: #888;">
+                            No available games. Create one to get started!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="color: #666; font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+            Rooms are automatically refreshed every 3 seconds
+        </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <button id="cancelMultiplayerBtn" class="btn btn-secondary"
+                style="padding: 0.5rem 1rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px;">
+            Cancel
+        </button>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+{
+  "title": "Tree",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "url": "models/new_fir/new_fir.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "height": 75,
+  "size": 25,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
+}

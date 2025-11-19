@@ -1,0 +1,10 @@
+{
+  "title": "Forest",
+  "type": "forest",
+  "texture": "forest",
+  "color": "#2f4a29",
+  "buildable": true,
+  "walkable": true,
+  "spriteWidth": 24,
+  "spriteHeight": 24
+}
