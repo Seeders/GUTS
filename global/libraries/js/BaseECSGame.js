@@ -51,7 +51,9 @@ class BaseECSGame {
 
             // Use tick count based timing to avoid floating-point accumulation errors
             this.tickCount++;
-            this.currentTime = this.tickCount * deltaTime;
+            // Round to 2 decimal places to avoid floating-point precision issues
+            // (e.g., 3 * 0.05 = 0.15000000000000002 in JavaScript)
+            this.currentTime = Math.round(this.tickCount * deltaTime * 100) / 100;
 
             // Only update if a reasonable amount of time has passed
             // const timeSinceLastUpdate = this.currentTime - this.lastTime;

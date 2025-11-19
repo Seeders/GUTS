@@ -57,10 +57,12 @@ class MovementSystem extends engine.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);        
-        
+        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
+        // Sort for deterministic processing order (prevents desync)
+        entities.sort((a, b) => String(a).localeCompare(String(b)));
+
         const unitData = new Map();
-        
+
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);

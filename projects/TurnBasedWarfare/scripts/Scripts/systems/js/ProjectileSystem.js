@@ -300,10 +300,13 @@ class ProjectileSystem extends engine.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         const projectiles = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.VELOCITY, 
+            this.componentTypes.POSITION,
+            this.componentTypes.VELOCITY,
             this.componentTypes.PROJECTILE
-        );        
+        );
+        // Sort for deterministic processing order (prevents desync)
+        projectiles.sort((a, b) => String(a).localeCompare(String(b)));
+
         projectiles.forEach(projectileId => {
             const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);

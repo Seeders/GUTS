@@ -56,6 +56,10 @@ class CommandQueueSystem extends engine.BaseSystem {
             createdTime
         );
 
+        // Override the command ID with a deterministic ID based on entity ID and time
+        // This ensures the same command has the same ID on both client and server
+        command.id = `cmd_${entityId}_${createdTime}_${commandData.type}`;
+
         // Check if we should interrupt current command
         if (interrupt && commandQueue.currentCommand) {
             if (this.canInterruptCommand(entityId, command.priority)) {

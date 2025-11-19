@@ -542,10 +542,13 @@ class UnitOrderSystem extends engine.BaseSystem {
         const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
         const unitPadding = 1;
 
+        // Round to 2 decimal places to avoid floating-point precision issues that cause desync
+        const roundPos = (val) => Math.round(val * 100) / 100;
+
         for(let i = 0; i < placementIds.length; i++){
             targetPositions.push({
-                x: targetPosition.x,
-                z: i % 2 == 0 ? targetPosition.z + i * placementGridSize * unitPadding : targetPosition.z - i * placementGridSize * unitPadding
+                x: roundPos(targetPosition.x),
+                z: roundPos(i % 2 == 0 ? targetPosition.z + i * placementGridSize * unitPadding : targetPosition.z - i * placementGridSize * unitPadding)
             });
         }
         return targetPositions;

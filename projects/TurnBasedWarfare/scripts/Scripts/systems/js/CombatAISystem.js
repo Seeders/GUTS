@@ -36,6 +36,8 @@ class CombatAISystem extends engine.BaseSystem {
     onPlacementPhaseStart() {
         const CT = this.componentTypes;
         const combatUnits = this.game.getEntitiesWith(CT.AI_STATE);
+        // Sort for deterministic processing order (prevents desync)
+        combatUnits.sort((a, b) => String(a).localeCompare(String(b)));
 
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
@@ -67,6 +69,9 @@ class CombatAISystem extends engine.BaseSystem {
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         );
+        // Sort for deterministic processing order (prevents desync)
+        combatUnits.sort((a, b) => String(a).localeCompare(String(b)));
+
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
             const pos = this.game.getComponent(entityId, CT.POSITION);

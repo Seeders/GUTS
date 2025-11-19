@@ -7,6 +7,8 @@ class DeathSystem extends engine.BaseSystem {
     update() {
         // Get all entities with death state
         const dyingEntities = this.game.getEntitiesWith(this.componentTypes.DEATH_STATE);
+        // Sort for deterministic processing order (prevents desync)
+        dyingEntities.sort((a, b) => String(a).localeCompare(String(b)));
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
@@ -78,8 +80,10 @@ class DeathSystem extends engine.BaseSystem {
     // Rest of your existing methods remain the same...
     getCorpsesInRange(position, range, teamFilter = null) {
         const corpses = this.game.getEntitiesWith(this.componentTypes.CORPSE);
+        // Sort for deterministic processing order (prevents desync)
+        corpses.sort((a, b) => String(a).localeCompare(String(b)));
         const nearbyCorpses = [];
-        
+
         corpses.forEach(corpseId => {
             const corpsePos = this.game.getComponent(corpseId, this.componentTypes.POSITION);
             const corpse = this.game.getComponent(corpseId, this.componentTypes.CORPSE);
