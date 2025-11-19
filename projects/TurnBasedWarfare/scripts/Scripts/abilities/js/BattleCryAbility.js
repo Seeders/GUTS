@@ -105,27 +105,110 @@ class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
             
             // Visual rally effect on each ally
             this.createVisualEffect(allyPos, 'rally');
-            
+
+            // Enhanced individual rally effect
+            if (this.game.gameManager) {
+                this.game.gameManager.call('createLayeredEffect', {
+                    position: new THREE.Vector3(allyPos.x, allyPos.y + 25, allyPos.z),
+                    layers: [
+                        // Golden empowerment
+                        {
+                            count: 10,
+                            lifetime: 0.5,
+                            color: 0xffd700,
+                            colorRange: { start: 0xffffff, end: 0xffaa00 },
+                            scale: 15,
+                            scaleMultiplier: 1.8,
+                            velocityRange: { x: [-30, 30], y: [50, 120], z: [-30, 30] },
+                            gravity: -40,
+                            drag: 0.9,
+                            blending: 'additive'
+                        },
+                        // Red/orange battle sparks
+                        {
+                            count: 8,
+                            lifetime: 0.4,
+                            color: 0xff6347,
+                            colorRange: { start: 0xffaa66, end: 0xff4400 },
+                            scale: 8,
+                            scaleMultiplier: 0.8,
+                            velocityRange: { x: [-50, 50], y: [60, 100], z: [-50, 50] },
+                            gravity: 100,
+                            drag: 0.94,
+                            blending: 'additive'
+                        }
+                    ]
+                });
+            }
+
             // DESYNC SAFE: Schedule buff removal
             this.game.schedulingSystem.scheduleAction(() => {
                 this.removeRallyBuff(allyId);
             }, this.duration, allyId);
-            
+
             ralliedCount++;
         });
-        
+
         // Screen effect for dramatic rally
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenShake(0.3, 2);
             this.game.effectsSystem.playScreenFlash('#FFD700', 0.4);
         }
-        
+
         // Additional visual effect at caster position
-        this.createVisualEffect(casterPos, 'rally', { 
-            count: 12, 
+        this.createVisualEffect(casterPos, 'rally', {
+            count: 12,
             scaleMultiplier: 3.0,
-            heightOffset: 20 
+            heightOffset: 20
         });
+
+        // Enhanced central battle cry burst
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
+                layers: [
+                    // Massive golden shockwave
+                    {
+                        count: 30,
+                        lifetime: 0.7,
+                        color: 0xffd700,
+                        colorRange: { start: 0xffffff, end: 0xff8800 },
+                        scale: 25,
+                        scaleMultiplier: 2.5,
+                        velocityRange: { x: [-150, 150], y: [40, 100], z: [-150, 150] },
+                        gravity: -30,
+                        drag: 0.9,
+                        blending: 'additive'
+                    },
+                    // Red battle fury
+                    {
+                        count: 20,
+                        lifetime: 0.6,
+                        color: 0xff4500,
+                        colorRange: { start: 0xff6644, end: 0xcc2200 },
+                        scale: 18,
+                        scaleMultiplier: 2.0,
+                        velocityRange: { x: [-120, 120], y: [60, 140], z: [-120, 120] },
+                        gravity: -20,
+                        drag: 0.92,
+                        blending: 'additive'
+                    },
+                    // White flash
+                    {
+                        count: 10,
+                        lifetime: 0.3,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xffd700 },
+                        scale: 45,
+                        scaleMultiplier: 3.0,
+                        velocityRange: { x: [-40, 40], y: [30, 80], z: [-40, 40] },
+                        gravity: 0,
+                        drag: 0.8,
+                        blending: 'additive'
+                    }
+                ]
+            });
+        }
  
     }
     

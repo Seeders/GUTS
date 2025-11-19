@@ -96,21 +96,105 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         // Get current target position (target may have moved)
         const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
         const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
-        
+
         // Create pillar of light effect
         this.createVisualEffect(targetPos, 'pillar');
-        
+
         // Create divine judgment aura effect
         this.createVisualEffect(targetPos, 'divine_judgment');
-        
+
+        // Enhanced divine pillar descending from sky
+        if (this.game.gameManager) {
+            // Pillar of golden light descending
+            const pillarSteps = 8;
+            for (let i = 0; i < pillarSteps; i++) {
+                const delay = i * 0.05;
+                const height = 300 - (i * 35);
+
+                this.game.schedulingSystem.scheduleAction(() => {
+                    this.game.gameManager.call('createParticles', {
+                        position: new THREE.Vector3(targetPos.x, targetPos.y + height, targetPos.z),
+                        count: 15,
+                        lifetime: 0.4,
+                        visual: {
+                            color: 0xffd700,
+                            colorRange: { start: 0xffffff, end: 0xffa500 },
+                            scale: 20,
+                            scaleMultiplier: 1.8,
+                            fadeOut: true,
+                            blending: 'additive'
+                        },
+                        velocityRange: { x: [-30, 30], y: [-150, -80], z: [-30, 30] },
+                        gravity: 100,
+                        drag: 0.9,
+                        emitterShape: 'ring',
+                        emitterRadius: 15
+                    });
+                }, delay, targetId);
+            }
+
+            // Warning ring on ground
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 5, targetPos.z),
+                count: 24,
+                lifetime: 0.6,
+                visual: {
+                    color: 0xffd700,
+                    colorRange: { start: 0xffffff, end: 0xffaa00 },
+                    scale: 15,
+                    scaleMultiplier: 1.2,
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-10, 10], y: [20, 60], z: [-10, 10] },
+                gravity: -20,
+                drag: 0.95,
+                emitterShape: 'ring',
+                emitterRadius: 40
+            });
+
+            // Holy symbols/sparkles rising
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
+                layers: [
+                    // Golden core glow
+                    {
+                        count: 10,
+                        lifetime: 0.5,
+                        color: 0xffd700,
+                        colorRange: { start: 0xffffff, end: 0xffa500 },
+                        scale: 30,
+                        scaleMultiplier: 2.5,
+                        velocityRange: { x: [-20, 20], y: [50, 120], z: [-20, 20] },
+                        gravity: -30,
+                        drag: 0.85,
+                        blending: 'additive'
+                    },
+                    // White divine sparkles
+                    {
+                        count: 20,
+                        lifetime: 0.7,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xffffcc },
+                        scale: 8,
+                        scaleMultiplier: 0.6,
+                        velocityRange: { x: [-60, 60], y: [80, 180], z: [-60, 60] },
+                        gravity: -50,
+                        drag: 0.92,
+                        blending: 'additive'
+                    }
+                ]
+            });
+        }
+
         // Screen flash and shake
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#FFD700', 0.5);
             this.game.effectsSystem.playScreenShake(0.3, 3);
         }
-        
+
         this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);
-        
+
         // Schedule the actual damage after pillar effect
         this.game.schedulingSystem.scheduleAction(() => {
             this.applySmiteDamage(casterEntity, targetId, targetPos);
@@ -150,8 +234,54 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Create smite impact effect
         this.createVisualEffect(targetPos, 'smite');
-      
-    
+
+        // Enhanced divine explosion on impact
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
+                layers: [
+                    // Blinding flash
+                    {
+                        count: 8,
+                        lifetime: 0.2,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xffd700 },
+                        scale: 50,
+                        scaleMultiplier: 3.0,
+                        velocityRange: { x: [-50, 50], y: [20, 80], z: [-50, 50] },
+                        gravity: 0,
+                        drag: 0.7,
+                        blending: 'additive'
+                    },
+                    // Golden explosion
+                    {
+                        count: 25,
+                        lifetime: 0.5,
+                        color: 0xffd700,
+                        colorRange: { start: 0xffffff, end: 0xff8800 },
+                        scale: 18,
+                        scaleMultiplier: 1.5,
+                        velocityRange: { x: [-100, 100], y: [50, 150], z: [-100, 100] },
+                        gravity: 150,
+                        drag: 0.93,
+                        blending: 'additive'
+                    },
+                    // Holy embers
+                    {
+                        count: 15,
+                        lifetime: 0.8,
+                        color: 0xffffaa,
+                        colorRange: { start: 0xffffff, end: 0xffcc00 },
+                        scale: 6,
+                        scaleMultiplier: 0.5,
+                        velocityRange: { x: [-80, 80], y: [100, 200], z: [-80, 80] },
+                        gravity: 100,
+                        drag: 0.96,
+                        blending: 'additive'
+                    }
+                ]
+            });
+        }
     }
     
     // FIXED: Deterministic highest health enemy selection
