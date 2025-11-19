@@ -234,17 +234,20 @@ class CommandQueueSystem extends engine.BaseSystem {
             const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
             const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
 
-            // Check if current command is complete
+            // Clear all combat-related commands on phase transition
             if (commandQueue.currentCommand) {
-                // Command completion is handled by individual systems (BuildAbility, MineGoldAbility, etc.)
-                // They should call completeCurrentCommand when done
-
-                // However, we can check for some automatic completions:
-                // - If target position is reached and no special state
-                if (aiState.state === 'idle' && commandQueue.currentCommand.type === 'move') {
-                    // Move command completed
+                const cmdType = commandQueue.currentCommand.type;
+                // Clear attack and move commands - they're not valid across rounds
+                if (cmdType === 'attack' || cmdType === 'move' || cmdType === 'combat') {
                     this.completeCurrentCommand(entityId);
                 }
+            }
+
+            // Also clear any queued attack/combat commands
+            if (commandQueue.commands && commandQueue.commands.length > 0) {
+                commandQueue.commands = commandQueue.commands.filter(cmd =>
+                    cmd.type !== 'attack' && cmd.type !== 'combat' && cmd.type !== 'move'
+                );
             }
         }
     }
