@@ -593,10 +593,15 @@ class PlayerControlSystem extends engine.BaseSystem {
         if (clickTarget) {
             // Handle click-to-move with pathfinding
             if (aiState) {
-                // Request path if we don't have one or target changed
-                if (!aiState.path || !aiState.targetPosition ||
+                // Check if target changed - request new path immediately
+                const targetChanged = !aiState.targetPosition ||
                     aiState.targetPosition.x !== clickTarget.x ||
-                    aiState.targetPosition.z !== clickTarget.z) {
+                    aiState.targetPosition.z !== clickTarget.z;
+
+                if (targetChanged) {
+                    // Clear old path and request new one
+                    aiState.path = null;
+                    aiState.pathIndex = 0;
                     aiState.targetPosition = { x: clickTarget.x, z: clickTarget.z };
                     aiState.state = 'chasing';
                     // Request path from pathfinding system
@@ -612,7 +617,7 @@ class PlayerControlSystem extends engine.BaseSystem {
                         aiState.targetPosition = null;
                     }
                 } else {
-                    // Fallback to direct movement while waiting for path
+                    // Move directly while waiting for path
                     const reached = this.handleClickMoveFor(entityId, pos, vel, clickTarget);
                     if (reached && isLocal) {
                         this.cancelClickMove();
