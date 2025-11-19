@@ -694,19 +694,33 @@ class CombatAISystem extends engine.BaseSystem {
     setRetaliatoryTarget(entityId, attackerId) {
         const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
         if (!aiState) return;
-        
+
+        // If already has a target, don't override
         if (aiState.target) return;
-        
+
         const attackerHealth = this.game.getComponent(attackerId, this.componentTypes.HEALTH);
         const attackerDeathState = this.game.getComponent(attackerId, this.componentTypes.DEATH_STATE);
         if (!attackerHealth || attackerHealth.current <= 0) return;
         if (attackerDeathState && attackerDeathState.isDying) return;
-        
+
         const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
         const defenderTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
         if (attackerTeam && defenderTeam && attackerTeam.team === defenderTeam.team) return;
-        
+
         aiState.target = attackerId;
+
+        // Queue attack command through command queue system so the unit actually engages
+        if (this.game.commandQueueSystem) {
+            this.game.gameManager.call('queueCommand', entityId, {
+                type: 'attack',
+                controllerId: "CombatAISystem",
+                targetPosition: null,
+                target: attackerId,
+                meta: {},
+                priority: this.game.commandQueueSystem.PRIORITY.ATTACK,
+                interruptible: true
+            }, true); // true = interrupt current (idle) command
+        }
     }
 
     debugStatusEffects() {
