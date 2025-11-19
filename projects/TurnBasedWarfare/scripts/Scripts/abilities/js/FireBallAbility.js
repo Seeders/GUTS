@@ -298,9 +298,10 @@ console.log('fire fireBall', projectileData);
 
     // Create epic multi-layered explosion effect
     createExplosionEffect(impactPos) {
-        console.log('createExplosionEffect called', impactPos, 'effectsSystem:', !!this.game.effectsSystem);
+        console.log('createExplosionEffect called', impactPos, 'effectsSystem:', !!this.game.effectsSystem, 'particleSystem:', !!this.game.particleSystem, 'gameManager:', !!this.game.gameManager);
         if (!this.game.effectsSystem) return;
         // Standard explosion effects
+        console.log('Creating explosion_core effect');
         this.createVisualEffect(impactPos, 'explosion_core');
         this.createVisualEffect(impactPos, 'explosion_fire');
         this.createVisualEffect(impactPos, 'explosion_embers');
