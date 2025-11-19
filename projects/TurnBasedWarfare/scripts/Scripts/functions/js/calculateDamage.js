@@ -1,7 +1,7 @@
-function calculateDamage(attack, target) {
+function calculateDamage(attack, target, rng = null) {
     // Set default values if not provided
-    
-    attack.speed = attack.speed || 5;     
+
+    attack.speed = attack.speed || 5;
     attack.piercing = attack.piercing || 0,
     attack.splashRadius = attack.splashRadius || 0;
     attack.critChance = attack.critChance || .05;
@@ -20,7 +20,10 @@ function calculateDamage(attack, target) {
       "physical": target.physicalResistance || 0,
       "toxic": target.toxicResistance || 0,
     }
-    
+
+    // Use seeded RNG for deterministic results, fallback to Math.random for backwards compatibility
+    const random = rng ? () => rng.next() : Math.random;
+
     // Initialize result object
     const result = {
       damageBlocked: 0,
@@ -28,13 +31,13 @@ function calculateDamage(attack, target) {
       damageDealt: 0,
       energyShieldRemaining: target.energyShield || 0,
       wasEvaded: false,
-      wasCritical: Math.random() <= attack.critChance,
+      wasCritical: random() <= attack.critChance,
       hitDetails: {}
     };
-    
+
     // Check for evasion
     if (target.evasion && target.evasion > 0) {
-      const evasionRoll = Math.random() * 100;
+      const evasionRoll = random() * 100;
       if (evasionRoll < target.evasion) {
         result.wasEvaded = true;
         result.hitDetails.evasion = "Attack evaded";

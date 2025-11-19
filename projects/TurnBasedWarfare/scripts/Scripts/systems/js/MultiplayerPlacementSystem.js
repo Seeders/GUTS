@@ -267,6 +267,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.applyOpponentPlacements(opponentPlacements);
             this.applyTargetPositions();
             this.game.state.phase = 'battle';
+
+            // Initialize deterministic RNG for this battle (must match server seed)
+            const roomId = this.game.clientNetworkManager?.roomId || 'default';
+            const roomIdHash = SeededRandom.hashString(roomId);
+            const battleSeed = SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
+            this.game.rng = new SeededRandom(battleSeed);
+
             this.game.triggerEvent("onBattleStart");
             this.game.resetCurrentTime();
             this.resetAI();

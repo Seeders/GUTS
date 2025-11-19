@@ -70,8 +70,8 @@ class CommandQueueSystem extends engine.BaseSystem {
             } else {
                 // Queue it for later
                 commandQueue.commands.push(command);
-                // Sort by priority (highest first)
-                commandQueue.commands.sort((a, b) => b.priority - a.priority);
+                // Sort by priority (highest first), with command ID as tie-breaker for determinism
+                commandQueue.commands.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
                 return true;
             }
         } else if (!commandQueue.currentCommand) {
@@ -81,7 +81,8 @@ class CommandQueueSystem extends engine.BaseSystem {
         } else {
             // Queue it for later
             commandQueue.commands.push(command);
-            commandQueue.commands.sort((a, b) => b.priority - a.priority);
+            // Sort by priority (highest first), with command ID as tie-breaker for determinism
+            commandQueue.commands.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
             return true;
         }
     }

@@ -29,9 +29,15 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
-            
+
+            // Initialize deterministic RNG for this battle
+            // Seed based on room ID and round number for reproducibility
+            const roomIdHash = room.id ? SeededRandom.hashString(room.id) : 1;
+            const battleSeed = SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
+            this.game.rng = new SeededRandom(battleSeed);
+
             return { success: true };
-            
+
         } catch (error) {
             console.error('Error in startBattle:', error);
             return { success: false, error: error.message };

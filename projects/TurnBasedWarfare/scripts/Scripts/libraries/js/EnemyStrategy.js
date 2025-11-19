@@ -1,8 +1,9 @@
 class EnemyStrategy {
-    constructor() {
+    constructor(rng = null) {
         this.current = null;
         this.history = [];
         this.playerCounters = new Map();
+        this.rng = rng; // Seeded RNG for deterministic strategy selection
         
         // Strategy definitions with weights and preferences
         this.strategies = {
@@ -181,17 +182,29 @@ class EnemyStrategy {
      * @param {Object} weights - Strategy weights
      * @returns {string} Selected strategy key
      */
+    /**
+     * Set the RNG instance for deterministic selection
+     * @param {SeededRandom} rng - Seeded random instance
+     */
+    setRNG(rng) {
+        this.rng = rng;
+    }
+
     weightedRandomSelection(weights) {
-        const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-        let random = Math.random() * totalWeight;
-        
-        for (const [strategy, weight] of Object.entries(weights)) {
+        // Sort entries for deterministic iteration order
+        const entries = Object.entries(weights).sort((a, b) => a[0].localeCompare(b[0]));
+        const totalWeight = entries.reduce((sum, [, weight]) => sum + weight, 0);
+
+        // Use seeded RNG if available, otherwise fallback to Math.random
+        let random = (this.rng ? this.rng.next() : Math.random()) * totalWeight;
+
+        for (const [strategy, weight] of entries) {
             random -= weight;
             if (random <= 0) {
                 return strategy;
             }
         }
-        
+
         return 'balanced'; // Fallback
     }
     

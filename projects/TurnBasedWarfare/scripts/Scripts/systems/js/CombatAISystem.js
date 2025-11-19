@@ -458,7 +458,7 @@ class CombatAISystem extends engine.BaseSystem {
                 const availableAbilities = abilities
                     .filter(ability => this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id))
                     .filter(ability => ability.canExecute && ability.canExecute(entityId))
-                    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+                    .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id));
 
                 if (availableAbilities.length > 0) {
                     this.game.abilitySystem.useAbility(entityId, availableAbilities[0].id);
