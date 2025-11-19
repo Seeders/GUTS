@@ -2,7 +2,7 @@ class UnitCreationManager {
     constructor(game) {
         this.game = game;
         this.game.unitCreationManager = this;
-        this.SPEED_MODIFIER = 20;
+        this.SPEED_MODIFIER = 2; // Reduced for ARPG - enemies should be similar speed to player
         // Default component values for missing unit data
         this.defaults = {
             hp: 100,
