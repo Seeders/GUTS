@@ -449,7 +449,22 @@ class CombatAISystem extends engine.BaseSystem {
                 combat.lastAttack = this.game.state.now;
                 aiMeta.lastAttackStart = this.game.state.now;
             }
-        }           
+        }
+        // Handle ability-only units (damage = 0) - they rely on abilities for combat
+        else if (this.game.abilitySystem) {
+            const abilities = this.game.gameManager.call('getEntityAbilities', entityId);
+            if (abilities && abilities.length > 0) {
+                // Find available offensive abilities
+                const availableAbilities = abilities
+                    .filter(ability => this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id))
+                    .filter(ability => ability.canExecute && ability.canExecute(entityId))
+                    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+                if (availableAbilities.length > 0) {
+                    this.game.abilitySystem.useAbility(entityId, availableAbilities[0].id);
+                }
+            }
+        }
     }
 
     log(){
