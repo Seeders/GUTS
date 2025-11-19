@@ -1,6 +1,6 @@
 {
   "title": "Level 1",
-  "procedural": true,
+  "procedural": false,
   "tileSet": "dungeon",
   "floor": 1,
   "minRooms": 8,

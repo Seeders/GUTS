@@ -7,8 +7,8 @@ class MovementSystem extends engine.BaseSystem {
         this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         
-        this.AI_SPEED_MULTIPLIER = 0.1;
-        this.DEFAULT_AI_SPEED = 50;
+        this.AI_SPEED_MULTIPLIER = 1.0;
+        this.DEFAULT_AI_SPEED = 100;
         this.POSITION_UPDATE_MULTIPLIER = 1;
         this.DEFAULT_TERRAIN_SIZE = 768 * 2;
         
@@ -115,8 +115,18 @@ class MovementSystem extends engine.BaseSystem {
             
             if (!projectile && unitData.has(entityId)) {
                 let entityData = unitData.get(entityId);
-                if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vz != 0){
-                    this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
+                // Skip smoothing for player-controlled units (no aiBehavior)
+                // They set velocity directly via PlayerControlSystem
+                const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+                if (aiState && aiState.aiBehavior) {
+                    if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vz != 0){
+                        this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
+                    }
+                }
+                // For player-controlled units, just apply separation forces without smoothing
+                else if (entityData.separationForce) {
+                    vel.vx += entityData.separationForce.x * 0.3;
+                    vel.vz += entityData.separationForce.z * 0.3;
                 }
             }
             
