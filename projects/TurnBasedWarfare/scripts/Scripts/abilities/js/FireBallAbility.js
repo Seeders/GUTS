@@ -111,6 +111,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
 
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
+        console.log(`FireBall canExecute: entity ${casterEntity}, enemies in range: ${enemies.length}, range: ${this.range}`);
         return enemies.length > 0;
     }
 
