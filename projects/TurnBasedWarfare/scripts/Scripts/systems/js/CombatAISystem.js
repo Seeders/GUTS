@@ -53,9 +53,6 @@ class CombatAISystem extends engine.BaseSystem {
             return;
         }
 
-        // Reset cleanup flag when battle starts
-        this.hasCleanedUpForNonBattle = false;
-
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         );
