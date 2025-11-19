@@ -27,7 +27,10 @@ class DamageSystem extends engine.BaseSystem {
         
         // Damage event queue for delayed damage (melee attacks, etc.)
         this.pendingDamageEvents = new Map();
-        
+
+        // Deterministic counter for event IDs (prevents desync)
+        this.damageEventCounter = 0;
+
         // Configuration
         this.RESISTANCE_CAP = 0.9; // Maximum resistance (90%)
         this.MIN_DAMAGE = 1; // Minimum damage that can be dealt
@@ -170,10 +173,12 @@ class DamageSystem extends engine.BaseSystem {
 
         // Find all entities within splash radius
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
+            this.componentTypes.POSITION,
             this.componentTypes.HEALTH,
             this.componentTypes.TEAM
         );
+        // Sort for deterministic processing order (prevents desync)
+        allEntities.sort((a, b) => String(a).localeCompare(String(b)));
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
             
@@ -364,10 +369,12 @@ class DamageSystem extends engine.BaseSystem {
     /**
      * Process ongoing poison damage
      */
-    processStatusEffects() {     
+    processStatusEffects() {
+        // Sort entity IDs for deterministic processing order (prevents desync)
+        const sortedEntityIds = Array.from(this.activeStatusEffects.keys()).sort((a, b) => String(a).localeCompare(String(b)));
 
-        
-        for (const [entityId, statusEffects] of this.activeStatusEffects.entries()) {
+        for (const entityId of sortedEntityIds) {
+            const statusEffects = this.activeStatusEffects.get(entityId);
             const targetHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
             const targetDeathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
             
@@ -434,7 +441,7 @@ class DamageSystem extends engine.BaseSystem {
      */
     scheduleDamage(sourceId, targetId, damage, element, delay, options = {}) {
         const triggerTime = this.game.state.now + delay;
-        const eventId = `${sourceId}_${targetId}_${this.game.state.now}_${Math.random()}`;
+        const eventId = `${sourceId}_${targetId}_${Math.round(this.game.state.now * 1000)}_${this.damageEventCounter++}`;
         
         this.pendingDamageEvents.set(eventId, {
             sourceId,
@@ -452,11 +459,14 @@ class DamageSystem extends engine.BaseSystem {
     /**
      * Process pending damage events
      */
-    processPendingDamage() {        
-
+    processPendingDamage() {
         const eventsToRemove = [];
-        
-        for (const [eventId, event] of this.pendingDamageEvents.entries()) {
+
+        // Sort event IDs for deterministic processing order (prevents desync)
+        const sortedEventIds = Array.from(this.pendingDamageEvents.keys()).sort((a, b) => a.localeCompare(b));
+
+        for (const eventId of sortedEventIds) {
+            const event = this.pendingDamageEvents.get(eventId);
 
             if (this.game.state.now >= event.triggerTime) {
                 // Check if target is still valid

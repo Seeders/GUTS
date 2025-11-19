@@ -140,24 +140,27 @@ class CombatAISystem extends engine.BaseSystem {
             this.componentTypes.TEAM,
             this.componentTypes.HEALTH
         );
-        
+
         const visionRange = combat.visionRange;
-        
-        return allUnits.filter(otherId => {
+
+        const enemies = allUnits.filter(otherId => {
             if (otherId === entityId) return false;
-            
+
             const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
             const otherHealth = this.game.getComponent(otherId, this.componentTypes.HEALTH);
             const otherDeathState = this.game.getComponent(otherId, this.componentTypes.DEATH_STATE);
             const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
-            
+
             if (!otherTeam || otherTeam.team === team.team) return false;
             if (!otherHealth || otherHealth.current <= 0) return false;
             if (otherDeathState && otherDeathState.isDying) return false;
             if (!otherPos) return false;
-            
-            return this.isInVisionRange(entityId, otherId, visionRange) && this.game.gameManager.call('hasLineOfSight', pos, otherPos, unitType, entityId);                   
+
+            return this.isInVisionRange(entityId, otherId, visionRange) && this.game.gameManager.call('hasLineOfSight', pos, otherPos, unitType, entityId);
         });
+
+        // Sort for deterministic order (prevents desync)
+        return enemies.sort((a, b) => String(a).localeCompare(String(b)));
     }
 
 
@@ -304,12 +307,13 @@ class CombatAISystem extends engine.BaseSystem {
             const isCurrentTarget = (enemyId === aiState.target);
             
             const score = this.calculateTargetScore(distance, healthRatio, isCurrentTarget);
-            
-            if (score > bestScore) {
+
+            // Use deterministic tie-breaking (entity ID) to prevent desync
+            if (score > bestScore || (score === bestScore && bestTarget !== null && String(enemyId).localeCompare(String(bestTarget)) < 0)) {
                 bestScore = score;
                 bestTarget = enemyId;
             }
-            
+
         });
         
         if (bestTarget !== aiState.target) {
