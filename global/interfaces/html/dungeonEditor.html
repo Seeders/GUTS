@@ -1,0 +1,224 @@
+<div id="dungeon-editor-container" class="editor-module">
+   <div class="editor-module__sidebar editor-module__sidebar--left">
+     <div class="editor-module__toolbar">
+       <button id="tileEditorBtn" class="editor-module__btn editor-module__btn--active">Tile</button>
+       <button id="connectionsBtn" class="editor-module__btn">Edges</button>
+       <button id="contentBtn" class="editor-module__btn">Content</button>
+       <button id="previewBtn" class="editor-module__btn">Preview</button>
+     </div>
+
+     <div class="editor-module__scroll-y">
+       <!-- Tile Editor Panel -->
+       <div id="tileEditorPanel">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Tile Properties</h3>
+           <div class="editor-module__form-row">
+             <label for="tileId" class="editor-module__label">Tile ID:</label>
+             <input type="text" id="tileId" class="editor-module__input" value="new_tile">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="tileName" class="editor-module__label">Name:</label>
+             <input type="text" id="tileName" class="editor-module__input" value="New Tile">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="tileWidth" class="editor-module__label">Width (cells):</label>
+             <input type="number" id="tileWidth" class="editor-module__input" value="2" min="1" max="8">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="tileHeight" class="editor-module__label">Height (cells):</label>
+             <input type="number" id="tileHeight" class="editor-module__input" value="2" min="1" max="8">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="tileWeight" class="editor-module__label">Weight:</label>
+             <input type="number" id="tileWeight" class="editor-module__input" value="10" min="1" max="100">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="tileCategory" class="editor-module__label">Category:</label>
+             <select id="tileCategory" class="editor-module__select">
+               <option value="room">Room</option>
+               <option value="corridor">Corridor</option>
+               <option value="entrance">Entrance</option>
+               <option value="special">Special</option>
+               <option value="boss">Boss</option>
+             </select>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Interior Painting</h3>
+           <div class="editor-module__form-row">
+             <label class="editor-module__label">Paint Mode:</label>
+             <div class="dungeon-editor__tool-buttons">
+               <button id="paintFloorBtn" class="editor-module__btn editor-module__btn--small editor-module__btn--active">Floor</button>
+               <button id="paintWallBtn" class="editor-module__btn editor-module__btn--small">Wall</button>
+               <button id="paintDoorBtn" class="editor-module__btn editor-module__btn--small">Door</button>
+             </div>
+           </div>
+           <div class="editor-module__form-row">
+             <label for="interiorBrushSize" class="editor-module__label">Brush:</label>
+             <input type="range" id="interiorBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="3">
+             <span id="interiorBrushSizeValue" class="editor-module__value-display">1</span>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <div class="editor-module__form-row">
+             <button id="clearTileBtn" class="editor-module__btn editor-module__btn--danger">Clear Tile</button>
+             <button id="saveTileBtn" class="editor-module__btn editor-module__btn--success">Save Tile</button>
+           </div>
+         </div>
+       </div>
+
+       <!-- Connections Panel -->
+       <div id="connectionsPanel" style="display: none;">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Edge Connections</h3>
+           <div class="editor-module__info-box">
+             <p>Define connection types for each edge. Tiles connect when their edges match.</p>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">North Edge</h4>
+           <div id="northConnections" class="dungeon-editor__connection-slots">
+             <!-- Connection slots generated dynamically -->
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">East Edge</h4>
+           <div id="eastConnections" class="dungeon-editor__connection-slots">
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">South Edge</h4>
+           <div id="southConnections" class="dungeon-editor__connection-slots">
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">West Edge</h4>
+           <div id="westConnections" class="dungeon-editor__connection-slots">
+           </div>
+         </div>
+       </div>
+
+       <!-- Content Panel -->
+       <div id="contentPanel" style="display: none;">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Tile Content</h3>
+           <div class="editor-module__info-box">
+             <p>Define enemies, props, and loot for this tile.</p>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">Enemy Spawns</h4>
+           <div class="editor-module__form-row">
+             <label class="editor-module__label">Click canvas to place spawn points</label>
+           </div>
+           <div class="editor-module__form-row">
+             <label for="enemyType" class="editor-module__label">Enemy Type:</label>
+             <select id="enemyType" class="editor-module__select">
+               <option value="weak">Weak</option>
+               <option value="medium">Medium</option>
+               <option value="strong">Strong</option>
+               <option value="elite">Elite</option>
+               <option value="boss">Boss</option>
+             </select>
+           </div>
+           <div id="enemySpawnList" class="dungeon-editor__spawn-list">
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">Props</h4>
+           <div class="editor-module__form-row">
+             <label for="propType" class="editor-module__label">Prop Type:</label>
+             <select id="propType" class="editor-module__select">
+               <option value="barrel">Barrel</option>
+               <option value="crate">Crate</option>
+               <option value="torch">Torch</option>
+               <option value="chest">Chest</option>
+               <option value="pillar">Pillar</option>
+               <option value="debris">Debris</option>
+             </select>
+           </div>
+           <div id="propList" class="dungeon-editor__spawn-list">
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">Loot</h4>
+           <div class="editor-module__form-row">
+             <label for="lootTier" class="editor-module__label">Loot Tier:</label>
+             <select id="lootTier" class="editor-module__select">
+               <option value="none">None</option>
+               <option value="common">Common</option>
+               <option value="uncommon">Uncommon</option>
+               <option value="rare">Rare</option>
+               <option value="epic">Epic</option>
+             </select>
+           </div>
+         </div>
+       </div>
+
+       <!-- Preview Panel -->
+       <div id="previewPanel" style="display: none;">
+         <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Level Preview</h3>
+           <div class="editor-module__info-box">
+             <p>Test level generation with current tile set.</p>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">Generation Settings</h4>
+           <div class="editor-module__form-row">
+             <label for="previewWidth" class="editor-module__label">Width:</label>
+             <input type="number" id="previewWidth" class="editor-module__input" value="8" min="4" max="20">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="previewHeight" class="editor-module__label">Height:</label>
+             <input type="number" id="previewHeight" class="editor-module__input" value="8" min="4" max="20">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="previewSeed" class="editor-module__label">Seed:</label>
+             <input type="number" id="previewSeed" class="editor-module__input" value="12345">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="previewMinRooms" class="editor-module__label">Min Rooms:</label>
+             <input type="number" id="previewMinRooms" class="editor-module__input" value="6" min="1" max="50">
+           </div>
+           <div class="editor-module__form-row">
+             <label for="previewMaxRooms" class="editor-module__label">Max Rooms:</label>
+             <input type="number" id="previewMaxRooms" class="editor-module__input" value="12" min="1" max="50">
+           </div>
+           <div class="editor-module__form-row">
+             <button id="generatePreviewBtn" class="editor-module__btn editor-module__btn--primary">Generate Level</button>
+             <button id="randomSeedBtn" class="editor-module__btn">Random Seed</button>
+           </div>
+         </div>
+
+         <div class="editor-module__section">
+           <h4 class="editor-module__section-title">Tile Set</h4>
+           <div id="tileSetList" class="dungeon-editor__tile-list">
+             <!-- Tile list populated dynamically -->
+           </div>
+           <div class="editor-module__form-row">
+             <button id="addCurrentTileBtn" class="editor-module__btn editor-module__btn--success">Add Current Tile</button>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+
+   <div class="editor-module__canvas-area editor-module__grid-background">
+     <canvas id="dungeonCanvas" class="editor-module__canvas"></canvas>
+
+     <div class="editor-module__status-bar">
+       <span id="dungeonStatusText">Mode: Tile Editor | Cursor: 0, 0</span>
+     </div>
+   </div>
+ </div>
