@@ -552,41 +552,13 @@ class MultiplayerNetworkManager {
     compareComponents(entityId, componentType, clientData, serverData) {
         const diffs = [];
 
-        // Skip visual-only properties for environment objects (trees, rocks, etc.)
-        // These have floating-point precision differences that don't affect gameplay
-        const isEnvironmentObject = entityId.startsWith('env_');
-        const visualOnlyProperties = ['scale', 'rotation', 'angle'];
-
-        // Skip transient timing fields that use absolute timestamps
-        // These are expected to differ slightly between client and server
-        const timingProperties = ['miningStartTime', 'depositStartTime', 'lastExperienceGain', 'creationTime'];
-
-        // Skip simulation state fields that can have minor timing differences
-        // targetPosition is cleared when unit reaches destination, which can happen at slightly different times
-        const transientAIStateProperties = ['targetPosition', 'targetDistance'];
-
         // Compare all properties
         for (const key of Object.keys(serverData)) {
             const clientValue = clientData[key];
             const serverValue = serverData[key];
 
-            // Skip functions and complex objects for comparison
+            // Skip functions for comparison
             if (typeof serverValue === 'function') continue;
-
-            // Skip visual-only properties for environment objects
-            if (isEnvironmentObject && visualOnlyProperties.includes(key)) {
-                continue;
-            }
-
-            // Skip transient timing properties
-            if (timingProperties.includes(key)) {
-                continue;
-            }
-
-            // Skip transient AI state properties
-            if (componentType === 'aiState' && transientAIStateProperties.includes(key)) {
-                continue;
-            }
 
             // Use tolerance for floating-point number comparisons
             if (typeof serverValue === 'number' && typeof clientValue === 'number') {
