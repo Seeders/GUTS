@@ -215,8 +215,9 @@ class CommandQueueSystem extends engine.BaseSystem {
                 aiState.target = null;
                 aiState.path = [];
                 aiState.pathIndex = 0;
-                aiState.meta = {};
-                aiState.aiControllerId = "";
+                // Don't clear meta - preserve timing info for state changes
+                // Don't clear aiControllerId - let the current controller continue
+                // to manage the unit (e.g., CombatAISystem can find new targets)
             }
         }
     }
