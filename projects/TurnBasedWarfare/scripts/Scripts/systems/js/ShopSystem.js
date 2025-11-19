@@ -624,6 +624,30 @@ class ShopSystem extends engine.BaseSystem {
             return;
         }
 
+        // Send cancel request to server
+        if (this.game.networkManager && this.game.networkManager.cancelBuilding) {
+            this.game.networkManager.cancelBuilding({ 
+                placementId: placement.placementId,
+                buildingEntityId: buildingEntityId 
+            }, (success, response) => {
+                if (!success) {
+                    this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
+                    console.error('Cancel construction failed:', response);
+                    return;
+                }
+                
+                // Server confirmed, now do local cleanup
+                this.performLocalCancelConstruction(buildingEntityId, placement);
+            });
+        } else {
+            // Fallback for single-player or when network not available
+            this.performLocalCancelConstruction(buildingEntityId, placement);
+        }
+    }
+
+    performLocalCancelConstruction(buildingEntityId, placement) {
+        const CT = this.game.componentManager.getComponentTypes();
+
         // Refund the gold
         const refundAmount = placement.unitType.value || 0;
         if (refundAmount > 0) {

@@ -340,6 +340,37 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             });
         });
     }
+    
+    removeOpponentPlacement(placementId) {
+        const CT = this.game.componentManager.getComponentTypes();
+        
+        // Find and remove from opponent placements
+        const index = this.opponentPlacements.findIndex(p => p.placementId === placementId);
+        if (index === -1) {
+            console.warn('Opponent placement not found:', placementId);
+            return;
+        }
+
+        const placement = this.opponentPlacements[index];
+        
+        // Destroy all units in the placement
+        if (placement.squadUnits) {
+            for (const entityId of placement.squadUnits) {
+                // Remove from render system
+                if (this.game.renderSystem) {
+                    this.game.renderSystem.removeInstance(entityId);
+                }
+                
+                // Destroy the entity
+                this.game.destroyEntity(entityId);
+            }
+        }
+
+        // Remove from array
+        this.opponentPlacements.splice(index, 1);
+        
+        console.log('Removed opponent placement:', placementId);
+    }
 
     update() {
         if (this.game.state.phase !== 'placement') {

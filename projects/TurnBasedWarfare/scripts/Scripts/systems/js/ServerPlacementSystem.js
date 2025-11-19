@@ -30,6 +30,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGETS', this.handleSetSquadTargets.bind(this));
+        this.game.serverEventManager.subscribe('CANCEL_BUILDING', this.handleCancelBuilding.bind(this));
     
     }
 
@@ -644,6 +645,143 @@ class ServerPlacementSystem extends engine.BaseSystem {
         
         return true;
     }
+    
+    handleCancelBuilding(eventData) {
+        try {
+            const { playerId, data } = eventData;
+            const { placementId, buildingEntityId } = data;
+            
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                    error: 'Room not found'
+                });
+                return;
+            }
+            
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+            
+            if (!player) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                    error: 'Player not found'
+                });
+                return;
+            }
+
+            // Find the placement
+            const playerPlacements = this.playerPlacements.get(playerId);
+            if (!playerPlacements) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                    error: 'No placements found for player'
+                });
+                return;
+            }
+
+            const placementIndex = playerPlacements.findIndex(p => p.placementId === placementId);
+            if (placementIndex === -1) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                    error: 'Placement not found'
+                });
+                return;
+            }
+
+            const placement = playerPlacements[placementIndex];
+
+            // Validate it's a building under construction
+            if (!placement.isUnderConstruction) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                    error: 'Building is not under construction'
+                });
+                return;
+            }
+
+            // Refund gold to the player
+            const refundAmount = placement.unitType?.value || 0;
+            if (refundAmount > 0) {
+                player.gold = (player.gold || 0) + refundAmount;
+            }
+
+            // Remove the placement from arrays
+            playerPlacements.splice(placementIndex, 1);
+
+            const side = player.side;
+            if (side === 'left') {
+                const leftIndex = this.leftPlacements.findIndex(p => p.placementId === placementId);
+                if (leftIndex !== -1) {
+                    this.leftPlacements.splice(leftIndex, 1);
+                }
+            } else if (side === 'right') {
+                const rightIndex = this.rightPlacements.findIndex(p => p.placementId === placementId);
+                if (rightIndex !== -1) {
+                    this.rightPlacements.splice(rightIndex, 1);
+                }
+            }
+
+            // Clean up the builder if assigned
+            const assignedBuilder = placement.assignedBuilder;
+            if (assignedBuilder) {
+                const CT = this.game.componentManager.getComponentTypes();
+                
+                // Complete/clear the build command
+                if (this.game.commandQueueSystem) {
+                    const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
+                    if (currentCommand && currentCommand.type === 'build') {
+                        this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
+                    }
+                }
+
+                // Remove the builder's BUILDING_STATE component
+                if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
+                    this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+                }
+
+                // Reset builder's AI state
+                const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
+                if (aiState) {
+                    aiState.state = 'idle';
+                    aiState.targetPosition = null;
+                    aiState.target = null;
+                }
+            }
+
+            // Destroy the building entity on the server
+            const buildingEntity = placement.squadUnits?.[0];
+            if (buildingEntity) {
+                if (this.game.renderSystem) {
+                    this.game.renderSystem.removeInstance(buildingEntity);
+                }
+                this.game.destroyEntity(buildingEntity);
+            }
+
+            // Send success response to requesting player
+            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                success: true,
+                placementId,
+                refundAmount,
+                gold: player.gold
+            });
+            
+            // Broadcast to other players in the room
+            for (const [otherPlayerId, otherPlayer] of room.players) {
+                if (otherPlayerId !== playerId) {
+                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_BUILDING_CANCELLED', {
+                        placementId,
+                        side: player.side
+                    });
+                }
+            }
+            
+            console.log(`Player ${playerId} cancelled building construction: ${placementId}`);
+            
+        } catch (error) {
+            console.error('Error cancelling building:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_CANCELLED', { 
+                error: 'Server error while cancelling building'
+            });
+        }
+    }
+
     clearAllPlacements(){
 
         this.playerPlacements.keys().forEach((playerId) => {

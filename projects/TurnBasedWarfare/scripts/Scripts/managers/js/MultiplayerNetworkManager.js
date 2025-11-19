@@ -100,6 +100,11 @@ class MultiplayerNetworkManager {
 
             nm.listen('GAME_ENDED_ALL_PLAYERS_LEFT', (data) => {
                 this.handleAllPlayersLeft(data);
+            }),
+            
+
+            nm.listen('OPPONENT_BUILDING_CANCELLED', (data) => {
+                this.handleOpponentBuildingCancelled(data);
             })
         );
     }
@@ -204,6 +209,37 @@ class MultiplayerNetworkManager {
         );
     }
 
+    cancelBuilding(data, callback) {
+        if (this.game.state.phase !== 'placement') {
+            callback(false, 'Not in placement phase.');
+            return;
+        }
+        
+        this.game.clientNetworkManager.call(
+            'CANCEL_BUILDING',
+            data,
+            'BUILDING_CANCELLED',
+            (data, error) => {
+                if (error || data.error) {
+                    console.log('Cancel building error:', error || data.error);
+                    callback(false, error || data.error);
+                } else {
+                    console.log('Cancel building response:', data);
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
+    handleOpponentBuildingCancelled(data) {
+        const { placementId, side } = data;
+        
+        if (this.game.placementSystem && this.game.placementSystem.removeOpponentPlacement) {
+            this.game.placementSystem.removeOpponentPlacement(placementId);
+            this.game.uiSystem?.showNotification('Opponent cancelled a building', 'info', 1500);
+        }
+    }
+    
     purchaseUpgrade(data, callback){
         if(this.game.state.phase != "placement") {
             callback(false, 'Not in placement phase.');

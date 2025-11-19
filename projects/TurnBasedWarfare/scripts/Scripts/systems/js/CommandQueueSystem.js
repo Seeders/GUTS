@@ -34,7 +34,7 @@ class CommandQueueSystem extends engine.BaseSystem {
     queueCommand(entityId, commandData, interrupt = true) {
         const ComponentTypes = this.game.componentTypes;
         const Components = this.game.componentManager.getComponents();
-;
+
         // Ensure unit has a command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
         if (!commandQueue) {

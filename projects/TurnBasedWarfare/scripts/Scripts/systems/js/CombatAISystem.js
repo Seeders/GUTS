@@ -107,7 +107,42 @@ class CombatAISystem extends engine.BaseSystem {
             } else {
                 aiState.targetDistance = 0;
             }
-            if (enemiesInVisionRange.length === 0) {
+ if (enemiesInVisionRange.length > 0) {
+                // Enemies are present - ensure unit is under combat control
+                let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
+                
+                // If unit has no controller or wrong controller, establish combat control
+                if (!currentAI || currentAI === "" || currentAI !== "CombatAISystem") {
+                    // Ensure we have a current command or queue a new one
+                    const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
+                    
+                    if (!currentCommand || currentCommand.type !== 'attack' || currentCommand.controllerId !== "CombatAISystem") {
+                        // Queue attack command with high priority
+                        if (this.game.commandQueueSystem) {
+                            this.game.gameManager.call('queueCommand', entityId, {
+                                type: 'attack',
+                                controllerId: "CombatAISystem",
+                                targetPosition: null,
+                                target: null,
+                                meta: {},
+                                priority: this.game.commandQueueSystem.PRIORITY.ATTACK,
+                                interruptible: true
+                            }, true);
+                        }
+                    }
+                }
+                
+                // Process combat AI decision
+                if (aiMeta.nextMoveTime == null) aiMeta.nextMoveTime = 0;
+                
+                if (aiState.state !== 'waiting') {
+                    aiMeta.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
+                    this.makeAIDecision(entityId, pos, combat, team, aiState, enemiesInVisionRange, collision);
+                    aiMeta.lastDecisionTime = this.game.state.now;
+                }
+                
+            } else {
+                // No enemies present - handle idle/movement logic
                 if(aiState.targetPosition){
                     if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored){
                         if(aiState.state !== 'chasing'){
@@ -115,7 +150,6 @@ class CombatAISystem extends engine.BaseSystem {
                         }
                     } else {
                         if (aiState.state !== 'idle') {
-                            
                             let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
                             if(currentAI == "CombatAISystem"){
                                 this.onLostTarget(entityId);
@@ -123,15 +157,16 @@ class CombatAISystem extends engine.BaseSystem {
                             this.changeAIState(aiState, 'idle');
                         }
                     }
-                }   
-            }
-
-            if (aiMeta.nextMoveTime == null) aiMeta.nextMoveTime = 0;
-    
-            if (aiState.state !== 'waiting') {
-                aiMeta.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
-                this.makeAIDecision(entityId, pos, combat, team, aiState, enemiesInVisionRange, collision);
-                aiMeta.lastDecisionTime = this.game.state.now;
+                }
+                
+                // Still call makeAIDecision even without enemies (for state management)
+                if (aiMeta.nextMoveTime == null) aiMeta.nextMoveTime = 0;
+                
+                if (aiState.state !== 'waiting') {
+                    aiMeta.nextMoveTime = this.game.state.now + this.MOVEMENT_DECISION_INTERVAL;
+                    this.makeAIDecision(entityId, pos, combat, team, aiState, enemiesInVisionRange, collision);
+                    aiMeta.lastDecisionTime = this.game.state.now;
+                }
             }
 
             this.handleCombat(entityId, pos, combat, aiState, collision);
@@ -338,8 +373,22 @@ class CombatAISystem extends engine.BaseSystem {
         aiState.useDirectMovement = false;
         aiState.target = null;
 
-        // Complete the current attack command through the command queue
-        // This lets the queue handle what comes next (idle or next queued command)
+        // Check for nearby enemies before completing the command
+        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
+        const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        
+        if (pos && combat && team && unitType) {
+            const enemiesInVisionRange = this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || [];
+            
+            // If enemies remain, keep the attack command active
+            if (enemiesInVisionRange.length > 0) {
+                return;
+            }
+        }
+
+        // Only complete the command if no enemies nearby
         if (this.game.commandQueueSystem) {
             const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
             if (currentCommand && currentCommand.type === 'attack') {
