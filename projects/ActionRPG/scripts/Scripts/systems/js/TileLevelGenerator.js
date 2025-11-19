@@ -898,6 +898,15 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     spawnEnemy(difficulty, x, z) {
+        // Check if we're on server side or in offline mode
+        const isServer = !!this.engine.serverNetworkManager;
+        const hasAnyNetwork = this.engine.serverNetworkManager || this.game.clientNetworkManager;
+
+        // Only spawn if we're the server OR there's no network at all (offline single-player)
+        if (!isServer && hasAnyNetwork) {
+            return; // Client waits for server to spawn
+        }
+
         // Get enemy types from enemySets collection
         const collections = this.game.getCollections();
         const enemySet = collections.enemySets?.[difficulty] || collections.enemySets?.easy;
