@@ -101,6 +101,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
         // Listen for enemy spawns from server
         nm.listen('ENEMY_SPAWNED', (data) => {
+            console.log('EnemySpawnerSystem: Received ENEMY_SPAWNED from server:', data);
             this.createEnemyFromServer(data);
         });
 
