@@ -111,15 +111,27 @@ class WorldSystem extends engine.BaseSystem {
             );
         } else if(this.cameraData.zoom){
             this.camera = new THREE.OrthographicCamera(
-                width / - 2, 
-                width / 2, 
-                height / 2, 
-                height / - 2, 
+                width / - 2,
+                width / 2,
+                height / 2,
+                height / - 2,
                 this.cameraData.near,
                 this.cameraData.far
             );
             this.camera.zoom = this.cameraData.zoom;
             this.camera.updateProjectionMatrix();
+        }
+
+        // Set camera position and lookAt from config
+        if (this.cameraData.position) {
+            const pos = JSON.parse(this.cameraData.position);
+            this.camera.position.set(pos.x, pos.y, pos.z);
+        }
+        if (this.cameraData.lookAt) {
+            const lookAt = JSON.parse(this.cameraData.lookAt);
+            this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+            // Store lookAt for camera panning
+            this.camera.userData.lookAt = new THREE.Vector3(lookAt.x, lookAt.y, lookAt.z);
         }
 
         this.renderer = new THREE.WebGLRenderer({
