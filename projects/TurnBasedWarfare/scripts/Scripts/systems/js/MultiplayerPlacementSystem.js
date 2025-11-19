@@ -264,12 +264,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         if (data.allReady) {
             let opponentPlacements = null;
+            let opponentPlayerId = null;
             data.gameState.players.forEach((player) => {
                 if(player.id != myPlayerId){
                     opponentPlacements = player.placements;
+                    opponentPlayerId = player.id;
                 }
             });
-            this.applyOpponentPlacements(opponentPlacements);
+            this.applyOpponentPlacements(opponentPlacements, opponentPlayerId);
             this.applyTargetPositions();
             this.game.state.phase = 'battle';
 
@@ -418,12 +420,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         }
     }
 
-    applyOpponentPlacements(opponentData) {
+    applyOpponentPlacements(opponentData, opponentPlayerId = null) {
         opponentData.forEach(placement => {
             if(this.game.gameManager.call('getOpponentPlacements').find(p => p.placementId === placement.placementId)) {
                 return;
             }
-            this.placeSquad(placement);         
+            // Store opponent's playerId on placement for unit creation
+            if (opponentPlayerId) {
+                placement.playerId = opponentPlayerId;
+            }
+            this.placeSquad(placement);
         });
 
         if (this.game.state) {
@@ -604,16 +610,20 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const maxUnits = Math.min(unitPositions.length, 16);
         const positions = unitPositions.slice(0, maxUnits);
 
-        // Only set playerId for units on the player's own team
-        // Opponent units will have their playerId set by server sync
-        const isOwnTeam = team === this.game.state.mySide;
-        const playerId = isOwnTeam ? (this.game.clientNetworkManager?.playerId || null) : null;
+        // Use playerId from placement if available (for opponent units)
+        // Otherwise use local player's ID for own team units
+        let playerId = placement.playerId || null;
+        if (!playerId && team === this.game.state.mySide) {
+            playerId = this.game.clientNetworkManager?.playerId || null;
+        }
 
         positions.forEach(pos => {
             const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
             const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team, playerId);
+            // Use placement.targetPosition to match server behavior
+            // Server passes placement.targetPosition, not each unit's pos
+            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, placement.targetPosition, placement, team, playerId);
             createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
 
@@ -673,6 +683,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             unitType: { ...unitType },
             squadUnits: [],
             team: team,
+            playerId: this.game.clientNetworkManager?.playerId || null,
             targetPosition: this.game.state.targetPositions.get(placementId),
             roundPlaced: this.game.state.round,
             timestamp: this.game.state.now,
