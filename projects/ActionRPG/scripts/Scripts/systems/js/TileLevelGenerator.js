@@ -932,7 +932,7 @@ class TileLevelGenerator extends engine.BaseSystem {
             const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', x, z) || 0;
 
             const placement = {
-                unitType: { ...unitData, id: type },
+                unitType: { ...unitData, id: type, collection: 'units' },
                 gridPosition: { x: gridX, z: gridZ }
             };
 

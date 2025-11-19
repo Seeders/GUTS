@@ -601,11 +601,11 @@ class MovementSystem extends engine.BaseSystem {
     requestPathIfNeeded(entityId, data) {
         const { pos, aiState } = data;
         const now = this.game.state.now;
-        if(!aiState.aiBehavior){
-            aiState.aiBehavior = {};
+        if(!aiState.meta){
+            aiState.meta = {};
         }
-        if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
-            aiState.aiBehavior.lastPathRequest = now;
+        if (!aiState.meta.lastPathRequest || (now - aiState.meta.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
+            aiState.meta.lastPathRequest = now;
 
             let targetPos = aiState.targetPosition;
             if (aiState.target) {

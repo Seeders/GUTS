@@ -249,7 +249,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             const gridZ = Math.floor(spawnZ / gridSize);
 
             const placement = {
-                unitType: { ...unitData, id: unitType }, // Include id from the collection key
+                unitType: { ...unitData, id: unitType, collection: 'units' }, // Include id from the collection key
                 gridPosition: { x: gridX, z: gridZ }
             };
 
@@ -438,7 +438,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             const gridZ = Math.floor(z / gridSize);
 
             const placement = {
-                unitType: { ...unitData, id: unitType },
+                unitType: { ...unitData, id: unitType, collection: 'units' },
                 gridPosition: { x: gridX, z: gridZ }
             };
 
