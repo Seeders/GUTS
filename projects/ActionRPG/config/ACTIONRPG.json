@@ -20284,6 +20284,18 @@
       "QuestSystem": {
         "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/QuestSystem.js",
         "fileName": "QuestSystem"
+      },
+      "ServerPlayerControlSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ServerPlayerControlSystem.js",
+        "fileName": "ServerPlayerControlSystem"
+      },
+      "ServerEnemySpawnerSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ServerEnemySpawnerSystem.js",
+        "fileName": "ServerEnemySpawnerSystem"
+      },
+      "ServerLootSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ServerLootSystem.js",
+        "fileName": "ServerLootSystem"
       }
     },
     "terrainTypes": {

@@ -43,18 +43,35 @@ class PlayerControlSystem extends engine.BaseSystem {
         // Camera follow settings
         this.cameraFollowPlayer = true;
         this.cameraOffset = { x: 0, y: 300, z: 400 };
+
+        // Network state
+        this.isServer = false;
+        this.lastInputSendTime = 0;
+        this.inputSendInterval = 50; // Send inputs every 50ms
+        this.previousKeys = { ...this.keys };
+        this.otherPlayers = new Map(); // playerId -> { entityId, keys, clickTarget }
     }
 
     init() {
+        // Check if running on server
+        this.isServer = !!this.engine.serverNetworkManager;
+
         this.game.gameManager.register('setPlayerEntity', this.setPlayerEntity.bind(this));
         this.game.gameManager.register('getPlayerEntity', this.getPlayerEntity.bind(this));
         this.game.gameManager.register('assignAbilityToSlot', this.assignAbilityToSlot.bind(this));
         this.game.gameManager.register('getAbilitySlots', () => this.abilitySlots);
         this.game.gameManager.register('useAbilitySlot', this.useAbilitySlot.bind(this));
         this.game.gameManager.register('setClickMoveTarget', this.setClickMoveTarget.bind(this));
+        this.game.gameManager.register('applyPlayerInput', this.applyPlayerInput.bind(this));
+        this.game.gameManager.register('registerOtherPlayer', this.registerOtherPlayer.bind(this));
 
-        // Set up input handlers
-        this.setupInputHandlers();
+        // Set up input handlers (client only)
+        if (!this.isServer) {
+            this.setupInputHandlers();
+            this.setupNetworkListeners();
+        } else {
+            this.setupServerEventHandlers();
+        }
     }
 
     setupInputHandlers() {
@@ -63,6 +80,162 @@ class PlayerControlSystem extends engine.BaseSystem {
         this.game.gameManager.register('onKeyUp', this.onKeyUp.bind(this));
         this.game.gameManager.register('onMouseClick', this.onMouseClick.bind(this));
         this.game.gameManager.register('onRightClick', this.onRightClick.bind(this));
+    }
+
+    setupNetworkListeners() {
+        // Client listens for other players' inputs
+        if (!this.game.clientNetworkManager) return;
+
+        const nm = this.game.clientNetworkManager;
+
+        nm.listen('OTHER_PLAYER_INPUT', (data) => {
+            this.handleOtherPlayerInput(data);
+        });
+
+        nm.listen('OTHER_PLAYER_ABILITY', (data) => {
+            this.handleOtherPlayerAbility(data);
+        });
+
+        nm.listen('OTHER_PLAYER_POTION', (data) => {
+            this.handleOtherPlayerPotion(data);
+        });
+
+        nm.listen('PLAYER_JOINED', (data) => {
+            this.registerOtherPlayer(data.playerId, data.entityId);
+        });
+
+        nm.listen('PLAYER_LEFT', (data) => {
+            this.otherPlayers.delete(data.playerId);
+        });
+    }
+
+    setupServerEventHandlers() {
+        // Server handles incoming player inputs
+        if (!this.game.serverEventManager) return;
+
+        this.game.serverEventManager.subscribe('PLAYER_INPUT', this.handlePlayerInputFromClient.bind(this));
+        this.game.serverEventManager.subscribe('PLAYER_ABILITY', this.handlePlayerAbilityFromClient.bind(this));
+        this.game.serverEventManager.subscribe('PLAYER_POTION', this.handlePlayerPotionFromClient.bind(this));
+    }
+
+    // Server: Handle input from a client
+    handlePlayerInputFromClient(eventData) {
+        const { playerId, data } = eventData;
+        const { keys, clickMoveTarget, position } = data;
+
+        // Get or create player data
+        let playerData = this.otherPlayers.get(playerId);
+        if (!playerData) {
+            playerData = { entityId: null, keys: { w: false, a: false, s: false, d: false, shift: false }, clickTarget: null };
+            this.otherPlayers.set(playerId, playerData);
+        }
+
+        // Update player input state
+        playerData.keys = keys;
+        playerData.clickTarget = clickMoveTarget;
+
+        // Broadcast to other clients
+        const roomId = this.engine.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            this.engine.serverNetworkManager.broadcastToRoom(roomId, 'OTHER_PLAYER_INPUT', {
+                playerId: playerId,
+                keys: keys,
+                clickMoveTarget: clickMoveTarget,
+                position: position
+            }, playerId); // Exclude sender
+        }
+    }
+
+    handlePlayerAbilityFromClient(eventData) {
+        const { playerId, data } = eventData;
+        const { slot, abilityId, targetId, targetPosition } = data;
+
+        const playerData = this.otherPlayers.get(playerId);
+        if (!playerData || !playerData.entityId) return;
+
+        // Execute ability on server
+        if (this.game.abilitySystem) {
+            this.game.gameManager.call('useAbility', playerData.entityId, abilityId, targetId, targetPosition);
+        }
+
+        // Broadcast to other clients
+        const roomId = this.engine.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            this.engine.serverNetworkManager.broadcastToRoom(roomId, 'OTHER_PLAYER_ABILITY', {
+                playerId: playerId,
+                entityId: playerData.entityId,
+                slot: slot,
+                abilityId: abilityId,
+                targetId: targetId,
+                targetPosition: targetPosition
+            }, playerId);
+        }
+    }
+
+    handlePlayerPotionFromClient(eventData) {
+        const { playerId, data } = eventData;
+        const { potionType } = data;
+
+        const playerData = this.otherPlayers.get(playerId);
+        if (!playerData || !playerData.entityId) return;
+
+        // Use potion on server
+        this.game.gameManager.call('usePotion', playerData.entityId, potionType);
+
+        // Broadcast to other clients
+        const roomId = this.engine.serverNetworkManager.getPlayerRoom(playerId);
+        if (roomId) {
+            this.engine.serverNetworkManager.broadcastToRoom(roomId, 'OTHER_PLAYER_POTION', {
+                playerId: playerId,
+                entityId: playerData.entityId,
+                potionType: potionType
+            }, playerId);
+        }
+    }
+
+    // Client: Handle other player's input
+    handleOtherPlayerInput(data) {
+        const { playerId, keys, clickMoveTarget, position } = data;
+
+        let playerData = this.otherPlayers.get(playerId);
+        if (!playerData) {
+            playerData = { entityId: null, keys: { w: false, a: false, s: false, d: false, shift: false }, clickTarget: null };
+            this.otherPlayers.set(playerId, playerData);
+        }
+
+        playerData.keys = keys;
+        playerData.clickTarget = clickMoveTarget;
+
+        // Correct position if provided
+        if (position && playerData.entityId) {
+            const pos = this.game.getComponent(playerData.entityId, this.componentTypes.POSITION);
+            if (pos) {
+                pos.x = position.x;
+                pos.z = position.z;
+            }
+        }
+    }
+
+    handleOtherPlayerAbility(data) {
+        const { entityId, abilityId, targetId, targetPosition } = data;
+
+        // Execute ability visually for other player
+        if (this.game.abilitySystem) {
+            this.game.gameManager.call('useAbility', entityId, abilityId, targetId, targetPosition);
+        }
+    }
+
+    handleOtherPlayerPotion(data) {
+        const { entityId, potionType } = data;
+        this.game.gameManager.call('usePotion', entityId, potionType);
+    }
+
+    registerOtherPlayer(playerId, entityId) {
+        this.otherPlayers.set(playerId, {
+            entityId: entityId,
+            keys: { w: false, a: false, s: false, d: false, shift: false },
+            clickTarget: null
+        });
     }
 
     setPlayerEntity(entityId) {
@@ -259,47 +432,145 @@ class PlayerControlSystem extends engine.BaseSystem {
         const aiState = this.game.getComponent(this.playerEntityId, this.componentTypes.AI_STATE);
         const target = aiState?.target || null;
 
-        // Use the ability system to cast
+        // Use the ability system to cast locally
         if (this.game.abilitySystem) {
             this.game.gameManager.call('useAbility', this.playerEntityId, abilityId, target);
+        }
+
+        // Send to server if client
+        if (!this.isServer && this.game.clientNetworkManager) {
+            this.game.clientNetworkManager.emit('PLAYER_ABILITY', {
+                slot: slot,
+                abilityId: abilityId,
+                targetId: target,
+                targetPosition: aiState?.targetPosition || null
+            });
         }
     }
 
     useHealthPotion() {
         if (!this.playerEntityId) return;
         this.game.gameManager.call('usePotion', this.playerEntityId, 'health');
+
+        // Send to server if client
+        if (!this.isServer && this.game.clientNetworkManager) {
+            this.game.clientNetworkManager.emit('PLAYER_POTION', {
+                potionType: 'health'
+            });
+        }
     }
 
     useManaPotion() {
         if (!this.playerEntityId) return;
         this.game.gameManager.call('usePotion', this.playerEntityId, 'mana');
+
+        // Send to server if client
+        if (!this.isServer && this.game.clientNetworkManager) {
+            this.game.clientNetworkManager.emit('PLAYER_POTION', {
+                potionType: 'mana'
+            });
+        }
+    }
+
+    // Apply input state (used by server to apply inputs from client)
+    applyPlayerInput(playerId, keys, clickMoveTarget) {
+        const playerData = this.otherPlayers.get(playerId);
+        if (playerData) {
+            playerData.keys = keys;
+            playerData.clickTarget = clickMoveTarget;
+        }
+    }
+
+    sendInputToServer() {
+        if (this.isServer || !this.game.clientNetworkManager) return;
+
+        const now = Date.now();
+        if (now - this.lastInputSendTime < this.inputSendInterval) return;
+
+        // Check if input changed
+        const keysChanged = Object.keys(this.keys).some(k => this.keys[k] !== this.previousKeys[k]);
+        const clickChanged = !!this.clickMoveTarget;
+
+        if (!keysChanged && !clickChanged) return;
+
+        // Get current position for sync
+        let position = null;
+        if (this.playerEntityId) {
+            const pos = this.game.getComponent(this.playerEntityId, this.componentTypes.POSITION);
+            if (pos) {
+                position = { x: pos.x, z: pos.z };
+            }
+        }
+
+        // Send input state to server
+        this.game.clientNetworkManager.emit('PLAYER_INPUT', {
+            keys: { ...this.keys },
+            clickMoveTarget: this.clickMoveTarget,
+            position: position
+        });
+
+        this.previousKeys = { ...this.keys };
+        this.lastInputSendTime = now;
+
+        // Clear click target after sending
+        if (this.clickMoveTarget) {
+            // Keep for local processing but mark as sent
+        }
     }
 
     update() {
-        if (!this.playerEntityId) return;
+        // Process local player
+        if (this.playerEntityId) {
+            this.processPlayerMovement(this.playerEntityId, this.keys, this.clickMoveTarget, true);
+        }
 
+        // Process other players (on both client and server)
+        for (const [playerId, playerData] of this.otherPlayers) {
+            if (playerData.entityId) {
+                this.processPlayerMovement(playerData.entityId, playerData.keys, playerData.clickTarget, false);
+            }
+        }
+
+        // Send input to server (client only)
+        if (!this.isServer) {
+            this.sendInputToServer();
+        }
+
+        // Update camera to follow local player
+        if (!this.isServer && this.cameraFollowPlayer && this.playerEntityId) {
+            const pos = this.game.getComponent(this.playerEntityId, this.componentTypes.POSITION);
+            if (pos) {
+                this.updateCamera(pos);
+            }
+        }
+    }
+
+    processPlayerMovement(entityId, keys, clickTarget, isLocal) {
         const CT = this.componentTypes;
-        const pos = this.game.getComponent(this.playerEntityId, CT.POSITION);
-        const vel = this.game.getComponent(this.playerEntityId, CT.VELOCITY);
-        const aiState = this.game.getComponent(this.playerEntityId, CT.AI_STATE);
+        const pos = this.game.getComponent(entityId, CT.POSITION);
+        const vel = this.game.getComponent(entityId, CT.VELOCITY);
+        const aiState = this.game.getComponent(entityId, CT.AI_STATE);
 
         if (!pos || !vel) return;
 
         // Handle WASD movement
-        if (this.keys.w || this.keys.a || this.keys.s || this.keys.d) {
-            this.handleWASDMovement(vel);
+        if (keys.w || keys.a || keys.s || keys.d) {
+            this.handleWASDMovementFor(entityId, vel, keys);
 
             // Update facing direction
-            this.updateFacing(vel);
+            this.updateFacingFor(entityId, vel);
 
             // Set AI state to idle to prevent AI from taking over
             if (aiState && aiState.state !== 'attacking') {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;
             }
-        } else if (this.isClickMoving && this.clickMoveTarget) {
+        } else if (clickTarget) {
             // Handle click-to-move
-            this.handleClickMove(pos, vel);
+            const reached = this.handleClickMoveFor(entityId, pos, vel, clickTarget);
+            if (reached && isLocal) {
+                this.cancelClickMove();
+            }
         } else {
             // No input - stop if not attacking
             if (aiState && aiState.state !== 'attacking' && aiState.state !== 'chasing') {
@@ -310,23 +581,18 @@ class PlayerControlSystem extends engine.BaseSystem {
 
         // Handle auto-attack
         if (this.autoAttack && aiState && aiState.target) {
-            this.handleAutoAttack(aiState);
-        }
-
-        // Update camera to follow player
-        if (this.cameraFollowPlayer) {
-            this.updateCamera(pos);
+            this.handleAutoAttackFor(entityId, aiState);
         }
     }
 
-    handleWASDMovement(vel) {
+    handleWASDMovementFor(entityId, vel, keys) {
         let moveX = 0;
         let moveZ = 0;
 
-        if (this.keys.w) moveZ -= 1;
-        if (this.keys.s) moveZ += 1;
-        if (this.keys.a) moveX -= 1;
-        if (this.keys.d) moveX += 1;
+        if (keys.w) moveZ -= 1;
+        if (keys.s) moveZ += 1;
+        if (keys.a) moveX -= 1;
+        if (keys.d) moveX += 1;
 
         // Normalize diagonal movement
         const magnitude = Math.sqrt(moveX * moveX + moveZ * moveZ);
@@ -336,40 +602,53 @@ class PlayerControlSystem extends engine.BaseSystem {
         }
 
         // Apply speed (with shift for run)
-        const speed = this.keys.shift ? this.MOVE_SPEED * 1.5 : this.MOVE_SPEED;
+        const speed = keys.shift ? this.MOVE_SPEED * 1.5 : this.MOVE_SPEED;
         vel.vx = moveX * speed;
         vel.vz = moveZ * speed;
     }
 
-    handleClickMove(pos, vel) {
-        const dx = this.clickMoveTarget.x - pos.x;
-        const dz = this.clickMoveTarget.z - pos.z;
+    handleClickMoveFor(entityId, pos, vel, clickTarget) {
+        const dx = clickTarget.x - pos.x;
+        const dz = clickTarget.z - pos.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist <= this.CLICK_MOVE_THRESHOLD) {
             // Reached destination
-            this.cancelClickMove();
             vel.vx = 0;
             vel.vz = 0;
+            return true;
         } else {
             // Move towards target
             vel.vx = (dx / dist) * this.MOVE_SPEED;
             vel.vz = (dz / dist) * this.MOVE_SPEED;
 
-            this.updateFacing(vel);
+            this.updateFacingFor(entityId, vel);
+            return false;
         }
     }
 
-    updateFacing(vel) {
+    updateFacingFor(entityId, vel) {
         if (Math.abs(vel.vx) > 0.1 || Math.abs(vel.vz) > 0.1) {
-            const facing = this.game.getComponent(this.playerEntityId, this.componentTypes.FACING);
+            const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
             if (facing) {
                 facing.angle = Math.atan2(vel.vz, vel.vx);
             }
         }
     }
 
-    handleAutoAttack(aiState) {
+    handleWASDMovement(vel) {
+        this.handleWASDMovementFor(this.playerEntityId, vel, this.keys);
+    }
+
+    handleClickMove(pos, vel) {
+        return this.handleClickMoveFor(this.playerEntityId, pos, vel, this.clickMoveTarget);
+    }
+
+    updateFacing(vel) {
+        this.updateFacingFor(this.playerEntityId, vel);
+    }
+
+    handleAutoAttackFor(entityId, aiState) {
         // Let the CombatAISystem handle the actual attacking
         // Just ensure the player continues to attack the target
         if (aiState.target) {
@@ -378,6 +657,10 @@ class PlayerControlSystem extends engine.BaseSystem {
                 aiState.target = null;
             }
         }
+    }
+
+    handleAutoAttack(aiState) {
+        this.handleAutoAttackFor(this.playerEntityId, aiState);
     }
 
     updateCamera(pos) {

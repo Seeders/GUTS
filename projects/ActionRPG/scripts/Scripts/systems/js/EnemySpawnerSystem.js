@@ -32,9 +32,15 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         // Aggro settings
         this.AGGRO_RANGE = 400;
         this.LEASH_RANGE = 800;
+
+        // Network state
+        this.isServer = false;
     }
 
     init() {
+        // Check if running on server
+        this.isServer = !!this.engine.serverNetworkManager;
+
         this.game.gameManager.register('spawnEnemy', this.spawnEnemy.bind(this));
         this.game.gameManager.register('spawnWave', this.spawnWave.bind(this));
         this.game.gameManager.register('addSpawnPoint', this.addSpawnPoint.bind(this));
@@ -42,6 +48,59 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         this.game.gameManager.register('getActiveEnemyCount', () => this.activeEnemies.size);
         this.game.gameManager.register('setMaxEnemies', (max) => { this.maxEnemies = max; });
         this.game.gameManager.register('setSpawnRate', (rate) => { this.spawnRate = rate; });
+        this.game.gameManager.register('createEnemyFromServer', this.createEnemyFromServer.bind(this));
+
+        // Set up network listeners
+        if (this.isServer) {
+            this.setupServerEventHandlers();
+        } else {
+            this.setupNetworkListeners();
+        }
+    }
+
+    setupServerEventHandlers() {
+        if (!this.game.serverEventManager) return;
+
+        this.game.serverEventManager.subscribe('REQUEST_WAVE', (eventData) => {
+            const { playerId, data } = eventData;
+            const roomId = this.engine.serverNetworkManager.getPlayerRoom(playerId);
+            if (roomId) {
+                this.spawnWave(data.waveConfig);
+            }
+        });
+    }
+
+    setupNetworkListeners() {
+        if (!this.game.clientNetworkManager) return;
+
+        const nm = this.game.clientNetworkManager;
+
+        // Listen for enemy spawns from server
+        nm.listen('ENEMY_SPAWNED', (data) => {
+            this.createEnemyFromServer(data);
+        });
+
+        // Listen for enemy deaths
+        nm.listen('ENEMY_DIED', (data) => {
+            this.activeEnemies.delete(data.entityId);
+        });
+
+        // Listen for wave events
+        nm.listen('WAVE_STARTED', (data) => {
+            this.waveNumber = data.waveNumber;
+            this.waveInProgress = true;
+            this.game.triggerEvent('onWaveStart', {
+                wave: data.waveNumber,
+                enemyCount: data.enemyCount
+            });
+        });
+
+        nm.listen('WAVE_COMPLETED', (data) => {
+            this.waveInProgress = false;
+            this.game.triggerEvent('onWaveComplete', {
+                wave: data.waveNumber
+            });
+        });
     }
 
     addSpawnPoint(x, z, types = null) {
@@ -70,6 +129,13 @@ class EnemySpawnerSystem extends engine.BaseSystem {
     }
 
     spawnWave(waveConfig = null) {
+        // Only server spawns waves
+        if (!this.isServer && this.game.clientNetworkManager) {
+            // Request wave from server
+            this.game.clientNetworkManager.emit('REQUEST_WAVE', { waveConfig });
+            return;
+        }
+
         const config = waveConfig || {
             count: this.enemiesPerWave + Math.floor(this.waveNumber / 2),
             types: this.getDefaultEnemyTypes(),
@@ -78,6 +144,17 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
         this.waveInProgress = true;
         this.enemiesSpawnedThisWave = 0;
+
+        // Broadcast wave start
+        if (this.isServer) {
+            const roomId = this.getCurrentRoomId();
+            if (roomId) {
+                this.engine.serverNetworkManager.broadcastToRoom(roomId, 'WAVE_STARTED', {
+                    waveNumber: this.waveNumber,
+                    enemyCount: config.count
+                });
+            }
+        }
 
         // Spawn enemies over time
         for (let i = 0; i < config.count; i++) {
@@ -99,7 +176,21 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         });
     }
 
+    getCurrentRoomId() {
+        // Get current room ID for broadcasting
+        if (this.engine.serverNetworkManager) {
+            // Server mode - need to get room from game state
+            return this.game.state.roomId || null;
+        }
+        return null;
+    }
+
     spawnEnemy(unitType, x = null, z = null) {
+        // Only server spawns enemies in multiplayer
+        if (!this.isServer && this.game.clientNetworkManager) {
+            return null; // Client waits for server spawn events
+        }
+
         if (this.activeEnemies.size >= this.maxEnemies) {
             return null;
         }
@@ -207,7 +298,112 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
         this.game.triggerEvent('onEnemySpawned', entityId);
 
+        // Broadcast spawn to clients
+        if (this.isServer) {
+            const roomId = this.getCurrentRoomId();
+            if (roomId) {
+                this.engine.serverNetworkManager.broadcastToRoom(roomId, 'ENEMY_SPAWNED', {
+                    entityId: entityId,
+                    unitType: unitType,
+                    x: spawnX,
+                    z: spawnZ,
+                    scaledHP: scaledHP,
+                    scaledDamage: scaledDamage,
+                    difficultyMult: difficultyMult
+                });
+            }
+        }
+
         return entityId;
+    }
+
+    // Create enemy entity from server data (client-side)
+    createEnemyFromServer(data) {
+        const { entityId, unitType, x, z, scaledHP, scaledDamage, difficultyMult } = data;
+
+        const CT = this.componentTypes;
+        const Components = this.game.componentManager.getComponents();
+        const collections = this.game.getCollections();
+
+        const unitData = collections.units[unitType];
+        if (!unitData) {
+            console.warn('Enemy unit type not found:', unitType);
+            return null;
+        }
+
+        // Create entity with same ID as server
+        const createdId = this.game.createEntityWithId ?
+            this.game.createEntityWithId(entityId) :
+            this.game.createEntity();
+
+        // Add components with server-provided values
+        this.game.addComponent(createdId, CT.POSITION, Components.Position(x, 0, z));
+        this.game.addComponent(createdId, CT.VELOCITY, Components.Velocity(0, 0, 0, unitData.speed || 50, false, false));
+        this.game.addComponent(createdId, CT.FACING, Components.Facing(Math.random() * Math.PI * 2));
+        this.game.addComponent(createdId, CT.COLLISION, Components.Collision(unitData.size || 25, 50));
+
+        this.game.addComponent(createdId, CT.HEALTH, Components.Health(scaledHP));
+        this.game.addComponent(createdId, CT.COMBAT, Components.Combat(
+            scaledDamage,
+            unitData.range || 30,
+            unitData.attackSpeed || 1.0,
+            unitData.projectile || null,
+            0,
+            unitData.element || 'physical',
+            unitData.armor || 0,
+            unitData.fireResistance || 0,
+            unitData.coldResistance || 0,
+            unitData.lightningResistance || 0,
+            unitData.poisonResistance || 0,
+            unitData.visionRange || this.AGGRO_RANGE
+        ));
+
+        this.game.addComponent(createdId, CT.TEAM, Components.Team('enemy'));
+
+        const xpValue = (unitData.xpValue || 10) * difficultyMult;
+        const goldValue = (unitData.goldValue || 5) * difficultyMult;
+
+        this.game.addComponent(createdId, CT.UNIT_TYPE, Components.UnitType({
+            id: unitType,
+            ...unitData,
+            xpValue,
+            goldValue,
+            lootTable: unitData.lootTable || 'common'
+        }));
+
+        this.game.addComponent(createdId, CT.AI_STATE, Components.AIState('idle', null, null, null, {
+            initialized: true,
+            spawnPosition: { x: x, z: z },
+            leashRange: this.LEASH_RANGE
+        }));
+
+        this.game.addComponent(createdId, CT.ABILITY_COOLDOWNS, Components.AbilityCooldowns({}));
+
+        if (unitData.render) {
+            this.game.addComponent(createdId, CT.RENDERABLE, Components.Renderable(
+                'units',
+                unitType,
+                128
+            ));
+        }
+
+        // Track active enemies
+        this.activeEnemies.set(createdId, {
+            type: unitType,
+            spawnTime: this.game.state.now,
+            spawnPosition: { x: x, z: z }
+        });
+
+        // Add abilities
+        if (unitData.abilities && this.game.abilitySystem) {
+            for (const abilityId of unitData.abilities) {
+                this.game.gameManager.call('addAbilityToEntity', createdId, abilityId);
+            }
+        }
+
+        this.game.triggerEvent('onEnemySpawned', createdId);
+
+        return createdId;
     }
 
     getSpawnPosition() {
@@ -246,11 +442,13 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         // Clean up dead enemies
         this.cleanupDeadEnemies();
 
-        // Update enemy AI (aggro check)
+        // Update enemy AI (aggro check) - runs on both client and server
         this.updateEnemyAggro();
 
-        // Auto-spawn enemies
-        this.autoSpawn();
+        // Auto-spawn enemies - only on server
+        if (this.isServer || !this.game.clientNetworkManager) {
+            this.autoSpawn();
+        }
     }
 
     cleanupDeadEnemies() {
@@ -260,6 +458,16 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
             if (!health || health.current <= 0 || (deathState && deathState.isDying)) {
                 this.activeEnemies.delete(entityId);
+
+                // Server broadcasts death
+                if (this.isServer) {
+                    const roomId = this.getCurrentRoomId();
+                    if (roomId) {
+                        this.engine.serverNetworkManager.broadcastToRoom(roomId, 'ENEMY_DIED', {
+                            entityId: entityId
+                        });
+                    }
+                }
             }
         }
     }

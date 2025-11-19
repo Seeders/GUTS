@@ -13,6 +13,9 @@ class LootSystem extends engine.BaseSystem {
         this.PICKUP_RANGE = 30;
         this.LOOT_DESPAWN_TIME = 60; // seconds
 
+        // Network state
+        this.isServer = false;
+
         // Loot tables
         this.lootTables = {
             common: {
@@ -144,12 +147,136 @@ class LootSystem extends engine.BaseSystem {
     }
 
     init() {
+        // Check if running on server
+        this.isServer = !!this.engine.serverNetworkManager;
+
         this.game.gameManager.register('spawnLoot', this.spawnLoot.bind(this));
         this.game.gameManager.register('pickupLoot', this.pickupLoot.bind(this));
         this.game.gameManager.register('getGroundLoot', () => this.groundLoot);
         this.game.gameManager.register('getNearbyLoot', this.getNearbyLoot.bind(this));
         this.game.gameManager.register('getItemDefinition', (type) => this.itemDefinitions[type]);
         this.game.gameManager.register('addLootTable', this.addLootTable.bind(this));
+        this.game.gameManager.register('createLootFromServer', this.createLootFromServer.bind(this));
+
+        // Set up network listeners
+        if (this.isServer) {
+            this.setupServerEventHandlers();
+        } else {
+            this.setupNetworkListeners();
+        }
+    }
+
+    setupServerEventHandlers() {
+        if (!this.game.serverEventManager) return;
+
+        this.game.serverEventManager.subscribe('PICKUP_LOOT', (eventData) => {
+            const { playerId, data } = eventData;
+            const { lootId, playerPosition } = data;
+
+            // Validate pickup
+            const loot = this.groundLoot.get(lootId);
+            if (!loot) {
+                this.engine.serverNetworkManager.sendToPlayer(playerId, 'PICKUP_FAILED', {
+                    lootId,
+                    reason: 'not_found'
+                });
+                return;
+            }
+
+            // Check distance
+            const dx = playerPosition.x - loot.x;
+            const dz = playerPosition.z - loot.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            if (dist > this.PICKUP_RANGE) {
+                this.engine.serverNetworkManager.sendToPlayer(playerId, 'PICKUP_FAILED', {
+                    lootId,
+                    reason: 'too_far'
+                });
+                return;
+            }
+
+            // Get player entity from room
+            const roomId = this.engine.serverNetworkManager.getPlayerRoom(playerId);
+            const room = this.engine.getRoom(roomId);
+            const player = room?.getPlayer(playerId);
+
+            if (!player) return;
+
+            // Process pickup
+            const definition = loot.definition;
+
+            if (definition.currency) {
+                player.stats.gold = (player.stats.gold || 0) + loot.quantity;
+            }
+
+            // Remove loot
+            this.groundLoot.delete(lootId);
+
+            // Broadcast pickup to all players
+            this.engine.serverNetworkManager.broadcastToRoom(roomId, 'LOOT_PICKED_UP', {
+                lootId,
+                playerId,
+                type: loot.type,
+                quantity: loot.quantity
+            });
+
+            // Confirm to picker
+            this.engine.serverNetworkManager.sendToPlayer(playerId, 'PICKUP_SUCCESS', {
+                lootId,
+                type: loot.type,
+                quantity: loot.quantity,
+                newGold: player.stats.gold
+            });
+        });
+    }
+
+    setupNetworkListeners() {
+        if (!this.game.clientNetworkManager) return;
+
+        const nm = this.game.clientNetworkManager;
+
+        // Listen for loot spawns from server
+        nm.listen('LOOT_SPAWNED', (data) => {
+            this.createLootFromServer(data);
+        });
+
+        // Listen for loot pickups
+        nm.listen('LOOT_PICKED_UP', (data) => {
+            this.groundLoot.delete(data.lootId);
+            this.game.triggerEvent('onLootPickedUp', {
+                entityId: data.playerId,
+                lootId: data.lootId,
+                type: data.type,
+                quantity: data.quantity
+            });
+        });
+
+        // Listen for pickup confirmations
+        nm.listen('PICKUP_SUCCESS', (data) => {
+            // Update local state based on server confirmation
+            if (data.type === 'gold') {
+                this.game.gameManager.call('setPlayerGold', data.newGold);
+            }
+        });
+
+        nm.listen('PICKUP_FAILED', (data) => {
+            // Handle pickup failure (e.g., show message)
+            console.warn('Pickup failed:', data.reason);
+        });
+
+        // Listen for loot despawns
+        nm.listen('LOOT_DESPAWNED', (data) => {
+            this.groundLoot.delete(data.lootId);
+            this.game.triggerEvent('onLootDespawned', data.lootId);
+        });
+    }
+
+    getCurrentRoomId() {
+        if (this.engine.serverNetworkManager) {
+            return this.game.state.roomId || null;
+        }
+        return null;
     }
 
     addLootTable(name, table) {
@@ -157,6 +284,11 @@ class LootSystem extends engine.BaseSystem {
     }
 
     spawnLoot(x, z, tableName = 'common', guaranteedDrops = null) {
+        // Only server spawns loot in multiplayer
+        if (!this.isServer && this.game.clientNetworkManager) {
+            return; // Client waits for server spawn events
+        }
+
         const table = this.lootTables[tableName];
         if (!table) {
             console.warn('Loot table not found:', tableName);
@@ -242,6 +374,53 @@ class LootSystem extends engine.BaseSystem {
             quantity: item.quantity || 1
         });
 
+        // Broadcast spawn to clients
+        if (this.isServer) {
+            const roomId = this.getCurrentRoomId();
+            if (roomId) {
+                this.engine.serverNetworkManager.broadcastToRoom(roomId, 'LOOT_SPAWNED', {
+                    lootId,
+                    x, z,
+                    type: item.type,
+                    quantity: item.quantity || 1
+                });
+            }
+        }
+
+        return lootId;
+    }
+
+    // Create loot from server data (client-side)
+    createLootFromServer(data) {
+        const { lootId, x, z, type, quantity } = data;
+        const definition = this.itemDefinitions[type];
+
+        if (!definition) {
+            console.warn('Item definition not found:', type);
+            return;
+        }
+
+        this.groundLoot.set(lootId, {
+            id: lootId,
+            x, z,
+            type: type,
+            quantity: quantity || 1,
+            definition,
+            spawnTime: this.game.state.now
+        });
+
+        // Update nextLootId to avoid conflicts
+        if (lootId >= this.nextLootId) {
+            this.nextLootId = lootId + 1;
+        }
+
+        this.game.triggerEvent('onLootSpawned', {
+            lootId,
+            x, z,
+            type: type,
+            quantity: quantity || 1
+        });
+
         return lootId;
     }
 
@@ -266,6 +445,18 @@ class LootSystem extends engine.BaseSystem {
         const loot = this.groundLoot.get(lootId);
         if (!loot) return false;
 
+        // In multiplayer, send pickup request to server
+        if (!this.isServer && this.game.clientNetworkManager) {
+            const playerPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            if (playerPos) {
+                this.game.clientNetworkManager.emit('PICKUP_LOOT', {
+                    lootId,
+                    playerPosition: { x: playerPos.x, z: playerPos.z }
+                });
+            }
+            return true; // Optimistically assume success
+        }
+
         const definition = loot.definition;
 
         // Handle different item types
@@ -289,6 +480,19 @@ class LootSystem extends engine.BaseSystem {
             type: loot.type,
             quantity: loot.quantity
         });
+
+        // Server broadcasts pickup
+        if (this.isServer) {
+            const roomId = this.getCurrentRoomId();
+            if (roomId) {
+                this.engine.serverNetworkManager.broadcastToRoom(roomId, 'LOOT_PICKED_UP', {
+                    lootId,
+                    playerId: entityId,
+                    type: loot.type,
+                    quantity: loot.quantity
+                });
+            }
+        }
 
         return true;
     }
@@ -315,8 +519,10 @@ class LootSystem extends engine.BaseSystem {
         // Auto-pickup for player
         this.autoPickupForPlayer();
 
-        // Despawn old loot
-        this.despawnOldLoot();
+        // Despawn old loot - only on server
+        if (this.isServer || !this.game.clientNetworkManager) {
+            this.despawnOldLoot();
+        }
     }
 
     autoPickupForPlayer() {
@@ -344,6 +550,16 @@ class LootSystem extends engine.BaseSystem {
             if (now - loot.spawnTime > this.LOOT_DESPAWN_TIME) {
                 this.groundLoot.delete(lootId);
                 this.game.triggerEvent('onLootDespawned', lootId);
+
+                // Server broadcasts despawn
+                if (this.isServer) {
+                    const roomId = this.getCurrentRoomId();
+                    if (roomId) {
+                        this.engine.serverNetworkManager.broadcastToRoom(roomId, 'LOOT_DESPAWNED', {
+                            lootId
+                        });
+                    }
+                }
             }
         }
     }
