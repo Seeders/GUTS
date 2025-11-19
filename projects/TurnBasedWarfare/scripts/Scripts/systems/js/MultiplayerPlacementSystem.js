@@ -697,16 +697,28 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             placements.forEach(placement => {
                 if (placement.experience && placement.placementId) {
                     const experienceData = placement.experience;
+
+                    // Update SquadExperienceSystem Map data
                     let squadData = this.game.gameManager.call('getSquadInfo', placement.placementId);
-                    
+
                     if (squadData) {
                         squadData.level = experienceData.level;
                         squadData.experience = experienceData.experience;
                         squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
-                        squadData.canLevelUp = experienceData.canLevelUp;                    
+                        squadData.canLevelUp = experienceData.canLevelUp;
+                    }
+
+                    // Also update the local placement object's experience field
+                    // Find in playerPlacements or opponentPlacements
+                    let localPlacement = this.playerPlacements.find(p => p.placementId === placement.placementId);
+                    if (!localPlacement) {
+                        localPlacement = this.opponentPlacements.find(p => p.placementId === placement.placementId);
+                    }
+                    if (localPlacement) {
+                        localPlacement.experience = experienceData;
                     }
                 }
-            });            
+            });
         }
     }
 

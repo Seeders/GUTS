@@ -557,6 +557,14 @@ class MultiplayerNetworkManager {
         const isEnvironmentObject = entityId.startsWith('env_');
         const visualOnlyProperties = ['scale', 'rotation', 'angle'];
 
+        // Skip transient timing fields that use absolute timestamps
+        // These are expected to differ slightly between client and server
+        const timingProperties = ['miningStartTime', 'depositStartTime', 'lastExperienceGain', 'creationTime'];
+
+        // Skip simulation state fields that can have minor timing differences
+        // targetPosition is cleared when unit reaches destination, which can happen at slightly different times
+        const transientAIStateProperties = ['targetPosition', 'targetDistance'];
+
         // Compare all properties
         for (const key of Object.keys(serverData)) {
             const clientValue = clientData[key];
@@ -567,6 +575,16 @@ class MultiplayerNetworkManager {
 
             // Skip visual-only properties for environment objects
             if (isEnvironmentObject && visualOnlyProperties.includes(key)) {
+                continue;
+            }
+
+            // Skip transient timing properties
+            if (timingProperties.includes(key)) {
+                continue;
+            }
+
+            // Skip transient AI state properties
+            if (componentType === 'aiState' && transientAIStateProperties.includes(key)) {
                 continue;
             }
 
@@ -757,17 +775,21 @@ class MultiplayerNetworkManager {
             // Also set sides in placement system
             if (this.game.placementSystem ) {
                 if(this.game.placementSystem.setTeamSides) {
-                
+
                     this.game.placementSystem.setTeamSides({
                         player: myPlayer.stats.side,
                         enemy: opponent.stats.side
                     });
                 }
 
+                // Sync experience for both player and opponent placements
                 this.game.placementSystem.setPlacementExperience(myPlayer.placements);
+                if (opponent && opponent.placements) {
+                    this.game.placementSystem.setPlacementExperience(opponent.placements);
+                }
             }
 
-                
+
             // Update UI to reflect synced experience data
             if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
                 this.game.shopSystem.updateGoldDisplay();
