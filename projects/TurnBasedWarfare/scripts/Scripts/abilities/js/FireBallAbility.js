@@ -10,7 +10,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
             targetType: 'enemy',
             animation: 'cast',
             priority: 7,
-            castTime: 0.15,
+            castTime: 1,
             ...params
         });
 
@@ -141,10 +141,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
 
         this.logAbilityUsage(casterEntity, `Fireball launched at enemy target!`, true);
 
-        // DESYNC SAFE: Use scheduling system for projectile firing
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.fireProjectile(casterEntity, closestEnemy);
-        }, this.castTime, casterEntity);
+        this.fireProjectile(casterEntity, closestEnemy);
     }
 
     // Create impressive charging effect at caster
@@ -258,7 +255,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
             }
         };
 
-        this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
+        this.game.gameManager.call('fireProjectile', casterEntity, targetId, projectileData);
     }
 
     // Create rich trail effect for projectile

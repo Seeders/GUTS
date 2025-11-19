@@ -23,7 +23,6 @@ class EffectsSystem extends engine.BaseSystem {
         // Batching system
         this.batchedEffects = new Map(); // type -> effects[]
         
-        this.effectOffset = { x: 0, y: 75, z: 0 };
         this.shakeData = null;
         this.flashData = null;
         // Performance tracking
@@ -638,7 +637,7 @@ class EffectsSystem extends engine.BaseSystem {
     createParticleEffect(x, y, z, type, options = {}) {
         // Convert to the config format that ParticleSystem.createParticles expects
         const config = {
-            position: new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z),
+            position: new THREE.Vector3(x, y, z),
             count: options.count || 3,
             shape: options.shape || 'circle',
             color: options.color || 0xffffff,
@@ -695,7 +694,7 @@ class EffectsSystem extends engine.BaseSystem {
         if (!this.game.particleSystem) return;
         const auraId = `aura_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const startTime = this.game.state.now;
-        const position = new THREE.Vector3(x + this.effectOffset.x, y + this.effectOffset.y, z + this.effectOffset.z);
+        const position = new THREE.Vector3(x, y, z);
         
         // Create aura configuration
         const config = this.getEffectConfig(type);
