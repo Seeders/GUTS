@@ -19,11 +19,17 @@ class InputManager {
     setupCanvasEvents() {
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) return;
-        
+
         canvas.addEventListener('click', (event) => {
-            this.game.placementSystem.handleCanvasClick(event);
+            // For ARPG, handle click as attack/ability at mouse position
+            if (this.game.playerControlSystem) {
+                this.game.playerControlSystem.handleClick(event);
+            } else if (this.game.placementSystem) {
+                // Fallback for TurnBasedWarfare
+                this.game.placementSystem.handleCanvasClick(event);
+            }
         });
-        
+
         canvas.addEventListener('contextmenu', (event) => {
             event.preventDefault();
             this.handleRightClick(event);
@@ -258,7 +264,9 @@ class InputManager {
                 selected.classList.remove('selected');
             });
             state.selectedUnitType = null;
-            this.game.placementSystem.handleUnitSelectionChange(null);
+            if (this.game.placementSystem) {
+                this.game.placementSystem.handleUnitSelectionChange(null);
+            }
         }
     }
     cycleThroughUnits() {

@@ -367,8 +367,8 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         this.roomWaves.set(roomId, waveData);
 
-        // Spawn initial enemies
-        const enemyTypes = ['skeleton', 'zombie', 'goblin'];
+        // Spawn initial enemies using actual unit prefab IDs
+        const enemyTypes = ['0_skeleton', 'peasant', '1_di_scout'];
         const tier = Math.floor(waveNumber / 3) + 1;
 
         for (let i = 0; i < Math.min(waveData.totalEnemies, 5); i++) {
@@ -394,7 +394,7 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         // Spawn more enemies if needed
         if (waveData.enemiesSpawned < waveData.totalEnemies && aliveCount < 5) {
-            const enemyTypes = ['skeleton', 'zombie', 'goblin', 'orc'];
+            const enemyTypes = ['0_skeleton', 'peasant', '1_di_scout', '1_sd_soldier'];
             const tier = Math.floor(waveData.number / 3) + 1;
             const toSpawn = Math.min(3, waveData.totalEnemies - waveData.enemiesSpawned);
 

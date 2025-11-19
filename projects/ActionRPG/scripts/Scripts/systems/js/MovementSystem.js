@@ -507,8 +507,18 @@ class MovementSystem extends engine.BaseSystem {
             data.desiredVelocity.vz = 0;
             return;
         }
-        
+
+        // For player-controlled units in idle state, preserve their velocity
+        // (PlayerControlSystem sets velocity directly for WASD movement)
         if (aiState.state === 'waiting' || aiState.state === 'idle') {
+            // Check if this is a player-controlled entity with active input
+            if (!aiState.aiBehavior && (Math.abs(vel.vx) > 0.1 || Math.abs(vel.vz) > 0.1)) {
+                // Preserve the velocity set by PlayerControlSystem
+                data.desiredVelocity.vx = vel.vx;
+                data.desiredVelocity.vy = vel.vy || 0;
+                data.desiredVelocity.vz = vel.vz;
+                return;
+            }
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;

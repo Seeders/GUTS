@@ -8,7 +8,7 @@ class PlayerControlSystem extends engine.BaseSystem {
         this.playerEntityId = null;
 
         // Movement settings
-        this.MOVE_SPEED = 150;
+        this.MOVE_SPEED = 200;
         this.CLICK_MOVE_THRESHOLD = 5;
 
         // Input state
@@ -343,6 +343,34 @@ class PlayerControlSystem extends engine.BaseSystem {
 
         // Right click = force move (no attack)
         this.setClickMoveTarget(worldX, worldZ);
+    }
+
+    handleClick(event) {
+        // Convert screen coordinates to world coordinates
+        const rect = event.target.getBoundingClientRect();
+        const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Use raycaster to find world position
+        if (!this.raycaster) {
+            this.raycaster = new THREE.Raycaster();
+        }
+        if (!this.mouse) {
+            this.mouse = new THREE.Vector2();
+        }
+
+        this.mouse.set(mouseX, mouseY);
+        this.raycaster.setFromCamera(this.mouse, this.game.camera);
+
+        // Raycast to ground plane at y=0
+        const ray = this.raycaster.ray;
+        const t = -ray.origin.y / ray.direction.y;
+
+        if (t > 0) {
+            const worldX = ray.origin.x + ray.direction.x * t;
+            const worldZ = ray.origin.z + ray.direction.z * t;
+            this.onMouseClick(worldX, worldZ, event.button);
+        }
     }
 
     setClickMoveTarget(worldX, worldZ) {

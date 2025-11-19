@@ -898,12 +898,12 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     spawnEnemy(difficulty, x, z) {
-        // Map difficulty to enemy types
+        // Map difficulty to actual unit prefab IDs
         const enemyTypes = {
-            easy: ['skeleton', 'zombie', 'goblin'],
-            medium: ['orc', 'skeleton', 'zombie'],
-            hard: ['demon', 'orc'],
-            boss: ['demon'] // Boss system handles this separately
+            easy: ['0_skeleton', 'peasant', '1_di_scout'],
+            medium: ['1_sd_soldier', '1_d_archer', '1_i_apprentice'],
+            hard: ['1_s_barbarian', '0_golemStone', '0_golemFire'],
+            boss: ['0_golemFire'] // Boss system handles this separately
         };
 
         const types = enemyTypes[difficulty] || enemyTypes.easy;
