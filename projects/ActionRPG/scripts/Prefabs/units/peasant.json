@@ -158,10 +158,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [
-    "MineGoldAbility",
-    "BuildAbility"
-  ],
+  "abilities": [],
   "icon": "unit_peasant",
   "actionSet": "peasant_actions",
   "visionRange": 400,

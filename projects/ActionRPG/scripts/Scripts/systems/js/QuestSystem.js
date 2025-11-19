@@ -101,6 +101,7 @@ class QuestSystem extends engine.BaseSystem {
     }
 
     createUI() {
+        if (typeof document === 'undefined') return;
         this.questLog = document.createElement('div');
         this.questLog.id = 'quest-log';
         this.questLog.innerHTML = `
@@ -278,6 +279,7 @@ class QuestSystem extends engine.BaseSystem {
     }
 
     updateTracker() {
+        if (typeof document === 'undefined') return;
         this.tracker.innerHTML = this.activeQuests.slice(0, 3).map(quest => `
             <div class="tracker-quest">
                 <div class="tracker-name">${quest.name}</div>
