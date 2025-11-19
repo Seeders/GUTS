@@ -10,7 +10,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
             targetType: 'enemy',
             animation: 'cast',
             priority: 7,
-            castTime: 1,
+            castTime: 0,
             ...params
         });
 
