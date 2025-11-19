@@ -604,8 +604,10 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const maxUnits = Math.min(unitPositions.length, 16);
         const positions = unitPositions.slice(0, maxUnits);
 
-        // Get playerId for the current player
-        const playerId = this.game.clientNetworkManager?.playerId || null;
+        // Only set playerId for units on the player's own team
+        // Opponent units will have their playerId set by server sync
+        const isOwnTeam = team === this.game.state.mySide;
+        const playerId = isOwnTeam ? (this.game.clientNetworkManager?.playerId || null) : null;
 
         positions.forEach(pos => {
             const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
