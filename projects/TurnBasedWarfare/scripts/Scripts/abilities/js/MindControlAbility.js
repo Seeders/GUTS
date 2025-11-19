@@ -230,7 +230,73 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual charm effect
         this.createVisualEffect(targetPos, 'charm');
 
-       
+        // Enhanced mind control success burst
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 35, targetPos.z),
+                layers: [
+                    // Psychic shockwave
+                    {
+                        count: 25,
+                        lifetime: 0.6,
+                        color: 0x9932cc,
+                        colorRange: { start: 0xda70d6, end: 0x8a2be2 },
+                        scale: 20,
+                        scaleMultiplier: 2.5,
+                        velocityRange: { x: [-100, 100], y: [30, 100], z: [-100, 100] },
+                        gravity: -30,
+                        drag: 0.9,
+                        blending: 'additive'
+                    },
+                    // Purple mind energy
+                    {
+                        count: 18,
+                        lifetime: 0.5,
+                        color: 0x8a2be2,
+                        colorRange: { start: 0xdda0dd, end: 0x4b0082 },
+                        scale: 15,
+                        scaleMultiplier: 2.0,
+                        velocityRange: { x: [-60, 60], y: [60, 140], z: [-60, 60] },
+                        gravity: -50,
+                        drag: 0.88,
+                        blending: 'additive'
+                    },
+                    // White sparkles
+                    {
+                        count: 12,
+                        lifetime: 0.7,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xdda0dd },
+                        scale: 6,
+                        scaleMultiplier: 0.6,
+                        velocityRange: { x: [-80, 80], y: [80, 160], z: [-80, 80] },
+                        gravity: 50,
+                        drag: 0.95,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Mind control ring around target
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
+                count: 20,
+                lifetime: 0.8,
+                visual: {
+                    color: 0x9932cc,
+                    colorRange: { start: 0xda70d6, end: 0x8a2be2 },
+                    scale: 10,
+                    scaleMultiplier: 1.2,
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-15, 15], y: [20, 60], z: [-15, 15] },
+                gravity: -40,
+                drag: 0.94,
+                emitterShape: 'ring',
+                emitterRadius: 30
+            });
+        }
 
         // Clean up beams
         this.clearAllBeamsForTarget(targetId);

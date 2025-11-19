@@ -84,12 +84,94 @@ class InfernoAbility extends engine.app.appClasses['BaseAbility'] {
     createInferno(casterEntity, centerPos) {
         // Create initial inferno effect
         this.createVisualEffect(centerPos, 'inferno');
-        
+
+        // Enhanced massive inferno explosion
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z),
+                layers: [
+                    // Massive fire eruption
+                    {
+                        count: 40,
+                        lifetime: 1.0,
+                        color: 0xff4400,
+                        colorRange: { start: 0xffaa44, end: 0xcc2200 },
+                        scale: 35,
+                        scaleMultiplier: 3.0,
+                        velocityRange: { x: [-120, 120], y: [80, 200], z: [-120, 120] },
+                        gravity: -50,
+                        drag: 0.9,
+                        blending: 'additive'
+                    },
+                    // Central white-hot core
+                    {
+                        count: 15,
+                        lifetime: 0.5,
+                        color: 0xffffaa,
+                        colorRange: { start: 0xffffff, end: 0xffaa44 },
+                        scale: 50,
+                        scaleMultiplier: 4.0,
+                        velocityRange: { x: [-40, 40], y: [50, 120], z: [-40, 40] },
+                        gravity: 0,
+                        drag: 0.8,
+                        blending: 'additive'
+                    },
+                    // Smoke column
+                    {
+                        count: 25,
+                        lifetime: 1.5,
+                        color: 0x333333,
+                        colorRange: { start: 0x555555, end: 0x111111 },
+                        scale: 40,
+                        scaleMultiplier: 3.5,
+                        velocityRange: { x: [-60, 60], y: [100, 200], z: [-60, 60] },
+                        gravity: -80,
+                        drag: 0.85,
+                        blending: 'normal'
+                    },
+                    // Flying embers
+                    {
+                        count: 30,
+                        lifetime: 2.0,
+                        color: 0xff6600,
+                        colorRange: { start: 0xffcc44, end: 0xff3300 },
+                        scale: 6,
+                        scaleMultiplier: 0.5,
+                        velocityRange: { x: [-100, 100], y: [150, 300], z: [-100, 100] },
+                        gravity: 80,
+                        drag: 0.97,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Fire ring on ground
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(centerPos.x, centerPos.y + 5, centerPos.z),
+                count: 30,
+                lifetime: 0.8,
+                visual: {
+                    color: 0xff4400,
+                    colorRange: { start: 0xffaa44, end: 0xcc2200 },
+                    scale: 20,
+                    scaleMultiplier: 2.0,
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-30, 30], y: [20, 60], z: [-30, 30] },
+                gravity: -20,
+                drag: 0.9,
+                emitterShape: 'ring',
+                emitterRadius: 60
+            });
+        }
+
         // Screen effect
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#ff3300', 0.4);
+            this.game.effectsSystem.playScreenShake(0.4, 3);
         }
-        
+
         this.logAbilityUsage(casterEntity, `The battlefield erupts in an unstoppable inferno!`);
         
         // Schedule damage ticks deterministically
