@@ -150,6 +150,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
 
     // Create impressive charging effect at caster
     createCastEffect(casterPos) {
+        console.log('createCastEffect called', casterPos, 'effectsSystem:', !!this.game.effectsSystem);
         if (!this.game.effectsSystem) return;
         // Main cast particles
         this.createVisualEffect(casterPos, 'cast');
@@ -297,6 +298,7 @@ console.log('fire fireBall', projectileData);
 
     // Create epic multi-layered explosion effect
     createExplosionEffect(impactPos) {
+        console.log('createExplosionEffect called', impactPos, 'effectsSystem:', !!this.game.effectsSystem);
         if (!this.game.effectsSystem) return;
         // Standard explosion effects
         this.createVisualEffect(impactPos, 'explosion_core');
