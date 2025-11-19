@@ -16,7 +16,6 @@
         { "type": "TileLevelGenerator" },
         { "type": "ARPGGameSystem" },
         { "type": "CharacterClassSystem" },
-        { "type": "PlayerControlSystem" },
         { "type": "AISystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
