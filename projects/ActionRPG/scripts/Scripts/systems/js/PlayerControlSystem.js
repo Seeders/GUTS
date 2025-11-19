@@ -36,6 +36,9 @@ class PlayerControlSystem extends engine.BaseSystem {
             f: null
         };
 
+        // Right-click ability (if set, overrides basic attack)
+        this.rightClickAbility = null;
+
         // Attack state
         this.autoAttack = true;
         this.lastAttackTime = 0;
@@ -64,6 +67,8 @@ class PlayerControlSystem extends engine.BaseSystem {
         this.game.gameManager.register('setClickMoveTarget', this.setClickMoveTarget.bind(this));
         this.game.gameManager.register('applyPlayerInput', this.applyPlayerInput.bind(this));
         this.game.gameManager.register('registerOtherPlayer', this.registerOtherPlayer.bind(this));
+        this.game.gameManager.register('setRightClickAbility', this.setRightClickAbility.bind(this));
+        this.game.gameManager.register('getRightClickAbility', () => this.rightClickAbility);
 
         // Set up input handlers (client only)
         if (!this.isServer) {
@@ -285,6 +290,10 @@ class PlayerControlSystem extends engine.BaseSystem {
         }
     }
 
+    setRightClickAbility(abilityId) {
+        this.rightClickAbility = abilityId;
+    }
+
     onKeyDown(key) {
         const lowerKey = key.toLowerCase();
 
@@ -372,8 +381,24 @@ class PlayerControlSystem extends engine.BaseSystem {
             aiState.targetPosition = { x: worldX, z: worldZ };
         }
 
-        // Perform the attack
-        this.performDirectionalAttack(worldX, worldZ, angle);
+        // Check if there's a right-click ability assigned
+        if (this.rightClickAbility && this.game.abilitySystem) {
+            // Use the ability with mouse position as target
+            this.game.gameManager.call('useAbility', this.playerEntityId, this.rightClickAbility, null, { x: worldX, y: 0, z: worldZ });
+
+            // Send to server if client
+            if (!this.isServer && this.game.clientNetworkManager) {
+                this.game.clientNetworkManager.emit('PLAYER_ABILITY', {
+                    slot: 'rightClick',
+                    abilityId: this.rightClickAbility,
+                    targetId: null,
+                    targetPosition: { x: worldX, y: 0, z: worldZ }
+                });
+            }
+        } else {
+            // Perform basic attack (melee or projectile)
+            this.performDirectionalAttack(worldX, worldZ, angle);
+        }
     }
 
     performDirectionalAttack(targetX, targetZ, angle) {
