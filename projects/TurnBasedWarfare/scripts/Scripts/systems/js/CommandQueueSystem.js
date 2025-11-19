@@ -43,6 +43,8 @@ class CommandQueueSystem extends engine.BaseSystem {
         }
 
         // Create the command
+        // Use provided createdTime if available (for client->server sync), otherwise use current time
+        const createdTime = commandData.createdTime || this.game.state.now;
         const command = Components.Command(
             commandData.type,
             commandData.controllerId,
@@ -51,7 +53,7 @@ class CommandQueueSystem extends engine.BaseSystem {
             commandData.meta || {},
             commandData.priority || this.PRIORITY.MOVE,
             commandData.interruptible !== false, // Default to true
-            this.game.state.now
+            createdTime
         );
 
         // Check if we should interrupt current command

@@ -93,7 +93,9 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
                 target: buildingEntityId,
                 meta: this.meta,
                 priority: this.game.commandQueueSystem.PRIORITY.BUILD,
-                interruptible: true
+                interruptible: true,
+                // Use client's timestamp for deterministic command creation
+                createdTime: peasantInfo.commandCreatedTime
             }, true); // true = interrupt current command
         } else {
             // Fallback to old method if command queue system not available

@@ -687,7 +687,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             targetPosition: this.game.state.targetPositions.get(placementId),
             roundPlaced: this.game.state.round,
             timestamp: this.game.state.now,
-            peasantInfo: this.game.state.peasantBuildingPlacement
+            // Include command timestamp in peasantInfo for deterministic command creation
+            peasantInfo: this.game.state.peasantBuildingPlacement ? {
+                ...this.game.state.peasantBuildingPlacement,
+                commandCreatedTime: this.game.state.now
+            } : null
         };
     }
 
