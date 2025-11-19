@@ -108,30 +108,10 @@ class CombatAISystem extends engine.BaseSystem {
                 aiState.targetDistance = 0;
             }
  if (enemiesInVisionRange.length > 0) {
-                // Enemies are present - ensure unit is under combat control
-                let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
-                
-                // If unit has no controller or wrong controller, establish combat control
-                if (!currentAI || currentAI === "" || currentAI !== "CombatAISystem") {
-                    // Ensure we have a current command or queue a new one
-                    const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
-                    
-                    if (!currentCommand || currentCommand.type !== 'attack' || currentCommand.controllerId !== "CombatAISystem") {
-                        // Queue attack command with high priority
-                        if (this.game.commandQueueSystem) {
-                            this.game.gameManager.call('queueCommand', entityId, {
-                                type: 'attack',
-                                controllerId: "CombatAISystem",
-                                targetPosition: null,
-                                target: null,
-                                meta: {},
-                                priority: this.game.commandQueueSystem.PRIORITY.ATTACK,
-                                interruptible: true
-                            }, true);
-                        }
-                    }
-                }
-                
+                // Enemies are present - combat AI will take control
+                // Note: Command queuing is handled by makeAIDecision() below,
+                // which properly finds the target first before queuing the attack command
+
                 // Process combat AI decision
                 if (aiMeta.nextMoveTime == null) aiMeta.nextMoveTime = 0;
                 
