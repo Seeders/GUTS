@@ -326,23 +326,125 @@ class PlayerControlSystem extends engine.BaseSystem {
     onMouseClick(worldX, worldZ, button) {
         if (!this.playerEntityId) return;
 
-        if (button === 0) { // Left click
-            // Check if clicking on enemy
-            const clickedEntity = this.getEntityAtPosition(worldX, worldZ);
-            if (clickedEntity && this.isEnemy(clickedEntity)) {
-                this.attackTarget(clickedEntity);
-            } else {
-                // Move to position
-                this.setClickMoveTarget(worldX, worldZ);
-            }
+        if (button === 0) { // Left click - move only
+            this.setClickMoveTarget(worldX, worldZ);
         }
     }
 
     onRightClick(worldX, worldZ) {
         if (!this.playerEntityId) return;
 
-        // Right click = force move (no attack)
-        this.setClickMoveTarget(worldX, worldZ);
+        // Right click = attack in direction of mouse
+        this.attackInDirection(worldX, worldZ);
+    }
+
+    attackInDirection(worldX, worldZ) {
+        if (!this.playerEntityId) return;
+
+        const pos = this.game.getComponent(this.playerEntityId, this.componentTypes.POSITION);
+        if (!pos) return;
+
+        // Calculate direction to mouse
+        const dx = worldX - pos.x;
+        const dz = worldZ - pos.z;
+        const angle = Math.atan2(dz, dx);
+
+        // Face the attack direction
+        const facing = this.game.getComponent(this.playerEntityId, this.componentTypes.FACING);
+        if (facing) {
+            facing.angle = angle;
+        }
+
+        // Stop movement during attack
+        this.cancelClickMove();
+        const vel = this.game.getComponent(this.playerEntityId, this.componentTypes.VELOCITY);
+        if (vel) {
+            vel.vx = 0;
+            vel.vz = 0;
+        }
+
+        // Set AI state to attacking
+        const aiState = this.game.getComponent(this.playerEntityId, this.componentTypes.AI_STATE);
+        if (aiState) {
+            aiState.state = 'attacking';
+            // Store attack direction for projectile/melee systems
+            aiState.attackDirection = { x: dx, z: dz, angle: angle };
+            aiState.targetPosition = { x: worldX, z: worldZ };
+        }
+
+        // Perform the attack
+        this.performDirectionalAttack(worldX, worldZ, angle);
+    }
+
+    performDirectionalAttack(targetX, targetZ, angle) {
+        const combat = this.game.getComponent(this.playerEntityId, this.componentTypes.COMBAT);
+        if (!combat) return;
+
+        const now = this.game.state.now;
+        const attackCooldown = 1000 / (combat.attackSpeed || 1);
+
+        // Check cooldown
+        if (now - this.lastAttackTime < attackCooldown) return;
+        this.lastAttackTime = now;
+
+        const pos = this.game.getComponent(this.playerEntityId, this.componentTypes.POSITION);
+        if (!pos) return;
+
+        // Check if unit has a projectile attack
+        if (combat.projectile) {
+            // Spawn projectile in attack direction
+            this.game.gameManager.call('spawnProjectile',
+                this.playerEntityId,
+                combat.projectile,
+                pos.x, pos.y || 0, pos.z,
+                targetX, 0, targetZ,
+                combat.damage,
+                combat.element || 'physical'
+            );
+        } else {
+            // Melee attack - check for enemies in cone in front of player
+            const range = combat.range || 50;
+            this.performMeleeAttack(pos, angle, range, combat.damage, combat.element);
+        }
+
+        // Play attack animation
+        const animation = this.game.getComponent(this.playerEntityId, this.componentTypes.ANIMATION);
+        if (animation) {
+            animation.currentAnimation = 'attack';
+            animation.animationStartTime = now;
+        }
+    }
+
+    performMeleeAttack(pos, angle, range, damage, element) {
+        // Find enemies in a cone in front of the player
+        const coneAngle = Math.PI / 4; // 45 degree cone
+        const entities = this.game.getEntitiesWith(
+            this.componentTypes.POSITION,
+            this.componentTypes.HEALTH,
+            this.componentTypes.TEAM
+        );
+
+        for (const entityId of entities) {
+            if (entityId === this.playerEntityId) continue;
+            if (!this.isEnemy(entityId)) continue;
+
+            const targetPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            if (dist > range) continue;
+
+            // Check if in cone
+            const targetAngle = Math.atan2(dz, dx);
+            let angleDiff = Math.abs(targetAngle - angle);
+            if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+
+            if (angleDiff <= coneAngle) {
+                // Deal damage
+                this.game.gameManager.call('dealDamage', this.playerEntityId, entityId, damage, element || 'physical');
+            }
+        }
     }
 
     handleClick(event) {
