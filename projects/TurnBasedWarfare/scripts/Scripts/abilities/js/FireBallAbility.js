@@ -9,7 +9,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             manaCost: 0,
             targetType: 'enemy',
             animation: 'cast',
-            priority: 1,
+            priority: 7,
             castTime: 1.5,
             ...params
         });
