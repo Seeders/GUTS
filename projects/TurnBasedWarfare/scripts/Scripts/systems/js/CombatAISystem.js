@@ -44,8 +44,15 @@ class CombatAISystem extends engine.BaseSystem {
                 if (aiState.state !== 'idle') {
                     this.changeAIState(aiState, 'idle');
                 }
-                // Clear targetPosition to prevent stale movement data in next round
-                aiState.targetPosition = null;
+
+                // Preserve player's original move order if one exists
+                // This allows orders to persist between rounds
+                if (aiState.playerOrder && aiState.playerOrder.targetPosition) {
+                    aiState.targetPosition = aiState.playerOrder.targetPosition;
+                } else {
+                    // Clear targetPosition to prevent stale movement data in next round
+                    aiState.targetPosition = null;
+                }
             }
             // Don't clear targets - let units remember their last target for next round
         }
@@ -135,6 +142,8 @@ class CombatAISystem extends engine.BaseSystem {
                                 this.onLostTarget(entityId);
                             }
                             this.changeAIState(aiState, 'idle');
+                            // Unit has reached destination - clear the player order
+                            aiState.playerOrder = null;
                         }
                     }
                 }
@@ -358,10 +367,10 @@ class CombatAISystem extends engine.BaseSystem {
         const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
         const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
         const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-        
+
         if (pos && combat && team && unitType) {
             const enemiesInVisionRange = this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || [];
-            
+
             // If enemies remain, keep the attack command active
             if (enemiesInVisionRange.length > 0) {
                 return;
@@ -373,6 +382,38 @@ class CombatAISystem extends engine.BaseSystem {
             const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
             if (currentCommand && currentCommand.type === 'attack') {
                 this.game.gameManager.call('completeCurrentCommand', entityId);
+            }
+        }
+
+        // Restore player's original move order if one exists
+        if (aiState.playerOrder && aiState.playerOrder.targetPosition) {
+            const playerOrder = aiState.playerOrder;
+
+            // Check if unit has already reached the target position
+            if (pos) {
+                const distanceToTarget = Math.sqrt(
+                    Math.pow(playerOrder.targetPosition.x - pos.x, 2) +
+                    Math.pow(playerOrder.targetPosition.z - pos.z, 2)
+                );
+
+                // Only restore if not already at target (threshold of 20 units)
+                if (distanceToTarget > 20) {
+                    // Queue the original move command
+                    if (this.game.commandQueueSystem) {
+                        this.game.gameManager.call('queueCommand', entityId, {
+                            type: 'move',
+                            controllerId: "UnitOrderSystem",
+                            targetPosition: playerOrder.targetPosition,
+                            target: null,
+                            meta: playerOrder.meta || {},
+                            priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                            interruptible: true
+                        }, true);
+                    }
+                } else {
+                    // Unit has reached destination, clear the player order
+                    aiState.playerOrder = null;
+                }
             }
         }
     }
