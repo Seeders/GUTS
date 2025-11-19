@@ -40,8 +40,12 @@ class CombatAISystem extends engine.BaseSystem {
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
             const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-            if (aiState && aiState.state !== 'idle') {
-                this.changeAIState(aiState, 'idle');
+            if (aiState) {
+                if (aiState.state !== 'idle') {
+                    this.changeAIState(aiState, 'idle');
+                }
+                // Clear targetPosition to prevent stale movement data in next round
+                aiState.targetPosition = null;
             }
             // Don't clear targets - let units remember their last target for next round
         }
