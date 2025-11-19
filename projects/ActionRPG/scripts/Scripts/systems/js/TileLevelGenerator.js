@@ -564,13 +564,14 @@ class TileLevelGenerator extends engine.BaseSystem {
         }
 
         // Create placed tile record
+        // Center world coordinates around 0 to match terrain system
         const placedTile = {
             tile,
             gridX,
             gridY,
             rotation,
-            worldX: gridX * this.TILE_SIZE,
-            worldZ: gridY * this.TILE_SIZE,
+            worldX: (gridX - this.GRID_WIDTH / 2) * this.TILE_SIZE,
+            worldZ: (gridY - this.GRID_HEIGHT / 2) * this.TILE_SIZE,
             width: tile.width * this.TILE_SIZE,
             height: tile.height * this.TILE_SIZE
         };
@@ -945,8 +946,9 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     worldToGrid(worldX, worldZ) {
-        const x = Math.floor(worldX / this.TILE_SIZE);
-        const y = Math.floor(worldZ / this.TILE_SIZE);
+        // Convert centered world coordinates back to grid
+        const x = Math.floor(worldX / this.TILE_SIZE + this.GRID_WIDTH / 2);
+        const y = Math.floor(worldZ / this.TILE_SIZE + this.GRID_HEIGHT / 2);
 
         if (x < 0 || x >= this.GRID_WIDTH || y < 0 || y >= this.GRID_HEIGHT) {
             return null;
@@ -956,9 +958,10 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     gridToWorld(gridX, gridY) {
+        // Center coordinates to match terrain system
         return {
-            x: gridX * this.TILE_SIZE + this.TILE_SIZE / 2,
-            z: gridY * this.TILE_SIZE + this.TILE_SIZE / 2
+            x: (gridX - this.GRID_WIDTH / 2) * this.TILE_SIZE + this.TILE_SIZE / 2,
+            z: (gridY - this.GRID_HEIGHT / 2) * this.TILE_SIZE + this.TILE_SIZE / 2
         };
     }
 
