@@ -45,18 +45,9 @@ class BaseAbility {
             const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
 
             const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-            if (targetPos) {
-                // Show damage number via gameManager
-                if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
-                    const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-                    const height = targetUnitType?.height || 50;
-                    this.game.gameManager.call('showDamageNumber', targetPos.x, targetPos.y + height, targetPos.z, result.damage, element);
-                }
-
-                // Show impact effect
-                if (this.game.effectsSystem) {
-                    this.createVisualEffect(targetPos, 'impact');
-                }
+            if (targetPos && this.game.effectsSystem) {
+                // Show impact effect - DamageSystem already handles damage numbers
+                this.createVisualEffect(targetPos, 'impact');
             }
 
             return result;
