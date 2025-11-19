@@ -14,6 +14,10 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         this.createdSquads = new Map();
         this.maxRounds = 5;
         this.baseGoldPerRound = 50;
+
+        // Time sync configuration
+        this.timeSyncInterval = 1.0; // Sync every second
+        this.lastTimeSyncTime = 0;
     }
 
     init(params) {
@@ -29,6 +33,9 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
+
+            // Reset time sync tracking
+            this.lastTimeSyncTime = 0;
 
             // Initialize deterministic RNG for this battle
             // Seed based on room ID and round number for reproducibility
@@ -92,8 +99,24 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
             return;
         }
         this.currentBattleTime += this.game.state.deltaTime;
+
+        // Broadcast time sync periodically
+        if (this.game.state.now - this.lastTimeSyncTime >= this.timeSyncInterval) {
+            this.broadcastTimeSync();
+            this.lastTimeSyncTime = this.game.state.now;
+        }
+
         // Check for battle end conditions
         this.checkForBattleEnd();
+    }
+
+    broadcastTimeSync() {
+        if (!this.game.room || !this.serverNetworkManager) return;
+
+        this.serverNetworkManager.broadcastToRoom(this.game.room.id, 'TIME_SYNC', {
+            serverTime: this.game.state.now,
+            tickCount: this.game.tickCount
+        });
     }
 
     checkForBattleEnd() {

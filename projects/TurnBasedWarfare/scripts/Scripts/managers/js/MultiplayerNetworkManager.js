@@ -105,8 +105,30 @@ class MultiplayerNetworkManager {
 
             nm.listen('OPPONENT_BUILDING_CANCELLED', (data) => {
                 this.handleOpponentBuildingCancelled(data);
+            }),
+
+            nm.listen('TIME_SYNC', (data) => {
+                this.handleTimeSync(data);
             })
         );
+    }
+
+    handleTimeSync(data) {
+        const { serverTime, tickCount } = data;
+        if (serverTime === undefined || tickCount === undefined) return;
+
+        // Sync client tick count to server
+        // This ensures deterministic simulation stays in sync
+        if (this.game.tickCount !== tickCount) {
+            const drift = this.game.tickCount - tickCount;
+            if (Math.abs(drift) > 1) {
+                // Significant drift detected, correct it
+                console.log(`[TIME_SYNC] Correcting tick drift: client=${this.game.tickCount}, server=${tickCount}, drift=${drift}`);
+                this.game.tickCount = tickCount;
+                this.game.currentTime = serverTime;
+                this.game.state.now = serverTime;
+            }
+        }
     }
 
     createRoom(playerName, maxPlayers = 2) {
