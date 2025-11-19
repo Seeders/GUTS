@@ -2,8 +2,9 @@ class ComponentManager {
     constructor(game) {
         this.game = game;
         this.game.componentManager = this;
-        this.models = this.game.getCollections().models;        
+        this.models = this.game.getCollections().models;
         this.game.componentTypes = this.getComponentTypes();
+        this.commandIdCounter = 0; // Deterministic counter for command IDs
         //this.models.position == { x: 0, y: 0, z: 0 };
     }
 
@@ -653,7 +654,7 @@ class ComponentManager {
                 priority,          // Higher priority interrupts lower priority
                 interruptible,     // Can this command be interrupted?
                 createdTime: createdTime || (this.game.state.now || 0),
-                id: Math.random().toString(36).substr(2, 9) // Unique command ID
+                id: `cmd_${createdTime || (this.game.state.now || 0)}_${++this.commandIdCounter}` // Deterministic command ID
             })
         };
     }

@@ -242,7 +242,16 @@ class ServerPlacementSystem extends engine.BaseSystem {
             // Store target position in placement data
             placement.targetPosition = targetPosition;
             placement.squadUnits.forEach((unitId) => {
-                   
+                // Store player order for persistence through combat
+                const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                if (aiState) {
+                    aiState.playerOrder = {
+                        targetPosition: targetPosition,
+                        meta: meta,
+                        issuedTime: this.game.state.now
+                    };
+                }
+
                 this.game.gameManager.call('clearCommands', unitId);
                 this.game.gameManager.call('queueCommand', unitId, {
                     type: 'move',
@@ -253,7 +262,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     priority: this.game.commandQueueSystem.PRIORITY.MOVE,
                     interruptible: true
                 }, true); // true = interrupt current command
-            
+
             });
                     
                
@@ -332,6 +341,16 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Store target position in placement data
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
+                    // Store player order for persistence through combat
+                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                    if (aiState) {
+                        aiState.playerOrder = {
+                            targetPosition: targetPosition,
+                            meta: meta,
+                            issuedTime: this.game.state.now
+                        };
+                    }
+
                     this.game.gameManager.call('clearCommands', unitId);
                     this.game.gameManager.call('queueCommand', unitId, {
                         type: 'move',
@@ -342,7 +361,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                         priority: this.game.commandQueueSystem.PRIORITY.MOVE,
                         interruptible: true
                     }, true); // true = interrupt current command
-                
+
                 });
                         
 
