@@ -111,7 +111,6 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
 
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
-        console.log(`FireBall canExecute: entity ${casterEntity}, enemies in range: ${enemies.length}, range: ${this.range}`);
         return enemies.length > 0;
     }
 
@@ -150,7 +149,6 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
 
     // Create impressive charging effect at caster
     createCastEffect(casterPos) {
-        console.log('createCastEffect called', casterPos, 'effectsSystem:', !!this.game.effectsSystem);
         if (!this.game.effectsSystem) return;
         // Main cast particles
         this.createVisualEffect(casterPos, 'cast');
@@ -259,7 +257,7 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
                 this.createTrailEffect(currentPos);
             }
         };
-console.log('fire fireBall', projectileData);
+
         this.game.projectileSystem.fireProjectile(casterEntity, targetId, projectileData);
     }
 
@@ -298,10 +296,9 @@ console.log('fire fireBall', projectileData);
 
     // Create epic multi-layered explosion effect
     createExplosionEffect(impactPos) {
-        console.log('createExplosionEffect called', impactPos, 'effectsSystem:', !!this.game.effectsSystem, 'particleSystem:', !!this.game.particleSystem, 'gameManager:', !!this.game.gameManager);
         if (!this.game.effectsSystem) return;
+
         // Standard explosion effects
-        console.log('Creating explosion_core effect');
         this.createVisualEffect(impactPos, 'explosion_core');
         this.createVisualEffect(impactPos, 'explosion_fire');
         this.createVisualEffect(impactPos, 'explosion_embers');
