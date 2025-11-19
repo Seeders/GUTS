@@ -19842,6 +19842,36 @@
                 "type": "ARPGUISystem"
               },
               {
+                "type": "ClassSelectionUI"
+              },
+              {
+                "type": "SkillTreeUI"
+              },
+              {
+                "type": "InventorySystem"
+              },
+              {
+                "type": "RespawnSystem"
+              },
+              {
+                "type": "CharacterStatsUI"
+              },
+              {
+                "type": "VendorSystem"
+              },
+              {
+                "type": "SaveLoadSystem"
+              },
+              {
+                "type": "DungeonSystem"
+              },
+              {
+                "type": "BossSystem"
+              },
+              {
+                "type": "QuestSystem"
+              },
+              {
                 "type": "LifetimeSystem"
               },
               {
@@ -20214,6 +20244,46 @@
       "SkillTreeSystem": {
         "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/SkillTreeSystem.js",
         "fileName": "SkillTreeSystem"
+      },
+      "ClassSelectionUI": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ClassSelectionUI.js",
+        "fileName": "ClassSelectionUI"
+      },
+      "SkillTreeUI": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/SkillTreeUI.js",
+        "fileName": "SkillTreeUI"
+      },
+      "InventorySystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/InventorySystem.js",
+        "fileName": "InventorySystem"
+      },
+      "RespawnSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/RespawnSystem.js",
+        "fileName": "RespawnSystem"
+      },
+      "CharacterStatsUI": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/CharacterStatsUI.js",
+        "fileName": "CharacterStatsUI"
+      },
+      "VendorSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/VendorSystem.js",
+        "fileName": "VendorSystem"
+      },
+      "SaveLoadSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/SaveLoadSystem.js",
+        "fileName": "SaveLoadSystem"
+      },
+      "DungeonSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/DungeonSystem.js",
+        "fileName": "DungeonSystem"
+      },
+      "BossSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/BossSystem.js",
+        "fileName": "BossSystem"
+      },
+      "QuestSystem": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/QuestSystem.js",
+        "fileName": "QuestSystem"
       }
     },
     "terrainTypes": {
