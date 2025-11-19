@@ -17,12 +17,12 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         this.enemiesSpawnedThisWave = 0;
         this.waveInProgress = false;
 
-        // Enemy types by difficulty
+        // Enemy types by difficulty (using actual unit IDs from prefabs)
         this.enemyTiers = {
-            easy: ['peasant', 'scout'],
-            medium: ['soldier', 'archer', 'apprentice'],
-            hard: ['barbarian', 'berserker', 'ranger', 'elementalist'],
-            elite: ['paladin', 'assassin', 'archmage']
+            easy: ['0_skeleton', 'peasant', '0_golemStone'],
+            medium: ['1_sd_soldier', '1_d_archer', '1_i_apprentice', '1_di_scout'],
+            hard: ['1_s_barbarian', '2_s_berserker', '2_d_ranger', '2_i_elementalist', '0_golemFire', '0_golemIce'],
+            elite: ['2_is_paladin', '2_di_shadowAssassin', '4_archmage', '2_i_necromancer']
         };
 
         // Spawn radius from player

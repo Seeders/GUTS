@@ -30,6 +30,12 @@ class ARPGUISystem extends engine.BaseSystem {
         this.createUI();
     }
 
+    postAllInit() {
+        // Show class selection UI when game loads
+        // This gives the player time to choose their class before starting
+        this.game.gameManager.call('showClassSelection');
+    }
+
     createUI() {
         // Create main container
         this.uiContainer = document.createElement('div');

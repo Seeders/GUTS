@@ -10,7 +10,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Warrior',
                 description: 'A mighty melee fighter with high health and armor',
                 icon: 'unit_barbarian',
-                baseUnit: 'barbarian',
+                baseUnit: '1_s_barbarian',
                 baseStats: {
                     health: 500,
                     damage: 25,
@@ -27,7 +27,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Ranger',
                 description: 'A swift ranged attacker with high dexterity',
                 icon: 'unit_archer',
-                baseUnit: 'archer',
+                baseUnit: '1_d_archer',
                 baseStats: {
                     health: 350,
                     damage: 20,
@@ -44,7 +44,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Mage',
                 description: 'A powerful spellcaster with devastating magic',
                 icon: 'unit_apprentice',
-                baseUnit: 'apprentice',
+                baseUnit: '1_i_apprentice',
                 baseStats: {
                     health: 280,
                     damage: 15,
@@ -61,7 +61,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Paladin',
                 description: 'A holy warrior with healing and combat abilities',
                 icon: 'unit_acolyte',
-                baseUnit: 'acolyte',
+                baseUnit: '1_is_acolyte',
                 baseStats: {
                     health: 420,
                     damage: 18,
@@ -78,7 +78,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Assassin',
                 description: 'A stealthy fighter with critical strikes',
                 icon: 'unit_rogue',
-                baseUnit: 'scout',
+                baseUnit: '1_di_scout',
                 baseStats: {
                     health: 320,
                     damage: 30,
@@ -95,7 +95,7 @@ class CharacterClassSystem extends engine.BaseSystem {
                 name: 'Necromancer',
                 description: 'A dark mage who commands the undead',
                 icon: 'unit_apprentice',
-                baseUnit: 'apprentice',
+                baseUnit: '1_i_apprentice',
                 baseStats: {
                     health: 300,
                     damage: 12,

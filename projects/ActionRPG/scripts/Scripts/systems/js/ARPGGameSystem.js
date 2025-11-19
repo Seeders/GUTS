@@ -107,8 +107,8 @@ class ARPGGameSystem extends engine.BaseSystem {
         const Components = this.game.componentManager.getComponents();
         const collections = this.game.getCollections();
 
-        // Default player unit type
-        const playerUnitType = 'barbarian';
+        // Default player unit type (use actual unit ID from prefabs)
+        const playerUnitType = '1_s_barbarian';
         const unitData = collections.units[playerUnitType];
 
         if (!unitData) {
