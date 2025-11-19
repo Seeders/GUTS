@@ -1,0 +1,18 @@
+{
+  "title": "Dungeon Editor",
+  "container": "dungeon-editor-container",
+  "libraries": [
+    "threejs",
+    "ShapeFactory",
+    "CoordinateTranslator",
+    "ImageManager",
+    "TileMap",
+    "DungeonEditor"
+  ],
+  "propertyName": "tileData",
+  "interface": "dungeonEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editDungeonTile",
+  "saveHook": "saveDungeonTile"
+}
