@@ -159,13 +159,15 @@ class AbilitySystem extends engine.BaseSystem {
 
         for (const anim of animationsToTry) {
 
-            // For abilities, use normal speed unless it's an attack-based ability
+            // For abilities, calculate animation speed based on cast time
             let animationSpeed = 1.0;
             let minAnimationTime = 1.5;
 
-            if (ability) {
-                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, ability.castTime);
-                minAnimationTime = 1 / ability.castTime;
+            if (ability && ability.castTime > 0) {
+                // Convert cast time to rate (casts per second) for calculateAnimationSpeed
+                const castRate = 1 / ability.castTime;
+                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, castRate);
+                minAnimationTime = ability.castTime;
             }
             if(this.game.gameManager.has('triggerSinglePlayAnimation')){
                 this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
