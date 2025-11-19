@@ -150,8 +150,9 @@ class AbilitySystem extends engine.BaseSystem {
             targetData: targetData,
             executeTime: this.game.state.now + ability.castTime
         });
-        
-        this.setCooldown(entityId, abilityId, ability.cooldown);
+
+        // Cooldown includes cast time so it doesn't expire until after the ability executes
+        this.setCooldown(entityId, abilityId, ability.castTime + ability.cooldown);
         ability.logAbilityUsage(entityId);
         
         return true;
