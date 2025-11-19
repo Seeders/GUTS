@@ -19872,6 +19872,9 @@
                 "type": "QuestSystem"
               },
               {
+                "type": "TileLevelGenerator"
+              },
+              {
                 "type": "LifetimeSystem"
               },
               {
@@ -20296,6 +20299,10 @@
       "ServerLootSystem": {
         "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/ServerLootSystem.js",
         "fileName": "ServerLootSystem"
+      },
+      "TileLevelGenerator": {
+        "filePath": "/projects/ActionRPG/scripts/Scripts/systems/js/TileLevelGenerator.js",
+        "fileName": "TileLevelGenerator"
       }
     },
     "terrainTypes": {
