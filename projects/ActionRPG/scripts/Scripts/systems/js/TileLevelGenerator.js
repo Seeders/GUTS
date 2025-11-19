@@ -75,6 +75,8 @@ class TileLevelGenerator extends engine.BaseSystem {
         const currentLevel = this.game.state?.level || 'level1';
         const levelData = collections.levels?.[currentLevel];
 
+        console.log('TileLevelGenerator.postAllInit:', { currentLevel, procedural: levelData?.procedural, isServer: !!this.engine.serverNetworkManager });
+
         if (levelData?.procedural) {
             console.log('TileLevelGenerator: Generating procedural level for', currentLevel);
 
@@ -865,6 +867,8 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     spawnLevelContent() {
+        console.log('TileLevelGenerator.spawnLevelContent: Processing', this.placedTiles.length, 'tiles');
+
         for (const placed of this.placedTiles) {
             const content = placed.tile.content;
             if (!content) continue;
