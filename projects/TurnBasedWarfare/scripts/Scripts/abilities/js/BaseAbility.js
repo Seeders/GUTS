@@ -43,16 +43,22 @@ class BaseAbility {
     dealDamageWithEffects(sourceId, targetId, damage, element = 'physical', options = {}) {
         if (this.game.damageSystem) {
             const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
-            
+
             const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-            if (targetPos && this.game.effectsSystem) {
-                const effectType = result.isCritical ? 'critical' : 'damage';
-                if (this.game.effectsSystem.showDamageNumber) {
-                    this.game.effectsSystem.showDamageNumber(targetPos.x, targetPos.y + 15, targetPos.z, result.damage, effectType);
+            if (targetPos) {
+                // Show damage number via gameManager
+                if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+                    const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+                    const height = targetUnitType?.height || 50;
+                    this.game.gameManager.call('showDamageNumber', targetPos.x, targetPos.y + height, targetPos.z, result.damage, element);
                 }
-                this.createVisualEffect(targetPos, 'impact');
+
+                // Show impact effect
+                if (this.game.effectsSystem) {
+                    this.createVisualEffect(targetPos, 'impact');
+                }
             }
-            
+
             return result;
         }
         return null;

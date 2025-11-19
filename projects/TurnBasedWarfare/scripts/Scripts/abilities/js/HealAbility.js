@@ -84,8 +84,8 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
         targetHealth.current += actualHeal;
         
         // Show heal number
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.showDamageNumber(
+        if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+            this.game.gameManager.call('showDamageNumber',
                 targetPos.x, targetPos.y + 50, targetPos.z,
                 actualHeal, 'heal'
             );

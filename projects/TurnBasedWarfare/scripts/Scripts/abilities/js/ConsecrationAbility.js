@@ -184,9 +184,9 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
                         
                         this.createVisualEffect(unitPos, 'consecration', { heightOffset: 10 });
                         
-                        if (this.game.effectsSystem) {
-                            this.game.effectsSystem.showDamageNumber(
-                                unitPos.x, unitPos.y + 15, unitPos.z, 
+                        if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+                            this.game.gameManager.call('showDamageNumber',
+                                unitPos.x, unitPos.y + 15, unitPos.z,
                                 healAmount, 'heal'
                             );
                         }
