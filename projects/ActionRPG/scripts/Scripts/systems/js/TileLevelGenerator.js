@@ -902,8 +902,11 @@ class TileLevelGenerator extends engine.BaseSystem {
         const isServer = !!this.engine.serverNetworkManager;
         const hasAnyNetwork = this.engine.serverNetworkManager || this.game.clientNetworkManager;
 
+        console.log('TileLevelGenerator.spawnEnemy:', { difficulty, x, z, isServer, hasAnyNetwork });
+
         // Only spawn if we're the server OR there's no network at all (offline single-player)
         if (!isServer && hasAnyNetwork) {
+            console.log('TileLevelGenerator: Skipping spawn - client side');
             return; // Client waits for server to spawn
         }
 
@@ -919,9 +922,13 @@ class TileLevelGenerator extends engine.BaseSystem {
         const types = enemySet.units;
         const type = types[Math.floor(this.random() * types.length)];
 
+        console.log('TileLevelGenerator: Spawning enemy type:', type, 'at', x, z);
+
         // Use enemy spawner if available
         if (this.game.enemySpawnerSystem) {
             this.game.gameManager.call('spawnEnemy', type, x, z);
+        } else {
+            console.warn('TileLevelGenerator: EnemySpawnerSystem not available');
         }
     }
 
