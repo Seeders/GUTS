@@ -419,8 +419,6 @@ class EnemySpawnerSystem extends engine.BaseSystem {
     createEnemyFromServer(data) {
         const { entityId, unitType, x, z } = data;
 
-        const CT = this.componentTypes;
-        const Components = this.game.componentManager.getComponents();
         const collections = this.game.getCollections();
 
         const unitData = collections.units[unitType];
@@ -429,86 +427,58 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             return null;
         }
 
-        // Create entity with same ID as server
-        const createdId = this.game.createEntity(entityId);
-
         // Get terrain height
         const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', x, z) || 0;
 
-        // Add components
-        this.game.addComponent(createdId, CT.POSITION, Components.Position(x, terrainHeight, z));
-        this.game.addComponent(createdId, CT.VELOCITY, Components.Velocity(0, 0, 0, unitData.speed || 50, false, false));
-        this.game.addComponent(createdId, CT.FACING, Components.Facing(Math.random() * Math.PI * 2));
-        this.game.addComponent(createdId, CT.COLLISION, Components.Collision(unitData.size || 25, 50));
+        // Use UnitCreationManager with server's entity ID
+        if (this.game.unitCreationManager) {
+            const gridSize = collections.configs?.game?.gridSize || 48;
+            const gridX = Math.floor(x / gridSize);
+            const gridZ = Math.floor(z / gridSize);
 
-        this.game.addComponent(createdId, CT.HEALTH, Components.Health(unitData.hp || 100));
-        this.game.addComponent(createdId, CT.COMBAT, Components.Combat(
-            unitData.damage || 10,
-            unitData.range || 30,
-            unitData.attackSpeed || 1.0,
-            unitData.projectile || null,
-            0,
-            unitData.element || 'physical',
-            unitData.armor || 0,
-            unitData.fireResistance || 0,
-            unitData.coldResistance || 0,
-            unitData.lightningResistance || 0,
-            unitData.poisonResistance || 0,
-            unitData.visionRange || this.AGGRO_RANGE
-        ));
+            const placement = {
+                unitType: { ...unitData, id: unitType },
+                gridPosition: { x: gridX, z: gridZ }
+            };
 
-        this.game.addComponent(createdId, CT.TEAM, Components.Team('enemy'));
+            const createdId = this.game.unitCreationManager.create(
+                x,
+                terrainHeight,
+                z,
+                null,
+                placement,
+                'enemy',
+                entityId // Pass server's entity ID
+            );
 
-        this.game.addComponent(createdId, CT.UNIT_TYPE, Components.UnitType({
-            id: unitType,
-            ...unitData,
-            xpValue: unitData.xpValue || 10,
-            goldValue: unitData.goldValue || 5,
-            lootTable: unitData.lootTable || 'common'
-        }));
-
-        this.game.addComponent(createdId, CT.AI_STATE, Components.AIState('idle', null, null, null, {
-            initialized: true,
-            aiBehavior: unitData.aiBehavior || 'aggressive',
-            spawnPosition: { x: x, z: z },
-            leashRange: this.LEASH_RANGE
-        }));
-
-        this.game.addComponent(createdId, CT.ABILITY_COOLDOWNS, Components.AbilityCooldowns({}));
-
-        // Renderable
-        if (unitData.render) {
-            this.game.addComponent(createdId, CT.RENDERABLE, Components.Renderable(
-                'units',
-                unitType,
-                128
-            ));
-        }
-
-        // Animation component
-        this.game.addComponent(createdId, CT.ANIMATION, Components.Animation());
-
-        // Equipment component
-        this.game.addComponent(createdId, CT.EQUIPMENT, Components.Equipment());
-
-        // Track active enemies
-        this.activeEnemies.set(createdId, {
-            type: unitType,
-            spawnTime: this.game.state.now,
-            spawnPosition: { x: x, z: z }
-        });
-
-        // Add abilities
-        if (unitData.abilities && this.game.abilitySystem) {
-            for (const abilityId of unitData.abilities) {
-                this.game.gameManager.call('addAbilityToEntity', createdId, abilityId);
+            // Update AI state with enemy-specific settings
+            const CT = this.componentTypes;
+            const aiState = this.game.getComponent(createdId, CT.AI_STATE);
+            if (aiState) {
+                aiState.aiBehavior = unitData.aiBehavior || 'aggressive';
+                aiState.meta = {
+                    initialized: true,
+                    spawnPosition: { x: x, z: z },
+                    leashRange: this.LEASH_RANGE
+                };
             }
+
+            // Track active enemies
+            this.activeEnemies.set(createdId, {
+                type: unitType,
+                spawnTime: this.game.state.now,
+                spawnPosition: { x: x, z: z }
+            });
+
+            this.game.triggerEvent('onEnemySpawned', createdId);
+
+            console.log('EnemySpawnerSystem: Created enemy from server via UnitCreationManager:', createdId, unitType);
+            return createdId;
         }
 
-        this.game.triggerEvent('onEnemySpawned', createdId);
-
-        console.log('EnemySpawnerSystem: Created enemy from server:', createdId, unitType);
-        return createdId;
+        // Fallback if UnitCreationManager not available
+        console.warn('EnemySpawnerSystem: UnitCreationManager not available for client-side creation');
+        return null;
     }
 
     getSpawnPosition() {

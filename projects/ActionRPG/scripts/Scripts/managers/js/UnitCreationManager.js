@@ -64,19 +64,27 @@ class UnitCreationManager {
      * @param {number} worldX - World X coordinate
      * @param {number} worldY - World Y coordinate
      * @param {number} worldZ - World Z coordinate
-     * @param {Object} unitType - Unit type definition
-     * @param {string} team - Team identifier ('left' or 'right')
-     * @returns {number} Entity ID
+     * @param {Object} targetPosition - Target position for AI
+     * @param {Object} placement - Placement data including unitType
+     * @param {string} team - Team identifier ('player' or 'enemy')
+     * @param {string} entityId - Optional entity ID (for client-side creation with server ID)
+     * @returns {string} Entity ID
      */
-    create(worldX, worldY, worldZ, targetPosition, placement, team) {
+    create(worldX, worldY, worldZ, targetPosition, placement, team, entityId = null) {
         const unitType = placement.unitType;
         try {
-            // Round world coordinates to ensure deterministic entity IDs across client and server
-            const roundedX = Math.round(worldX * 100) / 100;
-            const roundedZ = Math.round(worldZ * 100) / 100;
-            const entity = this.game.createEntity(`${unitType.id}_${roundedX}_${roundedZ}_${team}_${this.game.state.round}`);
+            // Use provided entityId or generate one
+            let entity;
+            if (entityId) {
+                entity = this.game.createEntity(entityId);
+            } else {
+                // Round world coordinates to ensure deterministic entity IDs across client and server
+                const roundedX = Math.round(worldX * 100) / 100;
+                const roundedZ = Math.round(worldZ * 100) / 100;
+                entity = this.game.createEntity(`${unitType.id}_${roundedX}_${roundedZ}_${team}_${this.game.state.now || 0}`);
+            }
             console.log('created unit', unitType.id, team, entity);
-            const teamConfig = this.teamConfigs[team];
+            const teamConfig = this.teamConfigs[team] || this.teamConfigs.enemy;
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig);
             
