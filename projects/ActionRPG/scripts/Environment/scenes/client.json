@@ -29,6 +29,7 @@
         { "type": "RenderSystem" },
         { "type": "ARPGGameSystem" },
         { "type": "ARPGUISystem" },
+        { "type": "MultiplayerUISystem" },
         { "type": "CharacterClassSystem" },
         { "type": "ClassSelectionUI" },
         { "type": "CharacterStatsUI" },

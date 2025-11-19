@@ -24,10 +24,16 @@ class GameManager {
 
         this.game.triggerEvent('onGameStarted');
 
-        setTimeout(() => {   
+        setTimeout(() => {
             this.game.state.isPaused = false;
-            this.game.uiSystem.start();
-            this.game.screenManager.showGameScreen();  
+
+            // Start the ARPG game (initialize player, etc.)
+            this.call('startARPG');
+
+            if (this.game.uiSystem) {
+                this.game.uiSystem.start();
+            }
+            this.game.screenManager.showGameScreen();
         }, 2000);
         
     }

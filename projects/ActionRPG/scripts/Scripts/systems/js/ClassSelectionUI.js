@@ -255,8 +255,23 @@ class ClassSelectionUI extends engine.BaseSystem {
         // Hide selection UI
         this.hide();
 
-        // Start the game
-        this.game.gameManager.call('startARPG');
+        // Show the multiplayer game room lobby
+        // Get the arena mode configuration from GameModeManager
+        if (this.game.gameModeManager) {
+            const arenaMode = this.game.gameModeManager.getModeConfig('arena');
+            if (arenaMode && this.game.uiSystem) {
+                // Set the game mode in screen manager (required by initializeGame)
+                if (this.game.screenManager) {
+                    this.game.screenManager.setGameMode('arena');
+                }
+                // Trigger the multiplayer lobby flow
+                this.game.uiSystem.handleMultiplayerModeSelection(arenaMode);
+            } else {
+                console.error('Cannot show lobby - missing gameModeManager or uiSystem');
+            }
+        } else {
+            console.error('GameModeManager not found');
+        }
     }
 
     show() {
