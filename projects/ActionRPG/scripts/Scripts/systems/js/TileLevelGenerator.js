@@ -903,18 +903,6 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     spawnEnemy(difficulty, x, z) {
-        // Check if we're on server side or in offline mode
-        const isServer = !!this.engine.serverNetworkManager;
-        const hasAnyNetwork = this.engine.serverNetworkManager || this.game.clientNetworkManager;
-
-        console.log('TileLevelGenerator.spawnEnemy:', { difficulty, x, z, isServer, hasAnyNetwork });
-
-        // Only spawn if we're the server OR there's no network at all (offline single-player)
-        if (!isServer && hasAnyNetwork) {
-            console.log('TileLevelGenerator: Skipping spawn - client side');
-            return; // Client waits for server to spawn
-        }
-
         // Get enemy types from enemySets collection
         const collections = this.game.getCollections();
         const enemySet = collections.enemySets?.[difficulty] || collections.enemySets?.easy;
@@ -929,11 +917,48 @@ class TileLevelGenerator extends engine.BaseSystem {
 
         console.log('TileLevelGenerator: Spawning enemy type:', type, 'at', x, z);
 
-        // Use enemy spawner if available
-        if (this.game.enemySpawnerSystem) {
-            this.game.gameManager.call('spawnEnemy', type, x, z);
+        // Spawn directly using UnitCreationManager (both client and server use same seed)
+        if (this.game.unitCreationManager) {
+            const gridSize = collections.configs?.game?.gridSize || 48;
+            const gridX = Math.floor(x / gridSize);
+            const gridZ = Math.floor(z / gridSize);
+
+            const unitData = collections.units[type];
+            if (!unitData) {
+                console.warn('TileLevelGenerator: Unit type not found:', type);
+                return;
+            }
+
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', x, z) || 0;
+
+            const placement = {
+                unitType: { ...unitData, id: type },
+                gridPosition: { x: gridX, z: gridZ }
+            };
+
+            const entityId = this.game.unitCreationManager.create(
+                x,
+                terrainHeight,
+                z,
+                null,
+                placement,
+                'enemy'
+            );
+
+            // Update AI state with enemy-specific settings
+            const CT = this.game.componentManager.getComponentTypes();
+            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            if (aiState) {
+                aiState.aiBehavior = unitData.aiBehavior || 'aggressive';
+                aiState.meta = {
+                    initialized: true,
+                    spawnPosition: { x: x, z: z }
+                };
+            }
+
+            console.log('TileLevelGenerator: Created enemy:', entityId, type);
         } else {
-            console.warn('TileLevelGenerator: EnemySpawnerSystem not available');
+            console.warn('TileLevelGenerator: UnitCreationManager not available');
         }
     }
 
