@@ -41,8 +41,19 @@ class CombatAISystem extends engine.BaseSystem {
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
         );
+        // Get player entity to exclude from AI control
+        const playerEntityId = this.game.gameManager.has('getPlayerEntity')
+            ? this.game.gameManager.call('getPlayerEntity')
+            : null;
+
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
+
+            // Skip player - PlayerControlSystem handles player attacks manually
+            if (entityId === playerEntityId) {
+                continue;
+            }
+
             const pos = this.game.getComponent(entityId, CT.POSITION);
             const combat = this.game.getComponent(entityId, CT.COMBAT);
             const team = this.game.getComponent(entityId, CT.TEAM);
