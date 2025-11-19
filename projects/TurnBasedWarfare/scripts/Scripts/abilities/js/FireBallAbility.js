@@ -1,4 +1,4 @@
-class FireballAbility extends engine.app.appClasses['BaseAbility'] {
+class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'fireBall',
