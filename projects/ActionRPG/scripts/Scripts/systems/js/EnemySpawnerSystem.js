@@ -258,7 +258,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
                 spawnZ,
                 null, // targetPosition
                 placement,
-                'right' // Use 'right' team which has enemy tint
+                'enemy'
             );
 
             // Update AI state with enemy-specific settings

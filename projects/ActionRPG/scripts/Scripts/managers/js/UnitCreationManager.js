@@ -33,12 +33,12 @@ class UnitCreationManager {
         
         // Team-specific configurations
         this.teamConfigs = {
-            left: {
+            player: {
                 initialFacing: 0,
                 aiState: 'idle',
                 colorTint: null
             },
-            right: {
+            enemy: {
                 initialFacing: Math.PI,
                 aiState: 'idle',
                 colorTint: 0xff4444
