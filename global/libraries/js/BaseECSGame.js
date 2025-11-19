@@ -16,6 +16,7 @@ class BaseECSGame {
         this.lastTime = 0;
         this.currentTime = 0;
         this.deltaTime = 0;
+        this.tickCount = 0;
 
         this.isServer = false;
 
@@ -48,7 +49,9 @@ class BaseECSGame {
                 this.performanceMonitor.startFrame();
             }
 
-            this.currentTime = this.currentTime + deltaTime;
+            // Use tick count based timing to avoid floating-point accumulation errors
+            this.tickCount++;
+            this.currentTime = this.tickCount * deltaTime;
 
             // Only update if a reasonable amount of time has passed
             // const timeSinceLastUpdate = this.currentTime - this.lastTime;
@@ -218,7 +221,8 @@ class BaseECSGame {
     resetCurrentTime() {
         this.state.now = 0;
         this.lastTime = 0;
-        this.currentTime = 0;     
+        this.currentTime = 0;
+        this.tickCount = 0;
     }
 }
 
