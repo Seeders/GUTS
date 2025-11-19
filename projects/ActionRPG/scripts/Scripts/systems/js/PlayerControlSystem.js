@@ -581,23 +581,49 @@ class PlayerControlSystem extends engine.BaseSystem {
 
         if (!pos || !vel) return;
 
-        // Handle WASD movement
-        if (keys.w || keys.a || keys.s || keys.d) {
-            this.handleWASDMovementFor(entityId, vel, keys);
+        // WASD movement disabled - use click-to-move with pathfinding instead
+        // if (keys.w || keys.a || keys.s || keys.d) {
+        //     this.handleWASDMovementFor(entityId, vel, keys);
+        //     this.updateFacingFor(entityId, vel);
+        //     if (aiState && aiState.state !== 'attacking') {
+        //         aiState.state = 'idle';
+        //         aiState.targetPosition = null;
+        //     }
+        // } else
+        if (clickTarget) {
+            // Handle click-to-move with pathfinding
+            if (aiState) {
+                // Request path if we don't have one or target changed
+                if (!aiState.path || !aiState.targetPosition ||
+                    aiState.targetPosition.x !== clickTarget.x ||
+                    aiState.targetPosition.z !== clickTarget.z) {
+                    aiState.targetPosition = { x: clickTarget.x, z: clickTarget.z };
+                    aiState.state = 'chasing';
+                    // Request path from pathfinding system
+                    this.game.gameManager.call('requestPath', entityId, pos.x, pos.z, clickTarget.x, clickTarget.z, 10);
+                }
 
-            // Update facing direction
-            this.updateFacingFor(entityId, vel);
-
-            // Set AI state to idle to prevent AI from taking over
-            if (aiState && aiState.state !== 'attacking') {
-                aiState.state = 'idle';
-                aiState.targetPosition = null;
-            }
-        } else if (clickTarget) {
-            // Handle click-to-move
-            const reached = this.handleClickMoveFor(entityId, pos, vel, clickTarget);
-            if (reached && isLocal) {
-                this.cancelClickMove();
+                // Follow the path if we have one
+                if (aiState.path && aiState.path.length > 0) {
+                    const reached = this.followPath(entityId, pos, vel, aiState);
+                    if (reached && isLocal) {
+                        this.cancelClickMove();
+                        aiState.path = null;
+                        aiState.targetPosition = null;
+                    }
+                } else {
+                    // Fallback to direct movement while waiting for path
+                    const reached = this.handleClickMoveFor(entityId, pos, vel, clickTarget);
+                    if (reached && isLocal) {
+                        this.cancelClickMove();
+                    }
+                }
+            } else {
+                // No AI state, use direct movement
+                const reached = this.handleClickMoveFor(entityId, pos, vel, clickTarget);
+                if (reached && isLocal) {
+                    this.cancelClickMove();
+                }
             }
         } else {
             // No input - stop if not attacking
@@ -653,6 +679,52 @@ class PlayerControlSystem extends engine.BaseSystem {
             this.updateFacingFor(entityId, vel);
             return false;
         }
+    }
+
+    followPath(entityId, pos, vel, aiState) {
+        if (!aiState.path || aiState.path.length === 0) {
+            vel.vx = 0;
+            vel.vz = 0;
+            return true;
+        }
+
+        // Initialize path index if needed
+        if (aiState.pathIndex === undefined || aiState.pathIndex === null) {
+            aiState.pathIndex = 0;
+        }
+
+        // Get current waypoint
+        const waypoint = aiState.path[aiState.pathIndex];
+        if (!waypoint) {
+            vel.vx = 0;
+            vel.vz = 0;
+            return true;
+        }
+
+        const dx = waypoint.x - pos.x;
+        const dz = waypoint.z - pos.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        // Check if reached current waypoint
+        if (dist <= this.CLICK_MOVE_THRESHOLD) {
+            aiState.pathIndex++;
+
+            // Check if reached end of path
+            if (aiState.pathIndex >= aiState.path.length) {
+                vel.vx = 0;
+                vel.vz = 0;
+                return true;
+            }
+        }
+
+        // Move towards current waypoint
+        if (dist > 0.1) {
+            vel.vx = (dx / dist) * this.MOVE_SPEED;
+            vel.vz = (dz / dist) * this.MOVE_SPEED;
+            this.updateFacingFor(entityId, vel);
+        }
+
+        return false;
     }
 
     updateFacingFor(entityId, vel) {

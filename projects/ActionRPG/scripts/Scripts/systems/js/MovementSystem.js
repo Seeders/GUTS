@@ -133,7 +133,7 @@ class MovementSystem extends engine.BaseSystem {
             if (isAffectedByGravity) {
                 vel.vy -= this.GRAVITY * this.game.state.deltaTime;
             }
-            
+
             pos.x += vel.vx * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.y += vel.vy * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
             pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
