@@ -19467,7 +19467,7 @@
                   "x": 0,
                   "y": 0,
                   "z": 0,
-                  "size": 0.4,
+                  "size": 1.5,
                   "color": {
                     "paletteColor": "yellowColor"
                   },
@@ -19487,7 +19487,7 @@
                   "x": 0,
                   "y": 0,
                   "z": 0,
-                  "size": 0.6,
+                  "size": 2.5,
                   "color": {
                     "paletteColor": "orangeColor"
                   },
@@ -19508,7 +19508,7 @@
                   "x": 0,
                   "y": 0,
                   "z": 0,
-                  "size": 0.9,
+                  "size": 4,
                   "color": {
                     "paletteColor": "redDColor"
                   },

@@ -4,13 +4,13 @@ class FireBallAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'fireBall',
             name: 'Fire Ball',
             description: 'Launch a fiery projectile that explodes on impact',
-            cooldown: 5.0,
-            range: 150,
+            cooldown: 1,
+            range: 300,
             manaCost: 0,
             targetType: 'enemy',
             animation: 'cast',
             priority: 7,
-            castTime: 1.5,
+            castTime: 0.15,
             ...params
         });
 
