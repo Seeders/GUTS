@@ -47,7 +47,9 @@ class BaseAbility {
             const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
             if (targetPos && this.game.effectsSystem) {
                 const effectType = result.isCritical ? 'critical' : 'damage';
-                this.game.effectsSystem.showDamageNumber(targetPos.x, targetPos.y + 15, targetPos.z, result.damage, effectType);
+                if (this.game.effectsSystem.showDamageNumber) {
+                    this.game.effectsSystem.showDamageNumber(targetPos.x, targetPos.y + 15, targetPos.z, result.damage, effectType);
+                }
                 this.createVisualEffect(targetPos, 'impact');
             }
             
