@@ -248,10 +248,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             const gridX = Math.floor(spawnX / gridSize);
             const gridZ = Math.floor(spawnZ / gridSize);
 
-            const placement = {
-                unitType: { ...unitData, id: unitType, collection: 'units' }, // Include id from the collection key
-                gridPosition: { x: gridX, z: gridZ }
-            };
+            const placement = this.game.unitCreationManager.createPlacement(unitType, unitData, gridX, gridZ);
 
             const entityId = this.game.unitCreationManager.create(
                 spawnX,
@@ -437,10 +434,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             const gridX = Math.floor(x / gridSize);
             const gridZ = Math.floor(z / gridSize);
 
-            const placement = {
-                unitType: { ...unitData, id: unitType, collection: 'units' },
-                gridPosition: { x: gridX, z: gridZ }
-            };
+            const placement = this.game.unitCreationManager.createPlacement(unitType, unitData, gridX, gridZ);
 
             const createdId = this.game.unitCreationManager.create(
                 x,

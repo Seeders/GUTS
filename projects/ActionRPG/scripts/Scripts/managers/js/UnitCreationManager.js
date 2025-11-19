@@ -60,6 +60,22 @@ class UnitCreationManager {
     }
     
     /**
+     * Create placement object with proper unitType structure
+     * @param {string} unitTypeId - Unit type ID from collection
+     * @param {Object} unitData - Unit data from collections.units
+     * @param {number} gridX - Grid X position
+     * @param {number} gridZ - Grid Z position
+     * @param {string} collection - Collection name (default: 'units')
+     * @returns {Object} Placement object
+     */
+    createPlacement(unitTypeId, unitData, gridX, gridZ, collection = 'units') {
+        return {
+            unitType: { ...unitData, id: unitTypeId, collection },
+            gridPosition: { x: gridX, z: gridZ }
+        };
+    }
+
+    /**
      * Create a new unit entity with all required components
      * @param {number} worldX - World X coordinate
      * @param {number} worldY - World Y coordinate
@@ -72,6 +88,11 @@ class UnitCreationManager {
      */
     create(worldX, worldY, worldZ, targetPosition, placement, team, entityId = null) {
         const unitType = placement.unitType;
+
+        // Ensure unitType has required properties
+        if (!unitType.collection) {
+            unitType.collection = 'units';
+        }
         try {
             // Use provided entityId or generate one
             let entity;
