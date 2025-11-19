@@ -336,7 +336,7 @@ class UnitOrderSystem extends engine.BaseSystem {
             this.stopTargeting();
             return;
         }
- 
+
         const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
@@ -345,11 +345,23 @@ class UnitOrderSystem extends engine.BaseSystem {
         }
 
         let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
-        
+
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             this.stopTargeting();
             return;
+        }
+
+        // Check if clicking on a building under construction
+        const buildingUnderConstruction = this.getBuildingUnderConstructionAtPosition(worldPos);
+        if (buildingUnderConstruction) {
+            // Check if any selected units have BuildAbility
+            const builderUnit = this.getBuilderUnitFromSelection(placementIds);
+            if (builderUnit) {
+                this.assignBuilderToConstruction(builderUnit, buildingUnderConstruction);
+                this.startTargeting();
+                return;
+            }
         }
 
         const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
@@ -359,6 +371,116 @@ class UnitOrderSystem extends engine.BaseSystem {
         }
 
         this.issueMoveOrders(placementIds, targetPosition);
+    }
+
+    getBuildingUnderConstructionAtPosition(worldPos) {
+        const CT = this.CT;
+        const buildings = this.game.getEntitiesWith(CT.PLACEMENT, CT.POSITION, CT.UNIT_TYPE);
+
+        for (const entityId of buildings) {
+            const placement = this.game.getComponent(entityId, CT.PLACEMENT);
+            const pos = this.game.getComponent(entityId, CT.POSITION);
+            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+
+            if (!placement || !pos || !unitType) continue;
+            if (unitType.collection !== 'buildings') continue;
+            if (!placement.isUnderConstruction) continue;
+
+            // Check if click is within building bounds (use collision radius or default)
+            const radius = unitType.collisionRadius || 50;
+            const dx = worldPos.x - pos.x;
+            const dz = worldPos.z - pos.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            if (dist <= radius) {
+                return entityId;
+            }
+        }
+
+        return null;
+    }
+
+    getBuilderUnitFromSelection(placementIds) {
+        const CT = this.CT;
+
+        for (const placementId of placementIds) {
+            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            if (!placement) continue;
+
+            for (const unitId of placement.squadUnits) {
+                // Check if unit has BuildAbility
+                if (this.game.abilitySystem) {
+                    const abilities = this.game.abilitySystem.getEntityAbilities(unitId);
+                    if (abilities) {
+                        for (const ability of abilities) {
+                            if (ability.id === 'build') {
+                                return unitId;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    assignBuilderToConstruction(builderEntityId, buildingEntityId) {
+        const CT = this.CT;
+        const Components = this.game.componentManager.getComponents();
+
+        const buildingPos = this.game.getComponent(buildingEntityId, CT.POSITION);
+        const buildingPlacement = this.game.getComponent(buildingEntityId, CT.PLACEMENT);
+
+        if (!buildingPos || !buildingPlacement) return;
+
+        // Get BuildAbility from the peasant
+        if (this.game.abilitySystem) {
+            const abilities = this.game.abilitySystem.getEntityAbilities(builderEntityId);
+            if (abilities) {
+                for (const ability of abilities) {
+                    if (ability.id === 'build') {
+                        // Assign peasant to continue construction
+                        const peasantInfo = {
+                            peasantId: builderEntityId,
+                            buildTime: buildingPlacement.buildTime || 1
+                        };
+
+                        // Set up the peasant's building state
+                        const buildingBuildState = this.game.getComponent(buildingEntityId, CT.BUILDING_STATE);
+
+                        this.game.addComponent(builderEntityId, CT.BUILDING_STATE,
+                            Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
+
+                        // Update building's assigned builder
+                        buildingPlacement.assignedBuilder = builderEntityId;
+
+                        // Queue build command
+                        if (this.game.commandQueueSystem) {
+                            this.game.gameManager.call('queueCommand', builderEntityId, {
+                                type: 'build',
+                                controllerId: CT.BUILDING_STATE,
+                                targetPosition: buildingPos,
+                                target: buildingEntityId,
+                                meta: { preventEnemiesInRangeCheck: true },
+                                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
+                                interruptible: true
+                            }, true);
+                        }
+
+                        // Store peasantId in ability for completion tracking
+                        ability.peasantId = builderEntityId;
+
+                        if (this.game.effectsSystem) {
+                            this.game.gameManager.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
+                        }
+
+                        this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     issueMoveOrders(placementIds, targetPosition) {
