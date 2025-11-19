@@ -82,10 +82,78 @@ class RageAbility extends engine.app.appClasses['BaseAbility'] {
     activateRage(casterEntity) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
-        
+
         // Create dramatic rage effects
         this.createVisualEffect(casterPos, 'rage');
-        
+
+        // Enhanced rage activation with fiery burst
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
+                layers: [
+                    // Red fury burst
+                    {
+                        count: 25,
+                        lifetime: 0.6,
+                        color: 0xff2200,
+                        colorRange: { start: 0xff4444, end: 0xcc0000 },
+                        scale: 30,
+                        scaleMultiplier: 2.5,
+                        velocityRange: { x: [-100, 100], y: [60, 150], z: [-100, 100] },
+                        gravity: -50,
+                        drag: 0.9,
+                        blending: 'additive'
+                    },
+                    // Orange flames rising
+                    {
+                        count: 20,
+                        lifetime: 0.8,
+                        color: 0xff6600,
+                        colorRange: { start: 0xffaa44, end: 0xff4400 },
+                        scale: 18,
+                        scaleMultiplier: 1.8,
+                        velocityRange: { x: [-60, 60], y: [80, 180], z: [-60, 60] },
+                        gravity: -80,
+                        drag: 0.92,
+                        blending: 'additive'
+                    },
+                    // Hot white core
+                    {
+                        count: 8,
+                        lifetime: 0.3,
+                        color: 0xffffaa,
+                        colorRange: { start: 0xffffff, end: 0xffaa44 },
+                        scale: 40,
+                        scaleMultiplier: 3.0,
+                        velocityRange: { x: [-30, 30], y: [40, 100], z: [-30, 30] },
+                        gravity: 0,
+                        drag: 0.8,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Anger aura ring
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(casterPos.x, casterPos.y + 5, casterPos.z),
+                count: 20,
+                lifetime: 0.6,
+                visual: {
+                    color: 0xff4400,
+                    colorRange: { start: 0xff6644, end: 0xcc2200 },
+                    scale: 15,
+                    scaleMultiplier: 1.5,
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-20, 20], y: [30, 80], z: [-20, 20] },
+                gravity: -30,
+                drag: 0.9,
+                emitterShape: 'ring',
+                emitterRadius: 30
+            });
+        }
+
         // Schedule a secondary fury effect for visual impact
         this.game.schedulingSystem.scheduleAction(() => {
             if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {

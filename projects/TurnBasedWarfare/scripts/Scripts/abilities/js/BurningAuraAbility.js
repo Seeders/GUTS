@@ -11,12 +11,46 @@ class BurningAuraAbility extends engine.app.appClasses['BaseAbility'] {
             animation: 'cast',
             priority: 6,
             castTime: 0,
+            passive: true,
             ...params
         });
         this.drainPerSecond = 8;
-        this.duration = 12.0; // 12 seconds instead of 1200 seconds
+        this.cycleDuration = 12.0; // Duration of each cycle
         this.tickInterval = 1.0; // 1 second between ticks
         this.hasActiveAura = false;
+        this.assignedCaster = null;
+    }
+
+    // Called when ability is assigned to a unit - auto-start the passive aura
+    onAssign(casterEntity) {
+        this.assignedCaster = casterEntity;
+        this.startAuraCycle(casterEntity);
+    }
+
+    // Start or restart the perpetual aura cycle
+    startAuraCycle(casterEntity) {
+        if (this.hasActiveAura) return;
+
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        if (!casterHealth || casterHealth.current <= 0) return;
+
+        this.hasActiveAura = true;
+
+        const totalTicks = Math.floor(this.cycleDuration / this.tickInterval);
+
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
+
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
+            }, tickDelay, casterEntity);
+        }
+
+        // Schedule cycle restart for perpetual effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.hasActiveAura = false;
+            this.startAuraCycle(casterEntity);
+        }, this.cycleDuration, casterEntity);
     }
     
     defineEffects() {
@@ -53,34 +87,14 @@ class BurningAuraAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     canExecute(casterEntity) {
-        // Only allow one active aura per caster
-        return !this.hasActiveAura;
+        // Passive ability - cannot be manually executed
+        return false;
     }
-    
+
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        this.createVisualEffect(pos, 'cast');
-        
-        // Mark aura as active
-        this.hasActiveAura = true;
-        
-        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
-        const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
-        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-            const tickDelay = this.tickInterval * tickIndex;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
-            }, tickDelay, casterEntity);
-        }
-        
-        // DESYNC SAFE: Schedule aura cleanup
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.hasActiveAura = false;
-        }, this.duration, casterEntity);
+        // Passive ability - starts automatically via onAssign
+        // This method kept for compatibility but redirects to cycle start
+        this.startAuraCycle(casterEntity);
     }
     
     // DESYNC SAFE: Execute a single aura tick deterministically
@@ -125,11 +139,59 @@ class BurningAuraAbility extends engine.app.appClasses['BaseAbility'] {
         });
         // Additional visual effects every few ticks
         if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'burning', { 
-                count: 6, 
+            this.createVisualEffect(casterPos, 'burning', {
+                count: 6,
                 scaleMultiplier: 2.5,
-                heightOffset: 15 
+                heightOffset: 15
             });
+
+            // Enhanced burning aura pulse
+            if (this.game.gameManager) {
+                this.game.gameManager.call('createLayeredEffect', {
+                    position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
+                    layers: [
+                        // Fire ring expanding
+                        {
+                            count: 20,
+                            lifetime: 0.8,
+                            color: 0xff4400,
+                            colorRange: { start: 0xffaa44, end: 0xcc2200 },
+                            scale: 15,
+                            scaleMultiplier: 1.5,
+                            velocityRange: { x: [-80, 80], y: [10, 50], z: [-80, 80] },
+                            gravity: -20,
+                            drag: 0.92,
+                            blending: 'additive'
+                        },
+                        // Rising flames
+                        {
+                            count: 15,
+                            lifetime: 0.6,
+                            color: 0xff6600,
+                            colorRange: { start: 0xffcc44, end: 0xff3300 },
+                            scale: 12,
+                            scaleMultiplier: 1.8,
+                            velocityRange: { x: [-30, 30], y: [60, 120], z: [-30, 30] },
+                            gravity: -50,
+                            drag: 0.9,
+                            blending: 'additive'
+                        },
+                        // Hot embers
+                        {
+                            count: 10,
+                            lifetime: 1.0,
+                            color: 0xffaa44,
+                            colorRange: { start: 0xffffff, end: 0xff8800 },
+                            scale: 5,
+                            scaleMultiplier: 0.5,
+                            velocityRange: { x: [-50, 50], y: [80, 150], z: [-50, 50] },
+                            gravity: 50,
+                            drag: 0.96,
+                            blending: 'additive'
+                        }
+                    ]
+                });
+            }
         }
     }
 }

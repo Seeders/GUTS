@@ -76,7 +76,7 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
     strikeLightning(casterEntity, targetId, targetPos) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
-        
+
         // Create lightning bolt visual effect
         if (this.game.effectsSystem) {
             this.game.effectsSystem.createLightningBolt(
@@ -88,19 +88,89 @@ class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
                 }
             );
         }
-        
+
         // Lightning effect at target
         this.createVisualEffect(targetPos, 'lightning');
-        
+
+        // Enhanced electric impact effect
+        if (this.game.gameManager) {
+            const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 30, targetPos.z);
+
+            this.game.gameManager.call('createLayeredEffect', {
+                position: impactPos,
+                layers: [
+                    // Bright flash core
+                    {
+                        count: 12,
+                        lifetime: 0.15,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xffffaa },
+                        scale: 25,
+                        scaleMultiplier: 2.0,
+                        velocityRange: { x: [-80, 80], y: [20, 100], z: [-80, 80] },
+                        gravity: 0,
+                        drag: 0.8,
+                        blending: 'additive'
+                    },
+                    // Electric sparks
+                    {
+                        count: 20,
+                        lifetime: 0.4,
+                        color: 0xffff44,
+                        colorRange: { start: 0xffffff, end: 0x88aaff },
+                        scale: 10,
+                        scaleMultiplier: 0.8,
+                        velocityRange: { x: [-120, 120], y: [30, 150], z: [-120, 120] },
+                        gravity: 200,
+                        drag: 0.95,
+                        blending: 'additive'
+                    },
+                    // Blue electric arcs
+                    {
+                        count: 15,
+                        lifetime: 0.3,
+                        color: 0x44aaff,
+                        colorRange: { start: 0x88ddff, end: 0x4488ff },
+                        scale: 8,
+                        scaleMultiplier: 1.2,
+                        velocityRange: { x: [-100, 100], y: [50, 120], z: [-100, 100] },
+                        gravity: -50,
+                        drag: 0.9,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Ground scorch ring
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(targetPos.x, targetPos.y + 5, targetPos.z),
+                count: 16,
+                lifetime: 0.5,
+                visual: {
+                    color: 0xffaa44,
+                    colorRange: { start: 0xffffaa, end: 0x886622 },
+                    scale: 12,
+                    scaleMultiplier: 1.5,
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-60, 60], y: [5, 20], z: [-60, 60] },
+                gravity: 10,
+                drag: 0.92,
+                emitterShape: 'ring',
+                emitterRadius: 20
+            });
+        }
+
         // Screen flash
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#ffffaa', 0.15);
         }
-        
+
         // DESYNC SAFE: Determine critical hit deterministically instead of random
         const isCritical = this.isDeterministicCritical(casterEntity, targetId);
         const damage = isCritical ? this.damage * 2 : this.damage;
-        
+
         // Apply lightning damage
         this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
             isCritical: isCritical,

@@ -84,20 +84,55 @@ class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
     fireMultishotVolley(casterEntity, targets) {
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
-        
+
         // Create volley effect
         this.createVisualEffect(casterPos, 'volley');
-        
+
+        // Enhanced volley launch burst
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(casterPos.x, casterPos.y + 25, casterPos.z),
+                layers: [
+                    // Arrow trail burst
+                    {
+                        count: 15,
+                        lifetime: 0.4,
+                        color: 0xcd853f,
+                        colorRange: { start: 0xf4a460, end: 0x8b4513 },
+                        scale: 12,
+                        scaleMultiplier: 1.5,
+                        velocityRange: { x: [-80, 80], y: [30, 80], z: [-80, 80] },
+                        gravity: 100,
+                        drag: 0.93,
+                        blending: 'normal'
+                    },
+                    // Golden glint
+                    {
+                        count: 8,
+                        lifetime: 0.3,
+                        color: 0xffd700,
+                        colorRange: { start: 0xffffff, end: 0xdaa520 },
+                        scale: 8,
+                        scaleMultiplier: 1.2,
+                        velocityRange: { x: [-50, 50], y: [40, 100], z: [-50, 50] },
+                        gravity: 0,
+                        drag: 0.85,
+                        blending: 'additive'
+                    }
+                ]
+            });
+        }
+
         // Fire arrows at each target with staggered timing
         targets.forEach((targetId, shotIndex) => {
             const shotDelay = shotIndex * this.shotInterval;
-            
+
             this.game.schedulingSystem.scheduleAction(() => {
                 this.fireSingleArrow(casterEntity, targetId, shotIndex);
             }, shotDelay, casterEntity);
         });
-        
-        this.logAbilityUsage(casterEntity, 
+
+        this.logAbilityUsage(casterEntity,
             `Archer fires volley of ${targets.length} arrows!`);
     }
     

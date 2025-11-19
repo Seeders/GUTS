@@ -23,33 +23,45 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
     
     defineEffects() {
         return {
-            cast: { 
-                type: 'magic', 
-                options: { 
-                    count: 3, 
-                    color: 0xffffaa, 
-                    colorRange: { start: 0xffffaa, end: 0xffffff },
-                    scaleMultiplier: 1.6,
-                    speedMultiplier: 1.2
-                } 
-            },
-            consecration: { 
-                type: 'heal', 
-                options: { 
-                    count: 3, 
-                    color: 0xffffdd, 
-                    scaleMultiplier: 0.6,
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 20,
+                    color: 0xffdd66,
+                    colorRange: { start: 0xffffff, end: 0xffaa00 },
+                    scaleMultiplier: 2.5,
                     speedMultiplier: 1.0
-                } 
+                }
             },
-            purge: { 
-                type: 'damage', 
-                options: { 
-                    count: 3, 
-                    color: 0xffffff, 
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                } 
+            consecration: {
+                type: 'heal',
+                options: {
+                    count: 12,
+                    color: 0xffff88,
+                    colorRange: { start: 0xffffff, end: 0xffdd44 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 0.6
+                }
+            },
+            purge: {
+                type: 'damage',
+                options: {
+                    count: 15,
+                    color: 0xffffff,
+                    colorRange: { start: 0xffffff, end: 0xffff88 },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 2.5
+                }
+            },
+            ground_glow: {
+                type: 'magic',
+                options: {
+                    count: 8,
+                    color: 0xffdd44,
+                    colorRange: { start: 0xffff88, end: 0xffaa00 },
+                    scaleMultiplier: 1.0,
+                    speedMultiplier: 0.4
+                }
             }
         };
     }
@@ -117,6 +129,96 @@ class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
         // Screen effect for consecration creation
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#ffffaa', 0.5);
+        }
+
+        // Create initial burst and continuous ground glow
+        if (this.game.gameManager) {
+            const glowPos = new THREE.Vector3(consecrationPos.x, consecrationPos.y + 10, consecrationPos.z);
+
+            // Initial holy burst
+            this.game.gameManager.call('createLayeredEffect', {
+                position: glowPos,
+                layers: [
+                    // Expanding golden ring
+                    {
+                        count: 32,
+                        lifetime: 1.0,
+                        color: 0xffdd44,
+                        colorRange: { start: 0xffffff, end: 0xffaa00 },
+                        scale: 15,
+                        scaleMultiplier: 1.0,
+                        velocityRange: { x: [-100, 100], y: [5, 20], z: [-100, 100] },
+                        gravity: 20,
+                        drag: 0.9,
+                        emitterShape: 'ring',
+                        emitterRadius: 20,
+                        blending: 'additive'
+                    },
+                    // Rising light pillars
+                    {
+                        count: 20,
+                        lifetime: 1.5,
+                        color: 0xffff88,
+                        colorRange: { start: 0xffffff, end: 0xffdd44 },
+                        scale: 20,
+                        scaleMultiplier: 2.0,
+                        velocityRange: { x: [-20, 20], y: [60, 120], z: [-20, 20] },
+                        gravity: -40,
+                        drag: 0.95,
+                        emitterShape: 'disk',
+                        emitterRadius: this.consecrationRadius * 0.8,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Schedule continuous ground glow throughout duration
+            const glowInterval = 0.5;
+            const glowCount = Math.floor(this.duration / glowInterval);
+
+            for (let i = 0; i < glowCount; i++) {
+                this.game.schedulingSystem.scheduleAction(() => {
+                    // Ground particles
+                    this.game.gameManager.call('createParticles', {
+                        position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
+                        count: 10,
+                        lifetime: 1.2,
+                        visual: {
+                            color: 0xffdd44,
+                            colorRange: { start: 0xffff88, end: 0xffaa00 },
+                            scale: 15,
+                            scaleMultiplier: 1.0,
+                            fadeOut: true,
+                            blending: 'additive'
+                        },
+                        velocityRange: { x: [-30, 30], y: [20, 50], z: [-30, 30] },
+                        gravity: -30,
+                        drag: 0.96,
+                        emitterShape: 'disk',
+                        emitterRadius: this.consecrationRadius * 0.6
+                    });
+
+                    // Edge sparkles
+                    this.game.gameManager.call('createParticles', {
+                        position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
+                        count: 6,
+                        lifetime: 0.8,
+                        visual: {
+                            color: 0xffffff,
+                            colorRange: { start: 0xffffff, end: 0xffffaa },
+                            scale: 8,
+                            scaleMultiplier: 0.5,
+                            fadeOut: true,
+                            blending: 'additive'
+                        },
+                        velocityRange: { x: [-20, 20], y: [30, 60], z: [-20, 20] },
+                        gravity: -20,
+                        drag: 0.98,
+                        emitterShape: 'ring',
+                        emitterRadius: this.consecrationRadius * 0.9
+                    });
+                }, i * glowInterval, consecrationId);
+            }
         }
     }
     

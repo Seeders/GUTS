@@ -201,7 +201,101 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Visual explosion effect
         this.createVisualEffect(trapPos, 'trap_explosion');
-        
+
+        // Enhanced massive trap explosion
+        if (this.game.gameManager) {
+            this.game.gameManager.call('createLayeredEffect', {
+                position: new THREE.Vector3(trapPos.x, trapPos.y + 20, trapPos.z),
+                layers: [
+                    // Blinding flash
+                    {
+                        count: 10,
+                        lifetime: 0.15,
+                        color: 0xffffff,
+                        colorRange: { start: 0xffffff, end: 0xffaa44 },
+                        scale: 60,
+                        scaleMultiplier: 4.0,
+                        velocityRange: { x: [-40, 40], y: [30, 80], z: [-40, 40] },
+                        gravity: 0,
+                        drag: 0.7,
+                        blending: 'additive'
+                    },
+                    // Orange fireball
+                    {
+                        count: 35,
+                        lifetime: 0.6,
+                        color: 0xff6600,
+                        colorRange: { start: 0xffaa44, end: 0xff3300 },
+                        scale: 25,
+                        scaleMultiplier: 2.5,
+                        velocityRange: { x: [-150, 150], y: [80, 200], z: [-150, 150] },
+                        gravity: 200,
+                        drag: 0.93,
+                        blending: 'additive'
+                    },
+                    // Dark smoke
+                    {
+                        count: 25,
+                        lifetime: 1.0,
+                        color: 0x333333,
+                        colorRange: { start: 0x555555, end: 0x111111 },
+                        scale: 35,
+                        scaleMultiplier: 3.0,
+                        velocityRange: { x: [-100, 100], y: [50, 150], z: [-100, 100] },
+                        gravity: -30,
+                        drag: 0.88,
+                        blending: 'normal'
+                    },
+                    // Flying debris
+                    {
+                        count: 20,
+                        lifetime: 0.8,
+                        color: 0x8b4513,
+                        colorRange: { start: 0xa0522d, end: 0x654321 },
+                        scale: 8,
+                        scaleMultiplier: 0.6,
+                        velocityRange: { x: [-120, 120], y: [100, 250], z: [-120, 120] },
+                        gravity: 500,
+                        drag: 0.97,
+                        blending: 'normal'
+                    },
+                    // Hot embers
+                    {
+                        count: 15,
+                        lifetime: 1.2,
+                        color: 0xff4400,
+                        colorRange: { start: 0xffaa66, end: 0xcc2200 },
+                        scale: 5,
+                        scaleMultiplier: 0.4,
+                        velocityRange: { x: [-80, 80], y: [120, 220], z: [-80, 80] },
+                        gravity: 150,
+                        drag: 0.98,
+                        blending: 'additive'
+                    }
+                ]
+            });
+
+            // Ground scorch ring
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(trapPos.x, trapPos.y + 3, trapPos.z),
+                count: 24,
+                lifetime: 0.6,
+                visual: {
+                    color: 0x886644,
+                    colorRange: { start: 0xaa8866, end: 0x553322 },
+                    scale: 18,
+                    scaleMultiplier: 2.0,
+                    fadeOut: true,
+                    blending: 'normal'
+                },
+                velocityRange: { x: [-60, 60], y: [5, 20], z: [-60, 60] },
+                gravity: 20,
+                drag: 0.9,
+                emitterShape: 'ring',
+                emitterRadius: 50
+            });
+        }
+
         // Screen effects for dramatic explosion
         if (this.game.effectsSystem) {
             this.game.effectsSystem.showExplosionEffect(trapPos.x, trapPos.y, trapPos.z);

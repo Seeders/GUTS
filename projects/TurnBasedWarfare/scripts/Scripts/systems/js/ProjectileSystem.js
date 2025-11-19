@@ -434,33 +434,45 @@ class ProjectileSystem extends engine.BaseSystem {
         
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
+            this.componentTypes.POSITION,
             this.componentTypes.TEAM,
             this.componentTypes.HEALTH
         );
-        
+
         const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
         if (!sourceTeam) return;
-        
-        let hitDetected = false;
 
+        // Calculate distances and sort by closest first for deterministic collision (prevents desync)
+        const entitiesWithDistance = [];
         for (const entityId of allEntities) {
-            if (hitDetected) break; // Stop after first hit to ensure consistency
             if (entityId === projectile.source) continue; // Don't hit the source
-            
+
             const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            
+
             if (!entityPos || !entityTeam || !entityHealth) continue;
             if (entityTeam.team === sourceTeam.team) continue; // Don't hit allies
-            
+
             // Calculate 3D distance with consistent precision
             const dx = Math.round((entityPos.x - pos.x) * 1000) / 1000;
             const dy = Math.round((entityPos.y - pos.y) * 1000) / 1000;
             const dz = Math.round((entityPos.z - pos.z) * 1000) / 1000;
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            
+
+            entitiesWithDistance.push({ entityId, entityPos, distance });
+        }
+
+        // Sort by distance (closest first), then by entity ID for deterministic tie-breaking
+        entitiesWithDistance.sort((a, b) => {
+            if (Math.abs(a.distance - b.distance) > 0.001) {
+                return a.distance - b.distance;
+            }
+            return String(a.entityId).localeCompare(String(b.entityId));
+        });
+
+        // Check collision in sorted order - hit closest entity first
+        for (const { entityId, entityPos, distance } of entitiesWithDistance) {
             // Get entity radius for collision detection
             const entityUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const entityRadius = this.getUnitRadius(entityUnitType);
@@ -469,8 +481,7 @@ class ProjectileSystem extends engine.BaseSystem {
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
                 // Direct hit detected!
                 this.handleProjectileHit(projectileId, entityId, entityPos, projectile);
-                hitDetected = true;
-                break;
+                break; // Stop after first hit
             }
         }
     }

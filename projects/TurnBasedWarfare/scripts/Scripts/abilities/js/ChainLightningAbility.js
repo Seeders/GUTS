@@ -26,37 +26,50 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             cast: {
                 type: 'magic',
                 options: {
-                    count: 3,
-                    color: 0x00aaff,
-                    colorRange: { start: 0x00aaff, end: 0x88aaff },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 2.0
+                    count: 15,
+                    color: 0x00ccff,
+                    colorRange: { start: 0xffffff, end: 0x0088ff },
+                    scaleMultiplier: 2.0,
+                    speedMultiplier: 3.0
                 }
             },
             lightning: {
-                type: 'magic',
+                type: 'explosion',
                 options: {
-                    count: 3,
-                    color: 0x00ccff,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 3.0
+                    count: 20,
+                    color: 0x00ddff,
+                    colorRange: { start: 0xffffff, end: 0x0066ff },
+                    scaleMultiplier: 2.5,
+                    speedMultiplier: 4.0
                 }
             },
             arc: {
                 type: 'magic',
                 options: {
-                    count: 3,
-                    color: 0x88aaff,
-                    scaleMultiplier: 0.8,
-                    speedMultiplier: 2.5
+                    count: 10,
+                    color: 0x88ccff,
+                    colorRange: { start: 0xffffff, end: 0x4488ff },
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 3.5
+                }
+            },
+            sparks: {
+                type: 'damage',
+                options: {
+                    count: 12,
+                    color: 0xffff00,
+                    colorRange: { start: 0xffffff, end: 0x00aaff },
+                    scaleMultiplier: 0.5,
+                    speedMultiplier: 4.0
                 }
             },
             impact: {
                 type: 'damage',
                 options: {
-                    count: 3,
+                    count: 8,
                     color: 0x00aaff,
-                    scaleMultiplier: 1.0
+                    colorRange: { start: 0xffffff, end: 0x0066ff },
+                    scaleMultiplier: 1.5
                 }
             }
         };
@@ -111,15 +124,53 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         this.game.schedulingSystem.scheduleAction(() => {
             // Lightning strike effect
             this.createVisualEffect(targetPos, 'lightning');
-            
+            this.createVisualEffect(targetPos, 'sparks');
+
+            // Enhanced electric burst at impact
+            if (this.game.gameManager) {
+                const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
+
+                this.game.gameManager.call('createLayeredEffect', {
+                    position: impactPos,
+                    layers: [
+                        // Bright flash
+                        {
+                            count: 10,
+                            lifetime: 0.2,
+                            color: 0xffffff,
+                            colorRange: { start: 0xffffff, end: 0x00ddff },
+                            scale: 30,
+                            scaleMultiplier: 2.0,
+                            velocityRange: { x: [-50, 50], y: [-20, 80], z: [-50, 50] },
+                            gravity: 0,
+                            drag: 0.8,
+                            blending: 'additive'
+                        },
+                        // Electric sparks
+                        {
+                            count: 15,
+                            lifetime: 0.4,
+                            color: 0x00ddff,
+                            colorRange: { start: 0xffffff, end: 0x0066ff },
+                            scale: 8,
+                            scaleMultiplier: 0.6,
+                            velocityRange: { x: [-80, 80], y: [20, 100], z: [-80, 80] },
+                            gravity: 150,
+                            drag: 0.95,
+                            blending: 'additive'
+                        }
+                    ]
+                });
+            }
+
             // Apply damage
             this.dealDamageWithEffects(sourceId, currentTarget, Math.floor(damage), this.element);
-            
+
             // Screen flash for dramatic effect (only on first hit)
             if (this.game.effectsSystem && jumpIndex === 0) {
-                this.game.effectsSystem.playScreenFlash('#00aaff', 0.2);
+                this.game.effectsSystem.playScreenFlash('#00aaff', 0.3);
             }
-            
+
             // Create visual arc effect if there was a previous target
             if (jumpIndex > 0) {
                 const previousTarget = hitTargets[jumpIndex - 1];
@@ -319,31 +370,44 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
     
     createLightningPoints(fromPos, toPos) {
         // Create bright particle effects at connection points
-        if (this.game.effectsSystem) {
-            this.game.effectsSystem.createParticleEffect(
-                fromPos.x, fromPos.y + 10, fromPos.z, 'magic', {
-                    count: 5,
+        if (this.game.gameManager) {
+            // Source point sparks
+            this.game.gameManager.call('createParticles', {
+                position: new THREE.Vector3(fromPos.x, fromPos.y + 50, fromPos.z),
+                count: 8,
+                lifetime: 0.3,
+                visual: {
                     color: 0x00ddff,
+                    colorRange: { start: 0xffffff, end: 0x0088ff },
+                    scale: 12,
                     scaleMultiplier: 0.8,
-                    speedMultiplier: 2.0,
-                    heightOffset: 0
-                }
-            );
-            
-            // DESYNC SAFE: Use scheduling system for delayed effect
+                    fadeOut: true,
+                    blending: 'additive'
+                },
+                velocityRange: { x: [-40, 40], y: [20, 60], z: [-40, 40] },
+                gravity: 100,
+                drag: 0.95
+            });
+
+            // Target point sparks
             this.game.schedulingSystem.scheduleAction(() => {
-                if (this.game.effectsSystem) {
-                    this.game.effectsSystem.createParticleEffect(
-                        toPos.x, toPos.y + 10, toPos.z, 'magic', {
-                            count: 5,
-                            color: 0x00ddff,
-                            scaleMultiplier: 0.8,
-                            speedMultiplier: 2.0,
-                            heightOffset: 0
-                        }
-                    );
-                }
-            }, 0.1, null);
+                this.game.gameManager.call('createParticles', {
+                    position: new THREE.Vector3(toPos.x, toPos.y + 50, toPos.z),
+                    count: 10,
+                    lifetime: 0.4,
+                    visual: {
+                        color: 0x00ddff,
+                        colorRange: { start: 0xffffff, end: 0x0088ff },
+                        scale: 15,
+                        scaleMultiplier: 1.0,
+                        fadeOut: true,
+                        blending: 'additive'
+                    },
+                    velocityRange: { x: [-50, 50], y: [30, 80], z: [-50, 50] },
+                    gravity: 120,
+                    drag: 0.95
+                });
+            }, 0.05, null);
         }
     }
 }

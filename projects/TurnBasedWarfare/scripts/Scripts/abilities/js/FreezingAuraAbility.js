@@ -11,12 +11,46 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             animation: 'cast',
             priority: 6,
             castTime: 0,
+            passive: true,
             ...params
         });
         this.drainPerSecond = 8;
-        this.duration = 12.0; // 12 seconds instead of 1200 seconds
+        this.cycleDuration = 12.0; // Duration of each cycle
         this.tickInterval = 1.0; // 1 second between ticks
         this.hasActiveAura = false;
+        this.assignedCaster = null;
+    }
+
+    // Called when ability is assigned to a unit - auto-start the passive aura
+    onAssign(casterEntity) {
+        this.assignedCaster = casterEntity;
+        this.startAuraCycle(casterEntity);
+    }
+
+    // Start or restart the perpetual aura cycle
+    startAuraCycle(casterEntity) {
+        if (this.hasActiveAura) return;
+
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        if (!casterHealth || casterHealth.current <= 0) return;
+
+        this.hasActiveAura = true;
+
+        const totalTicks = Math.floor(this.cycleDuration / this.tickInterval);
+
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
+
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
+            }, tickDelay, casterEntity);
+        }
+
+        // Schedule cycle restart for perpetual effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.hasActiveAura = false;
+            this.startAuraCycle(casterEntity);
+        }, this.cycleDuration, casterEntity);
     }
     
     defineEffects() {
@@ -53,33 +87,14 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     canExecute(casterEntity) {
-        // Only allow one active aura per caster
-        return !this.hasActiveAura;
+        // Passive ability - cannot be manually executed
+        return false;
     }
-    
+
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        this.createVisualEffect(pos, 'cast');
-        // Mark aura as active
-        this.hasActiveAura = true;
-        
-        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
-        const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
-        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-            const tickDelay = this.tickInterval * tickIndex;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
-            }, tickDelay, casterEntity);
-        }
-        
-        // DESYNC SAFE: Schedule aura cleanup
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.hasActiveAura = false;
-        }, this.duration, casterEntity);
+        // Passive ability - starts automatically via onAssign
+        // This method kept for compatibility but redirects to cycle start
+        this.startAuraCycle(casterEntity);
     }
     
     // DESYNC SAFE: Execute a single aura tick deterministically
@@ -134,11 +149,59 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
         
         // Additional visual effects every few ticks
         if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'freezing', { 
-                count: 6, 
+            this.createVisualEffect(casterPos, 'freezing', {
+                count: 6,
                 scaleMultiplier: 2.5,
-                heightOffset: 50 
+                heightOffset: 50
             });
+
+            // Enhanced freezing aura pulse
+            if (this.game.gameManager) {
+                this.game.gameManager.call('createLayeredEffect', {
+                    position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
+                    layers: [
+                        // Ice crystal ring
+                        {
+                            count: 18,
+                            lifetime: 0.8,
+                            color: 0x88ddff,
+                            colorRange: { start: 0xaaeeff, end: 0x4488cc },
+                            scale: 12,
+                            scaleMultiplier: 1.5,
+                            velocityRange: { x: [-70, 70], y: [5, 40], z: [-70, 70] },
+                            gravity: 30,
+                            drag: 0.92,
+                            blending: 'additive'
+                        },
+                        // Frost mist rising
+                        {
+                            count: 15,
+                            lifetime: 0.7,
+                            color: 0xccffff,
+                            colorRange: { start: 0xffffff, end: 0x88ccff },
+                            scale: 20,
+                            scaleMultiplier: 2.0,
+                            velocityRange: { x: [-40, 40], y: [30, 80], z: [-40, 40] },
+                            gravity: -30,
+                            drag: 0.88,
+                            blending: 'additive'
+                        },
+                        // Snowflakes
+                        {
+                            count: 12,
+                            lifetime: 1.2,
+                            color: 0xffffff,
+                            colorRange: { start: 0xffffff, end: 0xccddff },
+                            scale: 4,
+                            scaleMultiplier: 0.4,
+                            velocityRange: { x: [-50, 50], y: [-20, 30], z: [-50, 50] },
+                            gravity: 60,
+                            drag: 0.97,
+                            blending: 'additive'
+                        }
+                    ]
+                });
+            }
         }
     }
 }
