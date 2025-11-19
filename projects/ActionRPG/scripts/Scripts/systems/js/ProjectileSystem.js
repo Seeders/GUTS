@@ -47,9 +47,10 @@ class ProjectileSystem extends engine.BaseSystem {
         const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
         
         if (!sourcePos || !sourceCombat || !targetPos) return null;
-        
-        // Create projectile entity
-        const projectileId = this.game.createEntity();
+
+        // Create projectile entity with descriptive string ID
+        const timestamp = this.game.state.now || Date.now();
+        const projectileId = this.game.createEntity(`projectile_${sourceId}_${targetId}_${timestamp}`);
         const components = this.game.componentManager.getComponents();
         
         // Determine projectile element (from weapon, combat component, or projectile data)

@@ -83,7 +83,11 @@ class BossSystem extends engine.BaseSystem {
         const unitData = collections.units[unitType];
         if (!unitData) return null;
 
-        const entityId = this.game.createEntity();
+        // Create boss entity with descriptive string ID
+        const roundedX = Math.round(x);
+        const roundedZ = Math.round(z);
+        const timestamp = this.game.state.now || Date.now();
+        const entityId = this.game.createEntity(`boss_${unitType}_${roundedX}_${roundedZ}_${timestamp}`);
         const difficulty = this.game.gameManager.call('getDifficultyMultiplier') || 1.0;
 
         // Boss stats are much higher

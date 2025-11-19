@@ -269,7 +269,7 @@ class GridSystem extends engine.BaseSystem {
                 }
             }
         }
-        return nearbyUnits.sort((a, b) => a.id - b.id);
+        return nearbyUnits.sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
 
     onEntityPositionUpdated(entityId) {
@@ -278,7 +278,7 @@ class GridSystem extends engine.BaseSystem {
         this.occupyCells(cells, entityId);
     }
 
-    occupyCells(cells, entityId) {       
+    occupyCells(cells, entityId) {
         for (const cell of cells) {
             const key = `${cell.x},${cell.z}`;
             let cellState = this.state.get(key);
@@ -292,7 +292,7 @@ class GridSystem extends engine.BaseSystem {
             if (!cellState.entities.includes(entityId)) {
                 cellState.entities.push(entityId);
             }
-            cellState.entities.sort((a, b) => a - b);
+            cellState.entities.sort((a, b) => String(a).localeCompare(String(b)));
         }
     }
 
@@ -305,7 +305,7 @@ class GridSystem extends engine.BaseSystem {
                 if (cellState.entities.length === 0) {
                     this.state.delete(key);
                 } else {
-                    cellState.entities.sort((a, b) => a - b);
+                    cellState.entities.sort((a, b) => String(a).localeCompare(String(b)));
                 }
             }
         }

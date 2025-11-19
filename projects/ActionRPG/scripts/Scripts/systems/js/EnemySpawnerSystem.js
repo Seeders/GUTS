@@ -216,8 +216,11 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             spawnZ = spawnPos.z;
         }
 
-        // Create enemy entity
-        const entityId = this.game.createEntity();
+        // Create enemy entity with descriptive string ID
+        const roundedX = Math.round(spawnX);
+        const roundedZ = Math.round(spawnZ);
+        const timestamp = this.game.state.now || Date.now();
+        const entityId = this.game.createEntity(`enemy_${unitType}_${roundedX}_${roundedZ}_${timestamp}`);
 
         // Apply difficulty scaling
         const difficultyMult = this.game.gameManager.call('getDifficultyMultiplier') || 1.0;

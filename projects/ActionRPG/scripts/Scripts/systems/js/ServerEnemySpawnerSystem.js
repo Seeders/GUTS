@@ -181,8 +181,11 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
             return null;
         }
 
-        // Create entity
-        const entityId = this.game.createEntity();
+        // Create entity with descriptive string ID
+        const roundedX = Math.round(position.x);
+        const roundedY = Math.round(position.y);
+        const timestamp = this.game.state.now || Date.now();
+        const entityId = this.game.createEntity(`server_enemy_${enemyType}_${roundedX}_${roundedY}_${timestamp}`);
 
         // Add components
         this.game.addComponent(entityId, 'Position', {

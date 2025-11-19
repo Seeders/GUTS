@@ -116,8 +116,9 @@ class ARPGGameSystem extends engine.BaseSystem {
             return;
         }
 
-        // Create player entity
-        const entityId = this.game.createEntity();
+        // Create player entity with descriptive string ID
+        const timestamp = this.game.state.now || Date.now();
+        const entityId = this.game.createEntity(`player_${playerUnitType}_${timestamp}`);
 
         // Add core components
         this.game.addComponent(entityId, CT.POSITION, Components.Position(0, 0, 0));

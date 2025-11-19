@@ -149,8 +149,10 @@ class CharacterClassSystem extends engine.BaseSystem {
         // Get base unit data for visuals
         const unitData = collections.units[classData.baseUnit] || {};
 
-        // Create player entity
-        const entityId = this.game.createEntity();
+        // Create player entity with descriptive string ID
+        const timestamp = this.game.state.now || Date.now();
+        const playerClass = this.selectedClass || chosenClass;
+        const entityId = this.game.createEntity(`player_${playerClass}_${timestamp}`);
 
         // Add core components
         this.game.addComponent(entityId, CT.POSITION, Components.Position(0, 0, 0));
