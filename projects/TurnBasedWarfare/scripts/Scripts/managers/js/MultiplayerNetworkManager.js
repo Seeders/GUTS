@@ -421,10 +421,14 @@ class MultiplayerNetworkManager {
 
         console.log(`Applying battle end sync at client time: ${this.game.state.now?.toFixed(3)}`);
 
+        // Trigger onBattleEnd BEFORE resync to match server state
+        // Server serializes entities AFTER onBattleEnd, so client must also
+        // run onBattleEnd before comparing to have matching state
+        this.game.triggerEvent('onBattleEnd');
+
         if (data.entitySync) {
             this.resyncEntities(data.entitySync);
         }
-        this.game.triggerEvent('onBattleEnd');
         console.log('battle result', data);
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
