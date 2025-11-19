@@ -219,8 +219,6 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             return null;
         }
 
-        const CT = this.componentTypes;
-        const Components = this.game.componentManager.getComponents();
         const collections = this.game.getCollections();
 
         // Get unit data
@@ -240,6 +238,73 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             spawnZ = spawnPos.z;
         }
 
+        // Get terrain height
+        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', spawnX, spawnZ) || 0;
+
+        // Use UnitCreationManager if available
+        if (this.game.unitCreationManager) {
+            const gridSize = collections.configs?.game?.gridSize || 48;
+            const gridX = Math.floor(spawnX / gridSize);
+            const gridZ = Math.floor(spawnZ / gridSize);
+
+            const placement = {
+                unitType: unitData,
+                gridPosition: { x: gridX, z: gridZ }
+            };
+
+            const entityId = this.game.unitCreationManager.create(
+                spawnX,
+                terrainHeight,
+                spawnZ,
+                null, // targetPosition
+                placement,
+                'right' // Use 'right' team which has enemy tint
+            );
+
+            // Update AI state with enemy-specific settings
+            const CT = this.componentTypes;
+            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            if (aiState) {
+                aiState.aiBehavior = unitData.aiBehavior || 'aggressive';
+                aiState.meta = {
+                    initialized: true,
+                    spawnPosition: { x: spawnX, z: spawnZ },
+                    leashRange: this.LEASH_RANGE
+                };
+            }
+
+            // Track active enemies
+            this.activeEnemies.set(entityId, {
+                type: unitType,
+                spawnTime: this.game.state.now,
+                spawnPosition: { x: spawnX, z: spawnZ }
+            });
+
+            this.game.triggerEvent('onEnemySpawned', entityId);
+
+            // Broadcast spawn to clients
+            if (this.isServer) {
+                const roomId = this.getCurrentRoomId();
+                if (roomId) {
+                    this.engine.serverNetworkManager.broadcastToRoom(roomId, 'ENEMY_SPAWNED', {
+                        entityId: entityId,
+                        unitType: unitType,
+                        x: spawnX,
+                        z: spawnZ
+                    });
+                }
+            }
+
+            console.log('EnemySpawnerSystem: Spawned enemy via UnitCreationManager:', entityId, unitType);
+            return entityId;
+        }
+
+        // Fallback: Manual creation if UnitCreationManager not available
+        console.warn('EnemySpawnerSystem: UnitCreationManager not available, using fallback');
+
+        const CT = this.componentTypes;
+        const Components = this.game.componentManager.getComponents();
+
         // Create enemy entity with descriptive string ID
         const roundedX = Math.round(spawnX);
         const roundedZ = Math.round(spawnZ);
@@ -250,7 +315,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         const difficultyMult = this.game.gameManager.call('getDifficultyMultiplier') || 1.0;
 
         // Add components
-        this.game.addComponent(entityId, CT.POSITION, Components.Position(spawnX, 0, spawnZ));
+        this.game.addComponent(entityId, CT.POSITION, Components.Position(spawnX, terrainHeight, spawnZ));
         this.game.addComponent(entityId, CT.VELOCITY, Components.Velocity(0, 0, 0, unitData.speed || 50, false, false));
         this.game.addComponent(entityId, CT.FACING, Components.Facing(Math.random() * Math.PI * 2));
         this.game.addComponent(entityId, CT.COLLISION, Components.Collision(unitData.size || 25, 50));
@@ -308,6 +373,12 @@ class EnemySpawnerSystem extends engine.BaseSystem {
                 128
             ));
         }
+
+        // Animation component
+        this.game.addComponent(entityId, CT.ANIMATION, Components.Animation());
+
+        // Equipment component
+        this.game.addComponent(entityId, CT.EQUIPMENT, Components.Equipment());
 
         // Track active enemies
         this.activeEnemies.set(entityId, {
