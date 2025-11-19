@@ -63,9 +63,47 @@ class TileLevelGenerator extends engine.BaseSystem {
         this.game.gameManager.register('gridToWorld', this.gridToWorld.bind(this));
         this.game.gameManager.register('registerTileSet', this.registerTileSet.bind(this));
         this.game.gameManager.register('getLevelData', () => this.levelData);
+        this.game.gameManager.register('generateTerrainMap', this.generateTerrainMap.bind(this));
 
         // Register default tile sets
         this.registerDefaultTileSets();
+    }
+
+    postAllInit() {
+        // Check if current level should use procedural generation
+        const collections = this.game.getCollections();
+        const currentLevel = this.game.state?.level || 'level1';
+        const levelData = collections.levels?.[currentLevel];
+
+        if (levelData?.procedural) {
+            console.log('TileLevelGenerator: Generating procedural level for', currentLevel);
+
+            // Generate the level
+            const config = {
+                tileSet: levelData.tileSet || 'dungeon',
+                floor: levelData.floor || 1,
+                seed: levelData.seed || Date.now(),
+                minRooms: levelData.minRooms || 8,
+                maxRooms: levelData.maxRooms || 15
+            };
+
+            this.generateLevel(config);
+
+            // Generate and apply terrain map
+            if (this.levelData) {
+                const terrainMap = this.generateTerrainMap();
+
+                // Update level's tileMap with generated terrain
+                if (levelData.tileMap && terrainMap) {
+                    levelData.tileMap.terrainMap = terrainMap.terrainMap;
+                    levelData.tileMap.heightMap = terrainMap.heightMap;
+                    levelData.tileMap.size = terrainMap.size;
+
+                    // Store spawn point for player
+                    this.game.state.spawnPoint = this.levelData.spawnPoint;
+                }
+            }
+        }
     }
 
     registerTileSet(name, tiles) {
@@ -936,6 +974,111 @@ class TileLevelGenerator extends engine.BaseSystem {
             let t = Math.imul(state ^ state >>> 15, 1 | state);
             t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
             return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    generateTerrainMap() {
+        if (!this.levelData || !this.placedTiles.length) {
+            return null;
+        }
+
+        // Calculate bounds of the generated level
+        const bounds = this.levelData.bounds;
+        const collections = this.game.getCollections();
+        const gridSize = collections.configs?.game?.gridSize || 48;
+
+        // Convert tile bounds to terrain map size
+        // Each tile unit = TILE_SIZE world units = TILE_SIZE/gridSize terrain cells
+        const cellsPerTileUnit = Math.ceil(this.TILE_SIZE / gridSize);
+        const mapWidth = (bounds.maxX - bounds.minX + 1) * cellsPerTileUnit;
+        const mapHeight = (bounds.maxY - bounds.minY + 1) * cellsPerTileUnit;
+
+        // Use fixed size for simplicity (64x64)
+        const mapSize = 64;
+
+        // Initialize terrain map with rock (impassable)
+        const terrainMap = [];
+        const heightMap = [];
+        for (let z = 0; z < mapSize; z++) {
+            terrainMap[z] = new Array(mapSize).fill(2); // 2 = rock
+            heightMap[z] = new Array(mapSize).fill(0);
+        }
+
+        // Terrain type indices (matching level1 terrainTypes)
+        const FLOOR = 4;  // dirt
+        const WALL = 2;   // rock
+
+        // Fill in placed tiles
+        for (const placed of this.placedTiles) {
+            // Convert tile grid position to terrain map position
+            const baseX = (placed.gridX - bounds.minX) * cellsPerTileUnit;
+            const baseZ = (placed.gridY - bounds.minY) * cellsPerTileUnit;
+
+            // Fill tile area with floor
+            const tileWidthCells = placed.tile.width * cellsPerTileUnit;
+            const tileHeightCells = placed.tile.height * cellsPerTileUnit;
+
+            for (let dz = 0; dz < tileHeightCells; dz++) {
+                for (let dx = 0; dx < tileWidthCells; dx++) {
+                    const x = baseX + dx;
+                    const z = baseZ + dz;
+
+                    if (x >= 0 && x < mapSize && z >= 0 && z < mapSize) {
+                        // Check if this is an edge cell
+                        const isEdge = dx === 0 || dx === tileWidthCells - 1 ||
+                                      dz === 0 || dz === tileHeightCells - 1;
+
+                        if (isEdge) {
+                            // Check connections for openings
+                            let isOpen = false;
+
+                            // North edge
+                            if (dz === 0 && placed.tile.connections.north) {
+                                const connIdx = Math.floor(dx / cellsPerTileUnit);
+                                const conn = placed.tile.connections.north[connIdx];
+                                if (conn === 'open' || conn === 'door' || conn === 'wide') {
+                                    isOpen = true;
+                                }
+                            }
+                            // South edge
+                            if (dz === tileHeightCells - 1 && placed.tile.connections.south) {
+                                const connIdx = Math.floor(dx / cellsPerTileUnit);
+                                const conn = placed.tile.connections.south[connIdx];
+                                if (conn === 'open' || conn === 'door' || conn === 'wide') {
+                                    isOpen = true;
+                                }
+                            }
+                            // West edge
+                            if (dx === 0 && placed.tile.connections.west) {
+                                const connIdx = Math.floor(dz / cellsPerTileUnit);
+                                const conn = placed.tile.connections.west[connIdx];
+                                if (conn === 'open' || conn === 'door' || conn === 'wide') {
+                                    isOpen = true;
+                                }
+                            }
+                            // East edge
+                            if (dx === tileWidthCells - 1 && placed.tile.connections.east) {
+                                const connIdx = Math.floor(dz / cellsPerTileUnit);
+                                const conn = placed.tile.connections.east[connIdx];
+                                if (conn === 'open' || conn === 'door' || conn === 'wide') {
+                                    isOpen = true;
+                                }
+                            }
+
+                            terrainMap[z][x] = isOpen ? FLOOR : WALL;
+                        } else {
+                            // Interior is always floor
+                            terrainMap[z][x] = FLOOR;
+                        }
+                    }
+                }
+            }
+        }
+
+        return {
+            terrainMap,
+            heightMap,
+            size: mapSize
         };
     }
 

@@ -1,0 +1,22 @@
+{
+  "title": "Treasure Room",
+  "id": "treasure_room",
+  "width": 2,
+  "height": 2,
+  "weight": 5,
+  "category": "special",
+  "connections": {
+    "north": ["door", "door"],
+    "east": ["wall", "wall"],
+    "south": ["wall", "wall"],
+    "west": ["wall", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "elite", "count": 1 }
+    ],
+    "props": ["chest", "chest", "torch", "torch"],
+    "loot": "rare"
+  },
+  "terrainType": 5
+}

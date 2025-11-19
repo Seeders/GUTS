@@ -1,0 +1,23 @@
+{
+  "title": "Large Room",
+  "id": "room_large",
+  "width": 4,
+  "height": 4,
+  "weight": 8,
+  "category": "room",
+  "connections": {
+    "north": ["wall", "door", "door", "wall"],
+    "east": ["wall", "door", "door", "wall"],
+    "south": ["wall", "door", "door", "wall"],
+    "west": ["wall", "door", "door", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "medium", "count": 4 },
+      { "type": "strong", "count": 2 }
+    ],
+    "props": ["barrel", "crate", "torch", "pillar", "chest"],
+    "loot": "rare"
+  },
+  "terrainType": 5
+}

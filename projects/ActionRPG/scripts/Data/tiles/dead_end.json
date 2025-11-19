@@ -1,0 +1,20 @@
+{
+  "title": "Dead End",
+  "id": "dead_end",
+  "width": 1,
+  "height": 1,
+  "weight": 10,
+  "category": "corridor",
+  "connections": {
+    "north": ["open"],
+    "east": ["wall"],
+    "south": ["wall"],
+    "west": ["wall"]
+  },
+  "content": {
+    "enemies": [],
+    "props": ["chest"],
+    "loot": "uncommon"
+  },
+  "terrainType": 4
+}

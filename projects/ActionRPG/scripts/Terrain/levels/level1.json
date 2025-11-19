@@ -1,5 +1,10 @@
 {
   "title": "Level 1",
+  "procedural": true,
+  "tileSet": "dungeon",
+  "floor": 1,
+  "minRooms": 8,
+  "maxRooms": 15,
   "tileMap": {
     "size": 64,
     "terrainTypes": [

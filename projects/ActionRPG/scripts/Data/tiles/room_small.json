@@ -1,0 +1,22 @@
+{
+  "title": "Small Room",
+  "id": "room_small",
+  "width": 2,
+  "height": 2,
+  "weight": 20,
+  "category": "room",
+  "connections": {
+    "north": ["door", "wall"],
+    "east": ["wall", "door"],
+    "south": ["wall", "door"],
+    "west": ["door", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "medium", "count": 2 }
+    ],
+    "props": ["barrel", "crate"],
+    "loot": "common"
+  },
+  "terrainType": 5
+}

@@ -1,0 +1,20 @@
+{
+  "title": "South-East Corner",
+  "id": "corner_se",
+  "width": 2,
+  "height": 2,
+  "weight": 15,
+  "category": "corridor",
+  "connections": {
+    "north": ["wall", "wall"],
+    "east": ["open", "wall"],
+    "south": ["wall", "open"],
+    "west": ["wall", "wall"]
+  },
+  "content": {
+    "enemies": [],
+    "props": ["torch"],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

@@ -1,0 +1,22 @@
+{
+  "title": "East-West Corridor",
+  "id": "corridor_ew",
+  "width": 2,
+  "height": 1,
+  "weight": 25,
+  "category": "corridor",
+  "connections": {
+    "north": ["wall", "wall"],
+    "east": ["open"],
+    "south": ["wall", "wall"],
+    "west": ["open"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "weak", "count": 1 }
+    ],
+    "props": [],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Boss Chamber",
+  "id": "boss_chamber",
+  "width": 5,
+  "height": 5,
+  "weight": 2,
+  "category": "boss",
+  "connections": {
+    "north": ["wall", "wall", "door", "wall", "wall"],
+    "east": ["wall", "wall", "wall", "wall", "wall"],
+    "south": ["wall", "wall", "wall", "wall", "wall"],
+    "west": ["wall", "wall", "wall", "wall", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "boss", "count": 1 },
+      { "type": "elite", "count": 2 }
+    ],
+    "props": ["pillar", "pillar", "pillar", "pillar", "torch", "torch", "torch", "torch"],
+    "loot": "epic"
+  },
+  "terrainType": 5
+}

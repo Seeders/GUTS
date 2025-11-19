@@ -1,0 +1,23 @@
+{
+  "title": "Medium Room",
+  "id": "room_medium",
+  "width": 3,
+  "height": 3,
+  "weight": 15,
+  "category": "room",
+  "connections": {
+    "north": ["wall", "door", "wall"],
+    "east": ["wall", "door", "wall"],
+    "south": ["wall", "door", "wall"],
+    "west": ["wall", "door", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "medium", "count": 3 },
+      { "type": "strong", "count": 1 }
+    ],
+    "props": ["barrel", "crate", "torch", "pillar"],
+    "loot": "uncommon"
+  },
+  "terrainType": 5
+}

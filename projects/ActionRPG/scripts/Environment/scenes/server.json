@@ -9,30 +9,34 @@
       "managers": [
         { "type": "ComponentManager" },
         { "type": "GameManager" },
-        { "type": "UnitCreationManager" },
-        { "type": "SquadManager" }
+        { "type": "UnitCreationManager" }
       ],
       "systems": [
-        {"type": "TerrainSystem" },
+        { "type": "TerrainSystem" },
+        { "type": "TileLevelGenerator" },
+        { "type": "ARPGGameSystem" },
+        { "type": "CharacterClassSystem" },
+        { "type": "PlayerControlSystem" },
         { "type": "AISystem" },
-        { "type": "CommandQueueSystem" },
         { "type": "MovementSystem" },
         { "type": "CombatAISystem" },
         { "type": "ProjectileSystem" },
-        { "type": "TeamHealthSystem" },
         { "type": "DeathSystem" },
         { "type": "DamageSystem" },
         { "type": "AbilitySystem" },
-        { "type": "SquadExperienceSystem" },
-        { "type": "ServerBattlePhaseSystem" },
-        { "type": "ServerPlacementSystem" },
+        { "type": "EnemySpawnerSystem" },
+        { "type": "LootSystem" },
+        { "type": "ExperienceSystem" },
+        { "type": "InventorySystem" },
+        { "type": "EquipmentSystem" },
         { "type": "LifetimeSystem" },
+        { "type": "SchedulingSystem" },
+        { "type": "PathfindingSystem" },
         { "type": "GridSystem" },
-        { "type": "SchedulingSystem" },    
-        { "type": "PathfindingSystem" }, 
-        { "type": "GoldMineSystem" },    
-        { "type": "VisionSystem" },
-        { "type": "SupplySystem" }
+        { "type": "RespawnSystem" },
+        { "type": "QuestSystem" },
+        { "type": "BossSystem" },
+        { "type": "DungeonSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }
