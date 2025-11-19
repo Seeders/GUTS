@@ -413,6 +413,12 @@ class MultiplayerNetworkManager {
 
         this.pendingBattleEnd = null;
 
+        // Unpause game if it was paused waiting for battle end
+        this.game.state.isPaused = false;
+        if (this.game.placementSystem) {
+            this.game.placementSystem.isBattlePaused = false;
+        }
+
         console.log(`Applying battle end sync at client time: ${this.game.state.now?.toFixed(3)}`);
 
         if (data.entitySync) {
@@ -546,6 +552,11 @@ class MultiplayerNetworkManager {
     compareComponents(entityId, componentType, clientData, serverData) {
         const diffs = [];
 
+        // Skip visual-only properties for environment objects (trees, rocks, etc.)
+        // These have floating-point precision differences that don't affect gameplay
+        const isEnvironmentObject = entityId.startsWith('env_');
+        const visualOnlyProperties = ['scale', 'rotation', 'angle'];
+
         // Compare all properties
         for (const key of Object.keys(serverData)) {
             const clientValue = clientData[key];
@@ -553,6 +564,19 @@ class MultiplayerNetworkManager {
 
             // Skip functions and complex objects for comparison
             if (typeof serverValue === 'function') continue;
+
+            // Skip visual-only properties for environment objects
+            if (isEnvironmentObject && visualOnlyProperties.includes(key)) {
+                continue;
+            }
+
+            // Use tolerance for floating-point number comparisons
+            if (typeof serverValue === 'number' && typeof clientValue === 'number') {
+                const tolerance = 0.001;
+                if (Math.abs(clientValue - serverValue) <= tolerance) {
+                    continue; // Close enough, skip reporting
+                }
+            }
 
             // Compare values
             if (JSON.stringify(clientValue) !== JSON.stringify(serverValue)) {

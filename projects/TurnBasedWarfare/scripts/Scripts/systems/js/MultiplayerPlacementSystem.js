@@ -33,6 +33,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.mouseWorldOffset = { x: 0, z: 0 };
         this.mouseWorldPos = { x: 0, y: 0, z: 0 };
         this.mouseScreenPos = { x: 0, y: 0 };
+
+        // Battle duration tracking (client-side)
+        this.maxBattleDuration = 30; // Must match server
+        this.battleStartTime = 0;
+        this.isBattlePaused = false;
     }
 
     init(params) {
@@ -274,8 +279,13 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             const battleSeed = SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
             this.game.rng = new SeededRandom(battleSeed);
 
+            // Track battle start time for duration limiting
+            this.battleStartTime = 0; // Will be set after resetCurrentTime
+            this.isBattlePaused = false;
+
             this.game.triggerEvent("onBattleStart");
             this.game.resetCurrentTime();
+            this.battleStartTime = this.game.state.now || 0;
             this.resetAI();
             this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
@@ -380,14 +390,27 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     update() {
+        // Check battle duration limit during battle phase
+        if (this.game.state.phase === 'battle') {
+            const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
+
+            // Pause game when client reaches max battle duration
+            // This prevents client from running ahead of server
+            if (battleDuration >= this.maxBattleDuration && !this.isBattlePaused) {
+                this.isBattlePaused = true;
+                this.game.state.isPaused = true;
+                console.log(`Client reached max battle duration (${this.maxBattleDuration}s), pausing until server sends BATTLE_END`);
+            }
+        }
+
         if (this.game.state.phase !== 'placement') {
             this.lastRaycastTime = 0;
             this.lastValidationTime = 0;
-            this.lastUpdateTime = 0;            
+            this.lastUpdateTime = 0;
             this.disablePlacementUI();
             return;
         }
-        
+
         if (this.game.state.now - this.lastValidationTime > this.config.validationThrottle) {
             this.updateCursorState();
             this.updatePlacementUI();
