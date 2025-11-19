@@ -25,6 +25,8 @@ class CombatAISystem extends engine.BaseSystem {
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
 
+        // Track if we've already cleaned up for this non-battle phase
+        this.hasCleanedUpForNonBattle = false;
     }
 
     init() {
@@ -36,19 +38,26 @@ class CombatAISystem extends engine.BaseSystem {
     update() {
         const CT = this.componentTypes;
         if (this.game.state.phase !== 'battle'){
-            const combatUnits = this.game.getEntitiesWith(
-               CT.AI_STATE
-            );
-            for (let i = 0; i < combatUnits.length; i++) {
-                const entityId = combatUnits[i];
-                const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-                if (aiState.state !== 'idle') {
-                    this.changeAIState(aiState, 'idle');
+            // Only clear targets once when transitioning out of battle, not every frame
+            if (!this.hasCleanedUpForNonBattle) {
+                const combatUnits = this.game.getEntitiesWith(
+                   CT.AI_STATE
+                );
+                for (let i = 0; i < combatUnits.length; i++) {
+                    const entityId = combatUnits[i];
+                    const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+                    if (aiState.state !== 'idle') {
+                        this.changeAIState(aiState, 'idle');
+                    }
+                    // Don't clear targets - let units remember their last target for next round
                 }
-                aiState.target = null;
+                this.hasCleanedUpForNonBattle = true;
             }
             return;
         }
+
+        // Reset cleanup flag when battle starts
+        this.hasCleanedUpForNonBattle = false;
 
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
