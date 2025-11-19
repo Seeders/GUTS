@@ -570,15 +570,18 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     createSquadUnits(placement, unitPositions, team, undoInfo) {
         const createdUnits = [];
-        
+
         const maxUnits = Math.min(unitPositions.length, 16);
         const positions = unitPositions.slice(0, maxUnits);
-        
+
+        // Get playerId for the current player
+        const playerId = this.game.clientNetworkManager?.playerId || null;
+
         positions.forEach(pos => {
             const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
             const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team);
+            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, pos, placement, team, playerId);
             createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
 

@@ -66,9 +66,10 @@ class UnitCreationManager {
      * @param {number} worldZ - World Z coordinate
      * @param {Object} unitType - Unit type definition
      * @param {string} team - Team identifier ('left' or 'right')
+     * @param {string|null} playerId - Optional player ID
      * @returns {number} Entity ID
      */
-    create(worldX, worldY, worldZ, targetPosition, placement, team) {
+    create(worldX, worldY, worldZ, targetPosition, placement, team, playerId = null) {
         const unitType = placement.unitType;
         try {
             // Round world coordinates to ensure deterministic entity IDs across client and server
@@ -79,19 +80,28 @@ class UnitCreationManager {
             const teamConfig = this.teamConfigs[team];
             // Add core components
             this.addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig);
-            
+
             // Add combat components
             this.addCombatComponents(entity, unitType);
-            
+
             // Add AI and behavior components
             this.addBehaviorComponents(entity, targetPosition, unitType);
-            
+
             // Add visual and interaction components
             this.addVisualComponents(entity, unitType, teamConfig);
-            
+
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);
-            
+
+            // Set playerId on team component if provided
+            if (playerId) {
+                const ComponentTypes = this.game.componentManager.getComponentTypes();
+                const teamComponent = this.game.getComponent(entity, ComponentTypes.TEAM);
+                if (teamComponent) {
+                    teamComponent.playerId = playerId;
+                }
+            }
+
             // Update statistics
             this.updateCreationStats(unitType, team);
             return entity;
