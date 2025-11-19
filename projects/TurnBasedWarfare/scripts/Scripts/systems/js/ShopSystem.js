@@ -75,10 +75,41 @@ class ShopSystem extends engine.BaseSystem {
                 container.appendChild(empty);
             }
         } else {
-            const empty = document.createElement('div');
-            empty.className = 'action-empty';
-            empty.textContent = 'Under Construction';
-            container.appendChild(empty);
+            // Building is under construction - show cancel button
+            const CT = this.game.componentManager.getComponentTypes();
+            const buildingEntityId = this.game.state.selectedEntity.entityId;
+
+            if (placement.isUnderConstruction) {
+                const constructionSection = document.createElement('div');
+                constructionSection.className = 'action-section';
+
+                const statusText = document.createElement('div');
+                statusText.className = 'action-empty';
+                statusText.textContent = 'Under Construction';
+                constructionSection.appendChild(statusText);
+
+                const grid = document.createElement('div');
+                grid.className = 'action-grid';
+
+                const cancelBtn = this.createActionButton({
+                    iconId: null,
+                    title: 'Cancel Construction',
+                    cost: null,
+                    locked: false,
+                    onClick: () => this.cancelConstruction(buildingEntityId, placement)
+                });
+                cancelBtn.style.backgroundColor = '#8B0000';
+                cancelBtn.title = `Cancel and refund ${placement.unitType.value || 0} gold`;
+                grid.appendChild(cancelBtn);
+
+                constructionSection.appendChild(grid);
+                container.appendChild(constructionSection);
+            } else {
+                const empty = document.createElement('div');
+                empty.className = 'action-empty';
+                empty.textContent = 'No actions available';
+                container.appendChild(empty);
+            }
         }
         
         container.removeAttribute('style');
@@ -582,6 +613,62 @@ class ShopSystem extends engine.BaseSystem {
 
                 this.lastExperienceUpdate = this.game.state.now;
             }
+        }
+    }
+
+    cancelConstruction(buildingEntityId, placement) {
+        const CT = this.game.componentManager.getComponentTypes();
+
+        if (!placement || !placement.isUnderConstruction) {
+            this.game.uiSystem?.showNotification('Building is not under construction', 'warning', 1000);
+            return;
+        }
+
+        // Refund the gold
+        const refundAmount = placement.unitType.value || 0;
+        if (refundAmount > 0) {
+            this.game.state.playerGold += refundAmount;
+            this.game.uiSystem?.showNotification(`Refunded ${refundAmount} gold`, 'success', 1500);
+        }
+
+        // Clear the assigned builder's command if there is one
+        const assignedBuilder = placement.assignedBuilder;
+        if (assignedBuilder) {
+            // Complete/clear the build command
+            if (this.game.commandQueueSystem) {
+                const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
+                if (currentCommand && currentCommand.type === 'build') {
+                    this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
+                }
+            }
+
+            // Remove the builder's BUILDING_STATE component
+            if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
+                this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+            }
+
+            // Reset builder's AI state
+            const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
+            if (aiState) {
+                aiState.state = 'idle';
+                aiState.targetPosition = null;
+                aiState.target = null;
+            }
+        }
+
+        // Clear selection before destroying
+        this.clearSelectedEntity();
+        this.clearActionPanel();
+
+        // Destroy the building entity
+        if (this.game.renderSystem) {
+            this.game.renderSystem.removeInstance(buildingEntityId);
+        }
+        this.game.destroyEntity(buildingEntityId);
+
+        // Deselect all
+        if (this.game.selectedUnitSystem) {
+            this.game.selectedUnitSystem.deselectAll();
         }
     }
 
