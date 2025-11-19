@@ -490,10 +490,14 @@ class UnitOrderSystem extends engine.BaseSystem {
         const meta = { ...this.orderMeta };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
+        // Capture client time for deterministic command creation
+        const commandCreatedTime = this.game.state.now;
         this.game.networkManager.setSquadTargets(
-            { placementIds, targetPositions, meta },
-            (success) => {
+            { placementIds, targetPositions, meta, commandCreatedTime },
+            (success, responseData) => {
                 if (success) {
+                    // Use the time from the response (which came from our original request)
+                    const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
                     for(let i = 0; i < placementIds.length; i++){
                         let placementId = placementIds[i];
                         const targetPosition = targetPositions[i];
@@ -511,7 +515,7 @@ class UnitOrderSystem extends engine.BaseSystem {
                                     aiState.playerOrder = {
                                         targetPosition: targetPosition,
                                         meta: meta,
-                                        issuedTime: this.game.state.now
+                                        issuedTime: createdTime
                                     };
                                 }
 
@@ -522,7 +526,8 @@ class UnitOrderSystem extends engine.BaseSystem {
                                     target: null,
                                     meta: meta,
                                     priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                    interruptible: true
+                                    interruptible: true,
+                                    createdTime: createdTime
                                 }, true); // true = interrupt current command
 
                             }
@@ -554,12 +559,13 @@ class UnitOrderSystem extends engine.BaseSystem {
         return targetPositions;
     }
 
-    applySquadTargetPosition(placementId, targetPosition, meta) {
+    applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
         const placement = this.game.gameManager.call('getPlacementById', placementId);
         if(!placement){
-            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta });
+            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta, commandCreatedTime: commandCreatedTime });
             return;
         }
+        const createdTime = commandCreatedTime || this.game.state.now;
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
@@ -569,7 +575,7 @@ class UnitOrderSystem extends engine.BaseSystem {
                     aiState.playerOrder = {
                         targetPosition: targetPosition,
                         meta: meta,
-                        issuedTime: this.game.state.now
+                        issuedTime: createdTime
                     };
                 }
 
@@ -582,7 +588,8 @@ class UnitOrderSystem extends engine.BaseSystem {
                         target: null,
                         meta: meta,
                         priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                        interruptible: true
+                        interruptible: true,
+                        createdTime: createdTime
                     }, true); // true = interrupt current command
                 } else {
                     // Fallback to old method
@@ -596,11 +603,11 @@ class UnitOrderSystem extends engine.BaseSystem {
         });
     }
 
-    applySquadsTargetPositions(placementIds, targetPositions, meta) {     
-        for(let i = 0; i < placementIds.length; i++){  
+    applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime) {
+        for(let i = 0; i < placementIds.length; i++){
             let placementId = placementIds[i];
             let targetPosition = targetPositions[i];
-            this.applySquadTargetPosition(placementId, targetPosition, meta);
+            this.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
         }
     }
     onBattleStart() {

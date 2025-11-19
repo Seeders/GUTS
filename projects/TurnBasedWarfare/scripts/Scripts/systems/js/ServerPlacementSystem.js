@@ -299,7 +299,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     handleSetSquadTargets(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementIds, targetPositions, meta } = data;
+            const { placementIds, targetPositions, meta, commandCreatedTime } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
                     success: false
@@ -347,7 +347,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                         aiState.playerOrder = {
                             targetPosition: targetPosition,
                             meta: meta,
-                            issuedTime: this.game.state.now
+                            issuedTime: commandCreatedTime || this.game.state.now
                         };
                     }
 
@@ -359,7 +359,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                         target: null,
                         meta: meta,
                         priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                        interruptible: true
+                        interruptible: true,
+                        createdTime: commandCreatedTime || this.game.state.now
                     }, true); // true = interrupt current command
 
                 });
@@ -370,8 +371,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
             }
 
                         // Send success response to requesting player
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
-                success: true
+            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
+                success: true,
+                commandCreatedTime: commandCreatedTime
             });
             
             // Broadcast to other players in the room
@@ -380,7 +382,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
                         placementIds,
                         targetPositions,
-                        meta
+                        meta,
+                        commandCreatedTime: commandCreatedTime
                     });
                 }
             }
