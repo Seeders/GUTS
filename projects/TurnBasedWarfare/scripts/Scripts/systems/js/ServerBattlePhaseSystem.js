@@ -202,10 +202,12 @@ class ServerBattlePhaseSystem extends engine.BaseSystem {
         
         const entitySync = this.serializeAllEntities();
         // Broadcast with updated health values
+        // Include server simulation time so clients can wait until they've caught up
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
             gameState: room.getGameState(), // This will also have updated player health
-            entitySync: entitySync
+            entitySync: entitySync,
+            serverTime: this.game.state.now // Server's simulation time when battle ended
         });
         // Check for game end or continue to next round
         if (this.shouldEndGame(room)) {

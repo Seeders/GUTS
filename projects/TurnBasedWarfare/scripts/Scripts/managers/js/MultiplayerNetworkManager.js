@@ -375,13 +375,52 @@ class MultiplayerNetworkManager {
     }
 
     handleBattleEnd(data) {
-        
+        // Store battle end data and wait for client to catch up to server time
+        this.pendingBattleEnd = data;
+
+        const serverTime = data.serverTime || 0;
+        const clientTime = this.game.state.now || 0;
+
+        console.log(`Battle end received. Server time: ${serverTime.toFixed(3)}, Client time: ${clientTime.toFixed(3)}`);
+
+        // If client is already caught up, apply immediately
+        if (clientTime >= serverTime - 0.01) { // Small tolerance for float precision
+            this.applyBattleEndSync();
+        } else {
+            // Wait for client to catch up
+            console.log(`Waiting for client to catch up... (${(serverTime - clientTime).toFixed(3)}s behind)`);
+            this.waitForBattleEndSync();
+        }
+    }
+
+    waitForBattleEndSync() {
+        if (!this.pendingBattleEnd) return;
+
+        const serverTime = this.pendingBattleEnd.serverTime || 0;
+        const clientTime = this.game.state.now || 0;
+
+        if (clientTime >= serverTime - 0.01) {
+            this.applyBattleEndSync();
+        } else {
+            // Check again next frame
+            requestAnimationFrame(() => this.waitForBattleEndSync());
+        }
+    }
+
+    applyBattleEndSync() {
+        const data = this.pendingBattleEnd;
+        if (!data) return;
+
+        this.pendingBattleEnd = null;
+
+        console.log(`Applying battle end sync at client time: ${this.game.state.now?.toFixed(3)}`);
+
         if (data.entitySync) {
             this.resyncEntities(data.entitySync);
         }
-        this.game.triggerEvent('onBattleEnd');        
+        this.game.triggerEvent('onBattleEnd');
         console.log('battle result', data);
-        this.game.desyncDebugger.displaySync(true); 
+        this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
         const myPlayerId = this.game.clientNetworkManager.playerId;
         data.gameState?.players?.forEach((player) => {
@@ -392,22 +431,195 @@ class MultiplayerNetworkManager {
         this.game.state.round += 1;
         // Transition back to placement phase
         this.game.state.phase = 'placement';
-        this.game.triggerEvent('onPlacementPhaseStart');   
+        this.game.triggerEvent('onPlacementPhaseStart');
     }
 
     resyncEntities(entitySync) {
+        const differences = {
+            created: [],
+            deleted: [],
+            updated: [],
+            componentAdded: [],
+            componentUpdated: []
+        };
 
-        for (const [entityId, components] of Object.entries(entitySync)) {
-        
-            
-            for (const [componentType, componentData] of Object.entries(components)) {
-                if (this.game.hasComponent(entityId, componentType)) {
-                    const existing = this.game.getComponent(entityId, componentType);
-                    Object.assign(existing, componentData);
-                } 
+        // Get all server entity IDs
+        const serverEntityIds = new Set(Object.keys(entitySync));
+
+        // Get all client entity IDs (only those with components we care about)
+        const clientEntityIds = new Set();
+        for (const [entityId] of this.game.entities) {
+            clientEntityIds.add(entityId);
+        }
+
+        // Find entities to create (exist on server but not client)
+        const entitiesToCreate = [];
+        for (const entityId of serverEntityIds) {
+            if (!clientEntityIds.has(entityId)) {
+                entitiesToCreate.push(entityId);
             }
         }
-        
+
+        // Find entities to delete (exist on client but not server)
+        const entitiesToDelete = [];
+        for (const entityId of clientEntityIds) {
+            if (!serverEntityIds.has(entityId)) {
+                entitiesToDelete.push(entityId);
+            }
+        }
+
+        // Create missing entities
+        for (const entityId of entitiesToCreate) {
+            try {
+                // Create the entity with the same ID
+                this.game.createEntity(entityId);
+
+                // Add all components from server
+                const components = entitySync[entityId];
+                for (const [componentType, componentData] of Object.entries(components)) {
+                    this.game.addComponent(entityId, componentType, JSON.parse(JSON.stringify(componentData)));
+                }
+
+                differences.created.push({
+                    entityId,
+                    components: Object.keys(components)
+                });
+            } catch (error) {
+                console.error(`Failed to create entity ${entityId}:`, error);
+            }
+        }
+
+        // Delete extra entities
+        for (const entityId of entitiesToDelete) {
+            try {
+                this.game.destroyEntity(entityId);
+                differences.deleted.push(entityId);
+            } catch (error) {
+                console.error(`Failed to delete entity ${entityId}:`, error);
+            }
+        }
+
+        // Update existing entities
+        for (const [entityId, components] of Object.entries(entitySync)) {
+            // Skip entities we just created
+            if (entitiesToCreate.includes(entityId)) continue;
+
+            for (const [componentType, componentData] of Object.entries(components)) {
+                if (this.game.hasComponent(entityId, componentType)) {
+                    // Update existing component
+                    const existing = this.game.getComponent(entityId, componentType);
+                    const componentDiffs = this.compareComponents(entityId, componentType, existing, componentData);
+
+                    if (componentDiffs.length > 0) {
+                        differences.componentUpdated.push({
+                            entityId,
+                            componentType,
+                            diffs: componentDiffs
+                        });
+                    }
+
+                    Object.assign(existing, componentData);
+                } else {
+                    // Add missing component
+                    try {
+                        this.game.addComponent(entityId, componentType, JSON.parse(JSON.stringify(componentData)));
+                        differences.componentAdded.push({
+                            entityId,
+                            componentType
+                        });
+                    } catch (error) {
+                        console.error(`Failed to add component ${componentType} to ${entityId}:`, error);
+                    }
+                }
+            }
+        }
+
+        // Log all differences
+        this.logSyncDifferences(differences);
+    }
+
+    compareComponents(entityId, componentType, clientData, serverData) {
+        const diffs = [];
+
+        // Compare all properties
+        for (const key of Object.keys(serverData)) {
+            const clientValue = clientData[key];
+            const serverValue = serverData[key];
+
+            // Skip functions and complex objects for comparison
+            if (typeof serverValue === 'function') continue;
+
+            // Compare values
+            if (JSON.stringify(clientValue) !== JSON.stringify(serverValue)) {
+                diffs.push({
+                    property: key,
+                    client: clientValue,
+                    server: serverValue
+                });
+            }
+        }
+
+        return diffs;
+    }
+
+    logSyncDifferences(differences) {
+        const hasAnyDifferences =
+            differences.created.length > 0 ||
+            differences.deleted.length > 0 ||
+            differences.componentAdded.length > 0 ||
+            differences.componentUpdated.length > 0;
+
+        if (!hasAnyDifferences) {
+            console.log('%c[SYNC] No differences found - client and server are in sync!', 'color: green');
+            return;
+        }
+
+        console.log('%c[SYNC] State differences detected:', 'color: orange; font-weight: bold');
+
+        // Log created entities
+        if (differences.created.length > 0) {
+            console.group('%c[SYNC] Entities created on client (missing from client):', 'color: cyan');
+            for (const item of differences.created) {
+                console.log(`  + ${item.entityId} [${item.components.join(', ')}]`);
+            }
+            console.groupEnd();
+        }
+
+        // Log deleted entities
+        if (differences.deleted.length > 0) {
+            console.group('%c[SYNC] Entities deleted from client (extra on client):', 'color: red');
+            for (const entityId of differences.deleted) {
+                console.log(`  - ${entityId}`);
+            }
+            console.groupEnd();
+        }
+
+        // Log added components
+        if (differences.componentAdded.length > 0) {
+            console.group('%c[SYNC] Components added to entities:', 'color: cyan');
+            for (const item of differences.componentAdded) {
+                console.log(`  + ${item.entityId}.${item.componentType}`);
+            }
+            console.groupEnd();
+        }
+
+        // Log updated components with details
+        if (differences.componentUpdated.length > 0) {
+            console.group('%c[SYNC] Components updated with different values:', 'color: yellow');
+            for (const item of differences.componentUpdated) {
+                console.group(`  ~ ${item.entityId}.${item.componentType}`);
+                for (const diff of item.diffs) {
+                    const clientStr = JSON.stringify(diff.client);
+                    const serverStr = JSON.stringify(diff.server);
+                    console.log(`    ${diff.property}: ${clientStr} -> ${serverStr}`);
+                }
+                console.groupEnd();
+            }
+            console.groupEnd();
+        }
+
+        // Summary
+        console.log(`%c[SYNC] Summary: ${differences.created.length} created, ${differences.deleted.length} deleted, ${differences.componentAdded.length} components added, ${differences.componentUpdated.length} components updated`, 'color: orange');
     }
 
     handleGameEnd(data) {
