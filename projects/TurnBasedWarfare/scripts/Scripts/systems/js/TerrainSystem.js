@@ -40,7 +40,89 @@ class TerrainSystem extends engine.BaseSystem {
         // Initialize height map processing
         this.initializeHeightMapProcessing();
 
+        // Spawn environment objects (trees, rocks, etc.) - runs on both client and server
+        this.spawnEnvironmentObjects();
+
         this.initialized = true;
+    }
+
+    /**
+     * Spawn environment objects from level data
+     * Creates entities with gameplay components (POSITION, COLLISION, TEAM, UNIT_TYPE)
+     * Visual components (RENDERABLE, ANIMATION) are added by WorldSystem on client
+     */
+    spawnEnvironmentObjects() {
+        if (!this.tileMap?.environmentObjects || this.tileMap.environmentObjects.length === 0) {
+            return;
+        }
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        const collections = this.game.getCollections();
+
+        this.tileMap.environmentObjects.forEach(envObj => {
+            const unitType = collections.worldObjects?.[envObj.type];
+            if (!unitType) {
+                console.warn(`Environment object type '${envObj.type}' not found in worldObjects collection`);
+                return;
+            }
+
+            // Calculate world position
+            const worldX = (envObj.x + this.extensionSize) - this.extendedSize / 2;
+            const worldZ = (envObj.y + this.extensionSize) - this.extendedSize / 2;
+
+            // Get terrain height
+            let height = 0;
+            if (this.heightMapSettings?.enabled) {
+                height = this.getTerrainHeightAtPosition(worldX, worldZ);
+            }
+
+            // Create entity with unique ID
+            const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
+
+            // Add Position component
+            this.game.addComponent(entityId, ComponentTypes.POSITION,
+                Components.Position(worldX, height, worldZ));
+
+            // Add UnitType component
+            const unitTypeData = { ...unitType, collection: "worldObjects", id: envObj.type };
+            this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
+                Components.UnitType(unitTypeData));
+
+            // Add Team component (neutral for environment objects)
+            this.game.addComponent(entityId, ComponentTypes.TEAM,
+                Components.Team('neutral'));
+
+            // Add Collision component if the object should block movement
+            if (unitType.collision !== false && unitType.size) {
+                this.game.addComponent(entityId, ComponentTypes.COLLISION,
+                    Components.Collision(unitType.size, unitType.height || 100));
+            }
+
+            // Store random values for consistent visual representation
+            const rotation = this.seededRandom(envObj.x, envObj.y) * Math.PI * 2;
+            const scale = (0.8 + this.seededRandom(envObj.y, envObj.x) * 0.4) * (envObj.type === 'rock' ? 1 : 50);
+
+            // Add Facing component for rotation
+            this.game.addComponent(entityId, ComponentTypes.FACING,
+                Components.Facing(rotation));
+
+            // Store scale in a way that WorldSystem can use
+            if (!this.game.hasComponent(entityId, ComponentTypes.ANIMATION)) {
+                this.game.addComponent(entityId, ComponentTypes.ANIMATION,
+                    Components.Animation(scale, rotation, 0));
+            }
+        });
+
+        console.log(`TerrainSystem: Spawned ${this.tileMap.environmentObjects.length} environment objects`);
+    }
+
+    /**
+     * Seeded random for consistent values between client and server
+     */
+    seededRandom(x, y) {
+        const seed = x * 12.9898 + y * 78.233;
+        return (Math.sin(seed) * 43758.5453) % 1;
     }
 
     loadWorldData() {

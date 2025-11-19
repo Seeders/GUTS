@@ -633,58 +633,34 @@ class WorldSystem extends engine.BaseSystem {
 
         // Create entities for each environment object
         this.tileMap.environmentObjects.forEach(obj => {
-            this.createEnvironmentEntity(obj);
+            this.addEnvironmentEntityVisuals(obj);
         });
     }
 
-    createEnvironmentEntity(envObj) {
+    /**
+     * Add visual components (RENDERABLE) to existing environment entities
+     * Entities are created by TerrainSystem with gameplay components
+     * WorldSystem only adds the visual representation on the client
+     */
+    addEnvironmentEntityVisuals(envObj) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
 
-        const unitType = this.game.getCollections().worldObjects[envObj.type];
-        unitType.collection = "worldObjects";
-        unitType.id = envObj.type;
-        // Calculate world position (matching your existing offset logic)
-        const worldX = (envObj.x + this.extensionSize) - this.extendedSize / 2;
-        const worldZ = (envObj.y + this.extensionSize) - this.extendedSize / 2;
-        
-        // Get terrain height
-        let height = 0;
-        if (this.heightMapSettings?.enabled) {
-            height = this.game.gameManager.call('getTerrainHeightAtPosition', worldX, worldZ);
+        // Find the existing entity created by TerrainSystem
+        const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
+
+        // Check if entity exists
+        if (!this.game.entities.has(entityId)) {
+            console.warn(`WorldSystem: Environment entity ${entityId} not found - TerrainSystem may not have created it`);
+            return;
         }
 
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
-        
-        // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION, 
-            Components.Position(worldX, height, worldZ));
-                
-        // Add Renderable component
-        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
-            Components.Renderable('worldObjects', envObj.type, 1024));
-        
-        // Add Animation component for rotation and scale
-        const rotation = Math.random() * Math.PI * 2;
-        const scale = (0.8 + Math.random() * 0.4) * (envObj.type === 'rock' ? 1 : 50);
-        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
-            Components.Animation(scale, rotation, 0));
-        
-        // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING, 
-            Components.Facing(rotation));
-        
-         this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
-            Components.UnitType(
-                unitType
-            ));
-        
-        // Add Team component (neutral for environment objects)
-        this.game.addComponent(entityId, ComponentTypes.TEAM, 
-            Components.Team('neutral'));
+        // Add Renderable component for visual representation
+        if (!this.game.hasComponent(entityId, ComponentTypes.RENDERABLE)) {
+            this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
+                Components.Renderable('worldObjects', envObj.type, 1024));
+        }
 
-        console.log('created tree');
         this.game.triggerEvent('onEntityPositionUpdated', entityId);
     }
 
@@ -1474,10 +1450,13 @@ class WorldSystem extends engine.BaseSystem {
             Components.UnitType(unitType));
 
         // Add Team component (neutral for cliffs)
-        this.game.addComponent(entityId, ComponentTypes.TEAM, 
+        this.game.addComponent(entityId, ComponentTypes.TEAM,
             Components.Team('cliff'));
 
         this.game.addComponent(entityId, "cliff", { type });
+
+        // Mark as client-only so server sync doesn't delete it
+        this.game.addComponent(entityId, "CLIENT_ONLY", { reason: 'visual_only' });
 
         this.game.triggerEvent('onEntityPositionUpdated', entityId);
     }

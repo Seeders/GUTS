@@ -461,10 +461,15 @@ class MultiplayerNetworkManager {
         }
 
         // Find entities to delete (exist on client but not server)
+        // Skip entities marked as CLIENT_ONLY - they only exist on client
         const entitiesToDelete = [];
         for (const entityId of clientEntityIds) {
             if (!serverEntityIds.has(entityId)) {
-                entitiesToDelete.push(entityId);
+                // Check if entity is marked as client-only
+                const isClientOnly = this.game.hasComponent(entityId, "CLIENT_ONLY");
+                if (!isClientOnly) {
+                    entitiesToDelete.push(entityId);
+                }
             }
         }
 
