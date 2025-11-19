@@ -92,8 +92,8 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
         // Immediate effects (visual, audio, logging)
         this.createVisualEffect(casterPos, 'cast');
         
-        // Create drain beam effect immediately
-        if (this.game.effectsSystem) {
+        // Create drain beam effect immediately (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.createEnergyBeam(
                 new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
                 new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
@@ -136,8 +136,8 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             this.createVisualEffect(targetPos, 'drain');
             this.createVisualEffect(targetPos, 'dark_energy');
 
-            // Create flowing dark energy particles from target to caster
-            if (this.game.gameManager) {
+            // Create flowing dark energy particles from target to caster (client only)
+            if (!this.game.isServer && this.game.gameManager) {
                 // Dark energy extraction at target
                 const targetEffectPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
 
@@ -207,8 +207,8 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             if (actualHeal > 0) {
                 this.createVisualEffect(casterPos, 'heal');
 
-                // Enhanced heal absorption effect
-                if (this.game.gameManager) {
+                // Enhanced heal absorption effect (client only)
+                if (!this.game.isServer && this.game.gameManager) {
                     const casterEffectPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
 
                     this.game.gameManager.call('createLayeredEffect', {
@@ -233,7 +233,7 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
                     });
                 }
 
-                if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+                if (!this.game.isServer && this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
                     this.game.gameManager.call('showDamageNumber',
                         casterPos.x, casterPos.y + 50, casterPos.z,
                         actualHeal, 'heal'

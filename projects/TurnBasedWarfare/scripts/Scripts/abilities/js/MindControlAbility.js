@@ -230,8 +230,8 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual charm effect
         this.createVisualEffect(targetPos, 'charm');
 
-        // Enhanced mind control success burst
-        if (this.game.gameManager) {
+        // Enhanced mind control success burst (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 35, targetPos.z),
                 layers: [
@@ -347,9 +347,12 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
 
     // DESYNC SAFE: Create visual beam effect
     createBeam(casterId, targetId) {
+        // Only create visual beams on client
+        if (this.game.isServer) return;
+
         const casterPos = this.game.getComponent(casterId, this.componentTypes.POSITION);
         const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        
+
         if (!casterPos || !targetPos || !this.game.effectsSystem) return;
 
         // Create beam using the effects system
@@ -366,7 +369,7 @@ class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
         if (!this.beamRegistry.has(targetId)) {
             this.beamRegistry.set(targetId, { beams: new Map() });
         }
-        
+
         this.beamRegistry.get(targetId).beams.set(casterId, beamEffect);
     }
 

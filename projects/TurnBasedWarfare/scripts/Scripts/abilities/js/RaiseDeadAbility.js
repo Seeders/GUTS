@@ -119,8 +119,8 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
                 this.createVisualEffect(corpseData.position, 'raise_dead');
                 this.logCorpseRaising(consumedCorpse, team);
 
-                // Enhanced necromantic rising effect
-                if (this.game.gameManager) {
+                // Enhanced necromantic rising effect (client only)
+                if (!this.game.isServer && this.game.gameManager) {
                     this.game.gameManager.call('createLayeredEffect', {
                         position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z),
                         layers: [
@@ -198,8 +198,8 @@ class RaiseDeadAbility extends engine.app.appClasses['BaseAbility'] {
             this.logAbilityUsage(casterEntity, 
                 `Necromancy raises ${raisedCount} skeleton${raisedCount > 1 ? 's' : ''} from the dead!`);
                 
-            // Screen effect for dramatic impact
-            if (this.game.effectsSystem) {
+            // Screen effect for dramatic impact (client only)
+            if (!this.game.isServer && this.game.effectsSystem) {
                 this.game.effectsSystem.playScreenFlash('#4B0082', 0.4);
             }
         }

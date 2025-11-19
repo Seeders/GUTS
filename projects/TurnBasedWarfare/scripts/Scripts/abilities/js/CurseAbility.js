@@ -102,8 +102,8 @@ class CurseAbility extends engine.app.appClasses['BaseAbility'] {
                         isCursed: true
                     }, this.game.state.now + this.duration, false, 1, this.game.state.now));
                 
-                // Create dark aura effect
-                if (this.game.effectsSystem) {
+                // Create dark aura effect (client only)
+                if (!this.game.isServer && this.game.effectsSystem) {
                     this.game.effectsSystem.createAuraEffect(
                         enemyPos.x, enemyPos.y, enemyPos.z,
                         'magic',

@@ -199,8 +199,8 @@ class TrackingMarkAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(casterPos, 'tracking_beam');
         this.createVisualEffect(targetPos, 'tracking_beam');
         
-        // Create energy beam if effects system supports it
-        if (this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
+        // Create energy beam if effects system supports it (client only)
+        if (!this.game.isServer && this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
             this.game.effectsSystem.createEnergyBeam(
                 new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
                 new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),

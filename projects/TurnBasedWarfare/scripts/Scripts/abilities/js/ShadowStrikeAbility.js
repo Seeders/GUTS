@@ -120,8 +120,8 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual effect at original position before teleport
         this.createVisualEffect(casterPos, 'teleport');
 
-        // Enhanced shadow dissolution effect at departure
-        if (this.game.gameManager) {
+        // Enhanced shadow dissolution effect at departure (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
                 layers: [
@@ -162,8 +162,8 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual effect at new position after teleport
         this.createVisualEffect(teleportPos, 'teleport');
 
-        // Enhanced shadow coalesce effect at arrival
-        if (this.game.gameManager) {
+        // Enhanced shadow coalesce effect at arrival (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(teleportPos.x, teleportPos.y + 30, teleportPos.z),
                 layers: [
@@ -207,8 +207,8 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
         // Backstab effect
         this.createVisualEffect(targetPos, 'backstab');
 
-        // Enhanced backstab blood/shadow burst
-        if (this.game.gameManager) {
+        // Enhanced backstab blood/shadow burst (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 25, targetPos.z),
                 layers: [
@@ -242,8 +242,8 @@ class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
             });
         }
 
-        // Screen effect for dramatic teleport
-        if (this.game.effectsSystem) {
+        // Screen effect for dramatic teleport (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.playScreenShake(0.2, 1.5);
         }
     }

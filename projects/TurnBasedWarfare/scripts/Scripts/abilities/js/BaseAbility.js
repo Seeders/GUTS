@@ -25,8 +25,10 @@ class BaseAbility {
     }
     
     createVisualEffect(position, effectName = 'cast', customOptions = {}) {
+        // Don't show visual effects on server
+        if (this.game.isServer) return;
         if (!this.game.effectsSystem) return;
-        
+
         const effectDef = this.effects[effectName];
         if (effectDef) {
             const mergedOptions = { ...effectDef.options, ...customOptions, heightOffset: customOptions.heightOffset || 0 };

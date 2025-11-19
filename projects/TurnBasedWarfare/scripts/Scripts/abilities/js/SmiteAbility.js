@@ -103,8 +103,8 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         // Create divine judgment aura effect
         this.createVisualEffect(targetPos, 'divine_judgment');
 
-        // Enhanced divine pillar descending from sky
-        if (this.game.gameManager) {
+        // Enhanced divine pillar descending from sky (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             // Pillar of golden light descending
             const pillarSteps = 8;
             for (let i = 0; i < pillarSteps; i++) {
@@ -187,8 +187,8 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
             });
         }
 
-        // Screen flash and shake
-        if (this.game.effectsSystem) {
+        // Screen flash and shake (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#FFD700', 0.5);
             this.game.effectsSystem.playScreenShake(0.3, 3);
         }
@@ -235,8 +235,8 @@ class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
         // Create smite impact effect
         this.createVisualEffect(targetPos, 'smite');
 
-        // Enhanced divine explosion on impact
-        if (this.game.gameManager) {
+        // Enhanced divine explosion on impact (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                 layers: [

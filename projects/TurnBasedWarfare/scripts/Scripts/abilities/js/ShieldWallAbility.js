@@ -124,8 +124,8 @@ class ShieldWallAbility extends engine.app.appClasses['BaseAbility'] {
         // Apply taunt effect to nearby enemies
         this.applyTauntToEnemies(casterEntity);
         
-        // Screen effects for dramatic formation
-        if (this.game.effectsSystem) {
+        // Screen effects for dramatic formation (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.playScreenShake(0.3, 1);
         }
         

@@ -92,8 +92,8 @@ class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual explosion effect
         this.createVisualEffect(targetPos, 'explosion');
         
-        // Screen effects for dramatic explosion
-        if (this.game.effectsSystem) {
+        // Screen effects for dramatic explosion (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.showExplosionEffect(targetPos.x, targetPos.y, targetPos.z);
             this.game.effectsSystem.playScreenShake(0.4, 2);
             this.game.effectsSystem.playScreenFlash('#8A2BE2', 0.3);

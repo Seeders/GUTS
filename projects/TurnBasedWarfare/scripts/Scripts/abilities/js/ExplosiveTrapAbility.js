@@ -202,8 +202,8 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
         // Visual explosion effect
         this.createVisualEffect(trapPos, 'trap_explosion');
 
-        // Enhanced massive trap explosion
-        if (this.game.gameManager) {
+        // Enhanced massive trap explosion (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             this.game.gameManager.call('createLayeredEffect', {
                 position: new THREE.Vector3(trapPos.x, trapPos.y + 20, trapPos.z),
                 layers: [
@@ -296,8 +296,8 @@ class ExplosiveTrapAbility extends engine.app.appClasses['BaseAbility'] {
             });
         }
 
-        // Screen effects for dramatic explosion
-        if (this.game.effectsSystem) {
+        // Screen effects for dramatic explosion (client only)
+        if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.showExplosionEffect(trapPos.x, trapPos.y, trapPos.z);
             this.game.effectsSystem.playScreenShake(0.3, 2);
         }

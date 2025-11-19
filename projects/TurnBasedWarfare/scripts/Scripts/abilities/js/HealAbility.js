@@ -92,8 +92,8 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
         this.createVisualEffect(targetPos, 'heal');
         this.createVisualEffect(targetPos, 'sparkles');
 
-        // Enhanced holy light effect
-        if (this.game.gameManager) {
+        // Enhanced holy light effect (client only)
+        if (!this.game.isServer && this.game.gameManager) {
             const healPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
 
             this.game.gameManager.call('createLayeredEffect', {
@@ -148,8 +148,8 @@ class HealAbility extends engine.app.appClasses['BaseAbility'] {
         const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
         targetHealth.current += actualHeal;
 
-        // Show heal number
-        if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+        // Show heal number (client only)
+        if (!this.game.isServer && this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
             this.game.gameManager.call('showDamageNumber',
                 targetPos.x, targetPos.y + 50, targetPos.z,
                 actualHeal, 'heal'
