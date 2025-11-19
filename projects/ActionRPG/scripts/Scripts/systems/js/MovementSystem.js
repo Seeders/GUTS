@@ -54,7 +54,7 @@ class MovementSystem extends engine.BaseSystem {
     }
     
     update() {
-        if (this.game.state.phase !== 'battle') return;
+        // In ARPG, we're always in battle mode - skip phase check
         
         this.frameCounter++;
         const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);        

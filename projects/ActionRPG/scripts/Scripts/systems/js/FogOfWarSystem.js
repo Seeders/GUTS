@@ -448,8 +448,8 @@ class FogOfWarSystem extends engine.BaseSystem {
     }
 
     renderFogTexture() {
-        const myTeam = this.game.state.mySide;
-        if (!myTeam) return;
+        // In ARPG, player is always on 'player' team
+        const myTeam = 'player';
 
         const myUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,

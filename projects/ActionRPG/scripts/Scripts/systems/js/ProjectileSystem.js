@@ -293,7 +293,7 @@ class ProjectileSystem extends engine.BaseSystem {
     }
     
     update() {
-        if (this.game.state.phase !== 'battle') return;
+        // In ARPG, we're always in battle mode - skip phase check
         
         const projectiles = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 

@@ -35,20 +35,8 @@ class CombatAISystem extends engine.BaseSystem {
 
     update() {
         const CT = this.componentTypes;
-        if (this.game.state.phase !== 'battle'){
-            const combatUnits = this.game.getEntitiesWith(
-               CT.AI_STATE
-            );
-            for (let i = 0; i < combatUnits.length; i++) {
-                const entityId = combatUnits[i];
-                const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-                if (aiState.state !== 'idle') {
-                    this.changeAIState(aiState, 'idle');
-                }
-                aiState.target = null;
-            }
-            return;
-        }
+        // In ARPG, we're always in battle mode - skip phase check
+        // Original turn-based check disabled for real-time gameplay
 
         const combatUnits = this.game.getEntitiesWith(
             CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE

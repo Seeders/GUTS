@@ -137,38 +137,37 @@ class AnimationSystem extends engine.BaseSystem {
         let speed = 1.0;
         let minTime = 0;
 
-        if(this.game.state.phase == 'battle'){
-            // Check movement first
-            const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
-            
-            if (isMoving) {
-                clip = 'walk';
-                speed = this.calculateWalkSpeed(velocity);
-            }
+        // In ARPG, we're always in battle mode
+        // Check movement first
+        const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
 
-            // AI state overrides
-            if (aiState) {
-                switch (aiState.state) {
-                    case 'attacking':
-                    case 'combat':
-                        // During combat, prefer walking if moving, otherwise idle
-                        if (!isMoving) {
-                            clip = 'idle';
-                            speed = 1.0;
-                        }
-                        break;
-                        
-                    case 'chasing':
-                    case 'moving':
-                        clip = 'walk';
-                        speed = this.calculateWalkSpeed(velocity);
-                        break;
-                        
-                    case 'waiting':
-                        clip = isMoving ? 'walk' : 'idle';
-                        if (isMoving) speed = this.calculateWalkSpeed(velocity);
-                        break;
-                }
+        if (isMoving) {
+            clip = 'walk';
+            speed = this.calculateWalkSpeed(velocity);
+        }
+
+        // AI state overrides
+        if (aiState) {
+            switch (aiState.state) {
+                case 'attacking':
+                case 'combat':
+                    // During combat, prefer walking if moving, otherwise idle
+                    if (!isMoving) {
+                        clip = 'idle';
+                        speed = 1.0;
+                    }
+                    break;
+
+                case 'chasing':
+                case 'moving':
+                    clip = 'walk';
+                    speed = this.calculateWalkSpeed(velocity);
+                    break;
+
+                case 'waiting':
+                    clip = isMoving ? 'walk' : 'idle';
+                    if (isMoving) speed = this.calculateWalkSpeed(velocity);
+                    break;
             }
         }
 

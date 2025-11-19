@@ -15,10 +15,7 @@ class UnitRadiusSystem extends engine.BaseSystem {
     
     update() {
         if (!this.enabled ) return;
-        if(this.game.state.phase !== 'battle') {
-            this.hideAllCircles();
-            return;
-        }
+        // In ARPG, we're always in battle mode - skip phase check
         
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 

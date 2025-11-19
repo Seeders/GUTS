@@ -333,40 +333,40 @@ class MiniMapSystem extends engine.BaseSystem {
     }
 
     updateUnitIcons() {
-        const myTeam = this.game.state.mySide;
-        if (!myTeam) return;
-        
+        // In ARPG, player is always on 'player' team
+        const myTeam = 'player';
+
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
             this.componentTypes.TEAM,
-            this.componentTypes.UNIT_TYPE
-        ).filter(id => {
-            const unitType = this.game.getComponent(id, this.componentTypes.UNIT_TYPE);
-            return unitType.collection == "units" || unitType.collection == "buildings"
-        });
-        
+            this.componentTypes.HEALTH
+        );
+
         let friendlyUnitIndex = 0;
         let enemyUnitIndex = 0;
         let friendlyBuildingIndex = 0;
         let enemyBuildingIndex = 0;
-        
+
         for (const entityId of entities) {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            
+
             if (!pos || !team || projectile) continue;
-            
+
             const isMyUnit = team.team === myTeam;
             const visible = this.game.fogOfWarSystem?.isVisibleAt(pos.x, pos.z);
-            
+
             if (!isMyUnit && !visible) continue;
-            
+
             this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
             this.tempMatrix.multiply(this.rotationMatrix);
-            
-            if (unitType.collection == 'buildings') {
+
+            // Check if it's a building (has building collection type)
+            const isBuilding = unitType && unitType.collection === 'buildings';
+
+            if (isBuilding) {
                 // It's a building
                 if (isMyUnit) {
                     this.friendlyBuildingMesh.setMatrixAt(friendlyBuildingIndex, this.tempMatrix);
@@ -375,8 +375,8 @@ class MiniMapSystem extends engine.BaseSystem {
                     this.enemyBuildingMesh.setMatrixAt(enemyBuildingIndex, this.tempMatrix);
                     enemyBuildingIndex++;
                 }
-            } else if(unitType.collection == 'units') {
-                // It's a unit
+            } else {
+                // It's a unit (player, enemy, or other)
                 if (isMyUnit) {
                     this.friendlyInstancedMesh.setMatrixAt(friendlyUnitIndex, this.tempMatrix);
                     friendlyUnitIndex++;
@@ -407,28 +407,28 @@ class MiniMapSystem extends engine.BaseSystem {
     }
 
     updateGoldVeinIcons() {
-        const goldVeins = this.game.gameManager.call('getGoldVeinLocations');
-        if (!goldVeins) {
+        // In ARPG, show ground loot instead of gold veins
+        const groundLoot = this.game.gameManager.call('getGroundLoot');
+        if (!groundLoot) {
+            this.goldVeinMesh.count = 0;
             return;
         }
-        let goldIndex = 0;
-        
-        for (const vein of goldVeins) {
-            // Skip if claimed (has a gold mine built on it)
-            if (vein.claimed) continue;
-            
-            const explored = this.game.fogOfWarSystem?.isExploredAt(vein.worldX, vein.worldZ);
+
+        let lootIndex = 0;
+
+        for (const [lootId, loot] of groundLoot) {
+            const explored = this.game.fogOfWarSystem?.isExploredAt(loot.x, loot.z);
             if (!explored) continue;
-            
-            this.tempMatrix.makeTranslation(vein.worldX, 0, vein.worldZ);
+
+            this.tempMatrix.makeTranslation(loot.x, 0, loot.z);
             this.tempMatrix.multiply(this.rotationMatrix);
-            this.goldVeinMesh.setMatrixAt(goldIndex, this.tempMatrix);
-            goldIndex++;
+            this.goldVeinMesh.setMatrixAt(lootIndex, this.tempMatrix);
+            lootIndex++;
         }
-        
-        this.goldVeinMesh.count = goldIndex;
-        
-        if (goldIndex > 0) {
+
+        this.goldVeinMesh.count = lootIndex;
+
+        if (lootIndex > 0) {
             this.goldVeinMesh.instanceMatrix.needsUpdate = true;
         }
     }
