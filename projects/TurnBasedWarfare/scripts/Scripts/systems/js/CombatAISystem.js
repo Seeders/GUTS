@@ -24,7 +24,6 @@ class CombatAISystem extends engine.BaseSystem {
         this.TARGET_POSITION_THRESHOLD = this.game.getCollections().configs.game.gridSize / 2 * 0.5;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
-
     }
 
     init() {
@@ -33,20 +32,24 @@ class CombatAISystem extends engine.BaseSystem {
         this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
     }
 
+    // Called once when phase transitions to placement - synchronized across all clients
+    onPlacementPhaseStart() {
+        const CT = this.componentTypes;
+        const combatUnits = this.game.getEntitiesWith(CT.AI_STATE);
+
+        for (let i = 0; i < combatUnits.length; i++) {
+            const entityId = combatUnits[i];
+            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            if (aiState && aiState.state !== 'idle') {
+                this.changeAIState(aiState, 'idle');
+            }
+            // Don't clear targets - let units remember their last target for next round
+        }
+    }
+
     update() {
         const CT = this.componentTypes;
-        if (this.game.state.phase !== 'battle'){
-            const combatUnits = this.game.getEntitiesWith(
-               CT.AI_STATE
-            );
-            for (let i = 0; i < combatUnits.length; i++) {
-                const entityId = combatUnits[i];
-                const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-                if (aiState.state !== 'idle') {
-                    this.changeAIState(aiState, 'idle');
-                }
-                aiState.target = null;
-            }
+        if (this.game.state.phase !== 'battle') {
             return;
         }
 
