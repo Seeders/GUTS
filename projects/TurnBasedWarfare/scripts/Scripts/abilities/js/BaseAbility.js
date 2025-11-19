@@ -133,6 +133,51 @@ class BaseAbility {
     }
     onBattleEnd() {
     }
+
+    // Get the target entity for facing purposes
+    getTargetForFacing(casterEntity) {
+        // Self-targeting abilities don't need facing change
+        if (this.targetType === 'self') return null;
+
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return null;
+
+        let candidates = [];
+
+        if (this.targetType === 'enemy' || this.targetType === 'auto') {
+            candidates = this.getEnemiesInRange(casterEntity, this.range);
+        } else if (this.targetType === 'ally') {
+            candidates = this.getAlliesInRange(casterEntity, this.range)
+                .filter(id => id !== casterEntity); // Exclude self
+        }
+
+        if (candidates.length === 0) return null;
+
+        // Find closest target (same logic as findClosestEnemy)
+        let closestTarget = null;
+        let closestDistance = Infinity;
+
+        // Sort for determinism
+        const sortedCandidates = candidates.slice().sort((a, b) => String(a).localeCompare(String(b)));
+
+        sortedCandidates.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            if (!pos) return;
+
+            const distance = Math.sqrt(
+                Math.pow(pos.x - casterPos.x, 2) +
+                Math.pow(pos.z - casterPos.z, 2)
+            );
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestTarget = entityId;
+            }
+        });
+
+        return closestTarget;
+    }
+
     canExecute(casterEntity) { return true; }
     execute(casterEntity, targetData = null) { console.log(`${this.name} executed by entity ${casterEntity}`); }
 }
