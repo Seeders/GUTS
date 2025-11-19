@@ -127,8 +127,8 @@ class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
             if (actualHeal > 0) {
                 this.createVisualEffect(casterPos, 'heal');
                 
-                if (this.game.effectsSystem) {
-                    this.game.effectsSystem.showDamageNumber(
+                if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+                    this.game.gameManager.call('showDamageNumber',
                         casterPos.x, casterPos.y + 15, casterPos.z,
                         actualHeal, 'heal'
                     );

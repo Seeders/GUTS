@@ -73,7 +73,7 @@ class ProjectileSystem extends engine.BaseSystem {
         
          // Enhanced projectile component with element
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
-            damage: sourceCombat.damage,
+            damage: projectileData.damage || sourceCombat.damage,
             speed: projectileData.speed,
             range: sourceCombat.range * 1.5,
             target: targetId,
@@ -89,7 +89,11 @@ class ProjectileSystem extends engine.BaseSystem {
             launchAngle: trajectory.launchAngle,
             timeToTarget: trajectory.timeToTarget,
             weaponRange: trajectory.weaponRange || sourceCombat.range,
-            element: projectileElement
+            element: projectileElement,
+            splashRadius: projectileData.splashRadius || 80,
+            onHit: projectileData.onHit || null,
+            onTravel: projectileData.onTravel || null,
+            lastTrailTime: this.game.state.now
         });
 
         const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
@@ -312,7 +316,16 @@ class ProjectileSystem extends engine.BaseSystem {
             } else if (homing && homing.targetId) {
                 this.updateHomingProjectile(projectileId, pos, vel, projectile, homing);
             }
-            
+
+            // Call onTravel callback for trail effects (throttled)
+            if (projectile.onTravel && typeof projectile.onTravel === 'function') {
+                const timeSinceLastTrail = this.game.state.now - (projectile.lastTrailTime || 0);
+                if (timeSinceLastTrail >= this.TRAIL_UPDATE_INTERVAL) {
+                    projectile.onTravel(pos);
+                    projectile.lastTrailTime = this.game.state.now;
+                }
+            }
+
             // Handle different collision types based on projectile type
             if (projectile.isBallistic) {
                 // Ballistic projectiles ONLY check for ground impact
@@ -321,7 +334,7 @@ class ProjectileSystem extends engine.BaseSystem {
                 // Non-ballistic projectiles check for direct unit hits
                 this.checkProjectileCollisions(projectileId, pos, projectile);
             }
-            
+
             // Update visual trail
             this.updateProjectileTrail(projectileId, pos);
         });
@@ -501,31 +514,37 @@ class ProjectileSystem extends engine.BaseSystem {
     }
 
     triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-        this.createGroundExplosion(entityId, pos, projectile, groundLevel);
+        // Call custom onHit callback if provided
+        if (projectile.onHit && typeof projectile.onHit === 'function') {
+            projectile.onHit(pos);
+        } else {
+            // Default explosion behavior
+            this.createGroundExplosion(entityId, pos, projectile, groundLevel);
 
-        if (this.game.gameManager) {
-            const splashRadius = 80;
-            const splashDamage = Math.floor(projectile.damage);
-            const elementTypes = this.game.gameManager.call('getDamageElementTypes');
-            const element = projectile.element || elementTypes.PHYSICAL;
+            if (this.game.gameManager) {
+                const splashRadius = projectile.splashRadius || 80;
+                const splashDamage = Math.floor(projectile.damage);
+                const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+                const element = projectile.element || elementTypes.PHYSICAL;
 
-            const results = this.game.gameManager.call('applySplashDamage',
-                projectile.source,
-                pos,
-                splashDamage,
-                element,
-                splashRadius,
-                {
-                    isBallistic: true,
-                    projectileId: entityId,
-                    allowFriendlyFire: false
-                }
-            );
+                const results = this.game.gameManager.call('applySplashDamage',
+                    projectile.source,
+                    pos,
+                    splashDamage,
+                    element,
+                    splashRadius,
+                    {
+                        isBallistic: true,
+                        projectileId: entityId,
+                        allowFriendlyFire: false
+                    }
+                );
 
-            if (this.game.combatAISystems && projectile.source && results) {
-                for (const result of results) {
-                    if (result.targetId && result.actualDamage > 0) {
-                        this.game.combatAISystems.setRetaliatoryTarget(result.targetId, projectile.source);
+                if (this.game.combatAISystems && projectile.source && results) {
+                    for (const result of results) {
+                        if (result.targetId && result.actualDamage > 0) {
+                            this.game.combatAISystems.setRetaliatoryTarget(result.targetId, projectile.source);
+                        }
                     }
                 }
             }

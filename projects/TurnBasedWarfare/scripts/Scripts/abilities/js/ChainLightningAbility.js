@@ -242,9 +242,9 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
         const segments = 3; // Number of lightning segments
         
         points.push(new THREE.Vector3(
-            fromPos.x + (this.game.effectsSystem?.effectOffset?.x || 0),
-            fromPos.y + (this.game.effectsSystem?.effectOffset?.y || 0) + 10,
-            fromPos.z + (this.game.effectsSystem?.effectOffset?.z || 0)
+            fromPos.x,
+            fromPos.y + 10,
+            fromPos.z
         ));
         
         // Create jagged lightning path using deterministic values
@@ -263,16 +263,16 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             const jaggedZ = baseZ + (((i * 91) % 100) / 100 - 0.5) * deviation;
             
             points.push(new THREE.Vector3(
-                jaggedX + (this.game.effectsSystem?.effectOffset?.x || 0),
-                jaggedY + (this.game.effectsSystem?.effectOffset?.y || 0),
-                jaggedZ + (this.game.effectsSystem?.effectOffset?.z || 0)
+                jaggedX,
+                jaggedY,
+                jaggedZ
             ));
         }
         
         points.push(new THREE.Vector3(
-            toPos.x + (this.game.effectsSystem?.effectOffset?.x || 0),
-            toPos.y + (this.game.effectsSystem?.effectOffset?.y || 0) + 10,
-            toPos.z + (this.game.effectsSystem?.effectOffset?.z || 0)
+            toPos.x,
+            toPos.y + 10,
+            toPos.z
         ));
         
         return points;

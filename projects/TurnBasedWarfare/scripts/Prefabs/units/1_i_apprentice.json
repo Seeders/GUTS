@@ -5,9 +5,9 @@
   "value": 35,
   "hp": 150,
   "speed": 55,
-  "damage": 15,
-  "attackSpeed": 1.1,
-  "range": 150,
+  "damage": 0,
+  "attackSpeed": 0,
+  "range": 300,
   "element": "fire",
   "armor": 1,
   "render": {
@@ -161,7 +161,7 @@
     ]
   },
   "buyable": true,
-  "projectile": "fireball",
+  "projectile": "",
   "specUnits": [
     "2_i_elementalist",
     "2_i_enchanter",
@@ -171,7 +171,9 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [],
+  "abilities": [
+    "FireBallAbility"
+  ],
   "icon": "unit_apprentice",
   "visionRange": 500,
   "supplyCost": 2

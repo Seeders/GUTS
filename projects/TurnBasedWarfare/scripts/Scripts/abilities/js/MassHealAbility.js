@@ -108,8 +108,8 @@ class MassHealAbility extends engine.app.appClasses['BaseAbility'] {
                     this.createVisualEffect(allyPos, 'heal');
                     
                     // Show heal number
-                    if (this.game.effectsSystem) {
-                        this.game.effectsSystem.showDamageNumber(
+                    if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
+                        this.game.gameManager.call('showDamageNumber',
                             allyPos.x, allyPos.y + 50, allyPos.z,
                             actualHeal, 'heal'
                         );

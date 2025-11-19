@@ -139,6 +139,9 @@ class AbilitySystem extends engine.BaseSystem {
             return false;
         }
 
+        // Face the target before casting (unless targeting self)
+        this.faceTarget(entityId, ability);
+
         if (!ability.isPassive) {
             this.startAbilityAnimation(entityId, ability);
         }
@@ -159,13 +162,15 @@ class AbilitySystem extends engine.BaseSystem {
 
         for (const anim of animationsToTry) {
 
-            // For abilities, use normal speed unless it's an attack-based ability
+            // For abilities, calculate animation speed based on cast time
             let animationSpeed = 1.0;
             let minAnimationTime = 1.5;
 
-            if (ability) {
-                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, ability.castTime);
-                minAnimationTime = 1 / ability.castTime;
+            if (ability && ability.castTime > 0) {
+                // Convert cast time to rate (casts per second) for calculateAnimationSpeed
+                const castRate = 1 / ability.castTime;
+                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, castRate);
+                minAnimationTime = ability.castTime;
             }
             if(this.game.gameManager.has('triggerSinglePlayAnimation')){
                 this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
@@ -174,7 +179,26 @@ class AbilitySystem extends engine.BaseSystem {
 
         }
     }
-    
+
+    faceTarget(entityId, ability) {
+        // Get target for facing
+        const targetId = ability.getTargetForFacing(entityId);
+        if (!targetId || targetId === entityId) return;
+
+        const casterPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+
+        if (!casterPos || !targetPos || !facing) return;
+
+        // Calculate angle to face target
+        const dx = targetPos.x - casterPos.x;
+        const dz = targetPos.z - casterPos.z;
+        const angleToTarget = Math.atan2(dz, dx);
+
+        facing.angle = angleToTarget;
+    }
+
     setCooldown(entityId, abilityId, cooldownDuration) {
         const key = `${entityId}_${abilityId}`;
         this.abilityCooldowns.set(key, this.game.state.now + cooldownDuration);

@@ -14,8 +14,7 @@ class DamageNumberSystem extends engine.BaseSystem {
         this.damageNumberMesh = null;
         this.activeCharInstances = 0;
         this.VERTICAL_SPEED = 48;
-        this.CHAR_SIZE = 12;
-        this.effectOffset = { x: 0, y: 0, z: 0 };       
+        this.CHAR_SIZE = 12;      
         // Performance tracking
         this.stats = {
             activeDamageNumbers: 0
