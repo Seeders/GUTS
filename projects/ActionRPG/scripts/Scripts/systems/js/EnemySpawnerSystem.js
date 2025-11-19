@@ -248,7 +248,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
             const gridZ = Math.floor(spawnZ / gridSize);
 
             const placement = {
-                unitType: unitData,
+                unitType: { ...unitData, id: unitType }, // Include id from the collection key
                 gridPosition: { x: gridX, z: gridZ }
             };
 
@@ -417,7 +417,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
     // Create enemy entity from server data (client-side)
     createEnemyFromServer(data) {
-        const { entityId, unitType, x, z, scaledHP, scaledDamage, difficultyMult } = data;
+        const { entityId, unitType, x, z } = data;
 
         const CT = this.componentTypes;
         const Components = this.game.componentManager.getComponents();
@@ -430,19 +430,20 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         }
 
         // Create entity with same ID as server
-        const createdId = this.game.createEntityWithId ?
-            this.game.createEntityWithId(entityId) :
-            this.game.createEntity();
+        const createdId = this.game.createEntity(entityId);
 
-        // Add components with server-provided values
-        this.game.addComponent(createdId, CT.POSITION, Components.Position(x, 0, z));
+        // Get terrain height
+        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', x, z) || 0;
+
+        // Add components
+        this.game.addComponent(createdId, CT.POSITION, Components.Position(x, terrainHeight, z));
         this.game.addComponent(createdId, CT.VELOCITY, Components.Velocity(0, 0, 0, unitData.speed || 50, false, false));
         this.game.addComponent(createdId, CT.FACING, Components.Facing(Math.random() * Math.PI * 2));
         this.game.addComponent(createdId, CT.COLLISION, Components.Collision(unitData.size || 25, 50));
 
-        this.game.addComponent(createdId, CT.HEALTH, Components.Health(scaledHP));
+        this.game.addComponent(createdId, CT.HEALTH, Components.Health(unitData.hp || 100));
         this.game.addComponent(createdId, CT.COMBAT, Components.Combat(
-            scaledDamage,
+            unitData.damage || 10,
             unitData.range || 30,
             unitData.attackSpeed || 1.0,
             unitData.projectile || null,
@@ -458,25 +459,24 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
         this.game.addComponent(createdId, CT.TEAM, Components.Team('enemy'));
 
-        const xpValue = (unitData.xpValue || 10) * difficultyMult;
-        const goldValue = (unitData.goldValue || 5) * difficultyMult;
-
         this.game.addComponent(createdId, CT.UNIT_TYPE, Components.UnitType({
             id: unitType,
             ...unitData,
-            xpValue,
-            goldValue,
+            xpValue: unitData.xpValue || 10,
+            goldValue: unitData.goldValue || 5,
             lootTable: unitData.lootTable || 'common'
         }));
 
         this.game.addComponent(createdId, CT.AI_STATE, Components.AIState('idle', null, null, null, {
             initialized: true,
+            aiBehavior: unitData.aiBehavior || 'aggressive',
             spawnPosition: { x: x, z: z },
             leashRange: this.LEASH_RANGE
         }));
 
         this.game.addComponent(createdId, CT.ABILITY_COOLDOWNS, Components.AbilityCooldowns({}));
 
+        // Renderable
         if (unitData.render) {
             this.game.addComponent(createdId, CT.RENDERABLE, Components.Renderable(
                 'units',
@@ -484,6 +484,12 @@ class EnemySpawnerSystem extends engine.BaseSystem {
                 128
             ));
         }
+
+        // Animation component
+        this.game.addComponent(createdId, CT.ANIMATION, Components.Animation());
+
+        // Equipment component
+        this.game.addComponent(createdId, CT.EQUIPMENT, Components.Equipment());
 
         // Track active enemies
         this.activeEnemies.set(createdId, {
@@ -501,6 +507,7 @@ class EnemySpawnerSystem extends engine.BaseSystem {
 
         this.game.triggerEvent('onEnemySpawned', createdId);
 
+        console.log('EnemySpawnerSystem: Created enemy from server:', createdId, unitType);
         return createdId;
     }
 
