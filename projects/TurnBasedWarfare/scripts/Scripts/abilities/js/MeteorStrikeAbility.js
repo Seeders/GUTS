@@ -188,52 +188,63 @@ class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     spawnFallingMeteor(casterEntity, targetPos) {
-        // Create a projectile that falls from high above
-        const startPos = {
-            x: targetPos.x,
-            y: this.meteorHeight,
-            z: targetPos.z
-        };
+        // Create falling meteor using only particle effects
+        const trailInterval = 0.05; // More frequent for smoother descent
+        const trailCount = Math.floor(this.delay / trailInterval);
 
-        // Use projectile system to create the falling meteor
-        const projectileData = {
-            id: 'meteor',
-            title: 'Meteor',
-            damage: 0, // Damage handled separately in meteorImpact
-            speed: this.meteorHeight / this.delay, // Speed to reach ground in delay time
-            element: this.element,
-            ballistic: false,
-            homing: false,
-            targetPosition: targetPos,
-            startPosition: startPos,
-            onTravel: (currentPos) => {
-                this.createMeteorTrail(currentPos);
-            },
-            onHit: () => {
-                // Impact handled by scheduled meteorImpact
-            }
-        };
+        for (let i = 0; i < trailCount; i++) {
+            const progress = i / trailCount;
+            const currentY = this.meteorHeight * (1 - progress) + targetPos.y * progress;
+            const trailPos = {
+                x: targetPos.x,
+                y: currentY,
+                z: targetPos.z
+            };
 
-        // Fire projectile from sky position toward ground
-        if (this.game.gameManager && this.game.gameManager.has('fireProjectileFromPosition')) {
-            this.game.gameManager.call('fireProjectileFromPosition', startPos, targetPos, projectileData);
-        } else {
-            // Fallback: create trail effects manually during descent
-            const trailInterval = 0.1;
-            const trailCount = Math.floor(this.delay / trailInterval);
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.createMeteorTrail(trailPos);
 
-            for (let i = 0; i < trailCount; i++) {
-                const progress = i / trailCount;
-                const trailPos = {
-                    x: targetPos.x,
-                    y: this.meteorHeight * (1 - progress) + targetPos.y * progress,
-                    z: targetPos.z
-                };
+                // Create the meteor "body" as a burst of particles
+                if (this.game.gameManager) {
+                    const position = new THREE.Vector3(trailPos.x, trailPos.y, trailPos.z);
 
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.createMeteorTrail(trailPos);
-                }, i * trailInterval, null);
-            }
+                    // Glowing meteor core
+                    this.game.gameManager.call('createParticles', {
+                        position: position,
+                        count: 8,
+                        lifetime: 0.15,
+                        visual: {
+                            color: 0xffff00,
+                            colorRange: { start: 0xffffff, end: 0xffaa00 },
+                            scale: 40,
+                            scaleMultiplier: 1.2,
+                            fadeOut: true,
+                            blending: 'additive'
+                        },
+                        velocityRange: { x: [-10, 10], y: [-10, 10], z: [-10, 10] },
+                        gravity: 0,
+                        drag: 0.9
+                    });
+
+                    // Outer flame layer
+                    this.game.gameManager.call('createParticles', {
+                        position: position,
+                        count: 12,
+                        lifetime: 0.2,
+                        visual: {
+                            color: 0xff6600,
+                            colorRange: { start: 0xff8800, end: 0xff2200 },
+                            scale: 50,
+                            scaleMultiplier: 1.0,
+                            fadeOut: true,
+                            blending: 'additive'
+                        },
+                        velocityRange: { x: [-15, 15], y: [-5, 20], z: [-15, 15] },
+                        gravity: 0,
+                        drag: 0.85
+                    });
+                }
+            }, i * trailInterval, null);
         }
     }
 
