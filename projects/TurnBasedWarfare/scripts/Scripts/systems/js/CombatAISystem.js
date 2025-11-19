@@ -224,31 +224,18 @@ class CombatAISystem extends engine.BaseSystem {
         } 
 
         if(currentAI != "CombatAISystem"){
-            // Check if we can interrupt current command with combat AI
-            // Only take control if current command is interruptible or has lower priority
-            const ComponentTypes = this.game.componentTypes;
-
+            // Queue attack command through command queue system
             if (this.game.commandQueueSystem) {
-                // Use command queue - combat has lower priority than player commands
-                const canTakeControl = this.game.gameManager.call('canInterruptCommand', entityId, this.game.commandQueueSystem.PRIORITY.IDLE);
-
-                if (canTakeControl || !aiState.meta?.preventEnemiesInRangeCheck) {
-                    // Queue combat command with IDLE priority (won't interrupt player commands)
-                    this.game.gameManager.call('queueCommand', entityId, {
-                        type: 'combat',
-                        controllerId: "CombatAISystem",
-                        targetPosition: null,
-                        target: targetEnemy,
-                        meta: {},
-                        priority: this.game.commandQueueSystem.PRIORITY.IDLE,
-                        interruptible: true
-                    }, false); // false = don't force interrupt
-                }
-            } else {
-                // Fallback to old method - only switch if no preventEnemiesInRangeCheck
-                if (!aiState.meta?.preventEnemiesInRangeCheck) {
-                    this.game.gameManager.call('setCurrentAIController', entityId, "CombatAISystem", currentCombatAi);
-                }
+                // Queue attack command with ATTACK priority
+                this.game.gameManager.call('queueCommand', entityId, {
+                    type: 'attack',
+                    controllerId: "CombatAISystem",
+                    targetPosition: null,
+                    target: targetEnemy,
+                    meta: {},
+                    priority: this.game.commandQueueSystem.PRIORITY.ATTACK,
+                    interruptible: true
+                }, true); // true = interrupt lower priority commands
             }
         }
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
@@ -349,13 +336,14 @@ class CombatAISystem extends engine.BaseSystem {
     onLostTarget(entityId) {
         let aiState = this.game.getComponent(entityId, this.game.componentTypes.AI_STATE);
         aiState.useDirectMovement = false;
-        let currentCombatAI = this.game.gameManager.call('getAIControllerData', entityId, "CombatAISystem");
-        currentCombatAI.target = null;
-        if(this.game.gameManager.call('hasAIControllerData', entityId, "UnitOrderSystem")){
-            let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-            let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
-            if(currentAI == "CombatAISystem"){
-                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+        aiState.target = null;
+
+        // Complete the current attack command through the command queue
+        // This lets the queue handle what comes next (idle or next queued command)
+        if (this.game.commandQueueSystem) {
+            const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
+            if (currentCommand && currentCommand.type === 'attack') {
+                this.game.gameManager.call('completeCurrentCommand', entityId);
             }
         }
     }
