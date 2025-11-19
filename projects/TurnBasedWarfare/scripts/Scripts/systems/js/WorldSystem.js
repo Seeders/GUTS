@@ -690,14 +690,23 @@ class WorldSystem extends engine.BaseSystem {
 
     onWindowResize() {
         if (!this.camera || !this.renderer) return;
-        
+
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        this.camera.aspect = width / height;
+        // Handle both PerspectiveCamera and OrthographicCamera
+        if (this.camera.isPerspectiveCamera) {
+            this.camera.aspect = width / height;
+        } else if (this.camera.isOrthographicCamera) {
+            this.camera.left = width / -2;
+            this.camera.right = width / 2;
+            this.camera.top = height / 2;
+            this.camera.bottom = height / -2;
+        }
+
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
-        
+
         if (this.composer) {
             this.composer.setSize(width, height);
         }
