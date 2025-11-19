@@ -11,12 +11,46 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
             animation: 'cast',
             priority: 6,
             castTime: 0,
+            passive: true,
             ...params
         });
         this.drainPerSecond = 8;
-        this.duration = 12.0; // 12 seconds instead of 1200 seconds
+        this.cycleDuration = 12.0; // Duration of each cycle
         this.tickInterval = 1.0; // 1 second between ticks
         this.hasActiveAura = false;
+        this.assignedCaster = null;
+    }
+
+    // Called when ability is assigned to a unit - auto-start the passive aura
+    onAssign(casterEntity) {
+        this.assignedCaster = casterEntity;
+        this.startAuraCycle(casterEntity);
+    }
+
+    // Start or restart the perpetual aura cycle
+    startAuraCycle(casterEntity) {
+        if (this.hasActiveAura) return;
+
+        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        if (!casterHealth || casterHealth.current <= 0) return;
+
+        this.hasActiveAura = true;
+
+        const totalTicks = Math.floor(this.cycleDuration / this.tickInterval);
+
+        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
+            const tickDelay = this.tickInterval * tickIndex;
+
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
+            }, tickDelay, casterEntity);
+        }
+
+        // Schedule cycle restart for perpetual effect
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.hasActiveAura = false;
+            this.startAuraCycle(casterEntity);
+        }, this.cycleDuration, casterEntity);
     }
     
     defineEffects() {
@@ -53,33 +87,14 @@ class FreezingAuraAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     canExecute(casterEntity) {
-        // Only allow one active aura per caster
-        return !this.hasActiveAura;
+        // Passive ability - cannot be manually executed
+        return false;
     }
-    
+
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        if (!pos) return;
-        
-        this.createVisualEffect(pos, 'cast');
-        // Mark aura as active
-        this.hasActiveAura = true;
-        
-        // DESYNC SAFE: Schedule all aura ticks using the scheduling system
-        const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
-        for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
-            const tickDelay = this.tickInterval * tickIndex;
-            
-            this.game.schedulingSystem.scheduleAction(() => {
-                this.executeAuraTick(casterEntity, tickIndex, totalTicks);
-            }, tickDelay, casterEntity);
-        }
-        
-        // DESYNC SAFE: Schedule aura cleanup
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.hasActiveAura = false;
-        }, this.duration, casterEntity);
+        // Passive ability - starts automatically via onAssign
+        // This method kept for compatibility but redirects to cycle start
+        this.startAuraCycle(casterEntity);
     }
     
     // DESYNC SAFE: Execute a single aura tick deterministically
