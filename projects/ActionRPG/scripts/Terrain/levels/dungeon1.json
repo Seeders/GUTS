@@ -1,0 +1,27 @@
+{
+  "title": "Dungeon Level 1",
+  "procedural": true,
+  "tileSet": "dungeon",
+  "floor": 1,
+  "minRooms": 8,
+  "maxRooms": 15,
+  "seed": 12345,
+  "world": "shire",
+  "tileMap": {
+    "size": 64,
+    "terrainTypes": [
+      "water",
+      "lava",
+      "rock",
+      "forest",
+      "dirt",
+      "grass"
+    ],
+    "terrainMap": [],
+    "heightMap": []
+  },
+  "cameraData": {
+    "position": [1500, 2000, 1700],
+    "lookAt": [1500, 0, 1500]
+  }
+}

@@ -983,16 +983,18 @@ class TileLevelGenerator extends engine.BaseSystem {
             return null;
         }
 
-        // Calculate bounds of the generated level
-        const bounds = this.levelData.bounds;
         const collections = this.game.getCollections();
         const gridSize = collections.configs?.game?.gridSize || 48;
 
         // Convert tile bounds to terrain map size
         // Each tile unit = TILE_SIZE world units = TILE_SIZE/gridSize terrain cells
         const cellsPerTileUnit = Math.ceil(this.TILE_SIZE / gridSize);
-        const mapWidth = (bounds.maxX - bounds.minX + 1) * cellsPerTileUnit;
-        const mapHeight = (bounds.maxY - bounds.minY + 1) * cellsPerTileUnit;
+
+        // Calculate min grid coordinates (not world coordinates)
+        const minGridX = Math.min(...this.placedTiles.map(p => p.gridX));
+        const minGridZ = Math.min(...this.placedTiles.map(p => p.gridY));
+        const maxGridX = Math.max(...this.placedTiles.map(p => p.gridX + p.tile.width));
+        const maxGridZ = Math.max(...this.placedTiles.map(p => p.gridY + p.tile.height));
 
         // Use fixed size for simplicity (64x64)
         const mapSize = 64;
@@ -1012,8 +1014,8 @@ class TileLevelGenerator extends engine.BaseSystem {
         // Fill in placed tiles
         for (const placed of this.placedTiles) {
             // Convert tile grid position to terrain map position
-            const baseX = (placed.gridX - bounds.minX) * cellsPerTileUnit;
-            const baseZ = (placed.gridY - bounds.minY) * cellsPerTileUnit;
+            const baseX = (placed.gridX - minGridX) * cellsPerTileUnit;
+            const baseZ = (placed.gridY - minGridZ) * cellsPerTileUnit;
 
             // Fill tile area with floor
             const tileWidthCells = placed.tile.width * cellsPerTileUnit;
