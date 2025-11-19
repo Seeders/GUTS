@@ -1,0 +1,11 @@
+{
+  "title": "Medium Enemies",
+  "id": "medium",
+  "description": "Trained soldiers and ranged units",
+  "units": [
+    "1_sd_soldier",
+    "1_d_archer",
+    "1_i_apprentice",
+    "1_is_acolyte"
+  ]
+}

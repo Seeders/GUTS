@@ -17,13 +17,8 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         this.enemiesSpawnedThisWave = 0;
         this.waveInProgress = false;
 
-        // Enemy types by difficulty (using actual unit IDs from prefabs)
-        this.enemyTiers = {
-            easy: ['0_skeleton', 'peasant', '0_golemStone'],
-            medium: ['1_sd_soldier', '1_d_archer', '1_i_apprentice', '1_di_scout'],
-            hard: ['1_s_barbarian', '2_s_berserker', '2_d_ranger', '2_i_elementalist', '0_golemFire', '0_golemIce'],
-            elite: ['2_is_paladin', '2_di_shadowAssassin', '4_archmage', '2_i_necromancer']
-        };
+        // Enemy tiers will be loaded from enemySets collection
+        this.enemyTiers = null;
 
         // Spawn radius from player
         this.MIN_SPAWN_DISTANCE = 300;
@@ -41,6 +36,9 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         // Check if running on server
         this.isServer = !!this.engine.serverNetworkManager;
 
+        // Load enemy tiers from enemySets collection
+        this.loadEnemyTiers();
+
         this.game.gameManager.register('spawnEnemy', this.spawnEnemy.bind(this));
         this.game.gameManager.register('spawnWave', this.spawnWave.bind(this));
         this.game.gameManager.register('addSpawnPoint', this.addSpawnPoint.bind(this));
@@ -49,6 +47,32 @@ class EnemySpawnerSystem extends engine.BaseSystem {
         this.game.gameManager.register('setMaxEnemies', (max) => { this.maxEnemies = max; });
         this.game.gameManager.register('setSpawnRate', (rate) => { this.spawnRate = rate; });
         this.game.gameManager.register('createEnemyFromServer', this.createEnemyFromServer.bind(this));
+    }
+
+    loadEnemyTiers() {
+        const collections = this.game.getCollections();
+        const enemySets = collections.enemySets;
+
+        if (!enemySets) {
+            console.warn('EnemySpawnerSystem: No enemySets collection found, using defaults');
+            this.enemyTiers = {
+                easy: ['0_skeleton', 'peasant'],
+                medium: ['1_sd_soldier', '1_d_archer'],
+                hard: ['1_s_barbarian', '0_golemStone'],
+                elite: ['2_s_berserker', '2_d_ranger']
+            };
+            return;
+        }
+
+        // Build enemy tiers from enemySets collection
+        this.enemyTiers = {};
+        for (const [setId, setData] of Object.entries(enemySets)) {
+            if (setData.units && setData.units.length > 0) {
+                this.enemyTiers[setId] = setData.units;
+            }
+        }
+
+        console.log('EnemySpawnerSystem: Loaded enemy tiers:', Object.keys(this.enemyTiers));
 
         // Set up network listeners
         if (this.isServer) {

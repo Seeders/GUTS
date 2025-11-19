@@ -1,0 +1,10 @@
+{
+  "title": "Boss Enemies",
+  "id": "boss",
+  "description": "Powerful boss-tier enemies",
+  "units": [
+    "0_golemFire",
+    "4_archmage",
+    "4_ancientTreant"
+  ]
+}

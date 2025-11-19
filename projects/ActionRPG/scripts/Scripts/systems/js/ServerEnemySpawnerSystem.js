@@ -16,10 +16,16 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         // Wave management per room
         this.roomWaves = new Map(); // roomId -> wave data
+
+        // Enemy tiers will be loaded from enemySets collection
+        this.enemyTiers = null;
     }
 
     init(params) {
         this.params = params || {};
+
+        // Load enemy tiers from enemySets collection
+        this.loadEnemyTiers();
 
         // Register game manager methods
         this.game.gameManager.register('spawnEnemyForRoom', this.spawnEnemyForRoom.bind(this));
@@ -31,6 +37,32 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         // Start spawn timer
         this.lastSpawnCheck = 0;
+    }
+
+    loadEnemyTiers() {
+        const collections = this.game.getCollections();
+        const enemySets = collections.enemySets;
+
+        if (!enemySets) {
+            console.warn('ServerEnemySpawnerSystem: No enemySets collection found, using defaults');
+            this.enemyTiers = {
+                easy: ['0_skeleton', 'peasant'],
+                medium: ['1_sd_soldier', '1_d_archer'],
+                hard: ['1_s_barbarian', '0_golemStone'],
+                elite: ['2_s_berserker', '2_d_ranger']
+            };
+            return;
+        }
+
+        // Build enemy tiers from enemySets collection
+        this.enemyTiers = {};
+        for (const [setId, setData] of Object.entries(enemySets)) {
+            if (setData.units && setData.units.length > 0) {
+                this.enemyTiers[setId] = setData.units;
+            }
+        }
+
+        console.log('ServerEnemySpawnerSystem: Loaded enemy tiers:', Object.keys(this.enemyTiers));
     }
 
     subscribeToEvents() {
@@ -370,8 +402,8 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         this.roomWaves.set(roomId, waveData);
 
-        // Spawn initial enemies using actual unit prefab IDs
-        const enemyTypes = ['0_skeleton', 'peasant', '1_di_scout'];
+        // Get enemy types from loaded tiers
+        const enemyTypes = this.enemyTiers?.easy || ['0_skeleton', 'peasant'];
         const tier = Math.floor(waveNumber / 3) + 1;
 
         for (let i = 0; i < Math.min(waveData.totalEnemies, 5); i++) {
@@ -397,8 +429,13 @@ class ServerEnemySpawnerSystem extends engine.BaseSystem {
 
         // Spawn more enemies if needed
         if (waveData.enemiesSpawned < waveData.totalEnemies && aliveCount < 5) {
-            const enemyTypes = ['0_skeleton', 'peasant', '1_di_scout', '1_sd_soldier'];
+            // Select enemy tier based on wave number
             const tier = Math.floor(waveData.number / 3) + 1;
+            let tierName = 'easy';
+            if (tier >= 3) tierName = 'hard';
+            else if (tier >= 2) tierName = 'medium';
+
+            const enemyTypes = this.enemyTiers?.[tierName] || this.enemyTiers?.easy || ['0_skeleton', 'peasant'];
             const toSpawn = Math.min(3, waveData.totalEnemies - waveData.enemiesSpawned);
 
             for (let i = 0; i < toSpawn; i++) {

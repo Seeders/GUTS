@@ -1,0 +1,12 @@
+{
+  "title": "Elite Enemies",
+  "id": "elite",
+  "description": "Powerful advanced units",
+  "units": [
+    "2_s_berserker",
+    "2_d_ranger",
+    "2_i_elementalist",
+    "2_is_paladin",
+    "2_di_shadowAssassin"
+  ]
+}

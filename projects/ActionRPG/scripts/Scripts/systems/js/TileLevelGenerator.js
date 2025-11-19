@@ -898,15 +898,16 @@ class TileLevelGenerator extends engine.BaseSystem {
     }
 
     spawnEnemy(difficulty, x, z) {
-        // Map difficulty to actual unit prefab IDs
-        const enemyTypes = {
-            easy: ['0_skeleton', 'peasant', '1_di_scout'],
-            medium: ['1_sd_soldier', '1_d_archer', '1_i_apprentice'],
-            hard: ['1_s_barbarian', '0_golemStone', '0_golemFire'],
-            boss: ['0_golemFire'] // Boss system handles this separately
-        };
+        // Get enemy types from enemySets collection
+        const collections = this.game.getCollections();
+        const enemySet = collections.enemySets?.[difficulty] || collections.enemySets?.easy;
 
-        const types = enemyTypes[difficulty] || enemyTypes.easy;
+        if (!enemySet || !enemySet.units || enemySet.units.length === 0) {
+            console.warn('TileLevelGenerator: No enemy set found for difficulty:', difficulty);
+            return;
+        }
+
+        const types = enemySet.units;
         const type = types[Math.floor(this.random() * types.length)];
 
         // Use enemy spawner if available
