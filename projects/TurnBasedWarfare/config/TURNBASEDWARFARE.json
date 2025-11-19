@@ -21377,8 +21377,8 @@
         "value": 35,
         "hp": 150,
         "speed": 55,
-        "damage": 15,
-        "attackSpeed": 1.1,
+        "damage": 0,
+        "attackSpeed": 0,
         "range": 150,
         "element": "fire",
         "armor": 1,
@@ -21533,7 +21533,7 @@
           ]
         },
         "buyable": true,
-        "projectile": "fireball",
+        "projectile": "",
         "specUnits": [
           "2_i_elementalist",
           "2_i_enchanter",

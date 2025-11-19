@@ -110,7 +110,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
     }
 
     canExecute(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity);
+        const enemies = this.getEnemiesInRange(casterEntity, this.range);
         return enemies.length > 0;
     }
 
@@ -119,10 +119,8 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
 
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return;
-
-        // DESYNC SAFE: Get and sort enemies deterministically
-        const enemies = this.getEnemiesInRange(casterEntity);
-        if (enemies.length === 0) return;
+       
+        const enemies = this.getEnemiesInRange(casterEntity, this.range);
 
         // DESYNC SAFE: Find closest enemy deterministically
         const closestEnemy = this.findClosestEnemy(casterEntity, enemies);
