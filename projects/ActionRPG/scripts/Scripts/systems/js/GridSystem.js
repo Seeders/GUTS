@@ -269,7 +269,7 @@ class GridSystem extends engine.BaseSystem {
                 }
             }
         }
-        return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
+        return nearbyUnits.sort((a, b) => a.id - b.id);
     }
 
     onEntityPositionUpdated(entityId) {
@@ -292,20 +292,20 @@ class GridSystem extends engine.BaseSystem {
             if (!cellState.entities.includes(entityId)) {
                 cellState.entities.push(entityId);
             }
-            cellState.entities.sort((a, b) => a.localeCompare(b));     
-        }           
+            cellState.entities.sort((a, b) => a - b);
+        }
     }
-        
+
     freeCells(entityId) {
         for (const [key, cellState] of this.state.entries()) {
             if (cellState.entities.includes(entityId)) {
                 cellState.entities = cellState.entities.filter(id => id !== entityId);
-                
+
                 // Clean up empty cell
                 if (cellState.entities.length === 0) {
                     this.state.delete(key);
-                } else {                    
-                    cellState.entities.sort((a, b) => a.localeCompare(b));
+                } else {
+                    cellState.entities.sort((a, b) => a - b);
                 }
             }
         }
