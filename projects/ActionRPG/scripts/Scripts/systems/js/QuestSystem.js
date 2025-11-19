@@ -89,7 +89,10 @@ class QuestSystem extends engine.BaseSystem {
         this.game.gameManager.register('trackQuestKill', () => this.trackKill());
         this.game.gameManager.register('trackQuestBossKill', () => this.trackBossKill());
 
-        this.createUI();
+        // Only create UI on client (not server)
+        if (typeof document !== 'undefined') {
+            this.createUI();
+        }
 
         // Auto-start initial quests
         this.startQuest('kill_10_enemies');
@@ -284,7 +287,9 @@ class QuestSystem extends engine.BaseSystem {
     }
 
     refreshQuestLog() {
+        if (typeof document === 'undefined') return;
         const content = document.getElementById('quest-content');
+        if (!content) return;
         content.innerHTML = this.activeQuests.map(quest => {
             const percent = ((quest.progress || 0) / quest.target) * 100;
             return `
@@ -305,9 +310,9 @@ class QuestSystem extends engine.BaseSystem {
         }).join('') || '<div style="color: #888; text-align: center;">No active quests</div>';
     }
 
-    show() { this.isVisible = true; this.questLog.style.display = 'flex'; this.refreshQuestLog(); }
-    hide() { this.isVisible = false; this.questLog.style.display = 'none'; }
-    toggle() { if (this.isVisible) this.hide(); else this.show(); }
+    show() { if (!this.questLog) return; this.isVisible = true; this.questLog.style.display = 'flex'; this.refreshQuestLog(); }
+    hide() { if (!this.questLog) return; this.isVisible = false; this.questLog.style.display = 'none'; }
+    toggle() { if (!this.questLog) return; if (this.isVisible) this.hide(); else this.show(); }
 
     update() {
         // Check level/floor progress

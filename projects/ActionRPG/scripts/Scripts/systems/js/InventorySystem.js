@@ -36,7 +36,10 @@ class InventorySystem extends engine.BaseSystem {
         this.game.gameManager.register('hideInventory', this.hide.bind(this));
         this.game.gameManager.register('toggleInventory', this.toggle.bind(this));
 
-        this.createUI();
+        // Only create UI on client (not server)
+        if (typeof document !== 'undefined') {
+            this.createUI();
+        }
     }
 
     initializeInventory(entityId) {
@@ -390,6 +393,7 @@ class InventorySystem extends engine.BaseSystem {
     }
 
     refreshUI() {
+        if (typeof document === 'undefined') return;
         const playerEntityId = this.game.gameManager.call('getPlayerEntity');
         if (!playerEntityId) return;
 
@@ -488,18 +492,21 @@ class InventorySystem extends engine.BaseSystem {
     }
 
     show() {
+        if (!this.uiContainer) return;
         this.isVisible = true;
         this.uiContainer.style.display = 'block';
         this.refreshUI();
     }
 
     hide() {
+        if (!this.uiContainer) return;
         this.isVisible = false;
         this.uiContainer.style.display = 'none';
         this.hideTooltip();
     }
 
     toggle() {
+        if (!this.uiContainer) return;
         if (this.isVisible) this.hide();
         else this.show();
     }

@@ -12,7 +12,10 @@ class BossSystem extends engine.BaseSystem {
         this.game.gameManager.register('spawnBoss', this.spawnBoss.bind(this));
         this.game.gameManager.register('getActiveBosses', () => this.activeBosses);
 
-        this.createBossHealthBar();
+        // Only create UI on client (not server)
+        if (typeof document !== 'undefined') {
+            this.createBossHealthBar();
+        }
     }
 
     createBossHealthBar() {
@@ -147,6 +150,9 @@ class BossSystem extends engine.BaseSystem {
     }
 
     updateBossHealthBar() {
+        // Skip UI updates on server
+        if (!this.bossHealthBar) return;
+
         if (this.activeBosses.size === 0) {
             this.bossHealthBar.style.display = 'none';
             return;

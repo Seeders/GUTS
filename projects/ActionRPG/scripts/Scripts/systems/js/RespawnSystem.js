@@ -25,7 +25,10 @@ class RespawnSystem extends engine.BaseSystem {
         this.game.gameManager.register('respawnPlayer', this.respawnPlayer.bind(this));
         this.game.gameManager.register('isPlayerDead', () => this.isPlayerDead);
 
-        this.createDeathScreen();
+        // Only create UI on client (not server)
+        if (typeof document !== 'undefined') {
+            this.createDeathScreen();
+        }
     }
 
     setSpawnPoint(x, y, z) {
@@ -145,22 +148,27 @@ class RespawnSystem extends engine.BaseSystem {
         // Get stats
         const kills = this.game.gameManager.call('getPlayerKills');
 
-        // Update death screen
-        document.getElementById('death-kills').textContent = kills;
-        document.getElementById('death-gold-loss').textContent = goldLoss;
-        document.getElementById('death-xp-loss').textContent = '0'; // Could implement XP loss
+        // Update and show death screen (client only)
+        if (this.deathScreen) {
+            document.getElementById('death-kills').textContent = kills;
+            document.getElementById('death-gold-loss').textContent = goldLoss;
+            document.getElementById('death-xp-loss').textContent = '0'; // Could implement XP loss
 
-        // Show death screen
-        this.deathScreen.style.display = 'flex';
+            // Show death screen
+            this.deathScreen.style.display = 'flex';
 
-        // Start respawn timer
-        this.respawnTimer = this.RESPAWN_DELAY;
-        this.updateRespawnTimer();
+            // Start respawn timer
+            this.respawnTimer = this.RESPAWN_DELAY;
+            this.updateRespawnTimer();
+        }
     }
 
     updateRespawnTimer() {
+        if (typeof document === 'undefined') return;
+
         const timerEl = document.getElementById('respawn-timer');
         const buttonEl = document.getElementById('respawn-button');
+        if (!timerEl || !buttonEl) return;
 
         if (this.respawnTimer > 0) {
             timerEl.textContent = `Respawning in ${Math.ceil(this.respawnTimer)}...`;
@@ -220,7 +228,9 @@ class RespawnSystem extends engine.BaseSystem {
         // (Would need a buff system integration)
 
         this.isPlayerDead = false;
-        this.deathScreen.style.display = 'none';
+        if (this.deathScreen) {
+            this.deathScreen.style.display = 'none';
+        }
 
         this.game.triggerEvent('onPlayerRespawn', {
             entityId: playerEntityId,
