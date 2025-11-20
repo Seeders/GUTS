@@ -474,7 +474,8 @@ class TerrainDataManager {
 
         const cliffs = [];
         const heightMap = this.tileMap.heightMap;
-        const mapSize = heightMap.length;
+        // Use tileMap.size instead of heightMap.length to get the actual map size (not extended)
+        const mapSize = this.tileMap.size || heightMap.length;
 
         // For each tile, check for height differences with neighbors
         for (let z = 0; z < mapSize; z++) {
