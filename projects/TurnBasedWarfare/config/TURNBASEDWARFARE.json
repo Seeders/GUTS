@@ -18764,7 +18764,7 @@
         "filePath": "/global/libraries/js/ScriptEditor.js"
       },
       "SeededRandom": {
-        "filePath": "/global/libraries/js/SeededRandom.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/SeededRandom.js",
         "fileName": "SeededRandom"
       },
       "ServerECSGame": {

@@ -487,7 +487,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         if(this.game.state.phase != "placement") {
             return;
         };
-        const meta = { ...this.orderMeta };
+        const meta = { ...this.orderMeta, isPlayerOrder: true };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Capture client time for deterministic command creation
@@ -518,7 +518,8 @@ class UnitOrderSystem extends engine.BaseSystem {
                                         targetPosition: targetPosition,
                                         meta: meta,
                                         issuedTime: createdTime
-                                    };
+                                    };      
+                                    aiState.meta = meta;                              
                                 }
 
                                 this.game.gameManager.call('queueCommand', unitId, {
@@ -565,7 +566,7 @@ class UnitOrderSystem extends engine.BaseSystem {
         const placement = this.game.gameManager.call('getPlacementById', placementId);
         if(!placement){
             console.log('[UnitOrderSystem] Storing temp order for placementId:', placementId, 'targetPosition:', targetPosition, 'commandCreatedTime:', commandCreatedTime);
-            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta, commandCreatedTime: commandCreatedTime });
+            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta || {}, commandCreatedTime: commandCreatedTime });
             console.log('[UnitOrderSystem] Temp orders Map size:', this.temporaryOpponentMoveOrders.size);
             return;
         }

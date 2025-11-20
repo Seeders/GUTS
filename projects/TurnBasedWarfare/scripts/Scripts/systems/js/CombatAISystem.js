@@ -81,6 +81,7 @@ class CombatAISystem extends engine.BaseSystem {
             const vel = this.game.getComponent(entityId, CT.VELOCITY);
             const collision = this.game.getComponent(entityId, CT.COLLISION);
             const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const placement = this.game.getComponent(entityId, CT.PLACEMENT);
 
             if (!pos || !vel || !combat || !team || !aiState){
                  continue;
@@ -119,7 +120,7 @@ class CombatAISystem extends engine.BaseSystem {
             } else {
                 aiState.targetDistance = 0;
             }
- if (enemiesInVisionRange.length > 0) {
+            if (enemiesInVisionRange.length > 0) {
                 // Enemies are present - combat AI will take control
                 // Note: Command queuing is handled by makeAIDecision() below,
                 // which properly finds the target first before queuing the attack command
@@ -142,6 +143,7 @@ class CombatAISystem extends engine.BaseSystem {
                         }
                     } else {
                         if (aiState.state !== 'idle') {
+                            console.log('cleared player order 1', aiState);
                             let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
                             if(currentAI == "CombatAISystem"){
                                 this.onLostTarget(entityId);
@@ -149,6 +151,11 @@ class CombatAISystem extends engine.BaseSystem {
                             this.changeAIState(aiState, 'idle');
                             // Unit has reached destination - clear the player order
                             aiState.playerOrder = null;
+                            aiState.meta = {};
+                            placement.targetPosition = null;
+                            placement.meta = {};
+                            this.game.gameManager.call('completeCurrentCommand', entityId);
+                            return;
                         }
                     }
                 }
@@ -405,20 +412,23 @@ class CombatAISystem extends engine.BaseSystem {
                 if (distanceToTarget > 20) {
                     // Queue the original move command
                     if (this.game.commandQueueSystem) {
-                        this.game.gameManager.call('queueCommand', entityId, {
-                            type: 'move',
-                            controllerId: "UnitOrderSystem",
-                            targetPosition: playerOrder.targetPosition,
-                            target: null,
-                            meta: playerOrder.meta || {},
-                            priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                            interruptible: true,
-                            createdTime: playerOrder.issuedTime || this.game.state.now
-                        }, true);
+                        const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
+                        if(currentCommand && currentCommand.targetPosition != playerOrder.targetPosition){                            
+                            this.game.gameManager.call('clearCommands', entityId);
+                            this.game.gameManager.call('queueCommand', entityId, {
+                                type: 'move',
+                                controllerId: "UnitOrderSystem",
+                                targetPosition: playerOrder.targetPosition,
+                                target: null,
+                                meta: playerOrder.meta || {},
+                                priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                                interruptible: true,
+                                createdTime: playerOrder.issuedTime || this.game.state.now
+                            }, true);
+                        }
                     }
                 }
-                // Clear the player order after restoring to prevent re-queueing
-                aiState.playerOrder = null;
+
             }
         }
     }

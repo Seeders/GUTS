@@ -239,22 +239,26 @@ class CommandQueueSystem extends engine.BaseSystem {
         for (let i = 0; i < entities.length; i++) {
             const entityId = entities[i];
             const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-
-            // Clear all combat-related commands on phase transition
+                
             if (commandQueue.currentCommand) {
-                const cmdType = commandQueue.currentCommand.type;
-                // Clear attack and move commands - they're not valid across rounds
-                if (cmdType === 'attack' || cmdType === 'move' || cmdType === 'combat') {
+                const cmd = commandQueue.currentCommand;
+                const isPlayerOrder = cmd.meta?.isPlayerOrder === true;
+                
+                // Only clear non-player commands
+                if (!isPlayerOrder) {
                     this.completeCurrentCommand(entityId);
                 }
             }
 
-            // Also clear any queued attack/combat commands
             if (commandQueue.commands && commandQueue.commands.length > 0) {
-                commandQueue.commands = commandQueue.commands.filter(cmd =>
-                    cmd.type !== 'attack' && cmd.type !== 'combat' && cmd.type !== 'move'
-                );
+                commandQueue.commands = commandQueue.commands.filter(cmd => {
+                    const isPlayerOrder = cmd.meta?.isPlayerOrder === true;
+                    // Keep player orders, remove AI-generated combat/move commands
+                    if (!isPlayerOrder) {
+                        return false;
+                    }
+                    return true;
+                });
             }
         }
     }

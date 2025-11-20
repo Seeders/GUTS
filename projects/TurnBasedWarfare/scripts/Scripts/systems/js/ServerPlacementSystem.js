@@ -250,19 +250,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                         meta: meta,
                         issuedTime: commandCreatedTime || this.game.state.now
                     };
-                }
-
-                this.game.gameManager.call('clearCommands', unitId);
-                this.game.gameManager.call('queueCommand', unitId, {
-                    type: 'move',
-                    controllerId: "UnitOrderSystem",
-                    targetPosition: targetPosition,
-                    target: null,
-                    meta: meta,
-                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                    interruptible: true,
-                    createdTime: commandCreatedTime || this.game.state.now
-                }, true); // true = interrupt current command
+                }       
 
             });
                     
@@ -344,10 +332,16 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 // Don't queue command here - do it at battle start in applyTargetPositions for determinism
                 placement.targetPosition = targetPosition;
                 placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
-                placement.meta = meta;
+                placement.meta = meta || {};
                 placement.squadUnits.forEach((unitId) => {
                     // Store player order for persistence through combat
                     const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                    const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
+                    if(p){
+                        p.commandCreatedTime = placement.commandCreatedTime;
+                        p.targetPosition = placement.targetPosition;
+                        p.meta = placement.meta;
+                    }
                     if (aiState) {
                         aiState.playerOrder = {
                             targetPosition: targetPosition,
@@ -470,7 +464,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                     this.game.gameManager.call('removeCurrentAIController', entityId);
                                     placement.targetPosition = null;
                                 } else {
-                                    // Queue command at battle start for determinism
+                                    // Queue command at battle start for determinism        
+                                    
+                                    this.game.gameManager.call('clearCommands', entityId);        
                                     this.game.gameManager.call('queueCommand', entityId, {
                                         type: 'move',
                                         controllerId: "UnitOrderSystem",

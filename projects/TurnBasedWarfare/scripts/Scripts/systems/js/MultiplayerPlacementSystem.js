@@ -320,18 +320,25 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         allPlacements.forEach((placement) => {
             // Get temp order once per placement (not per unit)
             let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
-
+            
             placement.squadUnits.forEach(entityId => {
                 const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
                     let targetPosition = aiState.targetPosition;
                     let meta = aiState.meta;
+                    placement.targetPosition = targetPosition;
+        
+                    placement.meta = meta;
+                    
                     console.log('[applyTargetPositions] placementId:', placement.placementId, 'entityId:', entityId, 'tempMoveOrders:', tempMoveOrders ? 'found' : 'undefined', 'aiState.targetPosition:', aiState.targetPosition);
                     if(tempMoveOrders){
                         // Use command queue for temp opponent orders (needs deterministic timing)
                         targetPosition = tempMoveOrders.targetPosition;
                         meta = tempMoveOrders.meta;
+                        placement.commandCreatedTime = tempMoveOrders.commandCreatedTime;
+                        placement.meta = tempMoveOrders.meta;
+                        placement.targetPosition = tempMoveOrders.targetPosition;
                         console.log('[applyTargetPositions] Queueing command for temp order, entityId:', entityId, 'createdTime:', tempMoveOrders.commandCreatedTime);
                         this.game.gameManager.call('queueCommand', entityId, {
                             type: 'move',
