@@ -664,7 +664,8 @@ class EntityRenderer {
         }
 
         const models = {};
-        const loader = new THREE.GLTFLoader();
+        //THREE_ is the CORRECT prefix.
+        const loader = new THREE_.GLTFLoader();
         const typesToLoad = entityTypes || Object.keys(collection);
 
         for (const entityType of typesToLoad) {

@@ -1,12 +1,3 @@
-/**
- * RenderSystem - ECS system for entity rendering
- *
- * Thin wrapper that:
- * - Queries ECS entities with POSITION + RENDERABLE
- * - Extracts component data
- * - Delegates all rendering to EntityRenderer library
- * - No direct Three.js or rendering logic
- */
 class RenderSystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
@@ -42,7 +33,7 @@ class RenderSystem extends engine.BaseSystem {
         const collections = this.game.getCollections?.();
         const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
 
-        this.entityRenderer = new EntityRenderer({
+        this.entityRenderer = new GUTS.EntityRenderer({
             scene: this.game.scene,
             collections: collections,
             projectName: projectName,

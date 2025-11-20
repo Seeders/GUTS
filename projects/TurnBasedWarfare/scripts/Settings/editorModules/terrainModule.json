@@ -16,7 +16,8 @@
     "WorldRenderer",
     "RaycastHelper",
     "PlacementPreview",
-    "three_MeshBVH"
+    "three_MeshBVH",
+    "EntityRenderer"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

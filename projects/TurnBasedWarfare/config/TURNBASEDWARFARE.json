@@ -1848,6 +1848,7 @@
           "PerformanceMonitor",
           "TerrainDataManager",
           "WorldRenderer",
+          "EntityRenderer",
           "RaycastHelper"
         ],
         "fileName": "game",
@@ -2033,7 +2034,8 @@
           "WorldRenderer",
           "RaycastHelper",
           "PlacementPreview",
-          "three_MeshBVH"
+          "three_MeshBVH",
+          "EntityRenderer"
         ],
         "propertyName": "tileMap",
         "interface": "terrainEditor",
@@ -18607,6 +18609,10 @@
       "Entity": {
         "fileName": "Entity",
         "filePath": "/global/libraries/js/Entity.js"
+      },
+      "EntityRenderer": {
+        "filePath": "/global/libraries/js/EntityRenderer.js",
+        "fileName": "EntityRenderer"
       },
       "ExportScripts": {
         "fileName": "ExportScripts",
