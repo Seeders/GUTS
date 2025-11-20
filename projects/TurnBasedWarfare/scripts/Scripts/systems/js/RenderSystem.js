@@ -4,10 +4,15 @@ class RenderSystem extends engine.BaseSystem {
         this.game.renderSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
 
+        // VAT batching for animated entities (units, etc.)
         this.vatBatches = new Map();
         this.entityToInstance = new Map();
         this.batchCreationPromises = new Map();
-        
+
+        // EntityRenderer for static entities (cliffs, worldObjects)
+        this.entityRenderer = null;
+        this.staticEntityTypes = new Set(['cliffs', 'worldObjects']); // Collections that use EntityRenderer
+
         this.modelScale = 32;
         this.DEFAULT_CAPACITY = 128;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
@@ -19,7 +24,8 @@ class RenderSystem extends engine.BaseSystem {
             entitiesProcessed: 0,
             instancesCreated: 0,
             instancesRemoved: 0,
-            batchesActive: 0
+            batchesActive: 0,
+            staticEntitiesRendered: 0
         };
 
         this._bindDebugHelpers();
@@ -32,6 +38,22 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
         this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
         this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
+
+        // Initialize EntityRenderer for static entities
+        const collections = this.game.getCollections?.();
+        const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
+
+        this.entityRenderer = new EntityRenderer({
+            scene: this.game.scene,
+            collections: collections,
+            projectName: projectName,
+            getPalette: () => {
+                // Get palette from game collections
+                return collections?.palette || {};
+            }
+        });
+
+        console.log('[RenderSystem] EntityRenderer initialized for static entities');
     }
 
     _bindDebugHelpers() {
@@ -58,49 +80,88 @@ class RenderSystem extends engine.BaseSystem {
         const CT = this.componentTypes;
         const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
         this._stats.entitiesProcessed = entities.length;
-        entities.forEach(async (entityId) => {
+
+        for (const entityId of entities) {
             const pos = this.game.getComponent(entityId, CT.POSITION);
             const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
             const velocity = this.game.getComponent(entityId, CT.VELOCITY);
             const facing = this.game.getComponent(entityId, CT.FACING);
             const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
 
-            if (!unitType) return;
+            if (!unitType) continue;
 
-            const fow = this.game.fogOfWarSystem;            
+            // Check if entity uses static EntityRenderer or animated VAT batching
+            const isStaticEntity = this.staticEntityTypes.has(unitType.collection);
+
+            // Handle visibility
+            const fow = this.game.fogOfWarSystem;
             const isVisible = fow ? fow.isVisibleAt(pos.x, pos.z) : true;
-            if (unitType.collection != "worldObjects" && unitType.collection != "cliffs" && !isVisible) {
+            if (!isStaticEntity && !isVisible) {
                 if (this.entityToInstance.has(entityId)) {
                     this.hideEntityInstance(entityId);
                 }
-                return;
+                continue;
             } else {
                 if (this.hiddenEntities.has(entityId)) {
                     this.showEntityInstance(entityId);
                 }
             }
 
-            if (typeof renderable.spawnType !== 'string') {
-                console.error(`[RenderSystem] Unit entity ${entityId} has invalid spawnType:`, {
-                    objectType: renderable.objectType,
-                    spawnType: renderable.spawnType,
-                    spawnTypeType: typeof renderable.spawnType
-                });
-                return;
-            }
+            // Route to appropriate renderer
+            if (isStaticEntity) {
+                // Use EntityRenderer for static entities
+                await this.updateStaticEntity(entityId, unitType, pos, facing);
+            } else {
+                // Use VAT batching for animated entities
+                if (typeof renderable.spawnType !== 'string') {
+                    console.error(`[RenderSystem] Unit entity ${entityId} has invalid spawnType:`, {
+                        objectType: renderable.objectType,
+                        spawnType: renderable.spawnType,
+                        spawnTypeType: typeof renderable.spawnType
+                    });
+                    continue;
+                }
 
-            let instance = this.entityToInstance.get(entityId);
-            if (!instance) {
-                await this.createInstance(entityId, renderable.objectType, renderable.spawnType, renderable.capacity);
-                instance = this.entityToInstance.get(entityId);
-            }
+                let instance = this.entityToInstance.get(entityId);
+                if (!instance) {
+                    await this.createInstance(entityId, renderable.objectType, renderable.spawnType, renderable.capacity);
+                    instance = this.entityToInstance.get(entityId);
+                }
 
-            if (instance && !this.hiddenEntities.has(entityId)) {
-                this.updateInstanceTransform(instance, pos, velocity, facing);
+                if (instance && !this.hiddenEntities.has(entityId)) {
+                    this.updateInstanceTransform(instance, pos, velocity, facing);
+                }
             }
-        });
+        }
 
         this.cleanupRemovedEntities(new Set(entities));
+    }
+
+    /**
+     * Update static entity using EntityRenderer
+     */
+    async updateStaticEntity(entityId, unitType, pos, facing) {
+        if (!this.entityRenderer) return;
+
+        // Check if entity is already spawned
+        if (this.entityRenderer.hasEntity(entityId)) {
+            // Already spawned, just update position if needed (for now, static entities don't move)
+            return;
+        }
+
+        // Spawn new static entity
+        const entityData = {
+            id: entityId,
+            collectionType: unitType.collection,
+            entityType: unitType.id,
+            position: { x: pos.x, y: pos.y, z: pos.z },
+            rotation: facing ? facing.angle : 0
+        };
+
+        const spawned = await this.entityRenderer.spawnEntity(entityData);
+        if (spawned) {
+            this._stats.staticEntitiesRendered++;
+        }
     }
 
     async createInstance(entityId, objectType, spawnType, capacity = this.DEFAULT_CAPACITY) {
@@ -544,8 +605,9 @@ class RenderSystem extends engine.BaseSystem {
     }
 
     cleanupRemovedEntities(currentEntities) {
+        // Cleanup VAT batched entities
         const toRemove = [];
-        
+
         for (const [entityId, instance] of this.entityToInstance) {
             if (!currentEntities.has(entityId)) {
                 toRemove.push(entityId);
@@ -555,6 +617,18 @@ class RenderSystem extends engine.BaseSystem {
         toRemove.forEach(entityId => {
             this.removeInstance(entityId);
         });
+
+        // Cleanup EntityRenderer static entities
+        if (this.entityRenderer) {
+            // Get all EntityRenderer entities
+            const staticEntityIds = [];
+            for (let i = 0; i < this.entityRenderer.getEntityCount(); i++) {
+                // We need to track which entities exist in EntityRenderer
+                // For now, EntityRenderer will handle its own cleanup when entities are explicitly removed
+            }
+            // Note: EntityRenderer entities are cleaned up when they're explicitly removed
+            // via TerrainSystem or when the entire scene is cleared
+        }
     }
 
     removeInstance(entityId) {

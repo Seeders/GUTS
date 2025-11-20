@@ -129,6 +129,9 @@ class WorldSystem extends engine.BaseSystem {
             });
         }
 
+        // Add cliff entity visuals
+        this.addCliffEntityVisuals();
+
         this.initialized = true;
     }
 
@@ -209,6 +212,36 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         this.game.triggerEvent('onEntityPositionUpdated', entityId);
+    }
+
+    /**
+     * Add visual components (RENDERABLE) to cliff entities
+     * Cliffs are created by TerrainSystem with gameplay components
+     * WorldSystem only adds the visual representation on the client
+     */
+    addCliffEntityVisuals() {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+
+        // Find all cliff entities (they start with "cliff_")
+        let cliffCount = 0;
+        for (const entityId of this.game.entities.keys()) {
+            if (entityId.startsWith('cliff_')) {
+                // Add Renderable component for visual representation
+                if (!this.game.hasComponent(entityId, ComponentTypes.RENDERABLE)) {
+                    const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
+                    if (unitType && unitType.collection === 'cliffs') {
+                        this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
+                            Components.Renderable('cliffs', unitType.id, 1024));
+                        cliffCount++;
+                    }
+                }
+            }
+        }
+
+        if (cliffCount > 0) {
+            console.log(`WorldSystem: Added visuals to ${cliffCount} cliff entities`);
+        }
     }
 
     onWindowResize() {

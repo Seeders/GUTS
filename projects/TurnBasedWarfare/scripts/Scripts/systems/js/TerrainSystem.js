@@ -29,6 +29,9 @@ class TerrainSystem extends engine.BaseSystem {
         // Spawn environment objects (trees, rocks, etc.) - runs on both client and server
         this.spawnEnvironmentObjects();
 
+        // Spawn cliff entities based on height map
+        this.spawnCliffEntities();
+
         this.initialized = true;
     }
 
@@ -102,6 +105,61 @@ class TerrainSystem extends engine.BaseSystem {
         });
 
         console.log(`TerrainSystem: Spawned ${this.terrainDataManager.tileMap.environmentObjects.length} environment objects`);
+    }
+
+    /**
+     * Spawn cliff entities from height map analysis
+     * Creates entities with gameplay components (POSITION, TEAM, UNIT_TYPE, FACING)
+     * Visual components (RENDERABLE) are added by WorldSystem on client
+     */
+    spawnCliffEntities() {
+        if (!this.terrainDataManager.tileMap?.heightMap ||
+            this.terrainDataManager.tileMap.heightMap.length === 0) {
+            console.log('TerrainSystem: No height map, skipping cliff generation');
+            return;
+        }
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        const collections = this.game.getCollections();
+
+        // Analyze height map for cliff positions
+        const cliffData = this.terrainDataManager.analyzeCliffs();
+
+        if (cliffData.length === 0) {
+            console.log('TerrainSystem: No cliffs to spawn (no height differences)');
+            return;
+        }
+
+        cliffData.forEach(cliff => {
+            // Get world position for cliff
+            const worldPos = this.terrainDataManager.getCliffWorldPosition(cliff);
+
+            // Create entity with unique ID
+            const entityId = `cliff_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`;
+
+            // Add Position component
+            this.game.addComponent(entityId, ComponentTypes.POSITION,
+                Components.Position(worldPos.x, worldPos.y, worldPos.z));
+
+            // Add UnitType component
+            const cliffDef = collections.cliffs?.[cliff.type];
+            if (cliffDef) {
+                const unitTypeData = { ...cliffDef, collection: "cliffs", id: cliff.type };
+                this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
+                    Components.UnitType(unitTypeData));
+            }
+
+            // Add Team component (neutral for cliffs)
+            this.game.addComponent(entityId, ComponentTypes.TEAM,
+                Components.Team('neutral'));
+
+            // Add Facing component for rotation
+            this.game.addComponent(entityId, ComponentTypes.FACING,
+                Components.Facing(cliff.rotation));
+        });
+
+        console.log(`TerrainSystem: Spawned ${cliffData.length} cliff entities`);
     }
 
     /**
