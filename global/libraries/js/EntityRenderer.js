@@ -264,12 +264,24 @@ class EntityRenderer {
             console.log(`[EntityRenderer] Final mesh scale:`, mesh.scale);
             console.log(`[EntityRenderer] Mesh visible:`, mesh.visible);
 
+            // Check for lights in scene
+            const lights = this.scene.children.filter(c => c.isLight);
+            console.log(`[EntityRenderer] Lights in scene:`, lights.length);
+            lights.forEach(light => {
+                console.log(`[EntityRenderer]   - ${light.type} intensity=${light.intensity} color=${light.color.getHexString()}`);
+            });
+
             // Find camera in scene
             const camera = this.scene.children.find(c => c.type === 'PerspectiveCamera' || c.type === 'OrthographicCamera');
             if (camera) {
                 console.log(`[EntityRenderer] Camera position:`, camera.position);
                 console.log(`[EntityRenderer] Camera rotation:`, camera.rotation);
+            } else {
+                console.log(`[EntityRenderer] No camera found in scene.children`);
             }
+
+            // Log all scene children types
+            console.log(`[EntityRenderer] Scene children types:`, this.scene.children.map(c => c.type));
         }
 
         // Store entity data
