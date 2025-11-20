@@ -500,32 +500,32 @@ class TerrainDataManager {
 
                 // Place outer corners first (atom_one)
                 if (topLess && leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: 0 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2 });
                 }
                 if (topLess && rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0 });
                 }
                 if (botLess && leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: -Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI });
                 }
                 if (botLess && rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: Math.PI });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI/2 });
                 }
 
                 // Place inner corners (atom_three)
                 if (cornerTopLeftLess && !topLess && !leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: 0 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: Math.PI / 2 });
                 }
                 if (cornerTopRightLess && !topLess && !rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: 0 });
                 }
                 if (cornerBottomLeftLess && !botLess && !leftLess) {
                     // Rotate 90 deg clockwise: -Math.PI/2 + Math.PI/2 = 0
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: 0 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: Math.PI });
                 }
                 if (cornerBottomRightLess && !botLess && !rightLess) {
                     // Rotate 90 deg counter clockwise: Math.PI - Math.PI/2 = Math.PI/2
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: -Math.PI / 2 });
                 }
 
                 // Place edges in empty quadrants (atom_two)
