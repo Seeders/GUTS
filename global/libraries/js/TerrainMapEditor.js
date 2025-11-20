@@ -1868,7 +1868,33 @@ class TerrainMapEditor {
         // Spawn each cliff using EntityRenderer
         let spawnedCount = 0;
         for (const cliff of cliffData) {
-            const worldPos = this.terrainDataManager.getCliffWorldPosition(cliff);
+            // Calculate cliff position for editor (terrain centered at origin, no extension)
+            const gridSize = this.terrainDataManager.gridSize;
+            const terrainSize = this.tileMap.size * gridSize;
+
+            // Center of tile
+            const tileWorldX = cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
+            const tileWorldZ = cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
+
+            // Offset to edge based on direction
+            const offset = gridSize / 2;
+            let worldX = tileWorldX;
+            let worldZ = tileWorldZ;
+
+            switch (cliff.direction) {
+                case 'north': worldZ -= offset; break;
+                case 'south': worldZ += offset; break;
+                case 'east': worldX += offset; break;
+                case 'west': worldX -= offset; break;
+            }
+
+            // Get height from terrain (note: this still uses extended coordinates)
+            // For now, use heightStep * height from heightMap
+            const heightStep = this.terrainDataManager.heightStep;
+            const mapHeight = this.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
+            const height = mapHeight * heightStep;
+
+            const worldPos = { x: worldX, y: height, z: worldZ };
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`;
 
             const spawned = await this.entityRenderer.spawnEntity(entityId, {
