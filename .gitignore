@@ -7,7 +7,7 @@ cache/
 */**/dist/client/resources/**/*
 */**/dist/client/modules/**/*
 */**/dist/client/cache/**/*
-*/**/dist/server/**/*
+*/**/dist/server/game.js
 
 # Logs
 logs
