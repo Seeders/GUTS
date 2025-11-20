@@ -593,30 +593,6 @@ class TerrainMapEditor {
         // Give the renderer a moment to fully initialize
         await new Promise(resolve => setTimeout(resolve, 50));
     }
-    updatePreviewImage() {
-        if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {
-            return;
-        }
-        
-        const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
-        if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {
-            return;
-        }
-        
-        const image = images.idle[0][this.selectedEnvironmentItem];
-        
-        // Resize preview canvas if needed
-        const maxDimension = Math.max(image.width, image.height);
-        const scale = this.config.imageSize / maxDimension;
-        
-        this.previewCanvas.width = image.width * scale;
-        this.previewCanvas.height = image.height * scale;
-        
-        const ctx = this.previewCanvas.getContext('2d');
-        ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
-        ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
-    }
-
 
     setupTerrainImageProcessor() {
         this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
@@ -740,12 +716,6 @@ class TerrainMapEditor {
             deleteButton.classList.toggle('delete-mode');
             document.body.classList.toggle('delete-mode-active');
             this.deleteMode = deleteButton.classList.contains('delete-mode');
-            if (this.deleteMode) {
-            } else if (this.placementMode === 'environment' && 
-                      this.selectedEnvironmentType && 
-                      this.selectedEnvironmentItem !== null) {
-                this.updatePreviewImage();
-            }
         });
         
         const clearButton = document.createElement('button');
@@ -849,8 +819,7 @@ class TerrainMapEditor {
                             this.selectedEnvironmentType = type;
                             this.selectedEnvironmentItem = imageIndex;
                             this.placementMode = 'environment';
-                              // Update preview image for cursor
-                            this.updatePreviewImage();
+
                             // Update placement indicator
                             this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;
                             this.placementModeIndicator.style.opacity = '1';
@@ -1682,29 +1651,29 @@ class TerrainMapEditor {
         // Create extension planes
         this.worldRenderer.createExtensionPlanes();
 
-        // Initialize RaycastHelper
-        if (!this.raycastHelper) {
-            this.raycastHelper = new RaycastHelper(
-                this.worldRenderer.getCamera(),
-                this.worldRenderer.getScene()
-            );
+        // Recreate RaycastHelper to ensure fresh camera/scene references
+        this.raycastHelper = new RaycastHelper(
+            this.worldRenderer.getCamera(),
+            this.worldRenderer.getScene()
+        );
+
+        // Recreate PlacementPreview for each level to ensure correct scene and grid size
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
         }
 
-        // Initialize PlacementPreview for tile preview
-        if (!this.placementPreview) {
-            this.placementPreview = new PlacementPreview({
-                scene: this.worldRenderer.getScene(),
-                gridSize: gameConfig.gridSize,
-                getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
-            });
+        this.placementPreview = new PlacementPreview({
+            scene: this.worldRenderer.getScene(),
+            gridSize: gameConfig.gridSize,
+            getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
+        });
 
-            // Configure for editor use
-            this.placementPreview.updateConfig({
-                cellOpacity: 0.5,
-                borderOpacity: 0.9,
-                elevationOffset: 1.0 // Slightly above terrain
-            });
-        }
+        // Configure for editor use
+        this.placementPreview.updateConfig({
+            cellOpacity: 0.7,
+            borderOpacity: 1.0,
+            elevationOffset: 5.0 // Higher above terrain for visibility
+        });
 
         // Start render loop
         this.start3DRenderLoop();
@@ -1717,7 +1686,7 @@ class TerrainMapEditor {
      */
     start3DRenderLoop() {
         const render = () => {
-            if (false || !this.worldRenderer) return;
+            if (!this.worldRenderer) return;
 
             const deltaTime = this.worldRenderer.clock.getDelta();
             this.worldRenderer.update(deltaTime);
