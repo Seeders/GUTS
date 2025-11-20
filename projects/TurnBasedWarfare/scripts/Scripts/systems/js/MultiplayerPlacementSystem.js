@@ -321,73 +321,19 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     applyTargetPositions(){
+        // This function updates local placement data from entity AI state
+        // The actual AI state and commands are handled by the server and synced at battle start
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
-            // Get temp order once per placement (not per unit)
-            let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
-            
             placement.squadUnits.forEach(entityId => {
                 const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                if (aiState && position) {
-                    let targetPosition = aiState.targetPosition;
-                    let meta = aiState.meta;
-                    placement.targetPosition = targetPosition;
-        
-                    placement.meta = meta;
-                    
-                    console.log('[applyTargetPositions] placementId:', placement.placementId, 'entityId:', entityId, 'tempMoveOrders:', tempMoveOrders ? 'found' : 'undefined', 'aiState.targetPosition:', aiState.targetPosition);
-                    if(tempMoveOrders){
-                        // Use command queue for temp opponent orders (needs deterministic timing)
-                        targetPosition = tempMoveOrders.targetPosition;
-                        meta = tempMoveOrders.meta;
-                        placement.commandCreatedTime = tempMoveOrders.commandCreatedTime;
-                        placement.meta = tempMoveOrders.meta;
-                        placement.targetPosition = tempMoveOrders.targetPosition;
-                        console.log('[applyTargetPositions] Queueing command for temp order, entityId:', entityId, 'createdTime:', tempMoveOrders.commandCreatedTime);
-                        this.game.gameManager.call('queueCommand', entityId, {
-                            type: 'move',
-                            controllerId: "UnitOrderSystem",
-                            targetPosition: targetPosition,
-                            target: null,
-                            meta: meta || {},
-                            priority: 10, // PRIORITY.MOVE
-                            interruptible: true,
-                            createdTime: tempMoveOrders.commandCreatedTime || this.game.state.now
-                        }, true);
-                    } else if(targetPosition){
-                        // For own units with targetPosition - command was already queued when order was issued
-                        // Just set up the AI controller for movement
-                        const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
-
-                        if(!currentAIController || currentAIController == "UnitOrderSystem"){
-                            const dx = position.x - targetPosition.x;
-                            const dz = position.z - targetPosition.z;
-                            const distSq = dx * dx + dz * dz;
-                            const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
-                            const threshold = placementGridSize * 0.5;
-
-                            if (distSq <= threshold * threshold) {
-                                this.game.gameManager.call('removeCurrentAIController', entityId);
-                                placement.targetPosition = null;
-                            } else {
-                                // Set up AI controller (command was already queued when order was issued)
-                                let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-                                currentOrderAI.targetPosition = targetPosition;
-                                currentOrderAI.path = [];
-                                currentOrderAI.meta = { ...meta };
-                                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
-                            }
-                        }
-                    }
+                if (aiState) {
+                    // Sync placement data with entity AI state
+                    placement.targetPosition = aiState.targetPosition;
+                    placement.meta = aiState.meta;
                 }
             });
-
-            // Delete temp order after all units in squad have been processed
-            if (tempMoveOrders) {
-                this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);
-            }
         });
     }
 

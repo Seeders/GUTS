@@ -15,7 +15,6 @@ class UnitOrderSystem extends engine.BaseSystem {
 
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
-        this.temporaryOpponentMoveOrders = new Map();
         this.targetingPreview = new GUTS.PlacementPreview(this.game);
         this.targetingPreview.updateConfig({
             cellOpacity: 0.3,
@@ -24,11 +23,7 @@ class UnitOrderSystem extends engine.BaseSystem {
     }
 
     init() {
-        // Register methods with GameManager
-        this.game.gameManager.register('getTemporaryOpponentMoveOrders', () => this.temporaryOpponentMoveOrders);
-        this.game.gameManager.register('deleteTemporaryOpponentMoveOrder', (placementId) => {
-            this.temporaryOpponentMoveOrders.delete(placementId);
-        });
+        // No longer needed - entity sync at battle start handles opponent orders
     }
 
     showSquadActionPanel(placementId) {
@@ -565,9 +560,7 @@ class UnitOrderSystem extends engine.BaseSystem {
     applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
         const placement = this.game.gameManager.call('getPlacementById', placementId);
         if(!placement){
-            console.log('[UnitOrderSystem] Storing temp order for placementId:', placementId, 'targetPosition:', targetPosition, 'commandCreatedTime:', commandCreatedTime);
-            this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta || {}, commandCreatedTime: commandCreatedTime });
-            console.log('[UnitOrderSystem] Temp orders Map size:', this.temporaryOpponentMoveOrders.size);
+            // Placement doesn't exist yet on client - entity sync at battle start will handle it
             return;
         }
         const createdTime = commandCreatedTime || this.game.state.now;
@@ -582,27 +575,7 @@ class UnitOrderSystem extends engine.BaseSystem {
                         meta: meta,
                         issuedTime: createdTime
                     };
-                }
-
-                // Use command queue system for move orders
-                if (this.game.commandQueueSystem) {
-                    this.game.gameManager.call('queueCommand', unitId, {
-                        type: 'move',
-                        controllerId: "UnitOrderSystem",
-                        targetPosition: targetPosition,
-                        target: null,
-                        meta: meta,
-                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                        interruptible: true,
-                        createdTime: createdTime
-                    }, true); // true = interrupt current command
-                } else {
-                    // Fallback to old method
-                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                    currentOrderAI.targetPosition = targetPosition;
-                    currentOrderAI.path = [];
-                    currentOrderAI.meta = meta;
-                    this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);
+                    aiState.targetPosition = targetPosition;
                 }
             }
         });
