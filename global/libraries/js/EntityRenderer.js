@@ -16,12 +16,15 @@ class EntityRenderer {
         this.modelManager = options.modelManager; // For VAT bundles
 
         // Entity tracking - maps entityId to rendering data
-        // Format: { entityId: { type: 'static'|'vat', mesh: ..., batchKey: ..., instanceIndex: ... } }
+        // Format: { entityId: { type: 'static'|'vat'|'instanced', mesh: ..., batchKey: ..., instanceIndex: ... } }
         this.entities = new Map();
 
         // VAT batching system
         this.vatBatches = new Map(); // batchKey -> batch data
         this.batchCreationPromises = new Map();
+
+        // Static instanced rendering system for cliffs/worldObjects
+        this.staticBatches = new Map(); // batchKey -> { instancedMesh, entityMap, count, capacity }
 
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
@@ -68,7 +71,12 @@ class EntityRenderer {
         if (useVAT && this.modelManager) {
             return await this.spawnVATEntity(entityId, data, entityDef);
         } else {
-            return await this.spawnStaticEntity(entityId, data, entityDef);
+            // Use instanced rendering for cliffs and worldObjects
+            if (data.collection === 'cliffs' || data.collection === 'worldObjects') {
+                return await this.spawnInstancedEntity(entityId, data, entityDef);
+            } else {
+                return await this.spawnStaticEntity(entityId, data, entityDef);
+            }
         }
     }
 
@@ -153,6 +161,137 @@ class EntityRenderer {
         this.stats.vatEntities++;
 
         return true;
+    }
+
+    /**
+     * Spawn entity using instanced mesh (for cliffs and worldObjects)
+     */
+    async spawnInstancedEntity(entityId, data, entityDef) {
+        const batchKey = `${data.collection}_${data.type}`;
+
+        // Get or create instanced batch
+        let batch = this.staticBatches.get(batchKey);
+        if (!batch) {
+            batch = await this.createStaticBatch(batchKey, data.collection, data.type, entityDef);
+            if (!batch) {
+                console.error(`[EntityRenderer] Failed to create static batch for ${batchKey}`);
+                return false;
+            }
+        }
+
+        // Find free instance slot
+        let instanceIndex = -1;
+        for (let i = 0; i < batch.capacity; i++) {
+            if (!batch.entityMap.has(i)) {
+                instanceIndex = i;
+                break;
+            }
+        }
+
+        if (instanceIndex === -1) {
+            console.warn(`[EntityRenderer] Batch ${batchKey} is full (${batch.capacity} instances)`);
+            return false;
+        }
+
+        // Map entity to instance
+        batch.entityMap.set(instanceIndex, entityId);
+        batch.count = Math.max(batch.count, instanceIndex + 1);
+
+        // Store entity data
+        this.entities.set(entityId, {
+            type: 'instanced',
+            collection: data.collection,
+            entityType: data.type,
+            batchKey,
+            instanceIndex,
+            batch
+        });
+
+        // Update instance transform
+        const matrix = new THREE_.Matrix4();
+        matrix.compose(
+            new THREE_.Vector3(data.position.x, data.position.y, data.position.z),
+            new THREE_.Quaternion().setFromEuler(new THREE_.Euler(0, data.rotation || 0, 0)),
+            new THREE_.Vector3(1, 1, 1)
+        );
+        batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
+        batch.instancedMesh.instanceMatrix.needsUpdate = true;
+        batch.instancedMesh.count = batch.count;
+
+        this.stats.entitiesRendered++;
+        this.stats.staticEntities++;
+
+        return true;
+    }
+
+    /**
+     * Create a static instanced batch for a model type
+     */
+    async createStaticBatch(batchKey, collection, type, entityDef) {
+        const modelKey = `${collection}_${type}`;
+
+        if (!this.modelManager) {
+            console.error('[EntityRenderer] No modelManager for static batch');
+            return null;
+        }
+
+        const modelGroup = this.modelManager.masterModels.get(modelKey);
+        if (!modelGroup) {
+            console.warn(`[EntityRenderer] Model ${modelKey} not found in ModelManager`);
+            return null;
+        }
+
+        // Extract geometry and material from model
+        let geometry = null;
+        let material = null;
+
+        modelGroup.traverse((child) => {
+            if (child.isMesh && !geometry) {
+                geometry = child.geometry;
+                material = child.material.clone();
+
+                // Set SRGB color space for textures
+                if (material.map) {
+                    material.map.colorSpace = THREE_.SRGBColorSpace;
+                }
+                if (material.emissiveMap) {
+                    material.emissiveMap.colorSpace = THREE_.SRGBColorSpace;
+                }
+            }
+        });
+
+        if (!geometry || !material) {
+            console.error(`[EntityRenderer] No geometry/material found in ${modelKey}`);
+            return null;
+        }
+
+        // Create instanced mesh
+        const capacity = this.defaultCapacity;
+        const instancedMesh = new THREE_.InstancedMesh(geometry, material, capacity);
+
+        // Apply scale for cliffs
+        if (collection === 'cliffs') {
+            instancedMesh.scale.set(32, 32, 32);
+        }
+
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+        instancedMesh.count = 0; // Start with 0 visible instances
+
+        this.scene.add(instancedMesh);
+
+        const batch = {
+            instancedMesh,
+            entityMap: new Map(), // instanceIndex -> entityId
+            count: 0,
+            capacity
+        };
+
+        this.staticBatches.set(batchKey, batch);
+        this.stats.batches++;
+
+        console.log(`[EntityRenderer] Created static batch: ${batchKey} (capacity: ${capacity})`);
+        return batch;
     }
 
     /**
@@ -527,6 +666,20 @@ class EntityRenderer {
             batch.mesh.count = batch.count;
 
             this.stats.vatEntities--;
+        } else if (entity.type === 'instanced') {
+            // Free instanced slot
+            const batch = entity.batch;
+            batch.entityMap.delete(entity.instanceIndex);
+
+            // Recalculate count
+            let maxIndex = -1;
+            for (const index of batch.entityMap.keys()) {
+                if (index > maxIndex) maxIndex = index;
+            }
+            batch.count = maxIndex + 1;
+            batch.instancedMesh.count = batch.count;
+
+            this.stats.staticEntities--;
         } else {
             // Remove static mesh
             this.scene.remove(entity.mesh);
