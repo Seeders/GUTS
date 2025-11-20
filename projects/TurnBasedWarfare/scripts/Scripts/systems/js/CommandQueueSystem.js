@@ -230,7 +230,6 @@ class CommandQueueSystem extends engine.BaseSystem {
 
     /**
      * Update command queue system
-     * Called every frame to check if commands need to be processed
      */
     onPlacementPhaseStart() {
         const ComponentTypes = this.game.componentTypes;
