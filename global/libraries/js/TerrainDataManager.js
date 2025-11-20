@@ -528,21 +528,22 @@ class TerrainDataManager {
                     cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: Math.PI / 2 });
                 }
 
-                // Place edges in empty quadrants (atom_two) - all rotated 90 deg clockwise
+                // Place edges in empty quadrants (atom_two)
+                // Left/right rotated 90° clockwise, top/bottom rotated 90° counter clockwise
                 if (topLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0 });
                     }
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0 });
                     }
                 }
                 if (botLess) {
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI });
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI });
                     }
                 }
                 if (leftLess) {
