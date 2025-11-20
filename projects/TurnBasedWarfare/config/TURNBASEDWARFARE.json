@@ -2023,7 +2023,10 @@
           "TerrainImageProcessor",
           "TileMap",
           "GE_GroupManager",
-          "TerrainMapEditor"
+          "TerrainMapEditor",
+          "TerrainDataManager",
+          "WorldRenderer",
+          "RaycastHelper"
         ],
         "propertyName": "tileMap",
         "interface": "terrainEditor",
@@ -18747,6 +18750,10 @@
         "script": "",
         "filePath": "/global/libraries/js/RapierWorker.js"
       },
+      "RaycastHelper": {
+        "filePath": "/global/libraries/js/RaycastHelper.js",
+        "fileName": "RaycastHelper"
+      },
       "SE_GizmoManager": {
         "filePath": "/global/libraries/js/SE_GizmoManager.js",
         "fileName": "SE_GizmoManager"
@@ -18808,6 +18815,10 @@
         "fileName": "SpatialGrid",
         "filePath": "/global/libraries/js/SpatialGrid.js"
       },
+      "TerrainDataManager": {
+        "filePath": "/global/libraries/js/TerrainDataManager.js",
+        "fileName": "TerrainDataManager"
+      },
       "TerrainGenerator": {
         "title": "TerrainGenerator",
         "fileName": "TerrainGenerator",
@@ -18833,6 +18844,10 @@
       "UIComponents": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/UIComponents.js",
         "fileName": "UIComponents"
+      },
+      "WorldRenderer": {
+        "filePath": "/global/libraries/js/WorldRenderer.js",
+        "fileName": "WorldRenderer"
       },
       "ZipExporter": {
         "fileName": "ZipExporter",

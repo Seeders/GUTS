@@ -10,7 +10,10 @@
     "TerrainImageProcessor",
     "TileMap",
     "GE_GroupManager",
-    "TerrainMapEditor"
+    "TerrainMapEditor",
+    "TerrainDataManager",
+    "WorldRenderer",
+    "RaycastHelper"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",
