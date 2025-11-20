@@ -2026,7 +2026,8 @@
           "TerrainMapEditor",
           "TerrainDataManager",
           "WorldRenderer",
-          "RaycastHelper"
+          "RaycastHelper",
+          "PlacementPreview"
         ],
         "propertyName": "tileMap",
         "interface": "terrainEditor",
@@ -18735,7 +18736,7 @@
         "filePath": "/global/libraries/js/PhysicsEngine.js"
       },
       "PlacementPreview": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
+        "filePath": "/global/libraries/js/PlacementPreview.js",
         "fileName": "PlacementPreview"
       },
       "Rapier": {

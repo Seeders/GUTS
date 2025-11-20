@@ -13,7 +13,8 @@
     "TerrainMapEditor",
     "TerrainDataManager",
     "WorldRenderer",
-    "RaycastHelper"
+    "RaycastHelper",
+    "PlacementPreview"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",
