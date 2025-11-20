@@ -289,6 +289,12 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             this.game.resetCurrentTime();
             this.battleStartTime = this.game.state.now || 0;
             this.resetAI();
+
+            // Resync entities with server state to ensure both clients are in sync
+            if (data.entitySync) {
+                this.game.networkManager.resyncEntities(data.entitySync);
+            }
+
             this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
             if (this.elements.readyButton) {

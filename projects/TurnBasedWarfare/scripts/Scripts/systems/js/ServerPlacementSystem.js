@@ -406,18 +406,25 @@ class ServerPlacementSystem extends engine.BaseSystem {
         if (this.areAllPlayersReady() && this.game.state.phase === 'placement') {
 
             const gameState = room.getGameState();
-            this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {                       
-                gameState: gameState,
-                allReady: true
-            });
-            this.placementReadyStates.clear();
-            // Small delay to ensure clients receive the ready update
 
+            // Reset time and apply target positions before serializing
             this.game.resetCurrentTime();
             this.applyTargetPositions();
             this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
             this.resetAI();
+
+            // Serialize all entities for client sync (similar to battle end)
+            const entitySync = this.game.serverBattlePhaseSystem.serializeAllEntities();
+
+            this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {
+                gameState: gameState,
+                allReady: true,
+                entitySync: entitySync,
+                serverTime: this.game.state.now
+            });
+            this.placementReadyStates.clear();
+
             this.game.gameManager.call('startBattle', room);
         } else {
             const gameState = room.getGameState();
