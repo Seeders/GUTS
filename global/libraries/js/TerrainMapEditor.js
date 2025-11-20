@@ -1764,20 +1764,40 @@ class TerrainMapEditor {
     async initGridCanvas() {
         // Load environment images but keep fast tile rendering
         this.isInitializing = true;
-        
+
         try {
+            let palette = this.gameEditor.getPalette();
+            this.imageManager = new this.engineClasses.ImageManager(
+                this.gameEditor,
+                { imageSize: this.config.imageSize, palette: palette},
+                {ShapeFactory: this.engineClasses.ShapeFactory}
+            );
+
+            // Load terrain images for in-game graphics rendering
+            await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
+            const terrainImages = this.imageManager.getImages("levels", "level");
+
             // Load environment images if we have environment objects
             if (this.worldObjects && Object.keys(this.worldObjects).length > 0) {
-                let palette = this.gameEditor.getPalette();
-                this.imageManager = new this.engineClasses.ImageManager(
-                    this.gameEditor, 
-                    { imageSize: this.config.imageSize, palette: palette}, 
-                    {ShapeFactory: this.engineClasses.ShapeFactory}
-                );
                 await this.imageManager.loadImages("environment", this.worldObjects, false, false);
             }
-            
-            // Render with fast renderer
+
+            // Initialize TileMap with actual sprite sheets
+            this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+            if (!this.terrainCanvasBuffer) {
+                this.terrainCanvasBuffer = document.createElement('canvas');
+            }
+            this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+            this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
+            this.terrainTileMapper.init(
+                this.terrainCanvasBuffer,
+                this.gameEditor.getCollections().configs.game.gridSize,
+                terrainImages,
+                this.gameEditor.getCollections().configs.game.isIsometric
+            );
+
+            // Render with TileMap system
             this.updateCanvasWithData();
         } finally {
             this.isInitializing = false;
@@ -2210,7 +2230,7 @@ class TerrainMapEditor {
         }
     }
 
-    // Fast rendering method - draws simple colored squares
+    // Render using actual in-game graphics with TileMap system
     renderMap() {
         if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
             return;
@@ -2227,58 +2247,73 @@ class TerrainMapEditor {
         ctx.fillStyle = extensionTerrain?.color || '#7aad7b';
         ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
 
-        if (isIsometric) {
-            // Isometric rendering
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+        // Use TileMap system to render actual in-game graphics
+        if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
+            // Render terrain using TileMap.draw() with heightMap support
+            const heightMap = this.tileMap.heightMap || null;
+            this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
 
-                    if (!terrain) continue;
-
-                    const isoCoords = this.translator.gridToIso(x, y);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    ctx.fillStyle = terrain.color;
-                    ctx.beginPath();
-                    ctx.moveTo(isoCoords.x, isoCoords.y);
-                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Optional: draw borders
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-            }
-        } else {
-            // Non-isometric rendering (simple squares)
+            // Calculate offset to center the terrain on the canvas
             const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
             const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
 
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+            // Draw the TileMap's rendered canvas onto the editor canvas
+            ctx.drawImage(this.terrainCanvasBuffer, offsetX, offsetY);
+        } else {
+            // Fallback to simple colored squares if TileMap not ready
+            if (isIsometric) {
+                // Isometric rendering
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
 
-                    if (!terrain) continue;
+                        if (!terrain) continue;
 
-                    const drawX = offsetX + x * gridSize;
-                    const drawY = offsetY + y * gridSize;
+                        const isoCoords = this.translator.gridToIso(x, y);
+                        const tileWidth = gridSize;
+                        const tileHeight = gridSize * 0.5;
 
-                    ctx.fillStyle = terrain.color;
-                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
+                        ctx.fillStyle = terrain.color;
+                        ctx.beginPath();
+                        ctx.moveTo(isoCoords.x, isoCoords.y);
+                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.closePath();
+                        ctx.fill();
 
-                    // Optional: draw grid lines
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                        // Optional: draw borders
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            } else {
+                // Non-isometric rendering (simple squares)
+                const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
+
+                        if (!terrain) continue;
+
+                        const drawX = offsetX + x * gridSize;
+                        const drawY = offsetY + y * gridSize;
+
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
+
+                        // Optional: draw grid lines
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                    }
                 }
             }
         }
