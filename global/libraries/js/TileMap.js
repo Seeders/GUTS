@@ -436,11 +436,14 @@ class TileMap {
 	}
 
 	// Select the correct atom for a specific position based on neighbor analysis
-	selectAtomForPosition(tile, position, terrainIndex) {
+	selectAtomForPosition(tile, position, terrainIndex, useVariation = false) {
 		const analysis = tile.terrainAnalysis;
 		const atoms = this.baseAtoms[terrainIndex];
 
 		if (!atoms) return null;
+
+		// Helper to get full or variation atom based on flag
+		const getFullAtom = () => useVariation && atoms.fullVariation ? atoms.fullVariation : atoms.full;
 
 		// For each position, check diagonal and adjacent cardinals to determine atom type
 		switch(position) {
@@ -454,8 +457,8 @@ class TileMap {
 					// Only diagonal is lower: use oneCorner with TL corner cut
 					return atoms.oneCornerTL;
 				} else if (!topLess && !leftLess) {
-					// No neighbors lower: use full atom
-					return atoms.full;
+					// No neighbors lower: use full atom (possibly variation)
+					return getFullAtom();
 				} else {
 					// Cardinal neighbors are lower: handled by molecule logic
 					return null; // Will use molecule-based atom
@@ -471,8 +474,8 @@ class TileMap {
 					// Only diagonal is lower: use oneCorner with TR corner cut
 					return atoms.oneCornerTR;
 				} else if (!topLess && !rightLess) {
-					// No neighbors lower: use full atom
-					return atoms.full;
+					// No neighbors lower: use full atom (possibly variation)
+					return getFullAtom();
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -487,8 +490,8 @@ class TileMap {
 					// Only diagonal is lower: use oneCorner with BL corner cut
 					return atoms.oneCornerBL;
 				} else if (!botLess && !leftLess) {
-					// No neighbors lower: use full atom
-					return atoms.full;
+					// No neighbors lower: use full atom (possibly variation)
+					return getFullAtom();
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -503,8 +506,8 @@ class TileMap {
 					// Only diagonal is lower: use oneCorner with BR corner cut
 					return atoms.oneCornerBR;
 				} else if (!botLess && !rightLess) {
-					// No neighbors lower: use full atom
-					return atoms.full;
+					// No neighbors lower: use full atom (possibly variation)
+					return getFullAtom();
 				} else {
 					return null; // Will use molecule-based atom
 				}
@@ -775,12 +778,15 @@ class TileMap {
 		// Paint base layer with lower neighbor textures first
 		this.paintBaseLowerLayer(ctx, analyzedMap, tile, row, col);
 
+		// Determine if this tile should use variation sprites (50% chance for full tiles)
+		const useVariation = tile.terrainAnalysis.neighborLowerCount === 0 && Math.random() < 0.5;
+
 		// Build custom molecule based on diagonal-aware atom selection
 		const atoms = {
-			TL: this.selectAtomForPosition(tile, 'TL', tile.terrainIndex),
-			TR: this.selectAtomForPosition(tile, 'TR', tile.terrainIndex),
-			BL: this.selectAtomForPosition(tile, 'BL', tile.terrainIndex),
-			BR: this.selectAtomForPosition(tile, 'BR', tile.terrainIndex)
+			TL: this.selectAtomForPosition(tile, 'TL', tile.terrainIndex, useVariation),
+			TR: this.selectAtomForPosition(tile, 'TR', tile.terrainIndex, useVariation),
+			BL: this.selectAtomForPosition(tile, 'BL', tile.terrainIndex, useVariation),
+			BR: this.selectAtomForPosition(tile, 'BR', tile.terrainIndex, useVariation)
 		};
 
 		// If any atom is null, fall back to molecule-based extraction
