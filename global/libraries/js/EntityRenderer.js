@@ -276,6 +276,16 @@ class EntityRenderer {
 
             // Log all scene children types
             console.log(`[EntityRenderer] Scene children types:`, this.scene.children.map(c => c.type));
+
+            // Find terrain mesh
+            const terrainMeshes = this.scene.children.filter(c => c.type === 'Mesh');
+            console.log(`[EntityRenderer] Found ${terrainMeshes.length} meshes in scene:`);
+            terrainMeshes.forEach((m, i) => {
+                console.log(`[EntityRenderer]   Mesh ${i}: name="${m.name}" pos=(${m.position.x}, ${m.position.y}, ${m.position.z}) scale=(${m.scale.x}, ${m.scale.y}, ${m.scale.z})`);
+                if (m.geometry) {
+                    console.log(`[EntityRenderer]       vertices: ${m.geometry.attributes.position?.count || 0}`);
+                }
+            });
         }
 
         // Store entity data
