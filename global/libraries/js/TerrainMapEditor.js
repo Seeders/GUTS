@@ -237,6 +237,12 @@ class TerrainMapEditor {
         this.canvasEl.addEventListener('mouseleave', () => {
             this.hoverGridPosition = null;
             this.hoverPlacementGridPosition = null;
+
+            // Hide 3D placement preview
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+
             if (this.placementMode === 'terrain' || this.placementMode === 'height' || this.placementMode === 'placements') {
                 this.needsRender = true;
                 this.scheduleRender();
@@ -1911,6 +1917,22 @@ class TerrainMapEditor {
             );
         }
 
+        // Initialize PlacementPreview for tile preview
+        if (!this.placementPreview) {
+            this.placementPreview = new PlacementPreview({
+                scene: this.worldRenderer.getScene(),
+                gridSize: gameConfig.gridSize,
+                getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
+            });
+
+            // Configure for editor use
+            this.placementPreview.updateConfig({
+                cellOpacity: 0.5,
+                borderOpacity: 0.9,
+                elevationOffset: 1.0 // Slightly above terrain
+            });
+        }
+
         // Start render loop
         this.start3DRenderLoop();
 
@@ -2134,7 +2156,13 @@ class TerrainMapEditor {
             this.worldRenderer.getGroundMesh()
         );
 
-        if (!worldPos) return;
+        if (!worldPos) {
+            // Hide preview if raycast fails
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
 
         // Convert world position to grid coordinates
         const gridSize = this.terrainDataManager.gridSize;
@@ -2145,8 +2173,17 @@ class TerrainMapEditor {
 
         // Check bounds
         if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
             return;
         }
+
+        // Show preview for affected tiles (based on brush size)
+        this.showTilePreview(gridX, gridZ);
+
+        // Handle painting when mouse is down
+        if (!this.isMouseDown) return;
 
         if (this.placementMode === 'terrain') {
             let modifiedTiles = [];
@@ -2158,7 +2195,7 @@ class TerrainMapEditor {
                     this.lastPaintedTile = tileKey;
                 }
             } else if (this.terrainTool === 'fill') {
-                if (!this.isMouseDown || this.lastPaintedTile === null) {
+                if (this.lastPaintedTile === null) {
                     this.floodFillTerrain(gridX, gridZ, this.currentTerrainId);
                     this.lastPaintedTile = `${gridX},${gridZ}`;
                 }
@@ -2190,6 +2227,78 @@ class TerrainMapEditor {
                 this.update3DHeightRegion(modifiedTiles);
             }
         }
+    }
+
+    /**
+     * Show preview for tiles that will be affected by current tool
+     */
+    showTilePreview(gridX, gridZ) {
+        if (!this.placementPreview) return;
+
+        const affectedTiles = this.getAffectedTiles(gridX, gridZ);
+        if (affectedTiles.length === 0) {
+            this.placementPreview.hide();
+            return;
+        }
+
+        // Convert grid positions to world positions for preview
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+        const halfSize = terrainSize / 2;
+
+        const worldPositions = affectedTiles.map(tile => ({
+            x: (tile.x * gridSize) - halfSize + (gridSize / 2),
+            y: 0,
+            z: (tile.y * gridSize) - halfSize + (gridSize / 2)
+        }));
+
+        // Check if any tiles would actually be modified
+        const wouldModify = this.wouldModifyTiles(affectedTiles);
+
+        // Show preview (green if would modify, yellow/orange if no change)
+        this.placementPreview.showAtWorldPositions(worldPositions, wouldModify, true);
+    }
+
+    /**
+     * Get all tiles affected by current brush settings
+     */
+    getAffectedTiles(centerX, centerZ) {
+        const tiles = [];
+        const radius = Math.floor(this.brushSize / 2);
+
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const x = centerX + dx;
+                const y = centerZ + dy;
+
+                // Check bounds
+                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                    // For circular brush
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius) {
+                        tiles.push({ x, y });
+                    }
+                }
+            }
+        }
+
+        return tiles;
+    }
+
+    /**
+     * Check if any of the affected tiles would actually be modified
+     */
+    wouldModifyTiles(tiles) {
+        if (this.placementMode === 'terrain') {
+            return tiles.some(tile =>
+                this.tileMap.terrainMap[tile.y][tile.x] !== this.currentTerrainId
+            );
+        } else if (this.placementMode === 'height') {
+            return tiles.some(tile =>
+                this.tileMap.heightMap[tile.y][tile.x] !== this.currentHeightLevel
+            );
+        }
+        return true;
     }
 
     /**
