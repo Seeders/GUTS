@@ -14,18 +14,10 @@ class TerrainMapEditor {
 
         // Performance optimization: track last painted tile and debounce operations
         this.lastPaintedTile = null;
-        this.needsRender = false;
-        this.needsTerrainRender = false; // Track when terrain data actually changes
-        this.modifiedTiles = []; // Track which tiles were modified for incremental rendering
-        this.cachedTerrainCanvas = null; // Cache the expensive TileMap rendering
         this.exportDebounceTimer = null;
-        this.renderAnimationFrame = null;
-        this.previewAnimationFrame = null;
-        this.pendingPreviewEvent = null;
         this.isInitializing = false;
 
-        // 3D Rendering Components (NEW)
-        this.use3DRendering = true; // Flag to enable 3D rendering
+        // 3D Rendering Components
         this.worldRenderer = null;
         this.terrainDataManager = null;
         this.raycastHelper = null;
@@ -78,24 +70,10 @@ class TerrainMapEditor {
         this.canvasEl.style.width = '';
         this.canvasEl.style.height = '';
 
-        // Preview elements for cursor
-        this.previewCanvas = null;
-        this.currentPreviewImage = null;
-        this.hoverGridPosition = null; // Track mouse position for brush preview
-        this.hoverPlacementGridPosition = null; // Track mouse position for entity placement preview
-
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
-        this.mapRenderer = null;
-        this.mapManager = null;
-
         this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
-        this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-
-        console.log(this.tileMap.size, this.terrainCanvasBuffer.width, this.terrainCanvasBuffer.height);
         this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
@@ -105,7 +83,6 @@ class TerrainMapEditor {
         this.setupTerrainTypesUI();
         this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();
-        this.createPreviewCanvas();
         this.setupEventListeners();
         this.updateTerrainStyles();
     }
@@ -201,12 +178,6 @@ class TerrainMapEditor {
         document.addEventListener('mouseup', () => {
             this.isMouseDown = false;
             this.lastPaintedTile = null; // Reset for next paint operation
-            
-            // Ensure final render happens (no auto-save)
-            if (this.needsRender) {
-                this.updateCanvasWithData();
-                this.needsRender = false;
-            }
         });
 
         // Add mouse down event for canvas
@@ -216,41 +187,23 @@ class TerrainMapEditor {
                     this.deleteEnvironmentObjectAt(e);
                 } else {
                     this.isMouseDown = true;
-                    this.handleCanvasInteraction(e);
+                    this.handle3DCanvasInteraction(e);
                 }
             }
         });
-        
+
         // Add mouse move event for drawing while dragging
         this.canvasEl.addEventListener('mousemove', (e) => {
-            // Throttle preview position updates using requestAnimationFrame
-            this.pendingPreviewEvent = e;
-            if (!this.previewAnimationFrame) {
-                this.previewAnimationFrame = requestAnimationFrame(() => {
-                    this.updatePreviewPosition(this.pendingPreviewEvent);
-                    this.updateBrushPreview(this.pendingPreviewEvent);
-                    this.previewAnimationFrame = null;
-                });
-            }
-
             if (this.isMouseDown) {
-                this.handleCanvasInteraction(e);
+                this.handle3DCanvasInteraction(e);
             }
         });
 
-        // Add mouse leave event to clear brush preview
+        // Add mouse leave event to clear placement preview
         this.canvasEl.addEventListener('mouseleave', () => {
-            this.hoverGridPosition = null;
-            this.hoverPlacementGridPosition = null;
-
             // Hide 3D placement preview
             if (this.placementPreview) {
                 this.placementPreview.hide();
-            }
-
-            if (this.placementMode === 'terrain' || this.placementMode === 'height' || this.placementMode === 'placements') {
-                this.needsRender = true;
-                this.scheduleRender();
             }
         });
 
@@ -400,11 +353,6 @@ class TerrainMapEditor {
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'terrain';
-            this.previewCanvas.style.display = 'none';
-
-            // Trigger re-render to hide height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             // Update placement indicator
             this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
@@ -428,14 +376,9 @@ class TerrainMapEditor {
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'height';
-            this.previewCanvas.style.display = 'none';
 
             // Setup height levels UI
             this.setupHeightLevelsUI();
-
-            // Trigger re-render to show height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Heights';
             this.placementModeIndicator.style.opacity = '1';
@@ -462,8 +405,6 @@ class TerrainMapEditor {
             this.setupEnvironmentPanel();
 
             // Trigger re-render to hide height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Environment';
             this.placementModeIndicator.style.opacity = '1';
@@ -491,14 +432,9 @@ class TerrainMapEditor {
                 document.getElementById('placementsPanel').style.display = 'none';
             }
             this.placementMode = 'ramp';
-            this.previewCanvas.style.display = 'none';
 
             // Update ramp count display
             this.updateRampCount();
-
-            // Trigger re-render to show height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Ramps';
             this.placementModeIndicator.style.opacity = '1';
@@ -524,14 +460,9 @@ class TerrainMapEditor {
                 document.getElementById('rampsPanel').style.display = 'none';
                 document.getElementById('placementsPanel').style.display = 'block';
                 this.placementMode = 'placements';
-                this.previewCanvas.style.display = 'none';
 
                 // Setup placements panel
                 this.setupPlacementsPanel();
-
-                // Trigger re-render
-                this.needsRender = true;
-                this.scheduleRender();
 
                 this.placementModeIndicator.textContent = 'Placement Mode: Entity Placements';
                 this.placementModeIndicator.style.opacity = '1';
@@ -549,8 +480,6 @@ class TerrainMapEditor {
             if (this.tileMap.ramps) {
                 this.tileMap.ramps = [];
                 this.updateRampCount();
-                this.needsRender = true;
-                this.scheduleRender();
             }
         });
 
@@ -670,18 +599,15 @@ class TerrainMapEditor {
     }
     updatePreviewImage() {
         if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {
-            this.currentPreviewImage = null;
             return;
         }
         
         const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
         if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {
-            this.currentPreviewImage = null;
             return;
         }
         
         const image = images.idle[0][this.selectedEnvironmentItem];
-        this.currentPreviewImage = image;
         
         // Resize preview canvas if needed
         const maxDimension = Math.max(image.width, image.height);
@@ -694,150 +620,7 @@ class TerrainMapEditor {
         ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
         ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
     }
-    updatePreviewPosition(e) {
-        if (this.placementMode !== 'environment' ||
-            !this.selectedEnvironmentType ||
-            this.selectedEnvironmentItem === null ||
-            this.deleteMode ||
-            !this.currentPreviewImage) {
-            this.previewCanvas.style.display = 'none';
-            return;
-        }
 
-        // Get mouse position relative to canvas
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY;
-
-        if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-        }
-
-        // For isometric view, we need to convert cursor position to actual object position
-        let posX, posY;
-        if (this.gameEditor.getCollections().configs.game.isIsometric) {
-            const isoPos = { x: mouseX, y: mouseY };
-            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-
-            // Convert back to screen coordinates
-            const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);
-            posX = screenPos.x + rect.left;
-            posY = screenPos.y + rect.top;
-        } else {
-            // For non-isometric, just use the mouse position
-            posX = e.clientX;
-            posY = e.clientY;
-        }
-        posX = e.clientX + window.scrollX;
-        posY = e.clientY + window.scrollY;
-        // Center the preview on the cursor
-        this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;
-        this.previewCanvas.style.display = 'block';
-    }
-
-    updateBrushPreview(e) {
-        // Skip 2D brush preview when in 3D mode (we use PlacementPreview instead)
-        if (this.use3DRendering) {
-            return;
-        }
-
-        // Handle terrain/height mode brush preview
-        if (this.placementMode === 'terrain' || this.placementMode === 'height') {
-            // Get mouse position relative to canvas
-            const rect = this.canvasEl.getBoundingClientRect();
-            const scaleX = this.canvasEl.width / rect.width;
-            const scaleY = this.canvasEl.height / rect.height;
-            let mouseX = (e.clientX - rect.left) * scaleX;
-            let mouseY = (e.clientY - rect.top) * scaleY;
-
-            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-            }
-
-            // Convert to grid coordinates
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Update hover position if it changed
-            if (!this.hoverGridPosition ||
-                this.hoverGridPosition.x !== snappedGrid.x ||
-                this.hoverGridPosition.y !== snappedGrid.y) {
-                this.hoverGridPosition = { x: snappedGrid.x, y: snappedGrid.y };
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        } else {
-            // Clear terrain/height hover position if not in those modes
-            if (this.hoverGridPosition !== null) {
-                this.hoverGridPosition = null;
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        }
-
-        // Handle placements mode hover preview
-        if (this.placementMode === 'placements' && this.selectedPlacementType) {
-            // Get mouse position relative to canvas
-            const rect = this.canvasEl.getBoundingClientRect();
-            const scaleX = this.canvasEl.width / rect.width;
-            const scaleY = this.canvasEl.height / rect.height;
-            let mouseX = (e.clientX - rect.left) * scaleX;
-            let mouseY = (e.clientY - rect.top) * scaleY;
-
-            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-            }
-
-            // Convert to grid coordinates
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-
-            // For placement grid, we need finer granularity - snap to half tiles
-            const terrainGridX = Math.floor(gridPos.x);
-            const terrainGridZ = Math.floor(gridPos.y);
-
-            // Calculate sub-grid position (which half of the tile we're in)
-            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
-            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
-
-            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
-            const placementGridX = terrainGridX * 2 + subX;
-            const placementGridZ = terrainGridZ * 2 + subZ;
-
-            // Check if coordinates are within bounds (placement grid)
-            const placementGridSize = this.mapSize * 2;
-            if (placementGridX >= 0 && placementGridX < placementGridSize &&
-                placementGridZ >= 0 && placementGridZ < placementGridSize) {
-
-                // Update hover position if it changed
-                if (!this.hoverPlacementGridPosition ||
-                    this.hoverPlacementGridPosition.x !== placementGridX ||
-                    this.hoverPlacementGridPosition.z !== placementGridZ) {
-                    this.hoverPlacementGridPosition = { x: placementGridX, z: placementGridZ };
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            } else {
-                // Clear hover position if out of bounds
-                if (this.hoverPlacementGridPosition !== null) {
-                    this.hoverPlacementGridPosition = null;
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else {
-            // Clear placements hover position if not in that mode
-            if (this.hoverPlacementGridPosition !== null) {
-                this.hoverPlacementGridPosition = null;
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        }
-    }
 
     setupTerrainImageProcessor() {
         this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
@@ -936,20 +719,6 @@ class TerrainMapEditor {
         document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));
     }
     
-    createPreviewCanvas() {
-        if (this.previewCanvas) {
-            document.body.removeChild(this.previewCanvas);
-        }
-        
-        this.previewCanvas = document.createElement('canvas');
-        this.previewCanvas.id = 'object-preview-canvas';
-        this.previewCanvas.width = this.config.imageSize;
-        this.previewCanvas.height = this.config.imageSize;
-        this.previewCanvas.style.display = 'none'; // Hidden by default
-        
-        document.body.prepend(this.previewCanvas);
-
-    }
 
     setupEnvironmentPanel() {
         const environmentPanel = document.getElementById('environmentPanel');
@@ -976,7 +745,6 @@ class TerrainMapEditor {
             document.body.classList.toggle('delete-mode-active');
             this.deleteMode = deleteButton.classList.contains('delete-mode');
             if (this.deleteMode) {
-                this.previewCanvas.style.display = 'none';
             } else if (this.placementMode === 'environment' && 
                       this.selectedEnvironmentType && 
                       this.selectedEnvironmentItem !== null) {
@@ -990,7 +758,6 @@ class TerrainMapEditor {
         clearButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove all environment objects?')) {
                 this.tileMap.environmentObjects = [];
-                this.updateCanvasWithData();
                 this.exportMap();
                 this.updateObjectCounts();
             }
@@ -1342,8 +1109,6 @@ class TerrainMapEditor {
                 this.startingLocations = [];
                 this.entityPlacements = [];
                 this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
-                this.needsRender = true;
-                this.scheduleRender();
                 this.exportMap();
             }
         });
@@ -1372,8 +1137,6 @@ class TerrainMapEditor {
                 const idx = parseInt(e.target.dataset.index);
                 this.startingLocations.splice(idx, 1);
                 this.updateStartingLocationsList(listElement);
-                this.needsRender = true;
-                this.scheduleRender();
                 this.exportMap();
             });
 
@@ -1424,7 +1187,6 @@ class TerrainMapEditor {
                 }, 1500);
                 
                 // Update the map rendering
-                this.updateCanvasWithData();
                 
                 // Update object counts
                 this.updateObjectCounts();
@@ -1840,20 +1602,11 @@ class TerrainMapEditor {
                 this.gameEditor.getCollections().configs.game.gridSize,
                 terrainImages,
                 this.gameEditor.getCollections().configs.game.isIsometric,
-                { skipCliffTextures: !this.use3DRendering } // Enable cliffs for 3D
+                { skipCliffTextures: false } // Enable cliffs for 3D
             );
 
-            // Clear cached terrain canvas to force full re-render with new level data
-            this.cachedTerrainCanvas = null;
-            this.needsTerrainRender = true;
-
-            // Initialize 3D rendering if enabled
-            if (this.use3DRendering) {
-                await this.init3DRendering();
-            } else {
-                // 2D rendering fallback
-                this.updateCanvasWithData();
-            }
+            // Initialize 3D rendering
+            await this.init3DRendering();
         } finally {
             this.isInitializing = false;
         }
@@ -1968,7 +1721,7 @@ class TerrainMapEditor {
      */
     start3DRenderLoop() {
         const render = () => {
-            if (!this.use3DRendering || !this.worldRenderer) return;
+            if (false || !this.worldRenderer) return;
 
             const deltaTime = this.worldRenderer.clock.getDelta();
             this.worldRenderer.update(deltaTime);
@@ -1992,24 +1745,6 @@ class TerrainMapEditor {
 
 
     // Performance optimization: schedule render with requestAnimationFrame
-    scheduleRender() {
-        // Skip 2D rendering when in 3D mode
-        if (this.use3DRendering) {
-            return;
-        }
-
-        if (this.renderAnimationFrame) {
-            return; // Already scheduled
-        }
-
-        this.renderAnimationFrame = requestAnimationFrame(() => {
-            this.renderAnimationFrame = null;
-            if (this.needsRender) {
-                this.updateCanvasWithData(); // Now synchronous and fast
-                this.needsRender = false;
-            }
-        });
-    }
 
     // Performance optimization: debounce export to reduce save frequency
     debouncedExport() {
@@ -2091,16 +1826,10 @@ class TerrainMapEditor {
         });
 
         // Update rendering
-        if (this.use3DRendering) {
-            if (state.type === 'terrain') {
-                this.update3DTerrainRegion(modifiedTiles);
-            } else {
-                this.update3DHeightRegion(modifiedTiles);
-            }
+        if (state.type === 'terrain') {
+            this.update3DTerrainRegion(modifiedTiles);
         } else {
-            this.needsTerrainRender = true;
-            this.modifiedTiles.push(...modifiedTiles);
-            this.scheduleRender();
+            this.update3DHeightRegion(modifiedTiles);
         }
 
         this.exportMap();
@@ -2143,16 +1872,10 @@ class TerrainMapEditor {
         });
 
         // Update rendering
-        if (this.use3DRendering) {
-            if (state.type === 'terrain') {
-                this.update3DTerrainRegion(modifiedTiles);
-            } else {
-                this.update3DHeightRegion(modifiedTiles);
-            }
+        if (state.type === 'terrain') {
+            this.update3DTerrainRegion(modifiedTiles);
         } else {
-            this.needsTerrainRender = true;
-            this.modifiedTiles.push(...modifiedTiles);
-            this.scheduleRender();
+            this.update3DHeightRegion(modifiedTiles);
         }
 
         this.exportMap();
@@ -2547,896 +2270,6 @@ class TerrainMapEditor {
                 this.tileMap.heightMap[tile.y][tile.x]
             );
         }
-    }
-
-    handleCanvasInteraction(event) {
-        // Use 3D raycasting if 3D rendering is enabled
-        if (this.use3DRendering) {
-            this.handle3DCanvasInteraction(event);
-            return;
-        }
-
-        // 2D interaction fallback
-        // Get mouse position relative to canvas
-        const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (event.clientX - rect.left) * scaleX;
-        let mouseY = (event.clientY - rect.top) * scaleY;
-
-
-        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-            mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-        }
-
-        if (this.placementMode === 'terrain') {
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                let modifiedTiles = [];
-
-                if (this.terrainTool === 'brush') {
-                    // Brush tool: paint with variable size
-                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-
-                    // Only paint if we're on a new tile or haven't painted here yet
-                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        modifiedTiles = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
-                        this.lastPaintedTile = tileKey;
-                    }
-                } else if (this.terrainTool === 'fill') {
-                    // Flood fill tool: fill contiguous area (only on click, not drag)
-                    if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        const filled = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
-                        if (filled) {
-                            // For flood fill, mark entire map as needing redraw
-                            this.needsTerrainRender = true;
-                        }
-                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
-                    }
-                }
-
-                if (modifiedTiles.length > 0) {
-                    // Accumulate modified tiles for incremental rendering
-                    this.modifiedTiles.push(...modifiedTiles);
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType &&
-                   this.selectedEnvironmentItem !== null) {
-            // Environment object placement logic
-            const isoPos = { x: mouseX, y: mouseY };
-            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-
-            // Get the image to calculate its size
-            const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
-            const image = images.idle[0][this.selectedEnvironmentItem];
-
-            // Create new environment object
-            const newObject = {
-                type: this.selectedEnvironmentType,
-                imageIndex: this.selectedEnvironmentItem,
-                x: pixelPos.x,
-                y: pixelPos.y
-            };
-
-            // Add to environment objects array
-            if (!this.tileMap.environmentObjects) {
-                this.tileMap.environmentObjects = [];
-            }
-            this.tileMap.environmentObjects.push(newObject);
-
-            // Mark terrain as dirty (environment objects changed)
-            this.needsTerrainRender = true;
-            this.needsRender = true;
-            this.scheduleRender();
-
-            // Debounce export to reduce frequency
-        } else if (this.placementMode === 'ramp') {
-            // Ramp placement logic
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-            console.log('clicked');
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                // Initialize ramps array if needed
-                if (!this.tileMap.ramps) {
-                    this.tileMap.ramps = [];
-                }
-
-                // Check if ramp already exists at this position
-                const rampIndex = this.tileMap.ramps.findIndex(r => r.x === snappedGrid.x && r.z === snappedGrid.y);
-
-                if (rampIndex >= 0) {
-                    // Remove existing ramp (toggle off)
-                    this.tileMap.ramps.splice(rampIndex, 1);
-                } else {
-                    // Add new ramp (toggle on)
-                    this.tileMap.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
-                }
-
-                // Update ramp count display
-                this.updateRampCount();
-
-                // Schedule render to show ramps
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        } else if (this.placementMode === 'height') {
-            // Height map editing logic
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                let modifiedTiles = [];
-
-                if (this.terrainTool === 'brush') {
-                    // Brush tool: paint with variable size
-                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-
-                    // Only paint if we're on a new tile or haven't painted here yet
-                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        modifiedTiles = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
-                        this.lastPaintedTile = tileKey;
-
-                        // Apply terrain type 0 / height 0 coupling rule for brush strokes
-                        if (modifiedTiles.length > 0 && this.currentHeightLevel === 0) {
-                            const radius = Math.floor(this.brushSize / 2);
-                            for (let dy = -radius; dy <= radius; dy++) {
-                                for (let dx = -radius; dx <= radius; dx++) {
-                                    const x = snappedGrid.x + dx;
-                                    const y = snappedGrid.y + dy;
-                                    if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
-                                        const distance = Math.sqrt(dx * dx + dy * dy);
-                                        if (distance <= radius + 0.5 && this.tileMap.heightMap[y][x] === 0) {
-                                            this.tileMap.terrainMap[y][x] = 0;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (this.terrainTool === 'fill') {
-                    // Flood fill tool: fill contiguous area (only on click, not drag)
-                    if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        const filled = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
-                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
-
-                        if (filled) {
-                            // For flood fill, mark entire map as needing redraw
-                            this.needsTerrainRender = true;
-
-                            // Apply terrain type 0 / height 0 coupling rule for filled area
-                            if (this.currentHeightLevel === 0) {
-                                for (let y = 0; y < this.mapSize; y++) {
-                                    for (let x = 0; x < this.mapSize; x++) {
-                                        if (this.tileMap.heightMap[y][x] === 0) {
-                                            this.tileMap.terrainMap[y][x] = 0;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (modifiedTiles.length > 0) {
-                    // Accumulate modified tiles for incremental rendering
-                    this.modifiedTiles.push(...modifiedTiles);
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else if (this.placementMode === 'placements' && this.selectedPlacementType) {
-            // Entity placement logic - uses PLACEMENT GRID coordinates (2x terrain grid)
-            // This allows placement at half the granularity of the terrain grid
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-
-            // For placement grid, we need finer granularity - snap to half tiles
-            const terrainGridX = Math.floor(gridPos.x);
-            const terrainGridZ = Math.floor(gridPos.y);
-
-            // Calculate sub-grid position (which half of the tile we're in)
-            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
-            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
-
-            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
-            const placementGridX = terrainGridX * 2 + subX;
-            const placementGridZ = terrainGridZ * 2 + subZ;
-
-            // Check if coordinates are within bounds (placement grid)
-            const placementGridSize = this.mapSize * 2;
-            if (placementGridX >= 0 && placementGridX < placementGridSize &&
-                placementGridZ >= 0 && placementGridZ < placementGridSize) {
-
-                if (this.selectedPlacementType === 'startingLocation') {
-                    // Place starting location
-                    const side = this.selectedEntityType;
-
-                    // Remove existing starting location for this side
-                    this.startingLocations = this.startingLocations.filter(loc => loc.side !== side);
-
-                    // Add new starting location (using placement grid coordinates)
-                    this.startingLocations.push({
-                        side: side,
-                        gridPosition: { x: placementGridX, z: placementGridZ }
-                    });
-
-                    // Update UI list
-                    this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
-
-                    this.placementModeIndicator.textContent = `Placed ${side} team start at placement grid (${placementGridX}, ${placementGridZ})`;
-                    this.placementModeIndicator.style.opacity = '1';
-
-                    clearTimeout(this.indicatorTimeout);
-                    this.indicatorTimeout = setTimeout(() => {
-                        this.placementModeIndicator.style.opacity = '0';
-                    }, 2000);
-
-                    this.needsRender = true;
-                    this.scheduleRender();
-                    this.exportMap();
-
-                } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
-                    // Place building or unit (using placement grid coordinates)
-                    const placement = {
-                        type: this.selectedPlacementType,
-                        entityType: this.selectedEntityType,
-                        gridPosition: { x: placementGridX, z: placementGridZ }
-                    };
-
-                    // For gold mines, validate placement on gold veins (if we have that data)
-                    if (this.selectedEntityType === 'goldMine') {
-                        // TODO: Add validation for gold vein placement when gold vein data is available
-                        this.placementModeIndicator.textContent = `Note: Ensure this is placed on a gold vein!`;
-                    }
-
-                    this.entityPlacements.push(placement);
-
-                    this.placementModeIndicator.textContent = `Placed ${this.selectedEntityType} at placement grid (${placementGridX}, ${placementGridZ})`;
-                    this.placementModeIndicator.style.opacity = '1';
-
-                    clearTimeout(this.indicatorTimeout);
-                    this.indicatorTimeout = setTimeout(() => {
-                        this.placementModeIndicator.style.opacity = '0';
-                    }, 2000);
-
-                    this.needsRender = true;
-                    this.scheduleRender();
-                    this.exportMap();
-                }
-            }
-        }
-    }
-
-    // Render using TileMap sprites with caching for performance
-    renderMap() {
-        // Skip 2D rendering when in 3D mode
-        if (this.use3DRendering) {
-            return;
-        }
-
-        if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
-            return;
-        }
-
-        const ctx = this.canvasEl.getContext('2d');
-        const gridSize = this.config.gridSize;
-        const collections = this.gameEditor.getCollections();
-        const isIsometric = collections.configs.game.isIsometric;
-
-        // Clear canvas - get extension terrain type color
-        const extensionTerrainTypeId = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType || 3];
-        const extensionTerrain = collections.terrainTypes?.[extensionTerrainTypeId];
-        ctx.fillStyle = extensionTerrain?.color || '#7aad7b';
-        ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
-
-        // Calculate offset to center the terrain on the canvas
-        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-        // Use TileMap system to render actual in-game sprites (CACHED for performance)
-        if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
-            // Check if we need to do full or incremental rendering
-            if (this.needsTerrainRender || !this.cachedTerrainCanvas) {
-                // Full re-render (e.g., after flood fill or initial load)
-                const heightMap = this.tileMap.heightMap || null;
-                this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
-
-                // Cache the rendered terrain
-                if (!this.cachedTerrainCanvas) {
-                    this.cachedTerrainCanvas = document.createElement('canvas');
-                    this.cachedTerrainCanvas.width = this.terrainCanvasBuffer.width;
-                    this.cachedTerrainCanvas.height = this.terrainCanvasBuffer.height;
-                }
-                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
-                cacheCtx.clearRect(0, 0, this.cachedTerrainCanvas.width, this.cachedTerrainCanvas.height);
-                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
-
-                this.needsTerrainRender = false;
-            } else if (this.modifiedTiles.length > 0) {
-                // Incremental rendering - only redraw modified tiles and neighbors
-                this.terrainTileMapper.redrawTiles(this.modifiedTiles);
-
-                // Update cache with incremental changes
-                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
-                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
-
-                // Clear modified tiles list
-                this.modifiedTiles = [];
-            }
-
-            // Draw the cached terrain (fast!)
-            ctx.drawImage(this.cachedTerrainCanvas, offsetX, offsetY);
-        } else {
-            // Fallback to simple colored squares if TileMap not ready
-            if (isIsometric) {
-                // Isometric rendering
-                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                        const terrainIndex = this.tileMap.terrainMap[y][x];
-                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                        const terrain = collections.terrainTypes?.[terrainTypeId];
-
-                        if (!terrain) continue;
-
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
-
-                        ctx.fillStyle = terrain.color;
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Optional: draw borders
-                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-                }
-            } else {
-                // Non-isometric rendering (simple squares)
-                const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                        const terrainIndex = this.tileMap.terrainMap[y][x];
-                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                        const terrain = collections.terrainTypes?.[terrainTypeId];
-
-                        if (!terrain) continue;
-
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
-
-                        ctx.fillStyle = terrain.color;
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                        // Optional: draw grid lines
-                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
-                    }
-                }
-            }
-        }
-
-        // Placement grid overlay - show finer grid in placement mode
-        if (this.placementMode === 'placements' && !isIsometric) {
-            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-            const placementGridSize = gridSize / 2;
-
-            ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
-            ctx.lineWidth = 1;
-
-            // Draw placement grid lines (half the size of terrain grid)
-            const placementCells = this.mapSize * 2;
-            for (let i = 0; i <= placementCells; i++) {
-                // Vertical lines
-                const x = offsetX + i * placementGridSize;
-                ctx.beginPath();
-                ctx.moveTo(x, offsetY);
-                ctx.lineTo(x, offsetY + placementCells * placementGridSize);
-                ctx.stroke();
-
-                // Horizontal lines
-                const y = offsetY + i * placementGridSize;
-                ctx.beginPath();
-                ctx.moveTo(offsetX, y);
-                ctx.lineTo(offsetX + placementCells * placementGridSize, y);
-                ctx.stroke();
-            }
-        }
-
-        // Hover preview for entity placement
-        if (this.hoverPlacementGridPosition && this.placementMode === 'placements' && this.selectedPlacementType) {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            // Convert placement grid coordinates to terrain grid for display
-            const terrainGridX = this.hoverPlacementGridPosition.x / 2;
-            const terrainGridZ = this.hoverPlacementGridPosition.z / 2;
-
-            // Choose color based on placement type
-            let fillColor, strokeColor;
-            if (this.selectedPlacementType === 'startingLocation') {
-                // Blue for left team, orange for right team
-                if (this.selectedEntityType === 'left') {
-                    fillColor = 'rgba(0, 100, 255, 0.4)';
-                    strokeColor = 'rgba(0, 100, 255, 0.8)';
-                } else {
-                    fillColor = 'rgba(255, 100, 0, 0.4)';
-                    strokeColor = 'rgba(255, 100, 0, 0.8)';
-                }
-            } else if (this.selectedPlacementType === 'building') {
-                // Brown for buildings
-                fillColor = 'rgba(139, 69, 19, 0.4)';
-                strokeColor = 'rgba(139, 69, 19, 0.8)';
-            } else if (this.selectedPlacementType === 'unit') {
-                // Green for units
-                fillColor = 'rgba(0, 200, 0, 0.4)';
-                strokeColor = 'rgba(0, 200, 0, 0.8)';
-            }
-
-            if (isIsometric) {
-                const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                const tileWidth = gridSize;
-                const tileHeight = gridSize * 0.5;
-
-                // Draw hover highlight
-                ctx.fillStyle = fillColor;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 2;
-
-                ctx.beginPath();
-                ctx.moveTo(isoCoords.x, isoCoords.y);
-                ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            } else {
-                // Calculate pixel position with sub-tile precision
-                const placementPixelSize = gridSize / 2;
-                const drawX = offsetX + terrainGridX * gridSize;
-                const drawY = offsetY + terrainGridZ * gridSize;
-
-                // Draw hover highlight (show the placement grid cell)
-                ctx.fillStyle = fillColor;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 2;
-                ctx.fillRect(drawX, drawY, placementPixelSize, placementPixelSize);
-                ctx.strokeRect(drawX, drawY, placementPixelSize, placementPixelSize);
-            }
-        }
-
-        // Height mode overlay - show height levels in both height and ramp modes
-        if ((this.placementMode === 'height' || this.placementMode === 'ramp') && this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            for (let y = 0; y < this.tileMap.heightMap.length; y++) {
-                for (let x = 0; x < this.tileMap.heightMap[y].length; x++) {
-                    const heightLevel = this.tileMap.heightMap[y][x];
-
-                    if (isIsometric) {
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
-
-                        // Semi-transparent height overlay
-                        const alpha = 0.6;
-                        const intensity = Math.min(heightLevel / 10, 1);
-                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
-
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Draw height number
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 12px monospace';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(heightLevel, isoCoords.x, isoCoords.y + tileHeight / 2);
-                    } else {
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
-
-                        // Color gradient from blue (low) to red (high)
-                        const alpha = 0.6;
-                        const intensity = Math.min(heightLevel / 10, 1);
-                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                        // Draw height number
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 14px monospace';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.strokeStyle = 'black';
-                        ctx.lineWidth = 3;
-                        ctx.strokeText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
-                        ctx.fillText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
-                    }
-                }
-            }
-        }
-
-        // Render environment objects with their actual images
-        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0 && this.imageManager) {
-            for (const obj of this.tileMap.environmentObjects) {
-                if (!obj || obj.x === undefined || obj.y === undefined) continue;
-                
-                // Get the image for this object
-                const images = this.imageManager.getImages("environment", obj.type);
-                if (!images || !images.idle || !images.idle[0] || !images.idle[0][obj.imageIndex]) {
-                    continue;
-                }
-                
-                const image = images.idle[0][obj.imageIndex];
-                if (!image) continue;
-                
-                let screenX, screenY;
-                
-                if (isIsometric) {
-                    // Convert pixel coordinates to isometric screen coordinates
-                    const isoPos = this.translator.pixelToIso(obj.x, obj.y);
-                    screenX = isoPos.x;
-                    screenY = isoPos.y;
-                } else {
-                    // Convert pixel coordinates to screen coordinates
-                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-                    screenX = offsetX + obj.x;
-                    screenY = offsetY + obj.y;
-                }
-                
-                // Draw the image centered at the position
-                ctx.drawImage(
-                    image,
-                    screenX - image.width / 2,
-                    screenY - image.height / 2,
-                    image.width,
-                    image.height
-                );
-            }
-        }
-
-        // Render ramps as visual indicators
-        if (this.tileMap.ramps && this.tileMap.ramps.length > 0) {
-            for (const ramp of this.tileMap.ramps) {
-                if (isIsometric) {
-                    // Isometric rendering for ramps
-                    const isoCoords = this.translator.gridToIso(ramp.x, ramp.z);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw ramp indicator (triangle pointing up)
-                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
-                    ctx.beginPath();
-                    ctx.moveTo(isoCoords.x, isoCoords.y + tileHeight / 4);
-                    ctx.lineTo(isoCoords.x + tileWidth / 4, isoCoords.y + tileHeight / 2);
-                    ctx.lineTo(isoCoords.x - tileWidth / 4, isoCoords.y + tileHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Add border
-                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                } else {
-                    // Non-isometric rendering for ramps
-                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                    const drawX = offsetX + ramp.x * gridSize;
-                    const drawY = offsetY + ramp.z * gridSize;
-
-                    // Draw ramp indicator (triangle or arrow)
-                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
-                    ctx.beginPath();
-                    ctx.moveTo(drawX + gridSize / 2, drawY + gridSize / 4);
-                    ctx.lineTo(drawX + 3 * gridSize / 4, drawY + 3 * gridSize / 4);
-                    ctx.lineTo(drawX + gridSize / 4, drawY + 3 * gridSize / 4);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Add border
-                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    // Optional: Add "R" text to clearly mark it as a ramp
-                    ctx.fillStyle = 'white';
-                    ctx.font = `${gridSize / 3}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('R', drawX + gridSize / 2, drawY + gridSize / 2);
-                }
-            }
-        }
-
-        // Render entity placements
-        if (this.placementMode === 'placements' || this.placementMode === 'terrain') {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            // Render starting locations
-            this.startingLocations.forEach(loc => {
-                // Convert placement grid coordinates to terrain grid for display
-                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
-                const terrainGridX = loc.gridPosition.x / 2;
-                const terrainGridZ = loc.gridPosition.z / 2;
-
-                if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw starting location marker
-                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
-                    ctx.beginPath();
-                    ctx.arc(isoCoords.x, isoCoords.y + tileHeight / 2, gridSize / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Draw border
-                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 12px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(loc.side.charAt(0).toUpperCase(), isoCoords.x, isoCoords.y + tileHeight / 2);
-                } else {
-                    // Calculate pixel position with sub-tile precision
-                    const drawX = offsetX + terrainGridX * gridSize + gridSize / 2;
-                    const drawY = offsetY + terrainGridZ * gridSize + gridSize / 2;
-
-                    // Draw starting location marker
-                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY, gridSize / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Draw border
-                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 14px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 3;
-                    ctx.strokeText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
-                    ctx.fillText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
-                }
-            });
-
-            // Render entity placements (buildings and units)
-            this.entityPlacements.forEach(placement => {
-                // Convert placement grid coordinates to terrain grid for display
-                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
-                const terrainGridX = placement.gridPosition.x / 2;
-                const terrainGridZ = placement.gridPosition.z / 2;
-
-                const color = placement.type === 'building' ? 'rgba(139, 69, 19, 0.7)' : 'rgba(0, 200, 0, 0.7)';
-                const label = placement.entityType === 'goldMine' ? 'GM' :
-                              placement.entityType === 'townHall' ? 'TH' :
-                              placement.entityType.charAt(0).toUpperCase();
-
-                if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw placement marker
-                    ctx.fillStyle = color;
-                    ctx.fillRect(
-                        isoCoords.x - gridSize / 4,
-                        isoCoords.y + tileHeight / 4,
-                        gridSize / 2,
-                        gridSize / 2
-                    );
-
-                    // Draw border
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(
-                        isoCoords.x - gridSize / 4,
-                        isoCoords.y + tileHeight / 4,
-                        gridSize / 2,
-                        gridSize / 2
-                    );
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(label, isoCoords.x, isoCoords.y + tileHeight / 2);
-                } else {
-                    // Calculate pixel position with sub-tile precision
-                    // Placement grid size is half of terrain grid size
-                    const placementPixelSize = gridSize / 2;
-                    const drawX = offsetX + terrainGridX * gridSize;
-                    const drawY = offsetY + terrainGridZ * gridSize;
-
-                    // Draw placement marker (smaller to show placement grid granularity)
-                    ctx.fillStyle = color;
-                    ctx.fillRect(
-                        drawX + placementPixelSize / 4,
-                        drawY + placementPixelSize / 4,
-                        placementPixelSize - placementPixelSize / 2,
-                        placementPixelSize - placementPixelSize / 2
-                    );
-
-                    // Draw border
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(
-                        drawX + placementPixelSize / 4,
-                        drawY + placementPixelSize / 4,
-                        placementPixelSize - placementPixelSize / 2,
-                        placementPixelSize - placementPixelSize / 2
-                    );
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 2;
-                    ctx.strokeText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
-                    ctx.fillText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
-                }
-            });
-        }
-
-        // Render brush/fill preview overlay
-        if (this.hoverGridPosition &&
-            (this.placementMode === 'terrain' || this.placementMode === 'height')) {
-
-            if (this.terrainTool === 'brush') {
-                // Brush tool preview - show all affected tiles
-                const centerX = this.hoverGridPosition.x;
-                const centerY = this.hoverGridPosition.y;
-                const radius = Math.floor(this.brushSize / 2);
-
-                // Render each tile in the brush area
-                for (let dy = -radius; dy <= radius; dy++) {
-                    for (let dx = -radius; dx <= radius; dx++) {
-                        const x = centerX + dx;
-                        const y = centerY + dy;
-
-                        // Check bounds
-                        if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
-                            // Check if within brush radius (circular brush)
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            if (distance <= radius + 0.5) {
-                                if (isIsometric) {
-                                    // Isometric preview
-                                    const isoCoords = this.translator.gridToIso(x, y);
-                                    const tileWidth = gridSize;
-                                    const tileHeight = gridSize * 0.5;
-
-                                    // Draw semi-transparent overlay
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                                    ctx.beginPath();
-                                    ctx.moveTo(isoCoords.x, isoCoords.y);
-                                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                                    ctx.closePath();
-                                    ctx.fill();
-
-                                    // Draw border
-                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                                    ctx.lineWidth = 2;
-                                    ctx.stroke();
-                                } else {
-                                    // Non-isometric preview
-                                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                                    const drawX = offsetX + x * gridSize;
-                                    const drawY = offsetY + y * gridSize;
-
-                                    // Draw semi-transparent overlay
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                                    // Draw border
-                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                                    ctx.lineWidth = 2;
-                                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (this.terrainTool === 'fill') {
-                // Fill tool preview - show single tile with different color
-                const x = this.hoverGridPosition.x;
-                const y = this.hoverGridPosition.y;
-
-                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
-                    if (isIsometric) {
-                        // Isometric preview
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
-
-                        // Draw semi-transparent overlay with blue tint for fill
-                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Draw border
-                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
-                    } else {
-                        // Non-isometric preview
-                        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
-
-                        // Draw semi-transparent overlay with blue tint for fill
-                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                        // Draw border
-                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
-                    }
-                }
-            }
-        }
-    }
-    async updateCanvasWithData() {
-        // Use fast rendering for instant feedback
-        this.renderMap();
     }
 
     updateRampCount() {
