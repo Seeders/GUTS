@@ -1416,7 +1416,9 @@ class TileMap {
 			let imageData;
 
 			// Use the tile from fullAnalyzedMap instead of the individually analyzed tile
-			const correctTile = fullAnalyzedMap[y][x];
+			// fullAnalyzedMap is a 1D array indexed as: row * numColumns + col
+			const index = y * this.numColumns + x;
+			const correctTile = fullAnalyzedMap[index];
 
 			if (correctTile.terrainIndex >= 0) {
 				imageData = this.drawTileWithLayering(fullAnalyzedMap, correctTile, y, x);
