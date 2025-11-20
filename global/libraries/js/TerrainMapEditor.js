@@ -27,7 +27,7 @@ class TerrainMapEditor {
         this.cachedGridPosition = null; // Cached grid position from raycast
         this.mouseOverCanvas = false; // Track if mouse is over canvas
         this.isCameraControlActive = false; // Track if camera is being controlled
-        this.cliffMeshes = new Map(); // Track cliff mesh objects for cleanup
+        this.entityRenderer = null; // Shared EntityRenderer for spawning cliffs and other entities
         this.placementPreview = null; // Placement preview for tile editing
         // Terrain map structure without explicit IDs
         this.tileMap = {
@@ -1698,6 +1698,14 @@ class TerrainMapEditor {
             elevationOffset: 5.0 // Higher above terrain for visibility
         });
 
+        // Initialize EntityRenderer for spawning cliffs and other entities
+        this.entityRenderer = new EntityRenderer({
+            scene: this.worldRenderer.getScene(),
+            collections: collections,
+            projectName: this.gameEditor.getCurrentProject(),
+            getPalette: () => this.gameEditor.getPalette()
+        });
+
         // Spawn cliff entities based on height map
         await this.spawnCliffEntities();
 
@@ -1827,202 +1835,39 @@ class TerrainMapEditor {
 
     /**
      * Spawn cliff entities based on height map analysis
+     * Uses shared EntityRenderer library
      */
     async spawnCliffEntities() {
-        if (!this.terrainDataManager || !this.worldRenderer) {
-            console.warn('Cannot spawn cliffs: missing terrainDataManager or worldRenderer');
+        if (!this.terrainDataManager || !this.entityRenderer) {
+            console.warn('[TerrainMapEditor] Cannot spawn cliffs: missing dependencies');
             return;
         }
 
-        // Clear existing cliff meshes
-        this.clearAllCliffs();
+        // Clear existing cliff entities
+        this.entityRenderer.clearEntitiesByType('cliffs');
 
         // Analyze height map for cliff positions
         const cliffData = this.terrainDataManager.analyzeCliffs();
 
         if (cliffData.length === 0) {
-            console.log('No cliffs to spawn (no height differences)');
+            console.log('[TerrainMapEditor] No cliffs to spawn (no height differences)');
             return;
         }
 
-        const collections = this.gameEditor.getCollections();
-        const scene = this.worldRenderer.getScene();
-
-        console.log(`Spawning ${cliffData.length} cliff entities...`);
-
-        // Load cliff models
-        const cliffModels = await this.loadCliffModels(collections);
-
-        // Spawn each cliff
-        for (const cliff of cliffData) {
-            await this.spawnCliffEntity(cliff, cliffModels, scene);
-        }
-
-        console.log(`Spawned ${this.cliffMeshes.size} cliff meshes`);
-    }
-
-    /**
-     * Load cliff models from collections
-     */
-    async loadCliffModels(collections) {
-        const cliffs = collections.cliffs;
-        if (!cliffs) {
-            console.warn('No cliffs collection found');
-            return {};
-        }
-
-        const models = {};
-        const loader = new THREE.GLTFLoader();
-
-        console.log('Loading cliff models...');
-
-        // Load all four atom types
-        for (const cliffType of ['atom_one', 'atom_two', 'atom_three', 'atom_four']) {
-            const cliffDef = cliffs[cliffType];
-            if (!cliffDef?.render?.model?.main?.shapes?.[0]) {
-                console.warn(`Cliff ${cliffType} missing render definition`);
-                continue;
-            }
-
-            const shape = cliffDef.render.model.main.shapes[0];
-            if (shape.type !== 'gltf') {
-                console.warn(`Cliff ${cliffType} is not a GLTF model`);
-                continue;
-            }
-
-            try {
-                const projectName = this.gameEditor.getCurrentProject();
-                const url = `/projects/${projectName}/resources/${shape.url}`;
-
-                console.log(`Loading cliff model ${cliffType} from ${url}`);
-
-                const gltf = await new Promise((resolve, reject) => {
-                    loader.load(url,
-                        (gltf) => {
-                            console.log(`✓ Loaded ${cliffType}:`, gltf.scene);
-                            resolve(gltf);
-                        },
-                        undefined,
-                        (error) => {
-                            console.error(`✗ Failed to load ${cliffType}:`, error);
-                            reject(error);
-                        }
-                    );
-                });
-
-                models[cliffType] = {
-                    scene: gltf.scene,
-                    scale: cliffDef.render.model.main.scale || { x: 1, y: 1, z: 1 },
-                    color: shape.color
-                };
-
-                console.log(`Model ${cliffType} scale:`, models[cliffType].scale);
-            } catch (error) {
-                console.warn(`Failed to load cliff model ${cliffType}:`, error);
-            }
-        }
-
-        console.log(`Loaded ${Object.keys(models).length} cliff models`);
-        return models;
-    }
-
-    /**
-     * Spawn a single cliff entity
-     */
-    async spawnCliffEntity(cliffData, cliffModels, scene) {
-        const model = cliffModels[cliffData.type];
-        if (!model) {
-            console.warn(`Cliff model ${cliffData.type} not available`);
-            return;
-        }
-
-        // Clone the model
-        const cliffMesh = model.scene.clone(true); // Deep clone
-
-        // Get world position
-        const worldPos = this.terrainDataManager.getCliffWorldPosition(cliffData);
-
-        // Debug first few cliffs
-        if (this.cliffMeshes.size < 3) {
-            console.log(`Spawning cliff at grid (${cliffData.gridX}, ${cliffData.gridZ}) dir: ${cliffData.direction}`);
-            console.log(`  World position:`, worldPos);
-            console.log(`  Scale:`, model.scale);
-            console.log(`  Type:`, cliffData.type);
-        }
-
-        // Set position
-        cliffMesh.position.set(worldPos.x, worldPos.y, worldPos.z);
-
-        // Set rotation
-        cliffMesh.rotation.y = cliffData.rotation;
-
-        // Apply scale
-        cliffMesh.scale.set(
-            model.scale.x || 1,
-            model.scale.y || 1,
-            model.scale.z || 1
-        );
-
-        // Ensure materials are visible
-        cliffMesh.traverse((child) => {
-            if (child.isMesh) {
-                if (child.material) {
-                    // Clone material to avoid shared material issues
-                    child.material = child.material.clone();
-                    child.material.needsUpdate = true;
-
-                    // Apply color if specified
-                    if (model.color?.paletteColor) {
-                        const palette = this.gameEditor.getPalette();
-                        const color = palette[model.color.paletteColor];
-                        if (color) {
-                            child.material.color.set(color);
-                        }
-                    }
-                }
-
-                // Ensure mesh is visible
-                child.visible = true;
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
+        // Convert cliff data to EntityRenderer format
+        const cliffEntities = cliffData.map(cliff => {
+            const worldPos = this.terrainDataManager.getCliffWorldPosition(cliff);
+            return {
+                id: `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`,
+                collectionType: 'cliffs',
+                entityType: cliff.type,
+                position: worldPos,
+                rotation: cliff.rotation
+            };
         });
 
-        // Ensure parent object is visible
-        cliffMesh.visible = true;
-
-        // Add to scene
-        scene.add(cliffMesh);
-
-        // Track for cleanup
-        const cliffId = `cliff_${cliffData.gridX}_${cliffData.gridZ}_${cliffData.direction}`;
-        this.cliffMeshes.set(cliffId, cliffMesh);
-    }
-
-    /**
-     * Clear all cliff entities
-     */
-    clearAllCliffs() {
-        if (!this.worldRenderer) return;
-
-        const scene = this.worldRenderer.getScene();
-
-        for (const [id, mesh] of this.cliffMeshes.entries()) {
-            scene.remove(mesh);
-            // Dispose geometries and materials
-            mesh.traverse((child) => {
-                if (child.isMesh) {
-                    child.geometry?.dispose();
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(m => m?.dispose());
-                    } else {
-                        child.material?.dispose();
-                    }
-                }
-            });
-        }
-
-        this.cliffMeshes.clear();
+        // Spawn all cliffs using EntityRenderer
+        await this.entityRenderer.spawnEntities(cliffEntities);
     }
 
     /**
@@ -2032,8 +1877,7 @@ class TerrainMapEditor {
     async updateCliffsInRegion(modifiedTiles) {
         if (!modifiedTiles || modifiedTiles.length === 0) return;
 
-        // For now, just respawn all cliffs
-        // TODO: Optimize to only update affected cliffs
+        // Respawn all cliffs (EntityRenderer handles cleanup)
         await this.spawnCliffEntities();
     }
 
