@@ -325,6 +325,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     let targetPosition = aiState.targetPosition;
                     let meta = aiState.meta;
                     let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
+                    console.log('[applyTargetPositions] placementId:', placement.placementId, 'tempMoveOrders:', tempMoveOrders, 'aiState.targetPosition:', aiState.targetPosition);
                     if(tempMoveOrders){
                         // Use command queue for temp opponent orders (needs deterministic timing)
                         targetPosition = tempMoveOrders.targetPosition;

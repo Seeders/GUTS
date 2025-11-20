@@ -718,6 +718,7 @@ class MultiplayerNetworkManager {
 
     handleOpponentSquadTargets(data) {
         const { placementIds, targetPositions, meta, commandCreatedTime } = data;
+        console.log('[MultiplayerNetworkManager] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, commandCreatedTime });
         this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime);
     }
 

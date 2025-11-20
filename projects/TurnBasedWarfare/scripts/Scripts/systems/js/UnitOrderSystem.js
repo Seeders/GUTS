@@ -564,7 +564,9 @@ class UnitOrderSystem extends engine.BaseSystem {
     applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
         const placement = this.game.gameManager.call('getPlacementById', placementId);
         if(!placement){
+            console.log('[UnitOrderSystem] Storing temp order for placementId:', placementId, 'targetPosition:', targetPosition, 'commandCreatedTime:', commandCreatedTime);
             this.temporaryOpponentMoveOrders.set(placementId, { targetPosition: targetPosition, meta: meta, commandCreatedTime: commandCreatedTime });
+            console.log('[UnitOrderSystem] Temp orders Map size:', this.temporaryOpponentMoveOrders.size);
             return;
         }
         const createdTime = commandCreatedTime || this.game.state.now;
