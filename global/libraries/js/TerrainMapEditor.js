@@ -1698,11 +1698,20 @@ class TerrainMapEditor {
             elevationOffset: 5.0 // Higher above terrain for visibility
         });
 
+        // Load models if not already loaded
+        if (!this.gameEditor.modelManager.assetsLoaded) {
+            console.log('[TerrainMapEditor] Loading models for EntityRenderer...');
+            for (let objectType in collections) {
+                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
+            }
+        }
+
         // Initialize EntityRenderer for spawning cliffs and other entities
         this.entityRenderer = new EntityRenderer({
             scene: this.worldRenderer.getScene(),
             collections: collections,
             projectName: this.gameEditor.getCurrentProject(),
+            modelManager: this.gameEditor.modelManager,
             getPalette: () => this.gameEditor.getPalette()
         });
 
