@@ -1854,20 +1854,25 @@ class TerrainMapEditor {
             return;
         }
 
-        // Convert cliff data to EntityRenderer format
-        const cliffEntities = cliffData.map(cliff => {
+        console.log(`[TerrainMapEditor] Spawning ${cliffData.length} cliffs...`);
+
+        // Spawn each cliff using EntityRenderer
+        let spawnedCount = 0;
+        for (const cliff of cliffData) {
             const worldPos = this.terrainDataManager.getCliffWorldPosition(cliff);
-            return {
-                id: `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`,
-                collectionType: 'cliffs',
-                entityType: cliff.type,
+            const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`;
+
+            const spawned = await this.entityRenderer.spawnEntity(entityId, {
+                collection: 'cliffs',
+                type: cliff.type,
                 position: worldPos,
                 rotation: cliff.rotation
-            };
-        });
+            });
 
-        // Spawn all cliffs using EntityRenderer
-        await this.entityRenderer.spawnEntities(cliffEntities);
+            if (spawned) spawnedCount++;
+        }
+
+        console.log(`[TerrainMapEditor] Spawned ${spawnedCount}/${cliffData.length} cliffs`);
     }
 
     /**
