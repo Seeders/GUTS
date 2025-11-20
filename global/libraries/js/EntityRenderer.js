@@ -190,6 +190,17 @@ class EntityRenderer {
         if (isFirstCliff) {
             console.log(`[EntityRenderer] Cloned mesh:`, mesh);
             console.log(`[EntityRenderer] Mesh children:`, mesh.children?.length);
+
+            // Inspect mesh hierarchy
+            console.log(`[EntityRenderer] Inspecting mesh hierarchy:`);
+            mesh.traverse((child) => {
+                console.log(`[EntityRenderer]   - ${child.type} "${child.name}" visible=${child.visible}`);
+                if (child.isMesh) {
+                    console.log(`[EntityRenderer]     * geometry:`, !!child.geometry, 'vertices:', child.geometry?.attributes?.position?.count);
+                    console.log(`[EntityRenderer]     * material:`, child.material?.type);
+                    console.log(`[EntityRenderer]     * castShadow:`, child.castShadow, 'receiveShadow:', child.receiveShadow);
+                }
+            });
         }
 
         // Get model definition for scale and material properties
@@ -252,6 +263,13 @@ class EntityRenderer {
             console.log(`[EntityRenderer] Final mesh position:`, mesh.position);
             console.log(`[EntityRenderer] Final mesh scale:`, mesh.scale);
             console.log(`[EntityRenderer] Mesh visible:`, mesh.visible);
+
+            // Find camera in scene
+            const camera = this.scene.children.find(c => c.type === 'PerspectiveCamera' || c.type === 'OrthographicCamera');
+            if (camera) {
+                console.log(`[EntityRenderer] Camera position:`, camera.position);
+                console.log(`[EntityRenderer] Camera rotation:`, camera.rotation);
+            }
         }
 
         // Store entity data
