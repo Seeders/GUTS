@@ -1,0 +1,22 @@
+{
+  "title": "Crossroads",
+  "id": "crossroads",
+  "width": 2,
+  "height": 2,
+  "weight": 8,
+  "category": "corridor",
+  "connections": {
+    "north": ["open", "open"],
+    "east": ["open", "open"],
+    "south": ["open", "open"],
+    "west": ["open", "open"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "medium", "count": 2 }
+    ],
+    "props": ["torch", "torch", "torch", "torch"],
+    "loot": "common"
+  },
+  "terrainType": 4
+}

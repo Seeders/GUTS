@@ -1,0 +1,74 @@
+{
+  "title": "Town Hall",
+  "category": "townhall",
+  "value": 100,
+  "upgrades": [
+    "peasantEfficiency"
+  ],
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "purpleMColor"
+                },
+                "url": "models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "purpleMColor"
+            },
+            "roughness": 1,
+            "metalness": 0,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/townhall/townhall.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "footprintWidth": 3,
+  "footprintHeight": 3,
+  "units": [
+    "peasant"
+  ],
+  "height": 1000,
+  "size": 75,
+  "icon": "building_townHall",
+  "hp": 2500,
+  "visionRange": 2000,
+  "supplyProvided": 10
+}

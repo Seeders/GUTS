@@ -1,0 +1,20 @@
+{
+  "title": "North-East Corner",
+  "id": "corner_ne",
+  "width": 2,
+  "height": 2,
+  "weight": 15,
+  "category": "corridor",
+  "connections": {
+    "north": ["open", "wall"],
+    "east": ["wall", "open"],
+    "south": ["wall", "wall"],
+    "west": ["wall", "wall"]
+  },
+  "content": {
+    "enemies": [],
+    "props": ["torch"],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

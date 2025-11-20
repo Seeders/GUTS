@@ -1,0 +1,178 @@
+{
+  "title": "Apprentice",
+  "size": 25,
+  "height": 50,
+  "value": 35,
+  "hp": 150,
+  "speed": 55,
+  "damage": 15,
+  "attackSpeed": 1.1,
+  "range": 150,
+  "element": "fire",
+  "armor": 1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/idle.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/walk_bow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "models/1h_spell_throw/1h_spell_throw.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/death_fallback.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_gangnamstyle.glb",
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_thriller.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/apprentice/apprentice.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            }
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "woodStaff",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 10,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 20,
+            "z": 0
+          }
+        }
+      }
+    ]
+  },
+  "buyable": true,
+  "projectile": "fireball",
+  "specUnits": [
+    "2_i_elementalist",
+    "2_i_enchanter",
+    "2_i_necromancer"
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [],
+  "icon": "unit_apprentice",
+  "visionRange": 500,
+  "supplyCost": 2
+}

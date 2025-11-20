@@ -1,0 +1,14 @@
+{
+  "title": "Audio Editor",
+  "container": "audio-editor-container",
+  "propertyName": "audio",
+  "interface": "audioEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editAudio",
+  "saveHook": "saveAudio",
+  "libraries": [
+    "Component",
+    "AudioEditor"
+  ]
+}

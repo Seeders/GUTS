@@ -1,0 +1,22 @@
+{
+  "title": "North-South Corridor",
+  "id": "corridor_ns",
+  "width": 1,
+  "height": 2,
+  "weight": 25,
+  "category": "corridor",
+  "connections": {
+    "north": ["open"],
+    "east": ["wall", "wall"],
+    "south": ["open"],
+    "west": ["wall", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "weak", "count": 1 }
+    ],
+    "props": [],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

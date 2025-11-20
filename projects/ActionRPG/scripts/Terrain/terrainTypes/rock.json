@@ -1,0 +1,10 @@
+{
+  "title": "Rock",
+  "type": "rock",
+  "texture": "rock",
+  "color": "#3e4f57",
+  "buildable": true,
+  "walkable": true,
+  "spriteWidth": 24,
+  "spriteHeight": 24
+}

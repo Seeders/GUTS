@@ -1,0 +1,10 @@
+{
+  "title": "Lava",
+  "type": "lava",
+  "texture": "lava",
+  "color": "#ff8c00",
+  "buildable": false,
+  "walkable": false,
+  "spriteWidth": 24,
+  "spriteHeight": 24
+}

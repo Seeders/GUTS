@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Player Battle Test Interface</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr 1fr;
+            gap: 20px;
+            height: 100vh;
+        }
+        
+        .panel {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .panel h2 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+            font-size: 16px;
+        }
+        
+        .player-panel {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .player-panel.player1 {
+            border-color: #0066ff;
+        }
+        
+        .player-panel.player2 {
+            border-color: #ff6600;
+        }
+        
+        .player-panel h3 {
+            color: #ffff00;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #111;
+            border-radius: 5px;
+            border-left: 3px solid #00ff00;
+        }
+        
+        .section h4 {
+            color: #ffff00;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            padding: 5px 10px;
+            background: #003300;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn.danger {
+            background: #330000;
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        
+        .btn.player1 {
+            background: #000033;
+            border-color: #0066ff;
+            color: #0066ff;
+        }
+        
+        .btn.player2 {
+            background: #330000;
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .input-group label {
+            min-width: 60px;
+            color: #ffff00;
+            font-size: 10px;
+        }
+        
+        .input-group input {
+            padding: 3px 6px;
+            background: #000;
+            border: 1px solid #333;
+            color: #00ff00;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 10px;
+            flex: 1;
+        }
+        
+        .status {
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+        
+        .status.connected {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        
+        .status.disconnected {
+            background: #330000;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+        
+        .status.waiting {
+            background: #333300;
+            color: #ffff00;
+            border: 1px solid #ffff00;
+        }
+        
+        .log {
+            background: #000;
+            padding: 10px;
+            border-radius: 3px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 9px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+            padding: 2px 0;
+        }
+        
+        .log-entry.sent {
+            color: #00ffff;
+        }
+        
+        .log-entry.received {
+            color: #ffff00;
+        }
+        
+        .log-entry.error {
+            color: #ff4444;
+        }
+        
+        .log-entry.success {
+            color: #44ff44;
+        }
+        
+        .game-state {
+            background: #001122;
+            padding: 8px;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            font-size: 9px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .placement-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            margin-bottom: 10px;
+        }
+        
+        .placement-btn {
+            padding: 3px;
+            font-size: 8px;
+        }
+        
+        .timestamp {
+            color: #666;
+            font-size: 8px;
+        }
+        
+        .battle-status {
+            background: #220011;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ff00ff;
+        }
+        
+        .battle-status h4 {
+            color: #ff00ff;
+            margin-bottom: 5px;
+        }
+        
+        .automation-controls {
+            background: #112200;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #44ff44;
+        }
+        
+        .scenario-btn {
+            width: 100%;
+            margin-bottom: 5px;
+            padding: 8px;
+            font-size: 11px;
+        }
+        
+        .player-stats {
+            font-size: 9px;
+            margin-bottom: 8px;
+        }
+        
+        .player-stats div {
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="panel">
+            <h2>Battle Test Control</h2>
+            
+            <!-- Server Settings -->
+            <div class="section">
+                <h4>Server Settings</h4>
+                <div class="input-group">
+                    <label>Server:</label>
+                    <input type="text" id="serverUrl" value="http://localhost:3000" />
+                </div>
+                <div class="controls">
+                    <button class="btn" id="connectAllBtn">Connect All</button>
+                    <button class="btn danger" id="disconnectAllBtn">Disconnect All</button>
+                </div>
+            </div>
+            
+            <!-- Battle Automation -->
+            <div class="automation-controls">
+                <h4>Automated Battle Tests</h4>
+                <button class="btn scenario-btn" id="quickBattleBtn">Quick 2v2 Battle</button>
+                <button class="btn scenario-btn" id="fullGameBtn">Full Game (3 rounds)</button>
+                <button class="btn scenario-btn" id="stressTestBtn">Stress Test (10 battles)</button>
+                <button class="btn scenario-btn" id="errorTestBtn">Error Condition Test</button>
+                <button class="btn scenario-btn" id="reconnectTestBtn">Reconnect Test</button>
+            </div>
+            
+            <!-- Battle Status -->
+            <div class="battle-status">
+                <h4>Battle Status</h4>
+                <div id="battleStatusText">Ready to test</div>
+                <div class="controls" style="margin-top: 10px;">
+                    <button class="btn" id="startBattleBtn">Start Battle</button>
+                    <button class="btn danger" id="stopBattleBtn">Stop Battle</button>
+                </div>
+            </div>
+            
+            <!-- Performance Monitor -->
+            <div class="section">
+                <h4>Performance</h4>
+                <div style="font-size: 9px;">
+                    <div>Messages: <span id="totalMessages">0</span></div>
+                    <div>Avg Latency: <span id="avgLatency">--</span>ms</div>
+                    <div>Battles: <span id="battleCount">0</span></div>
+                    <div>Errors: <span id="errorCount">0</span></div>
+                </div>
+                <div class="controls" style="margin-top: 5px;">
+                    <button class="btn" id="resetStatsBtn">Reset</button>
+                    <button class="btn" id="exportLogBtn">Export</button>
+                </div>
+            </div>
+            
+            <!-- Global Log -->
+            <div class="section">
+                <h4>Global Battle Log</h4>
+                <div class="controls">
+                    <button class="btn" id="clearGlobalLogBtn">Clear</button>
+                </div>
+                <div id="globalLog" class="log"></div>
+            </div>
+        </div>
+        
+        <!-- Player 1 Panel -->
+        <div class="panel">
+            <h2 style="color: #0066ff;">Player 1 (Blue)</h2>
+            <div class="player-panel player1" id="player1Panel">
+                
+                <!-- Connection Status -->
+                <div class="section">
+                    <h4>Connection</h4>
+                    <div class="input-group">
+                        <label>Name:</label>
+                        <input type="text" id="player1Name" value="Player1" />
+                    </div>
+                    <div class="controls">
+                        <button class="btn player1" id="player1ConnectBtn">Connect</button>
+                        <button class="btn danger" id="player1DisconnectBtn">Disconnect</button>
+                    </div>
+                    <div id="player1Status" class="status disconnected">Disconnected</div>
+                </div>
+                
+                <!-- Room Controls -->
+                <div class="section">
+                    <h4>Room Management</h4>
+                    <div class="controls">
+                        <button class="btn player1" id="player1CreateRoomBtn">Create Room</button>
+                        <button class="btn player1" id="player1QuickMatchBtn">Quick Match</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Room ID:</label>
+                        <input type="text" id="player1RoomInput" />
+                        <button class="btn player1" id="player1JoinBtn">Join</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn player1" id="player1ReadyBtn">Toggle Ready</button>
+                        <button class="btn danger" id="player1LeaveBtn">Leave</button>
+                    </div>
+                </div>
+                
+                <!-- Army Builder -->
+                <div class="section">
+                    <h4>Army Builder</h4>
+                    <div class="placement-grid">
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_d_archer">Archer (35g)</button>
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_di_scout">Scout (35g)</button>
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_i_apprentice">Apprentice (35g)</button>
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_is_acolyte">Acolyte (35g)</button>
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_s_barbarian">Barbarian (35g)</button>
+                        <button class="btn placement-btn player1" data-player="1" data-unit="1_sd_soldier">Soldier (35g)</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn player1" id="player1SubmitBtn">Submit Army</button>
+                        <button class="btn player1" id="player1ClearBtn">Clear Army</button>
+                        <button class="btn player1" id="player1RandomBtn">Random Army</button>
+                    </div>
+                    <div id="player1Army" style="font-size: 8px; margin-top: 5px;">
+                        <strong>Army:</strong> <span id="player1ArmyList">None</span>
+                    </div>
+                </div>
+                
+                <!-- Game State -->
+                <div class="section">
+                    <h4>Game State</h4>
+                    <div class="player-stats">
+                        <div>Room: <span id="player1Room">-</span></div>
+                        <div>Phase: <span id="player1Phase">-</span></div>
+                        <div>Gold: <span id="player1Gold">100</span></div>
+                        <div>Round: <span id="player1Round">-</span></div>
+                    </div>
+                    <div id="player1GameState" class="game-state">No state</div>
+                </div>
+                
+                <!-- Communication Log -->
+                <div class="section">
+                    <h4>Communication Log</h4>
+                    <div class="controls">
+                        <button class="btn" id="player1ClearLogBtn">Clear</button>
+                    </div>
+                    <div id="player1Log" class="log"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Player 2 Panel -->
+        <div class="panel">
+            <h2 style="color: #ff6600;">Player 2 (Orange)</h2>
+            <div class="player-panel player2" id="player2Panel">
+                
+                <!-- Connection Status -->
+                <div class="section">
+                    <h4>Connection</h4>
+                    <div class="input-group">
+                        <label>Name:</label>
+                        <input type="text" id="player2Name" value="Player2" />
+                    </div>
+                    <div class="controls">
+                        <button class="btn player2" id="player2ConnectBtn">Connect</button>
+                        <button class="btn danger" id="player2DisconnectBtn">Disconnect</button>
+                    </div>
+                    <div id="player2Status" class="status disconnected">Disconnected</div>
+                </div>
+                
+                <!-- Room Controls -->
+                <div class="section">
+                    <h4>Room Management</h4>
+                    <div class="controls">
+                        <button class="btn player2" id="player2CreateRoomBtn">Create Room</button>
+                        <button class="btn player2" id="player2QuickMatchBtn">Quick Match</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Room ID:</label>
+                        <input type="text" id="player2RoomInput" />
+                        <button class="btn player2" id="player2JoinBtn">Join</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn player2" id="player2ReadyBtn">Toggle Ready</button>
+                        <button class="btn danger" id="player2LeaveBtn">Leave</button>
+                    </div>
+                </div>
+                
+                <!-- Army Builder -->
+                <div class="section">
+                    <h4>Army Builder</h4>
+                    <div class="placement-grid">
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_d_archer">Archer (35g)</button>
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_di_scout">Scout (35g)</button>
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_i_apprentice">Apprentice (35g)</button>
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_is_acolyte">Acolyte (35g)</button>
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_s_barbarian">Barbarian (35g)</button>
+                        <button class="btn placement-btn player2" data-player="2" data-unit="1_sd_soldier">Soldier (35g)</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn player2" id="player2SubmitBtn">Submit Army</button>
+                        <button class="btn player2" id="player2ClearBtn">Clear Army</button>
+                        <button class="btn player2" id="player2RandomBtn">Random Army</button>
+                    </div>
+                    <div id="player2Army" style="font-size: 8px; margin-top: 5px;">
+                        <strong>Army:</strong> <span id="player2ArmyList">None</span>
+                    </div>
+                </div>
+                
+                <!-- Game State -->
+                <div class="section">
+                    <h4>Game State</h4>
+                    <div class="player-stats">
+                        <div>Room: <span id="player2Room">-</span></div>
+                        <div>Phase: <span id="player2Phase">-</span></div>
+                        <div>Gold: <span id="player2Gold">100</span></div>
+                        <div>Round: <span id="player2Round">-</span></div>
+                    </div>
+                    <div id="player2GameState" class="game-state">No state</div>
+                </div>
+                
+                <!-- Communication Log -->
+                <div class="section">
+                    <h4>Communication Log</h4>
+                    <div class="controls">
+                        <button class="btn" id="player2ClearLogBtn">Clear</button>
+                    </div>
+                    <div id="player2Log" class="log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Multi-Player Test Client
+        class PlayerClient {
+            constructor(playerId, side) {
+                this.playerId = playerId;
+                this.side = side;
+                this.playerNum = playerId;
+                this.socket = null;
+                this.connected = false;
+                this.serverPlayerId = null;
+                this.roomId = null;
+                this.gameState = null;
+                this.currentArmy = [];
+                this.autoPlayEnabled = false; // Track if auto-play is enabled
+                this.stats = {
+                    messagesSent: 0,
+                    messagesReceived: 0,
+                    latencies: [],
+                    errors: 0
+                };
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                const id = this.playerId;
+                
+                // Connection controls
+                document.getElementById(`player${id}ConnectBtn`).onclick = () => this.connect();
+                document.getElementById(`player${id}DisconnectBtn`).onclick = () => this.disconnect();
+                
+                // Room controls
+                document.getElementById(`player${id}CreateRoomBtn`).onclick = () => this.createRoom();
+                document.getElementById(`player${id}QuickMatchBtn`).onclick = () => this.quickMatch();
+                document.getElementById(`player${id}JoinBtn`).onclick = () => this.joinRoom();
+                document.getElementById(`player${id}ReadyBtn`).onclick = () => this.toggleReady();
+                document.getElementById(`player${id}LeaveBtn`).onclick = () => this.leaveRoom();
+                
+                // Army controls
+                document.getElementById(`player${id}SubmitBtn`).onclick = () => this.submitArmy();
+                document.getElementById(`player${id}ClearBtn`).onclick = () => this.clearArmy();
+                document.getElementById(`player${id}RandomBtn`).onclick = () => this.randomArmy(this.side);
+                document.getElementById(`player${id}ClearLogBtn`).onclick = () => this.clearLog();
+                
+                // Placement buttons
+                document.querySelectorAll(`[data-player="${id}"]`).forEach(btn => {
+                    if (btn.dataset.unit) {
+                        btn.onclick = () => this.addUnit(btn.dataset.unit, this.side);
+                    }
+                });
+            }
+            
+            connect() {
+                const serverUrl = document.getElementById('serverUrl').value;
+                this.socket = io(serverUrl);
+                this.setupSocketEvents();
+                this.log('Connecting...', 'sent');
+            }
+            
+            setupSocketEvents() {
+                this.socket.on('connect', () => {
+                    this.connected = true;
+                    this.updateStatus('connected', 'Connected');
+                    this.log('Connected to server', 'success');
+                    
+                    // Get player ID
+                    this.call('CONNECT', null, 'CONNECTED', (data, error) => {
+                        if (data && data.playerId) {
+                            this.serverPlayerId = data.playerId;
+                            this.log(`Got player ID: ${this.serverPlayerId}`, 'success');
+                        }
+                    });
+                });
+                
+                this.socket.on('disconnect', () => {
+                    this.connected = false;
+                    this.updateStatus('disconnected', 'Disconnected');
+                    this.log('Disconnected', 'error');
+                });
+                
+                this.socket.on('connect_error', (error) => {
+                    this.log('Connection error: ' + error.message, 'error');
+                    this.stats.errors++;
+                });
+                
+                // Game events
+                const events = [
+                    'CONNECTED', 'ROOM_CREATED', 'ROOM_JOINED', 'QUICK_MATCH_FOUND',
+                    'PLAYER_JOINED', 'PLAYER_LEFT', 'PLAYER_READY_UPDATE',
+                    'GAME_STARTED', 'PLACEMENT_READY_UPDATE', 'BATTLE_END',
+                    'NEXT_ROUND', 'GAME_END', 'JOIN_ROOM_FAILED', 
+                    'QUICK_MATCH_FAILED', 'ERROR'
+                ];
+                
+                events.forEach(event => {
+                    this.socket.on(event, (data) => {
+                        this.stats.messagesReceived++;
+                        this.log(`← ${event}: ${JSON.stringify(data).substr(0, 100)}...`, 'received');
+                        this.handleGameEvent(event, data);
+                        window.testInterface.updateGlobalStats();
+                    });
+                });
+            }
+            
+            handleGameEvent(event, data) {
+                switch(event) {
+                    case 'ROOM_CREATED':
+                    case 'ROOM_JOINED':
+                    case 'QUICK_MATCH_FOUND':
+                        this.roomId = data.roomId;
+                        this.gameState = data.gameState;
+                        this.updateGameStateDisplay();
+                        window.testInterface.globalLog(`Player ${this.playerId} joined room ${this.roomId}`);
+                        break;
+                        
+                    case 'PLAYER_READY_UPDATE':
+                        if (data.gameState) {
+                            this.gameState = data.gameState;
+                            this.updateGameStateDisplay();
+                        }
+                        if (data.allReady) {
+                            window.testInterface.globalLog('All players ready - game starting!');
+                        }
+                        break;
+                        
+                    case 'GAME_STARTED':
+                        this.gameState = data.gameState;
+                        this.updateGameStateDisplay();
+                        window.testInterface.globalLog(`Game started in room ${this.roomId}`);
+                        break;
+                        
+                    case 'PLACEMENT_READY_UPDATE':
+                        if (data.allReady && data.allPlacements) {
+                            window.testInterface.globalLog('All armies submitted - battle starting!');
+                        }
+                        break;
+                        
+                    case 'BATTLE_END':
+                        window.testInterface.globalLog(`Battle ended - Winner: ${data.result?.winner || 'Draw'}`);
+                        window.testInterface.incrementBattleCount();
+                        break;
+                        
+                    case 'NEXT_ROUND':
+                        if (data.gameState) {
+                            this.gameState = data.gameState;
+                            this.updateGameStateDisplay();
+                        }
+                        window.testInterface.globalLog(`Next round started - Round ${data.round}`);
+                        
+                        // IMPORTANT: Auto-generate armies for next round if auto-play is enabled
+                        if (this.autoPlayEnabled) {
+                            this.log(`Auto-play: Generating army for round ${data.round}`, 'info');
+                            setTimeout(() => {
+                             //   this.simpleTestArmy(this.side);
+                                setTimeout(() => {
+                                    if (this.currentArmy.length > 0) {
+                                        this.submitArmy();
+                                    }
+                                }, 1000);
+                            }, 2000); // Wait 2 seconds then generate and submit army
+                        }
+                        break;
+                        
+                    case 'GAME_END':
+                        window.testInterface.globalLog(`Game ended - Final winner: ${data.result?.winner || 'Draw'}`);
+                        this.autoPlayEnabled = false; // Disable auto-play when game ends
+                        break;
+                }
+            }
+            
+            // Enable auto-play for automated testing
+            enableAutoPlay() {
+                this.autoPlayEnabled = true;
+                this.log('Auto-play enabled for multi-round games', 'info');
+            }
+            
+            disableAutoPlay() {
+                this.autoPlayEnabled = false;
+                this.log('Auto-play disabled', 'info');
+            }
+            
+            call(eventName, data, expectedResponse, callback) {
+                if (!this.socket || !this.connected) {
+                    this.log('Not connected', 'error');
+                    return;
+                }
+                
+                this.stats.messagesSent++;
+                const timestamp = Date.now();
+                this.log(`→ ${eventName}: ${JSON.stringify(data || {}).substr(0, 50)}...`, 'sent');
+                
+                if (expectedResponse && callback) {
+                    const timeoutId = setTimeout(() => {
+                        callback(null, { message: 'Timeout' });
+                    }, 5000);
+                    
+                    const responseHandler = (responseData) => {
+                        clearTimeout(timeoutId);
+                        const latency = Date.now() - timestamp;
+                        this.stats.latencies.push(latency);
+                        this.socket.off(expectedResponse, responseHandler);
+                        callback(responseData, null);
+                    };
+                    
+                    this.socket.on(expectedResponse, responseHandler);
+                }
+                
+                this.socket.emit(eventName, data);
+            }
+            
+            // Room Management
+            createRoom() {
+                const playerName = document.getElementById(`player${this.playerId}Name`).value;
+                this.call('CREATE_ROOM', { playerName, maxPlayers: 2 }, 'ROOM_CREATED', 
+                    (data, error) => {
+                        if (error) {
+                            this.log('Failed to create room: ' + error.message, 'error');
+                            this.stats.errors++;
+                        } else {
+                            // Auto-share room ID with other player
+                            const otherPlayerId = this.playerId === 1 ? 2 : 1;
+                            document.getElementById(`player${otherPlayerId}RoomInput`).value = data.roomId;
+                        }
+                    });
+            }
+            
+            quickMatch() {
+                const playerName = document.getElementById(`player${this.playerId}Name`).value;
+                this.call('QUICK_MATCH', { playerName }, 'QUICK_MATCH_FOUND',
+                    (data, error) => {
+                        if (error) {
+                            this.log('Quick match failed: ' + error.message, 'error');
+                            this.stats.errors++;
+                        }
+                    });
+            }
+            
+            joinRoom() {
+                const roomId = document.getElementById(`player${this.playerId}RoomInput`).value;
+                const playerName = document.getElementById(`player${this.playerId}Name`).value;
+                
+                if (!roomId) {
+                    this.log('Enter room ID', 'error');
+                    return;
+                }
+                
+                this.call('JOIN_ROOM', { roomId, playerName }, 'ROOM_JOINED',
+                    (data, error) => {
+                        if (error) {
+                            this.log('Failed to join: ' + error.message, 'error');
+                            this.stats.errors++;
+                        }
+                    });
+            }
+            
+            toggleReady() {
+                this.call('TOGGLE_READY', {}, 'PLAYER_READY_UPDATE',
+                    (data, error) => {
+                        if (error) {
+                            this.log('Toggle ready failed: ' + error.message, 'error');
+                            this.stats.errors++;
+                        }
+                    });
+            }
+            
+            leaveRoom() {
+                this.call('LEAVE_ROOM', {});
+                this.roomId = null;
+                this.gameState = null;
+                this.autoPlayEnabled = false;
+                this.updateGameStateDisplay();
+            }
+            
+            // Army Management
+            addUnit(unitType, side) {
+                const units = {
+                    '1_d_archer': { name: '1_d_archer', value: 35 },
+                    '1_di_scout': { name: '1_di_scout', value: 35 },
+                    '1_i_apprentice': { name: '1_i_apprentice', value: 35 },
+                    '1_is_acolyte': { name: '1_is_acolyte', value: 35 },
+                    '1_s_barbarian': { name: '1_s_barbarian', value: 35 },
+                    '1_sd_soldier': { name: '1_sd_soldier', value: 35 }
+                };
+
+                const sidePlacements = {
+                    'left': { x: 8, z: 16 },
+                    'right': { x: 20, z: 16 }
+                }
+                
+                const unit = units[unitType];
+                if (!unit) return;
+                
+                // Check army size and gold
+                if (this.currentArmy.length >= 6) {
+                    this.log('Army full (max 6 units)', 'error');
+                    return;
+                }
+                
+                const totalCost = this.currentArmy.reduce((sum, u) => sum + u.unitType.value, 0) + unit.value;
+                if (totalCost > 100) {
+                    this.log('Not enough gold', 'error');
+                    return;
+                }
+                
+                const placement = {
+                    unitType: unit,
+                    gridPosition: sidePlacements[side],
+                    id: Date.now() + Math.random()
+                };
+                
+                this.currentArmy.push(placement);
+                this.updateArmyDisplay();
+                this.log(`Added ${unit.name}`, 'success');
+            }
+            
+            simpleTestArmy(side) {
+                this.clearArmy();
+                this.log(`Creating simple test army for Player ${this.playerId} - Round ${this.gameState?.round || 1}`, 'info');
+                
+                // Add Scout and Archer (simple 2-unit army)
+                this.addUnit('1_d_archer', side);
+                
+                this.log(`Simple test army completed: ${this.currentArmy.length} squads`, 'success');
+            }
+            
+            clearArmy() {
+                this.currentArmy = [];
+                this.updateArmyDisplay();
+                this.log('Army cleared', 'success');
+            }
+            
+            randomArmy(side) {
+                this.clearArmy();
+                const squads = ['1_i_apprentice', '1_is_acolyte', '1_s_barbarian', '1_sd_soldier', '1_d_archer', '1_di_scout'];
+                const maxSquads = 2;
+                
+                for (let i = 0; i < maxSquads; i++) {
+                    const randomSquad = squads[Math.floor(Math.random() * squads.length)];
+                    this.addUnit(randomSquad, side);
+                    
+                    const totalCost = this.currentArmy.reduce((sum, u) => sum + u.unitType.value, 0);
+                    if (totalCost >= 70) break;
+                }
+                
+                this.log(`Generated random army (${this.currentArmy.length} squads)`, 'success');
+            }
+            
+            submitArmy() {
+                if (this.currentArmy.length === 0) {
+                    this.log('No units to submit', 'error');
+                    return;
+                }
+                
+                this.call('SUBMIT_PLACEMENTS', 
+                    { placements: this.currentArmy, ready: true },
+                    'PLACEMENT_READY_UPDATE',
+                    (data, error) => {
+                        if (error) {
+                            this.log('Submit failed: ' + error.message, 'error');
+                            this.stats.errors++;
+                        } else {
+                            this.log('Army submitted successfully!', 'success');
+                        }
+                    });
+            }
+            
+            // UI Updates
+            updateStatus(status, text) {
+                const statusEl = document.getElementById(`player${this.playerId}Status`);
+                statusEl.className = `status ${status}`;
+                statusEl.textContent = text;
+            }
+            
+            updateArmyDisplay() {
+                const listEl = document.getElementById(`player${this.playerId}ArmyList`);
+                if (this.currentArmy.length === 0) {
+                    listEl.textContent = 'None';
+                } else {
+                    const totalCost = this.currentArmy.reduce((sum, u) => sum + u.unitType.value, 0);
+                    listEl.innerHTML = this.currentArmy.map(p => p.unitType.name).join(', ') + 
+                        ` (${totalCost}g)`;
+                }
+            }
+            
+            updateGameStateDisplay() {
+                if (!this.gameState) {
+                    document.getElementById(`player${this.playerId}Room`).textContent = '-';
+                    document.getElementById(`player${this.playerId}Phase`).textContent = '-';
+                    document.getElementById(`player${this.playerId}Round`).textContent = '-';
+                    document.getElementById(`player${this.playerId}GameState`).textContent = 'No state';
+                    return;
+                }
+                
+                document.getElementById(`player${this.playerId}Room`).textContent = this.roomId || '-';
+                document.getElementById(`player${this.playerId}Phase`).textContent = this.gameState.phase || '-';
+                document.getElementById(`player${this.playerId}Round`).textContent = this.gameState.round || '1';
+                
+                // Find my player data
+                const myPlayer = this.gameState.players?.find(p => p.id === this.serverPlayerId);
+                if (myPlayer) {
+                    document.getElementById(`player${this.playerId}Gold`).textContent = myPlayer.gold || '100';
+                }
+                
+                document.getElementById(`player${this.playerId}GameState`).innerHTML = 
+                    '<pre>' + JSON.stringify(this.gameState, null, 2) + '</pre>';
+            }
+            
+            log(message, type = 'info') {
+                const logEl = document.getElementById(`player${this.playerId}Log`);
+                const timestamp = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+            
+            clearLog() {
+                document.getElementById(`player${this.playerId}Log`).innerHTML = '';
+            }
+            
+            disconnect() {
+                if (this.socket) {
+                    this.socket.disconnect();
+                    this.socket = null;
+                }
+                this.connected = false;
+                this.autoPlayEnabled = false;
+                this.updateStatus('disconnected', 'Disconnected');
+            }
+        }
+        
+        // Main Test Interface Controller
+        class MultiPlayerTestInterface {
+            constructor() {
+                this.players = {
+                    1: new PlayerClient(1, 'left'),
+                    2: new PlayerClient(2, 'right')
+                };
+                
+                this.globalStats = {
+                    totalMessages: 0,
+                    battleCount: 0,
+                    errorCount: 0,
+                    latencies: []
+                };
+                
+                this.setupControlEventListeners();
+            }
+            
+            setupControlEventListeners() {
+                // Global controls
+                document.getElementById('connectAllBtn').onclick = () => this.connectAll();
+                document.getElementById('disconnectAllBtn').onclick = () => this.disconnectAll();
+                
+                // Battle automation
+                document.getElementById('quickBattleBtn').onclick = () => this.quickBattle();
+                document.getElementById('fullGameBtn').onclick = () => this.fullGame();
+                document.getElementById('stressTestBtn').onclick = () => this.stressTest();
+                document.getElementById('errorTestBtn').onclick = () => this.errorTest();
+                document.getElementById('reconnectTestBtn').onclick = () => this.reconnectTest();
+                
+                // Battle controls
+                document.getElementById('startBattleBtn').onclick = () => this.startBattle();
+                document.getElementById('stopBattleBtn').onclick = () => this.stopBattle();
+                
+                // Stats
+                document.getElementById('resetStatsBtn').onclick = () => this.resetStats();
+                document.getElementById('exportLogBtn').onclick = () => this.exportLog();
+                document.getElementById('clearGlobalLogBtn').onclick = () => this.clearGlobalLog();
+            }
+            
+            // Global Controls
+            connectAll() {
+                this.globalLog('Connecting all players...');
+                this.players[1].connect();
+                setTimeout(() => this.players[2].connect(), 1000);
+            }
+            
+            disconnectAll() {
+                this.globalLog('Disconnecting all players...');
+                this.players[1].disconnect();
+                this.players[2].disconnect();
+            }
+            
+            // Automated Battle Scenarios
+            async quickBattle() {
+                this.globalLog('=== STARTING QUICK BATTLE TEST ===');
+                this.updateBattleStatus('Running quick battle test...');
+                
+                // Disable auto-play for single battle
+                this.players[1].disableAutoPlay();
+                this.players[2].disableAutoPlay();
+                
+                try {
+                    // Step 1: Connect both players
+                    this.globalLog('Step 1: Connecting players...');
+                    this.connectAll();
+                    
+                    // Step 2: Player 1 creates room
+                    setTimeout(() => {
+                        this.globalLog('Step 2: Player 1 creating room...');
+                        this.players[1].createRoom();
+                    }, 2000);
+                    
+                    // Step 3: Player 2 joins room
+                    setTimeout(() => {
+                        this.globalLog('Step 3: Player 2 joining room...');
+                        this.players[2].joinRoom();
+                    }, 4000);
+                    
+                    // Step 4: Both players ready up for GAME START (lobby ready)
+                    setTimeout(() => {
+                        this.globalLog('Step 4: Players readying up to start game...');
+                        this.players[1].toggleReady();
+                        this.players[2].toggleReady();
+                    }, 6000);
+                    
+                    // Step 5: Game should start automatically, wait for placement phase
+                    setTimeout(() => {
+                        this.globalLog('Step 5: Game started, now in placement phase...');
+                        this.globalLog('Step 6: Generating armies for battle...');
+                        this.players[1].simpleTestArmy('left');
+                        this.players[2].simpleTestArmy('right');
+                    }, 8000);
+                    
+                    // Step 6: Submit armies (this makes players "ready" for battle)
+                    setTimeout(() => {
+                        this.globalLog('Step 7: Submitting armies (placement ready)...');
+                        if (this.players[1].currentArmy.length > 0) {
+                            this.players[1].submitArmy();
+                        } else {
+                            this.globalLog('Player 1 has no army to submit!');
+                        }
+                        
+                        if (this.players[2].currentArmy.length > 0) {
+                            this.players[2].submitArmy();
+                        } else {
+                            this.globalLog('Player 2 has no army to submit!');
+                        }
+                    }, 10000);
+                    
+                    // Step 7: Wait for battle to start automatically
+                    setTimeout(() => {
+                        this.globalLog('Step 8: Battle should start automatically...');
+                        this.updateBattleStatus('Battle in progress - waiting for results...');
+                    }, 12000);
+                    
+                    // Step 8: Complete
+                    setTimeout(() => {
+                        this.updateBattleStatus('Quick battle test completed!');
+                        this.globalLog('=== QUICK BATTLE TEST COMPLETED ===');
+                    }, 20000);
+                    
+                } catch (error) {
+                    this.globalLog('Quick battle test failed: ' + error.message);
+                    this.updateBattleStatus('Test failed');
+                }
+            }
+            
+            async fullGame() {
+                this.globalLog('=== STARTING FULL GAME TEST (3 rounds) ===');
+                this.updateBattleStatus('Running full game test...');
+                
+                // Enable auto-play for multi-round games
+                this.players[1].enableAutoPlay();
+                this.players[2].enableAutoPlay();
+                
+                try {
+                    // Step 1: Connect both players
+                    this.globalLog('Step 1: Connecting players...');
+                    this.connectAll();
+                    
+                    // Step 2: Player 1 creates room
+                    setTimeout(() => {
+                        this.globalLog('Step 2: Player 1 creating room...');
+                        this.players[1].createRoom();
+                    }, 2000);
+                    
+                    // Step 3: Player 2 joins room
+                    setTimeout(() => {
+                        this.globalLog('Step 3: Player 2 joining room...');
+                        this.players[2].joinRoom();
+                    }, 4000);
+                    
+                    // Step 4: Both players ready up for GAME START (lobby ready)
+                    setTimeout(() => {
+                        this.globalLog('Step 4: Players readying up to start game...');
+                        this.players[1].toggleReady();
+                        this.players[2].toggleReady();
+                    }, 6000);
+                    
+                    // Step 5: Game should start automatically, wait for placement phase
+                    setTimeout(() => {
+                        this.globalLog('Step 5: Game started, now in placement phase...');
+                        this.globalLog('Step 6: Generating armies for first round...');
+                        this.players[1].simpleTestArmy('left');
+                        this.players[2].simpleTestArmy('right');
+                    }, 8000);
+                    
+                    // Step 6: Submit armies (this makes players "ready" for battle)
+                    setTimeout(() => {
+                        this.globalLog('Step 7: Submitting armies for first round...');
+                        if (this.players[1].currentArmy.length > 0) {
+                            this.players[1].submitArmy();
+                        }
+                        
+                        if (this.players[2].currentArmy.length > 0) {
+                            this.players[2].submitArmy();
+                        }
+                        
+                        this.globalLog('Auto-play enabled - subsequent rounds will be automated');
+                    }, 10000);
+                    
+                    
+                } catch (error) {
+                    this.globalLog('Full game test failed: ' + error.message);
+                    this.updateBattleStatus('Test failed');
+                    this.players[1].disableAutoPlay();
+                    this.players[2].disableAutoPlay();
+                }
+            }
+            
+            async stressTest() {
+                this.globalLog('=== STARTING STRESS TEST (10 battles) ===');
+                this.updateBattleStatus('Running stress test...');
+                
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        this.globalLog(`Starting stress test battle ${i + 1}/10`);
+                        this.quickBattle();
+                    }, i * 30000);
+                }
+            }
+            
+            async errorTest() {
+                this.globalLog('=== STARTING ERROR CONDITION TEST ===');
+                this.updateBattleStatus('Testing error conditions...');
+                
+                const tests = [
+                    () => {
+                        this.globalLog('Test 1: Join non-existent room');
+                        if (this.players[1].connected) {
+                            document.getElementById('player1RoomInput').value = 'INVALID';
+                            this.players[1].joinRoom();
+                        }
+                    },
+                    () => {
+                        this.globalLog('Test 2: Submit army without being in room');
+                        this.players[2].randomArmy();
+                        this.players[2].submitArmy();
+                    },
+                    () => {
+                        this.globalLog('Test 3: Toggle ready without being in room');
+                        this.players[1].toggleReady();
+                    }
+                ];
+                
+                tests.forEach((test, i) => {
+                    setTimeout(test, i * 2000);
+                });
+                
+                setTimeout(() => {
+                    this.updateBattleStatus('Error testing completed');
+                    this.globalLog('=== ERROR CONDITION TEST COMPLETED ===');
+                }, 10000);
+            }
+            
+            async reconnectTest() {
+                this.globalLog('=== STARTING RECONNECT TEST ===');
+                this.updateBattleStatus('Testing reconnection...');
+                
+                this.connectAll();
+                
+                setTimeout(() => {
+                    this.globalLog('Disconnecting Player 1...');
+                    this.players[1].disconnect();
+                }, 3000);
+                
+                setTimeout(() => {
+                    this.globalLog('Reconnecting Player 1...');
+                    this.players[1].connect();
+                }, 6000);
+                
+                setTimeout(() => {
+                    this.updateBattleStatus('Reconnect test completed');
+                    this.globalLog('=== RECONNECT TEST COMPLETED ===');
+                }, 10000);
+            }
+            
+            startBattle() {
+                this.globalLog('Manual battle start requested');
+                this.quickBattle();
+            }
+            
+            stopBattle() {
+                this.globalLog('Stopping current test...');
+                this.disconnectAll();
+                this.updateBattleStatus('Test stopped');
+            }
+            
+            // Stats and Logging
+            updateGlobalStats() {
+                const player1Stats = this.players[1].stats;
+                const player2Stats = this.players[2].stats;
+                
+                this.globalStats.totalMessages = 
+                    player1Stats.messagesSent + player1Stats.messagesReceived +
+                    player2Stats.messagesSent + player2Stats.messagesReceived;
+                
+                this.globalStats.errorCount = player1Stats.errors + player2Stats.errors;
+                
+                const allLatencies = [...player1Stats.latencies, ...player2Stats.latencies];
+                const avgLatency = allLatencies.length > 0 ? 
+                    Math.round(allLatencies.reduce((a, b) => a + b, 0) / allLatencies.length) : 0;
+                
+                document.getElementById('totalMessages').textContent = this.globalStats.totalMessages;
+                document.getElementById('avgLatency').textContent = avgLatency || '--';
+                document.getElementById('battleCount').textContent = this.globalStats.battleCount;
+                document.getElementById('errorCount').textContent = this.globalStats.errorCount;
+            }
+            
+            incrementBattleCount() {
+                this.globalStats.battleCount++;
+                this.updateGlobalStats();
+            }
+            
+            resetStats() {
+                this.globalStats = {
+                    totalMessages: 0,
+                    battleCount: 0,
+                    errorCount: 0,
+                    latencies: []
+                };
+                
+                this.players[1].stats = { messagesSent: 0, messagesReceived: 0, latencies: [], errors: 0 };
+                this.players[2].stats = { messagesSent: 0, messagesReceived: 0, latencies: [], errors: 0 };
+                
+                this.updateGlobalStats();
+                this.globalLog('Stats reset');
+            }
+            
+            updateBattleStatus(status) {
+                document.getElementById('battleStatusText').textContent = status;
+            }
+            
+            globalLog(message) {
+                const logEl = document.getElementById('globalLog');
+                const timestamp = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+            
+            clearGlobalLog() {
+                document.getElementById('globalLog').innerHTML = '';
+            }
+            
+            exportLog() {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    globalStats: this.globalStats,
+                    player1Stats: this.players[1].stats,
+                    player2Stats: this.players[2].stats,
+                    globalLog: document.getElementById('globalLog').textContent,
+                    player1Log: document.getElementById('player1Log').textContent,
+                    player2Log: document.getElementById('player2Log').textContent
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `multiplayer-test-export-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        // Initialize the test interface
+        const testInterface = new MultiPlayerTestInterface();
+        
+        // Make it globally accessible for debugging
+        window.testInterface = testInterface;
+        
+        console.log('Multi-Player Battle Test Interface loaded');
+        console.log('Use testInterface.quickBattle() for automated testing');
+    </script>
+</body>
+</html>

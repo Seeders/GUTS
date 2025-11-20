@@ -1,0 +1,24 @@
+{
+  "title": "Server Game",
+  "projectName": "TurnBasedWarfare",
+  "tickRate": 20,
+  "seed": "auto",
+  "appLoaderLibrary": "ServerGameLoader",
+  "appLibrary": "ServerECSGame",
+  "initialScene": "server",
+  "libraries": [
+    "BaseSystem",
+    "GameRoom",
+    "ServerGameRoom",
+    "GameState",
+    "BaseECSGame",
+    "GameUtils",
+    "ServerECSGame",
+    "ServerEventManager",
+    "ServerNetworkManager",
+    "ServerSceneManager",
+    "SeededRandom",
+    "MinHeap",
+    "DesyncDebugger"
+  ]
+}

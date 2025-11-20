@@ -259,13 +259,14 @@ class ServerGameRoom extends global.GameRoom {
             player.isHost = playerData.isHost || false;
             
             player.stats = {
-                health: this.game.state.teamMaxHealth,                
+                health: this.game.state.teamMaxHealth,
                 gold: this.game.state.startingGold,
                 side: playerData.isHost ? 'left' : 'right',
                 upgrades: []
             };
-            // If room is full, enter lobby phase (don't auto-start like parent does)
-            if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
+            // Enter lobby phase when first player joins (supports single-player)
+            // or when room is full (for multiplayer that requires all players)
+            if (this.game.state.phase === 'waiting') {
                 this.enterLobbyPhase();
             }
         }
@@ -321,8 +322,13 @@ class ServerGameRoom extends global.GameRoom {
             console.log(`Cannot start game, not in lobby phase. Current phase: ${this.game.state.phase}`);
             return false;
         }
-        
-        // Check if all players are ready
+
+        // Check if at least one player and all players are ready
+        if (this.players.size === 0) {
+            console.log('Cannot start game, no players in room');
+            return false;
+        }
+
         const allReady = Array.from(this.players.values()).every(p => p.ready);
         if (!allReady) {
             return false;

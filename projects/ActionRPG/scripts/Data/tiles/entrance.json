@@ -1,0 +1,20 @@
+{
+  "title": "Dungeon Entrance",
+  "id": "entrance",
+  "width": 2,
+  "height": 2,
+  "weight": 5,
+  "category": "entrance",
+  "connections": {
+    "north": ["wall", "wall"],
+    "east": ["wall", "wall"],
+    "south": ["open", "open"],
+    "west": ["wall", "wall"]
+  },
+  "content": {
+    "enemies": [],
+    "props": ["torch", "torch"],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

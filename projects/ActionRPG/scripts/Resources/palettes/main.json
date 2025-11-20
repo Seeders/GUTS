@@ -1,0 +1,21 @@
+{
+  "title": "Main",
+  "greenLColor": "#a3d39c",
+  "greenMColor": "#5a8a4f",
+  "greenDColor": "#2f4a29",
+  "brownLColor": "#d9b38c",
+  "brownMColor": "#8b5e3c",
+  "brownDColor": "#4a2f1f",
+  "blueLColor": "#b3e5fc",
+  "blueMColor": "#4fc3f7",
+  "blueDColor": "#0288d1",
+  "redLColor": "#ffcc80",
+  "redMColor": "#ff8c00",
+  "redDColor": "#bf360c",
+  "purpleLColor": "#e1bee7",
+  "purpleMColor": "#ab47bc",
+  "purpleDColor": "#6a1b9a",
+  "greyLColor": "#cfd8dc",
+  "greyMColor": "#78909c",
+  "greyDColor": "#3e4f57"
+}

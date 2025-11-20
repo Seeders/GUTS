@@ -1,0 +1,11 @@
+{
+  "title": "Hard Enemies",
+  "id": "hard",
+  "description": "Elite warriors and elemental golems",
+  "units": [
+    "1_s_barbarian",
+    "0_golemStone",
+    "0_golemFire",
+    "0_golemIce"
+  ]
+}

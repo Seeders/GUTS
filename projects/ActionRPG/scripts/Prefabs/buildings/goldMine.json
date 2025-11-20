@@ -1,0 +1,71 @@
+{
+  "title": "Gold Mine",
+  "info": "Mine gold veins",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "url": "models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/goldmine/goldmine.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.5
+        }
+      }
+    }
+  },
+  "upgrades": [
+    "peasantEfficiency"
+  ],
+  "units": [],
+  "footprintWidth": 2,
+  "footprintHeight": 2,
+  "size": 50,
+  "icon": "building_goldMine",
+  "hp": 2000,
+  "height": 100
+}

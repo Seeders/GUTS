@@ -1,0 +1,22 @@
+{
+  "title": "T-Junction North",
+  "id": "t_junction_n",
+  "width": 2,
+  "height": 2,
+  "weight": 12,
+  "category": "corridor",
+  "connections": {
+    "north": ["open", "open"],
+    "east": ["wall", "open"],
+    "south": ["wall", "wall"],
+    "west": ["open", "wall"]
+  },
+  "content": {
+    "enemies": [
+      { "type": "weak", "count": 1 }
+    ],
+    "props": [],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

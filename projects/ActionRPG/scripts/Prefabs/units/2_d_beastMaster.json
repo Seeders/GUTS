@@ -1,0 +1,192 @@
+{
+  "title": "Beast Master (2) [D]",
+  "size": 25,
+  "height": 50,
+  "value": 35,
+  "hp": 140,
+  "speed": 55,
+  "damage": 16,
+  "attackSpeed": 1.1,
+  "range": 200,
+  "projectile": "arrow",
+  "element": "physical",
+  "fireResistance": 0.5,
+  "coldResistance": 0.5,
+  "lightningResistance": 0.5,
+  "armor": 1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "models/idle/idle.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/walk_bow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/shooting_arrow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/death_fallback.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_gangnamstyle.glb",
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_thriller.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "cast": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "models/2h_spell_summon/2h_spell_summon.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/beastmaster/beastmaster.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            }
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "offHand",
+        "item": "woodBow",
+        "attachmentData": {
+          "bone": "",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 90
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "SummonWolfAbility"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "South-West Corner",
+  "id": "corner_sw",
+  "width": 2,
+  "height": 2,
+  "weight": 15,
+  "category": "corridor",
+  "connections": {
+    "north": ["wall", "wall"],
+    "east": ["wall", "wall"],
+    "south": ["open", "wall"],
+    "west": ["wall", "open"]
+  },
+  "content": {
+    "enemies": [],
+    "props": ["torch"],
+    "loot": "none"
+  },
+  "terrainType": 4
+}

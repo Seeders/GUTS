@@ -1,0 +1,81 @@
+{
+  "title": "client",
+  "type": "ECS",
+  "sceneData": [
+    {
+      "id": 1,
+      "objectType": "gamePrefabs",
+      "spawnType": "multiplayer",
+      "parent": null,
+      "children": [],
+      "managers": [
+        { "type": "ComponentManager" },
+        { "type": "GameManager" },
+        { "type": "GameModeManager" },
+        { "type": "KeyboardManager" },
+        { "type": "LoadingManager" },
+        { "type": "ResultsManager" },
+        { "type": "SaveManager" },
+        { "type": "ScreenManager" },
+        { "type": "UnitCreationManager" },
+        { "type": "MultiplayerNetworkManager" },
+        { "type": "InputManager" }
+      ],
+      "systems": [
+        { "type": "TerrainSystem" },
+        { "type": "TileLevelGenerator" },
+        { "type": "WorldSystem" },
+        { "type": "PostProcessingSystem" },
+        { "type": "RenderSystem" },
+        { "type": "ARPGGameSystem" },
+        { "type": "ARPGUISystem" },
+        { "type": "MultiplayerUISystem" },
+        { "type": "CharacterClassSystem" },
+        { "type": "ClassSelectionUI" },
+        { "type": "CharacterStatsUI" },
+        { "type": "PlayerControlSystem" },
+        { "type": "AISystem" },
+        { "type": "MovementSystem" },
+        { "type": "CombatAISystem" },
+        { "type": "ProjectileSystem" },
+        { "type": "AnimationSystem" },
+        { "type": "EffectsSystem" },
+        { "type": "GridSystem" },
+        { "type": "HealthBarSystem" },
+        { "type": "UnitRadiusSystem" },
+        { "type": "EquipmentSystem" },
+        { "type": "DeathSystem" },
+        { "type": "DamageSystem" },
+        { "type": "DamageNumberSystem" },
+        { "type": "AbilitySystem" },
+        { "type": "ParticleSystem" },
+        { "type": "EnemySpawnerSystem" },
+        { "type": "LootSystem" },
+        { "type": "ExperienceSystem" },
+        { "type": "InventorySystem" },
+        { "type": "PotionSystem" },
+        { "type": "SkillTreeSystem" },
+        { "type": "SkillTreeUI" },
+        { "type": "VendorSystem" },
+        { "type": "QuestSystem" },
+        { "type": "BossSystem" },
+        { "type": "DungeonSystem" },
+        { "type": "RespawnSystem" },
+        { "type": "SaveLoadSystem" },
+        { "type": "LifetimeSystem" },
+        { "type": "SchedulingSystem" },
+        { "type": "PathfindingSystem" },
+        { "type": "FogOfWarSystem" },
+        { "type": "MiniMapSystem" },
+        { "type": "CameraControlSystem" },
+        { "type": "VisionSystem" }
+      ],
+      "classes": [
+        {
+          "collection": "abilities",
+          "baseClass": "BaseAbility"
+        }
+      ]
+    }
+  ]
+}

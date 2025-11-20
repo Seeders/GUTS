@@ -1,0 +1,27 @@
+{
+  "title": "Graphics Editor",
+  "container": "graphics-editor-container",
+  "libraries": [
+    "threejs",
+    "three_OrbitControls",
+    "GLTFLoader",
+    "ShapeFactory",
+    "ModelManager",
+    "GE_AnimationManager",
+    "GE_EventManager",
+    "GE_GizmoManager",
+    "GE_GroupManager",
+    "GE_ShapeManager",
+    "GE_RotationUtils",
+    "GE_SceneRenderer",
+    "GE_UIManager",
+    "GE_EquipmentEditor",
+    "GraphicsEditor"
+  ],
+  "propertyName": "render",
+  "interface": "graphicsEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "renderGraphicsObject",
+  "saveHook": "saveGraphicsObject"
+}

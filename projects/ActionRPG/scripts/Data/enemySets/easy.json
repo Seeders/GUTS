@@ -1,0 +1,10 @@
+{
+  "title": "Easy Enemies",
+  "id": "easy",
+  "description": "Basic enemies for early game encounters",
+  "units": [
+    "0_skeleton",
+    "peasant",
+    "1_di_scout"
+  ]
+}

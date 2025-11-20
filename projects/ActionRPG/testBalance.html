@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Balance Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .file-upload.loaded {
+            background-color: #f0fdf4;
+            border-color: #10b981;
+        }
+
+        .file-upload.error {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn-green {
+            background: #10b981;
+        }
+
+        .btn-green:hover {
+            background: #059669;
+        }
+
+        .btn-gray {
+            background: #6b7280;
+        }
+
+        .btn-gray:hover {
+            background: #4b5563;
+        }
+
+        .btn-red {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+        }
+
+        .budget-control {
+            margin-bottom: 24px;
+        }
+
+        .budget-control label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .unit-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .unit-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: transparent;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .unit-name:focus {
+            background: #e0e7ff;
+            outline: 2px solid #3b82f6;
+        }
+
+        .unit-id {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-left: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-input label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-input input {
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .quantity-control {
+            margin-top: 12px;
+        }
+
+        .quantity-control label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .unit-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .abilities, .equipment {
+            margin-top: 4px;
+        }
+
+        .abilities {
+            color: #7c3aed;
+        }
+
+        .equipment {
+            color: #3b82f6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .result-card {
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .result-card.blue {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .result-card.green {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .result-card.purple {
+            background: #faf5ff;
+            border-color: #e9d5ff;
+        }
+
+        .result-card.yellow {
+            background: #fffbeb;
+            border-color: #fed7aa;
+        }
+
+        .result-card h3 {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-card.blue h3 {
+            color: #1e40af;
+        }
+
+        .result-card.green h3 {
+            color: #166534;
+        }
+
+        .result-card.purple h3 {
+            color: #7c2d12;
+        }
+
+        .result-card.yellow h3 {
+            color: #92400e;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.875rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.purple {
+            background: #7c3aed;
+        }
+
+        .progress-fill.green {
+            background: #10b981;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>
+                    <span class="icon">🎯</span>
+                    Unit Balance Simulator
+                </h1>
+                <p>Design and balance your unit composition. Adjust stats, quantities, and budget to find optimal strategies.</p>
+            </div>
+
+            <!-- File Upload Section -->
+            <div id="file-upload-section">
+                <h2 class="section-title">Load Game Collections</h2>
+                
+                <div id="file-upload" class="file-upload">
+                    <input type="file" accept=".json" id="collections-file" style="display: none;">
+                    <button class="btn" onclick="document.getElementById('collections-file').click()">
+                        <span>+</span>
+                        Load Collections JSON
+                    </button>
+                    <p style="margin-top: 8px; color: #6b7280; font-size: 0.875rem;">
+                        Upload your game's collections JSON file to automatically populate unit stats
+                    </p>
+                    <p style="margin-top: 4px; color: #9ca3af; font-size: 0.75rem;">
+                        Expected format: { "units": { "unitId": { "hp": 100, "damage": 25, ... } } }
+                    </p>
+                </div>
+
+                <div id="success-message" class="success-message hidden">
+                    <div>
+                        <strong>Collections Loaded Successfully</strong>
+                        <div id="units-count" style="font-size: 0.875rem; margin-top: 4px;"></div>
+                    </div>
+                    <button class="btn btn-gray" onclick="clearCollections()">Clear & Upload New</button>
+                </div>
+
+                <div id="error-message" class="error-message hidden">
+                    <strong>Load Error:</strong>
+                    <div id="error-text"></div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid">
+                <!-- Unit Configuration -->
+                <div>
+                    <div class="section-title">
+                        <span>Unit Configuration</span>
+                        <button class="btn" onclick="addUnit()">
+                            <span>+</span>
+                            Add Unit
+                        </button>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn btn-gray" onclick="resetSimulation()">
+                            <span>↻</span>
+                            Reset
+                        </button>
+                    </div>
+
+                    <!-- Combat Simulation Section -->
+                    <div style="margin-top: 24px;">
+                        <h3 class="section-title">Combat Simulation</h3>
+                        
+                        <!-- Unit Selection for Armies -->
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="font-weight: 600; margin-bottom: 8px;">Select Units for Armies</h4>
+                            <div id="unit-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; background: #f9fafb;"></div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 8px; color: #dc2626;">Army 1 (Red)</h4>
+                                <div id="army1-units" style="max-height: 150px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; background: #fef2f2; min-height: 100px;"></div>
+                                <button class="btn btn-red" onclick="clearArmy(1)" style="margin-top: 8px; width: 100%;">
+                                    Clear Army 1
+                                </button>
+                            </div>
+                            
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 8px; color: #2563eb;">Army 2 (Blue)</h4>
+                                <div id="army2-units" style="max-height: 150px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; background: #eff6ff; min-height: 100px;"></div>
+                                <button class="btn" onclick="clearArmy(2)" style="margin-top: 8px; width: 100%;">
+                                    Clear Army 2
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <button class="btn btn-green" onclick="runCombatSimulation()" style="padding: 12px 24px; font-size: 16px;">
+                                <span>⚔️</span>
+                                Simulate Combat
+                            </button>
+                        </div>
+                        
+                        <div id="combat-results" style="margin-top: 16px;"></div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div>
+                    <h2 class="section-title">Army Statistics</h2>
+                    <div id="results-container" class="results-section"></div>
+                </div>
+                <div id="units-container"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Global state
+        let units = [];
+        let gameCollections = null;
+        let isFileLoaded = false;
+        let nextUnitId = 1;
+        let army1Units = [];
+        let army2Units = [];
+        let combatResults = null;
+
+        // Initialize with default units
+        function initializeDefaultUnits() {
+            units = [];
+            nextUnitId = 1;
+        }
+
+        // File handling
+        document.getElementById('collections-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadGameCollections(file);
+            }
+        });
+
+        async function loadGameCollections(file) {
+            try {
+                clearError();
+                const text = await file.text();
+                const collections = JSON.parse(text);
+                
+                // Handle different possible JSON structures
+                let unitsData = null;
+                if (collections.units) {
+                    unitsData = collections.units;
+                } else if (collections.objectTypes?.units) {
+                    unitsData = collections.objectTypes.units;
+                } else if (collections.collections?.units) {
+                    unitsData = collections.collections.units;
+                }
+                
+                if (!unitsData) {
+                    throw new Error('No units data found in JSON file. Expected structure: { "units": {...} } or { "objectTypes": { "units": {...} } }');
+                }
+                
+                gameCollections = collections;
+                
+                // Convert game units to simulator format
+                units = Object.entries(unitsData).map(([unitId, unitData], index) => ({
+                    id: index + 1,
+                    gameId: unitId,
+                    name: unitData.title || unitData.name || unitId,
+                    attack: unitData.damage || 10,
+                    defense: unitData.armor || 0,
+                    health: unitData.hp || 100,
+                    cost: unitData.value || 50,
+                    speed: unitData.speed || 40,
+                    range: unitData.range || 30,
+                    count: 1,
+                    abilities: unitData.abilities || [],
+                    equipment: unitData.render?.equipment || [],
+                    fireResistance: unitData.fireResistance || 0,
+                    coldResistance: unitData.coldResistance || 0,
+                    lightningResistance: unitData.lightningResistance || 0,
+                    originalData: unitData
+                }));
+                
+                nextUnitId = units.length + 1;
+                isFileLoaded = true;
+                
+                showSuccess(units.length);
+                renderUnits();
+                renderUnitSelection();
+                
+            } catch (error) {
+                showError(`Failed to load collections: ${error.message}`);
+                console.error('Error loading collections:', error);
+            }
+        }
+
+        function clearCollections() {
+            isFileLoaded = false;
+            gameCollections = null;
+            document.getElementById('collections-file').value = '';
+            hideSuccess();
+            resetSimulation();
+        }
+
+        function showSuccess(count) {
+            document.getElementById('file-upload').className = 'file-upload loaded';
+            document.getElementById('success-message').classList.remove('hidden');
+            document.getElementById('units-count').textContent = `${count} units loaded from your game collections`;
+            hideError();
+        }
+
+        function hideSuccess() {
+            document.getElementById('file-upload').className = 'file-upload';
+            document.getElementById('success-message').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('file-upload').className = 'file-upload error';
+            document.getElementById('error-message').classList.remove('hidden');
+            document.getElementById('error-text').textContent = message;
+        }
+
+        function hideError() {
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        function clearError() {
+            hideError();
+            if (document.getElementById('file-upload').className.includes('error')) {
+                document.getElementById('file-upload').className = 'file-upload';
+            }
+        }
+
+        // Unit management
+        function addUnit() {
+            const newUnit = {
+                id: nextUnitId++,
+                name: `Unit ${nextUnitId - 1}`,
+                attack: 10,
+                defense: 10,
+                health: 100,
+                cost: 50,
+                count: 1
+            };
+            units.push(newUnit);
+            renderUnits();
+            renderUnitSelection();
+        }
+
+        function removeUnit(id) {
+            units = units.filter(unit => unit.id !== id);
+            renderUnits();
+            renderUnitSelection();
+        }
+
+        function updateUnit(id, field, value) {
+            const unit = units.find(u => u.id === id);
+            if (unit) {
+                unit[field] = field === 'name' ? value : (parseFloat(value) || 0);
+                renderUnitSelection(); // Update the selection display
+            }
+        }
+
+        // Army management - updated for individual selection
+        let selectedArmy = 1; // Track which army we're currently adding to
+
+        function renderUnitSelection() {
+            const container = document.getElementById('unit-selection-grid');
+            
+            if (units.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; text-align: center; grid-column: 1/-1; margin: 16px 0;">Load a collections file to select units</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            units.forEach(unit => {
+                const unitButton = document.createElement('button');
+                unitButton.className = 'btn';
+                unitButton.style.cssText = `
+                    width: 100%; 
+                    padding: 8px; 
+                    margin: 2px 0; 
+                    background: #f3f4f6; 
+                    color: #374151; 
+                    border: 1px solid #d1d5db;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    font-size: 0.875rem;
+                `;
+                
+                unitButton.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 2px;">${unit.name}</div>
+                    <div style="font-size: 0.75rem; color: #6b7280;">
+                        ${unit.attack}⚔️ ${unit.defense}🛡️ ${unit.health}❤️ ${unit.cost}💰
+                    </div>
+                `;
+                
+                // Add click handler for army selection
+                unitButton.addEventListener('click', () => showUnitArmyDialog(unit));
+                
+                container.appendChild(unitButton);
+            });
+        }
+
+        function showUnitArmyDialog(unit) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+                z-index: 1000;
+            `;
+            console.log(unit);
+            modal.innerHTML = `
+                <div style="background: white; padding: 24px; border-radius: 8px; max-width: 400px; width: 90%;">
+                    <h3 style="margin-bottom: 16px; font-weight: 600;">Add ${unit.name} to Army</h3>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Quantity:</label>
+                        <input type="number" id="unit-quantity" value="${unit.originalData.squadWidth * unit.originalData.squadHeight}" min="1" max="50" 
+                               style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <button class="btn btn-red" onclick="addUnitToArmy('${unit.gameId || unit.id}', 1, document.getElementById('unit-quantity').value); document.body.removeChild(this.closest('[style*=fixed]'))">
+                            Add to Army 1 (Red)
+                        </button>
+                        <button class="btn" onclick="addUnitToArmy('${unit.gameId || unit.id}', 2, document.getElementById('unit-quantity').value); document.body.removeChild(this.closest('[style*=fixed]'))" 
+                                style="background: #2563eb;">
+                            Add to Army 2 (Blue)
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-gray" onclick="document.body.removeChild(this.closest('[style*=fixed]'))" 
+                            style="width: 100%;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function addUnitToArmy(unitId, armyNumber, quantity) {
+            const unit = units.find(u => (u.gameId || u.id) == unitId);
+            if (!unit) return;
+            
+            const qty = parseInt(quantity) || 1;
+            const armyUnit = {
+                ...unit,
+                count: qty,
+                currentHP: unit.health,
+                maxHP: unit.health
+            };
+            
+            if (armyNumber === 1) {
+                army1Units.push(armyUnit);
+            } else {
+                army2Units.push(armyUnit);
+            }
+            
+            renderArmyDisplay(armyNumber);
+        }
+
+        function clearArmy(armyNumber) {
+            if (armyNumber === 1) {
+                army1Units = [];
+            } else {
+                army2Units = [];
+            }
+            renderArmyDisplay(armyNumber);
+        }
+
+        function renderArmyDisplay(armyNumber) {
+            const container = document.getElementById(`army${armyNumber}-units`);
+            const armyUnits = armyNumber === 1 ? army1Units : army2Units;
+            
+            if (armyUnits.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; text-align: center; margin: 8px 0;">No units assigned</p>';
+                return;
+            }
+            
+            container.innerHTML = armyUnits.map((unit, index) => `
+                <div style="font-size: 0.875rem; margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e5e7eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">${unit.name}</span>
+                        <button onclick="removeUnitFromArmy(${armyNumber}, ${index})" style="background: #ef4444; color: white; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer;">×</button>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">
+                        Quantity: ${unit.count} | ${unit.attack}⚔️ ${unit.defense}🛡️ ${unit.health}❤️
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeUnitFromArmy(armyNumber, index) {
+            if (armyNumber === 1) {
+                army1Units.splice(index, 1);
+            } else {
+                army2Units.splice(index, 1);
+            }
+            renderArmyDisplay(armyNumber);
+        }
+
+        // Combat System - Based on your game's damage calculation
+        const ELEMENT_TYPES = {
+            PHYSICAL: 'physical',
+            FIRE: 'fire',
+            COLD: 'cold',
+            LIGHTNING: 'lightning',
+            POISON: 'poison',
+            DIVINE: 'divine'
+        };
+
+        const RESISTANCE_CAP = 0.9;
+        const MIN_DAMAGE = 1;
+
+        function calculateFinalDamage(baseDamage, element, defenses, options = {}) {
+            let finalDamage = baseDamage;
+            let mitigated = 0;
+
+            // Apply critical hit multiplier first
+            if (options.isCritical) {
+                finalDamage *= options.criticalMultiplier || 2.0;
+            }
+
+            // Apply element-specific damage reduction
+            switch (element) {
+                case ELEMENT_TYPES.PHYSICAL:
+                    const armor = defenses.armor || 0;
+                    mitigated = Math.min(armor, finalDamage - MIN_DAMAGE);
+                    finalDamage = Math.max(MIN_DAMAGE, finalDamage - armor);
+                    break;
+
+                case ELEMENT_TYPES.FIRE:
+                    const fireResist = Math.min(RESISTANCE_CAP, Math.max(-1.0, defenses.fireResistance || 0));
+                    mitigated = Math.floor(finalDamage * fireResist);
+                    finalDamage = Math.max(MIN_DAMAGE, Math.floor(finalDamage * (1 - fireResist)));
+                    break;
+
+                case ELEMENT_TYPES.COLD:
+                    const coldResist = Math.min(RESISTANCE_CAP, Math.max(-1.0, defenses.coldResistance || 0));
+                    mitigated = Math.floor(finalDamage * coldResist);
+                    finalDamage = Math.max(MIN_DAMAGE, Math.floor(finalDamage * (1 - coldResist)));
+                    break;
+
+                case ELEMENT_TYPES.LIGHTNING:
+                    const lightningResist = Math.min(RESISTANCE_CAP, Math.max(-1.0, defenses.lightningResistance || 0));
+                    mitigated = Math.floor(finalDamage * lightningResist);
+                    finalDamage = Math.max(MIN_DAMAGE, Math.floor(finalDamage * (1 - lightningResist)));
+                    break;
+
+                case ELEMENT_TYPES.DIVINE:
+                    // Divine damage cannot be reduced
+                    mitigated = 0;
+                    finalDamage = Math.max(MIN_DAMAGE, Math.floor(finalDamage));
+                    break;
+
+                default:
+                    // Treat unknown elements as physical
+                    const defaultArmor = defenses.armor || 0;
+                    mitigated = Math.min(defaultArmor, finalDamage - MIN_DAMAGE);
+                    finalDamage = Math.max(MIN_DAMAGE, finalDamage - defaultArmor);
+                    break;
+            }
+
+            return {
+                finalDamage,
+                mitigated,
+                originalDamage: baseDamage
+            };
+        }
+
+        function getEntityDefenses(unit) {
+            return {
+                armor: unit.defense || 0,
+                fireResistance: unit.fireResistance || 0,
+                coldResistance: unit.coldResistance || 0,
+                lightningResistance: unit.lightningResistance || 0
+            };
+        }
+
+        function applyDamage(attacker, target, baseDamage, element = ELEMENT_TYPES.PHYSICAL, options = {}) {
+            if (target.currentHP <= 0) {
+                return { damage: 0, prevented: true, reason: 'target_dead' };
+            }
+
+            const defenses = getEntityDefenses(target);
+            const damageResult = calculateFinalDamage(baseDamage, element, defenses, options);
+
+            target.currentHP -= damageResult.finalDamage;
+            target.currentHP = Math.max(0, target.currentHP);
+
+            return {
+                damage: damageResult.finalDamage,
+                originalDamage: baseDamage,
+                mitigated: damageResult.mitigated,
+                element: element,
+                fatal: target.currentHP <= 0
+            };
+        }
+
+        function runCombatSimulation() {
+            if (army1Units.length === 0 || army2Units.length === 0) {
+                alert('Please set both armies before running combat simulation!');
+                return;
+            }
+
+            // Create combat instances for simulation
+            const army1Combat = createCombatInstances(army1Units, 1);
+            const army2Combat = createCombatInstances(army2Units, 2);
+
+            const battleLog = [];
+            let currentTime = 0;
+            const timeStep = 0.1; // 100ms steps
+            const maxTime = 300; // 5 minutes max battle time
+
+            // Combat loop - time-based instead of round-based
+            while (currentTime < maxTime) {
+                let actionsThisStep = 0;
+
+                // Process Army 1 attacks
+                army1Combat.forEach(unit => {
+                    if (unit.currentHP > 0) {
+                        // Check if unit just engaged (first time ready to fight)
+                        if (currentTime >= unit.engagementTime && unit.lastAttackTime === -999) {
+                            battleLog.push(`T${currentTime.toFixed(1)}s: ${unit.name} ${unit.isRanged ? '(ranged)' : '(melee)'} enters combat`);
+                            unit.lastAttackTime = currentTime - 10; // Allow immediate first attack
+                        }
+                        
+                        const result = tryAttack(unit, army2Combat, currentTime);
+                        if (result.attacked) {
+                            actionsThisStep++;
+                            battleLog.push(`T${currentTime.toFixed(1)}s: ${unit.name} deals ${result.damage} damage to ${result.targetName} (${result.targetHP}/${result.targetMaxHP} HP)`);
+                            if (result.killed) {
+                                battleLog.push(`T${currentTime.toFixed(1)}s: ${result.targetName} dies!`);
+                            }
+                        }
+                    }
+                });
+
+                // Process Army 2 attacks
+                army2Combat.forEach(unit => {
+                    if (unit.currentHP > 0) {
+                        // Check if unit just engaged (first time ready to fight)
+                        if (currentTime >= unit.engagementTime && unit.lastAttackTime === -999) {
+                            battleLog.push(`T${currentTime.toFixed(1)}s: ${unit.name} ${unit.isRanged ? '(ranged)' : '(melee)'} enters combat`);
+                            unit.lastAttackTime = currentTime - 10; // Allow immediate first attack
+                        }
+                        
+                        const result = tryAttack(unit, army1Combat, currentTime);
+                        if (result.attacked) {
+                            actionsThisStep++;
+                            battleLog.push(`T${currentTime.toFixed(1)}s: ${unit.name} deals ${result.damage} damage to ${result.targetName} (${result.targetHP}/${result.targetMaxHP} HP)`);
+                            if (result.killed) {
+                                battleLog.push(`T${currentTime.toFixed(1)}s: ${result.targetName} dies!`);
+                            }
+                        }
+                    }
+                });
+
+                // Check for battle end
+                const army1Alive = army1Combat.some(unit => unit.currentHP > 0);
+                const army2Alive = army2Combat.some(unit => unit.currentHP > 0);
+
+                if (!army1Alive || !army2Alive) {
+                    battleLog.push(`T${currentTime.toFixed(1)}s: Battle ends!`);
+                    break;
+                }
+
+                currentTime += timeStep;
+            }
+
+            // Determine winner
+            const army1Survivors = army1Combat.filter(unit => unit.currentHP > 0);
+            const army2Survivors = army2Combat.filter(unit => unit.currentHP > 0);
+
+            let winner = 'Draw';
+            if (army1Survivors.length > 0 && army2Survivors.length === 0) {
+                winner = 'Army 1 (Red)';
+            } else if (army2Survivors.length > 0 && army1Survivors.length === 0) {
+                winner = 'Army 2 (Blue)';
+            } else if (currentTime >= maxTime) {
+                winner = 'Draw (Timeout)';
+            }
+
+            combatResults = {
+                winner,
+                duration: currentTime.toFixed(1),
+                army1Survivors,
+                army2Survivors,
+                battleLog: battleLog.slice(-50) // Show last 50 events
+            };
+
+            renderCombatResults();
+        }
+
+        function tryAttack(attacker, enemyArmy, currentTime) {
+            // Check if unit has reached the battlefield (engagement time)
+            if (currentTime < attacker.engagementTime) {
+                return { attacked: false, reason: 'engaging' };
+            }
+
+            // Check if unit can attack (based on attack speed)
+            const attackSpeed = attacker.originalData?.attackSpeed || 1.0;
+            const attackInterval = 1.0 / attackSpeed; // Time between attacks in seconds
+
+            if (currentTime - attacker.lastAttackTime < attackInterval) {
+                return { attacked: false, reason: 'cooldown' };
+            }
+
+            // Find a living target
+            const target = findTarget(attacker, enemyArmy);
+            if (!target) {
+                return { attacked: false, reason: 'no_target' };
+            }
+
+            // Perform the attack
+            attacker.lastAttackTime = currentTime;
+
+            // Determine damage element
+            let element = ELEMENT_TYPES.PHYSICAL;
+            if (attacker.originalData?.element) {
+                element = attacker.originalData.element;
+            }
+
+            // Apply damage
+            const damageResult = applyDamage(attacker, target, attacker.attack, element);
+
+            return {
+                attacked: true,
+                damage: damageResult.damage,
+                targetName: target.name,
+                targetHP: target.currentHP,
+                targetMaxHP: target.maxHP,
+                killed: target.currentHP <= 0
+            };
+        }
+
+        function createCombatInstances(armyUnits, armyId) {
+            const instances = [];
+            armyUnits.forEach(unit => {
+                for (let i = 0; i < unit.count; i++) {
+                    const isRanged = (unit.range || 0) > 50; // Consider units with range > 50 as ranged
+                    const speed = unit.speed || 40;
+                    
+                    // Calculate engagement delay for melee units
+                    // Assume battlefield distance of ~100 units, so time = distance / speed
+                    const engagementDelay = isRanged ? 0 : (100 / speed);
+                    
+                    instances.push({
+                        ...unit,
+                        id: `army${armyId}_${unit.id}_${i}`,
+                        name: `${unit.name}`,
+                        currentHP: unit.health,
+                        maxHP: unit.health,
+                        lastAttackTime: -999, // Start ready to attack (after engagement delay)
+                        engagementTime: engagementDelay, // Time before this unit can first attack
+                        isRanged: isRanged,
+                        armyId: armyId
+                    });
+                }
+            });
+            return instances;
+        }
+
+        function findTarget(attacker, enemyArmy) {
+            // Find any living enemy (simple targeting - could be enhanced with range/distance logic)
+            const livingEnemies = enemyArmy.filter(unit => unit.currentHP > 0);
+            if (livingEnemies.length === 0) return null;
+
+            // For simulation, target the first available enemy
+            // In a real implementation, you'd consider range, position, threat level, etc.
+            return livingEnemies[0];
+        }
+
+        function renderCombatResults() {
+            if (!combatResults) return;
+
+            const container = document.getElementById('combat-results');
+            const winnerColor = combatResults.winner.includes('Army 1') ? '#dc2626' : 
+                               combatResults.winner.includes('Army 2') ? '#2563eb' : '#6b7280';
+
+            container.innerHTML = `
+                <div class="result-card" style="border-color: ${winnerColor}; background: ${winnerColor}10;">
+                    <h3 style="color: ${winnerColor}; text-align: center; font-size: 1.5rem; margin-bottom: 16px;">
+                        🏆 Winner: ${combatResults.winner}
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div>
+                            <h4 style="color: #dc2626; font-weight: 600;">Army 1 Survivors: ${combatResults.army1Survivors.length}</h4>
+                            ${combatResults.army1Survivors.slice(0, 5).map(unit => `
+                                <div style="font-size: 0.875rem; margin: 2px 0;">
+                                    ${unit.name}: ${unit.currentHP}/${unit.maxHP} HP
+                                </div>
+                            `).join('')}
+                            ${combatResults.army1Survivors.length > 5 ? `<div style="font-size: 0.75rem; color: #6b7280;">...and ${combatResults.army1Survivors.length - 5} more</div>` : ''}
+                        </div>
+                        
+                        <div>
+                            <h4 style="color: #2563eb; font-weight: 600;">Army 2 Survivors: ${combatResults.army2Survivors.length}</h4>
+                            ${combatResults.army2Survivors.slice(0, 5).map(unit => `
+                                <div style="font-size: 0.875rem; margin: 2px 0;">
+                                    ${unit.name}: ${unit.currentHP}/${unit.maxHP} HP
+                                </div>
+                            `).join('')}
+                            ${combatResults.army2Survivors.length > 5 ? `<div style="font-size: 0.75rem; color: #6b7280;">...and ${combatResults.army2Survivors.length - 5} more</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <strong>Battle Duration: ${combatResults.duration} seconds</strong>
+                    </div>
+                    
+                    <details style="margin-top: 16px;">
+                        <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">Battle Log (Last 50 events)</summary>
+                        <div style="max-height: 200px; overflow-y: auto; background: #f9fafb; padding: 8px; border-radius: 4px; font-size: 0.875rem;">
+                            ${combatResults.battleLog.map(log => `<div style="margin: 2px 0;">${log}</div>`).join('')}
+                        </div>
+                    </details>
+                </div>
+            `;
+        }
+
+        function resetSimulation() {
+            if (isFileLoaded && gameCollections) {
+                // Reset to loaded game data
+                const unitsData = gameCollections.units || gameCollections.objectTypes?.units || gameCollections.collections?.units;
+                units = Object.entries(unitsData).map(([unitId, unitData], index) => ({
+                    id: index + 1,
+                    gameId: unitId,
+                    name: unitData.title || unitData.name || unitId,
+                    attack: unitData.damage || 10,
+                    defense: unitData.armor || 0,
+                    health: unitData.hp || 100,
+                    cost: unitData.value || 50,
+                    speed: unitData.speed || 40,
+                    range: unitData.range || 30,
+                    count: 1,
+                    abilities: unitData.abilities || [],
+                    equipment: unitData.render?.equipment || [],
+                    fireResistance: unitData.fireResistance || 0,
+                    coldResistance: unitData.coldResistance || 0,
+                    lightningResistance: unitData.lightningResistance || 0,
+                    originalData: unitData
+                }));
+                nextUnitId = units.length + 1;
+            } else {
+                // Reset to default example units
+                initializeDefaultUnits();
+            }
+            
+            // Clear armies and combat results
+            army1Units = [];
+            army2Units = [];
+            combatResults = null;
+            renderArmyDisplay(1);
+            renderArmyDisplay(2);
+            document.getElementById('combat-results').innerHTML = '';
+            
+            renderUnits();
+            renderUnitSelection();
+        }
+
+        // Army Statistics Display
+        function renderArmyStats() {
+            const container = document.getElementById('results-container');
+            
+            if (army1Units.length === 0 && army2Units.length === 0) {
+                container.innerHTML = '<p>No armies configured</p>';
+                return;
+            }
+
+            const calculateArmyStats = (armyUnits, armyName) => {
+                if (armyUnits.length === 0) return { name: armyName, empty: true };
+                
+                let totalUnits = 0;
+                let totalAttack = 0;
+                let totalDefense = 0;
+                let totalHealth = 0;
+                let totalCost = 0;
+                
+                armyUnits.forEach(unit => {
+                    totalUnits += unit.count;
+                    totalAttack += unit.attack * unit.count;
+                    totalDefense += unit.defense * unit.count;
+                    totalHealth += unit.health * unit.count;
+                    totalCost += unit.cost * unit.count;
+                });
+
+                return {
+                    name: armyName,
+                    totalUnits,
+                    totalAttack,
+                    totalDefense,
+                    totalHealth,
+                    totalCost,
+                    avgAttack: (totalAttack / totalUnits).toFixed(1),
+                    avgDefense: (totalDefense / totalUnits).toFixed(1),
+                    avgHealth: (totalHealth / totalUnits).toFixed(1)
+                };
+            };
+
+            const army1Stats = calculateArmyStats(army1Units, 'Army 1 (Red)');
+            const army2Stats = calculateArmyStats(army2Units, 'Army 2 (Blue)');
+
+            container.innerHTML = `
+                <div class="result-card" style="border-color: #dc2626; background: #fef2f2;">
+                    <h3 style="color: #dc2626;">${army1Stats.name}</h3>
+                    ${army1Stats.empty ? '<p>No units assigned</p>' : `
+                        <div class="result-grid">
+                            <div>Total Units: <strong>${army1Stats.totalUnits}</strong></div>
+                            <div>Total Cost: <strong>${army1Stats.totalCost}</strong></div>
+                            <div>Total Attack: <strong>${army1Stats.totalAttack}</strong></div>
+                            <div>Avg Attack: <strong>${army1Stats.avgAttack}</strong></div>
+                            <div>Total Defense: <strong>${army1Stats.totalDefense}</strong></div>
+                            <div>Avg Defense: <strong>${army1Stats.avgDefense}</strong></div>
+                            <div>Total Health: <strong>${army1Stats.totalHealth}</strong></div>
+                            <div>Avg Health: <strong>${army1Stats.avgHealth}</strong></div>
+                        </div>
+                    `}
+                </div>
+
+                <div class="result-card" style="border-color: #2563eb; background: #eff6ff;">
+                    <h3 style="color: #2563eb;">${army2Stats.name}</h3>
+                    ${army2Stats.empty ? '<p>No units assigned</p>' : `
+                        <div class="result-grid">
+                            <div>Total Units: <strong>${army2Stats.totalUnits}</strong></div>
+                            <div>Total Cost: <strong>${army2Stats.totalCost}</strong></div>
+                            <div>Total Attack: <strong>${army2Stats.totalAttack}</strong></div>
+                            <div>Avg Attack: <strong>${army2Stats.avgAttack}</strong></div>
+                            <div>Total Defense: <strong>${army2Stats.totalDefense}</strong></div>
+                            <div>Avg Defense: <strong>${army2Stats.avgDefense}</strong></div>
+                            <div>Total Health: <strong>${army2Stats.totalHealth}</strong></div>
+                            <div>Avg Health: <strong>${army2Stats.avgHealth}</strong></div>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        // Rendering
+        function renderUnits() {
+            const container = document.getElementById('units-container');
+            container.innerHTML = '';
+
+            units.forEach(unit => {
+                const unitCard = document.createElement('div');
+                unitCard.className = 'unit-card';
+                unitCard.innerHTML = `
+                    <div class="unit-header">
+                        <div>
+                            <input type="text" class="unit-name" value="${unit.name}" 
+                                   onchange="updateUnit(${unit.id}, 'name', this.value)">
+                            ${unit.gameId ? `<span class="unit-id">ID: ${unit.gameId}</span>` : ''}
+                        </div>
+                        <button class="btn btn-red" onclick="removeUnit(${unit.id})">×</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-input">
+                            <label><span>⚔️</span> Attack</label>
+                            <input type="number" value="${unit.attack}" 
+                                   onchange="updateUnit(${unit.id}, 'attack', this.value)">
+                        </div>
+                        <div class="stat-input">
+                            <label><span>🛡️</span> Defense</label>
+                            <input type="number" value="${unit.defense}" 
+                                   onchange="updateUnit(${unit.id}, 'defense', this.value)">
+                        </div>
+                        <div class="stat-input">
+                            <label><span>⚡</span> Health</label>
+                            <input type="number" value="${unit.health}" 
+                                   onchange="updateUnit(${unit.id}, 'health', this.value)">
+                        </div>
+                        <div class="stat-input">
+                            <label>Cost</label>
+                            <input type="number" value="${unit.cost}" 
+                                   onchange="updateUnit(${unit.id}, 'cost', this.value)">
+                        </div>
+                        ${unit.speed !== undefined ? `
+                        <div class="stat-input">
+                            <label>Speed</label>
+                            <input type="number" value="${unit.speed}" 
+                                   onchange="updateUnit(${unit.id}, 'speed', this.value)">
+                        </div>` : ''}
+                        ${unit.range !== undefined ? `
+                        <div class="stat-input">
+                            <label>Range</label>
+                            <input type="number" value="${unit.range}" 
+                                   onchange="updateUnit(${unit.id}, 'range', this.value)">
+                        </div>` : ''}
+                    </div>
+
+                    <div class="quantity-control">
+                        <label>Quantity: ${unit.count}</label>
+                        <input type="range" min="0" max="20" value="${unit.count}" 
+                               oninput="updateUnit(${unit.id}, 'count', this.value); this.previousElementSibling.textContent = 'Quantity: ' + this.value">
+                    </div>
+
+                    <div class="unit-info">
+                        Total Cost: ${unit.cost * unit.count}
+                        ${unit.abilities?.length > 0 ? `
+                        <div class="abilities">
+                            Abilities: ${unit.abilities.slice(0, 3).join(', ')}${unit.abilities.length > 3 ? '...' : ''}
+                        </div>` : ''}
+                        ${unit.equipment?.length > 0 ? `
+                        <div class="equipment">
+                            Equipment: ${unit.equipment.slice(0, 2).map(eq => eq.item).join(', ')}${unit.equipment.length > 2 ? '...' : ''}
+                        </div>` : ''}
+                    </div>
+                `;
+                container.appendChild(unitCard);
+            });
+        }
+
+        // Initialize
+        initializeDefaultUnits();
+        renderUnits();
+        renderUnitSelection();
+        renderArmyStats();
+    </script>
+</body>
+</html>

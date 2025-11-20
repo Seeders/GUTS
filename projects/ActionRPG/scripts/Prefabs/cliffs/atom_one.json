@@ -1,0 +1,41 @@
+{
+  "title": "Atom One",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "roughness": 1,
+            "metalness": 0,
+            "name": "main",
+            "url": "models/atom_one_grass/atom_one_grass.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 0.375,
+          "z": 0.375,
+          "y": 0.94
+        }
+      }
+    }
+  }
+}

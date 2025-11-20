@@ -1,0 +1,75 @@
+{
+  "title": "Mage Tower",
+  "info": "Intelligence based training.",
+  "value": 50,
+  "category": "attribute",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "url": "models/underConstruction/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/mage_tower/mage_tower.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "upgrades": [
+    "spellDamage"
+  ],
+  "units": [
+    "1_is_acolyte",
+    "1_i_apprentice"
+  ],
+  "footprintWidth": 2,
+  "footprintHeight": 2,
+  "height": 100,
+  "anchored": true,
+  "size": 50,
+  "icon": "building_mageTower",
+  "hp": 1500
+}

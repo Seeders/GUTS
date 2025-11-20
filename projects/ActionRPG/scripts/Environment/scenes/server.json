@@ -1,0 +1,45 @@
+{
+  "title": "server",
+  "type": "ECS",
+  "sceneData": [
+    {
+      "id": 1,
+      "objectType": "gamePrefabs",
+      "spawnType": "multiplayer",
+      "managers": [
+        { "type": "ComponentManager" },
+        { "type": "GameManager" },
+        { "type": "UnitCreationManager" }
+      ],
+      "systems": [
+        { "type": "TerrainSystem" },
+        { "type": "TileLevelGenerator" },
+        { "type": "ARPGGameSystem" },
+        { "type": "CharacterClassSystem" },
+        { "type": "AISystem" },
+        { "type": "MovementSystem" },
+        { "type": "CombatAISystem" },
+        { "type": "ProjectileSystem" },
+        { "type": "DeathSystem" },
+        { "type": "DamageSystem" },
+        { "type": "AbilitySystem" },
+        { "type": "EnemySpawnerSystem" },
+        { "type": "LootSystem" },
+        { "type": "ExperienceSystem" },
+        { "type": "InventorySystem" },
+        { "type": "EquipmentSystem" },
+        { "type": "LifetimeSystem" },
+        { "type": "SchedulingSystem" },
+        { "type": "PathfindingSystem" },
+        { "type": "GridSystem" },
+        { "type": "RespawnSystem" },
+        { "type": "QuestSystem" },
+        { "type": "BossSystem" },
+        { "type": "DungeonSystem" }
+      ],
+      "classes": [
+        { "collection": "abilities", "baseClass": "BaseAbility" }
+      ]
+    }
+  ]
+}
