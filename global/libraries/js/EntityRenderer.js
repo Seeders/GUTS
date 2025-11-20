@@ -175,14 +175,33 @@ class EntityRenderer {
             return false;
         }
 
+        // Debug first cliff spawn
+        const isFirstCliff = !this.entities.has(entityId) && entityId.includes('cliffs') && this.stats.staticEntities === 0;
+        if (isFirstCliff) {
+            console.log(`[EntityRenderer] Spawning first cliff ${entityId}`);
+            console.log(`[EntityRenderer] modelGroup:`, modelGroup);
+            console.log(`[EntityRenderer] modelGroup type:`, modelGroup.type);
+            console.log(`[EntityRenderer] modelGroup children:`, modelGroup.children?.length);
+        }
+
         // Clone mesh
         const mesh = modelGroup.clone(true);
+
+        if (isFirstCliff) {
+            console.log(`[EntityRenderer] Cloned mesh:`, mesh);
+            console.log(`[EntityRenderer] Mesh children:`, mesh.children?.length);
+        }
 
         // Get model definition for scale and material properties
         const modelDef = entityDef.render?.model?.main;
 
         // Apply transforms
         mesh.position.set(data.position.x, data.position.y, data.position.z);
+
+        if (isFirstCliff) {
+            console.log(`[EntityRenderer] Position:`, data.position);
+            console.log(`[EntityRenderer] Scale def:`, modelDef?.scale);
+        }
 
         if (typeof data.rotation === 'number') {
             mesh.rotation.y = data.rotation;
@@ -226,6 +245,14 @@ class EntityRenderer {
 
         // Add to scene
         this.scene.add(mesh);
+
+        if (isFirstCliff) {
+            console.log(`[EntityRenderer] Added to scene. Scene children count:`, this.scene.children.length);
+            console.log(`[EntityRenderer] Mesh in scene:`, this.scene.children.includes(mesh));
+            console.log(`[EntityRenderer] Final mesh position:`, mesh.position);
+            console.log(`[EntityRenderer] Final mesh scale:`, mesh.scale);
+            console.log(`[EntityRenderer] Mesh visible:`, mesh.visible);
+        }
 
         // Store entity data
         this.entities.set(entityId, {
