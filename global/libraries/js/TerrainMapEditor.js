@@ -1872,22 +1872,42 @@ class TerrainMapEditor {
         }
 
         const models = {};
-        const loader = new THREE_.GLTFLoader();
+        const loader = new THREE.GLTFLoader();
+
+        console.log('Loading cliff models...');
 
         // Load all four atom types
         for (const cliffType of ['atom_one', 'atom_two', 'atom_three', 'atom_four']) {
             const cliffDef = cliffs[cliffType];
-            if (!cliffDef?.render?.model?.main?.shapes?.[0]) continue;
+            if (!cliffDef?.render?.model?.main?.shapes?.[0]) {
+                console.warn(`Cliff ${cliffType} missing render definition`);
+                continue;
+            }
 
             const shape = cliffDef.render.model.main.shapes[0];
-            if (shape.type !== 'gltf') continue;
+            if (shape.type !== 'gltf') {
+                console.warn(`Cliff ${cliffType} is not a GLTF model`);
+                continue;
+            }
 
             try {
                 const projectName = this.gameEditor.getCurrentProject();
                 const url = `/projects/${projectName}/resources/${shape.url}`;
 
+                console.log(`Loading cliff model ${cliffType} from ${url}`);
+
                 const gltf = await new Promise((resolve, reject) => {
-                    loader.load(url, resolve, undefined, reject);
+                    loader.load(url,
+                        (gltf) => {
+                            console.log(`✓ Loaded ${cliffType}:`, gltf.scene);
+                            resolve(gltf);
+                        },
+                        undefined,
+                        (error) => {
+                            console.error(`✗ Failed to load ${cliffType}:`, error);
+                            reject(error);
+                        }
+                    );
                 });
 
                 models[cliffType] = {
@@ -1895,11 +1915,14 @@ class TerrainMapEditor {
                     scale: cliffDef.render.model.main.scale || { x: 1, y: 1, z: 1 },
                     color: shape.color
                 };
+
+                console.log(`Model ${cliffType} scale:`, models[cliffType].scale);
             } catch (error) {
                 console.warn(`Failed to load cliff model ${cliffType}:`, error);
             }
         }
 
+        console.log(`Loaded ${Object.keys(models).length} cliff models`);
         return models;
     }
 
