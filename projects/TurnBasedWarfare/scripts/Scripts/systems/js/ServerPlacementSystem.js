@@ -204,7 +204,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
     handleSetSquadTarget(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementId, targetPosition, meta } = data;
+            const { placementId, targetPosition, meta, commandCreatedTime } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
                     success: false
@@ -248,7 +248,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     aiState.playerOrder = {
                         targetPosition: targetPosition,
                         meta: meta,
-                        issuedTime: this.game.state.now
+                        issuedTime: commandCreatedTime || this.game.state.now
                     };
                 }
 
@@ -260,7 +260,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     target: null,
                     meta: meta,
                     priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                    interruptible: true
+                    interruptible: true,
+                    createdTime: commandCreatedTime || this.game.state.now
                 }, true); // true = interrupt current command
 
             });
@@ -268,11 +269,12 @@ class ServerPlacementSystem extends engine.BaseSystem {
                
             
             // Send success response to requesting player
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                 success: true,
                 placementId,
                 targetPosition,
-                meta
+                meta,
+                commandCreatedTime: commandCreatedTime
             });
             
             // Broadcast to other players in the room

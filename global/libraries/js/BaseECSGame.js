@@ -18,6 +18,9 @@ class BaseECSGame {
         this.deltaTime = 0;
         this.tickCount = 0;
 
+        // Fixed timestep for deterministic simulation (20 TPS = 0.05s per tick)
+        this.FIXED_DELTA_TIME = 1/20;
+
         this.isServer = false;
 
         this.componentTypes = null;
@@ -51,9 +54,10 @@ class BaseECSGame {
 
             // Use tick count based timing to avoid floating-point accumulation errors
             this.tickCount++;
+            // Use FIXED_DELTA_TIME for deterministic simulation (ignore variable deltaTime)
             // Round to 2 decimal places to avoid floating-point precision issues
             // (e.g., 3 * 0.05 = 0.15000000000000002 in JavaScript)
-            this.currentTime = Math.round(this.tickCount * deltaTime * 100) / 100;
+            this.currentTime = Math.round(this.tickCount * this.FIXED_DELTA_TIME * 100) / 100;
 
             // Only update if a reasonable amount of time has passed
             // const timeSinceLastUpdate = this.currentTime - this.lastTime;
@@ -64,8 +68,9 @@ class BaseECSGame {
             //     return;
             // }
             this.state.now = this.currentTime;
-            this.state.deltaTime = deltaTime;
-            this.deltaTime = deltaTime;
+            // Use fixed deltaTime for deterministic simulation
+            this.state.deltaTime = this.FIXED_DELTA_TIME;
+            this.deltaTime = this.FIXED_DELTA_TIME;
 
             for (const system of this.systems) {
                 const systemName = system.constructor.name;
