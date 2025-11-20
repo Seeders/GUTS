@@ -159,21 +159,24 @@ class EntityRenderer {
      * Spawn entity using direct GLTF mesh
      */
     async spawnStaticEntity(entityId, data, entityDef) {
-        // Load model if not cached
-        await this.loadModelsFromCollection(data.collection, [data.type]);
+        // Request model from ModelManager
+        const modelKey = `${data.collection}_${data.type}`;
 
-        const models = this.modelCache.get(data.collection);
-        const model = models?.[data.type];
+        if (!this.modelManager) {
+            console.error(`[EntityRenderer] No modelManager available for ${modelKey}`);
+            return false;
+        }
 
-        if (!model) {
-            console.warn(`[EntityRenderer] Model ${data.collection}.${data.type} not available`);
-            console.warn(`[EntityRenderer] Cache has:`, models ? Object.keys(models) : 'no models for collection');
-            console.warn(`[EntityRenderer] Looking for:`, data.type);
+        const modelGroup = this.modelManager.masterModels.get(modelKey);
+
+        if (!modelGroup) {
+            console.warn(`[EntityRenderer] Model ${modelKey} not found in ModelManager`);
+            console.warn(`[EntityRenderer] Available models:`, Array.from(this.modelManager.masterModels.keys()));
             return false;
         }
 
         // Clone mesh
-        const mesh = model.scene.clone(true);
+        const mesh = modelGroup.clone(true);
 
         // Apply transforms
         mesh.position.set(data.position.x, data.position.y, data.position.z);
