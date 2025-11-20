@@ -220,13 +220,10 @@ class EntityRenderer {
             mesh.rotation.y = data.facing.angle;
         }
 
-        // NOTE: Do NOT apply scale here - ModelManager already applies the scale
-        // from the model definition when building the master model
-
-        // DEBUG: Make first cliff HUGE and RED so we can see if rendering works
-        if (isFirstCliff) {
-            mesh.scale.set(10, 10, 10);
-            console.log(`[EntityRenderer] DEBUG: Made first cliff 10x larger for visibility testing`);
+        // NOTE: ModelManager applies the scale from the model definition when building
+        // However, for cliffs we need an additional scale multiplier to match terrain scale
+        if (data.collection === 'cliffs') {
+            mesh.scale.multiplyScalar(32);
         }
 
         // Apply materials
@@ -238,13 +235,7 @@ class EntityRenderer {
                 child.material = child.material.clone();
                 child.material.needsUpdate = true;
 
-                // DEBUG: Make first cliff bright red
-                if (isFirstCliff) {
-                    child.material.color.set(0xff0000); // Bright red
-                    child.material.emissive.set(0xff0000); // Make it glow
-                    child.material.emissiveIntensity = 0.5;
-                    console.log(`[EntityRenderer] DEBUG: Made first cliff bright red and emissive`);
-                } else if (shape?.color?.paletteColor && palette) {
+                if (shape?.color?.paletteColor && palette) {
                     const color = palette[shape.color.paletteColor];
                     if (color) child.material.color.set(color);
                 }
