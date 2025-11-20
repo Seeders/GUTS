@@ -189,11 +189,10 @@ class TerrainMapEditor {
             }
         });
 
-        // Add mouse move event for drawing while dragging
+        // Add mouse move event for preview and drawing while dragging
         this.canvasEl.addEventListener('mousemove', (e) => {
-            if (this.isMouseDown) {
-                this.handle3DCanvasInteraction(e);
-            }
+            // Always update preview, painting only happens when mouse is down
+            this.handle3DCanvasInteraction(e);
         });
 
         // Add mouse leave event to clear placement preview
