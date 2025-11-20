@@ -549,18 +549,17 @@ class TerrainDataManager {
      * @param {number} x - Grid X position
      * @param {number} z - Grid Z position
      * @param {string} direction - Direction of cliff
-     * @returns {string} Cliff type (atom_one, atom_two, atom_three, atom_four)
+     * @returns {string} Cliff type (atom_one, atom_two, atom_three)
      */
     selectCliffType(x, z, direction) {
         // Use seeded random for consistent cliff types
         const directionSeed = { north: 0, south: 1, east: 2, west: 3 }[direction] || 0;
         const random = this.seededRandom(x * 4 + directionSeed, z * 4 + directionSeed);
 
-        // Distribute cliff types evenly
-        if (random < 0.25) return 'atom_one';
-        if (random < 0.5) return 'atom_two';
-        if (random < 0.75) return 'atom_three';
-        return 'atom_four';
+        // Distribute cliff types evenly across three types (atom_four not used)
+        if (random < 0.33) return 'atom_one';
+        if (random < 0.66) return 'atom_two';
+        return 'atom_three';
     }
 
     /**
