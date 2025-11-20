@@ -2,7 +2,12 @@
 node_modules/
 cache/
 
-*/**/dist/**/**
+*/**/dist/client/game.js
+*/**/dist/client/engine.js
+*/**/dist/client/resources/**/*
+*/**/dist/client/modules/**/*
+*/**/dist/client/cache/**/*
+*/**/dist/server/**/*
 
 # Logs
 logs
