@@ -4,7 +4,7 @@ class TerrainMapEditor {
         this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };
         this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };
         this.config = { ...this.defaultConfig, ...config };
-    
+
         this.defaultMapSize = 16;
         this.mapSize = this.defaultMapSize;
         this.currentTerrainId = 3; // Default to grass (index 3)
@@ -23,6 +23,14 @@ class TerrainMapEditor {
         this.previewAnimationFrame = null;
         this.pendingPreviewEvent = null;
         this.isInitializing = false;
+
+        // 3D Rendering Components (NEW)
+        this.use3DRendering = true; // Flag to enable 3D rendering
+        this.worldRenderer = null;
+        this.terrainDataManager = null;
+        this.raycastHelper = null;
+        this.mouseNDC = { x: 0, y: 0 }; // Normalized device coordinates
+        this.animationFrameId = null;
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -1788,7 +1796,7 @@ class TerrainMapEditor {
                 await this.imageManager.loadImages("environment", this.worldObjects, false, false);
             }
 
-            // Initialize TileMap with actual sprite sheets (skip cliff textures for 2D editor)
+            // Initialize TileMap with actual sprite sheets
             this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
             if (!this.terrainCanvasBuffer) {
                 this.terrainCanvasBuffer = document.createElement('canvas');
@@ -1796,23 +1804,143 @@ class TerrainMapEditor {
             this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
             this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
 
-            // Init with skipCliffTextures option for 2D editing without 3D cliff meshes
+            // Init TileMap (for both 2D and 3D - 3D uses it for texture generation)
             this.terrainTileMapper.init(
                 this.terrainCanvasBuffer,
                 this.gameEditor.getCollections().configs.game.gridSize,
                 terrainImages,
                 this.gameEditor.getCollections().configs.game.isIsometric,
-                { skipCliffTextures: true }
+                { skipCliffTextures: !this.use3DRendering } // Enable cliffs for 3D
             );
 
             // Clear cached terrain canvas to force full re-render with new level data
             this.cachedTerrainCanvas = null;
             this.needsTerrainRender = true;
 
-            // Initial render
-            this.updateCanvasWithData();
+            // Initialize 3D rendering if enabled
+            if (this.use3DRendering) {
+                await this.init3DRendering();
+            } else {
+                // 2D rendering fallback
+                this.updateCanvasWithData();
+            }
         } finally {
             this.isInitializing = false;
+        }
+    }
+
+    /**
+     * Initialize 3D rendering system
+     */
+    async init3DRendering() {
+        const collections = this.gameEditor.getCollections();
+        const gameConfig = collections.configs.game;
+
+        // Initialize TerrainDataManager
+        if (!this.terrainDataManager) {
+            this.terrainDataManager = new TerrainDataManager();
+        }
+
+        // Create a mock level structure for the editor
+        const editorLevel = {
+            world: this.objectData.world,
+            tileMap: this.tileMap
+        };
+
+        // Temporarily add editor level to collections
+        const tempLevelId = '__editor_level__';
+        collections.levels = collections.levels || {};
+        collections.levels[tempLevelId] = editorLevel;
+
+        // Initialize terrain data
+        this.terrainDataManager.init(collections, gameConfig, tempLevelId);
+
+        // Initialize WorldRenderer
+        if (!this.worldRenderer) {
+            this.worldRenderer = new WorldRenderer({
+                enableShadows: true,
+                enableFog: false,
+                enablePostProcessing: false,
+                enableGrass: false,
+                enableLiquidSurfaces: false,
+                enableCliffs: true
+            });
+        }
+
+        // Get world and camera settings
+        const world = collections.worlds?.[this.objectData.world];
+        const cameraSettings = world?.camera || {
+            position: { x: 0, y: 600, z: 600 },
+            lookAt: { x: 0, y: 0, z: 0 },
+            zoom: 1,
+            near: 0.1,
+            far: 30000
+        };
+
+        // Initialize Three.js scene
+        this.worldRenderer.initializeThreeJS(this.canvasEl, cameraSettings, true);
+
+        // Set background
+        this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
+
+        // Setup lighting
+        this.worldRenderer.setupLighting(
+            world?.lighting,
+            world?.shadows,
+            this.terrainDataManager.extendedSize
+        );
+
+        // Setup ground with terrain data
+        this.worldRenderer.setupGround(
+            this.terrainDataManager,
+            this.terrainTileMapper,
+            this.terrainDataManager.heightMapSettings
+        );
+
+        // Render terrain
+        this.worldRenderer.renderTerrain();
+
+        // Create extension planes
+        this.worldRenderer.createExtensionPlanes();
+
+        // Initialize RaycastHelper
+        if (!this.raycastHelper) {
+            this.raycastHelper = new RaycastHelper(
+                this.worldRenderer.getCamera(),
+                this.worldRenderer.getScene()
+            );
+        }
+
+        // Start render loop
+        this.start3DRenderLoop();
+
+        console.log('3D terrain editor initialized');
+    }
+
+    /**
+     * Start the 3D render loop
+     */
+    start3DRenderLoop() {
+        const render = () => {
+            if (!this.use3DRendering || !this.worldRenderer) return;
+
+            const deltaTime = this.worldRenderer.clock.getDelta();
+            this.worldRenderer.update(deltaTime);
+            this.worldRenderer.render();
+
+            this.animationFrameId = requestAnimationFrame(render);
+        };
+
+        render();
+    }
+
+    /**
+     * Stop the 3D render loop
+     */
+    stop3DRenderLoop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
         }
     }
 
@@ -1988,7 +2116,127 @@ class TerrainMapEditor {
         return true;
     }
 
+    /**
+     * Handle mouse interaction in 3D mode using raycasting
+     */
+    handle3DCanvasInteraction(event) {
+        if (!this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) return;
+
+        // Get normalized device coordinates
+        const rect = this.canvasEl.getBoundingClientRect();
+        this.mouseNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouseNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Raycast to get world position
+        const worldPos = this.raycastHelper.rayCastGround(
+            this.mouseNDC.x,
+            this.mouseNDC.y,
+            this.worldRenderer.getGroundMesh()
+        );
+
+        if (!worldPos) return;
+
+        // Convert world position to grid coordinates
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+
+        const gridX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
+        const gridZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
+
+        // Check bounds
+        if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
+            return;
+        }
+
+        if (this.placementMode === 'terrain') {
+            let modifiedTiles = [];
+
+            if (this.terrainTool === 'brush') {
+                const tileKey = `${gridX},${gridZ}`;
+                if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                    modifiedTiles = this.paintBrushTerrain(gridX, gridZ, this.currentTerrainId);
+                    this.lastPaintedTile = tileKey;
+                }
+            } else if (this.terrainTool === 'fill') {
+                if (!this.isMouseDown || this.lastPaintedTile === null) {
+                    this.floodFillTerrain(gridX, gridZ, this.currentTerrainId);
+                    this.lastPaintedTile = `${gridX},${gridZ}`;
+                }
+            }
+
+            if (modifiedTiles.length > 0) {
+                // Update 3D terrain mesh for modified tiles
+                this.update3DTerrainRegion(modifiedTiles);
+            }
+
+        } else if (this.placementMode === 'height') {
+            let modifiedTiles = [];
+
+            if (this.terrainTool === 'brush') {
+                const tileKey = `${gridX},${gridZ}`;
+                if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                    modifiedTiles = this.paintBrushHeight(gridX, gridZ, this.currentHeightLevel);
+                    this.lastPaintedTile = tileKey;
+                }
+            } else if (this.terrainTool === 'fill') {
+                if (!this.isMouseDown || this.lastPaintedTile === null) {
+                    this.floodFillHeight(gridX, gridZ, this.currentHeightLevel);
+                    this.lastPaintedTile = `${gridX},${gridZ}`;
+                }
+            }
+
+            if (modifiedTiles.length > 0) {
+                // Update 3D height mesh for modified tiles
+                this.update3DHeightRegion(modifiedTiles);
+            }
+        }
+    }
+
+    /**
+     * Update 3D terrain texture for modified tiles
+     */
+    update3DTerrainRegion(modifiedTiles) {
+        if (!this.worldRenderer) return;
+
+        // Render terrain tiles to texture
+        this.worldRenderer.renderTerrain();
+    }
+
+    /**
+     * Update 3D height mesh for modified tiles
+     */
+    update3DHeightRegion(modifiedTiles) {
+        if (!this.worldRenderer || !this.terrainDataManager) return;
+
+        // Update terrain data manager's height map
+        this.terrainDataManager.processHeightMapFromData();
+
+        // Batch update the mesh for all modified tiles
+        if (modifiedTiles.length > 1) {
+            const changes = modifiedTiles.map(tile => ({
+                gridX: tile.x,
+                gridZ: tile.y,
+                heightLevel: this.tileMap.heightMap[tile.y][tile.x]
+            }));
+            this.worldRenderer.batchUpdateHeights(changes);
+        } else if (modifiedTiles.length === 1) {
+            const tile = modifiedTiles[0];
+            this.worldRenderer.setHeightAtGridPosition(
+                tile.x,
+                tile.y,
+                this.tileMap.heightMap[tile.y][tile.x]
+            );
+        }
+    }
+
     handleCanvasInteraction(event) {
+        // Use 3D raycasting if 3D rendering is enabled
+        if (this.use3DRendering) {
+            this.handle3DCanvasInteraction(event);
+            return;
+        }
+
+        // 2D interaction fallback
         // Get mouse position relative to canvas
         const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
         const rect = this.canvasEl.getBoundingClientRect();
@@ -2003,7 +2251,7 @@ class TerrainMapEditor {
             mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
             mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
         }
-        
+
         if (this.placementMode === 'terrain') {
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
