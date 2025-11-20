@@ -1805,6 +1805,10 @@ class TerrainMapEditor {
                 { skipCliffTextures: true }
             );
 
+            // Clear cached terrain canvas to force full re-render with new level data
+            this.cachedTerrainCanvas = null;
+            this.needsTerrainRender = true;
+
             // Initial render
             this.updateCanvasWithData();
         } finally {
