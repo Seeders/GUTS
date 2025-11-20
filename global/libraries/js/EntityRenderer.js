@@ -235,6 +235,14 @@ class EntityRenderer {
                 child.material = child.material.clone();
                 child.material.needsUpdate = true;
 
+                // Ensure textures use SRGB color space for correct rendering
+                if (child.material.map) {
+                    child.material.map.colorSpace = THREE_.SRGBColorSpace;
+                }
+                if (child.material.emissiveMap) {
+                    child.material.emissiveMap.colorSpace = THREE_.SRGBColorSpace;
+                }
+
                 if (shape?.color?.paletteColor && palette) {
                     const color = palette[shape.color.paletteColor];
                     if (color) child.material.color.set(color);
