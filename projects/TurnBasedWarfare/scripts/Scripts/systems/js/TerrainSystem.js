@@ -131,16 +131,35 @@ class TerrainSystem extends engine.BaseSystem {
             return;
         }
 
+        const gridSize = collections.configs.game.gridSize;
+
         cliffData.forEach(cliff => {
-            // Get world position for cliff
-            const worldPos = this.terrainDataManager.getCliffWorldPosition(cliff);
+            // Calculate world position using quadrant-based positioning
+            const tileWorldX = (cliff.gridX + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2;
+            const tileWorldZ = (cliff.gridZ + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2;
+
+            // Quadrant offsets - each quadrant is centered at 1/4 and 3/4 positions
+            const quarterGrid = gridSize / 4;
+            let worldX = tileWorldX;
+            let worldZ = tileWorldZ;
+
+            // Position based on quadrant (centered in each quadrant)
+            switch (cliff.quadrant) {
+                case 'TL': worldX -= quarterGrid; worldZ -= quarterGrid; break;
+                case 'TR': worldX += quarterGrid; worldZ -= quarterGrid; break;
+                case 'BL': worldX -= quarterGrid; worldZ += quarterGrid; break;
+                case 'BR': worldX += quarterGrid; worldZ += quarterGrid; break;
+            }
+
+            // Get height
+            const height = this.terrainDataManager.getTerrainHeightAtPosition(tileWorldX, tileWorldZ);
 
             // Create entity with unique ID
-            const entityId = `cliff_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`;
+            const entityId = `cliff_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
 
             // Add Position component
             this.game.addComponent(entityId, ComponentTypes.POSITION,
-                Components.Position(worldPos.x, worldPos.y, worldPos.z));
+                Components.Position(worldX, height, worldZ));
 
             // Add UnitType component
             const cliffDef = collections.cliffs?.[cliff.type];
