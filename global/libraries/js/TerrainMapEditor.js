@@ -23,6 +23,7 @@ class TerrainMapEditor {
         this.raycastHelper = null;
         this.mouseNDC = { x: 0, y: 0 }; // Normalized device coordinates
         this.animationFrameId = null;
+        this.mouseThrottleId = null; // Throttle mousemove to reduce raycasting frequency
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -190,9 +191,15 @@ class TerrainMapEditor {
         });
 
         // Add mouse move event for preview and drawing while dragging
+        // Throttle using requestAnimationFrame to reduce raycasting frequency
         this.canvasEl.addEventListener('mousemove', (e) => {
-            // Always update preview, painting only happens when mouse is down
-            this.handle3DCanvasInteraction(e);
+            if (!this.mouseThrottleId) {
+                this.mouseThrottleId = requestAnimationFrame(() => {
+                    // Always update preview, painting only happens when mouse is down
+                    this.handle3DCanvasInteraction(e);
+                    this.mouseThrottleId = null;
+                });
+            }
         });
 
         // Add mouse leave event to clear placement preview
