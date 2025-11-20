@@ -1405,6 +1405,9 @@ class TileMap {
 			analyzedTiles.push({ tile, x, y });
 		});
 
+		// Re-analyze the entire map ONCE for proper neighbor detection
+		const fullAnalyzedMap = this.analyzeMap();
+
 		// Redraw each analyzed tile
 		analyzedTiles.forEach(({ tile, x, y }) => {
 			const pixelX = x * this.tileSize;
@@ -1412,10 +1415,11 @@ class TileMap {
 
 			let imageData;
 
-			if (tile.terrainIndex >= 0) {
-				// Re-analyze the entire map for proper neighbor detection
-				const fullAnalyzedMap = this.analyzeMap();
-				imageData = this.drawTileWithLayering(fullAnalyzedMap, tile, y, x);
+			// Use the tile from fullAnalyzedMap instead of the individually analyzed tile
+			const correctTile = fullAnalyzedMap[y][x];
+
+			if (correctTile.terrainIndex >= 0) {
+				imageData = this.drawTileWithLayering(fullAnalyzedMap, correctTile, y, x);
 			} else {
 				// Create transparent/black tile for invalid terrain
 				let numPixels = this.tileSize * this.tileSize;
@@ -1425,7 +1429,7 @@ class TileMap {
 			}
 
 			// Update height map for this tile
-			this.updateHeightMapForTile(pixelX, pixelY, tile.heightAnalysis.heightIndex);
+			this.updateHeightMapForTile(pixelX, pixelY, correctTile.heightAnalysis.heightIndex);
 
 			// Draw the tile to the main canvas
 			ctx.putImageData(imageData, pixelX, pixelY);
