@@ -76,14 +76,14 @@ class EntityRenderer {
      * Determine if entity should use VAT batching
      */
     shouldUseVAT(entityDef, collection) {
+        // Static collections always use direct rendering, even if they have placeholder animations
+        if (collection === 'cliffs' || collection === 'worldObjects') {
+            return false;
+        }
+
         // Check if entity has animation definitions that suggest VAT
         if (entityDef.render?.animations) {
             return true;
-        }
-
-        // Static collections always use direct rendering
-        if (collection === 'cliffs' || collection === 'worldObjects') {
-            return false;
         }
 
         // Default: try VAT for units, buildings, projectiles
