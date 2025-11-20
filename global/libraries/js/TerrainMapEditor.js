@@ -2982,7 +2982,7 @@ class TerrainMapEditor {
 
         // Camera
         const aspect = canvas.clientWidth / canvas.clientHeight;
-        this.preview3DCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 2000);
+        this.preview3DCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 10000);
         this.preview3DCamera.position.set(
             this.mapSize * 15,
             this.mapSize * 20,
@@ -3013,8 +3013,8 @@ class TerrainMapEditor {
         this.preview3DScene.add(dirLight);
 
         // Controls
-        if (window.THREE.OrbitControls) {
-            this.preview3DControls = new THREE.OrbitControls(this.preview3DCamera, canvas);
+        if (window.THREE_ && window.THREE_.OrbitControls) {
+            this.preview3DControls = new window.THREE_.OrbitControls(this.preview3DCamera, canvas);
             this.preview3DControls.enableDamping = true;
             this.preview3DControls.dampingFactor = 0.05;
         }
