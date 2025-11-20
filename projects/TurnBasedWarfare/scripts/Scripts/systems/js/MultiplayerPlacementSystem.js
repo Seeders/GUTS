@@ -324,15 +324,26 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                 if (aiState && position) {
                     let targetPosition = aiState.targetPosition;
                     let meta = aiState.meta;
-                    let commandCreatedTime = null;
                     let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
                     if(tempMoveOrders){
+                        // Use command queue for temp opponent orders (needs deterministic timing)
                         targetPosition = tempMoveOrders.targetPosition;
                         meta = tempMoveOrders.meta;
-                        commandCreatedTime = tempMoveOrders.commandCreatedTime;
+                        if (this.game.commandQueueSystem) {
+                            this.game.gameManager.call('queueCommand', entityId, {
+                                type: 'move',
+                                controllerId: "UnitOrderSystem",
+                                targetPosition: targetPosition,
+                                target: null,
+                                meta: meta || {},
+                                priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                                interruptible: true,
+                                createdTime: tempMoveOrders.commandCreatedTime || this.game.state.now
+                            }, true);
+                        }
                         this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);
-                    }
-                    if(targetPosition){
+                    } else if(targetPosition){
+                        // Use old method for regular target positions (own units, not from opponent commands)
                         const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
 
                         if(!currentAIController || currentAIController == "UnitOrderSystem"){
@@ -346,26 +357,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                                 this.game.gameManager.call('removeCurrentAIController', entityId);
                                 placement.targetPosition = null;
                             } else {
-                                // Use command queue system for move orders
-                                if (this.game.commandQueueSystem) {
-                                    this.game.gameManager.call('queueCommand', entityId, {
-                                        type: 'move',
-                                        controllerId: "UnitOrderSystem",
-                                        targetPosition: targetPosition,
-                                        target: null,
-                                        meta: meta || {},
-                                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                        interruptible: true,
-                                        createdTime: commandCreatedTime || this.game.state.now
-                                    }, true);
-                                } else {
-                                    // Fallback to old method
-                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-                                    currentOrderAI.targetPosition = targetPosition;
-                                    currentOrderAI.path = [];
-                                    currentOrderAI.meta = { ...meta };
-                                    this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
-                                }
+                                let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
+                                currentOrderAI.targetPosition = targetPosition;
+                                currentOrderAI.path = [];
+                                currentOrderAI.meta = { ...meta };
+                                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
                             }
                         }
                     }
