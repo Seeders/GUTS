@@ -23,7 +23,9 @@ class TerrainMapEditor {
         this.raycastHelper = null;
         this.mouseNDC = { x: 0, y: 0 }; // Normalized device coordinates
         this.animationFrameId = null;
-        this.mouseThrottleId = null; // Throttle mousemove to reduce raycasting frequency
+        this.raycastIntervalId = null; // Interval for periodic raycasting
+        this.cachedGridPosition = null; // Cached grid position from raycast
+        this.mouseOverCanvas = false; // Track if mouse is over canvas
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -185,25 +187,25 @@ class TerrainMapEditor {
                     this.deleteEnvironmentObjectAt(e);
                 } else {
                     this.isMouseDown = true;
-                    this.handle3DCanvasInteraction(e);
+                    // Painting will be handled by the raycast interval
+                    // which calls handlePainting when isMouseDown is true
                 }
             }
         });
 
-        // Add mouse move event for preview and drawing while dragging
-        // Throttle using requestAnimationFrame to reduce raycasting frequency
+        // Add mouse move event to update NDC coordinates
         this.canvasEl.addEventListener('mousemove', (e) => {
-            if (!this.mouseThrottleId) {
-                this.mouseThrottleId = requestAnimationFrame(() => {
-                    // Always update preview, painting only happens when mouse is down
-                    this.handle3DCanvasInteraction(e);
-                    this.mouseThrottleId = null;
-                });
-            }
+            // Just update normalized device coordinates - raycasting happens on interval
+            const rect = this.canvasEl.getBoundingClientRect();
+            this.mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            this.mouseOverCanvas = true;
         });
 
         // Add mouse leave event to clear placement preview
         this.canvasEl.addEventListener('mouseleave', () => {
+            this.mouseOverCanvas = false;
+            this.cachedGridPosition = null;
             // Hide 3D placement preview
             if (this.placementPreview) {
                 this.placementPreview.hide();
@@ -1685,6 +1687,9 @@ class TerrainMapEditor {
         // Start render loop
         this.start3DRenderLoop();
 
+        // Start raycast interval for mouse position updates
+        this.startRaycastInterval();
+
         console.log('3D terrain editor initialized');
     }
 
@@ -1712,6 +1717,88 @@ class TerrainMapEditor {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
+        }
+        // Also stop raycast interval
+        this.stopRaycastInterval();
+    }
+
+    /**
+     * Start the raycast interval for mouse position updates
+     * Runs at ~60fps to update grid position based on mouse NDC
+     */
+    startRaycastInterval() {
+        // Clear any existing interval
+        this.stopRaycastInterval();
+
+        // Run raycast at ~60fps (16ms)
+        this.raycastIntervalId = setInterval(() => {
+            this.updateGridPositionFromRaycast();
+        }, 16);
+    }
+
+    /**
+     * Stop the raycast interval
+     */
+    stopRaycastInterval() {
+        if (this.raycastIntervalId) {
+            clearInterval(this.raycastIntervalId);
+            this.raycastIntervalId = null;
+        }
+    }
+
+    /**
+     * Update cached grid position from raycast
+     * Called periodically by raycast interval
+     */
+    updateGridPositionFromRaycast() {
+        if (!this.mouseOverCanvas || !this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Raycast to get world position
+        const worldPos = this.raycastHelper.rayCastGround(
+            this.mouseNDC.x,
+            this.mouseNDC.y,
+            this.worldRenderer.getGroundMesh()
+        );
+
+        if (!worldPos) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Convert world position to grid coordinates
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+
+        const gridX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
+        const gridZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
+
+        // Check bounds
+        if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Update cached position
+        this.cachedGridPosition = { x: gridX, z: gridZ };
+
+        // Update preview
+        this.showTilePreview(gridX, gridZ);
+
+        // Handle painting if mouse is down
+        if (this.isMouseDown) {
+            this.handlePainting(gridX, gridZ);
         }
     }
 
@@ -2045,52 +2132,10 @@ class TerrainMapEditor {
     }
 
     /**
-     * Handle mouse interaction in 3D mode using raycasting
+     * Handle painting at grid position
+     * Called when mouse is down and cached grid position is available
      */
-    handle3DCanvasInteraction(event) {
-        if (!this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) return;
-
-        // Get normalized device coordinates
-        const rect = this.canvasEl.getBoundingClientRect();
-        this.mouseNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        this.mouseNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        // Raycast to get world position
-        const worldPos = this.raycastHelper.rayCastGround(
-            this.mouseNDC.x,
-            this.mouseNDC.y,
-            this.worldRenderer.getGroundMesh()
-        );
-
-        if (!worldPos) {
-            // Hide preview if raycast fails
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
-            return;
-        }
-
-        // Convert world position to grid coordinates
-        const gridSize = this.terrainDataManager.gridSize;
-        const terrainSize = this.terrainDataManager.terrainSize;
-
-        const gridX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
-        const gridZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
-
-        // Check bounds
-        if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
-            return;
-        }
-
-        // Show preview for affected tiles (based on brush size)
-        this.showTilePreview(gridX, gridZ);
-
-        // Handle painting when mouse is down
-        if (!this.isMouseDown) return;
-
+    handlePainting(gridX, gridZ) {
         if (this.placementMode === 'terrain') {
             let modifiedTiles = [];
 
@@ -2122,7 +2167,7 @@ class TerrainMapEditor {
                     this.lastPaintedTile = tileKey;
                 }
             } else if (this.terrainTool === 'fill') {
-                if (!this.isMouseDown || this.lastPaintedTile === null) {
+                if (this.lastPaintedTile === null) {
                     this.floodFillHeight(gridX, gridZ, this.currentHeightLevel);
                     this.lastPaintedTile = `${gridX},${gridZ}`;
                 }
