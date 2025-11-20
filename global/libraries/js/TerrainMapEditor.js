@@ -15,6 +15,9 @@ class TerrainMapEditor {
         // Performance optimization: track last painted tile and debounce operations
         this.lastPaintedTile = null;
         this.needsRender = false;
+        this.needsTerrainRender = false; // Track when terrain data actually changes
+        this.modifiedTiles = []; // Track which tiles were modified for incremental rendering
+        this.cachedTerrainCanvas = null; // Cache the expensive TileMap rendering
         this.exportDebounceTimer = null;
         this.renderAnimationFrame = null;
         this.previewAnimationFrame = null;
@@ -177,6 +180,9 @@ class TerrainMapEditor {
                 btn.style.backgroundColor = 'var(--secondary)';
             }, 1500);
         });
+
+        // 3D Preview button
+        this.setup3DPreviewButton();
        
         // Handle mouseup event (stop dragging)
         document.addEventListener('mouseup', () => {
@@ -1762,22 +1768,44 @@ class TerrainMapEditor {
     }
 
     async initGridCanvas() {
-        // Load environment images but keep fast tile rendering
+        // Load terrain and environment images for sprite rendering
         this.isInitializing = true;
-        
+
         try {
+            let palette = this.gameEditor.getPalette();
+            this.imageManager = new this.engineClasses.ImageManager(
+                this.gameEditor,
+                { imageSize: this.config.imageSize, palette: palette},
+                {ShapeFactory: this.engineClasses.ShapeFactory}
+            );
+
+            // Load terrain sprite sheets for in-game graphics rendering
+            await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
+            const terrainImages = this.imageManager.getImages("levels", "level");
+
             // Load environment images if we have environment objects
             if (this.worldObjects && Object.keys(this.worldObjects).length > 0) {
-                let palette = this.gameEditor.getPalette();
-                this.imageManager = new this.engineClasses.ImageManager(
-                    this.gameEditor, 
-                    { imageSize: this.config.imageSize, palette: palette}, 
-                    {ShapeFactory: this.engineClasses.ShapeFactory}
-                );
                 await this.imageManager.loadImages("environment", this.worldObjects, false, false);
             }
-            
-            // Render with fast renderer
+
+            // Initialize TileMap with actual sprite sheets (skip cliff textures for 2D editor)
+            this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+            if (!this.terrainCanvasBuffer) {
+                this.terrainCanvasBuffer = document.createElement('canvas');
+            }
+            this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+            this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
+            // Init with skipCliffTextures option for 2D editing without 3D cliff meshes
+            this.terrainTileMapper.init(
+                this.terrainCanvasBuffer,
+                this.gameEditor.getCollections().configs.game.gridSize,
+                terrainImages,
+                this.gameEditor.getCollections().configs.game.isIsometric,
+                { skipCliffTextures: true }
+            );
+
+            // Initial render
             this.updateCanvasWithData();
         } finally {
             this.isInitializing = false;
@@ -1815,7 +1843,7 @@ class TerrainMapEditor {
     // Paint with brush on terrain map
     paintBrushTerrain(centerX, centerY, terrainId) {
         const radius = Math.floor(this.brushSize / 2);
-        let painted = false;
+        const modifiedTiles = [];
 
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1829,20 +1857,20 @@ class TerrainMapEditor {
                     if (distance <= radius + 0.5) {
                         if (this.tileMap.terrainMap[y][x] !== terrainId) {
                             this.tileMap.terrainMap[y][x] = terrainId;
-                            painted = true;
+                            modifiedTiles.push({ x, y });
                         }
                     }
                 }
             }
         }
 
-        return painted;
+        return modifiedTiles;
     }
 
     // Paint with brush on height map
     paintBrushHeight(centerX, centerY, heightLevel) {
         const radius = Math.floor(this.brushSize / 2);
-        let painted = false;
+        const modifiedTiles = [];
 
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1856,14 +1884,14 @@ class TerrainMapEditor {
                     if (distance <= radius + 0.5) {
                         if (this.tileMap.heightMap[y][x] !== heightLevel) {
                             this.tileMap.heightMap[y][x] = heightLevel;
-                            painted = true;
+                            modifiedTiles.push({ x, y });
                         }
                     }
                 }
             }
         }
 
-        return painted;
+        return modifiedTiles;
     }
 
     // Flood fill terrain map
@@ -1980,7 +2008,7 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
 
-                let painted = false;
+                let modifiedTiles = [];
 
                 if (this.terrainTool === 'brush') {
                     // Brush tool: paint with variable size
@@ -1988,19 +2016,24 @@ class TerrainMapEditor {
 
                     // Only paint if we're on a new tile or haven't painted here yet
                     if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        painted = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        modifiedTiles = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
                         this.lastPaintedTile = tileKey;
                     }
                 } else if (this.terrainTool === 'fill') {
                     // Flood fill tool: fill contiguous area (only on click, not drag)
                     if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        painted = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        const filled = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        if (filled) {
+                            // For flood fill, mark entire map as needing redraw
+                            this.needsTerrainRender = true;
+                        }
                         this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
                     }
                 }
 
-                if (painted) {
-                    // Schedule render instead of immediate render
+                if (modifiedTiles.length > 0) {
+                    // Accumulate modified tiles for incremental rendering
+                    this.modifiedTiles.push(...modifiedTiles);
                     this.needsRender = true;
                     this.scheduleRender();
                 }
@@ -2029,7 +2062,8 @@ class TerrainMapEditor {
             }
             this.tileMap.environmentObjects.push(newObject);
 
-            // Schedule render instead of immediate render
+            // Mark terrain as dirty (environment objects changed)
+            this.needsTerrainRender = true;
             this.needsRender = true;
             this.scheduleRender();
 
@@ -2075,7 +2109,7 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
 
-                let painted = false;
+                let modifiedTiles = [];
 
                 if (this.terrainTool === 'brush') {
                     // Brush tool: paint with variable size
@@ -2083,11 +2117,11 @@ class TerrainMapEditor {
 
                     // Only paint if we're on a new tile or haven't painted here yet
                     if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        painted = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        modifiedTiles = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
                         this.lastPaintedTile = tileKey;
 
                         // Apply terrain type 0 / height 0 coupling rule for brush strokes
-                        if (painted && this.currentHeightLevel === 0) {
+                        if (modifiedTiles.length > 0 && this.currentHeightLevel === 0) {
                             const radius = Math.floor(this.brushSize / 2);
                             for (let dy = -radius; dy <= radius; dy++) {
                                 for (let dx = -radius; dx <= radius; dx++) {
@@ -2106,15 +2140,20 @@ class TerrainMapEditor {
                 } else if (this.terrainTool === 'fill') {
                     // Flood fill tool: fill contiguous area (only on click, not drag)
                     if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        painted = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        const filled = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
                         this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
 
-                        // Apply terrain type 0 / height 0 coupling rule for filled area
-                        if (painted && this.currentHeightLevel === 0) {
-                            for (let y = 0; y < this.mapSize; y++) {
-                                for (let x = 0; x < this.mapSize; x++) {
-                                    if (this.tileMap.heightMap[y][x] === 0) {
-                                        this.tileMap.terrainMap[y][x] = 0;
+                        if (filled) {
+                            // For flood fill, mark entire map as needing redraw
+                            this.needsTerrainRender = true;
+
+                            // Apply terrain type 0 / height 0 coupling rule for filled area
+                            if (this.currentHeightLevel === 0) {
+                                for (let y = 0; y < this.mapSize; y++) {
+                                    for (let x = 0; x < this.mapSize; x++) {
+                                        if (this.tileMap.heightMap[y][x] === 0) {
+                                            this.tileMap.terrainMap[y][x] = 0;
+                                        }
                                     }
                                 }
                             }
@@ -2122,8 +2161,9 @@ class TerrainMapEditor {
                     }
                 }
 
-                if (painted) {
-                    // Schedule render instead of immediate render
+                if (modifiedTiles.length > 0) {
+                    // Accumulate modified tiles for incremental rendering
+                    this.modifiedTiles.push(...modifiedTiles);
                     this.needsRender = true;
                     this.scheduleRender();
                 }
@@ -2210,7 +2250,7 @@ class TerrainMapEditor {
         }
     }
 
-    // Fast rendering method - draws simple colored squares
+    // Render using TileMap sprites with caching for performance
     renderMap() {
         if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
             return;
@@ -2227,58 +2267,98 @@ class TerrainMapEditor {
         ctx.fillStyle = extensionTerrain?.color || '#7aad7b';
         ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
 
-        if (isIsometric) {
-            // Isometric rendering
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+        // Calculate offset to center the terrain on the canvas
+        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
 
-                    if (!terrain) continue;
+        // Use TileMap system to render actual in-game sprites (CACHED for performance)
+        if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
+            // Check if we need to do full or incremental rendering
+            if (this.needsTerrainRender || !this.cachedTerrainCanvas) {
+                // Full re-render (e.g., after flood fill or initial load)
+                const heightMap = this.tileMap.heightMap || null;
+                this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
 
-                    const isoCoords = this.translator.gridToIso(x, y);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    ctx.fillStyle = terrain.color;
-                    ctx.beginPath();
-                    ctx.moveTo(isoCoords.x, isoCoords.y);
-                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Optional: draw borders
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+                // Cache the rendered terrain
+                if (!this.cachedTerrainCanvas) {
+                    this.cachedTerrainCanvas = document.createElement('canvas');
+                    this.cachedTerrainCanvas.width = this.terrainCanvasBuffer.width;
+                    this.cachedTerrainCanvas.height = this.terrainCanvasBuffer.height;
                 }
+                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
+                cacheCtx.clearRect(0, 0, this.cachedTerrainCanvas.width, this.cachedTerrainCanvas.height);
+                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
+
+                this.needsTerrainRender = false;
+            } else if (this.modifiedTiles.length > 0) {
+                // Incremental rendering - only redraw modified tiles and neighbors
+                this.terrainTileMapper.redrawTiles(this.modifiedTiles);
+
+                // Update cache with incremental changes
+                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
+                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
+
+                // Clear modified tiles list
+                this.modifiedTiles = [];
             }
+
+            // Draw the cached terrain (fast!)
+            ctx.drawImage(this.cachedTerrainCanvas, offsetX, offsetY);
         } else {
-            // Non-isometric rendering (simple squares)
-            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+            // Fallback to simple colored squares if TileMap not ready
+            if (isIsometric) {
+                // Isometric rendering
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
 
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+                        if (!terrain) continue;
 
-                    if (!terrain) continue;
+                        const isoCoords = this.translator.gridToIso(x, y);
+                        const tileWidth = gridSize;
+                        const tileHeight = gridSize * 0.5;
 
-                    const drawX = offsetX + x * gridSize;
-                    const drawY = offsetY + y * gridSize;
+                        ctx.fillStyle = terrain.color;
+                        ctx.beginPath();
+                        ctx.moveTo(isoCoords.x, isoCoords.y);
+                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.closePath();
+                        ctx.fill();
 
-                    ctx.fillStyle = terrain.color;
-                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
+                        // Optional: draw borders
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            } else {
+                // Non-isometric rendering (simple squares)
+                const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
 
-                    // Optional: draw grid lines
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
+
+                        if (!terrain) continue;
+
+                        const drawX = offsetX + x * gridSize;
+                        const drawY = offsetY + y * gridSize;
+
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
+
+                        // Optional: draw grid lines
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                    }
                 }
             }
         }
@@ -2787,6 +2867,223 @@ class TerrainMapEditor {
         if (rampCountEl) {
             const count = this.tileMap.ramps ? this.tileMap.ramps.length : 0;
             rampCountEl.textContent = count;
+        }
+    }
+
+    setup3DPreviewButton() {
+        // Create button next to save button
+        const saveBtn = document.getElementById('saveMapBtn');
+        if (!saveBtn) return;
+
+        const previewBtn = document.createElement('button');
+        previewBtn.id = 'preview3DBtn';
+        previewBtn.className = 'editor-module__btn';
+        previewBtn.textContent = '🎮 3D Preview';
+        previewBtn.style.marginLeft = '10px';
+
+        saveBtn.parentNode.insertBefore(previewBtn, saveBtn.nextSibling);
+
+        // Create modal
+        this.create3DPreviewModal();
+
+        // Button click handler
+        previewBtn.addEventListener('click', () => {
+            this.show3DPreview();
+        });
+    }
+
+    create3DPreviewModal() {
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'terrain-3d-preview-modal';
+        modal.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        modal.innerHTML = `
+            <div style="width: 90%; height: 90%; background: #1a1a1a; border-radius: 8px; display: flex; flex-direction: column;">
+                <div style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="color: #fff; margin: 0;">3D Terrain Preview</h2>
+                    <button id="close-3d-preview" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+                </div>
+                <div style="flex: 1; position: relative;">
+                    <canvas id="terrain-3d-canvas" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close button handler
+        document.getElementById('close-3d-preview').addEventListener('click', () => {
+            this.hide3DPreview();
+        });
+
+        // Click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.hide3DPreview();
+            }
+        });
+    }
+
+    show3DPreview() {
+        const modal = document.getElementById('terrain-3d-preview-modal');
+        if (!modal) return;
+
+        modal.style.display = 'flex';
+
+        // Initialize 3D scene if not already done
+        if (!this.preview3DScene) {
+            this.init3DPreview();
+        }
+
+        // Render the terrain in 3D
+        this.render3DTerrain();
+
+        // Start animation loop
+        if (!this.preview3DAnimationId) {
+            this.animate3DPreview();
+        }
+    }
+
+    hide3DPreview() {
+        const modal = document.getElementById('terrain-3d-preview-modal');
+        if (!modal) return;
+
+        modal.style.display = 'none';
+
+        // Stop animation loop
+        if (this.preview3DAnimationId) {
+            cancelAnimationFrame(this.preview3DAnimationId);
+            this.preview3DAnimationId = null;
+        }
+    }
+
+    init3DPreview() {
+        const canvas = document.getElementById('terrain-3d-canvas');
+        if (!canvas || !window.THREE) {
+            console.error('Three.js not available for 3D preview');
+            return;
+        }
+
+        // Set up Three.js scene
+        this.preview3DScene = new THREE.Scene();
+        this.preview3DScene.background = new THREE.Color(0x87CEEB); // Sky blue
+
+        // Camera
+        const aspect = canvas.clientWidth / canvas.clientHeight;
+        this.preview3DCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 2000);
+        this.preview3DCamera.position.set(
+            this.mapSize * 15,
+            this.mapSize * 20,
+            this.mapSize * 15
+        );
+        this.preview3DCamera.lookAt(0, 0, 0);
+
+        // Renderer
+        this.preview3DRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        this.preview3DRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        this.preview3DRenderer.setPixelRatio(window.devicePixelRatio);
+        this.preview3DRenderer.shadowMap.enabled = true;
+        this.preview3DRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.preview3DScene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.left = -this.mapSize * 10;
+        dirLight.shadow.camera.right = this.mapSize * 10;
+        dirLight.shadow.camera.top = this.mapSize * 10;
+        dirLight.shadow.camera.bottom = -this.mapSize * 10;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        this.preview3DScene.add(dirLight);
+
+        // Controls
+        if (window.THREE.OrbitControls) {
+            this.preview3DControls = new THREE.OrbitControls(this.preview3DCamera, canvas);
+            this.preview3DControls.enableDamping = true;
+            this.preview3DControls.dampingFactor = 0.05;
+        }
+
+        // Handle window resize
+        this.preview3DResizeHandler = () => {
+            if (this.preview3DCamera && this.preview3DRenderer && canvas) {
+                this.preview3DCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+                this.preview3DCamera.updateProjectionMatrix();
+                this.preview3DRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }
+        };
+        window.addEventListener('resize', this.preview3DResizeHandler);
+    }
+
+    render3DTerrain() {
+        if (!this.preview3DScene) return;
+
+        // Clear existing terrain
+        if (this.preview3DTerrain) {
+            this.preview3DScene.remove(this.preview3DTerrain);
+        }
+
+        // Create terrain mesh from terrain and height maps
+        const gridSize = this.config.gridSize;
+        const geometry = new THREE.PlaneGeometry(
+            this.mapSize * gridSize,
+            this.mapSize * gridSize,
+            this.mapSize - 1,
+            this.mapSize - 1
+        );
+
+        // Apply height map
+        if (this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
+            const vertices = geometry.attributes.position.array;
+            for (let y = 0; y < this.mapSize; y++) {
+                for (let x = 0; x < this.mapSize; x++) {
+                    const height = this.tileMap.heightMap[y][x] || 0;
+                    const index = (y * this.mapSize + x) * 3;
+                    vertices[index + 2] = height * gridSize * 0.5; // Z becomes height
+                }
+            }
+            geometry.attributes.position.needsUpdate = true;
+            geometry.computeVertexNormals();
+        }
+
+        // Create material from terrain texture
+        const material = new THREE.MeshStandardMaterial({
+            map: this.cachedTerrainCanvas ? new THREE.CanvasTexture(this.cachedTerrainCanvas) : null,
+            side: THREE.DoubleSide,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+
+        this.preview3DTerrain = new THREE.Mesh(geometry, material);
+        this.preview3DTerrain.rotation.x = -Math.PI / 2;
+        this.preview3DTerrain.receiveShadow = true;
+        this.preview3DScene.add(this.preview3DTerrain);
+    }
+
+    animate3DPreview() {
+        this.preview3DAnimationId = requestAnimationFrame(() => this.animate3DPreview());
+
+        if (this.preview3DControls) {
+            this.preview3DControls.update();
+        }
+
+        if (this.preview3DRenderer && this.preview3DScene && this.preview3DCamera) {
+            this.preview3DRenderer.render(this.preview3DScene, this.preview3DCamera);
         }
     }
 
