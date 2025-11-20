@@ -2307,57 +2307,58 @@ class TerrainMapEditor {
         } else {
             // Fallback to simple colored squares if TileMap not ready
             if (isIsometric) {
-            // Isometric rendering
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+                // Isometric rendering
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
 
-                    if (!terrain) continue;
+                        if (!terrain) continue;
 
-                    const isoCoords = this.translator.gridToIso(x, y);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
+                        const isoCoords = this.translator.gridToIso(x, y);
+                        const tileWidth = gridSize;
+                        const tileHeight = gridSize * 0.5;
 
-                    ctx.fillStyle = terrain.color;
-                    ctx.beginPath();
-                    ctx.moveTo(isoCoords.x, isoCoords.y);
-                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
+                        ctx.fillStyle = terrain.color;
+                        ctx.beginPath();
+                        ctx.moveTo(isoCoords.x, isoCoords.y);
+                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
+                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
+                        ctx.closePath();
+                        ctx.fill();
 
-                    // Optional: draw borders
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+                        // Optional: draw borders
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
                 }
-            }
-        } else {
-            // Non-isometric rendering (simple squares)
-            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+            } else {
+                // Non-isometric rendering (simple squares)
+                const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+                const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
 
-            for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                    const terrainIndex = this.tileMap.terrainMap[y][x];
-                    const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                    const terrain = collections.terrainTypes?.[terrainTypeId];
+                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                        const terrainIndex = this.tileMap.terrainMap[y][x];
+                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
+                        const terrain = collections.terrainTypes?.[terrainTypeId];
 
-                    if (!terrain) continue;
+                        if (!terrain) continue;
 
-                    const drawX = offsetX + x * gridSize;
-                    const drawY = offsetY + y * gridSize;
+                        const drawX = offsetX + x * gridSize;
+                        const drawY = offsetY + y * gridSize;
 
-                    ctx.fillStyle = terrain.color;
-                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
 
-                    // Optional: draw grid lines
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                        // Optional: draw grid lines
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                    }
                 }
             }
         }
