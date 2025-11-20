@@ -1914,10 +1914,18 @@ class TerrainMapEditor {
         }
 
         // Clone the model
-        const cliffMesh = model.scene.clone();
+        const cliffMesh = model.scene.clone(true); // Deep clone
 
         // Get world position
         const worldPos = this.terrainDataManager.getCliffWorldPosition(cliffData);
+
+        // Debug first few cliffs
+        if (this.cliffMeshes.size < 3) {
+            console.log(`Spawning cliff at grid (${cliffData.gridX}, ${cliffData.gridZ}) dir: ${cliffData.direction}`);
+            console.log(`  World position:`, worldPos);
+            console.log(`  Scale:`, model.scale);
+            console.log(`  Type:`, cliffData.type);
+        }
 
         // Set position
         cliffMesh.position.set(worldPos.x, worldPos.y, worldPos.z);
@@ -1932,19 +1940,33 @@ class TerrainMapEditor {
             model.scale.z || 1
         );
 
-        // Apply color if specified
-        if (model.color?.paletteColor) {
-            const palette = this.gameEditor.getPalette();
-            const color = palette[model.color.paletteColor];
-            if (color) {
-                cliffMesh.traverse((child) => {
-                    if (child.isMesh && child.material) {
-                        child.material = child.material.clone();
-                        child.material.color.set(color);
+        // Ensure materials are visible
+        cliffMesh.traverse((child) => {
+            if (child.isMesh) {
+                if (child.material) {
+                    // Clone material to avoid shared material issues
+                    child.material = child.material.clone();
+                    child.material.needsUpdate = true;
+
+                    // Apply color if specified
+                    if (model.color?.paletteColor) {
+                        const palette = this.gameEditor.getPalette();
+                        const color = palette[model.color.paletteColor];
+                        if (color) {
+                            child.material.color.set(color);
+                        }
                     }
-                });
+                }
+
+                // Ensure mesh is visible
+                child.visible = true;
+                child.castShadow = true;
+                child.receiveShadow = true;
             }
-        }
+        });
+
+        // Ensure parent object is visible
+        cliffMesh.visible = true;
 
         // Add to scene
         scene.add(cliffMesh);
