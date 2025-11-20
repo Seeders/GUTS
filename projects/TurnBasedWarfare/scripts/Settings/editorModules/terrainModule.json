@@ -10,6 +10,7 @@
     "TerrainImageProcessor",
     "TileMap",
     "GE_GroupManager",
+    "GLTFLoader",
     "TerrainMapEditor",
     "TerrainDataManager",
     "WorldRenderer",

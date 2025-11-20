@@ -1872,7 +1872,7 @@ class TerrainMapEditor {
         }
 
         const models = {};
-        const loader = new THREE.GLTFLoader();
+        const loader = new THREE_.GLTFLoader();
 
         // Load all four atom types
         for (const cliffType of ['atom_one', 'atom_two', 'atom_three', 'atom_four']) {

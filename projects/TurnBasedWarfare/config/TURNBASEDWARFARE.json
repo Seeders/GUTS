@@ -2027,6 +2027,7 @@
           "TerrainImageProcessor",
           "TileMap",
           "GE_GroupManager",
+          "GLTFLoader",
           "TerrainMapEditor",
           "TerrainDataManager",
           "WorldRenderer",
@@ -18741,7 +18742,7 @@
         "filePath": "/global/libraries/js/PhysicsEngine.js"
       },
       "PlacementPreview": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
+        "filePath": "/global/libraries/js/PlacementPreview.js",
         "fileName": "PlacementPreview"
       },
       "Rapier": {
@@ -18757,7 +18758,7 @@
         "filePath": "/global/libraries/js/RapierWorker.js"
       },
       "RaycastHelper": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/RaycastHelper.js",
+        "filePath": "/global/libraries/js/RaycastHelper.js",
         "fileName": "RaycastHelper"
       },
       "SE_GizmoManager": {
@@ -18822,7 +18823,7 @@
         "filePath": "/global/libraries/js/SpatialGrid.js"
       },
       "TerrainDataManager": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/TerrainDataManager.js",
+        "filePath": "/global/libraries/js/TerrainDataManager.js",
         "fileName": "TerrainDataManager"
       },
       "TerrainGenerator": {
@@ -18852,7 +18853,7 @@
         "fileName": "UIComponents"
       },
       "WorldRenderer": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/WorldRenderer.js",
+        "filePath": "/global/libraries/js/WorldRenderer.js",
         "fileName": "WorldRenderer"
       },
       "ZipExporter": {
