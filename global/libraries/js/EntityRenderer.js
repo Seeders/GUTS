@@ -208,15 +208,28 @@ class EntityRenderer {
         });
 
         // Update instance transform
+        // For cliffs, apply the scale in the instance matrix (not on the InstancedMesh itself)
+        const scale = data.collection === 'cliffs' ? 32 : 1;
         const matrix = new THREE_.Matrix4();
         matrix.compose(
             new THREE_.Vector3(data.position.x, data.position.y, data.position.z),
             new THREE_.Quaternion().setFromEuler(new THREE_.Euler(0, data.rotation || 0, 0)),
-            new THREE_.Vector3(1, 1, 1)
+            new THREE_.Vector3(scale, scale, scale)
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
         batch.instancedMesh.instanceMatrix.needsUpdate = true;
         batch.instancedMesh.count = batch.count;
+
+        // Debug first few instances
+        if (batch.count <= 3) {
+            console.log(`[EntityRenderer] Spawned instance ${instanceIndex} for ${batchKey}:`, {
+                entityId,
+                position: data.position,
+                rotation: data.rotation,
+                scale,
+                totalCount: batch.count
+            });
+        }
 
         this.stats.entitiesRendered++;
         this.stats.staticEntities++;
@@ -245,8 +258,11 @@ class EntityRenderer {
         let geometry = null;
         let material = null;
 
+        console.log(`[EntityRenderer] Creating batch for ${batchKey}, modelGroup:`, modelGroup);
+
         modelGroup.traverse((child) => {
             if (child.isMesh && !geometry) {
+                console.log(`[EntityRenderer] Found mesh in ${batchKey}:`, child);
                 geometry = child.geometry;
                 material = child.material.clone();
 
@@ -265,20 +281,23 @@ class EntityRenderer {
             return null;
         }
 
+        console.log(`[EntityRenderer] Geometry vertices:`, geometry.attributes.position?.count);
+        console.log(`[EntityRenderer] Material:`, material.type);
+
         // Create instanced mesh
         const capacity = this.defaultCapacity;
         const instancedMesh = new THREE_.InstancedMesh(geometry, material, capacity);
 
-        // Apply scale for cliffs
-        if (collection === 'cliffs') {
-            instancedMesh.scale.set(32, 32, 32);
-        }
+        console.log(`[EntityRenderer] Created InstancedMesh for ${batchKey}, capacity: ${capacity}`);
 
+        // Note: scale is applied per-instance in the matrix, not on the InstancedMesh itself
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
         instancedMesh.count = 0; // Start with 0 visible instances
 
+        console.log(`[EntityRenderer] Adding InstancedMesh to scene`);
         this.scene.add(instancedMesh);
+        console.log(`[EntityRenderer] InstancedMesh added, scene children count:`, this.scene.children.length);
 
         const batch = {
             instancedMesh,
