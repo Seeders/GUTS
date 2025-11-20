@@ -520,43 +520,45 @@ class TerrainDataManager {
                     cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: Math.PI / 2 });
                 }
                 if (cornerBottomLeftLess && !botLess && !leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: -Math.PI / 2 });
+                    // Rotate 90 deg clockwise: -Math.PI/2 + Math.PI/2 = 0
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: 0 });
                 }
                 if (cornerBottomRightLess && !botLess && !rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: Math.PI });
+                    // Rotate 90 deg counter clockwise: Math.PI - Math.PI/2 = Math.PI/2
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: Math.PI / 2 });
                 }
 
-                // Place edges in empty quadrants (atom_two)
+                // Place edges in empty quadrants (atom_two) - all rotated 90 deg clockwise
                 if (topLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI });
                     }
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI });
                     }
                 }
                 if (botLess) {
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: 0 });
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 0 });
                     }
                 }
                 if (leftLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2 });
                     }
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2 });
                     }
                 }
                 if (rightLess) {
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2 });
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2 });
                     }
                 }
             }

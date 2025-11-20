@@ -151,8 +151,10 @@ class TerrainSystem extends engine.BaseSystem {
                 case 'BR': worldX += quarterGrid; worldZ += quarterGrid; break;
             }
 
-            // Get height
-            const height = this.terrainDataManager.getTerrainHeightAtPosition(tileWorldX, tileWorldZ);
+            // Get cliff bottom height (2 levels below tile height)
+            const tileHeight = this.terrainDataManager.tileMap.heightMap[cliff.gridZ][cliff.gridX];
+            const cliffBottomHeight = (tileHeight - 2) * this.terrainDataManager.heightStep;
+            const height = cliffBottomHeight;
 
             // Create entity with unique ID
             const entityId = `cliff_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
