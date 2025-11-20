@@ -1901,10 +1901,11 @@ class TerrainMapEditor {
                     break;
             }
 
-            // Get height from terrain
+            // Get height from terrain - cliffs sit at the bottom (2 levels below tile height)
             const heightStep = this.terrainDataManager.heightStep;
             const mapHeight = this.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const height = mapHeight * heightStep;
+            const cliffBottomHeight = (mapHeight - 2) * heightStep;
+            const height = cliffBottomHeight;
 
             const worldPos = { x: worldX, y: height, z: worldZ };
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
