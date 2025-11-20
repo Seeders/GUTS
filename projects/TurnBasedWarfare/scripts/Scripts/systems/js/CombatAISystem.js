@@ -412,13 +412,13 @@ class CombatAISystem extends engine.BaseSystem {
                             target: null,
                             meta: playerOrder.meta || {},
                             priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                            interruptible: true
+                            interruptible: true,
+                            createdTime: playerOrder.issuedTime || this.game.state.now
                         }, true);
                     }
-                } else {
-                    // Unit has reached destination, clear the player order
-                    aiState.playerOrder = null;
                 }
+                // Clear the player order after restoring to prevent re-queueing
+                aiState.playerOrder = null;
             }
         }
     }
