@@ -637,22 +637,54 @@ class EntityRenderer {
     // ============ STATIC MODEL LOADING ============
 
     async loadModelsFromCollection(collectionType, entityTypes = null) {
-        if (this.modelCache.has(collectionType)) {
-            return this.modelCache.get(collectionType);
+        // Get or create cache for this collection
+        if (!this.modelCache.has(collectionType)) {
+            this.modelCache.set(collectionType, {});
         }
 
-        const loadKey = collectionType;
+        const cachedModels = this.modelCache.get(collectionType);
+
+        // If no specific types requested, load all (or return cached)
+        if (!entityTypes) {
+            // Check if we've already loaded all types
+            const collection = this.collections[collectionType];
+            const allTypes = Object.keys(collection || {});
+            const allLoaded = allTypes.every(type => type in cachedModels);
+
+            if (allLoaded) {
+                return cachedModels;
+            }
+
+            // Load all types
+            const models = await this._loadModelsInternal(collectionType, null);
+            Object.assign(cachedModels, models);
+            return cachedModels;
+        }
+
+        // Check which specific types need loading
+        const typesToLoad = entityTypes.filter(type => !(type in cachedModels));
+
+        if (typesToLoad.length === 0) {
+            // All requested types already cached
+            return cachedModels;
+        }
+
+        // Load missing types
+        const loadKey = `${collectionType}_${typesToLoad.join('_')}`;
+
         if (this.loadingPromises.has(loadKey)) {
-            return await this.loadingPromises.get(loadKey);
+            await this.loadingPromises.get(loadKey);
+            return cachedModels;
         }
 
-        const loadPromise = this._loadModelsInternal(collectionType, entityTypes);
+        const loadPromise = this._loadModelsInternal(collectionType, typesToLoad);
         this.loadingPromises.set(loadKey, loadPromise);
 
         try {
             const models = await loadPromise;
-            this.modelCache.set(collectionType, models);
-            return models;
+            // Merge new models into cache
+            Object.assign(cachedModels, models);
+            return cachedModels;
         } finally {
             this.loadingPromises.delete(loadKey);
         }
