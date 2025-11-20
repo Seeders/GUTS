@@ -341,8 +341,10 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 }
                 
                 // Store target position in placement data with timing for deterministic command creation
+                // Don't queue command here - do it at battle start in applyTargetPositions for determinism
                 placement.targetPosition = targetPosition;
                 placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
+                placement.meta = meta;
                 placement.squadUnits.forEach((unitId) => {
                     // Store player order for persistence through combat
                     const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
@@ -352,20 +354,8 @@ class ServerPlacementSystem extends engine.BaseSystem {
                             meta: meta,
                             issuedTime: commandCreatedTime || this.game.state.now
                         };
+                        aiState.targetPosition = targetPosition;
                     }
-
-                    this.game.gameManager.call('clearCommands', unitId);
-                    this.game.gameManager.call('queueCommand', unitId, {
-                        type: 'move',
-                        controllerId: "UnitOrderSystem",
-                        targetPosition: targetPosition,
-                        target: null,
-                        meta: meta,
-                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                        interruptible: true,
-                        createdTime: commandCreatedTime || this.game.state.now
-                    }, true); // true = interrupt current command
-
                 });
                         
 
@@ -457,16 +447,15 @@ class ServerPlacementSystem extends engine.BaseSystem {
     }
 
     applyTargetPositions() {
-     //   console.log('APPLY TARGET POSITIONS');
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         for (const [playerId, placements] of this.playerPlacements) {
-            placements.forEach((placement) => {     
-                const targetPosition = placement.targetPosition;         
+            placements.forEach((placement) => {
+                const targetPosition = placement.targetPosition;
                 placement.squadUnits.forEach(entityId => {
                     const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                     const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                     if (aiState && position) {
-                        
+
                         if(targetPosition){
                             const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
 
@@ -481,10 +470,17 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                     this.game.gameManager.call('removeCurrentAIController', entityId);
                                     placement.targetPosition = null;
                                 } else {
-                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-                                    currentOrderAI.targetPosition = targetPosition;
-                                    currentOrderAI.path = [];
-                                    this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+                                    // Queue command at battle start for determinism
+                                    this.game.gameManager.call('queueCommand', entityId, {
+                                        type: 'move',
+                                        controllerId: "UnitOrderSystem",
+                                        targetPosition: targetPosition,
+                                        target: null,
+                                        meta: placement.meta || {},
+                                        priority: 10, // PRIORITY.MOVE
+                                        interruptible: true,
+                                        createdTime: placement.commandCreatedTime || this.game.state.now
+                                    }, true);
                                 }
                             }
                         }
