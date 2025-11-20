@@ -1745,7 +1745,7 @@ class TerrainMapEditor {
         // Run raycast at ~60fps (16ms)
         this.raycastIntervalId = setInterval(() => {
             this.updateGridPositionFromRaycast();
-        }, 16);
+        }, 500);
     }
 
     /**

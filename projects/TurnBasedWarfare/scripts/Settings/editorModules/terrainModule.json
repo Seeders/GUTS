@@ -14,7 +14,8 @@
     "TerrainDataManager",
     "WorldRenderer",
     "RaycastHelper",
-    "PlacementPreview"
+    "PlacementPreview",
+    "three_MeshBVH"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",
