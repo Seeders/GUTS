@@ -16,6 +16,7 @@ class TerrainMapEditor {
         this.lastPaintedTile = null;
         this.needsRender = false;
         this.needsTerrainRender = false; // Track when terrain data actually changes
+        this.modifiedTiles = []; // Track which tiles were modified for incremental rendering
         this.cachedTerrainCanvas = null; // Cache the expensive TileMap rendering
         this.exportDebounceTimer = null;
         this.renderAnimationFrame = null;
@@ -1842,7 +1843,7 @@ class TerrainMapEditor {
     // Paint with brush on terrain map
     paintBrushTerrain(centerX, centerY, terrainId) {
         const radius = Math.floor(this.brushSize / 2);
-        let painted = false;
+        const modifiedTiles = [];
 
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1856,20 +1857,20 @@ class TerrainMapEditor {
                     if (distance <= radius + 0.5) {
                         if (this.tileMap.terrainMap[y][x] !== terrainId) {
                             this.tileMap.terrainMap[y][x] = terrainId;
-                            painted = true;
+                            modifiedTiles.push({ x, y });
                         }
                     }
                 }
             }
         }
 
-        return painted;
+        return modifiedTiles;
     }
 
     // Paint with brush on height map
     paintBrushHeight(centerX, centerY, heightLevel) {
         const radius = Math.floor(this.brushSize / 2);
-        let painted = false;
+        const modifiedTiles = [];
 
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
@@ -1883,14 +1884,14 @@ class TerrainMapEditor {
                     if (distance <= radius + 0.5) {
                         if (this.tileMap.heightMap[y][x] !== heightLevel) {
                             this.tileMap.heightMap[y][x] = heightLevel;
-                            painted = true;
+                            modifiedTiles.push({ x, y });
                         }
                     }
                 }
             }
         }
 
-        return painted;
+        return modifiedTiles;
     }
 
     // Flood fill terrain map
@@ -2007,7 +2008,7 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
 
-                let painted = false;
+                let modifiedTiles = [];
 
                 if (this.terrainTool === 'brush') {
                     // Brush tool: paint with variable size
@@ -2015,20 +2016,24 @@ class TerrainMapEditor {
 
                     // Only paint if we're on a new tile or haven't painted here yet
                     if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        painted = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        modifiedTiles = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
                         this.lastPaintedTile = tileKey;
                     }
                 } else if (this.terrainTool === 'fill') {
                     // Flood fill tool: fill contiguous area (only on click, not drag)
                     if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        painted = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        const filled = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
+                        if (filled) {
+                            // For flood fill, mark entire map as needing redraw
+                            this.needsTerrainRender = true;
+                        }
                         this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
                     }
                 }
 
-                if (painted) {
-                    // Mark terrain as dirty (expensive re-render needed)
-                    this.needsTerrainRender = true;
+                if (modifiedTiles.length > 0) {
+                    // Accumulate modified tiles for incremental rendering
+                    this.modifiedTiles.push(...modifiedTiles);
                     this.needsRender = true;
                     this.scheduleRender();
                 }
@@ -2104,7 +2109,7 @@ class TerrainMapEditor {
             if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
                 snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
 
-                let painted = false;
+                let modifiedTiles = [];
 
                 if (this.terrainTool === 'brush') {
                     // Brush tool: paint with variable size
@@ -2112,11 +2117,11 @@ class TerrainMapEditor {
 
                     // Only paint if we're on a new tile or haven't painted here yet
                     if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        painted = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        modifiedTiles = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
                         this.lastPaintedTile = tileKey;
 
                         // Apply terrain type 0 / height 0 coupling rule for brush strokes
-                        if (painted && this.currentHeightLevel === 0) {
+                        if (modifiedTiles.length > 0 && this.currentHeightLevel === 0) {
                             const radius = Math.floor(this.brushSize / 2);
                             for (let dy = -radius; dy <= radius; dy++) {
                                 for (let dx = -radius; dx <= radius; dx++) {
@@ -2135,15 +2140,20 @@ class TerrainMapEditor {
                 } else if (this.terrainTool === 'fill') {
                     // Flood fill tool: fill contiguous area (only on click, not drag)
                     if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        painted = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
+                        const filled = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
                         this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
 
-                        // Apply terrain type 0 / height 0 coupling rule for filled area
-                        if (painted && this.currentHeightLevel === 0) {
-                            for (let y = 0; y < this.mapSize; y++) {
-                                for (let x = 0; x < this.mapSize; x++) {
-                                    if (this.tileMap.heightMap[y][x] === 0) {
-                                        this.tileMap.terrainMap[y][x] = 0;
+                        if (filled) {
+                            // For flood fill, mark entire map as needing redraw
+                            this.needsTerrainRender = true;
+
+                            // Apply terrain type 0 / height 0 coupling rule for filled area
+                            if (this.currentHeightLevel === 0) {
+                                for (let y = 0; y < this.mapSize; y++) {
+                                    for (let x = 0; x < this.mapSize; x++) {
+                                        if (this.tileMap.heightMap[y][x] === 0) {
+                                            this.tileMap.terrainMap[y][x] = 0;
+                                        }
                                     }
                                 }
                             }
@@ -2151,9 +2161,9 @@ class TerrainMapEditor {
                     }
                 }
 
-                if (painted) {
-                    // Mark terrain as dirty (expensive re-render needed)
-                    this.needsTerrainRender = true;
+                if (modifiedTiles.length > 0) {
+                    // Accumulate modified tiles for incremental rendering
+                    this.modifiedTiles.push(...modifiedTiles);
                     this.needsRender = true;
                     this.scheduleRender();
                 }
@@ -2263,13 +2273,13 @@ class TerrainMapEditor {
 
         // Use TileMap system to render actual in-game sprites (CACHED for performance)
         if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
-            // Only re-render terrain if terrain data changed (not on every frame)
+            // Check if we need to do full or incremental rendering
             if (this.needsTerrainRender || !this.cachedTerrainCanvas) {
-                // Render terrain using TileMap.draw() with heightMap support
+                // Full re-render (e.g., after flood fill or initial load)
                 const heightMap = this.tileMap.heightMap || null;
                 this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
 
-                // Cache the rendered terrain to avoid expensive re-rendering
+                // Cache the rendered terrain
                 if (!this.cachedTerrainCanvas) {
                     this.cachedTerrainCanvas = document.createElement('canvas');
                     this.cachedTerrainCanvas.width = this.terrainCanvasBuffer.width;
@@ -2280,6 +2290,16 @@ class TerrainMapEditor {
                 cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
 
                 this.needsTerrainRender = false;
+            } else if (this.modifiedTiles.length > 0) {
+                // Incremental rendering - only redraw modified tiles and neighbors
+                this.terrainTileMapper.redrawTiles(this.modifiedTiles);
+
+                // Update cache with incremental changes
+                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
+                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
+
+                // Clear modified tiles list
+                this.modifiedTiles = [];
             }
 
             // Draw the cached terrain (fast!)
