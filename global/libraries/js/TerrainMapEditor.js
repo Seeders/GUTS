@@ -2198,8 +2198,8 @@ class TerrainMapEditor {
     update3DTerrainRegion(modifiedTiles) {
         if (!this.worldRenderer) return;
 
-        // Render terrain tiles to texture
-        this.worldRenderer.renderTerrain();
+        // Update only the modified tiles (localized update for performance)
+        this.worldRenderer.updateTerrainTiles(modifiedTiles);
     }
 
     /**

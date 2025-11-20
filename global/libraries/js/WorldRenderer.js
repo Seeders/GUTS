@@ -805,6 +805,68 @@ class WorldRenderer {
     }
 
     /**
+     * Update specific terrain tiles (localized update for performance)
+     * @param {Array} modifiedTiles - Array of {x, y} grid coordinates
+     */
+    updateTerrainTiles(modifiedTiles) {
+        if (!this.tileMapper || !this.terrainDataManager.tileMap?.terrainMap || !modifiedTiles || modifiedTiles.length === 0) {
+            return;
+        }
+
+        // Redraw only the modified tiles (TileMapper.redrawTiles includes neighbors for blending)
+        this.tileMapper.redrawTiles(modifiedTiles);
+
+        // Update ground texture only for affected regions
+        this.updateGroundTextureRegion(modifiedTiles);
+    }
+
+    /**
+     * Update only the affected regions of the ground texture
+     * @param {Array} modifiedTiles - Array of {x, y} grid coordinates
+     */
+    updateGroundTextureRegion(modifiedTiles) {
+        if (!this.tileMapper || !this.groundCtx || !modifiedTiles || modifiedTiles.length === 0) {
+            return;
+        }
+
+        const extensionSize = this.terrainDataManager.extensionSize;
+        const gridSize = this.terrainDataManager.gridSize;
+
+        // Calculate bounding box of all modified tiles
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+
+        modifiedTiles.forEach(tile => {
+            minX = Math.min(minX, tile.x);
+            maxX = Math.max(maxX, tile.x);
+            minY = Math.min(minY, tile.y);
+            maxY = Math.max(maxY, tile.y);
+        });
+
+        // Expand bounding box by 1 tile in each direction to account for neighbor blending
+        // (redrawTiles automatically includes neighbors)
+        minX = Math.max(0, minX - 1);
+        maxX = Math.min(this.terrainDataManager.tileMap.terrainMap[0].length - 1, maxX + 1);
+        minY = Math.max(0, minY - 1);
+        maxY = Math.min(this.terrainDataManager.tileMap.terrainMap.length - 1, maxY + 1);
+
+        // Convert grid coordinates to pixel coordinates
+        const sourceX = minX * gridSize;
+        const sourceY = minY * gridSize;
+        const sourceWidth = (maxX - minX + 1) * gridSize;
+        const sourceHeight = (maxY - minY + 1) * gridSize;
+
+        // Copy only the affected region from tileMapper canvas to ground canvas
+        this.groundCtx.drawImage(
+            this.tileMapper.canvas,
+            sourceX, sourceY, sourceWidth, sourceHeight,  // Source region
+            extensionSize + sourceX, extensionSize + sourceY, sourceWidth, sourceHeight  // Dest region
+        );
+
+        this.groundTexture.needsUpdate = true;
+    }
+
+    /**
      * Update loop
      */
     update(deltaTime) {
