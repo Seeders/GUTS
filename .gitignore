@@ -43,4 +43,4 @@ package-lock.json
 .vscode/
 .idea/
 *.sublime-project
-*.sublime-workspace
+*.sublime-workspace*.backup
