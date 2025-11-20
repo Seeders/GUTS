@@ -167,6 +167,8 @@ class EntityRenderer {
 
         if (!model) {
             console.warn(`[EntityRenderer] Model ${data.collection}.${data.type} not available`);
+            console.warn(`[EntityRenderer] Cache has:`, models ? Object.keys(models) : 'no models for collection');
+            console.warn(`[EntityRenderer] Looking for:`, data.type);
             return false;
         }
 
@@ -668,17 +670,30 @@ class EntityRenderer {
         const loader = new THREE_.GLTFLoader();
         const typesToLoad = entityTypes || Object.keys(collection);
 
+        console.log(`[EntityRenderer] Loading ${typesToLoad.length} models from '${collectionType}':`, typesToLoad);
+
         for (const entityType of typesToLoad) {
             const entityDef = collection[entityType];
+            if (!entityDef) {
+                console.warn(`[EntityRenderer] No definition for ${collectionType}.${entityType}`);
+                continue;
+            }
+
             if (!entityDef?.render?.model?.main?.shapes?.[0]) {
+                console.warn(`[EntityRenderer] ${collectionType}.${entityType} missing render.model.main.shapes[0]`);
                 continue;
             }
 
             const shape = entityDef.render.model.main.shapes[0];
-            if (shape.type !== 'gltf') continue;
+            if (shape.type !== 'gltf') {
+                console.warn(`[EntityRenderer] ${collectionType}.${entityType} shape is not GLTF, type: ${shape.type}`);
+                continue;
+            }
 
             try {
                 const url = `/projects/${this.projectName}/resources/${shape.url}`;
+                console.log(`[EntityRenderer] Loading GLTF: ${url}`);
+
                 const gltf = await new Promise((resolve, reject) => {
                     loader.load(url, resolve, undefined, reject);
                 });
@@ -692,11 +707,14 @@ class EntityRenderer {
                     metalness: shape.metalness !== undefined ? shape.metalness : 0,
                     roughness: shape.roughness !== undefined ? shape.roughness : 1
                 };
+
+                console.log(`[EntityRenderer] ✓ Loaded ${collectionType}.${entityType}`);
             } catch (error) {
-                console.warn(`[EntityRenderer] Failed to load ${collectionType}.${entityType}:`, error.message);
+                console.error(`[EntityRenderer] ✗ Failed to load ${collectionType}.${entityType}:`, error.message, error);
             }
         }
 
+        console.log(`[EntityRenderer] Loaded ${Object.keys(models).length}/${typesToLoad.length} models from '${collectionType}'`);
         return models;
     }
 
