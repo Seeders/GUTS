@@ -162,11 +162,14 @@ class WorldRenderer {
         const lookAtPos = lookAt ? (typeof lookAt === 'string' ? JSON.parse(lookAt) : lookAt) : { x: 0, y: 0, z: 0 };
 
         this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
+
+        // Use Ctrl+Right Click for rotation, Right Click alone for pan
         this.controls.mouseButtons = {
-            LEFT: null,
-            MIDDLE: THREE.MOUSE.ROTATE,
-            RIGHT: THREE.MOUSE.PAN
+            LEFT: null,                    // Left click disabled (used for editing)
+            MIDDLE: null,                  // Middle click disabled (conflicts with browser scroll)
+            RIGHT: THREE.MOUSE.PAN         // Right click for panning (default)
         };
+
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
         this.controls.maxPolarAngle = Math.PI / 2.05;
         this.controls.minPolarAngle = 0.1;
@@ -175,6 +178,32 @@ class WorldRenderer {
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 50;
         this.controls.maxDistance = 1000;
+
+        // Add modifier key detection for Ctrl+Right Click rotation
+        this.ctrlPressed = false;
+
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey || event.metaKey) {
+                this.ctrlPressed = true;
+                // Switch right click to rotate when Ctrl is held
+                this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+            }
+        };
+
+        const handleKeyUp = (event) => {
+            if (!event.ctrlKey && !event.metaKey) {
+                this.ctrlPressed = false;
+                // Switch right click back to pan when Ctrl is released
+                this.controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+            }
+        };
+
+        // Store event handlers for cleanup
+        this.controlsKeyHandlers = { handleKeyDown, handleKeyUp };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
         this.controls.update();
     }
 
@@ -1018,6 +1047,13 @@ class WorldRenderer {
         if (this.controls) {
             this.controls.dispose();
             this.controls = null;
+        }
+
+        // Clean up orbit controls keyboard handlers
+        if (this.controlsKeyHandlers) {
+            window.removeEventListener('keydown', this.controlsKeyHandlers.handleKeyDown);
+            window.removeEventListener('keyup', this.controlsKeyHandlers.handleKeyUp);
+            this.controlsKeyHandlers = null;
         }
 
         // Remove event listeners
