@@ -7,7 +7,7 @@ class TileMap {
  			"CanvasUtility": CanvasUtility
     } 
   }
-	init(canvas, tileSize, layerSpriteSheets, isometric) {
+	init(canvas, tileSize, layerSpriteSheets, isometric, options = {}) {
 		this.isometric = isometric;
 		this.canvas = canvas;
 		this.tileSize = tileSize;
@@ -17,6 +17,9 @@ class TileMap {
 		this.layerTextures = [];
 		this.baseAtoms = []; // Store base atoms per terrain type
 		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
+
+		// Options for editor mode: skip cliff supporting textures (for 2D editing without 3D cliff meshes)
+		this.skipCliffTextures = options.skipCliffTextures || false;
 
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
@@ -1213,6 +1216,11 @@ class TileMap {
 	 * This is called during terrain generation for each tile
 	 */
 	paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col) {
+		// Skip cliff supporting textures if in editor mode (2D without 3D cliff meshes)
+		if (this.skipCliffTextures) {
+			return;
+		}
+
 		const heightAnalysis = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 
@@ -1357,6 +1365,78 @@ class TileMap {
 		});
 
 		// Store terrain data for height mapping
+		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
+	}
+
+	/**
+	 * Redraw only specific tiles and their neighbors (incremental rendering)
+	 * @param {Array} tileCoords - Array of {x, y} coordinates of tiles to redraw
+	 */
+	redrawTiles(tileCoords) {
+		if (!tileCoords || tileCoords.length === 0) return;
+
+		const ctx = this.canvas.getContext('2d');
+		const tilesToRedraw = new Set();
+
+		// Collect all tiles that need to be redrawn (including neighbors)
+		tileCoords.forEach(coord => {
+			const { x, y } = coord;
+
+			// Add the tile itself
+			tilesToRedraw.add(`${x},${y}`);
+
+			// Add all 8 neighbors (for proper blending)
+			for (let dy = -1; dy <= 1; dy++) {
+				for (let dx = -1; dx <= 1; dx++) {
+					const nx = x + dx;
+					const ny = y + dy;
+					if (nx >= 0 && nx < this.numColumns && ny >= 0 && ny < this.numColumns) {
+						tilesToRedraw.add(`${nx},${ny}`);
+					}
+				}
+			}
+		});
+
+		// Re-analyze only the tiles that need to be redrawn
+		const analyzedTiles = [];
+		tilesToRedraw.forEach(coordStr => {
+			const [x, y] = coordStr.split(',').map(Number);
+			const tile = this.analyzeTile(y, x); // Note: analyzeTile takes (row, col)
+			analyzedTiles.push({ tile, x, y });
+		});
+
+		// Re-analyze the entire map ONCE for proper neighbor detection
+		const fullAnalyzedMap = this.analyzeMap();
+
+		// Redraw each analyzed tile
+		analyzedTiles.forEach(({ tile, x, y }) => {
+			const pixelX = x * this.tileSize;
+			const pixelY = y * this.tileSize;
+
+			let imageData;
+
+			// Use the tile from fullAnalyzedMap instead of the individually analyzed tile
+			const correctTile = fullAnalyzedMap[y][x];
+
+			if (correctTile.terrainIndex >= 0) {
+				imageData = this.drawTileWithLayering(fullAnalyzedMap, correctTile, y, x);
+			} else {
+				// Create transparent/black tile for invalid terrain
+				let numPixels = this.tileSize * this.tileSize;
+				const blackData = new Uint8ClampedArray(numPixels * 4);
+				blackData.fill(0);
+				imageData = new ImageData(blackData, this.tileSize, this.tileSize);
+			}
+
+			// Update height map for this tile
+			this.updateHeightMapForTile(pixelX, pixelY, correctTile.heightAnalysis.heightIndex);
+
+			// Draw the tile to the main canvas
+			ctx.putImageData(imageData, pixelX, pixelY);
+		});
+
+		// Update stored terrain data (only for modified region if possible)
+		// For simplicity, update the entire terrain data
 		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
 	}
 
