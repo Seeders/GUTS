@@ -3,9 +3,9 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         super(game);
         this.sceneManager = sceneManager;
         this.game.placementSystem = this;
-        
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
+
+        // Use global RaycastHelper for raycasting operations
+        this.raycastHelper = null; // Initialized after scene/camera are available
         this.canvas = this.game.canvas;
         
         this.playerPlacements = [];
@@ -21,7 +21,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.lastValidationTime = 0;
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        this.groundMeshCache = null;
         this.lastUpdateTime = 0;
         this.config = {
             maxSquadsPerRound: 2,
@@ -42,6 +41,11 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
 
     init(params) {
         this.params = params || {};
+
+        // Initialize RaycastHelper with scene and camera
+        if (this.game.scene && this.game.camera) {
+            this.raycastHelper = new RaycastHelper(this.game.camera, this.game.scene);
+        }
 
         this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
@@ -136,8 +140,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         if (this.config.enablePreview) {
             this.placementPreview = new GUTS.PlacementPreview(this.game);
         }
-        
-        this.groundMeshCache = this.findGroundMesh();
     }
 
     onGameStarted() {
@@ -858,68 +860,35 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
     }
 
     rayCastGround(mouseX, mouseY) {
-        if (!this.game.scene || !this.game.camera) return null;
-
-        if (!this.mouse) {
-            this.mouse = new THREE.Vector2();
+        if (!this.raycastHelper) {
+            console.warn('MultiplayerPlacementSystem: RaycastHelper not initialized');
+            return { x: 0, y: 0, z: 0 };
         }
-        this.mouse.set(mouseX, mouseY);
 
-        if (!this.raycaster) {
-            this.raycaster = new THREE.Raycaster();
-        }
-        this.raycaster.setFromCamera(this.mouse, this.game.camera);
-
-        // Try to raycast directly against the terrain mesh (most efficient)
+        // Get ground mesh for raycasting
         const ground = this.game.gameManager.call('getGroundMesh');
-        if (ground) {
-            const intersects = this.raycaster.intersectObject(ground, false);
-            if (intersects.length > 0) {
-                return intersects[0].point;
-            }
+
+        // Use RaycastHelper to raycast against ground
+        const worldPos = this.raycastHelper.rayCastGround(mouseX, mouseY, ground);
+
+        if (worldPos) {
+            return worldPos;
         }
+
         return { x: 0, y: 0, z: 0 };
     }
 
     getFlatWorldPositionFromMouse(event, mouseX, mouseY) {
-        if (!this.game.scene || !this.game.camera) return null;
-
-        const mouse = new THREE.Vector2();
-        
-
-        mouse.set(mouseX, mouseY);
-        if (!this.raycaster) {
-            this.raycaster = new THREE.Raycaster();
-        }
-        this.raycaster.setFromCamera(mouse, this.game.camera);
-
-        // Fallback: raycast to flat plane at y=0 if ground mesh not available
-        const ray = this.raycaster.ray;
-
-        if (Math.abs(ray.direction.y) < 0.0001) {
+        if (!this.raycastHelper) {
+            console.warn('MultiplayerPlacementSystem: RaycastHelper not initialized');
             return null;
         }
+
+        // Get base terrain height
         const baseHeight = this.game.gameManager.call('getBaseTerrainHeight');
-        const distance = (baseHeight - ray.origin.y) / ray.direction.y;
 
-        if (distance < 0) {
-            return null;
-        }
-
-        const intersectionPoint = ray.origin.clone().add(
-            ray.direction.clone().multiplyScalar(distance)
-        );
-
-        return intersectionPoint;
-    }
-
-    findGroundMesh() {
-        for (let child of this.game.scene.children) {
-            if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
-                return child;
-            }
-        }
-        return null;
+        // Use RaycastHelper to raycast to flat plane
+        return this.raycastHelper.rayCastFlatPlane(mouseX, mouseY, baseHeight);
     }
 
     isValidGridPlacement(worldPos, unitDef) {
@@ -1089,18 +1058,21 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        this.groundMeshCache = null;
-        this.groundMeshCache = this.findGroundMesh();
-        
+
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
     }
 
     dispose() {
+        // Clean up RaycastHelper
+        if (this.raycastHelper) {
+            this.raycastHelper.dispose();
+            this.raycastHelper = null;
+        }
+
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        this.groundMeshCache = null;
         
         if (this.placementPreview) {
             this.placementPreview.dispose();
