@@ -208,13 +208,23 @@ class EntityRenderer {
         });
 
         // Update instance transform
-        // For cliffs, apply the scale in the instance matrix (not on the InstancedMesh itself)
-        const scale = data.collection === 'cliffs' ? 32 : 1;
-        const matrix = new THREE.Matrix4();
+        // Get base scale from model definition
+        const modelDef = entityDef.render?.model?.main;
+        const baseScale = modelDef?.scale || { x: 1, y: 1, z: 1 };
+
+        // For cliffs, multiply by 32
+        const scaleMultiplier = data.collection === 'cliffs' ? 32 : 1;
+        const finalScale = new THREE_.Vector3(
+            baseScale.x * scaleMultiplier,
+            baseScale.y * scaleMultiplier,
+            baseScale.z * scaleMultiplier
+        );
+
+        const matrix = new THREE_.Matrix4();
         matrix.compose(
-            new THREE.Vector3(data.position.x, data.position.y, data.position.z),
-            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
-            new THREE.Vector3(scale, scale, scale)
+            new THREE_.Vector3(data.position.x, data.position.y, data.position.z),
+            new THREE_.Quaternion().setFromEuler(new THREE_.Euler(0, data.rotation || 0, 0)),
+            finalScale
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
         batch.instancedMesh.instanceMatrix.needsUpdate = true;
@@ -226,7 +236,9 @@ class EntityRenderer {
                 entityId,
                 position: data.position,
                 rotation: data.rotation,
-                scale,
+                baseScale,
+                scaleMultiplier,
+                finalScale,
                 totalCount: batch.count
             });
         }
