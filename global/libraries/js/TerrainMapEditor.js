@@ -64,6 +64,11 @@ class TerrainMapEditor {
         this.draggedItem = null;
         this.dragOverItem = null; // Track the item being dragged over
 
+        // Undo/Redo functionality
+        this.undoStack = [];
+        this.redoStack = [];
+        this.maxUndoSteps = 50; // Limit undo history to prevent memory issues
+
         // DOM elements
         this.canvasEl = document.getElementById('grid');
         this.canvasEl.width = this.config.canvasWidth;
@@ -246,6 +251,20 @@ class TerrainMapEditor {
             if (this.placementMode === 'terrain' || this.placementMode === 'height' || this.placementMode === 'placements') {
                 this.needsRender = true;
                 this.scheduleRender();
+            }
+        });
+
+        // Add keyboard shortcuts for undo/redo
+        document.addEventListener('keydown', (event) => {
+            // Undo: Ctrl+Z (or Cmd+Z on Mac)
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                this.undo();
+            }
+            // Redo: Ctrl+Shift+Z or Ctrl+Y (or Cmd+Shift+Z / Cmd+Y on Mac)
+            else if ((event.ctrlKey || event.metaKey) && (event.shiftKey && event.key === 'z' || event.key === 'y')) {
+                event.preventDefault();
+                this.redo();
             }
         });
 
@@ -1994,11 +2013,149 @@ class TerrainMapEditor {
         }, 300); // Export 300ms after last change
     }
 
+    /**
+     * Save current state to undo stack before making changes
+     * @param {string} type - 'terrain' or 'height'
+     * @param {Array} tiles - Array of {x, y} tiles that will be modified
+     */
+    saveUndoState(type, tiles) {
+        if (!tiles || tiles.length === 0) return;
+
+        const state = {
+            type: type,
+            tiles: tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+
+        this.undoStack.push(state);
+
+        // Limit undo stack size
+        if (this.undoStack.length > this.maxUndoSteps) {
+            this.undoStack.shift();
+        }
+
+        // Clear redo stack when new action is performed
+        this.redoStack = [];
+
+        console.log(`Undo state saved: ${type}, ${tiles.length} tiles`);
+    }
+
+    /**
+     * Undo the last action
+     */
+    undo() {
+        if (this.undoStack.length === 0) {
+            console.log('Nothing to undo');
+            return;
+        }
+
+        const state = this.undoStack.pop();
+
+        // Save current state to redo stack
+        const redoState = {
+            type: state.type,
+            tiles: state.tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: state.type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+        this.redoStack.push(redoState);
+
+        // Restore previous state
+        const modifiedTiles = [];
+        state.tiles.forEach(tile => {
+            if (state.type === 'terrain') {
+                this.tileMap.terrainMap[tile.y][tile.x] = tile.value;
+            } else {
+                this.tileMap.heightMap[tile.y][tile.x] = tile.value;
+            }
+            modifiedTiles.push({ x: tile.x, y: tile.y });
+        });
+
+        // Update rendering
+        if (this.use3DRendering) {
+            if (state.type === 'terrain') {
+                this.update3DTerrainRegion(modifiedTiles);
+            } else {
+                this.update3DHeightRegion(modifiedTiles);
+            }
+        } else {
+            this.needsTerrainRender = true;
+            this.modifiedTiles.push(...modifiedTiles);
+            this.scheduleRender();
+        }
+
+        this.exportMap();
+        console.log(`Undo: restored ${modifiedTiles.length} tiles (${state.type})`);
+    }
+
+    /**
+     * Redo the last undone action
+     */
+    redo() {
+        if (this.redoStack.length === 0) {
+            console.log('Nothing to redo');
+            return;
+        }
+
+        const state = this.redoStack.pop();
+
+        // Save current state to undo stack
+        const undoState = {
+            type: state.type,
+            tiles: state.tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: state.type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+        this.undoStack.push(undoState);
+
+        // Apply redo state
+        const modifiedTiles = [];
+        state.tiles.forEach(tile => {
+            if (state.type === 'terrain') {
+                this.tileMap.terrainMap[tile.y][tile.x] = tile.value;
+            } else {
+                this.tileMap.heightMap[tile.y][tile.x] = tile.value;
+            }
+            modifiedTiles.push({ x: tile.x, y: tile.y });
+        });
+
+        // Update rendering
+        if (this.use3DRendering) {
+            if (state.type === 'terrain') {
+                this.update3DTerrainRegion(modifiedTiles);
+            } else {
+                this.update3DHeightRegion(modifiedTiles);
+            }
+        } else {
+            this.needsTerrainRender = true;
+            this.modifiedTiles.push(...modifiedTiles);
+            this.scheduleRender();
+        }
+
+        this.exportMap();
+        console.log(`Redo: applied ${modifiedTiles.length} tiles (${state.type})`);
+    }
+
     // Paint with brush on terrain map
     paintBrushTerrain(centerX, centerY, terrainId) {
         const radius = Math.floor(this.brushSize / 2);
+        const tilesToCheck = [];
         const modifiedTiles = [];
 
+        // First, collect all tiles that would be affected
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
                 const x = centerX + dx;
@@ -2009,14 +2166,24 @@ class TerrainMapEditor {
                     // Check if within brush radius (circular brush)
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= radius + 0.5) {
-                        if (this.tileMap.terrainMap[y][x] !== terrainId) {
-                            this.tileMap.terrainMap[y][x] = terrainId;
-                            modifiedTiles.push({ x, y });
-                        }
+                        tilesToCheck.push({ x, y });
                     }
                 }
             }
         }
+
+        // Save undo state before modifying
+        if (tilesToCheck.length > 0) {
+            this.saveUndoState('terrain', tilesToCheck);
+        }
+
+        // Now modify the tiles
+        tilesToCheck.forEach(tile => {
+            if (this.tileMap.terrainMap[tile.y][tile.x] !== terrainId) {
+                this.tileMap.terrainMap[tile.y][tile.x] = terrainId;
+                modifiedTiles.push(tile);
+            }
+        });
 
         return modifiedTiles;
     }
@@ -2024,8 +2191,10 @@ class TerrainMapEditor {
     // Paint with brush on height map
     paintBrushHeight(centerX, centerY, heightLevel) {
         const radius = Math.floor(this.brushSize / 2);
+        const tilesToCheck = [];
         const modifiedTiles = [];
 
+        // First, collect all tiles that would be affected
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
                 const x = centerX + dx;
@@ -2036,14 +2205,24 @@ class TerrainMapEditor {
                     // Check if within brush radius (circular brush)
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= radius + 0.5) {
-                        if (this.tileMap.heightMap[y][x] !== heightLevel) {
-                            this.tileMap.heightMap[y][x] = heightLevel;
-                            modifiedTiles.push({ x, y });
-                        }
+                        tilesToCheck.push({ x, y });
                     }
                 }
             }
         }
+
+        // Save undo state before modifying
+        if (tilesToCheck.length > 0) {
+            this.saveUndoState('height', tilesToCheck);
+        }
+
+        // Now modify the tiles
+        tilesToCheck.forEach(tile => {
+            if (this.tileMap.heightMap[tile.y][tile.x] !== heightLevel) {
+                this.tileMap.heightMap[tile.y][tile.x] = heightLevel;
+                modifiedTiles.push(tile);
+            }
+        });
 
         return modifiedTiles;
     }
@@ -2061,7 +2240,8 @@ class TerrainMapEditor {
             return false;
         }
 
-        // Use a queue-based flood fill to avoid stack overflow
+        // First pass: collect all tiles that will be modified
+        const tilesToModify = [];
         const queue = [[startX, startY]];
         const visited = new Set();
 
@@ -2079,15 +2259,25 @@ class TerrainMapEditor {
                 continue;
             }
 
-            // Mark as visited and paint
+            // Mark as visited and collect tile
             visited.add(key);
-            this.tileMap.terrainMap[y][x] = newTerrainId;
+            tilesToModify.push({ x, y });
 
             // Add neighbors to queue
             queue.push([x + 1, y]);
             queue.push([x - 1, y]);
             queue.push([x, y + 1]);
             queue.push([x, y - 1]);
+        }
+
+        // Save undo state before modifying
+        if (tilesToModify.length > 0) {
+            this.saveUndoState('terrain', tilesToModify);
+
+            // Second pass: apply the modifications
+            tilesToModify.forEach(tile => {
+                this.tileMap.terrainMap[tile.y][tile.x] = newTerrainId;
+            });
         }
 
         return true;
@@ -2106,7 +2296,8 @@ class TerrainMapEditor {
             return false;
         }
 
-        // Use a queue-based flood fill to avoid stack overflow
+        // First pass: collect all tiles that will be modified
+        const tilesToModify = [];
         const queue = [[startX, startY]];
         const visited = new Set();
 
@@ -2124,15 +2315,25 @@ class TerrainMapEditor {
                 continue;
             }
 
-            // Mark as visited and paint
+            // Mark as visited and collect tile
             visited.add(key);
-            this.tileMap.heightMap[y][x] = newHeightLevel;
+            tilesToModify.push({ x, y });
 
             // Add neighbors to queue
             queue.push([x + 1, y]);
             queue.push([x - 1, y]);
             queue.push([x, y + 1]);
             queue.push([x, y - 1]);
+        }
+
+        // Save undo state before modifying
+        if (tilesToModify.length > 0) {
+            this.saveUndoState('height', tilesToModify);
+
+            // Second pass: apply the modifications
+            tilesToModify.forEach(tile => {
+                this.tileMap.heightMap[tile.y][tile.x] = newHeightLevel;
+            });
         }
 
         return true;
