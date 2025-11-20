@@ -463,6 +463,142 @@ class TerrainDataManager {
     }
 
     /**
+     * Analyze height map to identify cliff positions and orientations
+     * Returns array of cliff data for entity spawning
+     * @returns {Array} Array of cliff definitions {gridX, gridZ, direction, type, rotation}
+     */
+    analyzeCliffs() {
+        if (!this.tileMap?.heightMap || this.tileMap.heightMap.length === 0) {
+            return [];
+        }
+
+        const cliffs = [];
+        const heightMap = this.tileMap.heightMap;
+        const mapSize = heightMap.length;
+
+        // For each tile, check for height differences with neighbors
+        for (let z = 0; z < mapSize; z++) {
+            for (let x = 0; x < mapSize; x++) {
+                const currentHeight = heightMap[z][x];
+
+                // Check all four cardinal directions
+                const neighbors = {
+                    north: z > 0 ? heightMap[z - 1][x] : currentHeight,
+                    south: z < mapSize - 1 ? heightMap[z + 1][x] : currentHeight,
+                    east: x < mapSize - 1 ? heightMap[z][x + 1] : currentHeight,
+                    west: x > 0 ? heightMap[z][x - 1] : currentHeight
+                };
+
+                // Place cliff entities on the HIGHER tile facing toward the LOWER tile
+                // North neighbor is lower - place cliff on north edge of current tile
+                if (neighbors.north < currentHeight) {
+                    cliffs.push({
+                        gridX: x,
+                        gridZ: z,
+                        direction: 'north',
+                        heightDiff: currentHeight - neighbors.north,
+                        rotation: 0, // Facing north
+                        type: this.selectCliffType(x, z, 'north')
+                    });
+                }
+
+                // South neighbor is lower - place cliff on south edge
+                if (neighbors.south < currentHeight) {
+                    cliffs.push({
+                        gridX: x,
+                        gridZ: z,
+                        direction: 'south',
+                        heightDiff: currentHeight - neighbors.south,
+                        rotation: Math.PI, // Facing south
+                        type: this.selectCliffType(x, z, 'south')
+                    });
+                }
+
+                // East neighbor is lower - place cliff on east edge
+                if (neighbors.east < currentHeight) {
+                    cliffs.push({
+                        gridX: x,
+                        gridZ: z,
+                        direction: 'east',
+                        heightDiff: currentHeight - neighbors.east,
+                        rotation: Math.PI / 2, // Facing east
+                        type: this.selectCliffType(x, z, 'east')
+                    });
+                }
+
+                // West neighbor is lower - place cliff on west edge
+                if (neighbors.west < currentHeight) {
+                    cliffs.push({
+                        gridX: x,
+                        gridZ: z,
+                        direction: 'west',
+                        heightDiff: currentHeight - neighbors.west,
+                        rotation: -Math.PI / 2, // Facing west
+                        type: this.selectCliffType(x, z, 'west')
+                    });
+                }
+            }
+        }
+
+        return cliffs;
+    }
+
+    /**
+     * Select cliff model type based on position (for visual variety)
+     * @param {number} x - Grid X position
+     * @param {number} z - Grid Z position
+     * @param {string} direction - Direction of cliff
+     * @returns {string} Cliff type (atom_one, atom_two, atom_three, atom_four)
+     */
+    selectCliffType(x, z, direction) {
+        // Use seeded random for consistent cliff types
+        const directionSeed = { north: 0, south: 1, east: 2, west: 3 }[direction] || 0;
+        const random = this.seededRandom(x * 4 + directionSeed, z * 4 + directionSeed);
+
+        // Distribute cliff types evenly
+        if (random < 0.25) return 'atom_one';
+        if (random < 0.5) return 'atom_two';
+        if (random < 0.75) return 'atom_three';
+        return 'atom_four';
+    }
+
+    /**
+     * Get world position for a cliff entity
+     * @param {Object} cliffData - Cliff data from analyzeCliffs()
+     * @returns {Object} World position {x, y, z}
+     */
+    getCliffWorldPosition(cliffData) {
+        // Convert grid position to world position (center of tile)
+        const tileWorldX = (cliffData.gridX + this.extensionSize) * this.gridSize - this.extendedSize / 2 + this.gridSize / 2;
+        const tileWorldZ = (cliffData.gridZ + this.extensionSize) * this.gridSize - this.extendedSize / 2 + this.gridSize / 2;
+
+        // Offset based on direction to place cliff on edge of tile
+        const offset = this.gridSize / 2;
+        let worldX = tileWorldX;
+        let worldZ = tileWorldZ;
+
+        switch (cliffData.direction) {
+            case 'north':
+                worldZ -= offset;
+                break;
+            case 'south':
+                worldZ += offset;
+                break;
+            case 'east':
+                worldX += offset;
+                break;
+            case 'west':
+                worldX -= offset;
+                break;
+        }
+
+        // Get height of the tile this cliff is on
+        const height = this.getTerrainHeightAtPosition(tileWorldX, tileWorldZ);
+
+        return { x: worldX, y: height, z: worldZ };
+    }
+
+    /**
      * Clean up resources
      */
     dispose() {
