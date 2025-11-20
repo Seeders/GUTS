@@ -739,6 +739,11 @@ class TerrainMapEditor {
     }
 
     updateBrushPreview(e) {
+        // Skip 2D brush preview when in 3D mode (we use PlacementPreview instead)
+        if (this.use3DRendering) {
+            return;
+        }
+
         // Handle terrain/height mode brush preview
         if (this.placementMode === 'terrain' || this.placementMode === 'height') {
             // Get mouse position relative to canvas
@@ -1988,10 +1993,15 @@ class TerrainMapEditor {
 
     // Performance optimization: schedule render with requestAnimationFrame
     scheduleRender() {
+        // Skip 2D rendering when in 3D mode
+        if (this.use3DRendering) {
+            return;
+        }
+
         if (this.renderAnimationFrame) {
             return; // Already scheduled
         }
-        
+
         this.renderAnimationFrame = requestAnimationFrame(() => {
             this.renderAnimationFrame = null;
             if (this.needsRender) {
@@ -2814,6 +2824,11 @@ class TerrainMapEditor {
 
     // Render using TileMap sprites with caching for performance
     renderMap() {
+        // Skip 2D rendering when in 3D mode
+        if (this.use3DRendering) {
+            return;
+        }
+
         if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
             return;
         }
