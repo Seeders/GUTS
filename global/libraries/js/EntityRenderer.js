@@ -178,6 +178,9 @@ class EntityRenderer {
         // Clone mesh
         const mesh = modelGroup.clone(true);
 
+        // Get model definition for scale and material properties
+        const modelDef = entityDef.render?.model?.main;
+
         // Apply transforms
         mesh.position.set(data.position.x, data.position.y, data.position.z);
 
@@ -187,22 +190,31 @@ class EntityRenderer {
             mesh.rotation.y = data.facing.angle;
         }
 
-        mesh.scale.set(model.scale.x, model.scale.y, model.scale.z);
+        // Apply scale from model definition
+        if (modelDef?.scale) {
+            mesh.scale.set(
+                modelDef.scale.x || 1,
+                modelDef.scale.y || 1,
+                modelDef.scale.z || 1
+            );
+        }
 
         // Apply materials
         const palette = this.getPalette?.();
+        const shape = modelDef?.shapes?.[0]; // Get first shape for material properties
+
         mesh.traverse((child) => {
             if (child.isMesh && child.material) {
                 child.material = child.material.clone();
                 child.material.needsUpdate = true;
 
-                if (model.color?.paletteColor && palette) {
-                    const color = palette[model.color.paletteColor];
+                if (shape?.color?.paletteColor && palette) {
+                    const color = palette[shape.color.paletteColor];
                     if (color) child.material.color.set(color);
                 }
 
-                if (model.metalness !== undefined) child.material.metalness = model.metalness;
-                if (model.roughness !== undefined) child.material.roughness = model.roughness;
+                if (shape?.metalness !== undefined) child.material.metalness = shape.metalness;
+                if (shape?.roughness !== undefined) child.material.roughness = shape.roughness;
 
                 child.visible = true;
                 child.castShadow = true;
