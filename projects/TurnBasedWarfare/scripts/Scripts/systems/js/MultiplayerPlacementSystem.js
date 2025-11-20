@@ -343,7 +343,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                         }
                         this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);
                     } else if(targetPosition){
-                        // Use old method for regular target positions (own units, not from opponent commands)
+                        // Use command queue for regular target positions (ensures deterministic command IDs)
                         const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
 
                         if(!currentAIController || currentAIController == "UnitOrderSystem"){
@@ -357,11 +357,26 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                                 this.game.gameManager.call('removeCurrentAIController', entityId);
                                 placement.targetPosition = null;
                             } else {
-                                let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
-                                currentOrderAI.targetPosition = targetPosition;
-                                currentOrderAI.path = [];
-                                currentOrderAI.meta = { ...meta };
-                                this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+                                // Use command queue for deterministic command creation
+                                if (this.game.commandQueueSystem) {
+                                    this.game.gameManager.call('queueCommand', entityId, {
+                                        type: 'move',
+                                        controllerId: "UnitOrderSystem",
+                                        targetPosition: targetPosition,
+                                        target: null,
+                                        meta: meta || {},
+                                        priority: this.game.commandQueueSystem.PRIORITY.MOVE,
+                                        interruptible: true,
+                                        createdTime: placement.commandCreatedTime || this.game.state.now
+                                    }, true);
+                                } else {
+                                    // Fallback to old method if no command queue
+                                    let currentOrderAI = this.game.gameManager.call('getAIControllerData', entityId, "UnitOrderSystem");
+                                    currentOrderAI.targetPosition = targetPosition;
+                                    currentOrderAI.path = [];
+                                    currentOrderAI.meta = { ...meta };
+                                    this.game.gameManager.call('setCurrentAIController', entityId, "UnitOrderSystem", currentOrderAI);
+                                }
                             }
                         }
                     }

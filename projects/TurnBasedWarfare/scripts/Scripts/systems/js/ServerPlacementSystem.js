@@ -340,8 +340,9 @@ class ServerPlacementSystem extends engine.BaseSystem {
                     return;
                 }
                 
-                // Store target position in placement data
+                // Store target position in placement data with timing for deterministic command creation
                 placement.targetPosition = targetPosition;
+                placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
                 placement.squadUnits.forEach((unitId) => {
                     // Store player order for persistence through combat
                     const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
