@@ -474,92 +474,95 @@ class TerrainDataManager {
 
         const cliffs = [];
         const heightMap = this.tileMap.heightMap;
-        // Use tileMap.size instead of heightMap.length to get the actual map size (not extended)
         const mapSize = this.tileMap.size || heightMap.length;
 
-        // For each tile, check for height differences with neighbors
+        // For each tile, analyze height differences with all 8 neighbors (NSEW + diagonals)
         for (let z = 0; z < mapSize; z++) {
             for (let x = 0; x < mapSize; x++) {
                 const currentHeight = heightMap[z][x];
 
-                // Check all four cardinal directions
-                const neighbors = {
-                    north: z > 0 ? heightMap[z - 1][x] : currentHeight,
-                    south: z < mapSize - 1 ? heightMap[z + 1][x] : currentHeight,
-                    east: x < mapSize - 1 ? heightMap[z][x + 1] : currentHeight,
-                    west: x > 0 ? heightMap[z][x - 1] : currentHeight
-                };
+                // Analyze all neighbors
+                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight;
+                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight;
+                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight;
+                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight;
 
-                // Place cliff entities on the HIGHER tile facing toward the LOWER tile
-                // North neighbor is lower - place cliff on north edge of current tile
-                if (neighbors.north < currentHeight) {
-                    cliffs.push({
-                        gridX: x,
-                        gridZ: z,
-                        direction: 'north',
-                        heightDiff: currentHeight - neighbors.north,
-                        rotation: 0, // Facing north
-                        type: this.selectCliffType(x, z, 'north')
-                    });
+                const cornerTopLeftLess = z > 0 && x > 0 && heightMap[z - 1][x - 1] < currentHeight;
+                const cornerTopRightLess = z > 0 && x < mapSize - 1 && heightMap[z - 1][x + 1] < currentHeight;
+                const cornerBottomLeftLess = z < mapSize - 1 && x > 0 && heightMap[z + 1][x - 1] < currentHeight;
+                const cornerBottomRightLess = z < mapSize - 1 && x < mapSize - 1 && heightMap[z + 1][x + 1] < currentHeight;
+
+                // Track which quadrants are occupied by corners
+                const topLeftOccupied = (topLess && leftLess) || (cornerTopLeftLess && !topLess && !leftLess);
+                const topRightOccupied = (topLess && rightLess) || (cornerTopRightLess && !topLess && !rightLess);
+                const botLeftOccupied = (botLess && leftLess) || (cornerBottomLeftLess && !botLess && !leftLess);
+                const botRightOccupied = (botLess && rightLess) || (cornerBottomRightLess && !botLess && !rightLess);
+
+                // Place outer corners first (atom_one)
+                if (topLess && leftLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: 0 });
+                }
+                if (topLess && rightLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: Math.PI / 2 });
+                }
+                if (botLess && leftLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: -Math.PI / 2 });
+                }
+                if (botLess && rightLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: Math.PI });
                 }
 
-                // South neighbor is lower - place cliff on south edge
-                if (neighbors.south < currentHeight) {
-                    cliffs.push({
-                        gridX: x,
-                        gridZ: z,
-                        direction: 'south',
-                        heightDiff: currentHeight - neighbors.south,
-                        rotation: Math.PI, // Facing south
-                        type: this.selectCliffType(x, z, 'south')
-                    });
+                // Place inner corners (atom_three)
+                if (cornerTopLeftLess && !topLess && !leftLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: 0 });
+                }
+                if (cornerTopRightLess && !topLess && !rightLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: Math.PI / 2 });
+                }
+                if (cornerBottomLeftLess && !botLess && !leftLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: -Math.PI / 2 });
+                }
+                if (cornerBottomRightLess && !botLess && !rightLess) {
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: Math.PI });
                 }
 
-                // East neighbor is lower - place cliff on east edge
-                if (neighbors.east < currentHeight) {
-                    cliffs.push({
-                        gridX: x,
-                        gridZ: z,
-                        direction: 'east',
-                        heightDiff: currentHeight - neighbors.east,
-                        rotation: Math.PI / 2, // Facing east
-                        type: this.selectCliffType(x, z, 'east')
-                    });
+                // Place edges in empty quadrants (atom_two)
+                if (topLess) {
+                    if (!topLeftOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2 });
+                    }
+                    if (!topRightOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI / 2 });
+                    }
                 }
-
-                // West neighbor is lower - place cliff on west edge
-                if (neighbors.west < currentHeight) {
-                    cliffs.push({
-                        gridX: x,
-                        gridZ: z,
-                        direction: 'west',
-                        heightDiff: currentHeight - neighbors.west,
-                        rotation: -Math.PI / 2, // Facing west
-                        type: this.selectCliffType(x, z, 'west')
-                    });
+                if (botLess) {
+                    if (!botLeftOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI / 2 });
+                    }
+                    if (!botRightOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI / 2 });
+                    }
+                }
+                if (leftLess) {
+                    if (!topLeftOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0 });
+                    }
+                    if (!botLeftOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: 0 });
+                    }
+                }
+                if (rightLess) {
+                    if (!topRightOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: Math.PI });
+                    }
+                    if (!botRightOccupied) {
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: Math.PI });
+                    }
                 }
             }
         }
 
         return cliffs;
-    }
-
-    /**
-     * Select cliff model type based on position (for visual variety)
-     * @param {number} x - Grid X position
-     * @param {number} z - Grid Z position
-     * @param {string} direction - Direction of cliff
-     * @returns {string} Cliff type (atom_one, atom_two, atom_three)
-     */
-    selectCliffType(x, z, direction) {
-        // Use seeded random for consistent cliff types
-        const directionSeed = { north: 0, south: 1, east: 2, west: 3 }[direction] || 0;
-        const random = this.seededRandom(x * 4 + directionSeed, z * 4 + directionSeed);
-
-        // Distribute cliff types evenly across three types (atom_four not used)
-        if (random < 0.33) return 'atom_one';
-        if (random < 0.66) return 'atom_two';
-        return 'atom_three';
     }
 
     /**
