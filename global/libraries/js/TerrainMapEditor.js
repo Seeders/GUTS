@@ -1764,22 +1764,44 @@ class TerrainMapEditor {
     }
 
     async initGridCanvas() {
-        // Load environment images for preview
+        // Load terrain and environment images for sprite rendering
         this.isInitializing = true;
 
         try {
+            let palette = this.gameEditor.getPalette();
+            this.imageManager = new this.engineClasses.ImageManager(
+                this.gameEditor,
+                { imageSize: this.config.imageSize, palette: palette},
+                {ShapeFactory: this.engineClasses.ShapeFactory}
+            );
+
+            // Load terrain sprite sheets for in-game graphics rendering
+            await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
+            const terrainImages = this.imageManager.getImages("levels", "level");
+
             // Load environment images if we have environment objects
             if (this.worldObjects && Object.keys(this.worldObjects).length > 0) {
-                let palette = this.gameEditor.getPalette();
-                this.imageManager = new this.engineClasses.ImageManager(
-                    this.gameEditor,
-                    { imageSize: this.config.imageSize, palette: palette},
-                    {ShapeFactory: this.engineClasses.ShapeFactory}
-                );
                 await this.imageManager.loadImages("environment", this.worldObjects, false, false);
             }
 
-            // Render with fast renderer (colored squares for performance)
+            // Initialize TileMap with actual sprite sheets (skip cliff textures for 2D editor)
+            this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+            if (!this.terrainCanvasBuffer) {
+                this.terrainCanvasBuffer = document.createElement('canvas');
+            }
+            this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+            this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
+            // Init with skipCliffTextures option for 2D editing without 3D cliff meshes
+            this.terrainTileMapper.init(
+                this.terrainCanvasBuffer,
+                this.gameEditor.getCollections().configs.game.gridSize,
+                terrainImages,
+                this.gameEditor.getCollections().configs.game.isIsometric,
+                { skipCliffTextures: true }
+            );
+
+            // Initial render
             this.updateCanvasWithData();
         } finally {
             this.isInitializing = false;
@@ -2215,7 +2237,7 @@ class TerrainMapEditor {
         }
     }
 
-    // Fast rendering method - draws simple colored squares (optimized for performance)
+    // Render using TileMap sprites with caching for performance
     renderMap() {
         if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
             return;
@@ -2232,8 +2254,36 @@ class TerrainMapEditor {
         ctx.fillStyle = extensionTerrain?.color || '#7aad7b';
         ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
 
-        // Fast rendering with simple colored squares
-        if (isIsometric) {
+        // Calculate offset to center the terrain on the canvas
+        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
+        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+
+        // Use TileMap system to render actual in-game sprites (CACHED for performance)
+        if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
+            // Only re-render terrain if terrain data changed (not on every frame)
+            if (this.needsTerrainRender || !this.cachedTerrainCanvas) {
+                // Render terrain using TileMap.draw() with heightMap support
+                const heightMap = this.tileMap.heightMap || null;
+                this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
+
+                // Cache the rendered terrain to avoid expensive re-rendering
+                if (!this.cachedTerrainCanvas) {
+                    this.cachedTerrainCanvas = document.createElement('canvas');
+                    this.cachedTerrainCanvas.width = this.terrainCanvasBuffer.width;
+                    this.cachedTerrainCanvas.height = this.terrainCanvasBuffer.height;
+                }
+                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
+                cacheCtx.clearRect(0, 0, this.cachedTerrainCanvas.width, this.cachedTerrainCanvas.height);
+                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
+
+                this.needsTerrainRender = false;
+            }
+
+            // Draw the cached terrain (fast!)
+            ctx.drawImage(this.cachedTerrainCanvas, offsetX, offsetY);
+        } else {
+            // Fallback to simple colored squares if TileMap not ready
+            if (isIsometric) {
             // Isometric rendering
             for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
                 for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {

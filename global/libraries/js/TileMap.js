@@ -7,7 +7,7 @@ class TileMap {
  			"CanvasUtility": CanvasUtility
     } 
   }
-	init(canvas, tileSize, layerSpriteSheets, isometric) {
+	init(canvas, tileSize, layerSpriteSheets, isometric, options = {}) {
 		this.isometric = isometric;
 		this.canvas = canvas;
 		this.tileSize = tileSize;
@@ -17,6 +17,9 @@ class TileMap {
 		this.layerTextures = [];
 		this.baseAtoms = []; // Store base atoms per terrain type
 		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
+
+		// Options for editor mode: skip cliff supporting textures (for 2D editing without 3D cliff meshes)
+		this.skipCliffTextures = options.skipCliffTextures || false;
 
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
@@ -1213,6 +1216,11 @@ class TileMap {
 	 * This is called during terrain generation for each tile
 	 */
 	paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col) {
+		// Skip cliff supporting textures if in editor mode (2D without 3D cliff meshes)
+		if (this.skipCliffTextures) {
+			return;
+		}
+
 		const heightAnalysis = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 
