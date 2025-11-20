@@ -288,6 +288,9 @@ class TerrainMapEditor {
                 this.tileMap.extensionHeight = this.tileMap.extensionTerrainType || 0;
             }
             const extensionTerrainTypeSelector = document.getElementById('extensionTerrainType');
+            // Clear existing options before adding new ones
+            extensionTerrainTypeSelector.innerHTML = '';
+
             // Build extension terrain type dropdown from terrain type IDs
             this.tileMap.terrainTypes.forEach((terrainTypeId, index) => {
                 const terrainType = collections.terrainTypes?.[terrainTypeId];
@@ -343,14 +346,19 @@ class TerrainMapEditor {
             this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
 
             document.getElementById('terrainMapSize').value = this.mapSize;
-            
+
             // Resize canvas to fit map size
             this.updateCanvasSize();
-            
+
             // Load terrain types if provided
             this.updateTerrainStyles();
             this.setupTerrainTypesUI();
-            
+
+            // Invalidate terrain cache when switching levels to force full re-render
+            this.cachedTerrainCanvas = null;
+            this.needsTerrainRender = true;
+            this.modifiedTiles = [];
+
             // Wait for next frame to ensure DOM is updated, then initialize
             await new Promise(resolve => requestAnimationFrame(resolve));
             await this.initGridCanvas();
