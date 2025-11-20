@@ -22,7 +22,9 @@ class PlacementPreview {
         this.previewGroup = new THREE.Group();
         this.previewGroup.name = 'PlacementPreview';
         this.previewGroup.visible = false;
-        this.scene.add(this.previewGroup);
+        if(this.scene){
+            this.scene.add(this.previewGroup);
+        }
 
         this.config = {
             cellOpacity: 0.4,
