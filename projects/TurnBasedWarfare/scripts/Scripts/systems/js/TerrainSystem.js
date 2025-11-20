@@ -6,7 +6,6 @@ class TerrainSystem extends engine.BaseSystem {
         this.initialized = false;
 
         // Use global TerrainDataManager for all terrain data operations
-        this.terrainDataManager = new TerrainDataManager();
     }
 
     init() {
@@ -16,6 +15,7 @@ class TerrainSystem extends engine.BaseSystem {
         const collections = this.game.getCollections();
         const gameConfig = collections.configs.game;
         const currentLevel = this.game.state?.level || 'level1';
+        this.terrainDataManager = new GUTS.TerrainDataManager();
 
         this.terrainDataManager.init(collections, gameConfig, currentLevel);
 

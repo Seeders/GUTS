@@ -108,8 +108,8 @@ class WorldSystem extends engine.BaseSystem {
             this.game.terrainSystem.terrainDataManager.extendedSize);
 
         // Setup camera position
-        const cameraSettings = collections.cameras?.[world.camera];
-        this.worldRenderer.setupCamera(cameraSettings);
+        // const cameraSettings = collections.cameras?.[world.camera];
+        // this.worldRenderer.setupCamera(cameraSettings);
 
         // Setup ground with terrain data
         const terrainDataManager = this.game.terrainSystem.terrainDataManager;

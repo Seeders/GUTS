@@ -1845,13 +1845,16 @@
           "FantasyUIEnhancements",
           "MinHeap",
           "PerformanceProfiler",
-          "PerformanceMonitor"
+          "PerformanceMonitor",
+          "TerrainDataManager",
+          "WorldRenderer",
+          "RaycastHelper"
         ],
         "fileName": "game",
         "interface": "main",
         "appLibrary": "MultiplayerECSGame",
-        "canvasWidth": 1600,
-        "canvasHeight": 1600,
+        "canvasWidth": 3472,
+        "canvasHeight": 3472,
         "is3D": true,
         "palette": "main",
         "appLoaderLibrary": "GameLoader",
@@ -1885,7 +1888,8 @@
           "ServerSceneManager",
           "SeededRandom",
           "MinHeap",
-          "DesyncDebugger"
+          "DesyncDebugger",
+          "TerrainDataManager"
         ]
       },
       "state": {
@@ -18737,7 +18741,7 @@
         "filePath": "/global/libraries/js/PhysicsEngine.js"
       },
       "PlacementPreview": {
-        "filePath": "/global/libraries/js/PlacementPreview.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/PlacementPreview.js",
         "fileName": "PlacementPreview"
       },
       "Rapier": {
@@ -18753,7 +18757,7 @@
         "filePath": "/global/libraries/js/RapierWorker.js"
       },
       "RaycastHelper": {
-        "filePath": "/global/libraries/js/RaycastHelper.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/RaycastHelper.js",
         "fileName": "RaycastHelper"
       },
       "SE_GizmoManager": {
@@ -18818,7 +18822,7 @@
         "filePath": "/global/libraries/js/SpatialGrid.js"
       },
       "TerrainDataManager": {
-        "filePath": "/global/libraries/js/TerrainDataManager.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/TerrainDataManager.js",
         "fileName": "TerrainDataManager"
       },
       "TerrainGenerator": {
@@ -18848,7 +18852,7 @@
         "fileName": "UIComponents"
       },
       "WorldRenderer": {
-        "filePath": "/global/libraries/js/WorldRenderer.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/WorldRenderer.js",
         "fileName": "WorldRenderer"
       },
       "ZipExporter": {
