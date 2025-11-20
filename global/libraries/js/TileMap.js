@@ -313,16 +313,16 @@ class TileMap {
 		// Get pixel data from the canvases
 		const fullImageData = fullCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const fullVariationImageData = fullVariationCtx.getImageData(0, 0, spriteResolution, spriteResolution);
+		
 		const oneCornerTopRightImageData = oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);
-		const oneCornerTopLeftImageData = this.flipTextureHorizontal(oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));	
-
+		const oneCornerTopLeftImageData = this.flipTextureHorizontal(oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));
 		const oneCornerBotRightImageData = oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const oneCornerBotLeftImageData = this.flipTextureHorizontal(oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));	
 		
 		const twoCornerTopImageData = twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);
-		const twoCornerLeftImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), -Math.PI / 2);
 		const twoCornerRightImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), Math.PI / 2);
 		const twoCornerBottomImageData = twoCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);
+		const twoCornerLeftImageData = this.rotateTexture(twoCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution), Math.PI / 2);
 		
 		const threeCornerTopRightImageData = threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);
 		const threeCornerTopLeftImageData = this.flipTextureHorizontal(threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));
@@ -373,9 +373,9 @@ class TileMap {
 			oneCornerBotRightImageData,
 			//EDGES
 			this.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, fullImageData, fullImageData),
-			this.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, twoCornerLeftImageData, fullImageData),
+			this.createMolecule(moleculeCtx, twoCornerLeftImageData, fullVariationImageData, twoCornerLeftImageData, fullVariationImageData),
 			this.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, fullImageData, twoCornerRightImageData),
-			this.createMolecule(moleculeCtx, fullImageData, fullImageData, twoCornerBottomImageData, twoCornerBottomImageData),
+			this.createMolecule(moleculeCtx, fullVariationImageData, fullVariationImageData, twoCornerBottomImageData, twoCornerBottomImageData),
 
 			//TUNNELS
 			this.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, twoCornerBottomImageData, twoCornerBottomImageData),
@@ -384,8 +384,8 @@ class TileMap {
 			//TWO SIDES
 			this.createMolecule(moleculeCtx, threeCornerTopLeftImageData, twoCornerTopImageData, twoCornerLeftImageData, fullImageData),
 			this.createMolecule(moleculeCtx, twoCornerTopImageData, threeCornerTopRightImageData, fullImageData, twoCornerRightImageData),
-			this.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),
-			this.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),
+			this.createMolecule(moleculeCtx, twoCornerLeftImageData, fullVariationImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),
+			this.createMolecule(moleculeCtx, fullVariationImageData, twoCornerRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),
 
 			//PENNINSULAS		
 			this.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, twoCornerLeftImageData, twoCornerRightImageData),
@@ -840,46 +840,6 @@ class TileMap {
 		return sprites;
 	}
 	
-	getSpriteRotations(imageDataList) {
-		let rotationDict = {};
-
-		let requiredTransforms = {};
-
-		requiredTransforms[this.TileMolecule.Full] = [];
-		requiredTransforms[this.TileMolecule.Corner] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];
-		requiredTransforms[this.TileMolecule.Edge] = [this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90, this.TileTransforms.Rotate180];
-		requiredTransforms[this.TileMolecule.Tunnel] = [this.TileTransforms.CounterClockWise90];
-		requiredTransforms[this.TileMolecule.TwoSides] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];
-		requiredTransforms[this.TileMolecule.Penninsula] = [this.TileTransforms.FlipVertical, this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90];
-		requiredTransforms[this.TileMolecule.Island] = [];
-
-		Object.keys(imageDataList).forEach(moleculeType => {
-			let rotations = {};
-			let colors = imageDataList[moleculeType];
-			rotations[this.TileTransforms.None] = colors;
-
-			if (requiredTransforms[moleculeType].includes(this.TileTransforms.ClockWise90)) {
-				rotations[this.TileTransforms.ClockWise90] = this.rotateTexture(colors, Math.PI / 2);
-			}
-			if (requiredTransforms[moleculeType].includes(this.TileTransforms.CounterClockWise90)) {
-				rotations[this.TileTransforms.CounterClockWise90] = this.rotateTexture(colors, -Math.PI / 2);
-			}
-			if (requiredTransforms[moleculeType].includes(this.TileTransforms.Rotate180)) {
-				rotations[this.TileTransforms.Rotate180] = this.rotateTexture(colors, Math.PI);
-			}
-			if (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipHorizontal)) {
-				rotations[this.TileTransforms.FlipHorizontal] = this.flipTextureHorizontal(colors);
-			}
-			if (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipVertical)) {
-				rotations[this.TileTransforms.FlipVertical] = this.flipTextureVertical(colors);
-			}
-
-			rotationDict[moleculeType] = rotations;
-		});
-
-		return rotationDict;
-	}
-
 	rotateTexture(imageData, angle) {
 		return this.canvasUtility.rotateTexture(imageData, angle);
 	}
@@ -1041,11 +1001,9 @@ class TileMap {
 	}
 
 	getMoleculeByTileAnalysis(tileAnalysis){
-		var molecule = this.TileCliffMolecules.Full;								
+		var molecule = Math.random() < 0.5 ? this.TileCliffMolecules.Full : this.TileCliffMolecules.FullVariation;								
 		switch(tileAnalysis.neighborLowerCount){
 			case 0: 
-				// Randomly choose between Full (sprite 0) and FullVariation (sprite 4)
-				molecule = Math.random() < 0.5 ? this.TileCliffMolecules.Full : this.TileCliffMolecules.FullVariation;
 				break;
 			case 1:
 				if(tileAnalysis.topLess) {
