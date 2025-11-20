@@ -220,14 +220,8 @@ class EntityRenderer {
             mesh.rotation.y = data.facing.angle;
         }
 
-        // Apply scale from model definition
-        if (modelDef?.scale) {
-            mesh.scale.set(
-                modelDef.scale.x || 1,
-                modelDef.scale.y || 1,
-                modelDef.scale.z || 1
-            );
-        }
+        // NOTE: Do NOT apply scale here - ModelManager already applies the scale
+        // from the model definition when building the master model
 
         // Apply materials
         const palette = this.getPalette?.();
