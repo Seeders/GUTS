@@ -1867,14 +1867,24 @@ class TerrainMapEditor {
 
         // Spawn each cliff using EntityRenderer
         let spawnedCount = 0;
+        const isFirstCliff = true; // Debug first cliff
         for (const cliff of cliffData) {
             // Calculate cliff position for editor (terrain centered at origin, no extension)
             const gridSize = this.terrainDataManager.gridSize;
             const terrainSize = this.tileMap.size * gridSize;
 
+            if (isFirstCliff && spawnedCount === 0) {
+                console.log(`[TerrainMapEditor] First cliff data:`, cliff);
+                console.log(`[TerrainMapEditor] gridSize=${gridSize}, terrainSize=${terrainSize}, tileMap.size=${this.tileMap.size}`);
+            }
+
             // Center of tile
             const tileWorldX = cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
             const tileWorldZ = cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
+
+            if (isFirstCliff && spawnedCount === 0) {
+                console.log(`[TerrainMapEditor] Tile center: (${tileWorldX}, ${tileWorldZ})`);
+            }
 
             // Offset to edge based on direction
             const offset = gridSize / 2;
@@ -1888,14 +1898,26 @@ class TerrainMapEditor {
                 case 'west': worldX -= offset; break;
             }
 
+            if (isFirstCliff && spawnedCount === 0) {
+                console.log(`[TerrainMapEditor] After direction offset: (${worldX}, ${worldZ}), direction=${cliff.direction}`);
+            }
+
             // Get height from terrain (note: this still uses extended coordinates)
             // For now, use heightStep * height from heightMap
             const heightStep = this.terrainDataManager.heightStep;
             const mapHeight = this.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
             const height = mapHeight * heightStep;
 
+            if (isFirstCliff && spawnedCount === 0) {
+                console.log(`[TerrainMapEditor] Height: heightStep=${heightStep}, mapHeight=${mapHeight}, final height=${height}`);
+            }
+
             const worldPos = { x: worldX, y: height, z: worldZ };
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.direction}`;
+
+            if (isFirstCliff && spawnedCount === 0) {
+                console.log(`[TerrainMapEditor] Final worldPos:`, worldPos);
+            }
 
             const spawned = await this.entityRenderer.spawnEntity(entityId, {
                 collection: 'cliffs',
