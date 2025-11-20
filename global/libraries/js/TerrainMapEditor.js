@@ -26,6 +26,7 @@ class TerrainMapEditor {
         this.raycastIntervalId = null; // Interval for periodic raycasting
         this.cachedGridPosition = null; // Cached grid position from raycast
         this.mouseOverCanvas = false; // Track if mouse is over canvas
+        this.isCameraControlActive = false; // Track if camera is being controlled
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -174,10 +175,15 @@ class TerrainMapEditor {
             }, 1500);
         });
 
-        // Handle mouseup event (stop dragging)
-        document.addEventListener('mouseup', () => {
+        // Handle mouseup event (stop dragging and camera control)
+        document.addEventListener('mouseup', (e) => {
             this.isMouseDown = false;
             this.lastPaintedTile = null; // Reset for next paint operation
+
+            // Reset camera control flag for any button release
+            if (e.button === 1 || e.button === 2) {
+                this.isCameraControlActive = false;
+            }
         });
 
         // Add mouse down event for canvas
@@ -189,6 +195,12 @@ class TerrainMapEditor {
                     this.isMouseDown = true;
                     // Painting will be handled by the raycast interval
                     // which calls handlePainting when isMouseDown is true
+                }
+            } else if (e.button === 1 || e.button === 2) { // Middle or right click - camera controls
+                this.isCameraControlActive = true;
+                // Hide preview during camera movement
+                if (this.placementPreview) {
+                    this.placementPreview.hide();
                 }
             }
         });
@@ -1751,6 +1763,11 @@ class TerrainMapEditor {
      * Called periodically by raycast interval
      */
     updateGridPositionFromRaycast() {
+        // Skip raycasting if camera is being controlled (panning/rotating)
+        if (this.isCameraControlActive) {
+            return;
+        }
+
         if (!this.mouseOverCanvas || !this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) {
             this.cachedGridPosition = null;
             if (this.placementPreview) {
