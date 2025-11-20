@@ -318,14 +318,16 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
+            // Get temp order once per placement (not per unit)
+            let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
+
             placement.squadUnits.forEach(entityId => {
                 const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
                 const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
                 if (aiState && position) {
                     let targetPosition = aiState.targetPosition;
                     let meta = aiState.meta;
-                    let tempMoveOrders = this.game.gameManager.call('getTemporaryOpponentMoveOrders').get(placement.placementId);
-                    console.log('[applyTargetPositions] placementId:', placement.placementId, 'tempMoveOrders:', tempMoveOrders, 'aiState.targetPosition:', aiState.targetPosition);
+                    console.log('[applyTargetPositions] placementId:', placement.placementId, 'entityId:', entityId, 'tempMoveOrders:', tempMoveOrders ? 'found' : 'undefined', 'aiState.targetPosition:', aiState.targetPosition);
                     if(tempMoveOrders){
                         // Use command queue for temp opponent orders (needs deterministic timing)
                         targetPosition = tempMoveOrders.targetPosition;
@@ -341,7 +343,6 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                             interruptible: true,
                             createdTime: tempMoveOrders.commandCreatedTime || this.game.state.now
                         }, true);
-                        this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);
                     } else if(targetPosition){
                         // For own units with targetPosition - command was already queued when order was issued
                         // Just set up the AI controller for movement
@@ -369,9 +370,14 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
                     }
                 }
             });
+
+            // Delete temp order after all units in squad have been processed
+            if (tempMoveOrders) {
+                this.game.gameManager.call('deleteTemporaryOpponentMoveOrder', placement.placementId);
+            }
         });
     }
-    
+
     removeOpponentPlacement(placementId) {
         const CT = this.game.componentManager.getComponentTypes();
         
