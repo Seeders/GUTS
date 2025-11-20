@@ -502,6 +502,8 @@ class UnitOrderSystem extends engine.BaseSystem {
                         let placementId = placementIds[i];
                         const targetPosition = targetPositions[i];
                         const placement = this.game.gameManager.call('getPlacementById', placementId);
+                        // Set placement targetPosition to match server
+                        placement.targetPosition = targetPosition;
                         placement.squadUnits.forEach((unitId) => {
                             if (this.game.effectsSystem && targetPosition) {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
