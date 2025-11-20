@@ -32,7 +32,7 @@ class EntityRenderer {
 
         // Configuration
         this.modelScale = options.modelScale || 32;
-        this.defaultCapacity = options.defaultCapacity || 128;
+        this.defaultCapacity = options.defaultCapacity || 1024;
         this.minMovementThreshold = options.minMovementThreshold || 0.1;
 
         // Stats
@@ -210,11 +210,11 @@ class EntityRenderer {
         // Update instance transform
         // For cliffs, apply the scale in the instance matrix (not on the InstancedMesh itself)
         const scale = data.collection === 'cliffs' ? 32 : 1;
-        const matrix = new THREE_.Matrix4();
+        const matrix = new THREE.Matrix4();
         matrix.compose(
-            new THREE_.Vector3(data.position.x, data.position.y, data.position.z),
-            new THREE_.Quaternion().setFromEuler(new THREE_.Euler(0, data.rotation || 0, 0)),
-            new THREE_.Vector3(scale, scale, scale)
+            new THREE.Vector3(data.position.x, data.position.y, data.position.z),
+            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
+            new THREE.Vector3(scale, scale, scale)
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
         batch.instancedMesh.instanceMatrix.needsUpdate = true;
@@ -268,10 +268,10 @@ class EntityRenderer {
 
                 // Set SRGB color space for textures
                 if (material.map) {
-                    material.map.colorSpace = THREE_.SRGBColorSpace;
+                    material.map.colorSpace = THREE.SRGBColorSpace;
                 }
                 if (material.emissiveMap) {
-                    material.emissiveMap.colorSpace = THREE_.SRGBColorSpace;
+                    material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
                 }
             }
         });
@@ -286,7 +286,7 @@ class EntityRenderer {
 
         // Create instanced mesh
         const capacity = this.defaultCapacity;
-        const instancedMesh = new THREE_.InstancedMesh(geometry, material, capacity);
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
         console.log(`[EntityRenderer] Created InstancedMesh for ${batchKey}, capacity: ${capacity}`);
 
@@ -395,10 +395,10 @@ class EntityRenderer {
 
                 // Ensure textures use SRGB color space for correct rendering
                 if (child.material.map) {
-                    child.material.map.colorSpace = THREE_.SRGBColorSpace;
+                    child.material.map.colorSpace = THREE.SRGBColorSpace;
                 }
                 if (child.material.emissiveMap) {
-                    child.material.emissiveMap.colorSpace = THREE_.SRGBColorSpace;
+                    child.material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
                 }
 
                 if (shape?.color?.paletteColor && palette) {
@@ -957,7 +957,7 @@ class EntityRenderer {
         }
 
         const models = {};
-        //THREE_ is the CORRECT prefix.
+        //THREE_ is the CORRECT prefix for GLTF ONLY.
         const loader = new THREE_.GLTFLoader();
         const typesToLoad = entityTypes || Object.keys(collection);
 
