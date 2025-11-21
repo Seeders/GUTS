@@ -279,6 +279,18 @@ class EntryGenerator {
 
         sections.push('});');
         sections.push('');
+
+        // Also assign individual classes directly to window.GUTS (not just in organized collections)
+        sections.push('// Assign all individual classes directly to window.GUTS for direct access');
+        sections.push('Object.assign(window.GUTS, Managers);');
+        sections.push('Object.assign(window.GUTS, Systems);');
+
+        // Assign individual classes from dynamic collections
+        Object.entries(classCollectionObjects).forEach(([collectionName, varName]) => {
+            sections.push(`Object.assign(window.GUTS, ${varName});`);
+        });
+
+        sections.push('');
         sections.push('// Setup COMPILED_GAME namespace');
         sections.push('window.COMPILED_GAME = {');
         sections.push('  ready: Promise.resolve(),');

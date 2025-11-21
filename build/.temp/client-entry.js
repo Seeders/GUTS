@@ -1,6 +1,6 @@
 /**
  * GUTS Game Client Bundle
- * Generated: 2025-11-21T23:30:41.912Z
+ * Generated: 2025-11-21T23:42:50.838Z
  * Project: TurnBasedWarfare
  */
 
@@ -341,6 +341,11 @@ Object.assign(window.GUTS, {
   systems: Systems,
   abilities: Abilities
 });
+
+// Assign all individual classes directly to window.GUTS for direct access
+Object.assign(window.GUTS, Managers);
+Object.assign(window.GUTS, Systems);
+Object.assign(window.GUTS, Abilities);
 
 // Setup COMPILED_GAME namespace
 window.COMPILED_GAME = {

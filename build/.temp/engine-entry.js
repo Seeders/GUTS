@@ -1,6 +1,6 @@
 /**
  * GUTS Engine Bundle
- * Generated: 2025-11-21T23:30:41.916Z
+ * Generated: 2025-11-21T23:42:50.842Z
  */
 
 import ModuleManager from '/home/user/GUTS/engine/ModuleManager.js';
