@@ -167,8 +167,13 @@ class EnvironmentObjectSpawner {
         // Create unique entity ID for editor
         const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
 
-        // Editor mode needs 32x scale multiplier for proper visualization
-        const editorScale = scale * 32;
+        // Editor scale: the base scale already includes type-specific multipliers (50 for trees, 1 for rocks)
+        // We need a consistent base multiplier for worldObjects visualization
+        // The scale calculation gives us: 0.8-1.2 for rocks, 40-60 for trees
+        // We normalize by dividing out the type multiplier, then apply a standard multiplier
+        const typeMultiplier = envObj.type === 'rock' ? 1 : 50;
+        const normalizedScale = scale / typeMultiplier; // 0.8-1.2 for all types
+        const editorScale = normalizedScale * 32; // Apply consistent 32x multiplier
 
         // Spawn using EntityRenderer
         const spawned = await this.entityRenderer.spawnEntity(entityId, {
