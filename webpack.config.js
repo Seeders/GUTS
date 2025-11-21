@@ -47,22 +47,28 @@ const baseConfig = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: [
-                            ['@babel/preset-env', {
-                                targets: {
-                                    browsers: ['last 2 versions', 'not dead']
-                                },
-                                modules: false
-                            }]
-                        ],
-                        plugins: [
-                            '@babel/plugin-proposal-class-properties'
-                        ]
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: [
+                                ['@babel/preset-env', {
+                                    targets: {
+                                        browsers: ['last 2 versions', 'not dead']
+                                    },
+                                    modules: false
+                                }]
+                            ],
+                            plugins: [
+                                '@babel/plugin-proposal-class-properties'
+                            ]
+                        }
+                    },
+                    {
+                        // Custom loader to auto-export classes
+                        loader: path.resolve(__dirname, 'build/class-export-loader.js')
                     }
-                }
+                ]
             }
         ]
     },

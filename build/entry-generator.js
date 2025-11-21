@@ -285,7 +285,9 @@ class EntryGenerator {
             const varName = `${varPrefix}_${mod.fileName || mod.name}`;
             const requirePath = mod.path.replace(/\\/g, '/');
 
-            requires.push(`const ${varName} = require('${requirePath}');`);
+            // Require the module and extract the actual class from exports
+            requires.push(`const ${varName}_module = require('${requirePath}');`);
+            requires.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${moduleName} || ${varName}_module;`);
             exports.push(`  ${moduleName}: ${varName}`);
         });
 
@@ -317,6 +319,9 @@ class EntryGenerator {
         sections.push('// ========== SETUP GLOBALS ==========');
         sections.push('if (!global.engine) global.engine = {};');
         sections.push('if (!global.window) global.window = global;');
+        sections.push('// Setup app.appClasses for abilities and other dynamic classes');
+        sections.push('if (!global.engine.app) global.engine.app = {};');
+        sections.push('if (!global.engine.app.appClasses) global.engine.app.appClasses = {};');
         sections.push('');
 
         // Require libraries (synchronous, happens in order)
@@ -361,12 +366,43 @@ class EntryGenerator {
         // Require abilities
         if (server.abilities.length > 0) {
             sections.push('// ========== ABILITIES ==========');
-            const { requires, exports } = this.generateCommonJSImports(server.abilities, 'ability');
+
+            // Separate BaseAbility from other abilities
+            const baseAbility = server.abilities.find(a =>
+                (a.name === 'BaseAbility' || a.fileName === 'BaseAbility')
+            );
+            const otherAbilities = server.abilities.filter(a =>
+                !(a.name === 'BaseAbility' || a.fileName === 'BaseAbility')
+            );
+
+            // Require BaseAbility first and register it immediately
+            if (baseAbility) {
+                const varName = `ability_BaseAbility`;
+                const requirePath = baseAbility.path.replace(/\\/g, '/');
+                sections.push(`// Require BaseAbility first so other abilities can extend from it`);
+                sections.push(`const ${varName}_module = require('${requirePath}');`);
+                sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.BaseAbility || ${varName}_module;`);
+                sections.push(`global.engine.app.appClasses['BaseAbility'] = ${varName};`);
+                sections.push('');
+            }
+
+            // Now require all other abilities
+            const { requires, exports } = this.generateCommonJSImports(otherAbilities, 'ability');
             sections.push(...requires);
             sections.push('');
+
+            // Build the Abilities object
             sections.push('const Abilities = {');
+            if (baseAbility) {
+                sections.push('  BaseAbility: ability_BaseAbility,');
+            }
             sections.push(exports.join(',\n'));
             sections.push('};');
+            sections.push('');
+
+            // Make remaining abilities available in global.engine.app.appClasses
+            sections.push('// Make all abilities available in global.engine.app.appClasses');
+            sections.push('Object.assign(global.engine.app.appClasses, Abilities);');
             sections.push('');
         }
 
@@ -383,11 +419,19 @@ class EntryGenerator {
         // Setup global namespace (Node.js global)
         sections.push('// ========== GLOBAL SETUP ==========');
         sections.push('global.COMPILED_GAME = {');
+        sections.push('  ready: Promise.resolve(),');
+        sections.push('  initialized: false,');
         sections.push('  libraryClasses: Libraries,');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
         sections.push('  abilities: Abilities,');
-        sections.push('  classRegistry: ClassRegistry');
+        sections.push('  classRegistry: ClassRegistry,');
+        sections.push('  init: function(engine) {');
+        sections.push('    if (this.initialized) return;');
+        sections.push('    this.initialized = true;');
+        sections.push('    global.engine = engine;');
+        sections.push('    console.log("✅ COMPILED_GAME initialized on server");');
+        sections.push('  }');
         sections.push('};');
         sections.push('');
         sections.push('// Also expose in global.engine for compatibility');

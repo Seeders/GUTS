@@ -28,6 +28,11 @@ function loadCompiledGame() {
 
     // Set up window-like global context for compiled code
     global.window = global;
+
+    // Set up CommonJS-like environment for webpack bundle
+    global.module = { exports: {} };
+    global.exports = global.module.exports;
+
     // Load game_server.js (contains server-only compiled classes and collections)
     const gamePath = path.join(__dirname, 'dist/server/game.js');
     const gameCode = readFileSync(gamePath, 'utf8');
