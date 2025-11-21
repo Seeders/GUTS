@@ -356,7 +356,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
             for (const entityId of placement.squadUnits) {
                 // Remove from render system
                 if (this.game.renderSystem) {
-                    this.game.renderSystem.removeInstance(entityId);
+                    this.game.gameManager.call('removeInstance', entityId);
                 }
                 
                 // Destroy the entity

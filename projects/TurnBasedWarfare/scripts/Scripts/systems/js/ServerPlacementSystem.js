@@ -773,7 +773,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
             const buildingEntity = placement.squadUnits?.[0];
             if (buildingEntity) {
                 if (this.game.renderSystem) {
-                    this.game.renderSystem.removeInstance(buildingEntity);
+                    this.game.gameManager.call('removeInstance', buildingEntity);
                 }
                 this.game.destroyEntity(buildingEntity);
             }

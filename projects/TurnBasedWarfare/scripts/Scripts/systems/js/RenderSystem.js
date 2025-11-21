@@ -29,6 +29,7 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
         this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
         this.game.gameManager.register('getBatchInfo', this.getBatchInfo.bind(this));
+        this.game.gameManager.register('removeInstance', this.removeInstance.bind(this));
 
         // Initialize EntityRenderer with game context
         const collections = this.game.getCollections?.();
@@ -51,6 +52,9 @@ class RenderSystem extends engine.BaseSystem {
         console.log('[RenderSystem] Initialized with EntityRenderer');
     }
 
+    removeInstance(entityId) {
+        this.entityRenderer.removeEntity(entityId);
+    }
     /**
      * Get batch information for animation system
      * Returns available clips and other batch metadata

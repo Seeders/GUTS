@@ -686,7 +686,7 @@ class ShopSystem extends engine.BaseSystem {
 
         // Destroy the building entity
         if (this.game.renderSystem) {
-            this.game.renderSystem.removeInstance(buildingEntityId);
+            this.game.gameManager.call('removeInstance', buildingEntityId);
         }
         this.game.destroyEntity(buildingEntityId);
 

@@ -201,7 +201,7 @@ class BuildAbility extends engine.app.appClasses['BaseAbility'] {
         const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
         const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
         renderComponent.spawnType = buildingPlacement.unitType.id;
-        this.game.renderSystem?.removeInstance(buildState.targetBuildingEntityId);
+        this.game.gameManager.call('removeInstance', buildState.targetBuildingEntityId);
         if (!buildingPlacement) {
             buildState.state = 'idle';
             return;
