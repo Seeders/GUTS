@@ -39,7 +39,30 @@ class ConfigParser {
                 continue;
             }
 
-            // Skip external CDN libraries (href)
+            // Handle Three.js examples/addons from CDN - convert to npm imports
+            if (lib.href && lib.href.includes('three@') && lib.href.includes('/examples/jsm/')) {
+                // Extract the path from CDN URL
+                // Example: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js
+                const match = lib.href.match(/\/examples\/jsm\/(.+)\.js$/);
+                if (match) {
+                    const examplePath = match[1]; // e.g., "controls/OrbitControls"
+                    const absolutePath = path.join(__dirname, '..', 'node_modules', 'three', 'examples', 'jsm', `${examplePath}.js`);
+
+                    if (fs.existsSync(absolutePath)) {
+                        console.log(`✓ Using npm package for Three.js addon: ${libName}`);
+                        paths.push({
+                            name: libName,
+                            path: absolutePath,
+                            isModule: true,
+                            requireName: lib.requireName || lib.fileName || libName,
+                            windowContext: lib.windowContext
+                        });
+                        continue;
+                    }
+                }
+            }
+
+            // Skip other external CDN libraries (href)
             if (lib.href) {
                 console.log(`⚠️ Skipping external library: ${libName} (${lib.href})`);
                 continue;
