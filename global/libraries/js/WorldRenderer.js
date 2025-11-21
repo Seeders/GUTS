@@ -445,8 +445,9 @@ class WorldRenderer {
         const nz = z / segments;
 
         // Offset sampling by 2 pixels to create border for cliff coverage
-        const terrainX = Math.floor(nx * extendedSize) + 2;
-        const terrainZ = Math.floor(nz * extendedSize) + 2;
+        const terrainX = Math.floor(nx * extendedSize) - 1;
+        const terrainZ = Math.floor(nz * extendedSize) - 1;
+
 
         // Clamp to valid bounds
         const clampedX = Math.min(terrainX, extendedSize - 1);
