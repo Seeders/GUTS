@@ -417,7 +417,20 @@ class WorldRenderer {
      * Update height map geometry from terrain data
      */
     updateHeightMap() {
-        if (!this.terrainDataManager.heightMapSettings?.enabled || !this.tileMapper.heightMapCanvas) {
+        if (!this.terrainDataManager.heightMapSettings?.enabled) {
+            return;
+        }
+
+        // If we have heightMap data in tileMap, use TerrainDataManager to process it
+        // This ensures consistent behavior between initial render and editing
+        if (this.terrainDataManager.tileMap?.heightMap) {
+            this.terrainDataManager.processHeightMapFromData();
+            this.applyHeightMapToGeometry(this.terrainDataManager.heightMapData);
+            return;
+        }
+
+        // Fallback: read from canvas for legacy/backwards compatibility
+        if (!this.tileMapper.heightMapCanvas) {
             return;
         }
 
