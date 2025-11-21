@@ -26,14 +26,29 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Get world position from environment object (already stored as worldX/worldZ)
+     * Get world position from environment object
      */
     calculateWorldPosition(envObj, terrainDataManager) {
-        // Environment objects are stored with worldX and worldZ
-        return {
-            worldX: envObj.worldX,
-            worldZ: envObj.worldZ
-        };
+        // Support both formats: worldX/worldZ (new) and x/y (old pixel/grid coords)
+        if (envObj.worldX !== undefined && envObj.worldZ !== undefined) {
+            // New format: already has world coordinates
+            return {
+                worldX: envObj.worldX,
+                worldZ: envObj.worldZ
+            };
+        } else if (envObj.x !== undefined && envObj.y !== undefined) {
+            // Old format: convert from pixel/grid coordinates to world coordinates
+            const gridSize = terrainDataManager.gridSize;
+            const terrainSize = terrainDataManager.terrainSize;
+
+            // Assume old format is pixel coordinates, convert to world
+            const worldX = envObj.x - (terrainSize / 2);
+            const worldZ = envObj.y - (terrainSize / 2);
+            return { worldX, worldZ };
+        }
+
+        console.warn('[EnvironmentObjectSpawner] Invalid environment object format:', envObj);
+        return { worldX: 0, worldZ: 0 };
     }
 
     /**
