@@ -643,6 +643,9 @@ class WorldRenderer {
 
         const height = heightLevel * heightStep;
 
+        // Debug: log grid size
+        console.log(`[WorldRenderer] setHeightAtGridPosition: gridX=${gridX}, gridZ=${gridZ}, gridSize=${gridSize}, heightLevel=${heightLevel}`);
+
         // Update the height map data
         // Update the entire tile (gridSize x gridSize pixels)
         const extX = gridX * gridSize + extensionSize;
