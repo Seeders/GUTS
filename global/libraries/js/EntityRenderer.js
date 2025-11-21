@@ -213,7 +213,7 @@ class EntityRenderer {
         const baseScale = modelDef?.scale || { x: 1, y: 1, z: 1 };
 
         // For cliffs, multiply by 32
-        const scaleMultiplier = data.collection === 'cliffs' ? 32 : 1;
+        const scaleMultiplier = 32;
         const finalScale = new THREE.Vector3(
             baseScale.x * scaleMultiplier,
             baseScale.y * scaleMultiplier,
@@ -345,33 +345,11 @@ class EntityRenderer {
             return false;
         }
 
-        // Debug first cliff spawn
-        const isFirstCliff = !this.entities.has(entityId) && entityId.includes('cliffs') && this.stats.staticEntities === 0;
-        if (isFirstCliff) {
-            console.log(`[EntityRenderer] Spawning first cliff ${entityId}`);
-            console.log(`[EntityRenderer] modelGroup:`, modelGroup);
-            console.log(`[EntityRenderer] modelGroup type:`, modelGroup.type);
-            console.log(`[EntityRenderer] modelGroup children:`, modelGroup.children?.length);
-        }
-
+ 
         // Clone mesh
         const mesh = modelGroup.clone(true);
 
-        if (isFirstCliff) {
-            console.log(`[EntityRenderer] Cloned mesh:`, mesh);
-            console.log(`[EntityRenderer] Mesh children:`, mesh.children?.length);
 
-            // Inspect mesh hierarchy
-            console.log(`[EntityRenderer] Inspecting mesh hierarchy:`);
-            mesh.traverse((child) => {
-                console.log(`[EntityRenderer]   - ${child.type} "${child.name}" visible=${child.visible}`);
-                if (child.isMesh) {
-                    console.log(`[EntityRenderer]     * geometry:`, !!child.geometry, 'vertices:', child.geometry?.attributes?.position?.count);
-                    console.log(`[EntityRenderer]     * material:`, child.material?.type);
-                    console.log(`[EntityRenderer]     * castShadow:`, child.castShadow, 'receiveShadow:', child.receiveShadow);
-                }
-            });
-        }
 
         // Get model definition for scale and material properties
         const modelDef = entityDef.render?.model?.main;
@@ -379,10 +357,7 @@ class EntityRenderer {
         // Apply transforms
         mesh.position.set(data.position.x, data.position.y, data.position.z);
 
-        if (isFirstCliff) {
-            console.log(`[EntityRenderer] Position:`, data.position);
-            console.log(`[EntityRenderer] Scale def:`, modelDef?.scale);
-        }
+  
 
         if (typeof data.rotation === 'number') {
             mesh.rotation.y = data.rotation;
@@ -392,9 +367,8 @@ class EntityRenderer {
 
         // NOTE: ModelManager applies the scale from the model definition when building
         // However, for cliffs we need an additional scale multiplier to match terrain scale
-        if (data.collection === 'cliffs') {
-            mesh.scale.multiplyScalar(32);
-        }
+     
+        mesh.scale.multiplyScalar(32);
 
         // Apply materials
         const palette = this.getPalette?.();
@@ -431,43 +405,6 @@ class EntityRenderer {
 
         // Add to scene
         this.scene.add(mesh);
-
-        if (isFirstCliff) {
-            console.log(`[EntityRenderer] Added to scene. Scene children count:`, this.scene.children.length);
-            console.log(`[EntityRenderer] Mesh in scene:`, this.scene.children.includes(mesh));
-            console.log(`[EntityRenderer] Final mesh position:`, mesh.position);
-            console.log(`[EntityRenderer] Final mesh scale:`, mesh.scale);
-            console.log(`[EntityRenderer] Mesh visible:`, mesh.visible);
-
-            // Check for lights in scene
-            const lights = this.scene.children.filter(c => c.isLight);
-            console.log(`[EntityRenderer] Lights in scene:`, lights.length);
-            lights.forEach(light => {
-                console.log(`[EntityRenderer]   - ${light.type} intensity=${light.intensity} color=${light.color.getHexString()}`);
-            });
-
-            // Find camera in scene
-            const camera = this.scene.children.find(c => c.type === 'PerspectiveCamera' || c.type === 'OrthographicCamera');
-            if (camera) {
-                console.log(`[EntityRenderer] Camera position:`, camera.position);
-                console.log(`[EntityRenderer] Camera rotation:`, camera.rotation);
-            } else {
-                console.log(`[EntityRenderer] No camera found in scene.children`);
-            }
-
-            // Log all scene children types
-            console.log(`[EntityRenderer] Scene children types:`, this.scene.children.map(c => c.type));
-
-            // Find terrain mesh
-            const terrainMeshes = this.scene.children.filter(c => c.type === 'Mesh');
-            console.log(`[EntityRenderer] Found ${terrainMeshes.length} meshes in scene:`);
-            terrainMeshes.forEach((m, i) => {
-                console.log(`[EntityRenderer]   Mesh ${i}: name="${m.name}" pos=(${m.position.x}, ${m.position.y}, ${m.position.z}) scale=(${m.scale.x}, ${m.scale.y}, ${m.scale.z})`);
-                if (m.geometry) {
-                    console.log(`[EntityRenderer]       vertices: ${m.geometry.attributes.position?.count || 0}`);
-                }
-            });
-        }
 
         // Store entity data
         this.entities.set(entityId, {
