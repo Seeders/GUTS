@@ -8288,12 +8288,6 @@
             {
               "type": "tree",
               "imageIndex": 0,
-              "x": 1829,
-              "y": 1085.7999877929688
-            },
-            {
-              "type": "tree",
-              "imageIndex": 0,
               "x": 2458,
               "y": 1160.7999877929688
             },
@@ -10384,6 +10378,31 @@
               "imageIndex": 0,
               "x": 1657,
               "y": 12.800003051757812
+            },
+            {
+              "type": "tree",
+              "x": -552,
+              "y": 840
+            },
+            {
+              "type": "tree",
+              "x": -1272,
+              "y": -360
+            },
+            {
+              "type": "tree",
+              "x": -1272,
+              "y": -456
+            },
+            {
+              "type": "tree",
+              "x": -1272,
+              "y": -408
+            },
+            {
+              "type": "tree",
+              "x": 1512,
+              "y": 1464
             }
           ],
           "extensionTerrainType": 3,
@@ -25926,6 +25945,9 @@
                         "paletteColor": "greenDColor"
                       },
                       "id": 3
+                    },
+                    {
+                      "id": 0
                     }
                   ]
                 }
@@ -25973,7 +25995,24 @@
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -26031,7 +26070,15 @@
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "id": 0
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
