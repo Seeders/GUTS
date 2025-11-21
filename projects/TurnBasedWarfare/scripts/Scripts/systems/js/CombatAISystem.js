@@ -31,7 +31,6 @@ class CombatAISystem extends engine.BaseSystem {
         // Calculate target position threshold AFTER GridSystem has initialized
         // Use placement grid size (half of terrain grid) for position threshold
         this.TARGET_POSITION_THRESHOLD = this.game.gameManager.call('getPlacementGridSize') * 0.5;
-        console.log('[CombatAISystem] TARGET_POSITION_THRESHOLD:', this.TARGET_POSITION_THRESHOLD);
 
         this.game.gameManager.register('setRetaliatoryTarget', this.setRetaliatoryTarget.bind(this));
         this.game.gameManager.register('startDeathProcess', this.startDeathProcess.bind(this));
