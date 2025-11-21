@@ -170,20 +170,6 @@ class WorldRenderer {
             this.controls.keys = {}; // Clear any default key bindings
         }
 
-        // Prevent OrbitControls from seeing shift key (it has built-in shift handling we don't want)
-        const preventShiftKey = (event) => {
-            if (event.shiftKey && !event.ctrlKey && !event.metaKey) {
-                // Block shift from being detected by OrbitControls
-                Object.defineProperty(event, 'shiftKey', {
-                    get: () => false,
-                    configurable: true
-                });
-            }
-        };
-
-        this.renderer.domElement.addEventListener('mousedown', preventShiftKey, true);
-        this.renderer.domElement.addEventListener('mousemove', preventShiftKey, true);
-
         // Use Ctrl+Right Click for rotation, Right Click alone for pan
         this.controls.mouseButtons = {
             LEFT: null,                    // Left click disabled (used for editing)
@@ -202,6 +188,7 @@ class WorldRenderer {
 
         // Add modifier key detection for Ctrl+Right Click rotation
         this.ctrlPressed = false;
+        this.shiftPressed = false;
 
         // Constrain target Y position to prevent near-plane clipping through terrain
         this.controls.addEventListener('change', () => {
@@ -211,14 +198,28 @@ class WorldRenderer {
         });
 
         const handleKeyDown = (event) => {
+            // Track shift state but DON'T allow it to enable rotation
+            if (event.shiftKey) {
+                this.shiftPressed = true;
+            }
+
+            // ONLY ctrl/meta enables rotation
             if (event.ctrlKey || event.metaKey) {
                 this.ctrlPressed = true;
                 // Switch right click to rotate when Ctrl is held
                 this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+            } else if (this.shiftPressed && !event.ctrlKey && !event.metaKey) {
+                // Force pan mode if shift is pressed without ctrl
+                this.controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
             }
         };
 
         const handleKeyUp = (event) => {
+            // Track when shift is released
+            if (!event.shiftKey) {
+                this.shiftPressed = false;
+            }
+
             if (!event.ctrlKey && !event.metaKey) {
                 this.ctrlPressed = false;
                 // Switch right click back to pan when Ctrl is released
@@ -227,7 +228,7 @@ class WorldRenderer {
         };
 
         // Store event handlers for cleanup
-        this.controlsKeyHandlers = { handleKeyDown, handleKeyUp, preventShiftKey };
+        this.controlsKeyHandlers = { handleKeyDown, handleKeyUp };
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
@@ -1116,10 +1117,6 @@ class WorldRenderer {
         if (this.controlsKeyHandlers) {
             window.removeEventListener('keydown', this.controlsKeyHandlers.handleKeyDown);
             window.removeEventListener('keyup', this.controlsKeyHandlers.handleKeyUp);
-            if (this.renderer?.domElement && this.controlsKeyHandlers.preventShiftKey) {
-                this.renderer.domElement.removeEventListener('mousedown', this.controlsKeyHandlers.preventShiftKey, true);
-                this.renderer.domElement.removeEventListener('mousemove', this.controlsKeyHandlers.preventShiftKey, true);
-            }
             this.controlsKeyHandlers = null;
         }
 
