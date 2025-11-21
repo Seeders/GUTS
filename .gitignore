@@ -9,6 +9,8 @@ cache/
 */**/dist/client/cache/**/*
 */**/dist/server/game.js
 
+build/.temp/**/*
+
 # Logs
 logs
 *.log
