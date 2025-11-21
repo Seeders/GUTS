@@ -177,7 +177,7 @@ class WorldRenderer {
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.maxPolarAngle = Math.PI / 2.5;  // Limit to ~72 degrees to prevent near-plane clipping at horizon
+        this.controls.maxPolarAngle = Math.PI / 2.1;  // Limit to ~86° to prevent near-plane clipping (orthographic)
         this.controls.minPolarAngle = 0.1;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;

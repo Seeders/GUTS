@@ -1644,7 +1644,7 @@ class TerrainMapEditor {
             position: { x: 0, y: 600, z: 600 },
             lookAt: { x: 0, y: 0, z: 0 },
             zoom: 1,
-            near: 10.0,  // Increased from 0.1 to prevent near-plane clipping at horizon
+            near: 1.0,  // For orthographic camera
             far: 30000
         };
 
