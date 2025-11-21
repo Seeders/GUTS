@@ -2268,7 +2268,7 @@ class TerrainMapEditor {
 
         } else if (this.placementMode === 'environment') {
             // Place environment object at this position
-            if (this.selectedObjectType && this.lastPaintedTile === null) {
+            if (this.selectedEnvironmentType && this.lastPaintedTile === null) {
                 // Check if environment object already exists at this position
                 if (!this.tileMap.environmentObjects) {
                     this.tileMap.environmentObjects = [];
@@ -2281,7 +2281,7 @@ class TerrainMapEditor {
                 if (existingIndex === -1) {
                     // Add new environment object
                     this.tileMap.environmentObjects.push({
-                        type: this.selectedObjectType,
+                        type: this.selectedEnvironmentType,
                         x: gridX,
                         y: gridZ
                     });
