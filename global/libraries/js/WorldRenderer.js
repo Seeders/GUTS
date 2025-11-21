@@ -452,7 +452,28 @@ class WorldRenderer {
         const clampedZ = Math.min(terrainZ, extendedSize - 1);
 
         const heightIndex = clampedZ * extendedSize + clampedX;
-        const height = heightMapData[heightIndex] || 0;
+        let height = heightMapData[heightIndex] || 0;
+
+        // Check immediate neighbors to create vertical walls instead of slopes
+        // Use the lowest neighbor height to pull terrain back from cliff edges
+        const neighbors = [
+            { x: clampedX - 1, z: clampedZ },     // Left
+            { x: clampedX + 1, z: clampedZ },     // Right
+            { x: clampedX, z: clampedZ - 1 },     // Top
+            { x: clampedX, z: clampedZ + 1 },     // Bottom
+        ];
+
+        for (const neighbor of neighbors) {
+            if (neighbor.x >= 0 && neighbor.x < extendedSize &&
+                neighbor.z >= 0 && neighbor.z < extendedSize) {
+                const neighborIndex = neighbor.z * extendedSize + neighbor.x;
+                const neighborHeight = heightMapData[neighborIndex] || 0;
+
+                if (neighborHeight < height) {
+                    height = neighborHeight;
+                }
+            }
+        }
 
         positions[idx + 2] = height;
     }
