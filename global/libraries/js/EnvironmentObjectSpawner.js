@@ -26,18 +26,14 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Calculate world position from environment object grid position
+     * Get world position from environment object (already stored as worldX/worldZ)
      */
     calculateWorldPosition(envObj, terrainDataManager) {
-        // Convert grid coordinates to world coordinates
-        const gridSize = terrainDataManager.gridSize;
-        const terrainSize = terrainDataManager.terrainSize;
-        const halfGrid = gridSize / 2;
-
-        // Grid to world: multiply by gridSize, center terrain at origin, center in tile
-        const worldX = (envObj.x * gridSize) - (terrainSize / 2) + halfGrid;
-        const worldZ = (envObj.y * gridSize) - (terrainSize / 2) + halfGrid;
-        return { worldX, worldZ };
+        // Environment objects are stored with worldX and worldZ
+        return {
+            worldX: envObj.worldX,
+            worldZ: envObj.worldZ
+        };
     }
 
     /**

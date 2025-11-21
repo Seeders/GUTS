@@ -2274,16 +2274,23 @@ class TerrainMapEditor {
                     this.tileMap.environmentObjects = [];
                 }
 
+                // Convert grid position to world position
+                const gridSize = this.terrainDataManager.gridSize;
+                const terrainSize = this.terrainDataManager.terrainSize;
+                const halfGrid = gridSize / 2;
+                const worldX = (gridX * gridSize) - (terrainSize / 2) + halfGrid;
+                const worldZ = (gridZ * gridSize) - (terrainSize / 2) + halfGrid;
+
                 const existingIndex = this.tileMap.environmentObjects.findIndex(
-                    obj => obj.x === gridX && obj.y === gridZ
+                    obj => obj.worldX === worldX && obj.worldZ === worldZ
                 );
 
                 if (existingIndex === -1) {
-                    // Add new environment object
+                    // Add new environment object with world position
                     this.tileMap.environmentObjects.push({
                         type: this.selectedObjectType,
-                        x: gridX,
-                        y: gridZ
+                        worldX: worldX,
+                        worldZ: worldZ
                     });
 
                     // Respawn all environment objects to include the new one
