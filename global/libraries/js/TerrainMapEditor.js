@@ -2266,6 +2266,33 @@ class TerrainMapEditor {
                 this.update3DTerrainRegion(modifiedTiles);
             }
 
+        } else if (this.placementMode === 'environment') {
+            // Place environment object at this position
+            if (this.selectedObjectType && this.lastPaintedTile === null) {
+                // Check if environment object already exists at this position
+                if (!this.tileMap.environmentObjects) {
+                    this.tileMap.environmentObjects = [];
+                }
+
+                const existingIndex = this.tileMap.environmentObjects.findIndex(
+                    obj => obj.x === gridX && obj.y === gridZ
+                );
+
+                if (existingIndex === -1) {
+                    // Add new environment object
+                    this.tileMap.environmentObjects.push({
+                        type: this.selectedObjectType,
+                        x: gridX,
+                        y: gridZ
+                    });
+
+                    // Respawn all environment objects to include the new one
+                    this.updateEnvironmentObjects();
+                }
+
+                this.lastPaintedTile = `${gridX},${gridZ}`;
+            }
+
         } else if (this.placementMode === 'height') {
             let modifiedTiles = [];
 
