@@ -444,14 +444,14 @@ class WorldRenderer {
         const nx = x / segments;
         const nz = z / segments;
 
-        // Offset sampling by 2 pixels to create border for cliff coverage
-        const terrainX = Math.floor(nx * extendedSize) - 1;
-        const terrainZ = Math.floor(nz * extendedSize) - 1;
-
+        // Map vertex to exact heightmap pixel position
+        // Use round to snap to nearest pixel for proper alignment
+        const terrainX = Math.round(nx * (extendedSize - 1));
+        const terrainZ = Math.round(nz * (extendedSize - 1));
 
         // Clamp to valid bounds
-        const clampedX = Math.min(terrainX, extendedSize - 1);
-        const clampedZ = Math.min(terrainZ, extendedSize - 1);
+        const clampedX = Math.max(0, Math.min(terrainX, extendedSize - 1));
+        const clampedZ = Math.max(0, Math.min(terrainZ, extendedSize - 1));
 
         const heightIndex = clampedZ * extendedSize + clampedX;
         let height = heightMapData[heightIndex] || 0;
