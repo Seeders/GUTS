@@ -1612,19 +1612,14 @@ class TerrainMapEditor {
             this.terrainDataManager = new TerrainDataManager();
         }
 
-        // Create a mock level structure for the editor
+        // Create a level structure for the editor
         const editorLevel = {
             world: this.objectData.world,
             tileMap: this.tileMap
         };
 
-        // Temporarily add editor level to collections
-        const tempLevelId = '__editor_level__';
-        collections.levels = collections.levels || {};
-        collections.levels[tempLevelId] = editorLevel;
-
-        // Initialize terrain data
-        this.terrainDataManager.init(collections, gameConfig, tempLevelId);
+        // Initialize terrain data with direct level data (no need to add to collections)
+        this.terrainDataManager.init(collections, gameConfig, editorLevel);
 
         // Initialize WorldRenderer
         if (!this.worldRenderer) {
