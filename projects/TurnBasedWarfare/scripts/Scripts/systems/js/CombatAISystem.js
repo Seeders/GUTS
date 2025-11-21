@@ -20,27 +20,11 @@ class CombatAISystem extends engine.BaseSystem {
 
         this.DAMAGE_TIMING_RATIO = 0.5;
 
-        // TARGET_POSITION_THRESHOLD will be calculated lazily on first access
-        this._TARGET_POSITION_THRESHOLD = null;
+        // Use placement grid size (half of terrain grid) for position threshold
+        this.TARGET_POSITION_THRESHOLD = this.game.gameManager.call('getPlacementGridSize') * 0.5;
 
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
-    }
-
-    // Lazy getter for TARGET_POSITION_THRESHOLD - calculates on first access
-    get TARGET_POSITION_THRESHOLD() {
-        if (this._TARGET_POSITION_THRESHOLD === null) {
-            // Calculate once GridSystem has initialized
-            const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
-            if (placementGridSize !== undefined) {
-                this._TARGET_POSITION_THRESHOLD = placementGridSize * 0.5;
-                console.log('[CombatAISystem] TARGET_POSITION_THRESHOLD calculated:', this._TARGET_POSITION_THRESHOLD);
-            } else {
-                // Fallback if GridSystem not initialized yet
-                return 12; // Default value (assuming gridSize=48, placementGridSize=24, threshold=12)
-            }
-        }
-        return this._TARGET_POSITION_THRESHOLD;
     }
 
     init() {
