@@ -32,6 +32,104 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
         this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
         this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
+        this.game.gameManager.register('getEntityRenderer', () => this.getEntityRendererInterface());
+    }
+
+    /**
+     * Get an EntityRenderer-like interface for spawning entities
+     * This provides a consistent API for systems like WorldSystem to spawn entities
+     */
+    getEntityRendererInterface() {
+        return {
+            spawnEntity: async (entityId, options) => {
+                return await this.spawnEntity(entityId, options);
+            },
+            clearEntitiesByType: (collectionType) => {
+                this.clearEntitiesByType(collectionType);
+            }
+        };
+    }
+
+    /**
+     * Spawn an entity with the given parameters
+     * Compatible with EntityRenderer API from terrain editor
+     */
+    async spawnEntity(entityId, options) {
+        const { collection, type, position, rotation } = options;
+
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        const collections = this.game.getCollections();
+
+        const unitType = collections[collection]?.[type];
+        if (!unitType) {
+            console.warn(`[RenderSystem] Entity type ${type} not found in ${collection} collection`);
+            return false;
+        }
+
+        // Create entity if it doesn't exist
+        if (!this.game.entities.has(entityId)) {
+            this.game.createEntity(entityId);
+        }
+
+        // Add Position component
+        this.game.addComponent(entityId, ComponentTypes.POSITION,
+            Components.Position(position.x, position.y, position.z));
+
+        // Add UnitType component
+        const unitTypeData = { ...unitType, collection: collection, id: type };
+        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
+            Components.UnitType(unitTypeData));
+
+        // Add Renderable component
+        this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
+            Components.Renderable(collection, type, 1024));
+
+        // Add Facing component for rotation
+        this.game.addComponent(entityId, ComponentTypes.FACING,
+            Components.Facing(rotation || 0));
+
+        // Add Animation component for rotation and scale
+        this.game.addComponent(entityId, ComponentTypes.ANIMATION,
+            Components.Animation(1, rotation || 0, 0));
+
+        // Add Team component (neutral for cliffs/environment)
+        this.game.addComponent(entityId, ComponentTypes.TEAM,
+            Components.Team(collection === 'cliffs' ? 'cliff' : 'neutral'));
+
+        // Mark as client-only so server sync doesn't delete it
+        this.game.addComponent(entityId, "CLIENT_ONLY", { reason: 'visual_only' });
+
+        // Trigger position update to render
+        this.game.triggerEvent('onEntityPositionUpdated', entityId);
+
+        return true;
+    }
+
+    /**
+     * Clear all entities of a specific collection type
+     */
+    clearEntitiesByType(collectionType) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const entitiesToRemove = [];
+
+        for (const entityId of this.game.entities.keys()) {
+            const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
+            if (unitType && unitType.collection === collectionType) {
+                entitiesToRemove.push(entityId);
+            }
+        }
+
+        entitiesToRemove.forEach(entityId => {
+            if (this.entityToInstance.has(entityId)) {
+                this.removeInstance(entityId);
+            }
+            this.game.destroyEntity(entityId);
+        });
+
+        if (entitiesToRemove.length > 0) {
+            console.log(`[RenderSystem] Cleared ${entitiesToRemove.length} entities of type ${collectionType}`);
+        }
     }
 
     _bindDebugHelpers() {

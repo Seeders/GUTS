@@ -1124,13 +1124,23 @@ class WorldSystem extends engine.BaseSystem {
         }
         geometry.computeBoundsTree();
 
-        // Second pass: Generate cliff entities using TileMap analysis
-        this.generateCliffEntities();
+        // Second pass: Spawn cliff entities using TileMap analysis
+        this.spawnCliffEntities();
     }
 
 
-    generateCliffEntities() {
+    async spawnCliffEntities() {
         if (!this.heightMapData || !this.tileMap?.terrainMap || !this.game.terrainTileMapper) return;
+
+        // Get EntityRenderer interface from RenderSystem via gameManager
+        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        if (!entityRenderer) {
+            console.warn('[WorldSystem] EntityRenderer not available yet');
+            return;
+        }
+
+        // Clear existing cliffs
+        entityRenderer.clearEntitiesByType('cliffs');
 
         const terrainMap = this.tileMap.terrainMap;
         const gridSize = this.game.getCollections().configs.game.gridSize;
@@ -1139,7 +1149,9 @@ class WorldSystem extends engine.BaseSystem {
 
         const mapAnalysis = this.game.terrainTileMapper.analyzeMap();
 
-        mapAnalysis.forEach((tile, index) => {
+        let spawnedCount = 0;
+        for (let index = 0; index < mapAnalysis.length; index++) {
+            const tile = mapAnalysis[index];
             const x = (index % cols);
             const z = Math.floor(index / cols);
 
@@ -1148,12 +1160,12 @@ class WorldSystem extends engine.BaseSystem {
 
             // Only process tiles that have lower neighbors (cliff edges)
             if (heightAnalysis.neighborLowerCount > 0 || heightAnalysis.cornerLowerCount > 0) {
-                this.placeCliffAtomsForTile(x, z, heightAnalysis, gridSize);
+                const count = await this.placeCliffAtomsForTile(x, z, heightAnalysis, gridSize, entityRenderer);
+                spawnedCount += count;
             }
-        });
+        }
 
-        // Cliff supporting textures are now painted during terrain generation
-        // See TileMap.paintCliffSupportingTexturesForTile()
+        console.log(`[WorldSystem] Spawned ${spawnedCount} cliff entities`);
     }
 
     /**
@@ -1273,10 +1285,10 @@ class WorldSystem extends engine.BaseSystem {
         }
     }
 
-    placeCliffAtomsForTile(x, z, heightAnalysis, gridSize) {
+    async placeCliffAtomsForTile(x, z, heightAnalysis, gridSize, entityRenderer) {
 
         if(this.game.gameManager.call('hasRampAt', x, z)){
-            return;
+            return 0;
         }
         // Convert grid coordinates to world coordinates
         const worldX = (x * gridSize + this.extensionSize) - this.extendedSize / 2;
@@ -1393,72 +1405,26 @@ class WorldSystem extends engine.BaseSystem {
             }
         }
 
-        // Create entities for all atoms
-        atomPlacements.forEach(atom => {
-            this.createCliffEntity(atom.type, atom.x, cliffHeight, atom.z, atom.rotation);
-        });
-    }
-
-
-    resetCliffs() {
-        this.destroyAllCliffs();
-        this.generateCliffEntities();
-    }
-
-    destroyAllCliffs() {
-        const cliffs = this.game.getEntitiesWith('cliff');
-        cliffs.forEach((cliff) => {
-            this.game.destroyEntity(cliff);
-        });
-    }
-
-    createCliffEntity(type, worldX, worldY, worldZ, rotation) {
-        const cliffsType = "cliffs";
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-
-        const unitType = this.game.getCollections()[cliffsType]?.[type];
-        if (!unitType) {
-            console.warn(`Cliff type ${type} not found in cliffs collection`);
-            return;
+        // Spawn cliff entities using EntityRenderer interface
+        let spawnedCount = 0;
+        for (const atom of atomPlacements) {
+            const entityId = `cliff_${atom.type}_${Math.round(atom.x)}_${Math.round(atom.z)}_${Math.random().toString(36).substr(2, 9)}`;
+            const spawned = await entityRenderer.spawnEntity(entityId, {
+                collection: 'cliffs',
+                type: atom.type,
+                position: { x: atom.x, y: cliffHeight, z: atom.z },
+                rotation: atom.rotation
+            });
+            if (spawned) spawnedCount++;
         }
 
-        unitType.collection = cliffsType;
-        unitType.id = type;        
+        return spawnedCount;
+    }
 
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`${cliffsType}_${type}_${Math.round(worldX)}_${Math.round(worldZ)}_${Math.random()}`);
 
-        // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION, 
-            Components.Position(worldX, worldY, worldZ));
-
-        // Add Renderable component
-        this.game.addComponent(entityId, ComponentTypes.RENDERABLE, 
-            Components.Renderable(cliffsType, type, 1024));
-
-        // Add Animation component for rotation and scale
-        this.game.addComponent(entityId, ComponentTypes.ANIMATION, 
-            Components.Animation(1, rotation, 0));
-
-        // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING, 
-            Components.Facing(rotation));
-
-        // Add UnitType component
-        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, 
-            Components.UnitType(unitType));
-
-        // Add Team component (neutral for cliffs)
-        this.game.addComponent(entityId, ComponentTypes.TEAM,
-            Components.Team('cliff'));
-
-        this.game.addComponent(entityId, "cliff", { type });
-
-        // Mark as client-only so server sync doesn't delete it
-        this.game.addComponent(entityId, "CLIENT_ONLY", { reason: 'visual_only' });
-
-        this.game.triggerEvent('onEntityPositionUpdated', entityId);
+    async resetCliffs() {
+        // Clear and respawn cliffs
+        await this.spawnCliffEntities();
     }
 
     generateLiquidSurfaceMesh(terrainType) {
