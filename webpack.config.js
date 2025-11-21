@@ -103,6 +103,19 @@ const clientConfig = {
             'process.env.IS_SERVER': JSON.stringify(false)
         }),
         new webpack.BannerPlugin({
+            banner: `
+// Setup globals for browser environment BEFORE any imports execute
+if (typeof window !== 'undefined') {
+    if (!window.engine) window.engine = {};
+    if (!window.engine.app) window.engine.app = {};
+    if (!window.engine.app.appClasses) window.engine.app.appClasses = {};
+    if (!window.GUTS) window.GUTS = {};
+}
+`,
+            raw: true,
+            entryOnly: true
+        }),
+        new webpack.BannerPlugin({
             banner: `GUTS Game Engine - Client Bundle
 Project: ${projectName}
 Built: ${new Date().toISOString()}
