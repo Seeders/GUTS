@@ -140,6 +140,23 @@ class ModuleManager {
             let libraryDef = this.collections.libraries[library];
             this.atLeastOneModuleAdded = true;
 
+            // If using webpack bundle, libraries are already loaded in window.GUTS
+            if (window.COMPILED_GAME && window.GUTS) {
+                let libName = libraryDef?.requireName || library;
+
+                // Try to find the library in window.GUTS (already bundled)
+                let libraryClass = window.GUTS[libName] || window.COMPILED_GAME.libraryClasses?.[libName];
+
+                if (libraryClass) {
+                    this.registeredLibraries[libName] = libraryClass;
+                    pendingLibraries.delete(library);
+                    resolve();
+                    return;
+                } else {
+                    console.warn(`Library ${libName} not found in bundled GUTS, trying dynamic import...`);
+                }
+            }
+
             if (!document.getElementById(`${library}-script`)) {
                 if (libraryDef.isModule && (libraryDef.filePath || libraryDef.href)) {
                     let path = libraryDef.filePath || libraryDef.href;
