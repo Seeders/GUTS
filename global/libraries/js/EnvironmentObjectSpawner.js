@@ -29,10 +29,11 @@ class EnvironmentObjectSpawner {
      * Get world position from environment object
      */
     calculateWorldPosition(envObj, terrainDataManager) {
-        // Environment objects use x and z for world position
+        // Environment objects use x for worldX and y for worldZ
+        // (y in the data maps to Z axis in 3D world)
         return {
             worldX: envObj.x,
-            worldZ: envObj.z
+            worldZ: envObj.y
         };
     }
 
