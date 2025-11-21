@@ -31,12 +31,27 @@ class GridSystem extends engine.BaseSystem {
         this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
 
         // Tile ↔ World coordinate transformations (3D terrain grid)
-        this.game.gameManager.register('tileToWorld', (tileX, tileZ, useExtension = false) =>
-            this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension));
-        this.game.gameManager.register('worldToTile', (worldX, worldZ, useExtension = false) =>
-            this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension));
-        this.game.gameManager.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) =>
-            this.coordinateTranslator.tileToWorldCorner(tileX, tileZ, useExtension));
+        this.game.gameManager.register('tileToWorld', (tileX, tileZ, useExtension = false) => {
+            if (!this.coordinateTranslator) {
+                console.error('[GridSystem] tileToWorld called before CoordinateTranslator initialized!');
+                return { x: 0, z: 0 };
+            }
+            return this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension);
+        });
+        this.game.gameManager.register('worldToTile', (worldX, worldZ, useExtension = false) => {
+            if (!this.coordinateTranslator) {
+                console.error('[GridSystem] worldToTile called before CoordinateTranslator initialized!');
+                return { x: 0, z: 0 };
+            }
+            return this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension);
+        });
+        this.game.gameManager.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) => {
+            if (!this.coordinateTranslator) {
+                console.error('[GridSystem] tileToWorldCorner called before CoordinateTranslator initialized!');
+                return { x: 0, z: 0 };
+            }
+            return this.coordinateTranslator.tileToWorldCorner(tileX, tileZ, useExtension);
+        });
 
         // Quadrant positioning (for sub-tile positioning like cliffs)
         this.game.gameManager.register('applyQuadrantOffset', (tileWorldX, tileWorldZ, quadrant) =>
@@ -203,12 +218,24 @@ class GridSystem extends engine.BaseSystem {
     
     worldToGrid(worldX, worldZ) {
         // Use CoordinateTranslator for placement grid conversions
-        return this.coordinateTranslator.worldToPlacementGrid(worldX, worldZ);
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] worldToGrid called before CoordinateTranslator initialized!', worldX, worldZ);
+            return { x: 0, z: 0 };
+        }
+        const result = this.coordinateTranslator.worldToPlacementGrid(worldX, worldZ);
+        console.log('[GridSystem] worldToGrid:', worldX, worldZ, '=>', result);
+        return result;
     }
 
     gridToWorld(gridX, gridZ) {
         // Use CoordinateTranslator for placement grid conversions
-        return this.coordinateTranslator.placementGridToWorld(gridX, gridZ);
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] gridToWorld called before CoordinateTranslator initialized!', gridX, gridZ);
+            return { x: 0, z: 0 };
+        }
+        const result = this.coordinateTranslator.placementGridToWorld(gridX, gridZ);
+        console.log('[GridSystem] gridToWorld:', gridX, gridZ, '=>', result);
+        return result;
     }
     
     // OPTIMIZED: Early bounds checking
