@@ -2350,6 +2350,59 @@ class TerrainMapEditor {
                 // Update 3D height mesh for modified tiles
                 this.update3DHeightRegion(modifiedTiles);
             }
+        } else if (this.placementMode === 'placements') {
+            // Place entities (starting locations, units, buildings)
+            if (this.selectedPlacementType && this.lastPaintedTile === null) {
+                const gridSize = this.terrainDataManager.gridSize;
+                const terrainSize = this.terrainDataManager.terrainSize;
+
+                // Convert to world position (centered in tile)
+                const worldX = (gridX * gridSize) - (terrainSize / 2) + (gridSize / 2);
+                const worldZ = (gridZ * gridSize) - (terrainSize / 2) + (gridSize / 2);
+
+                if (this.selectedPlacementType === 'startingLocation') {
+                    // Check if starting location already exists for this side
+                    const existingIndex = this.startingLocations.findIndex(
+                        loc => loc.side === this.selectedEntityType
+                    );
+
+                    if (existingIndex !== -1) {
+                        // Update existing starting location
+                        this.startingLocations[existingIndex] = {
+                            side: this.selectedEntityType,
+                            gridPosition: { x: gridX, z: gridZ },
+                            worldPosition: { x: worldX, z: worldZ }
+                        };
+                    } else {
+                        // Add new starting location
+                        this.startingLocations.push({
+                            side: this.selectedEntityType,
+                            gridPosition: { x: gridX, z: gridZ },
+                            worldPosition: { x: worldX, z: worldZ }
+                        });
+                    }
+
+                    // Update the starting locations list display
+                    const listElement = document.getElementById('startingLocationsList');
+                    if (listElement) {
+                        this.updateStartingLocationsList(listElement);
+                    }
+
+                } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
+                    // Add entity placement
+                    this.entityPlacements.push({
+                        type: this.selectedPlacementType,
+                        entityType: this.selectedEntityType,
+                        gridPosition: { x: gridX, z: gridZ },
+                        worldPosition: { x: worldX, z: worldZ }
+                    });
+                }
+
+                // Save the map with updated placements
+                this.exportMap();
+
+                this.lastPaintedTile = `${gridX},${gridZ}`;
+            }
         }
     }
 
