@@ -177,7 +177,7 @@ class WorldRenderer {
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.maxPolarAngle = Math.PI / 2.1;  // Limit to ~86° to prevent near-plane clipping (orthographic)
+        this.controls.maxPolarAngle = Math.PI / 2.35;  // Limit to ~77° - orthographic needs stricter limit to prevent clipping
         this.controls.minPolarAngle = 0.1;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
@@ -187,6 +187,13 @@ class WorldRenderer {
 
         // Add modifier key detection for Ctrl+Right Click rotation
         this.ctrlPressed = false;
+
+        // Constrain target Y position to prevent near-plane clipping through terrain
+        this.controls.addEventListener('change', () => {
+            if (this.controls.target.y < -100) {
+                this.controls.target.y = -100;
+            }
+        });
 
         const handleKeyDown = (event) => {
             if (event.ctrlKey || event.metaKey) {
