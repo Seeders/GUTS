@@ -522,30 +522,17 @@ class TerrainMapEditor {
             document.getElementById('globalBrushSizeValue').textContent = this.brushSize;
         });
 
-        // Terrain tool buttons
-        document.getElementById('terrainBrushBtn').addEventListener('click', () => {
+        // Global tool buttons
+        document.getElementById('globalBrushBtn').addEventListener('click', () => {
             this.terrainTool = 'brush';
-            document.getElementById('terrainBrushBtn').classList.add('editor-module__btn--active');
-            document.getElementById('terrainFillBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('globalBrushBtn').classList.add('editor-module__btn--active');
+            document.getElementById('globalFillBtn').classList.remove('editor-module__btn--active');
         });
 
-        document.getElementById('terrainFillBtn').addEventListener('click', () => {
+        document.getElementById('globalFillBtn').addEventListener('click', () => {
             this.terrainTool = 'fill';
-            document.getElementById('terrainFillBtn').classList.add('editor-module__btn--active');
-            document.getElementById('terrainBrushBtn').classList.remove('editor-module__btn--active');
-        });
-
-        // Height tool buttons
-        document.getElementById('heightBrushBtn').addEventListener('click', () => {
-            this.terrainTool = 'brush';
-            document.getElementById('heightBrushBtn').classList.add('editor-module__btn--active');
-            document.getElementById('heightFillBtn').classList.remove('editor-module__btn--active');
-        });
-
-        document.getElementById('heightFillBtn').addEventListener('click', () => {
-            this.terrainTool = 'fill';
-            document.getElementById('heightFillBtn').classList.add('editor-module__btn--active');
-            document.getElementById('heightBrushBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('globalFillBtn').classList.add('editor-module__btn--active');
+            document.getElementById('globalBrushBtn').classList.remove('editor-module__btn--active');
         });
 
         this.canvasEl.addEventListener('contextmenu', (e) => {
