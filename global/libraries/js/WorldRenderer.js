@@ -662,8 +662,8 @@ class WorldRenderer {
             }
         }
 
-        // Update the mesh in this region
-        this.updateHeightMapRegion(gridX, gridZ, 2);
+        // Update the mesh in this region (radius=1 to include immediate neighbors for smooth blending)
+        this.updateHeightMapRegion(gridX, gridZ, 1);
     }
 
     /**
