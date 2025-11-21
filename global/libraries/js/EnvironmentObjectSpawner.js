@@ -29,8 +29,10 @@ class EnvironmentObjectSpawner {
      * Calculate world position from environment object grid position
      */
     calculateWorldPosition(envObj, terrainDataManager) {
-        const worldX = (envObj.x + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
-        const worldZ = (envObj.y + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
+        // Convert grid coordinates to world coordinates by multiplying by gridSize
+        const gridSize = terrainDataManager.gridSize;
+        const worldX = ((envObj.x * gridSize) + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
+        const worldZ = ((envObj.y * gridSize) + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
         return { worldX, worldZ };
     }
 
