@@ -838,10 +838,10 @@ class TerrainMapEditor {
                         item.addEventListener('click', () => {
                             // Deselect any previously selected items
                             document.querySelectorAll('.terrain-editor__environment-item').forEach(i => i.classList.remove('active'));
-                            
+
                             // Select this item
                             item.classList.add('active');
-                            this.selectedEnvironmentType = type;
+                            this.selectedObjectType = type;
                             this.selectedEnvironmentItem = imageIndex;
                             this.placementMode = 'environment';
 
@@ -2268,7 +2268,7 @@ class TerrainMapEditor {
 
         } else if (this.placementMode === 'environment') {
             // Place environment object at this position
-            if (this.selectedEnvironmentType && this.lastPaintedTile === null) {
+            if (this.selectedObjectType && this.lastPaintedTile === null) {
                 // Check if environment object already exists at this position
                 if (!this.tileMap.environmentObjects) {
                     this.tileMap.environmentObjects = [];
@@ -2281,7 +2281,7 @@ class TerrainMapEditor {
                 if (existingIndex === -1) {
                     // Add new environment object
                     this.tileMap.environmentObjects.push({
-                        type: this.selectedEnvironmentType,
+                        type: this.selectedObjectType,
                         x: gridX,
                         y: gridZ
                     });
