@@ -362,12 +362,13 @@ class WorldRenderer {
 
         this.groundVertices = groundGeometry.attributes.position;
 
-        // Create ground material
+        // Create ground material with flat shading for sharp terrain steps
         const groundMaterial = new THREE.MeshStandardMaterial({
             map: this.groundTexture,
             side: THREE.DoubleSide,
             metalness: 0.0,
-            roughness: 1
+            roughness: 1,
+            flatShading: true
         });
 
         // Create ground mesh
@@ -500,7 +501,6 @@ class WorldRenderer {
         }
 
         this.groundVertices.needsUpdate = true;
-        geometry.computeVertexNormals();
 
         // Rebuild BVH tree after geometry modification
         if (geometry.boundsTree) {
@@ -563,10 +563,6 @@ class WorldRenderer {
 
         // Mark for update
         this.groundVertices.needsUpdate = true;
-
-        // Recompute normals only for affected region if possible
-        // For now, recompute all normals (could be optimized further)
-        geometry.computeVertexNormals();
 
         // Rebuild BVH tree for the modified region
         if (geometry.boundsTree) {
