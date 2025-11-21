@@ -15,16 +15,48 @@ class GridSystem extends engine.BaseSystem {
     }
 
     init() {
+        // Grid state management
         this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
-        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
-        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
         this.game.gameManager.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
         this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
         this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
+
+        // Grid configuration
         this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
         this.game.gameManager.register('getPlacementGridSize', () => this.cellSize);
-        this.game.gameManager.register('getCoordinateTranslator', () => this.coordinateTranslator);
+
+        // Placement Grid ↔ World coordinate transformations (legacy names for backward compatibility)
+        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
+        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
+
+        // Tile ↔ World coordinate transformations (3D terrain grid)
+        this.game.gameManager.register('tileToWorld', (tileX, tileZ, useExtension = false) =>
+            this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension));
+        this.game.gameManager.register('worldToTile', (worldX, worldZ, useExtension = false) =>
+            this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension));
+        this.game.gameManager.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) =>
+            this.coordinateTranslator.tileToWorldCorner(tileX, tileZ, useExtension));
+
+        // Quadrant positioning (for sub-tile positioning like cliffs)
+        this.game.gameManager.register('applyQuadrantOffset', (tileWorldX, tileWorldZ, quadrant) =>
+            this.coordinateTranslator.applyQuadrantOffset(tileWorldX, tileWorldZ, quadrant));
+
+        // Tile ↔ Pixel coordinate transformations (for heightmap access)
+        this.game.gameManager.register('tileToPixel', (tileX, tileZ) =>
+            this.coordinateTranslator.tileToPixel(tileX, tileZ));
+        this.game.gameManager.register('pixelToTile', (pixelX, pixelZ) =>
+            this.coordinateTranslator.pixelToTile(pixelX, pixelZ));
+
+        // Coordinate validation
+        this.game.gameManager.register('isValidTile', (tileX, tileZ) =>
+            this.coordinateTranslator.isValidTile(tileX, tileZ));
+        this.game.gameManager.register('isValidWorldPosition', (worldX, worldZ) =>
+            this.coordinateTranslator.isValidWorldPosition(worldX, worldZ));
+
+        // Configuration updates (for dynamic changes like extension size)
+        this.game.gameManager.register('updateCoordinateConfig', (config) =>
+            this.coordinateTranslator.updateConfig(config));
 
         const collections = this.game.getCollections();
 

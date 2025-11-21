@@ -196,29 +196,20 @@ class PlacementPreview {
     
     showAtGridPositions(gridPositions, isValid = true, isBuilding = false) {
         // Convert grid positions to world positions
-        // Use game's CoordinateTranslator if available, otherwise fallback to simple multiplication
+        // Use GridSystem coordinate transformations via gameManager if available
         let worldPositions;
 
         if (this.game && this.game.gameManager) {
-            const coordinateTranslator = this.game.gameManager.call('getCoordinateTranslator');
-            if (coordinateTranslator && !isBuilding) {
-                // Use centralized coordinate transformation for placement grid
+            if (!isBuilding) {
+                // Use GridSystem coordinate transformation for placement grid (units)
                 worldPositions = gridPositions.map(gridPos =>
-                    coordinateTranslator.placementGridToWorld(gridPos.x, gridPos.z)
-                );
-            } else if (coordinateTranslator && isBuilding) {
-                // Use centralized coordinate transformation for terrain grid (buildings)
-                worldPositions = gridPositions.map(gridPos =>
-                    coordinateTranslator.tileToWorld(gridPos.x, gridPos.z)
+                    this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z)
                 );
             } else {
-                // Fallback to simple multiplication
-                const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
-                worldPositions = gridPositions.map(gridPos => ({
-                    x: gridPos.x * gridSize,
-                    y: 0,
-                    z: gridPos.z * gridSize
-                }));
+                // Use GridSystem coordinate transformation for terrain grid (buildings)
+                worldPositions = gridPositions.map(gridPos =>
+                    this.game.gameManager.call('tileToWorld', gridPos.x, gridPos.z)
+                );
             }
         } else {
             // Editor mode or legacy: grid position = world position at center of tile

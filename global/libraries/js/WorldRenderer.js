@@ -46,7 +46,7 @@ class WorldRenderer {
         this.terrainDataManager = null;
         this.tileMapper = null;
         this.collections = null;
-        this.coordinateTranslator = null;  // For centralized coordinate transformations
+        this.gameManager = null;  // For accessing GridSystem coordinate transformations
 
         // Configuration
         this.config = {
@@ -790,11 +790,11 @@ class WorldRenderer {
 
         const heightStep = this.terrainDataManager.heightStep;
 
-        // Use CoordinateTranslator if available, otherwise fallback to manual calculation
-        const useCoordinateTranslator = this.coordinateTranslator !== null;
+        // Use GameManager coordinate functions if available, otherwise fallback to manual calculation
+        const useGameManager = this.gameManager !== null;
 
-        if (!useCoordinateTranslator) {
-            console.warn('[WorldRenderer] CoordinateTranslator not set, using fallback coordinate calculations');
+        if (!useGameManager) {
+            console.warn('[WorldRenderer] GameManager not set, using fallback coordinate calculations');
         }
 
         // Spawn each cliff
@@ -802,10 +802,10 @@ class WorldRenderer {
         for (const cliff of cliffData) {
             let tileWorldPos, worldPos;
 
-            if (useCoordinateTranslator) {
-                // Use centralized coordinate translation
-                tileWorldPos = this.coordinateTranslator.tileToWorld(cliff.gridX, cliff.gridZ, useExtension);
-                worldPos = this.coordinateTranslator.applyQuadrantOffset(tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
+            if (useGameManager) {
+                // Use GridSystem coordinate transformations via gameManager
+                tileWorldPos = this.gameManager.call('tileToWorld', cliff.gridX, cliff.gridZ, useExtension);
+                worldPos = this.gameManager.call('applyQuadrantOffset', tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
             } else {
                 // Fallback: manual calculation
                 const gridSize = this.terrainDataManager.gridSize;
