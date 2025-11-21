@@ -21,28 +21,23 @@ class VisionSystem extends engine.BaseSystem {
 
         if (distance < gridSize*2) return true;
 
-        const terrainSystem = this.game.terrainSystem;
-        if (!terrainSystem) {
-            console.warn('[hasLineOfSight] No terrain system found!');
-            return true;
-        }
-
+        const terrainSize = this.game.gameManager.call("getTerrainSize");
         // Get discrete heightmap levels for from and to positions
-        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
+        const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
-        const fromHeightLevel = terrainSystem.getHeightLevelAtGridPosition(fromGridX, fromGridZ);
-        const toHeightLevel = terrainSystem.getHeightLevelAtGridPosition(toGridX, toGridZ);
+        const fromHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
+        const toHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
 
         // Cannot see up to tiles with higher heightmap values
         if (toHeightLevel > fromHeightLevel) {
             return false;
         }
 
-        const fromTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(from.x, from.z);
-        const toTerrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(to.x, to.z);
+        const fromTerrainHeight = this.game.gameManager.call("getTerrainHeightAtPositionSmooth", from.x, from.z);
+        const toTerrainHeight = this.game.gameManager.call("getTerrainHeightAtPositionSmooth", to.x, to.z);
 
         // Use unit height from unitType, or fall back to default if not available
         const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
@@ -92,13 +87,13 @@ class VisionSystem extends engine.BaseSystem {
     }
 
     checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
-        const terrainSystem = this.game.terrainSystem;
+        const terrainSize = this.game.gameManager.call("getTerrainSize");
         const gridSize = this.game.getCollections().configs.game.gridSize;
 
-        const fromGridX = Math.floor((from.x + terrainSystem.terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSystem.terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSystem.terrainSize / 2) / gridSize);
+        const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
         const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
 
@@ -107,7 +102,7 @@ class VisionSystem extends engine.BaseSystem {
             const tile = tiles[i];
 
             // Check if this intermediate tile has a higher heightmap level than the viewer
-            const tileHeightLevel = terrainSystem.getHeightLevelAtGridPosition(tile.x, tile.z);
+            const tileHeightLevel = this.game.gameManager.call('getHeightLevelAtGridPosition', tile.x, tile.z);
             if (tileHeightLevel > fromHeightLevel) {
                 // Cannot see through a tile with higher elevation
                 return false;
@@ -115,10 +110,10 @@ class VisionSystem extends engine.BaseSystem {
 
             // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
             const t = i / (tiles.length - 1);
-            const worldX = tile.x * gridSize - terrainSystem.terrainSize / 2;
-            const worldZ = tile.z * gridSize - terrainSystem.terrainSize / 2;
+            const worldX = tile.x * gridSize - terrainSize / 2;
+            const worldZ = tile.z * gridSize - terrainSize / 2;
             const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            const terrainHeight = terrainSystem.getTerrainHeightAtPositionSmooth(worldX, worldZ);
+            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPositionSmooth', worldX, worldZ);
 
             if (rayHeight <= terrainHeight) {
                 return false;

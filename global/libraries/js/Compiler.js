@@ -717,38 +717,6 @@ window.COMPILED_GAME.init = function(engine) {
         return;
     }
 
-    console.log('Initializing compiled game bundle...');
-
-    // Store original methods
-    const originalGetCompiledScript = ModuleManager.prototype.getCompiledScript;
-    const originalCompileScript = ModuleManager.prototype.compileScript;
-    const originalCompileFunction = ModuleManager.prototype.compileFunction;
-
-    // Patch getCompiledScript
-    ModuleManager.prototype.getCompiledScript = function(typeName, collectionType) {
-        if (window.COMPILED_GAME.hasClass(typeName, collectionType)) {
-            return window.COMPILED_GAME.getClass(typeName, collectionType);
-        }
-        return originalGetCompiledScript.call(this, typeName, collectionType);
-    };
-
-    // Patch compileScript
-    ModuleManager.prototype.compileScript = function(scriptText, typeName) {
-        for (const collectionType in window.engine.app) {
-            if (window.COMPILED_GAME.hasClass(typeName, collectionType)) {
-                return window.COMPILED_GAME.getClass(typeName, collectionType);
-            }
-        }
-        return originalCompileScript.call(this, scriptText, typeName);
-    };
-
-    // Patch compileFunction
-    ModuleManager.prototype.compileFunction = function(scriptText, typeName) {
-        if (window.COMPILED_GAME.hasClass(typeName, 'functions')) {
-            return window.COMPILED_GAME.getClass(typeName, 'functions');
-        }
-        return originalCompileFunction.call(this, scriptText, typeName);
-    };
 
     // Patch core.getCollections() to return compiled collections
     if (engine.core && typeof engine.core.getCollections === 'function') {

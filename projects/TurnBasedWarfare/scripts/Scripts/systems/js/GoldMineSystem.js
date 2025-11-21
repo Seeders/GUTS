@@ -20,23 +20,21 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     findGoldVeinLocations() {
-        const tileMap = this.game.terrainSystem?.tileMap;
+        const tileMap = this.game.gameManager.call('getTileMap');
         if (!tileMap?.environmentObjects) {
             console.warn('[GoldMineSystem] No environment objects found');
             return;
         }
 
-        const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-        const extendedSize = this.game.terrainSystem?.extendedSize || 0;
+        const extensionSize = this.game.gameManager.call('getTerrainExtensionSize');
+        const extendedSize = this.game.gameManager.call('getTerrainExtendedSize');
 
         this.goldVeinLocations = tileMap.environmentObjects
             .filter(obj => obj.type === 'goldVein')
             .map(obj => {
                 const worldX = (obj.x + extensionSize) - extendedSize / 2;
                 const worldZ = (obj.y + extensionSize) - extendedSize / 2;
-
                 const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
-
                 // Gold veins use placementGridWidth which is already in placement grid units
                 // But we need to match how buildings calculate their cells (footprintWidth * 2)
                 // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
@@ -139,7 +137,6 @@ class GoldMineSystem extends engine.BaseSystem {
     }
 
     buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
-
         const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
         if (!validation.valid) {
             console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');

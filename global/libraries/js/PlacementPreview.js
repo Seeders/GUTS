@@ -1,33 +1,48 @@
 class PlacementPreview {
-    constructor(game) {
-        this.game = game;
-        this.game.placementPreview = this;
-        
+    constructor(options = {}) {
+        // Support both game object (for backward compatibility) and direct options
+        if (options.getCollections) {
+            // Legacy game object mode
+            this.game = options;
+            this.game.placementPreview = this;
+
+            const configs = options.getCollections().configs.game;
+            this.scene = options.uiScene;
+            this.gridSize = configs.gridSize;
+            this.getTerrainHeight = (x, z) => options.gameManager.call('getTerrainHeightAtPosition', x, z);
+        } else {
+            // Modern options mode
+            this.scene = options.scene;
+            this.gridSize = options.gridSize || 48;
+            this.getTerrainHeight = options.getTerrainHeight || (() => 0);
+        }
+
         this.isActive = false;
-        
+
         this.previewGroup = new THREE.Group();
         this.previewGroup.name = 'PlacementPreview';
         this.previewGroup.visible = false;
-        this.game.uiScene.add(this.previewGroup);
-        
-        const configs = game.getCollections().configs.game;
+        if(this.scene){
+            this.scene.add(this.previewGroup);
+        }
+
         this.config = {
             cellOpacity: 0.4,
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: 0,
+            elevationOffset: 0.5,
             unitElevationOffset: -12,
             cellSizeMultiplier: 0.9,
             maxCells: 50,
             updateThrottle: 16,
-            placementGridSize: configs.gridSize / 2, // Placement grid is always half the terrain grid
-            terrainGridSize: configs.gridSize // Terrain grid size for building footprints
+            placementGridSize: this.gridSize / 2, // Placement grid is always half the terrain grid
+            terrainGridSize: this.gridSize // Terrain grid size for building footprints
         };
 
         this.geometryPool = this.createGeometryPool();
         this.materials = this.createMaterials();
-        
+
         this.placementCellMeshPool = [];
         this.placementBorderMeshPool = [];
         this.footprintCellMeshPool = [];
@@ -42,7 +57,7 @@ class PlacementPreview {
     }
     
     createGeometryPool() {
-        const placementCellSize = this.game.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
+        const placementCellSize = this.config.placementGridSize * this.config.cellSizeMultiplier;
         const footprintCellSize = this.config.terrainGridSize * this.config.cellSizeMultiplier;
 
         return {
@@ -159,7 +174,7 @@ class PlacementPreview {
         worldPositions.slice(0, this.config.maxCells).forEach((pos, index) => {
             if (index >= cellMeshPool.length) return;
 
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
+            const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
             const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
 
             const cellMesh = cellMeshPool[index];
@@ -180,9 +195,14 @@ class PlacementPreview {
     }
     
     showAtGridPositions(gridPositions, isValid = true, isBuilding = false) {
-        const worldPositions = gridPositions.map(gridPos =>
-            this.game.gridSystem.gridToWorld(gridPos.x, gridPos.z)
-        );
+        // Convert grid positions to world positions
+        // For terrain editor: grid position = world position at center of tile
+        const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
+        const worldPositions = gridPositions.map(gridPos => ({
+            x: gridPos.x * gridSize,
+            y: 0,
+            z: gridPos.z * gridSize
+        }));
         this.showAtWorldPositions(worldPositions, isValid, isBuilding);
     }
 
@@ -239,7 +259,7 @@ class PlacementPreview {
                 if (index >= this.unitMeshPool.length) return;
 
                 // Get terrain height at the unit position
-                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
+                const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
                 const yPosition = (terrainHeight || 0) + this.config.unitElevationOffset;
 
                 const unitMesh = this.unitMeshPool[index];

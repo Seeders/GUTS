@@ -4,7 +4,7 @@ class TerrainMapEditor {
         this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };
         this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };
         this.config = { ...this.defaultConfig, ...config };
-    
+
         this.defaultMapSize = 16;
         this.mapSize = this.defaultMapSize;
         this.currentTerrainId = 3; // Default to grass (index 3)
@@ -14,15 +14,22 @@ class TerrainMapEditor {
 
         // Performance optimization: track last painted tile and debounce operations
         this.lastPaintedTile = null;
-        this.needsRender = false;
-        this.needsTerrainRender = false; // Track when terrain data actually changes
-        this.modifiedTiles = []; // Track which tiles were modified for incremental rendering
-        this.cachedTerrainCanvas = null; // Cache the expensive TileMap rendering
         this.exportDebounceTimer = null;
-        this.renderAnimationFrame = null;
-        this.previewAnimationFrame = null;
-        this.pendingPreviewEvent = null;
         this.isInitializing = false;
+
+        // 3D Rendering Components
+        this.worldRenderer = null;
+        this.terrainDataManager = null;
+        this.raycastHelper = null;
+        this.mouseNDC = { x: 0, y: 0 }; // Normalized device coordinates
+        this.animationFrameId = null;
+        this.raycastIntervalId = null; // Interval for periodic raycasting
+        this.cachedGridPosition = null; // Cached grid position from raycast
+        this.mouseOverCanvas = false; // Track if mouse is over canvas
+        this.isCameraControlActive = false; // Track if camera is being controlled
+        this.entityRenderer = null; // Shared EntityRenderer for spawning cliffs and other entities
+        this.environmentObjectSpawner = null; // Shared spawner for environment objects
+        this.placementPreview = null; // Placement preview for tile editing
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -56,6 +63,11 @@ class TerrainMapEditor {
         this.draggedItem = null;
         this.dragOverItem = null; // Track the item being dragged over
 
+        // Undo/Redo functionality
+        this.undoStack = [];
+        this.redoStack = [];
+        this.maxUndoSteps = 50; // Limit undo history to prevent memory issues
+
         // DOM elements
         this.canvasEl = document.getElementById('grid');
         this.canvasEl.width = this.config.canvasWidth;
@@ -65,24 +77,10 @@ class TerrainMapEditor {
         this.canvasEl.style.width = '';
         this.canvasEl.style.height = '';
 
-        // Preview elements for cursor
-        this.previewCanvas = null;
-        this.currentPreviewImage = null;
-        this.hoverGridPosition = null; // Track mouse position for brush preview
-        this.hoverPlacementGridPosition = null; // Track mouse position for entity placement preview
-
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
-        this.mapRenderer = null;
-        this.mapManager = null;
-
         this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
-        this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-
-        console.log(this.tileMap.size, this.terrainCanvasBuffer.width, this.terrainCanvasBuffer.height);
         this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
@@ -92,7 +90,6 @@ class TerrainMapEditor {
         this.setupTerrainTypesUI();
         this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();
-        this.createPreviewCanvas();
         this.setupEventListeners();
         this.updateTerrainStyles();
     }
@@ -181,18 +178,14 @@ class TerrainMapEditor {
             }, 1500);
         });
 
-        // 3D Preview button
-        this.setup3DPreviewButton();
-       
-        // Handle mouseup event (stop dragging)
-        document.addEventListener('mouseup', () => {
+        // Handle mouseup event (stop dragging and camera control)
+        document.addEventListener('mouseup', (e) => {
             this.isMouseDown = false;
             this.lastPaintedTile = null; // Reset for next paint operation
-            
-            // Ensure final render happens (no auto-save)
-            if (this.needsRender) {
-                this.updateCanvasWithData();
-                this.needsRender = false;
+
+            // Reset camera control flag for any button release
+            if (e.button === 1 || e.button === 2) {
+                this.isCameraControlActive = false;
             }
         });
 
@@ -203,35 +196,48 @@ class TerrainMapEditor {
                     this.deleteEnvironmentObjectAt(e);
                 } else {
                     this.isMouseDown = true;
-                    this.handleCanvasInteraction(e);
+                    // Painting will be handled by the raycast interval
+                    // which calls handlePainting when isMouseDown is true
+                }
+            } else if (e.button === 1 || e.button === 2) { // Middle or right click - camera controls
+                this.isCameraControlActive = true;
+                // Hide preview during camera movement
+                if (this.placementPreview) {
+                    this.placementPreview.hide();
                 }
             }
         });
-        
-        // Add mouse move event for drawing while dragging
-        this.canvasEl.addEventListener('mousemove', (e) => {
-            // Throttle preview position updates using requestAnimationFrame
-            this.pendingPreviewEvent = e;
-            if (!this.previewAnimationFrame) {
-                this.previewAnimationFrame = requestAnimationFrame(() => {
-                    this.updatePreviewPosition(this.pendingPreviewEvent);
-                    this.updateBrushPreview(this.pendingPreviewEvent);
-                    this.previewAnimationFrame = null;
-                });
-            }
 
-            if (this.isMouseDown) {
-                this.handleCanvasInteraction(e);
+        // Add mouse move event to update NDC coordinates
+        this.canvasEl.addEventListener('mousemove', (e) => {
+            // Just update normalized device coordinates - raycasting happens on interval
+            const rect = this.canvasEl.getBoundingClientRect();
+            this.mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            this.mouseOverCanvas = true;
+        });
+
+        // Add mouse leave event to clear placement preview
+        this.canvasEl.addEventListener('mouseleave', () => {
+            this.mouseOverCanvas = false;
+            this.cachedGridPosition = null;
+            // Hide 3D placement preview
+            if (this.placementPreview) {
+                this.placementPreview.hide();
             }
         });
 
-        // Add mouse leave event to clear brush preview
-        this.canvasEl.addEventListener('mouseleave', () => {
-            this.hoverGridPosition = null;
-            this.hoverPlacementGridPosition = null;
-            if (this.placementMode === 'terrain' || this.placementMode === 'height' || this.placementMode === 'placements') {
-                this.needsRender = true;
-                this.scheduleRender();
+        // Add keyboard shortcuts for undo/redo
+        document.addEventListener('keydown', (event) => {
+            // Undo: Ctrl+Z (or Cmd+Z on Mac)
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                this.undo();
+            }
+            // Redo: Ctrl+Shift+Z or Ctrl+Y (or Cmd+Shift+Z / Cmd+Y on Mac)
+            else if ((event.ctrlKey || event.metaKey) && (event.shiftKey && event.key === 'z' || event.key === 'y')) {
+                event.preventDefault();
+                this.redo();
             }
         });
 
@@ -367,11 +373,6 @@ class TerrainMapEditor {
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'terrain';
-            this.previewCanvas.style.display = 'none';
-
-            // Trigger re-render to hide height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             // Update placement indicator
             this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
@@ -395,14 +396,9 @@ class TerrainMapEditor {
             document.getElementById('environmentPanel').style.display = 'none';
             document.getElementById('rampsPanel').style.display = 'none';
             this.placementMode = 'height';
-            this.previewCanvas.style.display = 'none';
 
             // Setup height levels UI
             this.setupHeightLevelsUI();
-
-            // Trigger re-render to show height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Heights';
             this.placementModeIndicator.style.opacity = '1';
@@ -429,8 +425,6 @@ class TerrainMapEditor {
             this.setupEnvironmentPanel();
 
             // Trigger re-render to hide height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Environment';
             this.placementModeIndicator.style.opacity = '1';
@@ -458,14 +452,9 @@ class TerrainMapEditor {
                 document.getElementById('placementsPanel').style.display = 'none';
             }
             this.placementMode = 'ramp';
-            this.previewCanvas.style.display = 'none';
 
             // Update ramp count display
             this.updateRampCount();
-
-            // Trigger re-render to show height overlay
-            this.needsRender = true;
-            this.scheduleRender();
 
             this.placementModeIndicator.textContent = 'Placement Mode: Ramps';
             this.placementModeIndicator.style.opacity = '1';
@@ -491,14 +480,9 @@ class TerrainMapEditor {
                 document.getElementById('rampsPanel').style.display = 'none';
                 document.getElementById('placementsPanel').style.display = 'block';
                 this.placementMode = 'placements';
-                this.previewCanvas.style.display = 'none';
 
                 // Setup placements panel
                 this.setupPlacementsPanel();
-
-                // Trigger re-render
-                this.needsRender = true;
-                this.scheduleRender();
 
                 this.placementModeIndicator.textContent = 'Placement Mode: Entity Placements';
                 this.placementModeIndicator.style.opacity = '1';
@@ -516,8 +500,6 @@ class TerrainMapEditor {
             if (this.tileMap.ramps) {
                 this.tileMap.ramps = [];
                 this.updateRampCount();
-                this.needsRender = true;
-                this.scheduleRender();
             }
         });
 
@@ -534,46 +516,23 @@ class TerrainMapEditor {
             }, 2000);
         });
 
-        // Terrain tool buttons
-        document.getElementById('terrainBrushBtn').addEventListener('click', () => {
-            this.terrainTool = 'brush';
-            document.getElementById('terrainBrushBtn').classList.add('editor-module__btn--active');
-            document.getElementById('terrainFillBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('terrainBrushSizeRow').style.display = 'flex';
-        });
-
-        document.getElementById('terrainFillBtn').addEventListener('click', () => {
-            this.terrainTool = 'fill';
-            document.getElementById('terrainFillBtn').classList.add('editor-module__btn--active');
-            document.getElementById('terrainBrushBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('terrainBrushSizeRow').style.display = 'none';
-        });
-
-        // Terrain brush size
-        document.getElementById('terrainBrushSize').addEventListener('input', (e) => {
+        // Global brush size slider
+        document.getElementById('globalBrushSize').addEventListener('input', (e) => {
             this.brushSize = parseInt(e.target.value);
-            document.getElementById('terrainBrushSizeValue').textContent = this.brushSize;
+            document.getElementById('globalBrushSizeValue').textContent = this.brushSize;
         });
 
-        // Height tool buttons
-        document.getElementById('heightBrushBtn').addEventListener('click', () => {
+        // Global tool buttons
+        document.getElementById('globalBrushBtn').addEventListener('click', () => {
             this.terrainTool = 'brush';
-            document.getElementById('heightBrushBtn').classList.add('editor-module__btn--active');
-            document.getElementById('heightFillBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('heightBrushSizeRow').style.display = 'flex';
+            document.getElementById('globalBrushBtn').classList.add('editor-module__btn--active');
+            document.getElementById('globalFillBtn').classList.remove('editor-module__btn--active');
         });
 
-        document.getElementById('heightFillBtn').addEventListener('click', () => {
+        document.getElementById('globalFillBtn').addEventListener('click', () => {
             this.terrainTool = 'fill';
-            document.getElementById('heightFillBtn').classList.add('editor-module__btn--active');
-            document.getElementById('heightBrushBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('heightBrushSizeRow').style.display = 'none';
-        });
-
-        // Height brush size
-        document.getElementById('heightBrushSize').addEventListener('input', (e) => {
-            this.brushSize = parseInt(e.target.value);
-            document.getElementById('heightBrushSizeValue').textContent = this.brushSize;
+            document.getElementById('globalFillBtn').classList.add('editor-module__btn--active');
+            document.getElementById('globalBrushBtn').classList.remove('editor-module__btn--active');
         });
 
         this.canvasEl.addEventListener('contextmenu', (e) => {
@@ -634,171 +593,6 @@ class TerrainMapEditor {
             
         // Give the renderer a moment to fully initialize
         await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    updatePreviewImage() {
-        if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {
-            this.currentPreviewImage = null;
-            return;
-        }
-        
-        const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
-        if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {
-            this.currentPreviewImage = null;
-            return;
-        }
-        
-        const image = images.idle[0][this.selectedEnvironmentItem];
-        this.currentPreviewImage = image;
-        
-        // Resize preview canvas if needed
-        const maxDimension = Math.max(image.width, image.height);
-        const scale = this.config.imageSize / maxDimension;
-        
-        this.previewCanvas.width = image.width * scale;
-        this.previewCanvas.height = image.height * scale;
-        
-        const ctx = this.previewCanvas.getContext('2d');
-        ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
-        ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
-    }
-    updatePreviewPosition(e) {
-        if (this.placementMode !== 'environment' ||
-            !this.selectedEnvironmentType ||
-            this.selectedEnvironmentItem === null ||
-            this.deleteMode ||
-            !this.currentPreviewImage) {
-            this.previewCanvas.style.display = 'none';
-            return;
-        }
-
-        // Get mouse position relative to canvas
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY;
-
-        if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-        }
-
-        // For isometric view, we need to convert cursor position to actual object position
-        let posX, posY;
-        if (this.gameEditor.getCollections().configs.game.isIsometric) {
-            const isoPos = { x: mouseX, y: mouseY };
-            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-
-            // Convert back to screen coordinates
-            const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);
-            posX = screenPos.x + rect.left;
-            posY = screenPos.y + rect.top;
-        } else {
-            // For non-isometric, just use the mouse position
-            posX = e.clientX;
-            posY = e.clientY;
-        }
-        posX = e.clientX + window.scrollX;
-        posY = e.clientY + window.scrollY;
-        // Center the preview on the cursor
-        this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;
-        this.previewCanvas.style.display = 'block';
-    }
-
-    updateBrushPreview(e) {
-        // Handle terrain/height mode brush preview
-        if (this.placementMode === 'terrain' || this.placementMode === 'height') {
-            // Get mouse position relative to canvas
-            const rect = this.canvasEl.getBoundingClientRect();
-            const scaleX = this.canvasEl.width / rect.width;
-            const scaleY = this.canvasEl.height / rect.height;
-            let mouseX = (e.clientX - rect.left) * scaleX;
-            let mouseY = (e.clientY - rect.top) * scaleY;
-
-            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-            }
-
-            // Convert to grid coordinates
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Update hover position if it changed
-            if (!this.hoverGridPosition ||
-                this.hoverGridPosition.x !== snappedGrid.x ||
-                this.hoverGridPosition.y !== snappedGrid.y) {
-                this.hoverGridPosition = { x: snappedGrid.x, y: snappedGrid.y };
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        } else {
-            // Clear terrain/height hover position if not in those modes
-            if (this.hoverGridPosition !== null) {
-                this.hoverGridPosition = null;
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        }
-
-        // Handle placements mode hover preview
-        if (this.placementMode === 'placements' && this.selectedPlacementType) {
-            // Get mouse position relative to canvas
-            const rect = this.canvasEl.getBoundingClientRect();
-            const scaleX = this.canvasEl.width / rect.width;
-            const scaleY = this.canvasEl.height / rect.height;
-            let mouseX = (e.clientX - rect.left) * scaleX;
-            let mouseY = (e.clientY - rect.top) * scaleY;
-
-            if (!this.gameEditor.getCollections().configs.game.isIsometric) {
-                mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-                mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-            }
-
-            // Convert to grid coordinates
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-
-            // For placement grid, we need finer granularity - snap to half tiles
-            const terrainGridX = Math.floor(gridPos.x);
-            const terrainGridZ = Math.floor(gridPos.y);
-
-            // Calculate sub-grid position (which half of the tile we're in)
-            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
-            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
-
-            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
-            const placementGridX = terrainGridX * 2 + subX;
-            const placementGridZ = terrainGridZ * 2 + subZ;
-
-            // Check if coordinates are within bounds (placement grid)
-            const placementGridSize = this.mapSize * 2;
-            if (placementGridX >= 0 && placementGridX < placementGridSize &&
-                placementGridZ >= 0 && placementGridZ < placementGridSize) {
-
-                // Update hover position if it changed
-                if (!this.hoverPlacementGridPosition ||
-                    this.hoverPlacementGridPosition.x !== placementGridX ||
-                    this.hoverPlacementGridPosition.z !== placementGridZ) {
-                    this.hoverPlacementGridPosition = { x: placementGridX, z: placementGridZ };
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            } else {
-                // Clear hover position if out of bounds
-                if (this.hoverPlacementGridPosition !== null) {
-                    this.hoverPlacementGridPosition = null;
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else {
-            // Clear placements hover position if not in that mode
-            if (this.hoverPlacementGridPosition !== null) {
-                this.hoverPlacementGridPosition = null;
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        }
     }
 
     setupTerrainImageProcessor() {
@@ -898,20 +692,6 @@ class TerrainMapEditor {
         document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));
     }
     
-    createPreviewCanvas() {
-        if (this.previewCanvas) {
-            document.body.removeChild(this.previewCanvas);
-        }
-        
-        this.previewCanvas = document.createElement('canvas');
-        this.previewCanvas.id = 'object-preview-canvas';
-        this.previewCanvas.width = this.config.imageSize;
-        this.previewCanvas.height = this.config.imageSize;
-        this.previewCanvas.style.display = 'none'; // Hidden by default
-        
-        document.body.prepend(this.previewCanvas);
-
-    }
 
     setupEnvironmentPanel() {
         const environmentPanel = document.getElementById('environmentPanel');
@@ -937,13 +717,6 @@ class TerrainMapEditor {
             deleteButton.classList.toggle('delete-mode');
             document.body.classList.toggle('delete-mode-active');
             this.deleteMode = deleteButton.classList.contains('delete-mode');
-            if (this.deleteMode) {
-                this.previewCanvas.style.display = 'none';
-            } else if (this.placementMode === 'environment' && 
-                      this.selectedEnvironmentType && 
-                      this.selectedEnvironmentItem !== null) {
-                this.updatePreviewImage();
-            }
         });
         
         const clearButton = document.createElement('button');
@@ -952,7 +725,7 @@ class TerrainMapEditor {
         clearButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove all environment objects?')) {
                 this.tileMap.environmentObjects = [];
-                this.updateCanvasWithData();
+                this.updateEnvironmentObjects();
                 this.exportMap();
                 this.updateObjectCounts();
             }
@@ -1042,14 +815,13 @@ class TerrainMapEditor {
                         item.addEventListener('click', () => {
                             // Deselect any previously selected items
                             document.querySelectorAll('.terrain-editor__environment-item').forEach(i => i.classList.remove('active'));
-                            
+
                             // Select this item
                             item.classList.add('active');
-                            this.selectedEnvironmentType = type;
+                            this.selectedObjectType = type;
                             this.selectedEnvironmentItem = imageIndex;
                             this.placementMode = 'environment';
-                              // Update preview image for cursor
-                            this.updatePreviewImage();
+
                             // Update placement indicator
                             this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;
                             this.placementModeIndicator.style.opacity = '1';
@@ -1304,8 +1076,6 @@ class TerrainMapEditor {
                 this.startingLocations = [];
                 this.entityPlacements = [];
                 this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
-                this.needsRender = true;
-                this.scheduleRender();
                 this.exportMap();
             }
         });
@@ -1334,8 +1104,6 @@ class TerrainMapEditor {
                 const idx = parseInt(e.target.dataset.index);
                 this.startingLocations.splice(idx, 1);
                 this.updateStartingLocationsList(listElement);
-                this.needsRender = true;
-                this.scheduleRender();
                 this.exportMap();
             });
 
@@ -1344,64 +1112,85 @@ class TerrainMapEditor {
     }
 
     deleteEnvironmentObjectAt(e) {
-        // Get mouse position and convert to game coordinates
-        let offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;//48*4;
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY - offsetY;
-
-        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+        // Use cached grid position from raycasting
+        if (!this.cachedGridPosition) {
+            return;
         }
-        
-        const isoPos = { x: mouseX, y: mouseY };
-        const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-        
-        // Find and remove any environment object near the click position
-        const clickRadius = 30; // Radius for detecting objects to delete (in pixels)
-        let deletedObject = false;
-        
-        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
-            const obj = this.tileMap.environmentObjects[i];
-            const dx = obj.x - pixelPos.x;
-            const dy = obj.y - pixelPos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < clickRadius) {
-                // Remove this object
-                const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];
-                deletedObject = true;
-                
-                // Show feedback
-                this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;
-                this.placementModeIndicator.style.opacity = '1';
-                
-                // Hide indicator after a delay
-                clearTimeout(this.indicatorTimeout);
-                this.indicatorTimeout = setTimeout(() => {
-                    this.placementModeIndicator.style.opacity = '0';
-                }, 1500);
-                
-                // Update the map rendering
-                this.updateCanvasWithData();
-                
-                // Update object counts
-                this.updateObjectCounts();
-                
-                // Export the updated map
-                this.exportMap();
-                break; // Only remove one object at a time
+
+        const gridX = this.cachedGridPosition.x;
+        const gridZ = this.cachedGridPosition.z;
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+        const halfGrid = gridSize / 2;
+        const radius = Math.floor(this.brushSize / 2);
+
+        // Calculate brush area in grid coordinates
+        const objectsToDelete = [];
+
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const targetGridX = gridX + dx;
+                const targetGridZ = gridZ + dy;
+
+                // Check bounds
+                if (targetGridX >= 0 && targetGridX < this.mapSize &&
+                    targetGridZ >= 0 && targetGridZ < this.mapSize) {
+
+                    // Check if within brush radius (circular brush)
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius + 0.5) {
+                        // Convert grid position to world position to match environment object format
+                        const worldX = (targetGridX * gridSize) + halfGrid;
+                        const worldZ = (targetGridZ * gridSize) + halfGrid;
+
+                        // Find any environment objects at this position
+                        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
+                            const obj = this.tileMap.environmentObjects[i];
+
+                            // Check if object is at this grid position (with small tolerance)
+                            const tolerance = gridSize * 0.1;
+                            if (Math.abs(obj.x - worldX) < tolerance &&
+                                Math.abs(obj.y - worldZ) < tolerance) {
+                                objectsToDelete.push(i);
+                            }
+                        }
+                    }
+                }
             }
         }
-        
-        // Show feedback if no object was found to delete
-        if (!deletedObject && this.deleteMode) {
-            this.placementModeIndicator.textContent = 'No object found at this location';
+
+        // Delete all found objects
+        if (objectsToDelete.length > 0) {
+            // Sort indices in descending order to remove from end first
+            objectsToDelete.sort((a, b) => b - a);
+
+            for (const index of objectsToDelete) {
+                this.tileMap.environmentObjects.splice(index, 1);
+            }
+
+            // Show feedback
+            this.placementModeIndicator.textContent = `Deleted ${objectsToDelete.length} object(s)`;
             this.placementModeIndicator.style.opacity = '1';
-            
+
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 1500);
+
+            // Update object counts
+            this.updateObjectCounts();
+
+            // Update 3D spawned environment objects
+            this.updateEnvironmentObjects();
+
+            // Export the updated map
+            this.exportMap();
+        } else if (this.deleteMode) {
+            // Show feedback if no objects were found
+            this.placementModeIndicator.textContent = 'No objects found in brush area';
+            this.placementModeIndicator.style.opacity = '1';
+
             // Hide indicator after a delay
             clearTimeout(this.indicatorTimeout);
             this.indicatorTimeout = setTimeout(() => {
@@ -1788,7 +1577,7 @@ class TerrainMapEditor {
                 await this.imageManager.loadImages("environment", this.worldObjects, false, false);
             }
 
-            // Initialize TileMap with actual sprite sheets (skip cliff textures for 2D editor)
+            // Initialize TileMap with actual sprite sheets
             this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
             if (!this.terrainCanvasBuffer) {
                 this.terrainCanvasBuffer = document.createElement('canvas');
@@ -1796,41 +1585,330 @@ class TerrainMapEditor {
             this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
             this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
 
-            // Init with skipCliffTextures option for 2D editing without 3D cliff meshes
+            // Init TileMap (for both 2D and 3D - 3D uses it for texture generation)
             this.terrainTileMapper.init(
                 this.terrainCanvasBuffer,
                 this.gameEditor.getCollections().configs.game.gridSize,
                 terrainImages,
                 this.gameEditor.getCollections().configs.game.isIsometric,
-                { skipCliffTextures: true }
+                { skipCliffTextures: false } // Enable cliffs for 3D
             );
 
-            // Clear cached terrain canvas to force full re-render with new level data
-            this.cachedTerrainCanvas = null;
-            this.needsTerrainRender = true;
-
-            // Initial render
-            this.updateCanvasWithData();
+            // Initialize 3D rendering
+            await this.init3DRendering();
         } finally {
             this.isInitializing = false;
         }
     }
 
+    /**
+     * Initialize 3D rendering system
+     */
+    async init3DRendering() {
+        const collections = this.gameEditor.getCollections();
+        const gameConfig = collections.configs.game;
+
+        // Initialize TerrainDataManager
+        if (!this.terrainDataManager) {
+            this.terrainDataManager = new TerrainDataManager();
+        }
+
+        // Create a level structure for the editor
+        const editorLevel = {
+            world: this.objectData.world,
+            tileMap: this.tileMap
+        };
+
+        // Initialize terrain data with direct level data (no need to add to collections)
+        this.terrainDataManager.init(collections, gameConfig, editorLevel);
+
+        // Initialize WorldRenderer
+        if (!this.worldRenderer) {
+            this.worldRenderer = new WorldRenderer({
+                enableShadows: true,
+                enableFog: false,
+                enablePostProcessing: false,
+                enableGrass: false,
+                enableLiquidSurfaces: false,
+                enableCliffs: true
+            });
+        }
+
+        // Get world and camera settings
+        const world = collections.worlds?.[this.objectData.world];
+        const cameraSettings = {
+            position: { x: 0, y: 1600, z: 600 },
+            lookAt: { x: 0, y: 0, z: 0 },
+            zoom: 1,
+            near: -1,  // Position near plane far enough to never intersect terrain mesh
+            far: 30000
+        };
+
+        // Initialize Three.js scene
+        this.worldRenderer.initializeThreeJS(this.canvasEl, cameraSettings, true);
+
+        // Set background
+        this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
+
+        // Setup lighting
+        this.worldRenderer.setupLighting(
+            world?.lighting,
+            world?.shadows,
+            this.terrainDataManager.extendedSize
+        );
+
+        // Setup ground with terrain data
+        this.worldRenderer.setupGround(
+            this.terrainDataManager,
+            this.terrainTileMapper,
+            this.terrainDataManager.heightMapSettings
+        );
+
+        // Render terrain
+        this.worldRenderer.renderTerrain();
+
+        // Create extension planes
+        this.worldRenderer.createExtensionPlanes();
+
+        // Recreate RaycastHelper to ensure fresh camera/scene references
+        this.raycastHelper = new RaycastHelper(
+            this.worldRenderer.getCamera(),
+            this.worldRenderer.getScene()
+        );
+
+        // Recreate PlacementPreview for each level to ensure correct scene and grid size
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
+        }
+
+        this.placementPreview = new PlacementPreview({
+            scene: this.worldRenderer.getScene(),
+            gridSize: gameConfig.gridSize,
+            getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
+        });
+
+        // Configure for editor use
+        this.placementPreview.updateConfig({
+            cellOpacity: 0.7,
+            borderOpacity: 1.0,
+            elevationOffset: 5.0 // Higher above terrain for visibility
+        });
+
+        // Load models if not already loaded
+        if (!this.gameEditor.modelManager.assetsLoaded) {
+            console.log('[TerrainMapEditor] Loading models for EntityRenderer...');
+            for (let objectType in collections) {
+                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
+            }
+        }
+
+        // Initialize EntityRenderer for spawning cliffs and other entities
+        this.entityRenderer = new EntityRenderer({
+            scene: this.worldRenderer.getScene(),
+            collections: collections,
+            projectName: this.gameEditor.getCurrentProject(),
+            modelManager: this.gameEditor.modelManager,
+            getPalette: () => this.gameEditor.getPalette()
+        });
+
+        // Initialize EnvironmentObjectSpawner in editor mode
+        this.environmentObjectSpawner = new EnvironmentObjectSpawner({
+            mode: 'editor',
+            entityRenderer: this.entityRenderer,
+            terrainDataManager: this.terrainDataManager,
+            collections: collections
+        });
+
+        // Spawn cliff entities based on height map
+        await this.spawnCliffEntities();
+
+        // Spawn environment objects (trees, rocks, etc.)
+        await this.spawnEnvironmentObjects();
+
+        // Start render loop
+        this.start3DRenderLoop();
+
+        // Start raycast interval for mouse position updates
+        this.startRaycastInterval();
+
+        console.log('3D terrain editor initialized');
+    }
+
+    /**
+     * Start the 3D render loop
+     */
+    start3DRenderLoop() {
+        const render = () => {
+            if (!this.worldRenderer) return;
+
+            const deltaTime = this.worldRenderer.clock.getDelta();
+            this.worldRenderer.update(deltaTime);
+            this.worldRenderer.render();
+
+            this.animationFrameId = requestAnimationFrame(render);
+        };
+
+        render();
+    }
+
+    /**
+     * Stop the 3D render loop
+     */
+    stop3DRenderLoop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        // Also stop raycast interval
+        this.stopRaycastInterval();
+    }
+
+    /**
+     * Start the raycast interval for mouse position updates
+     * Runs at ~60fps to update grid position based on mouse NDC
+     */
+    startRaycastInterval() {
+        // Clear any existing interval
+        this.stopRaycastInterval();
+
+        // Run raycast at ~60fps (16ms)
+        this.raycastIntervalId = setInterval(() => {
+            this.updateGridPositionFromRaycast();
+        }, 500);
+    }
+
+    /**
+     * Stop the raycast interval
+     */
+    stopRaycastInterval() {
+        if (this.raycastIntervalId) {
+            clearInterval(this.raycastIntervalId);
+            this.raycastIntervalId = null;
+        }
+    }
+
+    /**
+     * Update cached grid position from raycast
+     * Called periodically by raycast interval
+     */
+    updateGridPositionFromRaycast() {
+        // Skip raycasting if camera is being controlled (panning/rotating)
+        if (this.isCameraControlActive) {
+            return;
+        }
+
+        if (!this.mouseOverCanvas || !this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Raycast to get world position
+        const worldPos = this.raycastHelper.rayCastGround(
+            this.mouseNDC.x,
+            this.mouseNDC.y,
+            this.worldRenderer.getGroundMesh()
+        );
+
+        if (!worldPos) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Convert world position to grid coordinates
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+
+        const gridX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
+        const gridZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
+
+        // Check bounds
+        if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
+            this.cachedGridPosition = null;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Update cached position
+        this.cachedGridPosition = { x: gridX, z: gridZ };
+
+        // Update preview
+        this.showTilePreview(gridX, gridZ);
+
+        // Handle painting if mouse is down
+        if (this.isMouseDown) {
+            this.handlePainting(gridX, gridZ);
+        }
+    }
+
+
+    /**
+     * Spawn cliff entities based on height map analysis
+     * Uses shared EntityRenderer library
+     */
+    async spawnCliffEntities() {
+        if (!this.worldRenderer || !this.entityRenderer) {
+            console.warn('[TerrainMapEditor] Cannot spawn cliffs: missing dependencies');
+            return;
+        }
+
+        // Delegate to WorldRenderer which uses CliffSpawner
+        await this.worldRenderer.spawnCliffs(this.entityRenderer);
+    }
+
+    /**
+     * Spawn environment objects (trees, rocks, etc.)
+     * Uses shared EnvironmentObjectSpawner library
+     */
+    async spawnEnvironmentObjects() {
+        if (!this.environmentObjectSpawner || !this.terrainDataManager) {
+            console.warn('[TerrainMapEditor] Cannot spawn environment objects: missing dependencies');
+            return;
+        }
+
+        // Use the shared spawner in editor mode
+        await this.environmentObjectSpawner.spawnEnvironmentObjects(
+            this.tileMap,
+            this.terrainDataManager
+        );
+    }
+
+    /**
+     * Update environment objects (respawn all)
+     * Called when environment objects are added/removed through the UI
+     */
+    async updateEnvironmentObjects() {
+        if (!this.environmentObjectSpawner || !this.terrainDataManager) {
+            return;
+        }
+
+        // Respawn all environment objects
+        await this.environmentObjectSpawner.updateEnvironmentObjects(
+            this.tileMap,
+            this.terrainDataManager
+        );
+    }
+
+    /**
+     * Update cliffs in a region after height map changes
+     * @param {Array} modifiedTiles - Array of {x, y} tiles that were modified
+     */
+    async updateCliffsInRegion(modifiedTiles) {
+        if (!modifiedTiles || modifiedTiles.length === 0) return;
+
+        // Respawn all cliffs (EntityRenderer handles cleanup)
+        await this.spawnCliffEntities();
+    }
+
 
     // Performance optimization: schedule render with requestAnimationFrame
-    scheduleRender() {
-        if (this.renderAnimationFrame) {
-            return; // Already scheduled
-        }
-        
-        this.renderAnimationFrame = requestAnimationFrame(() => {
-            this.renderAnimationFrame = null;
-            if (this.needsRender) {
-                this.updateCanvasWithData(); // Now synchronous and fast
-                this.needsRender = false;
-            }
-        });
-    }
 
     // Performance optimization: debounce export to reduce save frequency
     debouncedExport() {
@@ -1844,11 +1922,137 @@ class TerrainMapEditor {
         }, 300); // Export 300ms after last change
     }
 
+    /**
+     * Save current state to undo stack before making changes
+     * @param {string} type - 'terrain' or 'height'
+     * @param {Array} tiles - Array of {x, y} tiles that will be modified
+     */
+    saveUndoState(type, tiles) {
+        if (!tiles || tiles.length === 0) return;
+
+        const state = {
+            type: type,
+            tiles: tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+
+        this.undoStack.push(state);
+
+        // Limit undo stack size
+        if (this.undoStack.length > this.maxUndoSteps) {
+            this.undoStack.shift();
+        }
+
+        // Clear redo stack when new action is performed
+        this.redoStack = [];
+
+        console.log(`Undo state saved: ${type}, ${tiles.length} tiles`);
+    }
+
+    /**
+     * Undo the last action
+     */
+    undo() {
+        if (this.undoStack.length === 0) {
+            console.log('Nothing to undo');
+            return;
+        }
+
+        const state = this.undoStack.pop();
+
+        // Save current state to redo stack
+        const redoState = {
+            type: state.type,
+            tiles: state.tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: state.type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+        this.redoStack.push(redoState);
+
+        // Restore previous state
+        const modifiedTiles = [];
+        state.tiles.forEach(tile => {
+            if (state.type === 'terrain') {
+                this.tileMap.terrainMap[tile.y][tile.x] = tile.value;
+            } else {
+                this.tileMap.heightMap[tile.y][tile.x] = tile.value;
+            }
+            modifiedTiles.push({ x: tile.x, y: tile.y });
+        });
+
+        // Update rendering
+        if (state.type === 'terrain') {
+            this.update3DTerrainRegion(modifiedTiles);
+        } else {
+            this.update3DHeightRegion(modifiedTiles);
+        }
+
+        this.exportMap();
+        console.log(`Undo: restored ${modifiedTiles.length} tiles (${state.type})`);
+    }
+
+    /**
+     * Redo the last undone action
+     */
+    redo() {
+        if (this.redoStack.length === 0) {
+            console.log('Nothing to redo');
+            return;
+        }
+
+        const state = this.redoStack.pop();
+
+        // Save current state to undo stack
+        const undoState = {
+            type: state.type,
+            tiles: state.tiles.map(tile => ({
+                x: tile.x,
+                y: tile.y,
+                value: state.type === 'terrain'
+                    ? this.tileMap.terrainMap[tile.y][tile.x]
+                    : this.tileMap.heightMap[tile.y][tile.x]
+            }))
+        };
+        this.undoStack.push(undoState);
+
+        // Apply redo state
+        const modifiedTiles = [];
+        state.tiles.forEach(tile => {
+            if (state.type === 'terrain') {
+                this.tileMap.terrainMap[tile.y][tile.x] = tile.value;
+            } else {
+                this.tileMap.heightMap[tile.y][tile.x] = tile.value;
+            }
+            modifiedTiles.push({ x: tile.x, y: tile.y });
+        });
+
+        // Update rendering
+        if (state.type === 'terrain') {
+            this.update3DTerrainRegion(modifiedTiles);
+        } else {
+            this.update3DHeightRegion(modifiedTiles);
+        }
+
+        this.exportMap();
+        console.log(`Redo: applied ${modifiedTiles.length} tiles (${state.type})`);
+    }
+
     // Paint with brush on terrain map
     paintBrushTerrain(centerX, centerY, terrainId) {
         const radius = Math.floor(this.brushSize / 2);
+        const tilesToCheck = [];
         const modifiedTiles = [];
 
+        // First, collect all tiles that would be affected
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
                 const x = centerX + dx;
@@ -1859,14 +2063,24 @@ class TerrainMapEditor {
                     // Check if within brush radius (circular brush)
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= radius + 0.5) {
-                        if (this.tileMap.terrainMap[y][x] !== terrainId) {
-                            this.tileMap.terrainMap[y][x] = terrainId;
-                            modifiedTiles.push({ x, y });
-                        }
+                        tilesToCheck.push({ x, y });
                     }
                 }
             }
         }
+
+        // Save undo state before modifying
+        if (tilesToCheck.length > 0) {
+            this.saveUndoState('terrain', tilesToCheck);
+        }
+
+        // Now modify the tiles
+        tilesToCheck.forEach(tile => {
+            if (this.tileMap.terrainMap[tile.y][tile.x] !== terrainId) {
+                this.tileMap.terrainMap[tile.y][tile.x] = terrainId;
+                modifiedTiles.push(tile);
+            }
+        });
 
         return modifiedTiles;
     }
@@ -1874,8 +2088,10 @@ class TerrainMapEditor {
     // Paint with brush on height map
     paintBrushHeight(centerX, centerY, heightLevel) {
         const radius = Math.floor(this.brushSize / 2);
+        const tilesToCheck = [];
         const modifiedTiles = [];
 
+        // First, collect all tiles that would be affected
         for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
                 const x = centerX + dx;
@@ -1886,14 +2102,24 @@ class TerrainMapEditor {
                     // Check if within brush radius (circular brush)
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= radius + 0.5) {
-                        if (this.tileMap.heightMap[y][x] !== heightLevel) {
-                            this.tileMap.heightMap[y][x] = heightLevel;
-                            modifiedTiles.push({ x, y });
-                        }
+                        tilesToCheck.push({ x, y });
                     }
                 }
             }
         }
+
+        // Save undo state before modifying
+        if (tilesToCheck.length > 0) {
+            this.saveUndoState('height', tilesToCheck);
+        }
+
+        // Now modify the tiles
+        tilesToCheck.forEach(tile => {
+            if (this.tileMap.heightMap[tile.y][tile.x] !== heightLevel) {
+                this.tileMap.heightMap[tile.y][tile.x] = heightLevel;
+                modifiedTiles.push(tile);
+            }
+        });
 
         return modifiedTiles;
     }
@@ -1911,7 +2137,8 @@ class TerrainMapEditor {
             return false;
         }
 
-        // Use a queue-based flood fill to avoid stack overflow
+        // First pass: collect all tiles that will be modified
+        const tilesToModify = [];
         const queue = [[startX, startY]];
         const visited = new Set();
 
@@ -1929,15 +2156,25 @@ class TerrainMapEditor {
                 continue;
             }
 
-            // Mark as visited and paint
+            // Mark as visited and collect tile
             visited.add(key);
-            this.tileMap.terrainMap[y][x] = newTerrainId;
+            tilesToModify.push({ x, y });
 
             // Add neighbors to queue
             queue.push([x + 1, y]);
             queue.push([x - 1, y]);
             queue.push([x, y + 1]);
             queue.push([x, y - 1]);
+        }
+
+        // Save undo state before modifying
+        if (tilesToModify.length > 0) {
+            this.saveUndoState('terrain', tilesToModify);
+
+            // Second pass: apply the modifications
+            tilesToModify.forEach(tile => {
+                this.tileMap.terrainMap[tile.y][tile.x] = newTerrainId;
+            });
         }
 
         return true;
@@ -1956,7 +2193,8 @@ class TerrainMapEditor {
             return false;
         }
 
-        // Use a queue-based flood fill to avoid stack overflow
+        // First pass: collect all tiles that will be modified
+        const tilesToModify = [];
         const queue = [[startX, startY]];
         const visited = new Set();
 
@@ -1974,9 +2212,9 @@ class TerrainMapEditor {
                 continue;
             }
 
-            // Mark as visited and paint
+            // Mark as visited and collect tile
             visited.add(key);
-            this.tileMap.heightMap[y][x] = newHeightLevel;
+            tilesToModify.push({ x, y });
 
             // Add neighbors to queue
             queue.push([x + 1, y]);
@@ -1985,885 +2223,289 @@ class TerrainMapEditor {
             queue.push([x, y - 1]);
         }
 
+        // Save undo state before modifying
+        if (tilesToModify.length > 0) {
+            this.saveUndoState('height', tilesToModify);
+
+            // Second pass: apply the modifications
+            tilesToModify.forEach(tile => {
+                this.tileMap.heightMap[tile.y][tile.x] = newHeightLevel;
+            });
+        }
+
         return true;
     }
 
-    handleCanvasInteraction(event) {
-        // Get mouse position relative to canvas
-        const offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (event.clientX - rect.left) * scaleX;
-        let mouseY = (event.clientY - rect.top) * scaleY;
-
-
-        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
-            mouseY -= (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;
-        }
-        
+    /**
+     * Handle painting at grid position
+     * Called when mouse is down and cached grid position is available
+     */
+    handlePainting(gridX, gridZ) {
         if (this.placementMode === 'terrain') {
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                let modifiedTiles = [];
-
-                if (this.terrainTool === 'brush') {
-                    // Brush tool: paint with variable size
-                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-
-                    // Only paint if we're on a new tile or haven't painted here yet
-                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        modifiedTiles = this.paintBrushTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
-                        this.lastPaintedTile = tileKey;
-                    }
-                } else if (this.terrainTool === 'fill') {
-                    // Flood fill tool: fill contiguous area (only on click, not drag)
-                    if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        const filled = this.floodFillTerrain(snappedGrid.x, snappedGrid.y, this.currentTerrainId);
-                        if (filled) {
-                            // For flood fill, mark entire map as needing redraw
-                            this.needsTerrainRender = true;
-                        }
-                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
-                    }
-                }
-
-                if (modifiedTiles.length > 0) {
-                    // Accumulate modified tiles for incremental rendering
-                    this.modifiedTiles.push(...modifiedTiles);
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType &&
-                   this.selectedEnvironmentItem !== null) {
-            // Environment object placement logic
-            const isoPos = { x: mouseX, y: mouseY };
-            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-
-            // Get the image to calculate its size
-            const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
-            const image = images.idle[0][this.selectedEnvironmentItem];
-
-            // Create new environment object
-            const newObject = {
-                type: this.selectedEnvironmentType,
-                imageIndex: this.selectedEnvironmentItem,
-                x: pixelPos.x,
-                y: pixelPos.y
-            };
-
-            // Add to environment objects array
-            if (!this.tileMap.environmentObjects) {
-                this.tileMap.environmentObjects = [];
-            }
-            this.tileMap.environmentObjects.push(newObject);
-
-            // Mark terrain as dirty (environment objects changed)
-            this.needsTerrainRender = true;
-            this.needsRender = true;
-            this.scheduleRender();
-
-            // Debounce export to reduce frequency
-        } else if (this.placementMode === 'ramp') {
-            // Ramp placement logic
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-            console.log('clicked');
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                // Initialize ramps array if needed
-                if (!this.tileMap.ramps) {
-                    this.tileMap.ramps = [];
-                }
-
-                // Check if ramp already exists at this position
-                const rampIndex = this.tileMap.ramps.findIndex(r => r.x === snappedGrid.x && r.z === snappedGrid.y);
-
-                if (rampIndex >= 0) {
-                    // Remove existing ramp (toggle off)
-                    this.tileMap.ramps.splice(rampIndex, 1);
-                } else {
-                    // Add new ramp (toggle on)
-                    this.tileMap.ramps.push({ x: snappedGrid.x, z: snappedGrid.y });
-                }
-
-                // Update ramp count display
-                this.updateRampCount();
-
-                // Schedule render to show ramps
-                this.needsRender = true;
-                this.scheduleRender();
-            }
-        } else if (this.placementMode === 'height') {
-            // Height map editing logic
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-
-            // Check if coordinates are within bounds
-            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize &&
-                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
-
-                let modifiedTiles = [];
-
-                if (this.terrainTool === 'brush') {
-                    // Brush tool: paint with variable size
-                    const tileKey = `${snappedGrid.x},${snappedGrid.y}`;
-
-                    // Only paint if we're on a new tile or haven't painted here yet
-                    if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
-                        modifiedTiles = this.paintBrushHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
-                        this.lastPaintedTile = tileKey;
-
-                        // Apply terrain type 0 / height 0 coupling rule for brush strokes
-                        if (modifiedTiles.length > 0 && this.currentHeightLevel === 0) {
-                            const radius = Math.floor(this.brushSize / 2);
-                            for (let dy = -radius; dy <= radius; dy++) {
-                                for (let dx = -radius; dx <= radius; dx++) {
-                                    const x = snappedGrid.x + dx;
-                                    const y = snappedGrid.y + dy;
-                                    if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
-                                        const distance = Math.sqrt(dx * dx + dy * dy);
-                                        if (distance <= radius + 0.5 && this.tileMap.heightMap[y][x] === 0) {
-                                            this.tileMap.terrainMap[y][x] = 0;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (this.terrainTool === 'fill') {
-                    // Flood fill tool: fill contiguous area (only on click, not drag)
-                    if (!this.isMouseDown || this.lastPaintedTile === null) {
-                        const filled = this.floodFillHeight(snappedGrid.x, snappedGrid.y, this.currentHeightLevel);
-                        this.lastPaintedTile = `${snappedGrid.x},${snappedGrid.y}`;
-
-                        if (filled) {
-                            // For flood fill, mark entire map as needing redraw
-                            this.needsTerrainRender = true;
-
-                            // Apply terrain type 0 / height 0 coupling rule for filled area
-                            if (this.currentHeightLevel === 0) {
-                                for (let y = 0; y < this.mapSize; y++) {
-                                    for (let x = 0; x < this.mapSize; x++) {
-                                        if (this.tileMap.heightMap[y][x] === 0) {
-                                            this.tileMap.terrainMap[y][x] = 0;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (modifiedTiles.length > 0) {
-                    // Accumulate modified tiles for incremental rendering
-                    this.modifiedTiles.push(...modifiedTiles);
-                    this.needsRender = true;
-                    this.scheduleRender();
-                }
-            }
-        } else if (this.placementMode === 'placements' && this.selectedPlacementType) {
-            // Entity placement logic - uses PLACEMENT GRID coordinates (2x terrain grid)
-            // This allows placement at half the granularity of the terrain grid
-            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
-
-            // For placement grid, we need finer granularity - snap to half tiles
-            const terrainGridX = Math.floor(gridPos.x);
-            const terrainGridZ = Math.floor(gridPos.y);
-
-            // Calculate sub-grid position (which half of the tile we're in)
-            const subX = (gridPos.x - terrainGridX) < 0.5 ? 0 : 1;
-            const subZ = (gridPos.y - terrainGridZ) < 0.5 ? 0 : 1;
-
-            // Convert to placement grid coordinates (2x terrain grid + sub-grid offset)
-            const placementGridX = terrainGridX * 2 + subX;
-            const placementGridZ = terrainGridZ * 2 + subZ;
-
-            // Check if coordinates are within bounds (placement grid)
-            const placementGridSize = this.mapSize * 2;
-            if (placementGridX >= 0 && placementGridX < placementGridSize &&
-                placementGridZ >= 0 && placementGridZ < placementGridSize) {
-
-                if (this.selectedPlacementType === 'startingLocation') {
-                    // Place starting location
-                    const side = this.selectedEntityType;
-
-                    // Remove existing starting location for this side
-                    this.startingLocations = this.startingLocations.filter(loc => loc.side !== side);
-
-                    // Add new starting location (using placement grid coordinates)
-                    this.startingLocations.push({
-                        side: side,
-                        gridPosition: { x: placementGridX, z: placementGridZ }
-                    });
-
-                    // Update UI list
-                    this.updateStartingLocationsList(document.getElementById('startingLocationsList'));
-
-                    this.placementModeIndicator.textContent = `Placed ${side} team start at placement grid (${placementGridX}, ${placementGridZ})`;
-                    this.placementModeIndicator.style.opacity = '1';
-
-                    clearTimeout(this.indicatorTimeout);
-                    this.indicatorTimeout = setTimeout(() => {
-                        this.placementModeIndicator.style.opacity = '0';
-                    }, 2000);
-
-                    this.needsRender = true;
-                    this.scheduleRender();
-                    this.exportMap();
-
-                } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
-                    // Place building or unit (using placement grid coordinates)
-                    const placement = {
-                        type: this.selectedPlacementType,
-                        entityType: this.selectedEntityType,
-                        gridPosition: { x: placementGridX, z: placementGridZ }
-                    };
-
-                    // For gold mines, validate placement on gold veins (if we have that data)
-                    if (this.selectedEntityType === 'goldMine') {
-                        // TODO: Add validation for gold vein placement when gold vein data is available
-                        this.placementModeIndicator.textContent = `Note: Ensure this is placed on a gold vein!`;
-                    }
-
-                    this.entityPlacements.push(placement);
-
-                    this.placementModeIndicator.textContent = `Placed ${this.selectedEntityType} at placement grid (${placementGridX}, ${placementGridZ})`;
-                    this.placementModeIndicator.style.opacity = '1';
-
-                    clearTimeout(this.indicatorTimeout);
-                    this.indicatorTimeout = setTimeout(() => {
-                        this.placementModeIndicator.style.opacity = '0';
-                    }, 2000);
-
-                    this.needsRender = true;
-                    this.scheduleRender();
-                    this.exportMap();
-                }
-            }
-        }
-    }
-
-    // Render using TileMap sprites with caching for performance
-    renderMap() {
-        if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
-            return;
-        }
-
-        const ctx = this.canvasEl.getContext('2d');
-        const gridSize = this.config.gridSize;
-        const collections = this.gameEditor.getCollections();
-        const isIsometric = collections.configs.game.isIsometric;
-
-        // Clear canvas - get extension terrain type color
-        const extensionTerrainTypeId = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType || 3];
-        const extensionTerrain = collections.terrainTypes?.[extensionTerrainTypeId];
-        ctx.fillStyle = extensionTerrain?.color || '#7aad7b';
-        ctx.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
-
-        // Calculate offset to center the terrain on the canvas
-        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-        // Use TileMap system to render actual in-game sprites (CACHED for performance)
-        if (this.terrainTileMapper && this.terrainTileMapper.layerSpriteSheets) {
-            // Check if we need to do full or incremental rendering
-            if (this.needsTerrainRender || !this.cachedTerrainCanvas) {
-                // Full re-render (e.g., after flood fill or initial load)
-                const heightMap = this.tileMap.heightMap || null;
-                this.terrainTileMapper.draw(this.tileMap.terrainMap, heightMap);
-
-                // Cache the rendered terrain
-                if (!this.cachedTerrainCanvas) {
-                    this.cachedTerrainCanvas = document.createElement('canvas');
-                    this.cachedTerrainCanvas.width = this.terrainCanvasBuffer.width;
-                    this.cachedTerrainCanvas.height = this.terrainCanvasBuffer.height;
-                }
-                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
-                cacheCtx.clearRect(0, 0, this.cachedTerrainCanvas.width, this.cachedTerrainCanvas.height);
-                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
-
-                this.needsTerrainRender = false;
-            } else if (this.modifiedTiles.length > 0) {
-                // Incremental rendering - only redraw modified tiles and neighbors
-                this.terrainTileMapper.redrawTiles(this.modifiedTiles);
-
-                // Update cache with incremental changes
-                const cacheCtx = this.cachedTerrainCanvas.getContext('2d');
-                cacheCtx.drawImage(this.terrainCanvasBuffer, 0, 0);
-
-                // Clear modified tiles list
-                this.modifiedTiles = [];
-            }
-
-            // Draw the cached terrain (fast!)
-            ctx.drawImage(this.cachedTerrainCanvas, offsetX, offsetY);
-        } else {
-            // Fallback to simple colored squares if TileMap not ready
-            if (isIsometric) {
-                // Isometric rendering
-                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                        const terrainIndex = this.tileMap.terrainMap[y][x];
-                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                        const terrain = collections.terrainTypes?.[terrainTypeId];
-
-                        if (!terrain) continue;
-
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
-
-                        ctx.fillStyle = terrain.color;
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Optional: draw borders
-                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-                }
-            } else {
-                // Non-isometric rendering (simple squares)
-                const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                        const terrainIndex = this.tileMap.terrainMap[y][x];
-                        const terrainTypeId = this.tileMap.terrainTypes[terrainIndex];
-                        const terrain = collections.terrainTypes?.[terrainTypeId];
-
-                        if (!terrain) continue;
-
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
-
-                        ctx.fillStyle = terrain.color;
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                        // Optional: draw grid lines
-                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
-                    }
-                }
-            }
-        }
-
-        // Placement grid overlay - show finer grid in placement mode
-        if (this.placementMode === 'placements' && !isIsometric) {
-            const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-            const placementGridSize = gridSize / 2;
-
-            ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
-            ctx.lineWidth = 1;
-
-            // Draw placement grid lines (half the size of terrain grid)
-            const placementCells = this.mapSize * 2;
-            for (let i = 0; i <= placementCells; i++) {
-                // Vertical lines
-                const x = offsetX + i * placementGridSize;
-                ctx.beginPath();
-                ctx.moveTo(x, offsetY);
-                ctx.lineTo(x, offsetY + placementCells * placementGridSize);
-                ctx.stroke();
-
-                // Horizontal lines
-                const y = offsetY + i * placementGridSize;
-                ctx.beginPath();
-                ctx.moveTo(offsetX, y);
-                ctx.lineTo(offsetX + placementCells * placementGridSize, y);
-                ctx.stroke();
-            }
-        }
-
-        // Hover preview for entity placement
-        if (this.hoverPlacementGridPosition && this.placementMode === 'placements' && this.selectedPlacementType) {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            // Convert placement grid coordinates to terrain grid for display
-            const terrainGridX = this.hoverPlacementGridPosition.x / 2;
-            const terrainGridZ = this.hoverPlacementGridPosition.z / 2;
-
-            // Choose color based on placement type
-            let fillColor, strokeColor;
-            if (this.selectedPlacementType === 'startingLocation') {
-                // Blue for left team, orange for right team
-                if (this.selectedEntityType === 'left') {
-                    fillColor = 'rgba(0, 100, 255, 0.4)';
-                    strokeColor = 'rgba(0, 100, 255, 0.8)';
-                } else {
-                    fillColor = 'rgba(255, 100, 0, 0.4)';
-                    strokeColor = 'rgba(255, 100, 0, 0.8)';
-                }
-            } else if (this.selectedPlacementType === 'building') {
-                // Brown for buildings
-                fillColor = 'rgba(139, 69, 19, 0.4)';
-                strokeColor = 'rgba(139, 69, 19, 0.8)';
-            } else if (this.selectedPlacementType === 'unit') {
-                // Green for units
-                fillColor = 'rgba(0, 200, 0, 0.4)';
-                strokeColor = 'rgba(0, 200, 0, 0.8)';
-            }
-
-            if (isIsometric) {
-                const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                const tileWidth = gridSize;
-                const tileHeight = gridSize * 0.5;
-
-                // Draw hover highlight
-                ctx.fillStyle = fillColor;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 2;
-
-                ctx.beginPath();
-                ctx.moveTo(isoCoords.x, isoCoords.y);
-                ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-            } else {
-                // Calculate pixel position with sub-tile precision
-                const placementPixelSize = gridSize / 2;
-                const drawX = offsetX + terrainGridX * gridSize;
-                const drawY = offsetY + terrainGridZ * gridSize;
-
-                // Draw hover highlight (show the placement grid cell)
-                ctx.fillStyle = fillColor;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 2;
-                ctx.fillRect(drawX, drawY, placementPixelSize, placementPixelSize);
-                ctx.strokeRect(drawX, drawY, placementPixelSize, placementPixelSize);
-            }
-        }
-
-        // Height mode overlay - show height levels in both height and ramp modes
-        if ((this.placementMode === 'height' || this.placementMode === 'ramp') && this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            for (let y = 0; y < this.tileMap.heightMap.length; y++) {
-                for (let x = 0; x < this.tileMap.heightMap[y].length; x++) {
-                    const heightLevel = this.tileMap.heightMap[y][x];
-
-                    if (isIsometric) {
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
-
-                        // Semi-transparent height overlay
-                        const alpha = 0.6;
-                        const intensity = Math.min(heightLevel / 10, 1);
-                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
-
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
-
-                        // Draw height number
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 12px monospace';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(heightLevel, isoCoords.x, isoCoords.y + tileHeight / 2);
-                    } else {
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
-
-                        // Color gradient from blue (low) to red (high)
-                        const alpha = 0.6;
-                        const intensity = Math.min(heightLevel / 10, 1);
-                        ctx.fillStyle = `rgba(${255 * intensity}, ${100}, ${255 * (1 - intensity)}, ${alpha})`;
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                        // Draw height number
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 14px monospace';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.strokeStyle = 'black';
-                        ctx.lineWidth = 3;
-                        ctx.strokeText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
-                        ctx.fillText(heightLevel, drawX + gridSize / 2, drawY + gridSize / 2);
-                    }
-                }
-            }
-        }
-
-        // Render environment objects with their actual images
-        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0 && this.imageManager) {
-            for (const obj of this.tileMap.environmentObjects) {
-                if (!obj || obj.x === undefined || obj.y === undefined) continue;
-                
-                // Get the image for this object
-                const images = this.imageManager.getImages("environment", obj.type);
-                if (!images || !images.idle || !images.idle[0] || !images.idle[0][obj.imageIndex]) {
-                    continue;
-                }
-                
-                const image = images.idle[0][obj.imageIndex];
-                if (!image) continue;
-                
-                let screenX, screenY;
-                
-                if (isIsometric) {
-                    // Convert pixel coordinates to isometric screen coordinates
-                    const isoPos = this.translator.pixelToIso(obj.x, obj.y);
-                    screenX = isoPos.x;
-                    screenY = isoPos.y;
-                } else {
-                    // Convert pixel coordinates to screen coordinates
-                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-                    screenX = offsetX + obj.x;
-                    screenY = offsetY + obj.y;
-                }
-                
-                // Draw the image centered at the position
-                ctx.drawImage(
-                    image,
-                    screenX - image.width / 2,
-                    screenY - image.height / 2,
-                    image.width,
-                    image.height
-                );
-            }
-        }
-
-        // Render ramps as visual indicators
-        if (this.tileMap.ramps && this.tileMap.ramps.length > 0) {
-            for (const ramp of this.tileMap.ramps) {
-                if (isIsometric) {
-                    // Isometric rendering for ramps
-                    const isoCoords = this.translator.gridToIso(ramp.x, ramp.z);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw ramp indicator (triangle pointing up)
-                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
-                    ctx.beginPath();
-                    ctx.moveTo(isoCoords.x, isoCoords.y + tileHeight / 4);
-                    ctx.lineTo(isoCoords.x + tileWidth / 4, isoCoords.y + tileHeight / 2);
-                    ctx.lineTo(isoCoords.x - tileWidth / 4, isoCoords.y + tileHeight / 2);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Add border
-                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                } else {
-                    // Non-isometric rendering for ramps
-                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                    const drawX = offsetX + ramp.x * gridSize;
-                    const drawY = offsetY + ramp.z * gridSize;
-
-                    // Draw ramp indicator (triangle or arrow)
-                    ctx.fillStyle = 'rgba(139, 115, 85, 0.7)'; // Semi-transparent brown
-                    ctx.beginPath();
-                    ctx.moveTo(drawX + gridSize / 2, drawY + gridSize / 4);
-                    ctx.lineTo(drawX + 3 * gridSize / 4, drawY + 3 * gridSize / 4);
-                    ctx.lineTo(drawX + gridSize / 4, drawY + 3 * gridSize / 4);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Add border
-                    ctx.strokeStyle = 'rgba(101, 84, 63, 1)'; // Darker brown
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-
-                    // Optional: Add "R" text to clearly mark it as a ramp
-                    ctx.fillStyle = 'white';
-                    ctx.font = `${gridSize / 3}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('R', drawX + gridSize / 2, drawY + gridSize / 2);
-                }
-            }
-        }
-
-        // Render entity placements
-        if (this.placementMode === 'placements' || this.placementMode === 'terrain') {
-            const offsetX = isIsometric ? 0 : (this.canvasEl.width - this.mapSize * gridSize) / 2;
-            const offsetY = isIsometric ? 0 : (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-            // Render starting locations
-            this.startingLocations.forEach(loc => {
-                // Convert placement grid coordinates to terrain grid for display
-                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
-                const terrainGridX = loc.gridPosition.x / 2;
-                const terrainGridZ = loc.gridPosition.z / 2;
-
-                if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw starting location marker
-                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
-                    ctx.beginPath();
-                    ctx.arc(isoCoords.x, isoCoords.y + tileHeight / 2, gridSize / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Draw border
-                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 12px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(loc.side.charAt(0).toUpperCase(), isoCoords.x, isoCoords.y + tileHeight / 2);
-                } else {
-                    // Calculate pixel position with sub-tile precision
-                    const drawX = offsetX + terrainGridX * gridSize + gridSize / 2;
-                    const drawY = offsetY + terrainGridZ * gridSize + gridSize / 2;
-
-                    // Draw starting location marker
-                    ctx.fillStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 0.6)' : 'rgba(255, 100, 0, 0.6)';
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY, gridSize / 3, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Draw border
-                    ctx.strokeStyle = loc.side === 'left' ? 'rgba(0, 100, 255, 1)' : 'rgba(255, 100, 0, 1)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 14px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 3;
-                    ctx.strokeText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
-                    ctx.fillText(loc.side.charAt(0).toUpperCase(), drawX, drawY);
-                }
-            });
-
-            // Render entity placements (buildings and units)
-            this.entityPlacements.forEach(placement => {
-                // Convert placement grid coordinates to terrain grid for display
-                // Placement grid is 2x terrain grid, so divide by 2 to get precise position
-                const terrainGridX = placement.gridPosition.x / 2;
-                const terrainGridZ = placement.gridPosition.z / 2;
-
-                const color = placement.type === 'building' ? 'rgba(139, 69, 19, 0.7)' : 'rgba(0, 200, 0, 0.7)';
-                const label = placement.entityType === 'goldMine' ? 'GM' :
-                              placement.entityType === 'townHall' ? 'TH' :
-                              placement.entityType.charAt(0).toUpperCase();
-
-                if (isIsometric) {
-                    const isoCoords = this.translator.gridToIso(terrainGridX, terrainGridZ);
-                    const tileWidth = gridSize;
-                    const tileHeight = gridSize * 0.5;
-
-                    // Draw placement marker
-                    ctx.fillStyle = color;
-                    ctx.fillRect(
-                        isoCoords.x - gridSize / 4,
-                        isoCoords.y + tileHeight / 4,
-                        gridSize / 2,
-                        gridSize / 2
-                    );
-
-                    // Draw border
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(
-                        isoCoords.x - gridSize / 4,
-                        isoCoords.y + tileHeight / 4,
-                        gridSize / 2,
-                        gridSize / 2
-                    );
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(label, isoCoords.x, isoCoords.y + tileHeight / 2);
-                } else {
-                    // Calculate pixel position with sub-tile precision
-                    // Placement grid size is half of terrain grid size
-                    const placementPixelSize = gridSize / 2;
-                    const drawX = offsetX + terrainGridX * gridSize;
-                    const drawY = offsetY + terrainGridZ * gridSize;
-
-                    // Draw placement marker (smaller to show placement grid granularity)
-                    ctx.fillStyle = color;
-                    ctx.fillRect(
-                        drawX + placementPixelSize / 4,
-                        drawY + placementPixelSize / 4,
-                        placementPixelSize - placementPixelSize / 2,
-                        placementPixelSize - placementPixelSize / 2
-                    );
-
-                    // Draw border
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(
-                        drawX + placementPixelSize / 4,
-                        drawY + placementPixelSize / 4,
-                        placementPixelSize - placementPixelSize / 2,
-                        placementPixelSize - placementPixelSize / 2
-                    );
-
-                    // Draw label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 2;
-                    ctx.strokeText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
-                    ctx.fillText(label, drawX + placementPixelSize / 2, drawY + placementPixelSize / 2);
-                }
-            });
-        }
-
-        // Render brush/fill preview overlay
-        if (this.hoverGridPosition &&
-            (this.placementMode === 'terrain' || this.placementMode === 'height')) {
+            let modifiedTiles = [];
 
             if (this.terrainTool === 'brush') {
-                // Brush tool preview - show all affected tiles
-                const centerX = this.hoverGridPosition.x;
-                const centerY = this.hoverGridPosition.y;
-                const radius = Math.floor(this.brushSize / 2);
+                const tileKey = `${gridX},${gridZ}`;
+                if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                    modifiedTiles = this.paintBrushTerrain(gridX, gridZ, this.currentTerrainId);
+                    this.lastPaintedTile = tileKey;
+                }
+            } else if (this.terrainTool === 'fill') {
+                if (this.lastPaintedTile === null) {
+                    this.floodFillTerrain(gridX, gridZ, this.currentTerrainId);
+                    this.lastPaintedTile = `${gridX},${gridZ}`;
+                }
+            }
 
-                // Render each tile in the brush area
+            if (modifiedTiles.length > 0) {
+                // Update 3D terrain mesh for modified tiles
+                this.update3DTerrainRegion(modifiedTiles);
+            }
+
+        } else if (this.placementMode === 'environment') {
+            // Place environment object(s) with brush size support
+            if (this.selectedObjectType && this.lastPaintedTile === null) {
+                if (!this.tileMap.environmentObjects) {
+                    this.tileMap.environmentObjects = [];
+                }
+
+                const gridSize = this.terrainDataManager.gridSize;
+                const terrainSize = this.terrainDataManager.terrainSize;
+                const halfGrid = gridSize / 2;
+                const radius = Math.floor(this.brushSize / 2);
+                let objectsPlaced = 0;
+
+                // Place objects in circular brush pattern
                 for (let dy = -radius; dy <= radius; dy++) {
                     for (let dx = -radius; dx <= radius; dx++) {
-                        const x = centerX + dx;
-                        const y = centerY + dy;
+                        const targetGridX = gridX + dx;
+                        const targetGridZ = gridZ + dy;
 
                         // Check bounds
-                        if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                        if (targetGridX >= 0 && targetGridX < this.mapSize &&
+                            targetGridZ >= 0 && targetGridZ < this.mapSize) {
+
                             // Check if within brush radius (circular brush)
                             const distance = Math.sqrt(dx * dx + dy * dy);
                             if (distance <= radius + 0.5) {
-                                if (isIsometric) {
-                                    // Isometric preview
-                                    const isoCoords = this.translator.gridToIso(x, y);
-                                    const tileWidth = gridSize;
-                                    const tileHeight = gridSize * 0.5;
+                                // Convert grid position to uncentered coordinate format
+                                // (spawner will apply centering offset when reading)
+                                const x = (targetGridX * gridSize) + halfGrid;
+                                const y = (targetGridZ * gridSize) + halfGrid;
 
-                                    // Draw semi-transparent overlay
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                                    ctx.beginPath();
-                                    ctx.moveTo(isoCoords.x, isoCoords.y);
-                                    ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                                    ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                                    ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                                    ctx.closePath();
-                                    ctx.fill();
+                                // Check if object already exists at this position
+                                const existingIndex = this.tileMap.environmentObjects.findIndex(
+                                    obj => obj.x === x && obj.y === y
+                                );
 
-                                    // Draw border
-                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                                    ctx.lineWidth = 2;
-                                    ctx.stroke();
-                                } else {
-                                    // Non-isometric preview
-                                    const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                                    const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
-
-                                    const drawX = offsetX + x * gridSize;
-                                    const drawY = offsetY + y * gridSize;
-
-                                    // Draw semi-transparent overlay
-                                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                                    ctx.fillRect(drawX, drawY, gridSize, gridSize);
-
-                                    // Draw border
-                                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                                    ctx.lineWidth = 2;
-                                    ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                                if (existingIndex === -1) {
+                                    // Add new environment object
+                                    this.tileMap.environmentObjects.push({
+                                        type: this.selectedObjectType,
+                                        x: x,
+                                        y: y
+                                    });
+                                    objectsPlaced++;
                                 }
                             }
                         }
                     }
                 }
+
+                // Respawn all environment objects if any were placed
+                if (objectsPlaced > 0) {
+                    this.updateEnvironmentObjects();
+                }
+
+                this.lastPaintedTile = `${gridX},${gridZ}`;
+            }
+
+        } else if (this.placementMode === 'height') {
+            let modifiedTiles = [];
+
+            if (this.terrainTool === 'brush') {
+                const tileKey = `${gridX},${gridZ}`;
+                if (this.lastPaintedTile !== tileKey || this.brushSize > 1) {
+                    modifiedTiles = this.paintBrushHeight(gridX, gridZ, this.currentHeightLevel);
+                    this.lastPaintedTile = tileKey;
+                }
             } else if (this.terrainTool === 'fill') {
-                // Fill tool preview - show single tile with different color
-                const x = this.hoverGridPosition.x;
-                const y = this.hoverGridPosition.y;
+                if (this.lastPaintedTile === null) {
+                    this.floodFillHeight(gridX, gridZ, this.currentHeightLevel);
+                    this.lastPaintedTile = `${gridX},${gridZ}`;
+                }
+            }
 
-                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
-                    if (isIsometric) {
-                        // Isometric preview
-                        const isoCoords = this.translator.gridToIso(x, y);
-                        const tileWidth = gridSize;
-                        const tileHeight = gridSize * 0.5;
+            if (modifiedTiles.length > 0) {
+                // Update 3D height mesh for modified tiles
+                this.update3DHeightRegion(modifiedTiles);
+            }
+        } else if (this.placementMode === 'placements') {
+            // Place entities (starting locations, units, buildings)
+            if (this.selectedPlacementType && this.lastPaintedTile === null) {
+                const gridSize = this.terrainDataManager.gridSize;
+                const terrainSize = this.terrainDataManager.terrainSize;
 
-                        // Draw semi-transparent overlay with blue tint for fill
-                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
-                        ctx.beginPath();
-                        ctx.moveTo(isoCoords.x, isoCoords.y);
-                        ctx.lineTo(isoCoords.x + tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.lineTo(isoCoords.x, isoCoords.y + tileHeight);
-                        ctx.lineTo(isoCoords.x - tileWidth / 2, isoCoords.y + tileHeight / 2);
-                        ctx.closePath();
-                        ctx.fill();
+                // Convert to world position (centered in tile)
+                const worldX = (gridX * gridSize) - (terrainSize / 2) + (gridSize / 2);
+                const worldZ = (gridZ * gridSize) - (terrainSize / 2) + (gridSize / 2);
 
-                        // Draw border
-                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
+                if (this.selectedPlacementType === 'startingLocation') {
+                    // Check if starting location already exists for this side
+                    const existingIndex = this.startingLocations.findIndex(
+                        loc => loc.side === this.selectedEntityType
+                    );
+
+                    if (existingIndex !== -1) {
+                        // Update existing starting location
+                        this.startingLocations[existingIndex] = {
+                            side: this.selectedEntityType,
+                            gridPosition: { x: gridX, z: gridZ },
+                            worldPosition: { x: worldX, z: worldZ }
+                        };
                     } else {
-                        // Non-isometric preview
-                        const offsetX = (this.canvasEl.width - this.mapSize * gridSize) / 2;
-                        const offsetY = (this.canvasEl.height - this.mapSize * gridSize) / 2;
+                        // Add new starting location
+                        this.startingLocations.push({
+                            side: this.selectedEntityType,
+                            gridPosition: { x: gridX, z: gridZ },
+                            worldPosition: { x: worldX, z: worldZ }
+                        });
+                    }
 
-                        const drawX = offsetX + x * gridSize;
-                        const drawY = offsetY + y * gridSize;
+                    // Update the starting locations list display
+                    const listElement = document.getElementById('startingLocationsList');
+                    if (listElement) {
+                        this.updateStartingLocationsList(listElement);
+                    }
 
-                        // Draw semi-transparent overlay with blue tint for fill
-                        ctx.fillStyle = 'rgba(100, 200, 255, 0.4)';
-                        ctx.fillRect(drawX, drawY, gridSize, gridSize);
+                } else if (this.selectedPlacementType === 'building' || this.selectedPlacementType === 'unit') {
+                    // Add entity placement
+                    this.entityPlacements.push({
+                        type: this.selectedPlacementType,
+                        entityType: this.selectedEntityType,
+                        gridPosition: { x: gridX, z: gridZ },
+                        worldPosition: { x: worldX, z: worldZ }
+                    });
+                }
 
-                        // Draw border
-                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(drawX, drawY, gridSize, gridSize);
+                // Save the map with updated placements
+                this.exportMap();
+
+                this.lastPaintedTile = `${gridX},${gridZ}`;
+            }
+        }
+    }
+
+    /**
+     * Show preview for tiles that will be affected by current tool
+     */
+    showTilePreview(gridX, gridZ) {
+        if (!this.placementPreview) return;
+
+        const affectedTiles = this.getAffectedTiles(gridX, gridZ);
+        if (affectedTiles.length === 0) {
+            this.placementPreview.hide();
+            return;
+        }
+
+        // Convert grid positions to world positions for preview
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+        const halfSize = terrainSize / 2;
+
+        const worldPositions = affectedTiles.map(tile => ({
+            x: (tile.x * gridSize) - halfSize + (gridSize / 2),
+            y: 0,
+            z: (tile.y * gridSize) - halfSize + (gridSize / 2)
+        }));
+
+        // Check if any tiles would actually be modified
+        const wouldModify = this.wouldModifyTiles(affectedTiles);
+
+        // Show preview (green if would modify, yellow/orange if no change)
+        this.placementPreview.showAtWorldPositions(worldPositions, wouldModify, true);
+    }
+
+    /**
+     * Get all tiles affected by current brush settings
+     */
+    getAffectedTiles(centerX, centerZ) {
+        const tiles = [];
+        const radius = Math.floor(this.brushSize / 2);
+
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const x = centerX + dx;
+                const y = centerZ + dy;
+
+                // Check bounds
+                if (x >= 0 && x < this.mapSize && y >= 0 && y < this.mapSize) {
+                    // For circular brush
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius) {
+                        tiles.push({ x, y });
                     }
                 }
             }
         }
+
+        return tiles;
     }
-    async updateCanvasWithData() {
-        // Use fast rendering for instant feedback
-        this.renderMap();
+
+    /**
+     * Check if any of the affected tiles would actually be modified
+     */
+    wouldModifyTiles(tiles) {
+        if (this.placementMode === 'terrain') {
+            return tiles.some(tile =>
+                this.tileMap.terrainMap[tile.y][tile.x] !== this.currentTerrainId
+            );
+        } else if (this.placementMode === 'height') {
+            return tiles.some(tile =>
+                this.tileMap.heightMap[tile.y][tile.x] !== this.currentHeightLevel
+            );
+        }
+        return true;
+    }
+
+    /**
+     * Update 3D terrain texture for modified tiles
+     */
+    update3DTerrainRegion(modifiedTiles) {
+        if (!this.worldRenderer) return;
+
+        // Update only the modified tiles (localized update for performance)
+        this.worldRenderer.updateTerrainTiles(modifiedTiles);
+    }
+
+    /**
+     * Update 3D height mesh for modified tiles
+     */
+    update3DHeightRegion(modifiedTiles) {
+        if (!this.worldRenderer || !this.terrainDataManager) return;
+
+        // Update terrain data manager's height map
+        this.terrainDataManager.processHeightMapFromData();
+
+        // Batch update the mesh for all modified tiles
+        if (modifiedTiles.length > 1) {
+            const changes = modifiedTiles.map(tile => ({
+                gridX: tile.x,
+                gridZ: tile.y,
+                heightLevel: this.tileMap.heightMap[tile.y][tile.x]
+            }));
+            this.worldRenderer.batchUpdateHeights(changes);
+        } else if (modifiedTiles.length === 1) {
+            const tile = modifiedTiles[0];
+            this.worldRenderer.setHeightAtGridPosition(
+                tile.x,
+                tile.y,
+                this.tileMap.heightMap[tile.y][tile.x]
+            );
+        }
+
+        // Update cliff entities to reflect new height configuration
+        this.updateCliffsInRegion(modifiedTiles);
     }
 
     updateRampCount() {
@@ -2871,223 +2513,6 @@ class TerrainMapEditor {
         if (rampCountEl) {
             const count = this.tileMap.ramps ? this.tileMap.ramps.length : 0;
             rampCountEl.textContent = count;
-        }
-    }
-
-    setup3DPreviewButton() {
-        // Create button next to save button
-        const saveBtn = document.getElementById('saveMapBtn');
-        if (!saveBtn) return;
-
-        const previewBtn = document.createElement('button');
-        previewBtn.id = 'preview3DBtn';
-        previewBtn.className = 'editor-module__btn';
-        previewBtn.textContent = '🎮 3D Preview';
-        previewBtn.style.marginLeft = '10px';
-
-        saveBtn.parentNode.insertBefore(previewBtn, saveBtn.nextSibling);
-
-        // Create modal
-        this.create3DPreviewModal();
-
-        // Button click handler
-        previewBtn.addEventListener('click', () => {
-            this.show3DPreview();
-        });
-    }
-
-    create3DPreviewModal() {
-        // Create modal HTML
-        const modal = document.createElement('div');
-        modal.id = 'terrain-3d-preview-modal';
-        modal.style.cssText = `
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-        `;
-
-        modal.innerHTML = `
-            <div style="width: 90%; height: 90%; background: #1a1a1a; border-radius: 8px; display: flex; flex-direction: column;">
-                <div style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="color: #fff; margin: 0;">3D Terrain Preview</h2>
-                    <button id="close-3d-preview" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
-                </div>
-                <div style="flex: 1; position: relative;">
-                    <canvas id="terrain-3d-canvas" style="width: 100%; height: 100%;"></canvas>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close button handler
-        document.getElementById('close-3d-preview').addEventListener('click', () => {
-            this.hide3DPreview();
-        });
-
-        // Click outside to close
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.hide3DPreview();
-            }
-        });
-    }
-
-    show3DPreview() {
-        const modal = document.getElementById('terrain-3d-preview-modal');
-        if (!modal) return;
-
-        modal.style.display = 'flex';
-
-        // Initialize 3D scene if not already done
-        if (!this.preview3DScene) {
-            this.init3DPreview();
-        }
-
-        // Render the terrain in 3D
-        this.render3DTerrain();
-
-        // Start animation loop
-        if (!this.preview3DAnimationId) {
-            this.animate3DPreview();
-        }
-    }
-
-    hide3DPreview() {
-        const modal = document.getElementById('terrain-3d-preview-modal');
-        if (!modal) return;
-
-        modal.style.display = 'none';
-
-        // Stop animation loop
-        if (this.preview3DAnimationId) {
-            cancelAnimationFrame(this.preview3DAnimationId);
-            this.preview3DAnimationId = null;
-        }
-    }
-
-    init3DPreview() {
-        const canvas = document.getElementById('terrain-3d-canvas');
-        if (!canvas || !window.THREE) {
-            console.error('Three.js not available for 3D preview');
-            return;
-        }
-
-        // Set up Three.js scene
-        this.preview3DScene = new THREE.Scene();
-        this.preview3DScene.background = new THREE.Color(0x87CEEB); // Sky blue
-
-        // Camera
-        const aspect = canvas.clientWidth / canvas.clientHeight;
-        this.preview3DCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 10000);
-        this.preview3DCamera.position.set(
-            this.mapSize * 15,
-            this.mapSize * 20,
-            this.mapSize * 15
-        );
-        this.preview3DCamera.lookAt(0, 0, 0);
-
-        // Renderer
-        this.preview3DRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        this.preview3DRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        this.preview3DRenderer.setPixelRatio(window.devicePixelRatio);
-        this.preview3DRenderer.shadowMap.enabled = true;
-        this.preview3DRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        this.preview3DScene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(50, 100, 50);
-        dirLight.castShadow = true;
-        dirLight.shadow.camera.left = -this.mapSize * 10;
-        dirLight.shadow.camera.right = this.mapSize * 10;
-        dirLight.shadow.camera.top = this.mapSize * 10;
-        dirLight.shadow.camera.bottom = -this.mapSize * 10;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
-        this.preview3DScene.add(dirLight);
-
-        // Controls
-        if (window.THREE_ && window.THREE_.OrbitControls) {
-            this.preview3DControls = new window.THREE_.OrbitControls(this.preview3DCamera, canvas);
-            this.preview3DControls.enableDamping = true;
-            this.preview3DControls.dampingFactor = 0.05;
-        }
-
-        // Handle window resize
-        this.preview3DResizeHandler = () => {
-            if (this.preview3DCamera && this.preview3DRenderer && canvas) {
-                this.preview3DCamera.aspect = canvas.clientWidth / canvas.clientHeight;
-                this.preview3DCamera.updateProjectionMatrix();
-                this.preview3DRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            }
-        };
-        window.addEventListener('resize', this.preview3DResizeHandler);
-    }
-
-    render3DTerrain() {
-        if (!this.preview3DScene) return;
-
-        // Clear existing terrain
-        if (this.preview3DTerrain) {
-            this.preview3DScene.remove(this.preview3DTerrain);
-        }
-
-        // Create terrain mesh from terrain and height maps
-        const gridSize = this.config.gridSize;
-        const geometry = new THREE.PlaneGeometry(
-            this.mapSize * gridSize,
-            this.mapSize * gridSize,
-            this.mapSize - 1,
-            this.mapSize - 1
-        );
-
-        // Apply height map
-        if (this.tileMap.heightMap && this.tileMap.heightMap.length > 0) {
-            const vertices = geometry.attributes.position.array;
-            for (let y = 0; y < this.mapSize; y++) {
-                for (let x = 0; x < this.mapSize; x++) {
-                    const height = this.tileMap.heightMap[y][x] || 0;
-                    const index = (y * this.mapSize + x) * 3;
-                    vertices[index + 2] = height * gridSize * 0.5; // Z becomes height
-                }
-            }
-            geometry.attributes.position.needsUpdate = true;
-            geometry.computeVertexNormals();
-        }
-
-        // Create material from terrain texture
-        const material = new THREE.MeshStandardMaterial({
-            map: this.cachedTerrainCanvas ? new THREE.CanvasTexture(this.cachedTerrainCanvas) : null,
-            side: THREE.DoubleSide,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-
-        this.preview3DTerrain = new THREE.Mesh(geometry, material);
-        this.preview3DTerrain.rotation.x = -Math.PI / 2;
-        this.preview3DTerrain.receiveShadow = true;
-        this.preview3DScene.add(this.preview3DTerrain);
-    }
-
-    animate3DPreview() {
-        this.preview3DAnimationId = requestAnimationFrame(() => this.animate3DPreview());
-
-        if (this.preview3DControls) {
-            this.preview3DControls.update();
-        }
-
-        if (this.preview3DRenderer && this.preview3DScene && this.preview3DCamera) {
-            this.preview3DRenderer.render(this.preview3DScene, this.preview3DCamera);
         }
     }
 

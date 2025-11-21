@@ -19,6 +19,8 @@
     "ServerSceneManager",
     "SeededRandom",
     "MinHeap",
-    "DesyncDebugger"
+    "DesyncDebugger",
+    "TerrainDataManager",
+    "EnvironmentObjectSpawner"
   ]
 }

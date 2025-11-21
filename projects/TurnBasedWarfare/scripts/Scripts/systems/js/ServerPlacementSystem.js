@@ -933,12 +933,13 @@ class ServerPlacementSystem extends engine.BaseSystem {
     getStartingState(player){
         // Get starting position from level data if available
         let startPosition = this.getStartingPositionFromLevel(player.stats.side);
-
+        console.log('startPosition', startPosition);
         // Find nearest unclaimed gold vein
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
         const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
+        console.log("goldVeinLocations", goldVeinLocations);
         if (goldVeinLocations) {
             goldVeinLocations.forEach(vein => {
                 // Skip if already claimed
@@ -952,6 +953,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearestGoldVeinLocation = vein.gridPos;
+        console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
         }

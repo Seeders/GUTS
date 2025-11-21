@@ -44,3 +44,4 @@ package-lock.json
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.backup
