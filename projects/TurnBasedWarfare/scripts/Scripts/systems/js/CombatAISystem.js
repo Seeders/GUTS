@@ -143,13 +143,22 @@ class CombatAISystem extends engine.BaseSystem {
             } else {
                 // No enemies present - handle idle/movement logic
                 if(aiState.targetPosition){
-                    if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored){
+                    const shouldMove = aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored;
+                    console.log(`[CombatAI] Unit ${entityId}: distance=${aiState.targetDistance.toFixed(2)}, threshold=${this.TARGET_POSITION_THRESHOLD}, anchored=${vel.anchored}, shouldMove=${shouldMove}, state=${aiState.state}`);
+
+                    if(shouldMove){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
                         }
                     } else {
                         if (aiState.state !== 'idle') {
-                            console.log('cleared player order 1', aiState);
+                            console.log('cleared player order 1', {
+                                distance: aiState.targetDistance,
+                                threshold: this.TARGET_POSITION_THRESHOLD,
+                                anchored: vel.anchored,
+                                targetPos: aiState.targetPosition,
+                                unitPos: {x: pos.x, z: pos.z}
+                            });
                             let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
                             if(currentAI == "CombatAISystem"){
                                 this.onLostTarget(entityId);
