@@ -212,8 +212,16 @@ class EntityRenderer {
         const modelDef = entityDef.render?.model?.main;
         const baseScale = modelDef?.scale || { x: 1, y: 1, z: 1 };
 
-        // For cliffs, multiply by 32
-        const scaleMultiplier = data.collection === 'cliffs' ? 32 : 1;
+        // Determine scale multiplier: use custom scale if provided, otherwise use collection default
+        let scaleMultiplier = 1;
+        if (data.scale !== undefined) {
+            // Custom scale provided (e.g., from EnvironmentObjectSpawner)
+            scaleMultiplier = data.scale;
+        } else if (data.collection === 'cliffs') {
+            // Default for cliffs
+            scaleMultiplier = 32;
+        }
+
         const finalScale = new THREE.Vector3(
             baseScale.x * scaleMultiplier,
             baseScale.y * scaleMultiplier,
