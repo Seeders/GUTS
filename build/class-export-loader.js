@@ -4,14 +4,6 @@
  */
 
 module.exports = function(source) {
-    // Check if the file already has exports
-    const hasExports = /module\.exports|exports\.|export\s+(default|{|class|const|function)/.test(source);
-
-    if (hasExports) {
-        // File already has exports, return as-is
-        return source;
-    }
-
     // Extract class names from the source (only top-level class declarations)
     // Match: class ClassName { or class ClassName extends
     const classRegex = /^class\s+(\w+)(?:\s+extends|\s*\{)/gm;
@@ -31,9 +23,17 @@ module.exports = function(source) {
     const resourcePath = this.resourcePath || '';
     const isServerBundle = resourcePath.includes('.temp/server-entry');
 
+    // Check if the file already has exports
+    const hasExports = /module\.exports|exports\.|export\s+(default|{|class|const|function)/.test(source);
+
     let exportCode = '\n\n// Auto-generated exports\n';
 
     if (isServerBundle) {
+        // For server bundles, only add exports if they don't exist
+        if (hasExports) {
+            return source;
+        }
+
         // CommonJS exports for server
         exportCode += 'if (typeof module !== \'undefined\' && module.exports) {\n';
         const mainClass = classNames[classNames.length - 1];
@@ -43,14 +43,25 @@ module.exports = function(source) {
         });
         exportCode += '}\n';
     } else {
-        // ES6 exports for client, but make them conditional to avoid conflicts
-        exportCode += 'if (typeof exports !== \'undefined\') {\n';
-        const mainClass = classNames[classNames.length - 1];
-        exportCode += `  exports.default = ${mainClass};\n`;
+        // For client bundles, ALWAYS assign to window.GUTS
+        // This ensures classes are available for inheritance before other modules are evaluated
+        exportCode += 'if (typeof window !== \'undefined\' && window.GUTS) {\n';
         classNames.forEach(className => {
-            exportCode += `  exports.${className} = ${className};\n`;
+            exportCode += `  window.GUTS.${className} = ${className};\n`;
         });
         exportCode += '}\n';
+
+        // If the file doesn't have exports, add them
+        if (!hasExports) {
+            exportCode += '\n';
+            exportCode += 'if (typeof exports !== \'undefined\') {\n';
+            const mainClass = classNames[classNames.length - 1];
+            exportCode += `  exports.default = ${mainClass};\n`;
+            classNames.forEach(className => {
+                exportCode += `  exports.${className} = ${className};\n`;
+            });
+            exportCode += '}\n';
+        }
     }
 
     return source + exportCode;

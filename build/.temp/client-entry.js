@@ -1,6 +1,6 @@
 /**
  * GUTS Game Client Bundle
- * Generated: 2025-11-21T22:46:55.200Z
+ * Generated: 2025-11-21T23:00:16.317Z
  * Project: TurnBasedWarfare
  */
 
@@ -334,16 +334,8 @@ if (Libraries.THREE) {
   });
 }
 
-// Setup window.engine context for class inheritance
-if (!window.engine) {
-  window.engine = {};
-}
-
-// Register libraries in engine context
-Object.assign(window.engine, Libraries);
-
-// Also expose managers, systems, abilities globally
-Object.assign(window.engine, {
+// Also expose managers, systems, abilities in GUTS namespace
+Object.assign(window.GUTS, {
   managers: Managers,
   systems: Systems,
   abilities: Abilities
@@ -358,10 +350,10 @@ window.COMPILED_GAME = {
   systems: Systems,
   abilities: Abilities,
   classRegistry: ClassRegistry,
-  init: function(engine) {
+  init: function(gutsEngine) {
     if (this.initialized) return;
     this.initialized = true;
-    window.engine = engine;
+    window.GUTS.engine = gutsEngine;
     console.log("✅ COMPILED_GAME initialized");
   }
 };

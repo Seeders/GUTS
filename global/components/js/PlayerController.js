@@ -1,4 +1,4 @@
-class PlayerController extends engine.Component {
+class PlayerController extends GUTS.Component {
     init({
         walkSpeed = 40, // Adjusted for Rapier (meters/second)
         runSpeed = 100,

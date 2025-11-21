@@ -1,4 +1,4 @@
-class Animator extends engine.Component {
+class Animator extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

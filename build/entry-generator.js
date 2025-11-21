@@ -214,16 +214,8 @@ class EntryGenerator {
         sections.push('  });');
         sections.push('}');
         sections.push('');
-        sections.push('// Setup window.engine context for class inheritance');
-        sections.push('if (!window.engine) {');
-        sections.push('  window.engine = {};');
-        sections.push('}');
-        sections.push('');
-        sections.push('// Register libraries in engine context');
-        sections.push('Object.assign(window.engine, Libraries);');
-        sections.push('');
-        sections.push('// Also expose managers, systems, abilities globally');
-        sections.push('Object.assign(window.engine, {');
+        sections.push('// Also expose managers, systems, abilities in GUTS namespace');
+        sections.push('Object.assign(window.GUTS, {');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
         sections.push('  abilities: Abilities');
@@ -238,10 +230,10 @@ class EntryGenerator {
         sections.push('  systems: Systems,');
         sections.push('  abilities: Abilities,');
         sections.push('  classRegistry: ClassRegistry,');
-        sections.push('  init: function(engine) {');
+        sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
         sections.push('    this.initialized = true;');
-        sections.push('    window.engine = engine;');
+        sections.push('    window.GUTS.engine = gutsEngine;');
         sections.push('    console.log("✅ COMPILED_GAME initialized");');
         sections.push('  }');
         sections.push('};');
@@ -317,11 +309,11 @@ class EntryGenerator {
 
         // Setup globals FIRST
         sections.push('// ========== SETUP GLOBALS ==========');
-        sections.push('if (!global.engine) global.engine = {};');
+        sections.push('if (!global.GUTS) global.GUTS = {};');
         sections.push('if (!global.window) global.window = global;');
         sections.push('// Setup app.appClasses for abilities and other dynamic classes');
-        sections.push('if (!global.engine.app) global.engine.app = {};');
-        sections.push('if (!global.engine.app.appClasses) global.engine.app.appClasses = {};');
+        sections.push('if (!global.GUTS.app) global.GUTS.app = {};');
+        sections.push('if (!global.GUTS.app.appClasses) global.GUTS.app.appClasses = {};');
         sections.push('');
 
         // Require libraries (synchronous, happens in order)
@@ -334,8 +326,8 @@ class EntryGenerator {
             sections.push(exports.join(',\n'));
             sections.push('};');
             sections.push('');
-            sections.push('// Make libraries available IMMEDIATELY in global.engine');
-            sections.push('Object.assign(global.engine, Libraries);');
+            sections.push('// Make libraries available IMMEDIATELY in global.GUTS');
+            sections.push('Object.assign(global.GUTS, Libraries);');
             sections.push('');
         }
 
@@ -382,7 +374,7 @@ class EntryGenerator {
                 sections.push(`// Require BaseAbility first so other abilities can extend from it`);
                 sections.push(`const ${varName}_module = require('${requirePath}');`);
                 sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.BaseAbility || ${varName}_module;`);
-                sections.push(`global.engine.app.appClasses['BaseAbility'] = ${varName};`);
+                sections.push(`global.GUTS.app.appClasses['BaseAbility'] = ${varName};`);
                 sections.push('');
             }
 
@@ -400,9 +392,9 @@ class EntryGenerator {
             sections.push('};');
             sections.push('');
 
-            // Make remaining abilities available in global.engine.app.appClasses
-            sections.push('// Make all abilities available in global.engine.app.appClasses');
-            sections.push('Object.assign(global.engine.app.appClasses, Abilities);');
+            // Make remaining abilities available in global.GUTS.app.appClasses
+            sections.push('// Make all abilities available in global.GUTS.app.appClasses');
+            sections.push('Object.assign(global.GUTS.app.appClasses, Abilities);');
             sections.push('');
         }
 
@@ -426,18 +418,18 @@ class EntryGenerator {
         sections.push('  systems: Systems,');
         sections.push('  abilities: Abilities,');
         sections.push('  classRegistry: ClassRegistry,');
-        sections.push('  init: function(engine) {');
+        sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
         sections.push('    this.initialized = true;');
-        sections.push('    global.engine = engine;');
+        sections.push('    global.GUTS.engine = gutsEngine;');
         sections.push('    console.log("✅ COMPILED_GAME initialized on server");');
         sections.push('  }');
         sections.push('};');
         sections.push('');
-        sections.push('// Also expose in global.engine for compatibility');
-        sections.push('global.engine.managers = Managers;');
-        sections.push('global.engine.systems = Systems;');
-        sections.push('global.engine.abilities = Abilities;');
+        sections.push('// Also expose in global.GUTS for compatibility');
+        sections.push('global.GUTS.managers = Managers;');
+        sections.push('global.GUTS.systems = Systems;');
+        sections.push('global.GUTS.abilities = Abilities;');
         sections.push('');
 
         // Export

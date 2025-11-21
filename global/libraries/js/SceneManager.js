@@ -53,8 +53,8 @@ class SceneManager {
                 if(baseClassId){
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(engine?.app?.appClasses){
-                        const BaseClassDef = engine.app.appClasses[baseClassId];
+                    if(GUTS?.app?.appClasses){
+                        const BaseClassDef = GUTS.app.appClasses[baseClassId];
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     } else {
                         const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
@@ -65,8 +65,8 @@ class SceneManager {
                     if(baseClassId && collectionClassId == baseClassId) continue;                
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(engine?.app?.appClasses){
-                        const ClassDef = engine.app.appClasses[collectionClassId];
+                    if(GUTS?.app?.appClasses){
+                        const ClassDef = GUTS.app.appClasses[collectionClassId];
                         this.game.addClass(collectionClassId, ClassDef, params);
                     } else {
                         const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
@@ -78,8 +78,8 @@ class SceneManager {
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
                 let ManagerClass = null;
-                if(engine?.app?.appClasses){
-                    ManagerClass = engine.app.appClasses[managerDef.type];        
+                if(GUTS?.app?.appClasses){
+                    ManagerClass = GUTS.app.appClasses[managerDef.type];        
                 } else {
                     ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
                 }     
@@ -93,8 +93,8 @@ class SceneManager {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
              
                 let SystemClass = null;
-                if(engine?.app?.appClasses){
-                    SystemClass = engine.app.appClasses[systemDef.type];            
+                if(GUTS?.app?.appClasses){
+                    SystemClass = GUTS.app.appClasses[systemDef.type];            
                 } else {
                     SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
                 }    

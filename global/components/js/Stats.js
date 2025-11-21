@@ -1,4 +1,4 @@
-class Stats extends engine.Component {
+class Stats extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

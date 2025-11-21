@@ -1,4 +1,4 @@
-class Physics extends engine.Component {
+class Physics extends GUTS.Component {
     async init() {
         this.colliders = new Map();
         this.rigidbodies = new Map();

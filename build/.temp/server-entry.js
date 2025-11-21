@@ -1,15 +1,15 @@
 /**
  * GUTS Game Server Bundle (CommonJS)
- * Generated: 2025-11-21T22:46:55.202Z
+ * Generated: 2025-11-21T23:00:16.320Z
  * Project: TurnBasedWarfare
  */
 
 // ========== SETUP GLOBALS ==========
-if (!global.engine) global.engine = {};
+if (!global.GUTS) global.GUTS = {};
 if (!global.window) global.window = global;
 // Setup app.appClasses for abilities and other dynamic classes
-if (!global.engine.app) global.engine.app = {};
-if (!global.engine.app.appClasses) global.engine.app.appClasses = {};
+if (!global.GUTS.app) global.GUTS.app = {};
+if (!global.GUTS.app.appClasses) global.GUTS.app.appClasses = {};
 
 // ========== LIBRARIES ==========
 const lib_BaseSystem_module = require('/home/user/GUTS/global/libraries/js/BaseSystem.js');
@@ -64,8 +64,8 @@ const Libraries = {
   CoordinateTranslator: lib_CoordinateTranslator
 };
 
-// Make libraries available IMMEDIATELY in global.engine
-Object.assign(global.engine, Libraries);
+// Make libraries available IMMEDIATELY in global.GUTS
+Object.assign(global.GUTS, Libraries);
 
 // ========== MANAGERS ==========
 const mgr_ComponentManager_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ComponentManager.js');
@@ -153,7 +153,7 @@ const Systems = {
 // Require BaseAbility first so other abilities can extend from it
 const ability_BaseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js');
 const ability_BaseAbility = ability_BaseAbility_module.default || ability_BaseAbility_module.BaseAbility || ability_BaseAbility_module;
-global.engine.app.appClasses['BaseAbility'] = ability_BaseAbility;
+global.GUTS.app.appClasses['BaseAbility'] = ability_BaseAbility;
 
 const ability_ArenaPresenceAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js');
 const ability_ArenaPresenceAbility = ability_ArenaPresenceAbility_module.default || ability_ArenaPresenceAbility_module.ArenaPresenceAbility || ability_ArenaPresenceAbility_module;
@@ -277,8 +277,8 @@ const Abilities = {
   WindShieldAbility: ability_WindShieldAbility
 };
 
-// Make all abilities available in global.engine.app.appClasses
-Object.assign(global.engine.app.appClasses, Abilities);
+// Make all abilities available in global.GUTS.app.appClasses
+Object.assign(global.GUTS.app.appClasses, Abilities);
 
 // ========== CLASS REGISTRY ==========
 const ClassRegistry = {
@@ -297,17 +297,17 @@ global.COMPILED_GAME = {
   systems: Systems,
   abilities: Abilities,
   classRegistry: ClassRegistry,
-  init: function(engine) {
+  init: function(gutsEngine) {
     if (this.initialized) return;
     this.initialized = true;
-    global.engine = engine;
+    global.GUTS.engine = gutsEngine;
     console.log("✅ COMPILED_GAME initialized on server");
   }
 };
 
-// Also expose in global.engine for compatibility
-global.engine.managers = Managers;
-global.engine.systems = Systems;
-global.engine.abilities = Abilities;
+// Also expose in global.GUTS for compatibility
+global.GUTS.managers = Managers;
+global.GUTS.systems = Systems;
+global.GUTS.abilities = Abilities;
 
 module.exports = global.COMPILED_GAME;

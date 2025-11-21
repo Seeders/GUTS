@@ -1,4 +1,4 @@
-class MultiplayerECSGame extends engine.ECSGame {
+class MultiplayerECSGame extends GUTS.ECSGame {
     constructor(app) {
         super(app);
         this.networkManager = new GUTS.ClientNetworkManager(this);

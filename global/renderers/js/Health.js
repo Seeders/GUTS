@@ -1,4 +1,4 @@
-class Health extends engine.Component {
+class Health extends GUTS.Component {
        
   init(){
         let statsComp = this.parent.getComponent('stats');

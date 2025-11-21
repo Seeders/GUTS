@@ -1,4 +1,4 @@
-class MultiplayerManager extends engine.Component {
+class MultiplayerManager extends GUTS.Component {
   init({scene, physics, serverUrl}) {
     this.scene = scene;            // Three.js scene
     this.physics = physics;            // Rapier world
