@@ -650,8 +650,8 @@ class WorldRenderer {
 
         // Apply height to a region around this tile
         const halfGrid = Math.floor(gridSize / 2);
-        for (let dz = -halfGrid; dz <= halfGrid; dz++) {
-            for (let dx = -halfGrid; dx <= halfGrid; dx++) {
+        for (let dz = -halfGrid; dz < halfGrid; dz++) {
+            for (let dx = -halfGrid; dx < halfGrid; dx++) {
                 const finalX = extX + dx;
                 const finalZ = extZ + dz;
 
@@ -698,8 +698,8 @@ class WorldRenderer {
             const extZ = gridZ * gridSize + extensionSize + gridSize / 2;
 
             const halfGrid = Math.floor(gridSize / 2);
-            for (let dz = -halfGrid; dz <= halfGrid; dz++) {
-                for (let dx = -halfGrid; dx <= halfGrid; dx++) {
+            for (let dz = -halfGrid; dz < halfGrid; dz++) {
+                for (let dx = -halfGrid; dx < halfGrid; dx++) {
                     const finalX = extX + dx;
                     const finalZ = extZ + dz;
 
