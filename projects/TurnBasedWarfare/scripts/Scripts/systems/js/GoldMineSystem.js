@@ -26,17 +26,15 @@ class GoldMineSystem extends engine.BaseSystem {
             return;
         }
 
-        const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-        const extendedSize = this.game.terrainSystem?.extendedSize || 0;
+        const extensionSize = this.game.gameManager.call('getTerrainExtensionSize');
+        const extendedSize = this.game.gameManager.call('getTerrainExtendedSize');
 
         this.goldVeinLocations = tileMap.environmentObjects
             .filter(obj => obj.type === 'goldVein')
             .map(obj => {
                 const worldX = (obj.x + extensionSize) - extendedSize / 2;
                 const worldZ = (obj.y + extensionSize) - extendedSize / 2;
-
-                const gridPos = { x: Math.floor(obj.x / 24), z: Math.floor(obj.y / 24) };
-console.log('GOLD VEIN LOCATION', obj, gridPos);
+                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
                 // Gold veins use placementGridWidth which is already in placement grid units
                 // But we need to match how buildings calculate their cells (footprintWidth * 2)
                 // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
