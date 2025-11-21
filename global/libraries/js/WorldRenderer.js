@@ -171,25 +171,35 @@ class WorldRenderer {
             this.controls.keys = {}; // Clear any default key bindings
         }
 
-        // Use Ctrl+Right Click for rotation, Right Click alone for pan
+        // Disable orbit rotation - we'll handle rotation manually for in-place rotation
+        this.controls.enableRotate = false;
+
+        // Use Right Click for pan only
         this.controls.mouseButtons = {
             LEFT: null,                    // Left click disabled (used for editing)
             MIDDLE: null,                  // Middle click disabled (conflicts with browser scroll)
-            RIGHT: THREE.MOUSE.PAN         // Right click for panning (default)
+            RIGHT: THREE.MOUSE.PAN         // Right click for panning
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.maxPolarAngle = Math.PI / 2.05;  // Limit to ~88° - allow nearly horizontal viewing
-        this.controls.minPolarAngle = 0.1;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 50;
-        this.controls.maxDistance = 1000;
 
-        // Add modifier key detection for Ctrl+Right Click rotation
+        // Custom rotation variables
         this.ctrlPressed = false;
         this.shiftPressed = false;
+        this.isRotating = false;
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+        this.cameraRotationX = 0; // Vertical rotation (pitch)
+        this.cameraRotationY = 0; // Horizontal rotation (yaw)
+
+        // Initialize rotation from camera's current orientation
+        const direction = new THREE.Vector3();
+        this.camera.getWorldDirection(direction);
+        this.cameraRotationY = Math.atan2(direction.x, direction.z);
+        this.cameraRotationX = Math.asin(-direction.y);
 
         // Constrain target Y position to prevent near-plane clipping through terrain
         this.controls.addEventListener('change', () => {
@@ -199,42 +209,93 @@ class WorldRenderer {
         });
 
         const handleKeyDown = (event) => {
-            // Track shift state but DON'T allow it to enable rotation
             if (event.shiftKey) {
                 this.shiftPressed = true;
             }
 
-            // ONLY ctrl/meta enables rotation
             if (event.ctrlKey || event.metaKey) {
                 this.ctrlPressed = true;
-                // Switch right click to rotate when Ctrl is held
-                this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
-            } else if (this.shiftPressed && !event.ctrlKey && !event.metaKey) {
-                // Force pan mode if shift is pressed without ctrl
-                this.controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
             }
         };
 
         const handleKeyUp = (event) => {
-            // Track when shift is released
             if (!event.shiftKey) {
                 this.shiftPressed = false;
             }
 
             if (!event.ctrlKey && !event.metaKey) {
                 this.ctrlPressed = false;
-                // Switch right click back to pan when Ctrl is released
-                this.controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+            }
+        };
+
+        const handleMouseDown = (event) => {
+            if (event.button === 2 && this.ctrlPressed) { // Right click + Ctrl
+                this.isRotating = true;
+                this.lastMouseX = event.clientX;
+                this.lastMouseY = event.clientY;
+                event.preventDefault();
+            }
+        };
+
+        const handleMouseMove = (event) => {
+            if (this.isRotating && this.ctrlPressed) {
+                const deltaX = event.clientX - this.lastMouseX;
+                const deltaY = event.clientY - this.lastMouseY;
+
+                // Update rotation angles
+                this.cameraRotationY -= deltaX * 0.005; // Horizontal rotation
+                this.cameraRotationX -= deltaY * 0.005; // Vertical rotation
+
+                // Clamp vertical rotation to prevent flipping
+                this.cameraRotationX = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.cameraRotationX));
+
+                // Apply rotation to camera
+                this.updateCameraRotation();
+
+                this.lastMouseX = event.clientX;
+                this.lastMouseY = event.clientY;
+                event.preventDefault();
+            }
+        };
+
+        const handleMouseUp = (event) => {
+            if (event.button === 2) {
+                this.isRotating = false;
             }
         };
 
         // Store event handlers for cleanup
         this.controlsKeyHandlers = { handleKeyDown, handleKeyUp };
+        this.controlsMouseHandlers = { handleMouseDown, handleMouseMove, handleMouseUp };
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
+        this.renderer.domElement.addEventListener('mousedown', handleMouseDown);
+        this.renderer.domElement.addEventListener('mousemove', handleMouseMove);
+        this.renderer.domElement.addEventListener('mouseup', handleMouseUp);
 
         this.controls.update();
+    }
+
+    /**
+     * Update camera rotation in place
+     */
+    updateCameraRotation() {
+        if (!this.camera) return;
+
+        // Calculate look direction based on rotation angles
+        const direction = new THREE.Vector3(
+            Math.sin(this.cameraRotationY) * Math.cos(this.cameraRotationX),
+            -Math.sin(this.cameraRotationX),
+            Math.cos(this.cameraRotationY) * Math.cos(this.cameraRotationX)
+        );
+
+        // Update controls target to be in front of camera
+        const lookDistance = 100;
+        this.controls.target.copy(this.camera.position).add(direction.multiplyScalar(lookDistance));
+
+        // Make camera look at the target
+        this.camera.lookAt(this.controls.target);
     }
 
     /**
@@ -1119,6 +1180,14 @@ class WorldRenderer {
             window.removeEventListener('keydown', this.controlsKeyHandlers.handleKeyDown);
             window.removeEventListener('keyup', this.controlsKeyHandlers.handleKeyUp);
             this.controlsKeyHandlers = null;
+        }
+
+        // Clean up orbit controls mouse handlers
+        if (this.controlsMouseHandlers && this.renderer && this.renderer.domElement) {
+            this.renderer.domElement.removeEventListener('mousedown', this.controlsMouseHandlers.handleMouseDown);
+            this.renderer.domElement.removeEventListener('mousemove', this.controlsMouseHandlers.handleMouseMove);
+            this.renderer.domElement.removeEventListener('mouseup', this.controlsMouseHandlers.handleMouseUp);
+            this.controlsMouseHandlers = null;
         }
 
         // Remove event listeners
