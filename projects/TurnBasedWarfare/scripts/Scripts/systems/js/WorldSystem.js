@@ -130,9 +130,10 @@ class WorldSystem extends engine.BaseSystem {
         }
 
         // Spawn cliff entities using WorldRenderer
+        // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.game.gameManager.call('getEntityRenderer');
         if (entityRenderer) {
-            await this.worldRenderer.spawnCliffs(entityRenderer, true);
+            await this.worldRenderer.spawnCliffs(entityRenderer, false);
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
