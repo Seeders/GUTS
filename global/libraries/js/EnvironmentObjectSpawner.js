@@ -83,97 +83,50 @@ class EnvironmentObjectSpawner {
 
         // Calculate world position
         const { worldX, worldZ } = this.calculateWorldPosition(envObj, terrainDataManager);
-
-        // Get terrain height
         const height = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
 
-        // Create entity ID (consistent between runtime and editor)
+        // Create entity ID
         const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
-
-        // No rotation or scale variation - just use defaults
         const rotation = 0;
-        const scale = 32; // Standard scale for worldObjects in 3D
+        const scale = 32;
 
-        if (this.mode === 'runtime') {
-            // Runtime mode: Create ECS entity with gameplay components
-            this.spawnRuntimeEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale);
-        } else if (this.mode === 'editor') {
-            // Editor mode: Render using EntityRenderer
-            await this.spawnEditorEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale);
-        }
-    }
+        // Runtime: Create ECS entity
+        if (this.game) {
+            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const Components = this.game.componentManager.getComponents();
+            const ecsEntityId = this.game.createEntity(entityId);
 
-    /**
-     * Spawn environment object in runtime mode (ECS)
-     * Creates gameplay entities that RenderSystem will visualize
-     */
-    spawnRuntimeEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale) {
-        if (!this.game) {
-            console.error('[EnvironmentObjectSpawner] Game instance required for runtime mode');
-            return;
-        }
+            this.game.addComponent(ecsEntityId, ComponentTypes.POSITION,
+                Components.Position(worldX, height, worldZ));
+            this.game.addComponent(ecsEntityId, ComponentTypes.UNIT_TYPE,
+                Components.UnitType({ ...unitType, collection: "worldObjects", id: envObj.type }));
+            this.game.addComponent(ecsEntityId, ComponentTypes.TEAM,
+                Components.Team('neutral'));
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+            if (unitType.collision !== false && unitType.size) {
+                this.game.addComponent(ecsEntityId, ComponentTypes.COLLISION,
+                    Components.Collision(unitType.size, unitType.height || 100));
+            }
 
-        // Create ECS entity
-        const ecsEntityId = this.game.createEntity(entityId);
-
-        // Add Position component
-        this.game.addComponent(ecsEntityId, ComponentTypes.POSITION,
-            Components.Position(worldX, height, worldZ));
-
-        // Add UnitType component
-        const unitTypeData = { ...unitType, collection: "worldObjects", id: envObj.type };
-        this.game.addComponent(ecsEntityId, ComponentTypes.UNIT_TYPE,
-            Components.UnitType(unitTypeData));
-
-        // Add Team component (neutral for environment objects)
-        this.game.addComponent(ecsEntityId, ComponentTypes.TEAM,
-            Components.Team('neutral'));
-
-        // Add Collision component if the object should block movement
-        if (unitType.collision !== false && unitType.size) {
-            this.game.addComponent(ecsEntityId, ComponentTypes.COLLISION,
-                Components.Collision(unitType.size, unitType.height || 100));
-        }
-
-        // Add Facing component for rotation
-        this.game.addComponent(ecsEntityId, ComponentTypes.FACING,
-            Components.Facing(rotation));
-
-        // Store scale - RenderSystem will use this when spawning visual
-        if (!this.game.hasComponent(ecsEntityId, ComponentTypes.ANIMATION)) {
+            this.game.addComponent(ecsEntityId, ComponentTypes.FACING,
+                Components.Facing(rotation));
             this.game.addComponent(ecsEntityId, ComponentTypes.ANIMATION,
                 Components.Animation(scale, rotation, 0));
         }
 
+        // Editor: Render with EntityRenderer
+        if (this.entityRenderer) {
+            await this.entityRenderer.spawnEntity(entityId, {
+                collection: 'worldObjects',
+                type: envObj.type,
+                position: { x: worldX, y: height, z: worldZ },
+                rotation: rotation,
+                scale: scale,
+                facing: rotation
+            });
+        }
+
         this.spawnedEntities.add(entityId);
-    }
-
-    /**
-     * Spawn environment object in editor mode (visual rendering)
-     * Directly renders using EntityRenderer without ECS
-     */
-    async spawnEditorEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale) {
-        if (!this.entityRenderer) {
-            console.error('[EnvironmentObjectSpawner] EntityRenderer required for editor mode');
-            return;
-        }
-
-        // Spawn using EntityRenderer with same scale as runtime
-        const spawned = await this.entityRenderer.spawnEntity(entityId, {
-            collection: 'worldObjects',
-            type: envObj.type,
-            position: { x: worldX, y: height, z: worldZ },
-            rotation: rotation,
-            scale: scale,
-            facing: rotation
-        });
-
-        if (spawned) {
-            this.spawnedEntities.add(entityId);
-        }
     }
 
     /**
