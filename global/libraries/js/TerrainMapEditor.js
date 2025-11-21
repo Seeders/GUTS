@@ -1842,80 +1842,13 @@ class TerrainMapEditor {
      * Uses shared EntityRenderer library
      */
     async spawnCliffEntities() {
-        if (!this.terrainDataManager || !this.entityRenderer) {
+        if (!this.worldRenderer || !this.entityRenderer) {
             console.warn('[TerrainMapEditor] Cannot spawn cliffs: missing dependencies');
             return;
         }
 
-        // Clear existing cliff entities
-        this.entityRenderer.clearEntitiesByType('cliffs');
-
-        // Analyze height map for cliff positions
-        const cliffData = this.terrainDataManager.analyzeCliffs();
-
-        if (cliffData.length === 0) {
-            console.log('[TerrainMapEditor] No cliffs to spawn (no height differences)');
-            return;
-        }
-
-        console.log(`[TerrainMapEditor] Spawning ${cliffData.length} cliffs...`);
-
-        // Spawn each cliff using EntityRenderer
-        let spawnedCount = 0;
-        for (const cliff of cliffData) {
-            // Calculate cliff position for editor (terrain centered at origin, no extension)
-            const gridSize = this.terrainDataManager.gridSize;
-            const terrainSize = this.tileMap.size * gridSize;
-
-            // Tile center
-            const tileWorldX = cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
-            const tileWorldZ = cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
-
-            // Quadrant offsets - each quadrant is centered at 1/4 and 3/4 positions
-            const quarterGrid = gridSize / 4;
-            let worldX = tileWorldX;
-            let worldZ = tileWorldZ;
-
-            // Position based on quadrant (centered in each quadrant)
-            switch (cliff.quadrant) {
-                case 'TL': // Top-left
-                    worldX -= quarterGrid;
-                    worldZ -= quarterGrid;
-                    break;
-                case 'TR': // Top-right
-                    worldX += quarterGrid;
-                    worldZ -= quarterGrid;
-                    break;
-                case 'BL': // Bottom-left
-                    worldX -= quarterGrid;
-                    worldZ += quarterGrid;
-                    break;
-                case 'BR': // Bottom-right
-                    worldX += quarterGrid;
-                    worldZ += quarterGrid;
-                    break;
-            }
-
-            // Get height from terrain - cliffs sit at the bottom (2 levels below tile height)
-            const heightStep = this.terrainDataManager.heightStep;
-            const mapHeight = this.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffBottomHeight = (mapHeight - 2) * heightStep;
-            const height = cliffBottomHeight;
-
-            const worldPos = { x: worldX, y: height, z: worldZ };
-            const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
-
-            const spawned = await this.entityRenderer.spawnEntity(entityId, {
-                collection: 'cliffs',
-                type: cliff.type,
-                position: worldPos,
-                rotation: cliff.rotation
-            });
-
-            if (spawned) spawnedCount++;
-        }
-
-        console.log(`[TerrainMapEditor] Spawned ${spawnedCount}/${cliffData.length} cliffs`);
+        // Delegate to WorldRenderer which uses CliffSpawner
+        await this.worldRenderer.spawnCliffs(this.entityRenderer);
     }
 
     /**
