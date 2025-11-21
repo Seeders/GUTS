@@ -88,8 +88,8 @@ class WorldRenderer {
         this.scene = new THREE.Scene();
 
         // Setup camera (orthographic or perspective based on settings)
-        const width = canvas.clientWidth || window.innerWidth;
-        const height = canvas.clientHeight || window.innerHeight;
+        let width = canvas.clientWidth || window.innerWidth;
+        let height = canvas.clientHeight || window.innerHeight;
 
         if (cameraSettings.fov) {
             // Perspective camera
@@ -101,7 +101,8 @@ class WorldRenderer {
             );
         } else if (cameraSettings.zoom) {
             // Orthographic camera - make frustum smaller to prevent hitting terrain when rotated
-            const frustumScale = 0.6;  // Smaller frustum stays above terrain
+            const frustumScale = 1;  // Smaller frustum stays above terrain
+      
             this.camera = new THREE.OrthographicCamera(
                 (width / -2) * frustumScale,
                 (width / 2) * frustumScale,
