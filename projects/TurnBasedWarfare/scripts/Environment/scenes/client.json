@@ -23,6 +23,7 @@
         { "type": "InputManager" }
       ],
       "systems": [
+        { "type": "GridSystem" },
         { "type": "TerrainSystem" },
         { "type": "WorldSystem" },
         { "type": "PostProcessingSystem" },
@@ -35,7 +36,6 @@
         { "type": "AnimationSystem" },
         { "type": "ArmyDisplaySystem" },
         { "type": "EffectsSystem" },
-        { "type": "GridSystem" },
         { "type": "MultiplayerPlacementSystem" },
         { "type": "MultiplayerUISystem" },
         { "type": "ShopSystem" },

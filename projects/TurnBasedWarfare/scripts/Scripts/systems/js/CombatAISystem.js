@@ -144,8 +144,7 @@ class CombatAISystem extends engine.BaseSystem {
                 // No enemies present - handle idle/movement logic
                 if(aiState.targetPosition){
                     const shouldMove = aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored;
-                    console.log(`[CombatAI] Unit ${entityId}: distance=${aiState.targetDistance.toFixed(2)}, threshold=${this.TARGET_POSITION_THRESHOLD}, anchored=${vel.anchored}, shouldMove=${shouldMove}, state=${aiState.state}`);
-
+                 
                     if(shouldMove){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
