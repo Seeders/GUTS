@@ -206,7 +206,7 @@ class BaseECSGame {
 
     addClass(classId, classRef, params) {
         this.classes[classId] = { classRef: classRef, defaultParams: params };
-        this.app.appClasses[classId] = classRef;
+        // Classes are now available directly at GUTS[classId]
     }
 
 

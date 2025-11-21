@@ -54,7 +54,7 @@ class SceneManager {
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
                     if(GUTS?.app?.appClasses){
-                        const BaseClassDef = GUTS.app.appClasses[baseClassId];
+                        const BaseClassDef = GUTS[baseClassId];
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     } else {
                         const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
@@ -66,7 +66,7 @@ class SceneManager {
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
                     if(GUTS?.app?.appClasses){
-                        const ClassDef = GUTS.app.appClasses[collectionClassId];
+                        const ClassDef = GUTS[collectionClassId];
                         this.game.addClass(collectionClassId, ClassDef, params);
                     } else {
                         const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
@@ -79,7 +79,7 @@ class SceneManager {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
                 let ManagerClass = null;
                 if(GUTS?.app?.appClasses){
-                    ManagerClass = GUTS.app.appClasses[managerDef.type];        
+                    ManagerClass = GUTS[managerDef.type];        
                 } else {
                     ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
                 }     
@@ -94,7 +94,7 @@ class SceneManager {
              
                 let SystemClass = null;
                 if(GUTS?.app?.appClasses){
-                    SystemClass = GUTS.app.appClasses[systemDef.type];            
+                    SystemClass = GUTS[systemDef.type];            
                 } else {
                     SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
                 }    

@@ -344,9 +344,6 @@ class EntryGenerator {
         sections.push('// ========== SETUP GLOBALS ==========');
         sections.push('if (!global.GUTS) global.GUTS = {};');
         sections.push('if (!global.window) global.window = global;');
-        sections.push('// Setup app.appClasses for abilities and other dynamic classes');
-        sections.push('if (!global.GUTS.app) global.GUTS.app = {};');
-        sections.push('if (!global.GUTS.app.appClasses) global.GUTS.app.appClasses = {};');
         sections.push('');
 
         // Require libraries (synchronous, happens in order)
@@ -417,7 +414,7 @@ class EntryGenerator {
                         sections.push(`// Require ${metadata.baseClass} first so other ${collectionName} can extend from it`);
                         sections.push(`const ${varName}_module = require('${requirePath}');`);
                         sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${metadata.baseClass} || ${varName}_module;`);
-                        sections.push(`global.GUTS.app.appClasses['${metadata.baseClass}'] = ${varName};`);
+                        sections.push(`global.GUTS.${metadata.baseClass} = ${varName};`);
                         sections.push('');
                     }
                 }
@@ -437,9 +434,9 @@ class EntryGenerator {
                 sections.push('};');
                 sections.push('');
 
-                // Make all classes available in global.GUTS.app.appClasses
-                sections.push(`// Make all ${collectionName} available in global.GUTS.app.appClasses`);
-                sections.push(`Object.assign(global.GUTS.app.appClasses, ${capitalized});`);
+                // Make all classes available in global.GUTS directly
+                sections.push(`// Make all ${collectionName} available in global.GUTS`);
+                sections.push(`Object.assign(global.GUTS, ${capitalized});`);
                 sections.push('');
 
                 classCollectionVars[collectionName] = capitalized;
