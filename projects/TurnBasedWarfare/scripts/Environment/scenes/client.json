@@ -49,7 +49,6 @@
         { "type": "ParticleSystem" },
         { "type": "SquadExperienceSystem" },
         { "type": "LifetimeSystem" },
-        { "type": "MultiplayerUISystem" },    
         { "type": "SchedulingSystem" },    
         { "type": "GoldMineSystem" },    
         { "type": "PathfindingSystem" },    
