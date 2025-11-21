@@ -93,15 +93,7 @@ class PathfindingSystem extends engine.BaseSystem {
     }
 
     canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
-        // Use height-based walkability if heightMap is available
-        if (this.game.terrainSystem?.terrainDataManager?.tileMap?.heightMap &&
-            this.game.terrainSystem.terrainDataManager.tileMap.heightMap.length > 0) {
-            // Always walkable between same terrain types
-            return true;
-        }
-
-        // Check if both terrains are walkable
-        return this.isTerrainWalkable(fromTerrainIndex) && this.isTerrainWalkable(toTerrainIndex);
+        return this.isTerrainWalkable(fromTerrainIndex) && this.isTerrainWalkable(toTerrainIndex);;
     }
 
     // Convert nav grid coordinates to terrain grid coordinates
@@ -135,9 +127,9 @@ class PathfindingSystem extends engine.BaseSystem {
 
     // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
     canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
+        const tileMap = this.game.gameManager.call('getTileMap');
         // NEW: Use height-based walkability if heightMap is available
-        if (this.game.terrainSystem?.terrainDataManager?.tileMap?.heightMap &&
-            this.game.terrainSystem.terrainDataManager.tileMap.heightMap.length > 0) {
+        if (tileMap.heightMap && tileMap.heightMap.length > 0) {
             const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
             const toHeight = this.getHeightLevelAtNavGrid(toNavGridX, toNavGridZ);
 
