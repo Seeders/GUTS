@@ -41,7 +41,7 @@ class RenderSystem extends engine.BaseSystem {
             modelManager: this.game.modelManager,
             getPalette: () => collections?.palette || {},
             modelScale: 32,
-            defaultCapacity: 128,
+            defaultCapacity: 1024,
             minMovementThreshold: 0.1
         });
 
