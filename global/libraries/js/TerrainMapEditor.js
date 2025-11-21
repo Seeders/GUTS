@@ -28,6 +28,7 @@ class TerrainMapEditor {
         this.mouseOverCanvas = false; // Track if mouse is over canvas
         this.isCameraControlActive = false; // Track if camera is being controlled
         this.entityRenderer = null; // Shared EntityRenderer for spawning cliffs and other entities
+        this.environmentObjectSpawner = null; // Shared spawner for environment objects
         this.placementPreview = null; // Placement preview for tile editing
         // Terrain map structure without explicit IDs
         this.tileMap = {
@@ -747,6 +748,7 @@ class TerrainMapEditor {
         clearButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove all environment objects?')) {
                 this.tileMap.environmentObjects = [];
+                this.updateEnvironmentObjects();
                 this.exportMap();
                 this.updateObjectCounts();
             }
@@ -1163,22 +1165,25 @@ class TerrainMapEditor {
                 // Remove this object
                 const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];
                 deletedObject = true;
-                
+
                 // Show feedback
                 this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;
                 this.placementModeIndicator.style.opacity = '1';
-                
+
                 // Hide indicator after a delay
                 clearTimeout(this.indicatorTimeout);
                 this.indicatorTimeout = setTimeout(() => {
                     this.placementModeIndicator.style.opacity = '0';
                 }, 1500);
-                
+
                 // Update the map rendering
-                
+
                 // Update object counts
                 this.updateObjectCounts();
-                
+
+                // Update 3D spawned environment objects
+                this.updateEnvironmentObjects();
+
                 // Export the updated map
                 this.exportMap();
                 break; // Only remove one object at a time
@@ -1710,8 +1715,19 @@ class TerrainMapEditor {
             getPalette: () => this.gameEditor.getPalette()
         });
 
+        // Initialize EnvironmentObjectSpawner in editor mode
+        this.environmentObjectSpawner = new EnvironmentObjectSpawner({
+            mode: 'editor',
+            entityRenderer: this.entityRenderer,
+            terrainDataManager: this.terrainDataManager,
+            collections: collections
+        });
+
         // Spawn cliff entities based on height map
         await this.spawnCliffEntities();
+
+        // Spawn environment objects (trees, rocks, etc.)
+        await this.spawnEnvironmentObjects();
 
         // Start render loop
         this.start3DRenderLoop();
@@ -1849,6 +1865,39 @@ class TerrainMapEditor {
 
         // Delegate to WorldRenderer which uses CliffSpawner
         await this.worldRenderer.spawnCliffs(this.entityRenderer);
+    }
+
+    /**
+     * Spawn environment objects (trees, rocks, etc.)
+     * Uses shared EnvironmentObjectSpawner library
+     */
+    async spawnEnvironmentObjects() {
+        if (!this.environmentObjectSpawner || !this.terrainDataManager) {
+            console.warn('[TerrainMapEditor] Cannot spawn environment objects: missing dependencies');
+            return;
+        }
+
+        // Use the shared spawner in editor mode
+        await this.environmentObjectSpawner.spawnEnvironmentObjects(
+            this.tileMap,
+            this.terrainDataManager
+        );
+    }
+
+    /**
+     * Update environment objects (respawn all)
+     * Called when environment objects are added/removed through the UI
+     */
+    async updateEnvironmentObjects() {
+        if (!this.environmentObjectSpawner || !this.terrainDataManager) {
+            return;
+        }
+
+        // Respawn all environment objects
+        await this.environmentObjectSpawner.updateEnvironmentObjects(
+            this.tileMap,
+            this.terrainDataManager
+        );
     }
 
     /**

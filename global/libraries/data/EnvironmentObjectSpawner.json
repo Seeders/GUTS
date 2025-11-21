@@ -1,0 +1,10 @@
+{
+  "name": "EnvironmentObjectSpawner",
+  "description": "Shared library for spawning environment objects in both runtime (ECS) and editor (visual) modes",
+  "version": "1.0.0",
+  "author": "GUTS Engine",
+  "dependencies": [],
+  "exports": {
+    "EnvironmentObjectSpawner": "class"
+  }
+}
