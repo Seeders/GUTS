@@ -89,11 +89,7 @@ const clientConfig = {
     output: {
         path: clientOutput,
         filename: '[name].js',
-        library: {
-            name: 'GUTS',
-            type: 'umd',
-            export: 'default'
-        },
+        // No library wrapper - entries handle their own global assignments
         globalObject: 'window'
     },
     plugins: [
