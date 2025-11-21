@@ -31,9 +31,11 @@ class EnvironmentObjectSpawner {
     calculateWorldPosition(envObj, terrainDataManager) {
         // Environment objects use x for worldX and y for worldZ
         // (y in the data maps to Z axis in 3D world)
+        // Apply offset to move objects left (-x) and up (+z) by half terrain size
+        const terrainSize = terrainDataManager.terrainSize;
         return {
-            worldX: envObj.x,
-            worldZ: envObj.y
+            worldX: envObj.x - (terrainSize / 2),
+            worldZ: envObj.y + (terrainSize / 2)
         };
     }
 
