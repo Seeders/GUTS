@@ -644,14 +644,13 @@ class WorldRenderer {
         const height = heightLevel * heightStep;
 
         // Update the height map data
-        // Position at tile CENTER to match cliff placement
-        const extX = gridX * gridSize + extensionSize + gridSize / 2;
-        const extZ = gridZ * gridSize + extensionSize + gridSize / 2;
+        // Update the entire tile (gridSize x gridSize pixels)
+        const extX = gridX * gridSize + extensionSize;
+        const extZ = gridZ * gridSize + extensionSize;
 
-        // Apply height to a region around this tile
-        const halfGrid = Math.floor(gridSize / 2);
-        for (let dz = -halfGrid; dz < halfGrid; dz++) {
-            for (let dx = -halfGrid; dx < halfGrid; dx++) {
+        // Apply height to all pixels in this tile
+        for (let dz = 0; dz < gridSize; dz++) {
+            for (let dx = 0; dx < gridSize; dx++) {
                 const finalX = extX + dx;
                 const finalZ = extZ + dz;
 
@@ -693,13 +692,13 @@ class WorldRenderer {
             minGridZ = Math.min(minGridZ, gridZ);
             maxGridZ = Math.max(maxGridZ, gridZ);
 
-            // Position at tile CENTER to match cliff placement
-            const extX = gridX * gridSize + extensionSize + gridSize / 2;
-            const extZ = gridZ * gridSize + extensionSize + gridSize / 2;
+            // Update the entire tile (gridSize x gridSize pixels)
+            const extX = gridX * gridSize + extensionSize;
+            const extZ = gridZ * gridSize + extensionSize;
 
-            const halfGrid = Math.floor(gridSize / 2);
-            for (let dz = -halfGrid; dz < halfGrid; dz++) {
-                for (let dx = -halfGrid; dx < halfGrid; dx++) {
+            // Apply height to all pixels in this tile
+            for (let dz = 0; dz < gridSize; dz++) {
+                for (let dx = 0; dx < gridSize; dx++) {
                     const finalX = extX + dx;
                     const finalZ = extZ + dz;
 
