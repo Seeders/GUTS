@@ -575,9 +575,10 @@ class WorldRenderer {
         const extX = gridX * gridSize + extensionSize;
         const extZ = gridZ * gridSize + extensionSize;
 
-        // First, set the base height for all pixels
-        for (let dz = 0; dz < gridSize; dz++) {
-            for (let dx = 0; dx < gridSize; dx++) {
+        // First, set the base height for all pixels (with small inset to prevent protruding from cliffs)
+        const inset = 2; // Skip first 2 pixels on top and left edges
+        for (let dz = inset; dz < gridSize; dz++) {
+            for (let dx = inset; dx < gridSize; dx++) {
                 const finalX = extX + dx;
                 const finalZ = extZ + dz;
 
@@ -623,9 +624,10 @@ class WorldRenderer {
             const extX = gridX * gridSize + extensionSize;
             const extZ = gridZ * gridSize + extensionSize;
 
-            // Set height for all pixels in this tile
-            for (let dz = 0; dz < gridSize; dz++) {
-                for (let dx = 0; dx < gridSize; dx++) {
+            // Set height for all pixels in this tile (with small inset to prevent protruding from cliffs)
+            const inset = 2; // Skip first 2 pixels on top and left edges
+            for (let dz = inset; dz < gridSize; dz++) {
+                for (let dx = inset; dx < gridSize; dx++) {
                     const finalX = extX + dx;
                     const finalZ = extZ + dz;
 
