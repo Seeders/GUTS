@@ -644,8 +644,9 @@ class WorldRenderer {
         const height = heightLevel * heightStep;
 
         // Update the height map data
-        const extX = gridX * gridSize + extensionSize;
-        const extZ = gridZ * gridSize + extensionSize;
+        // Position at tile CENTER to match cliff placement
+        const extX = gridX * gridSize + extensionSize + gridSize / 2;
+        const extZ = gridZ * gridSize + extensionSize + gridSize / 2;
 
         // Apply height to a region around this tile
         const halfGrid = Math.floor(gridSize / 2);
@@ -692,8 +693,9 @@ class WorldRenderer {
             minGridZ = Math.min(minGridZ, gridZ);
             maxGridZ = Math.max(maxGridZ, gridZ);
 
-            const extX = gridX * gridSize + extensionSize;
-            const extZ = gridZ * gridSize + extensionSize;
+            // Position at tile CENTER to match cliff placement
+            const extX = gridX * gridSize + extensionSize + gridSize / 2;
+            const extZ = gridZ * gridSize + extensionSize + gridSize / 2;
 
             const halfGrid = Math.floor(gridSize / 2);
             for (let dz = -halfGrid; dz <= halfGrid; dz++) {
