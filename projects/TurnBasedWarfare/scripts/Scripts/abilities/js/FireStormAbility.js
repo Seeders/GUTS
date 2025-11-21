@@ -1,4 +1,4 @@
-class FirestormAbility extends GUTS.app.appClasses['BaseAbility'] {
+class FirestormAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'fireStorm',

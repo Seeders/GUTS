@@ -1,4 +1,4 @@
-class InfernoAbility extends GUTS.app.appClasses['BaseAbility'] {
+class InfernoAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'inferno',

@@ -1,4 +1,4 @@
-class WindShieldAbility extends GUTS.app.appClasses['BaseAbility'] {
+class WindShieldAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'wind_shield',

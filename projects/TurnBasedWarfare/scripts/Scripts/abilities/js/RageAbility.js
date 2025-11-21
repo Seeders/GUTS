@@ -1,4 +1,4 @@
-class RageAbility extends GUTS.app.appClasses['BaseAbility'] {
+class RageAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'raging_strike',

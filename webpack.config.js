@@ -107,8 +107,6 @@ const clientConfig = {
 // Setup globals for browser environment BEFORE any imports execute
 if (typeof window !== 'undefined') {
     if (!window.GUTS) window.GUTS = {};
-    if (!window.GUTS.app) window.GUTS.app = {};
-    if (!window.GUTS.app.appClasses) window.GUTS.app.appClasses = {};
 }
 `,
             raw: true,

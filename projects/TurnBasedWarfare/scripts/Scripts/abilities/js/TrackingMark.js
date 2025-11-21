@@ -1,4 +1,4 @@
-class TrackingMarkAbility extends GUTS.app.appClasses['BaseAbility'] {
+class TrackingMarkAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'tracking_mark',

@@ -1,15 +1,12 @@
 /**
  * GUTS Game Server Bundle (CommonJS)
- * Generated: 2025-11-21T23:22:16.777Z
+ * Generated: 2025-11-21T23:28:36.527Z
  * Project: TurnBasedWarfare
  */
 
 // ========== SETUP GLOBALS ==========
 if (!global.GUTS) global.GUTS = {};
 if (!global.window) global.window = global;
-// Setup app.appClasses for abilities and other dynamic classes
-if (!global.GUTS.app) global.GUTS.app = {};
-if (!global.GUTS.app.appClasses) global.GUTS.app.appClasses = {};
 
 // ========== LIBRARIES ==========
 const lib_BaseSystem_module = require('/home/user/GUTS/global/libraries/js/BaseSystem.js');
@@ -153,7 +150,7 @@ const Systems = {
 // Require BaseAbility first so other abilities can extend from it
 const abilities_BaseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js');
 const abilities_BaseAbility = abilities_BaseAbility_module.default || abilities_BaseAbility_module.BaseAbility || abilities_BaseAbility_module;
-global.GUTS.app.appClasses['BaseAbility'] = abilities_BaseAbility;
+global.GUTS.BaseAbility = abilities_BaseAbility;
 
 const abilities_ArenaPresenceAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js');
 const abilities_ArenaPresenceAbility = abilities_ArenaPresenceAbility_module.default || abilities_ArenaPresenceAbility_module.ArenaPresenceAbility || abilities_ArenaPresenceAbility_module;
@@ -277,8 +274,8 @@ const Abilities = {
   WindShieldAbility: abilities_WindShieldAbility
 };
 
-// Make all abilities available in global.GUTS.app.appClasses
-Object.assign(global.GUTS.app.appClasses, Abilities);
+// Make all abilities available in global.GUTS
+Object.assign(global.GUTS, Abilities);
 
 // ========== CLASS REGISTRY ==========
 const ClassRegistry = {

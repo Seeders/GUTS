@@ -1,4 +1,4 @@
-class PhalanxFormationAbility extends GUTS.app.appClasses['BaseAbility'] {
+class PhalanxFormationAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'phalanx_formation',

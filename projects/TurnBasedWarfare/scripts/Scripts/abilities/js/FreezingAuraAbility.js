@@ -1,4 +1,4 @@
-class FreezingAuraAbility extends GUTS.app.appClasses['BaseAbility'] {
+class FreezingAuraAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'freezing_aura',

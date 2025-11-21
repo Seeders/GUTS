@@ -1,4 +1,4 @@
-class ExplosiveTrapAbility extends GUTS.app.appClasses['BaseAbility'] {
+class ExplosiveTrapAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'explosive_trap',

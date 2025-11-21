@@ -1,4 +1,4 @@
-class IceShardAbility extends GUTS.app.appClasses['BaseAbility'] {
+class IceShardAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'ice_shard',

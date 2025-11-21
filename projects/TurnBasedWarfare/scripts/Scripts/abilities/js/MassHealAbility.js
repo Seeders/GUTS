@@ -1,4 +1,4 @@
-class MassHealAbility extends GUTS.app.appClasses['BaseAbility'] {
+class MassHealAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'mass_heal',

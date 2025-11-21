@@ -1,4 +1,4 @@
-class BuildAbility extends GUTS.app.appClasses['BaseAbility'] {
+class BuildAbility extends GUTS.BaseAbility {
     constructor(game, abilityData) {
         super(game, abilityData);
         this.id = 'build';

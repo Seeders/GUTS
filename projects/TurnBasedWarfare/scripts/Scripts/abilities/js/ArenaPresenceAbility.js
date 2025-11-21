@@ -1,4 +1,4 @@
-class ArenaPresenceAbility extends GUTS.app.appClasses['BaseAbility'] {
+class ArenaPresenceAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'arena_presence',

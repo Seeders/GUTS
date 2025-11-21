@@ -1,4 +1,4 @@
-class RaiseDeadAbility extends GUTS.app.appClasses['BaseAbility'] {
+class RaiseDeadAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'raise_dead',

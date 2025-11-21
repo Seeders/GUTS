@@ -1,4 +1,4 @@
-class CorruptingAuraAbility extends GUTS.app.appClasses['BaseAbility'] {
+class CorruptingAuraAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'corrupting_aura',
