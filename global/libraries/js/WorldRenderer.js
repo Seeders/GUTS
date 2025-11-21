@@ -421,110 +421,15 @@ class WorldRenderer {
             return;
         }
 
-        // If we have heightMap data in tileMap, use TerrainDataManager to process it
-        // This ensures consistent behavior between initial render and editing
-        if (this.terrainDataManager.tileMap?.heightMap) {
-            this.terrainDataManager.processHeightMapFromData();
-            this.applyHeightMapToGeometry(this.terrainDataManager.heightMapData);
+        // Always use heightMap data from tileMap directly
+        // Cliff meshes will handle visual transitions at edges
+        if (!this.terrainDataManager.tileMap?.heightMap) {
+            console.warn('WorldRenderer: No heightMap data available in tileMap');
             return;
         }
 
-        // Fallback: read from canvas for legacy/backwards compatibility
-        if (!this.tileMapper.heightMapCanvas) {
-            return;
-        }
-
-        try {
-            const heightMapCanvas = this.tileMapper.heightMapCanvas;
-            const heightMapCtx = heightMapCanvas.getContext('2d', { willReadFrequently: true });
-
-            const heightMapImageData = heightMapCtx.getImageData(0, 0, heightMapCanvas.width, heightMapCanvas.height);
-            const heightData = heightMapImageData.data;
-
-            const extendedSize = this.terrainDataManager.extendedSize;
-            const terrainSize = this.terrainDataManager.terrainSize;
-            const extensionSize = this.terrainDataManager.extensionSize;
-            const heightStep = this.terrainDataManager.heightStep;
-
-            // Use terrainDataManager's heightMapData instead of creating a local copy
-            if (!this.terrainDataManager.heightMapData) {
-                this.terrainDataManager.heightMapData = new Float32Array(extendedSize * extendedSize);
-            }
-            const heightMapData = this.terrainDataManager.heightMapData;
-
-            // Set extension area to extension terrain height
-            const extensionTerrainType = this.terrainDataManager.tileMap.extensionTerrainType || 0;
-            const extensionHeight = extensionTerrainType * heightStep;
-
-            // Initialize all points with extension height
-            for (let z = 0; z < extendedSize; z++) {
-                for (let x = 0; x < extendedSize; x++) {
-                    heightMapData[z * extendedSize + x] = extensionHeight;
-                }
-            }
-
-            // Process the actual terrain area using height map data
-            const scaleX = heightMapCanvas.width / terrainSize;
-            const scaleZ = heightMapCanvas.height / terrainSize;
-
-            for (let z = 0; z < terrainSize; z++) {
-                for (let x = 0; x < terrainSize; x++) {
-                    // Sample from height map
-                    const heightMapX = Math.floor(x * scaleX);
-                    const heightMapZ = Math.floor(z * scaleZ);
-
-                    const pixelIndex = (heightMapZ * heightMapCanvas.width + heightMapX) * 4;
-                    const heightValue = heightData[pixelIndex]; // Red channel (grayscale)
-
-                    // Convert grayscale value back to height index
-                    const heightIndex = Math.floor(heightValue / 32);
-                    let height = heightIndex * heightStep;
-
-                    // Check neighboring pixels for cliff smoothing
-                    const neighborCheckDist = this.terrainDataManager.heightMapSettings.resolutionDivisor || 1;
-                    const neighbors = [
-                        { x: x - neighborCheckDist, z: z },
-                        { x: x + neighborCheckDist, z: z },
-                        { x: x, z: z - neighborCheckDist },
-                        { x: x, z: z + neighborCheckDist },
-                        { x: x - neighborCheckDist, z: z - neighborCheckDist },
-                        { x: x + neighborCheckDist, z: z - neighborCheckDist },
-                        { x: x - neighborCheckDist, z: z + neighborCheckDist },
-                        { x: x + neighborCheckDist, z: z + neighborCheckDist }
-                    ];
-
-                    let lowestNeighborHeight = height;
-                    for (const neighbor of neighbors) {
-                        if (neighbor.x >= 0 && neighbor.x < terrainSize &&
-                            neighbor.z >= 0 && neighbor.z < terrainSize) {
-
-                            const neighborHMapX = Math.floor(neighbor.x * scaleX);
-                            const neighborHMapZ = Math.floor(neighbor.z * scaleZ);
-                            const neighborIndex = (neighborHMapZ * heightMapCanvas.width + neighborHMapX) * 4;
-                            const neighborHeightValue = heightData[neighborIndex];
-                            const neighborHeightIndex = Math.floor(neighborHeightValue / 32);
-                            const neighborHeight = neighborHeightIndex * heightStep;
-
-                            if (neighborHeight < lowestNeighborHeight) {
-                                lowestNeighborHeight = neighborHeight;
-                            }
-                        }
-                    }
-
-                    height = lowestNeighborHeight;
-
-                    // Set height in extended coordinate system
-                    const extX = x + extensionSize;
-                    const extZ = z + extensionSize;
-                    heightMapData[extZ * extendedSize + extX] = height;
-                }
-            }
-
-            this.applyHeightMapToGeometry(heightMapData);
-
-        } catch (e) {
-            console.warn('Failed to update height map:', e);
-        }
+        this.terrainDataManager.processHeightMapFromData();
+        this.applyHeightMapToGeometry(this.terrainDataManager.heightMapData);
     }
 
     /**
