@@ -414,7 +414,7 @@ class AnimationSystem extends engine.BaseSystem {
         const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
         if (!renderable) return false;
 
-        const batchInfo = this.game.renderSystem?.getBatchInfo(renderable.objectType, renderable.spawnType);
+        const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);
         return batchInfo?.availableClips?.includes(clipName) || false;
     }
 
@@ -423,7 +423,7 @@ class AnimationSystem extends engine.BaseSystem {
         const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
         if (!renderable) return 'idle';
 
-        const batchInfo = this.game.renderSystem?.getBatchInfo(renderable.objectType, renderable.spawnType);
+        const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);
         if (!batchInfo) return 'idle';
 
         const availableClips = batchInfo.availableClips;

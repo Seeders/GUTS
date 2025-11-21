@@ -528,13 +528,13 @@ class CombatAISystem extends engine.BaseSystem {
             // NEW: Get duration from VAT bundle instead of mixer actions
             const CT = this.componentTypes;
             const renderable = this.game.getComponent(attackerId, CT.RENDERABLE);
-            
+
             if (renderable) {
-                const batchInfo = this.game.renderSystem?.getBatchInfo(
-                    renderable.objectType, 
+                const batchInfo = this.game.gameManager.call('getBatchInfo',
+                    renderable.objectType,
                     renderable.spawnType
                 );
-                
+
                 if (batchInfo) {
                     const bundle = this.game.modelManager?.getVATBundle(
                         renderable.objectType, 

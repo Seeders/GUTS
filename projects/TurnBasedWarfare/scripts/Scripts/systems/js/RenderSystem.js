@@ -28,6 +28,7 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('isInstanced', this.isInstanced.bind(this));
         this.game.gameManager.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
         this.game.gameManager.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
+        this.game.gameManager.register('getBatchInfo', this.getBatchInfo.bind(this));
 
         // Initialize EntityRenderer with game context
         const collections = this.game.getCollections?.();
@@ -48,6 +49,32 @@ class RenderSystem extends engine.BaseSystem {
         this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
 
         console.log('[RenderSystem] Initialized with EntityRenderer');
+    }
+
+    /**
+     * Get batch information for animation system
+     * Returns available clips and other batch metadata
+     */
+    getBatchInfo(objectType, spawnType) {
+        if (!this.entityRenderer) {
+            return null;
+        }
+
+        const batchKey = `${objectType}_${spawnType}`;
+        const batch = this.entityRenderer.vatBatches.get(batchKey);
+
+        if (!batch || !batch.meta) {
+            return null;
+        }
+
+        // Extract available clips from meta
+        const availableClips = batch.meta.clips ? batch.meta.clips.map(clip => clip.name) : [];
+
+        return {
+            availableClips,
+            clipIndexByName: batch.meta.clipIndexByName,
+            meta: batch.meta
+        };
     }
 
     _bindDebugHelpers() {
