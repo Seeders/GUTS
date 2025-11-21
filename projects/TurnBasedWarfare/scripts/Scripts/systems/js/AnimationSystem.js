@@ -43,6 +43,12 @@ class AnimationSystem extends engine.BaseSystem {
             // Only process instanced entities
             if (!this.game.renderSystem?.isInstanced(entityId)) return;
 
+            // Skip static entities (worldObjects, cliffs) that don't have animations
+            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            if (unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs')) {
+                return;
+            }
+
             const velocity = this.game.getComponent(entityId, CT.VELOCITY);
             const health = this.game.getComponent(entityId, CT.HEALTH);
             const combat = this.game.getComponent(entityId, CT.COMBAT);
