@@ -40,14 +40,19 @@ class TerrainDataManager {
      * Initialize with collections and configuration
      * @param {Object} collections - Game collections
      * @param {Object} gameConfig - Game configuration
-     * @param {string} [levelId] - Level to load (defaults to 'level1')
+     * @param {string|Object} [levelIdOrData] - Level ID to load from collections, or direct level data object
      */
-    init(collections, gameConfig, levelId = null) {
+    init(collections, gameConfig, levelIdOrData = null) {
         this.collections = collections;
         this.gridSize = gameConfig?.gridSize || 48;
 
-        const currentLevel = levelId || 'level1';
-        this.loadLevelData(currentLevel);
+        // If levelIdOrData is an object, use it directly; otherwise treat as ID
+        if (typeof levelIdOrData === 'object' && levelIdOrData !== null) {
+            this.loadLevelFromData(levelIdOrData);
+        } else {
+            const currentLevel = levelIdOrData || 'level1';
+            this.loadLevelData(currentLevel);
+        }
 
         if (this.heightMapSettings?.enabled) {
             this.processHeightMapFromData();
@@ -57,7 +62,38 @@ class TerrainDataManager {
     }
 
     /**
-     * Load level and world data
+     * Load level data directly (for editor or custom levels)
+     */
+    loadLevelFromData(levelData) {
+        this.level = levelData;
+
+        this.world = this.collections.worlds?.[this.level.world];
+        if (!this.world) {
+            console.error(`TerrainDataManager: World '${this.level.world}' not found`);
+            return false;
+        }
+
+        this.heightMapSettings = this.collections.heightMaps?.[this.world.heightMap];
+        this.heightStep = this.heightMapSettings?.heightStep || 10;
+        this.tileMap = this.level.tileMap;
+
+        // Load terrain types
+        this.terrainTypes = this.collections.terrainTypes;
+        if (!this.terrainTypes) {
+            console.error('TerrainDataManager: No terrainTypes collection found');
+            return false;
+        }
+
+        // Calculate world dimensions
+        this.terrainSize = this.tileMap.size * this.gridSize;
+        this.extensionSize = this.world.extensionSize || 0;
+        this.extendedSize = this.terrainSize + 2 * this.extensionSize;
+
+        return true;
+    }
+
+    /**
+     * Load level and world data from collections by ID
      */
     loadLevelData(levelId) {
         if (!this.collections) {
