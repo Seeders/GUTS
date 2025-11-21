@@ -191,7 +191,7 @@ class WorldRenderer {
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.maxPolarAngle = Math.PI / 2.35;  // Limit to ~77° - orthographic needs stricter limit to prevent clipping
+        this.controls.maxPolarAngle = Math.PI / 2.6;  // Limit to ~69° - prevent orthographic frustum clipping
         this.controls.minPolarAngle = 0.1;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
