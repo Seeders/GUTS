@@ -344,11 +344,60 @@ class EditorModel {
             }
 
             console.log('✅ Compiled game files saved to project directory');
+
+            // Trigger webpack build if enabled
+            if (window.location.hostname === 'localhost' && this.shouldUseWebpack()) {
+                this.triggerWebpackBuild();
+            }
+
             return true;
 
         } catch (error) {
             console.error('Error compiling and saving game:', error);
             return false;
+        }
+    }
+
+    /**
+     * Check if webpack build should be used
+     */
+    shouldUseWebpack() {
+        // Check if webpack is enabled in editor config
+        const editorConfig = this.getCollections()?.configs?.editor;
+        return editorConfig?.useWebpack !== false; // Default to true
+    }
+
+    /**
+     * Trigger webpack build via server endpoint
+     */
+    async triggerWebpackBuild() {
+        if (!this.state.currentProject) {
+            return;
+        }
+
+        console.log('🔨 Triggering webpack build...');
+
+        try {
+            const response = await fetch('/webpack-build', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectName: this.state.currentProject,
+                    production: false
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log(`✅ Webpack build completed in ${result.duration}s`);
+            } else {
+                const error = await response.json();
+                console.error('❌ Webpack build failed:', error.error);
+            }
+        } catch (error) {
+            console.error('❌ Error triggering webpack build:', error);
         }
     }
 
