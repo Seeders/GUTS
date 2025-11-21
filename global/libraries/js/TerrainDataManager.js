@@ -141,9 +141,9 @@ class TerrainDataManager {
                     const extX = x * this.gridSize + this.extensionSize;
                     const extZ = z * this.gridSize + this.extensionSize;
 
-                    // Apply height to the entire tile (gridSize x gridSize pixels)
-                    for (let dz = 0; dz < this.gridSize; dz++) {
-                        for (let dx = 0; dx < this.gridSize; dx++) {
+                    // Apply height to the entire tile (including right/bottom edge vertices)
+                    for (let dz = 0; dz <= this.gridSize; dz++) {
+                        for (let dx = 0; dx <= this.gridSize; dx++) {
                             const finalX = extX + dx;
                             const finalZ = extZ + dz;
 
@@ -168,9 +168,9 @@ class TerrainDataManager {
                     const extX = x * this.gridSize + this.extensionSize;
                     const extZ = z * this.gridSize + this.extensionSize;
 
-                    // Apply height to the entire tile (gridSize x gridSize pixels)
-                    for (let dz = 0; dz < this.gridSize; dz++) {
-                        for (let dx = 0; dx < this.gridSize; dx++) {
+                    // Apply height to the entire tile (including right/bottom edge vertices)
+                    for (let dz = 0; dz <= this.gridSize; dz++) {
+                        for (let dx = 0; dx <= this.gridSize; dx++) {
                             const finalX = extX + dx;
                             const finalZ = extZ + dz;
 

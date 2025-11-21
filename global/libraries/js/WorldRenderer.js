@@ -648,9 +648,9 @@ class WorldRenderer {
         const extX = gridX * gridSize + extensionSize;
         const extZ = gridZ * gridSize + extensionSize;
 
-        // Apply height to all pixels in this tile
-        for (let dz = 0; dz < gridSize; dz++) {
-            for (let dx = 0; dx < gridSize; dx++) {
+        // Apply height to all pixels in this tile (including right/bottom edge vertices)
+        for (let dz = 0; dz <= gridSize; dz++) {
+            for (let dx = 0; dx <= gridSize; dx++) {
                 const finalX = extX + dx;
                 const finalZ = extZ + dz;
 
@@ -696,9 +696,9 @@ class WorldRenderer {
             const extX = gridX * gridSize + extensionSize;
             const extZ = gridZ * gridSize + extensionSize;
 
-            // Apply height to all pixels in this tile
-            for (let dz = 0; dz < gridSize; dz++) {
-                for (let dx = 0; dx < gridSize; dx++) {
+            // Apply height to all pixels in this tile (including right/bottom edge vertices)
+            for (let dz = 0; dz <= gridSize; dz++) {
+                for (let dx = 0; dx <= gridSize; dx++) {
                     const finalX = extX + dx;
                     const finalZ = extZ + dz;
 
