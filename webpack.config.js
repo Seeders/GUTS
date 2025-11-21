@@ -106,10 +106,9 @@ const clientConfig = {
             banner: `
 // Setup globals for browser environment BEFORE any imports execute
 if (typeof window !== 'undefined') {
-    if (!window.engine) window.engine = {};
-    if (!window.engine.app) window.engine.app = {};
-    if (!window.engine.app.appClasses) window.engine.app.appClasses = {};
     if (!window.GUTS) window.GUTS = {};
+    if (!window.GUTS.app) window.GUTS.app = {};
+    if (!window.GUTS.app.appClasses) window.GUTS.app.appClasses = {};
 }
 `,
             raw: true,
@@ -160,7 +159,7 @@ Project: ${projectName}
 Built: ${new Date().toISOString()}
 Mode: ${mode}
 
-IMPORTANT: This bundle expects global.engine to be set up before loading.
+IMPORTANT: This bundle expects global.GUTS to be set up before loading.
 Set up in server_game.js before loading this bundle.`,
             entryOnly: true,
             raw: false
@@ -169,7 +168,7 @@ Set up in server_game.js before loading this bundle.`,
             banner: `
 // Setup globals for server environment
 if (typeof global !== 'undefined') {
-    if (!global.engine) global.engine = {};
+    if (!global.GUTS) global.GUTS = {};
     if (!global.window) global.window = global;
 }
 `,

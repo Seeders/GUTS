@@ -1,4 +1,4 @@
-class LifetimeSystem extends engine.BaseSystem {
+class LifetimeSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.lifetimeSystem = this;

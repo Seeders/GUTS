@@ -1,4 +1,4 @@
-class Effect extends engine.Component {
+class Effect extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

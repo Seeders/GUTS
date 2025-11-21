@@ -1,4 +1,4 @@
-class HealthBarSystem extends engine.BaseSystem {
+class HealthBarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.healthBarSystem = this;

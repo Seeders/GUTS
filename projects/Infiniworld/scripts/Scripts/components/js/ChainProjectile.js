@@ -1,4 +1,4 @@
-class ChainProjectile extends engine.Component {
+class ChainProjectile extends GUTS.Component {
     
     init( { spawnType, owner, target, stats }) {        
         this.type = spawnType;

@@ -1,4 +1,4 @@
-class Animator extends engine.Component {
+class Animator extends GUTS.Component {
     
     
     init({ objectType, spawnType}) {

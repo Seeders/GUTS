@@ -1,4 +1,4 @@
-class Effect extends engine.Component {
+class Effect extends GUTS.Component {
     
     init( {config, applyFn, amount }) {
         this.id = config.id;

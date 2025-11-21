@@ -1,4 +1,4 @@
-class MeteorStrikeAbility extends engine.app.appClasses['BaseAbility'] {
+class MeteorStrikeAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'meteor_strike',

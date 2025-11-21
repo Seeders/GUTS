@@ -1,4 +1,4 @@
-class MultiplayerUISystem extends engine.BaseSystem {
+class MultiplayerUISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.uiSystem = this;

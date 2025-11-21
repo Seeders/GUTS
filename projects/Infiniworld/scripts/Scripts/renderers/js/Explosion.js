@@ -1,4 +1,4 @@
-class Explosion extends engine.Component {
+class Explosion extends GUTS.Component {
 
    init( {radius}) {
         this.maxRadius = radius * this.game.getCollections().configs.game.gridSize / 2;

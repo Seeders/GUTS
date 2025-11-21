@@ -1,4 +1,4 @@
-class EffectsSystem extends engine.BaseSystem {
+class EffectsSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game); 
         this.game.effectsSystem = this;

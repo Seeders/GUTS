@@ -1,4 +1,4 @@
-class EnchantWeaponAbility extends engine.app.appClasses['BaseAbility'] {
+class EnchantWeaponAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'enchant_weapon',

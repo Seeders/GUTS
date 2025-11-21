@@ -1,4 +1,4 @@
-class WaveManager extends engine.Component {
+class WaveManager extends GUTS.Component {
     
     
     init() {   

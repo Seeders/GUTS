@@ -1,4 +1,4 @@
-class ModelRenderer extends engine.Component {
+class ModelRenderer extends GUTS.Component {
     init({ objectType, spawnType, frameDuration }) {
         if(!this.game.getCollections().configs.game.is3D) {
             return;

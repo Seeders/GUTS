@@ -1,4 +1,4 @@
-class Transform extends engine.Component {
+class Transform extends GUTS.Component {
     init({position, scale, rotation}) {
         let x, y, z = 0;
         if(position){

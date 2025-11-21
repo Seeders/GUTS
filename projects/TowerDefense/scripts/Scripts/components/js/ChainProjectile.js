@@ -1,4 +1,4 @@
-class ChainProjectile extends engine.Component {
+class ChainProjectile extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

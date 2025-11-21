@@ -1,4 +1,4 @@
-class TerrainSystem extends engine.BaseSystem {
+class TerrainSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.terrainSystem = this;

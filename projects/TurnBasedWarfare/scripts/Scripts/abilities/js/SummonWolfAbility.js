@@ -1,4 +1,4 @@
-class SummonWolfAbility extends engine.app.appClasses['BaseAbility'] {
+class SummonWolfAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'summon_wolf',

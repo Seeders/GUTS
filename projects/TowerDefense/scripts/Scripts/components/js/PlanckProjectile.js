@@ -1,4 +1,4 @@
-class PlanckProjectile extends engine.Component {
+class PlanckProjectile extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

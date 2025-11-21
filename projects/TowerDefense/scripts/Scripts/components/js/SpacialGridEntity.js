@@ -1,4 +1,4 @@
-class SpacialGridEntity extends engine.Component {
+class SpacialGridEntity extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

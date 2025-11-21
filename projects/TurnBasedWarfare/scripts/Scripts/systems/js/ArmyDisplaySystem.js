@@ -1,4 +1,4 @@
-class ArmyDisplaySystem extends engine.BaseSystem {
+class ArmyDisplaySystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);  
         this.game.armyDisplaySystem = this;

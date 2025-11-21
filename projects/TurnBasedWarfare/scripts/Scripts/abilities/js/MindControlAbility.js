@@ -1,4 +1,4 @@
-class MindControlAbility extends engine.app.appClasses['BaseAbility'] {
+class MindControlAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'mind_control',

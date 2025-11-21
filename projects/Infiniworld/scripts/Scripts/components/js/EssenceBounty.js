@@ -1,4 +1,4 @@
-class EssenceBounty extends engine.Component {
+class EssenceBounty extends GUTS.Component {
     
     init(){
         this.statsComp = this.parent.getComponent('stats');

@@ -1,4 +1,4 @@
-class BallisticProjectile extends engine.Component {
+class BallisticProjectile extends GUTS.Component {
     
     
 init({ spawnType, owner, target, stats }) {

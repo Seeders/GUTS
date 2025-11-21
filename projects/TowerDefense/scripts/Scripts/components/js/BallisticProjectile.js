@@ -1,4 +1,4 @@
-class BallisticProjectile extends engine.Component {
+class BallisticProjectile extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

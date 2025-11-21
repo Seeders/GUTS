@@ -1,4 +1,4 @@
-class AudioManager extends engine.Component {
+class AudioManager extends GUTS.Component {
     constructor(game, parent, params) {
         super(game, parent, params);
     }

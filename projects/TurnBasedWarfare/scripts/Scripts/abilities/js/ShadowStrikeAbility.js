@@ -1,4 +1,4 @@
-class ShadowStrikeAbility extends engine.app.appClasses['BaseAbility'] {
+class ShadowStrikeAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'shadow_strike',

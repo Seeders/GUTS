@@ -1,4 +1,4 @@
-class PlayerAttacker extends engine.Component {
+class PlayerAttacker extends GUTS.Component {
     init({isRemote = false}) {
         this.stats = this.parent.getComponent("stats").stats;
         this.camera = this.game.camera;

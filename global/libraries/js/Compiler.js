@@ -375,7 +375,7 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
     
     if (foundLibrary) {
         window.COMPILED_GAME.libraryClasses.${libraryKey} = foundLibrary;
-        window.engine.${libraryKey} = foundLibrary;
+        window.GUTS.${libraryKey} = foundLibrary;
         ${libraryDef.windowContext ? `
         if (!window["${libraryDef.windowContext}"]) {
             window["${libraryDef.windowContext}"] = {};
@@ -451,7 +451,7 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
             librariesSection.push(`(function() {`);
             librariesSection.push(`  var libraryClass = ${libraryDef.script};`);
             librariesSection.push(`  window.COMPILED_GAME.libraryClasses.${libraryKey} = libraryClass;`);
-            librariesSection.push(`  window.engine.${libraryKey} = libraryClass;`);
+            librariesSection.push(`  window.GUTS.${libraryKey} = libraryClass;`);
             
             if (libraryDef.windowContext) {
                 librariesSection.push(`  if (!window["${libraryDef.windowContext}"]) {`);
@@ -603,8 +603,8 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
                 if (itemDef && itemDef.script) {
                     const singularName = typeDef?.singular || collectionType.slice(0, -1);
                     classesSection.push(`\n// ${singularName}: ${itemName}`);
-                    classesSection.push(`window.engine.app.appClasses = window.engine.app.appClasses || {};`);
-                    classesSection.push(`window.engine.app.appClasses['${itemName}'] = ${itemDef.script};`);
+                    classesSection.push(`window.GUTS.app.appClasses = window.GUTS.app.appClasses || {};`);
+                    classesSection.push(`window.GUTS.app.appClasses['${itemName}'] = ${itemDef.script};`);
                     this.classRegistry[collectionType].set(itemName, true);
                     collectedClasses[collectionType].add(itemName);
                 }
@@ -677,7 +677,7 @@ window.COMPILED_GAME.libraryClasses.${libraryKey} = null; // Placeholder
  * This replaces the ModuleManager.getCompiledScript method for compiled bundles
  */
 window.COMPILED_GAME.getClass = function(className, collectionType) {
-    const collection = window.engine.app[collectionType];
+    const collection = window.GUTS.app[collectionType];
     if (!collection) {
         console.error(\`Collection \${collectionType} not found in compiled bundle\`);
         return null;
@@ -696,7 +696,7 @@ window.COMPILED_GAME.getClass = function(className, collectionType) {
  * Check if a class exists in the compiled bundle
  */
 window.COMPILED_GAME.hasClass = function(className, collectionType) {
-    const collection = window.engine.app[collectionType];
+    const collection = window.GUTS.app[collectionType];
     return collection && collection[className] !== undefined;
 };`;
         result.sections.push(registrySection);

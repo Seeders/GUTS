@@ -1,4 +1,4 @@
-class ThreeJsWorld extends engine.Component {
+class ThreeJsWorld extends GUTS.Component {
     init({
     containerSelector = '#gameContainer',
     width = window.innerWidth,

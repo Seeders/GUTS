@@ -1,4 +1,4 @@
-class PiercingShotAbility extends engine.app.appClasses['BaseAbility'] {
+class PiercingShotAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'piercing_shot',

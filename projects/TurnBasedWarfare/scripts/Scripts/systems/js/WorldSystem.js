@@ -1,4 +1,4 @@
-class WorldSystem extends engine.BaseSystem {
+class WorldSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.worldSystem = this;

@@ -1,4 +1,4 @@
-class FogOfWarSystem extends engine.BaseSystem {
+class FogOfWarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.fogOfWarSystem = this;

@@ -1,4 +1,4 @@
-class Buildable extends engine.Component {
+class Buildable extends GUTS.Component {
         
   init() {        
         this.placed = false;

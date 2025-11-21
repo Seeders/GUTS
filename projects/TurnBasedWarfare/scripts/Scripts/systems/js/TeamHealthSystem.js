@@ -1,4 +1,4 @@
-class TeamHealthSystem extends engine.BaseSystem {
+class TeamHealthSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.teamHealthSystem = this;

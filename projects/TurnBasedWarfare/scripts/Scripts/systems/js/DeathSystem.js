@@ -1,4 +1,4 @@
-class DeathSystem extends engine.BaseSystem {
+class DeathSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.deathSystem = this;

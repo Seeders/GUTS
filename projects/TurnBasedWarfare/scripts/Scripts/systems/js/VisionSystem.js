@@ -1,4 +1,4 @@
-class VisionSystem extends engine.BaseSystem {
+class VisionSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.visionSystem = this;

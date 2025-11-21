@@ -55,7 +55,7 @@ function loadCompiledGame() {
         MinHeap,
         DesyncDebugger,
         // Game classes from compiled bundle
-        ...global.engine?.app?.appClasses,
+        ...global.GUTS?.app?.appClasses,
         // Collections available from compiled game
         getCollections: () => global.COMPILED_GAME?.collections
     };

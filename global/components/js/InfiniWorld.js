@@ -1,4 +1,4 @@
-class InfiniWorld extends engine.Component {
+class InfiniWorld extends GUTS.Component {
     init({
       containerSelector = '#gameContainer',
       width = window.innerWidth,

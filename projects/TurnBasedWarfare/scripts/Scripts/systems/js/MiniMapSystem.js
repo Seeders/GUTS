@@ -1,4 +1,4 @@
-class MiniMapSystem extends engine.BaseSystem {
+class MiniMapSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.miniMapSystem = this;

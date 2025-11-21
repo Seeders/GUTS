@@ -1,4 +1,4 @@
-class UpgradeManager extends engine.Component {
+class UpgradeManager extends GUTS.Component {
         
 
     init() {

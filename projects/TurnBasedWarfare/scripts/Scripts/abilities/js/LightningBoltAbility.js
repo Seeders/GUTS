@@ -1,4 +1,4 @@
-class LightningBoltAbility extends engine.app.appClasses['BaseAbility'] {
+class LightningBoltAbility extends GUTS.app.appClasses['BaseAbility'] {
     constructor(game, params = {}) {
         super(game, {
             id: 'lightning_bolt',

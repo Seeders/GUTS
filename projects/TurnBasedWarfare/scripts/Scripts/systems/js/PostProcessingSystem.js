@@ -1,4 +1,4 @@
-class PostProcessingSystem extends engine.BaseSystem {
+class PostProcessingSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.postProcessingSystem = this;

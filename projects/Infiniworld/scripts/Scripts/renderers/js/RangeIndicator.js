@@ -1,4 +1,4 @@
-class RangeIndicator extends engine.Component {
+class RangeIndicator extends GUTS.Component {
     
     init() {
         this.ctx = this.game.ctx;

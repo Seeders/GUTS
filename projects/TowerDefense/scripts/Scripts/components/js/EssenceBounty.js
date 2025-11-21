@@ -1,4 +1,4 @@
-class EssenceBounty extends engine.Component {
+class EssenceBounty extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

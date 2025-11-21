@@ -1,4 +1,4 @@
-class SchedulingSystem extends engine.BaseSystem {
+class SchedulingSystem extends GUTS.BaseSystem {
    constructor(game) {
         super(game);
         this.game.schedulingSystem = this;

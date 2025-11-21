@@ -1,4 +1,4 @@
-class Explosion extends engine.Component {
+class Explosion extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

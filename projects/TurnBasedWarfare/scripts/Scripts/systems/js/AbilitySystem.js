@@ -1,4 +1,4 @@
-class AbilitySystem extends engine.BaseSystem {
+class AbilitySystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;

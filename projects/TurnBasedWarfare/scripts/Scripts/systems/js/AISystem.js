@@ -1,4 +1,4 @@
-class AISystem extends engine.BaseSystem {
+class AISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.aiSystem = this;

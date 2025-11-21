@@ -1,4 +1,4 @@
-class ArrayTracker extends engine.Component {
+class ArrayTracker extends GUTS.Component {
     
     init( {objectType}) {
         this.arr = objectType;

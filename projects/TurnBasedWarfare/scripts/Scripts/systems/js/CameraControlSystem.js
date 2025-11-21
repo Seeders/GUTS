@@ -1,4 +1,4 @@
-class CameraControlSystem extends engine.BaseSystem {
+class CameraControlSystem extends GUTS.BaseSystem {
   constructor(game) {
     super(game);
     this.game.cameraControlSystem = this;

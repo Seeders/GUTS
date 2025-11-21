@@ -1,4 +1,4 @@
-class AircraftController extends engine.Component {
+class AircraftController extends GUTS.Component {
     init({
         acceleration = 1000,
         strafeAcceleration = 15,
