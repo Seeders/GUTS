@@ -161,14 +161,43 @@ class ConfigParser {
             throw new Error('Game config not found');
         }
 
-        const clientLibraries = this.getLibraryPaths(gameConfig.libraries || []);
-        const clientScripts = this.getSceneScripts('client');
+        // Get the initial scene from game config (don't hardcode "client")
+        const initialScene = gameConfig.initialScene;
+        if (!initialScene) {
+            throw new Error('Game config missing initialScene');
+        }
 
-        // Get all abilities if referenced in scene
-        const abilities = [];
+        const clientLibraries = this.getLibraryPaths(gameConfig.libraries || []);
+        const clientScripts = this.getSceneScripts(initialScene);
+
+        // Get all classes from each collection, track base classes
+        const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
+        const classMetadata = []; // Track base classes for each collection
+
+        // Process each collection dynamically (NO hardcoding of collection names!)
         for (const classRef of clientScripts.classes) {
-            if (classRef.collection === 'abilities') {
-                abilities.push(...this.getAllClassesFromCollection('abilities'));
+            const collectionName = classRef.collection;
+            if (!collectionName) {
+                console.warn('⚠️ Class reference missing collection name');
+                continue;
+            }
+
+            // Get all classes from this collection
+            const allClasses = this.getAllClassesFromCollection(collectionName);
+
+            // Store in dynamic collection
+            if (!classCollections[collectionName]) {
+                classCollections[collectionName] = [];
+            }
+            classCollections[collectionName].push(...allClasses);
+
+            // Track base class if specified
+            if (classRef.baseClass) {
+                classMetadata.push({
+                    collection: collectionName,
+                    baseClass: classRef.baseClass,
+                    files: allClasses
+                });
             }
         }
 
@@ -176,7 +205,8 @@ class ConfigParser {
             libraries: clientLibraries,
             managers: clientScripts.managers,
             systems: clientScripts.systems,
-            abilities: abilities,
+            classCollections: classCollections, // Dynamic collections
+            classMetadata: classMetadata, // Base class metadata
             config: gameConfig
         };
     }
@@ -191,14 +221,44 @@ class ConfigParser {
             return null;
         }
 
-        const serverLibraries = this.getLibraryPaths(serverConfig.libraries || []);
-        const serverScripts = this.getSceneScripts('server');
+        // Get the initial scene from server config (don't hardcode "server")
+        const initialScene = serverConfig.initialScene;
+        if (!initialScene) {
+            console.warn('⚠️ Server config missing initialScene');
+            return null;
+        }
 
-        // Get all abilities if referenced in scene
-        const abilities = [];
+        const serverLibraries = this.getLibraryPaths(serverConfig.libraries || []);
+        const serverScripts = this.getSceneScripts(initialScene);
+
+        // Get all classes from each collection, track base classes
+        const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
+        const classMetadata = []; // Track base classes for each collection
+
+        // Process each collection dynamically (NO hardcoding of collection names!)
         for (const classRef of serverScripts.classes) {
-            if (classRef.collection === 'abilities') {
-                abilities.push(...this.getAllClassesFromCollection('abilities'));
+            const collectionName = classRef.collection;
+            if (!collectionName) {
+                console.warn('⚠️ Class reference missing collection name');
+                continue;
+            }
+
+            // Get all classes from this collection
+            const allClasses = this.getAllClassesFromCollection(collectionName);
+
+            // Store in dynamic collection
+            if (!classCollections[collectionName]) {
+                classCollections[collectionName] = [];
+            }
+            classCollections[collectionName].push(...allClasses);
+
+            // Track base class if specified
+            if (classRef.baseClass) {
+                classMetadata.push({
+                    collection: collectionName,
+                    baseClass: classRef.baseClass,
+                    files: allClasses
+                });
             }
         }
 
@@ -206,7 +266,8 @@ class ConfigParser {
             libraries: serverLibraries,
             managers: serverScripts.managers,
             systems: serverScripts.systems,
-            abilities: abilities,
+            classCollections: classCollections, // Dynamic collections
+            classMetadata: classMetadata, // Base class metadata
             config: serverConfig
         };
     }

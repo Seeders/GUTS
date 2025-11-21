@@ -157,30 +157,50 @@ class EntryGenerator {
             globalExports.Systems = 'Systems';
         }
 
-        // Import abilities
-        if (client.abilities.length > 0) {
-            sections.push('// ========== ABILITIES ==========');
-            const { imports, exports } = this.generateImports(client.abilities, 'ability');
-            sections.push(...imports);
-            sections.push('');
-            sections.push('const Abilities = {');
-            sections.push(exports.join(',\n'));
-            sections.push('};');
-            sections.push('');
-            globalExports.Abilities = 'Abilities';
+        // Import class collections dynamically (abilities, items, etc.)
+        const classCollectionObjects = {};
+        if (client.classCollections && Object.keys(client.classCollections).length > 0) {
+            for (const [collectionName, classFiles] of Object.entries(client.classCollections)) {
+                const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+                sections.push(`// ========== ${collectionName.toUpperCase()} ==========`);
+                const { imports, exports } = this.generateImports(classFiles, collectionName.toLowerCase());
+                sections.push(...imports);
+                sections.push('');
+                sections.push(`const ${capitalized} = {`);
+                sections.push(exports.join(',\n'));
+                sections.push('};');
+                sections.push('');
+                globalExports[capitalized] = capitalized;
+                classCollectionObjects[collectionName] = capitalized;
+            }
         }
 
-        // Create class registry
+        // Create class registry (dynamic collections)
         sections.push('// ========== CLASS REGISTRY ==========');
         sections.push('const ClassRegistry = {');
         sections.push('  getManager: (name) => Managers[name],');
         sections.push('  getSystem: (name) => Systems[name],');
         sections.push('  getLibrary: (name) => Libraries[name],');
-        sections.push('  getAbility: (name) => Abilities[name],');
+
+        // Add dynamic getters for each collection
+        Object.entries(classCollectionObjects).forEach(([collectionName, varName]) => {
+            const methodName = `get${varName}`;
+            sections.push(`  ${methodName}: (name) => ${varName}[name],`);
+        });
+
         sections.push('  getAllManagers: () => Managers,');
         sections.push('  getAllSystems: () => Systems,');
         sections.push('  getAllLibraries: () => Libraries,');
-        sections.push('  getAllAbilities: () => Abilities');
+
+        // Add dynamic getAll methods for each collection
+        const getAllEntries = Object.entries(classCollectionObjects);
+        getAllEntries.forEach(([collectionName, varName], index) => {
+            const methodName = `getAll${varName}`;
+            const isLast = index === getAllEntries.length - 1;
+            const comma = isLast ? '' : ',';
+            sections.push(`  ${methodName}: () => ${varName}${comma}`);
+        });
+
         sections.push('};');
         sections.push('');
 
@@ -214,11 +234,19 @@ class EntryGenerator {
         sections.push('  });');
         sections.push('}');
         sections.push('');
-        sections.push('// Also expose managers, systems, abilities in GUTS namespace');
+        // Also expose managers, systems, and dynamic collections in GUTS namespace
         sections.push('Object.assign(window.GUTS, {');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
-        sections.push('  abilities: Abilities');
+
+        // Add dynamic collections
+        const collectionEntries = Object.entries(classCollectionObjects);
+        collectionEntries.forEach(([collectionName, varName], index) => {
+            const isLast = index === collectionEntries.length - 1;
+            const comma = isLast ? '' : ',';
+            sections.push(`  ${collectionName}: ${varName}${comma}`);
+        });
+
         sections.push('});');
         sections.push('');
         sections.push('// Setup COMPILED_GAME namespace');
@@ -228,7 +256,12 @@ class EntryGenerator {
         sections.push('  libraryClasses: Libraries,');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
-        sections.push('  abilities: Abilities,');
+
+        // Add dynamic collections
+        Object.entries(classCollectionObjects).forEach(([collectionName, varName]) => {
+            sections.push(`  ${collectionName}: ${varName},`);
+        });
+
         sections.push('  classRegistry: ClassRegistry,');
         sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
@@ -355,56 +388,81 @@ class EntryGenerator {
             sections.push('');
         }
 
-        // Require abilities
-        if (server.abilities.length > 0) {
-            sections.push('// ========== ABILITIES ==========');
+        // Require class collections dynamically (abilities, items, etc.)
+        // Use classMetadata to load base classes FIRST
+        const classCollectionVars = {};
+        if (server.classCollections && Object.keys(server.classCollections).length > 0) {
+            for (const [collectionName, classFiles] of Object.entries(server.classCollections)) {
+                const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+                sections.push(`// ========== ${collectionName.toUpperCase()} ==========`);
 
-            // Separate BaseAbility from other abilities
-            const baseAbility = server.abilities.find(a =>
-                (a.name === 'BaseAbility' || a.fileName === 'BaseAbility')
-            );
-            const otherAbilities = server.abilities.filter(a =>
-                !(a.name === 'BaseAbility' || a.fileName === 'BaseAbility')
-            );
+                // Find metadata for this collection to check for base class
+                const metadata = server.classMetadata?.find(m => m.collection === collectionName);
+                let baseClassFile = null;
+                let otherFiles = classFiles;
 
-            // Require BaseAbility first and register it immediately
-            if (baseAbility) {
-                const varName = `ability_BaseAbility`;
-                const requirePath = baseAbility.path.replace(/\\/g, '/');
-                sections.push(`// Require BaseAbility first so other abilities can extend from it`);
-                sections.push(`const ${varName}_module = require('${requirePath}');`);
-                sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.BaseAbility || ${varName}_module;`);
-                sections.push(`global.GUTS.app.appClasses['BaseAbility'] = ${varName};`);
+                if (metadata && metadata.baseClass) {
+                    // Separate base class from other files
+                    baseClassFile = classFiles.find(f =>
+                        f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                    );
+                    otherFiles = classFiles.filter(f =>
+                        f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                    );
+
+                    // Require base class first and register it immediately
+                    if (baseClassFile) {
+                        const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                        const requirePath = baseClassFile.path.replace(/\\/g, '/');
+                        sections.push(`// Require ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                        sections.push(`const ${varName}_module = require('${requirePath}');`);
+                        sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${metadata.baseClass} || ${varName}_module;`);
+                        sections.push(`global.GUTS.app.appClasses['${metadata.baseClass}'] = ${varName};`);
+                        sections.push('');
+                    }
+                }
+
+                // Now require all other files
+                const { requires, exports } = this.generateCommonJSImports(otherFiles, collectionName.toLowerCase());
+                sections.push(...requires);
                 sections.push('');
+
+                // Build the collection object
+                sections.push(`const ${capitalized} = {`);
+                if (baseClassFile && metadata) {
+                    const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                    sections.push(`  ${metadata.baseClass}: ${varName},`);
+                }
+                sections.push(exports.join(',\n'));
+                sections.push('};');
+                sections.push('');
+
+                // Make all classes available in global.GUTS.app.appClasses
+                sections.push(`// Make all ${collectionName} available in global.GUTS.app.appClasses`);
+                sections.push(`Object.assign(global.GUTS.app.appClasses, ${capitalized});`);
+                sections.push('');
+
+                classCollectionVars[collectionName] = capitalized;
             }
-
-            // Now require all other abilities
-            const { requires, exports } = this.generateCommonJSImports(otherAbilities, 'ability');
-            sections.push(...requires);
-            sections.push('');
-
-            // Build the Abilities object
-            sections.push('const Abilities = {');
-            if (baseAbility) {
-                sections.push('  BaseAbility: ability_BaseAbility,');
-            }
-            sections.push(exports.join(',\n'));
-            sections.push('};');
-            sections.push('');
-
-            // Make remaining abilities available in global.GUTS.app.appClasses
-            sections.push('// Make all abilities available in global.GUTS.app.appClasses');
-            sections.push('Object.assign(global.GUTS.app.appClasses, Abilities);');
-            sections.push('');
         }
 
-        // Create class registry
+        // Create class registry (dynamic collections)
         sections.push('// ========== CLASS REGISTRY ==========');
         sections.push('const ClassRegistry = {');
         sections.push('  getManager: (name) => Managers[name],');
         sections.push('  getSystem: (name) => Systems[name],');
         sections.push('  getLibrary: (name) => Libraries[name],');
-        sections.push('  getAbility: (name) => Abilities[name]');
+
+        // Add dynamic getters for each collection
+        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
+            const methodName = `get${varName}`;
+            sections.push(`  ${methodName}: (name) => ${varName}[name],`);
+        }
+
+        // Remove trailing comma from last entry
+        let lastClassRegLine = sections[sections.length - 1];
+        sections[sections.length - 1] = lastClassRegLine.replace(/,$/, '');
+
         sections.push('};');
         sections.push('');
 
@@ -416,7 +474,12 @@ class EntryGenerator {
         sections.push('  libraryClasses: Libraries,');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
-        sections.push('  abilities: Abilities,');
+
+        // Add dynamic collections
+        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
+            sections.push(`  ${collectionName}: ${varName},`);
+        }
+
         sections.push('  classRegistry: ClassRegistry,');
         sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
@@ -429,7 +492,12 @@ class EntryGenerator {
         sections.push('// Also expose in global.GUTS for compatibility');
         sections.push('global.GUTS.managers = Managers;');
         sections.push('global.GUTS.systems = Systems;');
-        sections.push('global.GUTS.abilities = Abilities;');
+
+        // Add dynamic collections to global.GUTS
+        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
+            sections.push(`global.GUTS.${collectionName} = ${varName};`);
+        }
+
         sections.push('');
 
         // Export

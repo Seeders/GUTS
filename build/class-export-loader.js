@@ -47,7 +47,12 @@ module.exports = function(source) {
         // This ensures classes are available for inheritance before other modules are evaluated
         exportCode += 'if (typeof window !== \'undefined\' && window.GUTS) {\n';
         classNames.forEach(className => {
+            // Assign to top-level GUTS namespace
             exportCode += `  window.GUTS.${className} = ${className};\n`;
+            // Also assign to app.appClasses for dynamic lookup (used by some base classes)
+            exportCode += `  if (window.GUTS.app && window.GUTS.app.appClasses) {\n`;
+            exportCode += `    window.GUTS.app.appClasses['${className}'] = ${className};\n`;
+            exportCode += `  }\n`;
         });
         exportCode += '}\n';
 

@@ -1,6 +1,6 @@
 /**
  * GUTS Game Server Bundle (CommonJS)
- * Generated: 2025-11-21T23:00:16.320Z
+ * Generated: 2025-11-21T23:22:16.777Z
  * Project: TurnBasedWarfare
  */
 
@@ -151,130 +151,130 @@ const Systems = {
 
 // ========== ABILITIES ==========
 // Require BaseAbility first so other abilities can extend from it
-const ability_BaseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js');
-const ability_BaseAbility = ability_BaseAbility_module.default || ability_BaseAbility_module.BaseAbility || ability_BaseAbility_module;
-global.GUTS.app.appClasses['BaseAbility'] = ability_BaseAbility;
+const abilities_BaseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js');
+const abilities_BaseAbility = abilities_BaseAbility_module.default || abilities_BaseAbility_module.BaseAbility || abilities_BaseAbility_module;
+global.GUTS.app.appClasses['BaseAbility'] = abilities_BaseAbility;
 
-const ability_ArenaPresenceAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js');
-const ability_ArenaPresenceAbility = ability_ArenaPresenceAbility_module.default || ability_ArenaPresenceAbility_module.ArenaPresenceAbility || ability_ArenaPresenceAbility_module;
-const ability_BattleCryAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js');
-const ability_BattleCryAbility = ability_BattleCryAbility_module.default || ability_BattleCryAbility_module.BattleCryAbility || ability_BattleCryAbility_module;
-const ability_BlizzardAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js');
-const ability_BlizzardAbility = ability_BlizzardAbility_module.default || ability_BlizzardAbility_module.BlizzardAbility || ability_BlizzardAbility_module;
-const ability_BloodlustAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js');
-const ability_BloodlustAbility = ability_BloodlustAbility_module.default || ability_BloodlustAbility_module.BloodlustAbility || ability_BloodlustAbility_module;
-const ability_BuildAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js');
-const ability_BuildAbility = ability_BuildAbility_module.default || ability_BuildAbility_module.BuildAbility || ability_BuildAbility_module;
-const ability_BurningAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BurningAuraAbility.js');
-const ability_BurningAuraAbility = ability_BurningAuraAbility_module.default || ability_BurningAuraAbility_module.BurningAuraAbility || ability_BurningAuraAbility_module;
-const ability_ChainLightningAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js');
-const ability_ChainLightningAbility = ability_ChainLightningAbility_module.default || ability_ChainLightningAbility_module.ChainLightningAbility || ability_ChainLightningAbility_module;
-const ability_ChargeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChargeAbility.js');
-const ability_ChargeAbility = ability_ChargeAbility_module.default || ability_ChargeAbility_module.ChargeAbility || ability_ChargeAbility_module;
-const ability_ConsecrationAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ConsecrationAbility.js');
-const ability_ConsecrationAbility = ability_ConsecrationAbility_module.default || ability_ConsecrationAbility_module.ConsecrationAbility || ability_ConsecrationAbility_module;
-const ability_CorruptingAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js');
-const ability_CorruptingAuraAbility = ability_CorruptingAuraAbility_module.default || ability_CorruptingAuraAbility_module.CorruptingAuraAbility || ability_CorruptingAuraAbility_module;
-const ability_CurseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js');
-const ability_CurseAbility = ability_CurseAbility_module.default || ability_CurseAbility_module.CurseAbility || ability_CurseAbility_module;
-const ability_DisruptionBombAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js');
-const ability_DisruptionBombAbility = ability_DisruptionBombAbility_module.default || ability_DisruptionBombAbility_module.DisruptionBombAbility || ability_DisruptionBombAbility_module;
-const ability_DrainLifeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js');
-const ability_DrainLifeAbility = ability_DrainLifeAbility_module.default || ability_DrainLifeAbility_module.DrainLifeAbility || ability_DrainLifeAbility_module;
-const ability_EnchantWeaponAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js');
-const ability_EnchantWeaponAbility = ability_EnchantWeaponAbility_module.default || ability_EnchantWeaponAbility_module.EnchantWeaponAbility || ability_EnchantWeaponAbility_module;
-const ability_ExplosiveTrapAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js');
-const ability_ExplosiveTrapAbility = ability_ExplosiveTrapAbility_module.default || ability_ExplosiveTrapAbility_module.ExplosiveTrapAbility || ability_ExplosiveTrapAbility_module;
-const ability_FireBallAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js');
-const ability_FireBallAbility = ability_FireBallAbility_module.default || ability_FireBallAbility_module.FireBallAbility || ability_FireBallAbility_module;
-const ability_FireStormAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js');
-const ability_FireStormAbility = ability_FireStormAbility_module.default || ability_FireStormAbility_module.FireStormAbility || ability_FireStormAbility_module;
-const ability_FreezingAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js');
-const ability_FreezingAuraAbility = ability_FreezingAuraAbility_module.default || ability_FreezingAuraAbility_module.FreezingAuraAbility || ability_FreezingAuraAbility_module;
-const ability_HealAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js');
-const ability_HealAbility = ability_HealAbility_module.default || ability_HealAbility_module.HealAbility || ability_HealAbility_module;
-const ability_IceShardAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js');
-const ability_IceShardAbility = ability_IceShardAbility_module.default || ability_IceShardAbility_module.IceShardAbility || ability_IceShardAbility_module;
-const ability_InfernoAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js');
-const ability_InfernoAbility = ability_InfernoAbility_module.default || ability_InfernoAbility_module.InfernoAbility || ability_InfernoAbility_module;
-const ability_LightningBoltAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js');
-const ability_LightningBoltAbility = ability_LightningBoltAbility_module.default || ability_LightningBoltAbility_module.LightningBoltAbility || ability_LightningBoltAbility_module;
-const ability_MassHealAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js');
-const ability_MassHealAbility = ability_MassHealAbility_module.default || ability_MassHealAbility_module.MassHealAbility || ability_MassHealAbility_module;
-const ability_MeteorStrikeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js');
-const ability_MeteorStrikeAbility = ability_MeteorStrikeAbility_module.default || ability_MeteorStrikeAbility_module.MeteorStrikeAbility || ability_MeteorStrikeAbility_module;
-const ability_MindControlAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js');
-const ability_MindControlAbility = ability_MindControlAbility_module.default || ability_MindControlAbility_module.MindControlAbility || ability_MindControlAbility_module;
-const ability_MineGoldAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js');
-const ability_MineGoldAbility = ability_MineGoldAbility_module.default || ability_MineGoldAbility_module.MineGoldAbility || ability_MineGoldAbility_module;
-const ability_MirrorImagesAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js');
-const ability_MirrorImagesAbility = ability_MirrorImagesAbility_module.default || ability_MirrorImagesAbility_module.MirrorImagesAbility || ability_MirrorImagesAbility_module;
-const ability_MultiShotAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js');
-const ability_MultiShotAbility = ability_MultiShotAbility_module.default || ability_MultiShotAbility_module.MultiShotAbility || ability_MultiShotAbility_module;
-const ability_PhalanxFormationAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js');
-const ability_PhalanxFormationAbility = ability_PhalanxFormationAbility_module.default || ability_PhalanxFormationAbility_module.PhalanxFormationAbility || ability_PhalanxFormationAbility_module;
-const ability_PiercingShotAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js');
-const ability_PiercingShotAbility = ability_PiercingShotAbility_module.default || ability_PiercingShotAbility_module.PiercingShotAbility || ability_PiercingShotAbility_module;
-const ability_RageAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js');
-const ability_RageAbility = ability_RageAbility_module.default || ability_RageAbility_module.RageAbility || ability_RageAbility_module;
-const ability_RaiseDeadAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js');
-const ability_RaiseDeadAbility = ability_RaiseDeadAbility_module.default || ability_RaiseDeadAbility_module.RaiseDeadAbility || ability_RaiseDeadAbility_module;
-const ability_ShadowStrikeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js');
-const ability_ShadowStrikeAbility = ability_ShadowStrikeAbility_module.default || ability_ShadowStrikeAbility_module.ShadowStrikeAbility || ability_ShadowStrikeAbility_module;
-const ability_ShieldWallAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js');
-const ability_ShieldWallAbility = ability_ShieldWallAbility_module.default || ability_ShieldWallAbility_module.ShieldWallAbility || ability_ShieldWallAbility_module;
-const ability_SmiteAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js');
-const ability_SmiteAbility = ability_SmiteAbility_module.default || ability_SmiteAbility_module.SmiteAbility || ability_SmiteAbility_module;
-const ability_SummonWolfAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js');
-const ability_SummonWolfAbility = ability_SummonWolfAbility_module.default || ability_SummonWolfAbility_module.SummonWolfAbility || ability_SummonWolfAbility_module;
-const ability_Tornado_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js');
-const ability_Tornado = ability_Tornado_module.default || ability_Tornado_module.Tornado || ability_Tornado_module;
-const ability_TrackingMark_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js');
-const ability_TrackingMark = ability_TrackingMark_module.default || ability_TrackingMark_module.TrackingMark || ability_TrackingMark_module;
-const ability_WindShieldAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js');
-const ability_WindShieldAbility = ability_WindShieldAbility_module.default || ability_WindShieldAbility_module.WindShieldAbility || ability_WindShieldAbility_module;
+const abilities_ArenaPresenceAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js');
+const abilities_ArenaPresenceAbility = abilities_ArenaPresenceAbility_module.default || abilities_ArenaPresenceAbility_module.ArenaPresenceAbility || abilities_ArenaPresenceAbility_module;
+const abilities_BattleCryAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js');
+const abilities_BattleCryAbility = abilities_BattleCryAbility_module.default || abilities_BattleCryAbility_module.BattleCryAbility || abilities_BattleCryAbility_module;
+const abilities_BlizzardAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js');
+const abilities_BlizzardAbility = abilities_BlizzardAbility_module.default || abilities_BlizzardAbility_module.BlizzardAbility || abilities_BlizzardAbility_module;
+const abilities_BloodlustAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js');
+const abilities_BloodlustAbility = abilities_BloodlustAbility_module.default || abilities_BloodlustAbility_module.BloodlustAbility || abilities_BloodlustAbility_module;
+const abilities_BuildAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js');
+const abilities_BuildAbility = abilities_BuildAbility_module.default || abilities_BuildAbility_module.BuildAbility || abilities_BuildAbility_module;
+const abilities_BurningAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BurningAuraAbility.js');
+const abilities_BurningAuraAbility = abilities_BurningAuraAbility_module.default || abilities_BurningAuraAbility_module.BurningAuraAbility || abilities_BurningAuraAbility_module;
+const abilities_ChainLightningAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js');
+const abilities_ChainLightningAbility = abilities_ChainLightningAbility_module.default || abilities_ChainLightningAbility_module.ChainLightningAbility || abilities_ChainLightningAbility_module;
+const abilities_ChargeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChargeAbility.js');
+const abilities_ChargeAbility = abilities_ChargeAbility_module.default || abilities_ChargeAbility_module.ChargeAbility || abilities_ChargeAbility_module;
+const abilities_ConsecrationAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ConsecrationAbility.js');
+const abilities_ConsecrationAbility = abilities_ConsecrationAbility_module.default || abilities_ConsecrationAbility_module.ConsecrationAbility || abilities_ConsecrationAbility_module;
+const abilities_CorruptingAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js');
+const abilities_CorruptingAuraAbility = abilities_CorruptingAuraAbility_module.default || abilities_CorruptingAuraAbility_module.CorruptingAuraAbility || abilities_CorruptingAuraAbility_module;
+const abilities_CurseAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js');
+const abilities_CurseAbility = abilities_CurseAbility_module.default || abilities_CurseAbility_module.CurseAbility || abilities_CurseAbility_module;
+const abilities_DisruptionBombAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js');
+const abilities_DisruptionBombAbility = abilities_DisruptionBombAbility_module.default || abilities_DisruptionBombAbility_module.DisruptionBombAbility || abilities_DisruptionBombAbility_module;
+const abilities_DrainLifeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js');
+const abilities_DrainLifeAbility = abilities_DrainLifeAbility_module.default || abilities_DrainLifeAbility_module.DrainLifeAbility || abilities_DrainLifeAbility_module;
+const abilities_EnchantWeaponAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js');
+const abilities_EnchantWeaponAbility = abilities_EnchantWeaponAbility_module.default || abilities_EnchantWeaponAbility_module.EnchantWeaponAbility || abilities_EnchantWeaponAbility_module;
+const abilities_ExplosiveTrapAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js');
+const abilities_ExplosiveTrapAbility = abilities_ExplosiveTrapAbility_module.default || abilities_ExplosiveTrapAbility_module.ExplosiveTrapAbility || abilities_ExplosiveTrapAbility_module;
+const abilities_FireBallAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js');
+const abilities_FireBallAbility = abilities_FireBallAbility_module.default || abilities_FireBallAbility_module.FireBallAbility || abilities_FireBallAbility_module;
+const abilities_FireStormAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js');
+const abilities_FireStormAbility = abilities_FireStormAbility_module.default || abilities_FireStormAbility_module.FireStormAbility || abilities_FireStormAbility_module;
+const abilities_FreezingAuraAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js');
+const abilities_FreezingAuraAbility = abilities_FreezingAuraAbility_module.default || abilities_FreezingAuraAbility_module.FreezingAuraAbility || abilities_FreezingAuraAbility_module;
+const abilities_HealAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js');
+const abilities_HealAbility = abilities_HealAbility_module.default || abilities_HealAbility_module.HealAbility || abilities_HealAbility_module;
+const abilities_IceShardAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js');
+const abilities_IceShardAbility = abilities_IceShardAbility_module.default || abilities_IceShardAbility_module.IceShardAbility || abilities_IceShardAbility_module;
+const abilities_InfernoAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js');
+const abilities_InfernoAbility = abilities_InfernoAbility_module.default || abilities_InfernoAbility_module.InfernoAbility || abilities_InfernoAbility_module;
+const abilities_LightningBoltAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js');
+const abilities_LightningBoltAbility = abilities_LightningBoltAbility_module.default || abilities_LightningBoltAbility_module.LightningBoltAbility || abilities_LightningBoltAbility_module;
+const abilities_MassHealAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js');
+const abilities_MassHealAbility = abilities_MassHealAbility_module.default || abilities_MassHealAbility_module.MassHealAbility || abilities_MassHealAbility_module;
+const abilities_MeteorStrikeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js');
+const abilities_MeteorStrikeAbility = abilities_MeteorStrikeAbility_module.default || abilities_MeteorStrikeAbility_module.MeteorStrikeAbility || abilities_MeteorStrikeAbility_module;
+const abilities_MindControlAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js');
+const abilities_MindControlAbility = abilities_MindControlAbility_module.default || abilities_MindControlAbility_module.MindControlAbility || abilities_MindControlAbility_module;
+const abilities_MineGoldAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js');
+const abilities_MineGoldAbility = abilities_MineGoldAbility_module.default || abilities_MineGoldAbility_module.MineGoldAbility || abilities_MineGoldAbility_module;
+const abilities_MirrorImagesAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js');
+const abilities_MirrorImagesAbility = abilities_MirrorImagesAbility_module.default || abilities_MirrorImagesAbility_module.MirrorImagesAbility || abilities_MirrorImagesAbility_module;
+const abilities_MultiShotAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js');
+const abilities_MultiShotAbility = abilities_MultiShotAbility_module.default || abilities_MultiShotAbility_module.MultiShotAbility || abilities_MultiShotAbility_module;
+const abilities_PhalanxFormationAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js');
+const abilities_PhalanxFormationAbility = abilities_PhalanxFormationAbility_module.default || abilities_PhalanxFormationAbility_module.PhalanxFormationAbility || abilities_PhalanxFormationAbility_module;
+const abilities_PiercingShotAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js');
+const abilities_PiercingShotAbility = abilities_PiercingShotAbility_module.default || abilities_PiercingShotAbility_module.PiercingShotAbility || abilities_PiercingShotAbility_module;
+const abilities_RageAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js');
+const abilities_RageAbility = abilities_RageAbility_module.default || abilities_RageAbility_module.RageAbility || abilities_RageAbility_module;
+const abilities_RaiseDeadAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js');
+const abilities_RaiseDeadAbility = abilities_RaiseDeadAbility_module.default || abilities_RaiseDeadAbility_module.RaiseDeadAbility || abilities_RaiseDeadAbility_module;
+const abilities_ShadowStrikeAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js');
+const abilities_ShadowStrikeAbility = abilities_ShadowStrikeAbility_module.default || abilities_ShadowStrikeAbility_module.ShadowStrikeAbility || abilities_ShadowStrikeAbility_module;
+const abilities_ShieldWallAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js');
+const abilities_ShieldWallAbility = abilities_ShieldWallAbility_module.default || abilities_ShieldWallAbility_module.ShieldWallAbility || abilities_ShieldWallAbility_module;
+const abilities_SmiteAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js');
+const abilities_SmiteAbility = abilities_SmiteAbility_module.default || abilities_SmiteAbility_module.SmiteAbility || abilities_SmiteAbility_module;
+const abilities_SummonWolfAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js');
+const abilities_SummonWolfAbility = abilities_SummonWolfAbility_module.default || abilities_SummonWolfAbility_module.SummonWolfAbility || abilities_SummonWolfAbility_module;
+const abilities_Tornado_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js');
+const abilities_Tornado = abilities_Tornado_module.default || abilities_Tornado_module.Tornado || abilities_Tornado_module;
+const abilities_TrackingMark_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js');
+const abilities_TrackingMark = abilities_TrackingMark_module.default || abilities_TrackingMark_module.TrackingMark || abilities_TrackingMark_module;
+const abilities_WindShieldAbility_module = require('/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js');
+const abilities_WindShieldAbility = abilities_WindShieldAbility_module.default || abilities_WindShieldAbility_module.WindShieldAbility || abilities_WindShieldAbility_module;
 
 const Abilities = {
-  BaseAbility: ability_BaseAbility,
-  ArenaPresenceAbility: ability_ArenaPresenceAbility,
-  BattleCryAbility: ability_BattleCryAbility,
-  BlizzardAbility: ability_BlizzardAbility,
-  BloodlustAbility: ability_BloodlustAbility,
-  BuildAbility: ability_BuildAbility,
-  BurningAuraAbility: ability_BurningAuraAbility,
-  ChainLightningAbility: ability_ChainLightningAbility,
-  ChargeAbility: ability_ChargeAbility,
-  ConsecrationAbility: ability_ConsecrationAbility,
-  CorruptingAuraAbility: ability_CorruptingAuraAbility,
-  CurseAbility: ability_CurseAbility,
-  DisruptionBombAbility: ability_DisruptionBombAbility,
-  DrainLifeAbility: ability_DrainLifeAbility,
-  EnchantWeaponAbility: ability_EnchantWeaponAbility,
-  ExplosiveTrapAbility: ability_ExplosiveTrapAbility,
-  FireBallAbility: ability_FireBallAbility,
-  FireStormAbility: ability_FireStormAbility,
-  FreezingAuraAbility: ability_FreezingAuraAbility,
-  HealAbility: ability_HealAbility,
-  IceShardAbility: ability_IceShardAbility,
-  InfernoAbility: ability_InfernoAbility,
-  LightningBoltAbility: ability_LightningBoltAbility,
-  MassHealAbility: ability_MassHealAbility,
-  MeteorStrikeAbility: ability_MeteorStrikeAbility,
-  MindControlAbility: ability_MindControlAbility,
-  MineGoldAbility: ability_MineGoldAbility,
-  MirrorImagesAbility: ability_MirrorImagesAbility,
-  MultiShotAbility: ability_MultiShotAbility,
-  PhalanxFormationAbility: ability_PhalanxFormationAbility,
-  PiercingShotAbility: ability_PiercingShotAbility,
-  RageAbility: ability_RageAbility,
-  RaiseDeadAbility: ability_RaiseDeadAbility,
-  ShadowStrikeAbility: ability_ShadowStrikeAbility,
-  ShieldWallAbility: ability_ShieldWallAbility,
-  SmiteAbility: ability_SmiteAbility,
-  SummonWolfAbility: ability_SummonWolfAbility,
-  Tornado: ability_Tornado,
-  TrackingMark: ability_TrackingMark,
-  WindShieldAbility: ability_WindShieldAbility
+  BaseAbility: abilities_BaseAbility,
+  ArenaPresenceAbility: abilities_ArenaPresenceAbility,
+  BattleCryAbility: abilities_BattleCryAbility,
+  BlizzardAbility: abilities_BlizzardAbility,
+  BloodlustAbility: abilities_BloodlustAbility,
+  BuildAbility: abilities_BuildAbility,
+  BurningAuraAbility: abilities_BurningAuraAbility,
+  ChainLightningAbility: abilities_ChainLightningAbility,
+  ChargeAbility: abilities_ChargeAbility,
+  ConsecrationAbility: abilities_ConsecrationAbility,
+  CorruptingAuraAbility: abilities_CorruptingAuraAbility,
+  CurseAbility: abilities_CurseAbility,
+  DisruptionBombAbility: abilities_DisruptionBombAbility,
+  DrainLifeAbility: abilities_DrainLifeAbility,
+  EnchantWeaponAbility: abilities_EnchantWeaponAbility,
+  ExplosiveTrapAbility: abilities_ExplosiveTrapAbility,
+  FireBallAbility: abilities_FireBallAbility,
+  FireStormAbility: abilities_FireStormAbility,
+  FreezingAuraAbility: abilities_FreezingAuraAbility,
+  HealAbility: abilities_HealAbility,
+  IceShardAbility: abilities_IceShardAbility,
+  InfernoAbility: abilities_InfernoAbility,
+  LightningBoltAbility: abilities_LightningBoltAbility,
+  MassHealAbility: abilities_MassHealAbility,
+  MeteorStrikeAbility: abilities_MeteorStrikeAbility,
+  MindControlAbility: abilities_MindControlAbility,
+  MineGoldAbility: abilities_MineGoldAbility,
+  MirrorImagesAbility: abilities_MirrorImagesAbility,
+  MultiShotAbility: abilities_MultiShotAbility,
+  PhalanxFormationAbility: abilities_PhalanxFormationAbility,
+  PiercingShotAbility: abilities_PiercingShotAbility,
+  RageAbility: abilities_RageAbility,
+  RaiseDeadAbility: abilities_RaiseDeadAbility,
+  ShadowStrikeAbility: abilities_ShadowStrikeAbility,
+  ShieldWallAbility: abilities_ShieldWallAbility,
+  SmiteAbility: abilities_SmiteAbility,
+  SummonWolfAbility: abilities_SummonWolfAbility,
+  Tornado: abilities_Tornado,
+  TrackingMark: abilities_TrackingMark,
+  WindShieldAbility: abilities_WindShieldAbility
 };
 
 // Make all abilities available in global.GUTS.app.appClasses
@@ -285,7 +285,7 @@ const ClassRegistry = {
   getManager: (name) => Managers[name],
   getSystem: (name) => Systems[name],
   getLibrary: (name) => Libraries[name],
-  getAbility: (name) => Abilities[name]
+  getAbilities: (name) => Abilities[name]
 };
 
 // ========== GLOBAL SETUP ==========
