@@ -2274,12 +2274,13 @@ class TerrainMapEditor {
                     this.tileMap.environmentObjects = [];
                 }
 
-                // Convert grid position to world position
+                // Convert grid position to uncentered coordinate format
+                // (spawner will apply centering offset when reading)
                 const gridSize = this.terrainDataManager.gridSize;
                 const terrainSize = this.terrainDataManager.terrainSize;
                 const halfGrid = gridSize / 2;
-                const x = (gridX * gridSize) - (terrainSize / 2) + halfGrid;
-                const y = (gridZ * gridSize) - (terrainSize / 2) + halfGrid;
+                const x = (gridX * gridSize) + halfGrid;
+                const y = (gridZ * gridSize) + halfGrid;
 
                 const existingIndex = this.tileMap.environmentObjects.findIndex(
                     obj => obj.x === x && obj.y === y
