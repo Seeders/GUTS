@@ -676,6 +676,90 @@ class WorldRenderer {
     }
 
     /**
+     * Spawn cliff entities based on terrain height analysis
+     * @param {Object} entityRenderer - EntityRenderer instance
+     * @param {boolean} useExtension - Whether to account for extension size (true for game, false for editor)
+     */
+    async spawnCliffs(entityRenderer, useExtension = false) {
+        if (!this.terrainDataManager || !entityRenderer) {
+            console.warn('[WorldRenderer] Cannot spawn cliffs: missing dependencies');
+            return;
+        }
+
+        // Clear existing cliff entities
+        entityRenderer.clearEntitiesByType('cliffs');
+
+        // Analyze height map for cliff positions
+        const cliffData = this.terrainDataManager.analyzeCliffs();
+
+        if (cliffData.length === 0) {
+            console.log('[WorldRenderer] No cliffs to spawn (no height differences)');
+            return;
+        }
+
+        console.log(`[WorldRenderer] Spawning ${cliffData.length} cliffs...`);
+
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.tileMap.size * gridSize;
+        const heightStep = this.terrainDataManager.heightStep;
+
+        // Spawn each cliff
+        let spawnedCount = 0;
+        for (const cliff of cliffData) {
+            // Calculate cliff position
+            const tileWorldX = useExtension
+                ? (cliff.gridX + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                : cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
+            const tileWorldZ = useExtension
+                ? (cliff.gridZ + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                : cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
+
+            // Quadrant offsets - each quadrant centered at 1/4 and 3/4 positions
+            const quarterGrid = gridSize / 4;
+            let worldX = tileWorldX;
+            let worldZ = tileWorldZ;
+
+            // Position based on quadrant
+            switch (cliff.quadrant) {
+                case 'TL':
+                    worldX -= quarterGrid;
+                    worldZ -= quarterGrid;
+                    break;
+                case 'TR':
+                    worldX += quarterGrid;
+                    worldZ -= quarterGrid;
+                    break;
+                case 'BL':
+                    worldX -= quarterGrid;
+                    worldZ += quarterGrid;
+                    break;
+                case 'BR':
+                    worldX += quarterGrid;
+                    worldZ += quarterGrid;
+                    break;
+            }
+
+            // Cliffs sit 2 levels below tile height
+            const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
+            const cliffBottomHeight = (mapHeight - 2) * heightStep;
+
+            const worldPos = { x: worldX, y: cliffBottomHeight, z: worldZ };
+            const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
+
+            const spawned = await entityRenderer.spawnEntity(entityId, {
+                collection: 'cliffs',
+                type: cliff.type,
+                position: worldPos,
+                rotation: cliff.rotation
+            });
+
+            if (spawned) spawnedCount++;
+        }
+
+        console.log(`[WorldRenderer] Spawned ${spawnedCount}/${cliffData.length} cliffs`);
+    }
+
+    /**
      * Create extension planes for infinite terrain appearance
      */
     createExtensionPlanes() {
