@@ -218,24 +218,12 @@ class GridSystem extends engine.BaseSystem {
     
     worldToGrid(worldX, worldZ) {
         // Use CoordinateTranslator for placement grid conversions
-        if (!this.coordinateTranslator) {
-            console.error('[GridSystem] worldToGrid called before CoordinateTranslator initialized!', worldX, worldZ);
-            return { x: 0, z: 0 };
-        }
-        const result = this.coordinateTranslator.worldToPlacementGrid(worldX, worldZ);
-        console.log('[GridSystem] worldToGrid:', worldX, worldZ, '=>', result);
-        return result;
+        return this.coordinateTranslator.worldToPlacementGrid(worldX, worldZ);
     }
 
     gridToWorld(gridX, gridZ) {
         // Use CoordinateTranslator for placement grid conversions
-        if (!this.coordinateTranslator) {
-            console.error('[GridSystem] gridToWorld called before CoordinateTranslator initialized!', gridX, gridZ);
-            return { x: 0, z: 0 };
-        }
-        const result = this.coordinateTranslator.placementGridToWorld(gridX, gridZ);
-        console.log('[GridSystem] gridToWorld:', gridX, gridZ, '=>', result);
-        return result;
+        return this.coordinateTranslator.placementGridToWorld(gridX, gridZ);
     }
     
     // OPTIMIZED: Early bounds checking
