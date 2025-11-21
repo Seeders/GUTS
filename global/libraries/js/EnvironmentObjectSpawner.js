@@ -26,14 +26,6 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Seeded random for consistent values between client and server
-     */
-    seededRandom(x, y) {
-        const seed = x * 12.9898 + y * 78.233;
-        return (Math.sin(seed) * 43758.5453) % 1;
-    }
-
-    /**
      * Calculate world position from environment object grid position
      */
     calculateWorldPosition(envObj, terrainDataManager) {
@@ -95,23 +87,27 @@ class EnvironmentObjectSpawner {
         // Get terrain height
         const height = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
 
-        // Calculate rotation and scale (consistent between runtime and editor)
-        const rotation = this.seededRandom(envObj.x, envObj.y) * Math.PI * 2;
-        const scale = (0.8 + this.seededRandom(envObj.y, envObj.x) * 0.4) * (envObj.type === 'rock' ? 1 : 50);
+        // Create entity ID (consistent between runtime and editor)
+        const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
+
+        // No rotation or scale variation - just use defaults
+        const rotation = 0;
+        const scale = 32; // Standard scale for worldObjects in 3D
 
         if (this.mode === 'runtime') {
-            // Runtime mode: Create ECS entity with components
-            this.spawnRuntimeEntity(envObj, unitType, worldX, height, worldZ, rotation, scale);
+            // Runtime mode: Create ECS entity with gameplay components
+            this.spawnRuntimeEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale);
         } else if (this.mode === 'editor') {
             // Editor mode: Render using EntityRenderer
-            await this.spawnEditorEntity(envObj, unitType, worldX, height, worldZ, rotation, scale);
+            await this.spawnEditorEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale);
         }
     }
 
     /**
      * Spawn environment object in runtime mode (ECS)
+     * Creates gameplay entities that RenderSystem will visualize
      */
-    spawnRuntimeEntity(envObj, unitType, worldX, height, worldZ, rotation, scale) {
+    spawnRuntimeEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale) {
         if (!this.game) {
             console.error('[EnvironmentObjectSpawner] Game instance required for runtime mode');
             return;
@@ -120,35 +116,35 @@ class EnvironmentObjectSpawner {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
 
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
+        // Create ECS entity
+        const ecsEntityId = this.game.createEntity(entityId);
 
         // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION,
+        this.game.addComponent(ecsEntityId, ComponentTypes.POSITION,
             Components.Position(worldX, height, worldZ));
 
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: envObj.type };
-        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
+        this.game.addComponent(ecsEntityId, ComponentTypes.UNIT_TYPE,
             Components.UnitType(unitTypeData));
 
         // Add Team component (neutral for environment objects)
-        this.game.addComponent(entityId, ComponentTypes.TEAM,
+        this.game.addComponent(ecsEntityId, ComponentTypes.TEAM,
             Components.Team('neutral'));
 
         // Add Collision component if the object should block movement
         if (unitType.collision !== false && unitType.size) {
-            this.game.addComponent(entityId, ComponentTypes.COLLISION,
+            this.game.addComponent(ecsEntityId, ComponentTypes.COLLISION,
                 Components.Collision(unitType.size, unitType.height || 100));
         }
 
         // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING,
+        this.game.addComponent(ecsEntityId, ComponentTypes.FACING,
             Components.Facing(rotation));
 
-        // Store scale in Animation component
-        if (!this.game.hasComponent(entityId, ComponentTypes.ANIMATION)) {
-            this.game.addComponent(entityId, ComponentTypes.ANIMATION,
+        // Store scale - RenderSystem will use this when spawning visual
+        if (!this.game.hasComponent(ecsEntityId, ComponentTypes.ANIMATION)) {
+            this.game.addComponent(ecsEntityId, ComponentTypes.ANIMATION,
                 Components.Animation(scale, rotation, 0));
         }
 
@@ -157,31 +153,21 @@ class EnvironmentObjectSpawner {
 
     /**
      * Spawn environment object in editor mode (visual rendering)
+     * Directly renders using EntityRenderer without ECS
      */
-    async spawnEditorEntity(envObj, unitType, worldX, height, worldZ, rotation, scale) {
+    async spawnEditorEntity(entityId, envObj, unitType, worldX, height, worldZ, rotation, scale) {
         if (!this.entityRenderer) {
             console.error('[EnvironmentObjectSpawner] EntityRenderer required for editor mode');
             return;
         }
 
-        // Create unique entity ID for editor
-        const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
-
-        // Editor scale: the base scale already includes type-specific multipliers (50 for trees, 1 for rocks)
-        // We need a consistent base multiplier for worldObjects visualization
-        // The scale calculation gives us: 0.8-1.2 for rocks, 40-60 for trees
-        // We normalize by dividing out the type multiplier, then apply a standard multiplier
-        const typeMultiplier = envObj.type === 'rock' ? 1 : 50;
-        const normalizedScale = scale / typeMultiplier; // 0.8-1.2 for all types
-        const editorScale = normalizedScale * 32; // Apply consistent 32x multiplier
-
-        // Spawn using EntityRenderer
+        // Spawn using EntityRenderer with same scale as runtime
         const spawned = await this.entityRenderer.spawnEntity(entityId, {
             collection: 'worldObjects',
             type: envObj.type,
             position: { x: worldX, y: height, z: worldZ },
             rotation: rotation,
-            scale: editorScale,
+            scale: scale,
             facing: rotation
         });
 
