@@ -214,16 +214,16 @@ class EntityRenderer {
 
         // For cliffs, multiply by 32
         const scaleMultiplier = data.collection === 'cliffs' ? 32 : 1;
-        const finalScale = new THREE_.Vector3(
+        const finalScale = new THREE.Vector3(
             baseScale.x * scaleMultiplier,
             baseScale.y * scaleMultiplier,
             baseScale.z * scaleMultiplier
         );
 
-        const matrix = new THREE_.Matrix4();
+        const matrix = new THREE.Matrix4();
         matrix.compose(
-            new THREE_.Vector3(data.position.x, data.position.y, data.position.z),
-            new THREE_.Quaternion().setFromEuler(new THREE_.Euler(0, data.rotation || 0, 0)),
+            new THREE.Vector3(data.position.x, data.position.y, data.position.z),
+            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
             finalScale
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
