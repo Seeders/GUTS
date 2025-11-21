@@ -651,9 +651,7 @@ class WorldRenderer {
         const extX = gridX * gridSize + extensionSize;
         const extZ = gridZ * gridSize + extensionSize;
 
-        // Apply height to all pixels in this tile with cliff smoothing
-        const neighborCheckDist = this.terrainDataManager.heightMapSettings?.resolutionDivisor || 1;
-
+        // First, set the base height for all pixels
         for (let dz = 0; dz < gridSize; dz++) {
             for (let dx = 0; dx < gridSize; dx++) {
                 const finalX = extX + dx;
@@ -661,34 +659,8 @@ class WorldRenderer {
 
                 if (finalX >= 0 && finalX < extendedSize &&
                     finalZ >= 0 && finalZ < extendedSize) {
-
-                    // Check 8 neighbors for cliff smoothing
-                    let pixelHeight = height;
-                    const neighbors = [
-                        { x: finalX - neighborCheckDist, z: finalZ },
-                        { x: finalX + neighborCheckDist, z: finalZ },
-                        { x: finalX, z: finalZ - neighborCheckDist },
-                        { x: finalX, z: finalZ + neighborCheckDist },
-                        { x: finalX - neighborCheckDist, z: finalZ - neighborCheckDist },
-                        { x: finalX + neighborCheckDist, z: finalZ - neighborCheckDist },
-                        { x: finalX - neighborCheckDist, z: finalZ + neighborCheckDist },
-                        { x: finalX + neighborCheckDist, z: finalZ + neighborCheckDist }
-                    ];
-
-                    for (const neighbor of neighbors) {
-                        if (neighbor.x >= 0 && neighbor.x < extendedSize &&
-                            neighbor.z >= 0 && neighbor.z < extendedSize) {
-                            const neighborIndex = neighbor.z * extendedSize + neighbor.x;
-                            const neighborHeight = this.terrainDataManager.heightMapData[neighborIndex] || 0;
-
-                            if (neighborHeight < pixelHeight) {
-                                pixelHeight = neighborHeight;
-                            }
-                        }
-                    }
-
                     const heightIndex = finalZ * extendedSize + finalX;
-                    this.terrainDataManager.heightMapData[heightIndex] = pixelHeight;
+                    this.terrainDataManager.heightMapData[heightIndex] = height;
                 }
             }
         }
@@ -713,9 +685,7 @@ class WorldRenderer {
         let minGridX = Infinity, maxGridX = -Infinity;
         let minGridZ = Infinity, maxGridZ = -Infinity;
 
-        const neighborCheckDist = this.terrainDataManager.heightMapSettings?.resolutionDivisor || 1;
-
-        // First pass: Set all tile heights without smoothing
+        // Apply all height changes to the data
         changes.forEach(change => {
             const { gridX, gridZ, heightLevel } = change;
             const height = heightLevel * heightStep;
@@ -729,7 +699,7 @@ class WorldRenderer {
             const extX = gridX * gridSize + extensionSize;
             const extZ = gridZ * gridSize + extensionSize;
 
-            // Set base height for all pixels in this tile
+            // Set height for all pixels in this tile
             for (let dz = 0; dz < gridSize; dz++) {
                 for (let dx = 0; dx < gridSize; dx++) {
                     const finalX = extX + dx;
@@ -739,55 +709,6 @@ class WorldRenderer {
                         finalZ >= 0 && finalZ < extendedSize) {
                         const heightIndex = finalZ * extendedSize + finalX;
                         this.terrainDataManager.heightMapData[heightIndex] = height;
-                    }
-                }
-            }
-        });
-
-        // Second pass: Apply cliff smoothing to all changed tiles
-        changes.forEach(change => {
-            const { gridX, gridZ, heightLevel } = change;
-            const height = heightLevel * heightStep;
-
-            const extX = gridX * gridSize + extensionSize;
-            const extZ = gridZ * gridSize + extensionSize;
-
-            for (let dz = 0; dz < gridSize; dz++) {
-                for (let dx = 0; dx < gridSize; dx++) {
-                    const finalX = extX + dx;
-                    const finalZ = extZ + dz;
-
-                    if (finalX >= 0 && finalX < extendedSize &&
-                        finalZ >= 0 && finalZ < extendedSize) {
-
-                        const heightIndex = finalZ * extendedSize + finalX;
-                        let pixelHeight = this.terrainDataManager.heightMapData[heightIndex];
-
-                        // Check 8 neighbors for cliff smoothing
-                        const neighbors = [
-                            { x: finalX - neighborCheckDist, z: finalZ },
-                            { x: finalX + neighborCheckDist, z: finalZ },
-                            { x: finalX, z: finalZ - neighborCheckDist },
-                            { x: finalX, z: finalZ + neighborCheckDist },
-                            { x: finalX - neighborCheckDist, z: finalZ - neighborCheckDist },
-                            { x: finalX + neighborCheckDist, z: finalZ - neighborCheckDist },
-                            { x: finalX - neighborCheckDist, z: finalZ + neighborCheckDist },
-                            { x: finalX + neighborCheckDist, z: finalZ + neighborCheckDist }
-                        ];
-
-                        for (const neighbor of neighbors) {
-                            if (neighbor.x >= 0 && neighbor.x < extendedSize &&
-                                neighbor.z >= 0 && neighbor.z < extendedSize) {
-                                const neighborIndex = neighbor.z * extendedSize + neighbor.x;
-                                const neighborHeight = this.terrainDataManager.heightMapData[neighborIndex] || 0;
-
-                                if (neighborHeight < pixelHeight) {
-                                    pixelHeight = neighborHeight;
-                                }
-                            }
-                        }
-
-                        this.terrainDataManager.heightMapData[heightIndex] = pixelHeight;
                     }
                 }
             }
