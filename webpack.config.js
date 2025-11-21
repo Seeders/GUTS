@@ -139,7 +139,22 @@ const serverConfig = entries.server ? {
             banner: `GUTS Game Engine - Server Bundle
 Project: ${projectName}
 Built: ${new Date().toISOString()}
-Mode: ${mode}`,
+Mode: ${mode}
+
+IMPORTANT: This bundle expects global.engine to be set up before loading.
+Set up in server_game.js before loading this bundle.`,
+            entryOnly: true,
+            raw: false
+        }),
+        new webpack.BannerPlugin({
+            banner: `
+// Setup globals for server environment
+if (typeof global !== 'undefined') {
+    if (!global.engine) global.engine = {};
+    if (!global.window) global.window = global;
+}
+`,
+            raw: true,
             entryOnly: true
         })
     ],

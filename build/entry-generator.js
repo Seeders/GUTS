@@ -266,7 +266,34 @@ class EntryGenerator {
     }
 
     /**
-     * Generate server entry point
+     * Generate imports using CommonJS require (for server, to avoid hoisting issues)
+     */
+    generateCommonJSImports(modules, varPrefix = 'module') {
+        const requires = [];
+        const exports = [];
+        const seen = new Set();
+
+        modules.forEach((mod) => {
+            const moduleName = mod.requireName || mod.fileName || mod.name;
+
+            if (seen.has(moduleName)) {
+                console.log(`⚠️ Skipping duplicate: ${moduleName}`);
+                return;
+            }
+            seen.add(moduleName);
+
+            const varName = `${varPrefix}_${mod.fileName || mod.name}`;
+            const requirePath = mod.path.replace(/\\/g, '/');
+
+            requires.push(`const ${varName} = require('${requirePath}');`);
+            exports.push(`  ${moduleName}: ${varName}`);
+        });
+
+        return { requires, exports };
+    }
+
+    /**
+     * Generate server entry point (using CommonJS to avoid ES6 import hoisting)
      */
     generateServerEntry() {
         const { server } = this.buildConfig;
@@ -280,29 +307,38 @@ class EntryGenerator {
 
         // Header
         sections.push(`/**
- * GUTS Game Server Bundle
+ * GUTS Game Server Bundle (CommonJS)
  * Generated: ${new Date().toISOString()}
  * Project: ${this.buildConfig.projectName}
  */
 `);
 
-        // Import libraries
+        // Setup globals FIRST
+        sections.push('// ========== SETUP GLOBALS ==========');
+        sections.push('if (!global.engine) global.engine = {};');
+        sections.push('if (!global.window) global.window = global;');
+        sections.push('');
+
+        // Require libraries (synchronous, happens in order)
         if (server.libraries.length > 0) {
             sections.push('// ========== LIBRARIES ==========');
-            const { imports, exports } = this.generateImports(server.libraries, 'lib');
-            sections.push(...imports);
+            const { requires, exports } = this.generateCommonJSImports(server.libraries, 'lib');
+            sections.push(...requires);
             sections.push('');
             sections.push('const Libraries = {');
             sections.push(exports.join(',\n'));
             sections.push('};');
             sections.push('');
+            sections.push('// Make libraries available IMMEDIATELY in global.engine');
+            sections.push('Object.assign(global.engine, Libraries);');
+            sections.push('');
         }
 
-        // Import managers
+        // Require managers
         if (server.managers.length > 0) {
             sections.push('// ========== MANAGERS ==========');
-            const { imports, exports } = this.generateImports(server.managers, 'mgr');
-            sections.push(...imports);
+            const { requires, exports } = this.generateCommonJSImports(server.managers, 'mgr');
+            sections.push(...requires);
             sections.push('');
             sections.push('const Managers = {');
             sections.push(exports.join(',\n'));
@@ -310,11 +346,11 @@ class EntryGenerator {
             sections.push('');
         }
 
-        // Import systems
+        // Require systems
         if (server.systems.length > 0) {
             sections.push('// ========== SYSTEMS ==========');
-            const { imports, exports } = this.generateImports(server.systems, 'sys');
-            sections.push(...imports);
+            const { requires, exports } = this.generateCommonJSImports(server.systems, 'sys');
+            sections.push(...requires);
             sections.push('');
             sections.push('const Systems = {');
             sections.push(exports.join(',\n'));
@@ -322,11 +358,11 @@ class EntryGenerator {
             sections.push('');
         }
 
-        // Import abilities
+        // Require abilities
         if (server.abilities.length > 0) {
             sections.push('// ========== ABILITIES ==========');
-            const { imports, exports } = this.generateImports(server.abilities, 'ability');
-            sections.push(...imports);
+            const { requires, exports } = this.generateCommonJSImports(server.abilities, 'ability');
+            sections.push(...requires);
             sections.push('');
             sections.push('const Abilities = {');
             sections.push(exports.join(',\n'));
@@ -353,6 +389,11 @@ class EntryGenerator {
         sections.push('  abilities: Abilities,');
         sections.push('  classRegistry: ClassRegistry');
         sections.push('};');
+        sections.push('');
+        sections.push('// Also expose in global.engine for compatibility');
+        sections.push('global.engine.managers = Managers;');
+        sections.push('global.engine.systems = Systems;');
+        sections.push('global.engine.abilities = Abilities;');
         sections.push('');
 
         // Export
