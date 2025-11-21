@@ -464,9 +464,14 @@ app.post('/api/save-texture', async (req, res) => {
     }
 });
 
+// Setup Webpack Build Integration
+const WebpackEditorIntegration = require('./build/editor-integration');
+const webpackIntegration = new WebpackEditorIntegration();
+webpackIntegration.setupRoutes(app);
+
 // Start the server
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Files will be served from: ${PROJS_DIR}`);
-
+    console.log(`Webpack integration enabled`);
 });
