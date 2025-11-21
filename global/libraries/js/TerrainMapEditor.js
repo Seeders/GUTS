@@ -2279,18 +2279,18 @@ class TerrainMapEditor {
                 const terrainSize = this.terrainDataManager.terrainSize;
                 const halfGrid = gridSize / 2;
                 const x = (gridX * gridSize) - (terrainSize / 2) + halfGrid;
-                const z = (gridZ * gridSize) - (terrainSize / 2) + halfGrid;
+                const y = (gridZ * gridSize) - (terrainSize / 2) + halfGrid;
 
                 const existingIndex = this.tileMap.environmentObjects.findIndex(
-                    obj => obj.x === x && obj.z === z
+                    obj => obj.x === x && obj.y === y
                 );
 
                 if (existingIndex === -1) {
-                    // Add new environment object with world position
+                    // Add new environment object with world position (x, y where y=worldZ)
                     this.tileMap.environmentObjects.push({
                         type: this.selectedObjectType,
                         x: x,
-                        z: z
+                        y: y
                     });
 
                     // Respawn all environment objects to include the new one
