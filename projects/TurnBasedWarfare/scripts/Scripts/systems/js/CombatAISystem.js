@@ -20,19 +20,30 @@ class CombatAISystem extends engine.BaseSystem {
 
         this.DAMAGE_TIMING_RATIO = 0.5;
 
-        // TARGET_POSITION_THRESHOLD will be set in init() after GridSystem registers functions
-        this.TARGET_POSITION_THRESHOLD = null;
+        // TARGET_POSITION_THRESHOLD will be calculated lazily on first access
+        this._TARGET_POSITION_THRESHOLD = null;
 
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
     }
 
-    init() {
-        // Calculate target position threshold AFTER GridSystem has initialized
-        // Use placement grid size (half of terrain grid) for position threshold
-        this.TARGET_POSITION_THRESHOLD = this.game.gameManager.call('getPlacementGridSize') * 0.5;
-        console.log('[CombatAISystem] TARGET_POSITION_THRESHOLD:', this.TARGET_POSITION_THRESHOLD);
+    // Lazy getter for TARGET_POSITION_THRESHOLD - calculates on first access
+    get TARGET_POSITION_THRESHOLD() {
+        if (this._TARGET_POSITION_THRESHOLD === null) {
+            // Calculate once GridSystem has initialized
+            const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+            if (placementGridSize !== undefined) {
+                this._TARGET_POSITION_THRESHOLD = placementGridSize * 0.5;
+                console.log('[CombatAISystem] TARGET_POSITION_THRESHOLD calculated:', this._TARGET_POSITION_THRESHOLD);
+            } else {
+                // Fallback if GridSystem not initialized yet
+                return 12; // Default value (assuming gridSize=48, placementGridSize=24, threshold=12)
+            }
+        }
+        return this._TARGET_POSITION_THRESHOLD;
+    }
 
+    init() {
         this.game.gameManager.register('setRetaliatoryTarget', this.setRetaliatoryTarget.bind(this));
         this.game.gameManager.register('startDeathProcess', this.startDeathProcess.bind(this));
         this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
@@ -143,22 +154,12 @@ class CombatAISystem extends engine.BaseSystem {
             } else {
                 // No enemies present - handle idle/movement logic
                 if(aiState.targetPosition){
-                    const shouldMove = aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored;
-                    console.log(`[CombatAI] Unit ${entityId}: distance=${aiState.targetDistance.toFixed(2)}, threshold=${this.TARGET_POSITION_THRESHOLD}, anchored=${vel.anchored}, shouldMove=${shouldMove}, state=${aiState.state}`);
-
-                    if(shouldMove){
+                    if(aiState.targetDistance > this.TARGET_POSITION_THRESHOLD && !vel.anchored){
                         if(aiState.state !== 'chasing'){
                             this.changeAIState(aiState, 'chasing');
                         }
                     } else {
                         if (aiState.state !== 'idle') {
-                            console.log('cleared player order 1', {
-                                distance: aiState.targetDistance,
-                                threshold: this.TARGET_POSITION_THRESHOLD,
-                                anchored: vel.anchored,
-                                targetPos: aiState.targetPosition,
-                                unitPos: {x: pos.x, z: pos.z}
-                            });
                             let currentAI = this.game.gameManager.call('getCurrentAIControllerId', entityId);
                             if(currentAI == "CombatAISystem"){
                                 this.onLostTarget(entityId);
