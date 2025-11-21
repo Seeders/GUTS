@@ -8,6 +8,14 @@
        <button id="placementsBtn" class="editor-module__btn">Entities</button>
      </div>
 
+     <div class="editor-module__section" style="padding: 10px; border-bottom: 1px solid #444;">
+       <div class="editor-module__form-row">
+         <label for="globalBrushSize" class="editor-module__label">Brush Size:</label>
+         <input type="range" id="globalBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
+         <span id="globalBrushSizeValue" class="editor-module__value-display">1</span>
+       </div>
+     </div>
+
      <div class="editor-module__scroll-y">
        <div id="terrainsPanel">
          <div class="editor-module__section">
@@ -34,11 +42,6 @@
                <button id="terrainFillBtn" class="editor-module__btn editor-module__btn--small">Fill</button>
              </div>
            </div>
-           <div class="editor-module__form-row" id="terrainBrushSizeRow">
-             <label for="terrainBrushSize" class="editor-module__label">Brush Size:</label>
-             <input type="range" id="terrainBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
-             <span id="terrainBrushSizeValue" class="editor-module__value-display">1</span>
-           </div>
          </div>
 
          <div class="editor-module__section">
@@ -52,11 +55,6 @@
        <div id="environmentPanel" style="display: none;">
          <div class="editor-module__section">
            <h3 class="editor-module__section-title">Environment Objects</h3>
-           <div class="editor-module__form-row">
-             <label for="environmentBrushSize" class="editor-module__label">Brush Size:</label>
-             <input type="range" id="environmentBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
-             <span id="environmentBrushSizeValue" class="editor-module__value-display">1</span>
-           </div>
            <div class="terrain-editor__object-controls">
              <button class="editor-module__btn editor-module__btn--small" id="clear-selection-btn">Clear Selection</button>
              <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="delete-mode-btn">Delete Mode</button>
@@ -105,11 +103,6 @@
                <button id="heightBrushBtn" class="editor-module__btn editor-module__btn--small editor-module__btn--active">Brush</button>
                <button id="heightFillBtn" class="editor-module__btn editor-module__btn--small">Fill</button>
              </div>
-           </div>
-           <div class="editor-module__form-row" id="heightBrushSizeRow">
-             <label for="heightBrushSize" class="editor-module__label">Brush Size:</label>
-             <input type="range" id="heightBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
-             <span id="heightBrushSizeValue" class="editor-module__value-display">1</span>
            </div>
          </div>
        </div>

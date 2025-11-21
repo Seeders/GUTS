@@ -516,25 +516,23 @@ class TerrainMapEditor {
             }, 2000);
         });
 
+        // Global brush size slider
+        document.getElementById('globalBrushSize').addEventListener('input', (e) => {
+            this.brushSize = parseInt(e.target.value);
+            document.getElementById('globalBrushSizeValue').textContent = this.brushSize;
+        });
+
         // Terrain tool buttons
         document.getElementById('terrainBrushBtn').addEventListener('click', () => {
             this.terrainTool = 'brush';
             document.getElementById('terrainBrushBtn').classList.add('editor-module__btn--active');
             document.getElementById('terrainFillBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('terrainBrushSizeRow').style.display = 'flex';
         });
 
         document.getElementById('terrainFillBtn').addEventListener('click', () => {
             this.terrainTool = 'fill';
             document.getElementById('terrainFillBtn').classList.add('editor-module__btn--active');
             document.getElementById('terrainBrushBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('terrainBrushSizeRow').style.display = 'none';
-        });
-
-        // Terrain brush size
-        document.getElementById('terrainBrushSize').addEventListener('input', (e) => {
-            this.brushSize = parseInt(e.target.value);
-            document.getElementById('terrainBrushSizeValue').textContent = this.brushSize;
         });
 
         // Height tool buttons
@@ -542,26 +540,12 @@ class TerrainMapEditor {
             this.terrainTool = 'brush';
             document.getElementById('heightBrushBtn').classList.add('editor-module__btn--active');
             document.getElementById('heightFillBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('heightBrushSizeRow').style.display = 'flex';
         });
 
         document.getElementById('heightFillBtn').addEventListener('click', () => {
             this.terrainTool = 'fill';
             document.getElementById('heightFillBtn').classList.add('editor-module__btn--active');
             document.getElementById('heightBrushBtn').classList.remove('editor-module__btn--active');
-            document.getElementById('heightBrushSizeRow').style.display = 'none';
-        });
-
-        // Height brush size
-        document.getElementById('heightBrushSize').addEventListener('input', (e) => {
-            this.brushSize = parseInt(e.target.value);
-            document.getElementById('heightBrushSizeValue').textContent = this.brushSize;
-        });
-
-        // Environment brush size
-        document.getElementById('environmentBrushSize').addEventListener('input', (e) => {
-            this.brushSize = parseInt(e.target.value);
-            document.getElementById('environmentBrushSizeValue').textContent = this.brushSize;
         });
 
         this.canvasEl.addEventListener('contextmenu', (e) => {
