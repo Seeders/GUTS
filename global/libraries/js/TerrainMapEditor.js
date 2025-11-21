@@ -558,6 +558,12 @@ class TerrainMapEditor {
             document.getElementById('heightBrushSizeValue').textContent = this.brushSize;
         });
 
+        // Environment brush size
+        document.getElementById('environmentBrushSize').addEventListener('input', (e) => {
+            this.brushSize = parseInt(e.target.value);
+            document.getElementById('environmentBrushSizeValue').textContent = this.brushSize;
+        });
+
         this.canvasEl.addEventListener('contextmenu', (e) => {
             e.preventDefault(); // Prevent default context menu
 

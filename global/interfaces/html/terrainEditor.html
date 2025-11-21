@@ -52,6 +52,11 @@
        <div id="environmentPanel" style="display: none;">
          <div class="editor-module__section">
            <h3 class="editor-module__section-title">Environment Objects</h3>
+           <div class="editor-module__form-row">
+             <label for="environmentBrushSize" class="editor-module__label">Brush Size:</label>
+             <input type="range" id="environmentBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
+             <span id="environmentBrushSizeValue" class="editor-module__value-display">1</span>
+           </div>
            <div class="terrain-editor__object-controls">
              <button class="editor-module__btn editor-module__btn--small" id="clear-selection-btn">Clear Selection</button>
              <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="delete-mode-btn">Delete Mode</button>
