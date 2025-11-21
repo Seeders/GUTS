@@ -1112,66 +1112,85 @@ class TerrainMapEditor {
     }
 
     deleteEnvironmentObjectAt(e) {
-        // Get mouse position and convert to game coordinates
-        let offsetY = (this.canvasEl.height - this.mapSize * this.config.gridSize) / 2;//48*4;
-        const rect = this.canvasEl.getBoundingClientRect();
-        // Account for CSS scaling of the canvas
-        const scaleX = this.canvasEl.width / rect.width;
-        const scaleY = this.canvasEl.height / rect.height;
-        let mouseX = (e.clientX - rect.left) * scaleX;
-        const mouseY = (e.clientY - rect.top) * scaleY - offsetY;
-
-        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
-            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+        // Use cached grid position from raycasting
+        if (!this.cachedGridPosition) {
+            return;
         }
-        
-        const isoPos = { x: mouseX, y: mouseY };
-        const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
-        
-        // Find and remove any environment object near the click position
-        const clickRadius = 30; // Radius for detecting objects to delete (in pixels)
-        let deletedObject = false;
-        
-        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
-            const obj = this.tileMap.environmentObjects[i];
-            const dx = obj.x - pixelPos.x;
-            const dy = obj.y - pixelPos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < clickRadius) {
-                // Remove this object
-                const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];
-                deletedObject = true;
 
-                // Show feedback
-                this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;
-                this.placementModeIndicator.style.opacity = '1';
+        const gridX = this.cachedGridPosition.x;
+        const gridZ = this.cachedGridPosition.z;
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+        const halfGrid = gridSize / 2;
+        const radius = Math.floor(this.brushSize / 2);
 
-                // Hide indicator after a delay
-                clearTimeout(this.indicatorTimeout);
-                this.indicatorTimeout = setTimeout(() => {
-                    this.placementModeIndicator.style.opacity = '0';
-                }, 1500);
+        // Calculate brush area in grid coordinates
+        const objectsToDelete = [];
 
-                // Update the map rendering
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const targetGridX = gridX + dx;
+                const targetGridZ = gridZ + dy;
 
-                // Update object counts
-                this.updateObjectCounts();
+                // Check bounds
+                if (targetGridX >= 0 && targetGridX < this.mapSize &&
+                    targetGridZ >= 0 && targetGridZ < this.mapSize) {
 
-                // Update 3D spawned environment objects
-                this.updateEnvironmentObjects();
+                    // Check if within brush radius (circular brush)
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= radius + 0.5) {
+                        // Convert grid position to world position to match environment object format
+                        const worldX = (targetGridX * gridSize) + halfGrid;
+                        const worldZ = (targetGridZ * gridSize) + halfGrid;
 
-                // Export the updated map
-                this.exportMap();
-                break; // Only remove one object at a time
+                        // Find any environment objects at this position
+                        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
+                            const obj = this.tileMap.environmentObjects[i];
+
+                            // Check if object is at this grid position (with small tolerance)
+                            const tolerance = gridSize * 0.1;
+                            if (Math.abs(obj.x - worldX) < tolerance &&
+                                Math.abs(obj.y - worldZ) < tolerance) {
+                                objectsToDelete.push(i);
+                            }
+                        }
+                    }
+                }
             }
         }
-        
-        // Show feedback if no object was found to delete
-        if (!deletedObject && this.deleteMode) {
-            this.placementModeIndicator.textContent = 'No object found at this location';
+
+        // Delete all found objects
+        if (objectsToDelete.length > 0) {
+            // Sort indices in descending order to remove from end first
+            objectsToDelete.sort((a, b) => b - a);
+
+            for (const index of objectsToDelete) {
+                this.tileMap.environmentObjects.splice(index, 1);
+            }
+
+            // Show feedback
+            this.placementModeIndicator.textContent = `Deleted ${objectsToDelete.length} object(s)`;
             this.placementModeIndicator.style.opacity = '1';
-            
+
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 1500);
+
+            // Update object counts
+            this.updateObjectCounts();
+
+            // Update 3D spawned environment objects
+            this.updateEnvironmentObjects();
+
+            // Export the updated map
+            this.exportMap();
+        } else if (this.deleteMode) {
+            // Show feedback if no objects were found
+            this.placementModeIndicator.textContent = 'No objects found in brush area';
+            this.placementModeIndicator.style.opacity = '1';
+
             // Hide indicator after a delay
             clearTimeout(this.indicatorTimeout);
             this.indicatorTimeout = setTimeout(() => {
