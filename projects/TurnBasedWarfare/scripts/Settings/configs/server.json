@@ -20,6 +20,7 @@
     "SeededRandom",
     "MinHeap",
     "DesyncDebugger",
-    "TerrainDataManager"
+    "TerrainDataManager",
+    "EnvironmentObjectSpawner"
   ]
 }

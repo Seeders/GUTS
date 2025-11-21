@@ -116,6 +116,9 @@ async function startServer() {
     try {
         // ServerEngine/ServerNetworkManager will pick up global.io instead of creating a new listener
         await gameServer.init('TurnBasedWarfare');
+        if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) {
+            global.window.COMPILED_GAME.init(gameServer);
+        }
         console.log('GUTS Multiplayer Server started successfully');
         console.log('Game server running on port 3000');
 

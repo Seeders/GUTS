@@ -11,6 +11,7 @@
     "three_SkeletonUtils",
     "SceneManager",
     "ShapeFactory",
+    "EnvironmentObjectSpawner",
     "ImageManager",
     "SpatialGrid",
     "CoordinateTranslator",

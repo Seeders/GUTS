@@ -1,16 +1,3 @@
-/**
- * TerrainDataManager - Core terrain data management and queries
- *
- * Handles:
- * - Level and world data loading
- * - Height map data processing
- * - Terrain type lookups
- * - Height queries (with smooth interpolation)
- * - Boundary validation
- * - Environment object data management
- *
- * Works on both client and server (no rendering, just data)
- */
 class TerrainDataManager {
     constructor(config = {}) {
         // Collections reference (levels, worlds, terrainTypes, etc.)

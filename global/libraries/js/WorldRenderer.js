@@ -243,8 +243,8 @@ class WorldRenderer {
                 const deltaY = event.clientY - this.lastMouseY;
 
                 // Update rotation angles
-                this.cameraRotationY -= deltaX * 0.005; // Horizontal rotation
-                this.cameraRotationX -= deltaY * 0.005; // Vertical rotation
+                this.cameraRotationY -= deltaX * 0.001; // Horizontal rotation
+                this.cameraRotationX += deltaY * 0.001; // Vertical rotation
 
                 // Clamp vertical rotation to prevent flipping
                 this.cameraRotationX = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.cameraRotationX));
