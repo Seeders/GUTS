@@ -575,13 +575,13 @@ class WorldRenderer {
         const segments = extendedSize / (heightMapSettings?.resolutionDivisor || 1);
         const verticesPerRow = segments + 1;
 
-        // Convert grid coordinates to extended coordinates
+        // Convert grid coordinates to extended coordinates (center of the tile)
         const extensionSize = this.terrainDataManager.extensionSize;
-        const centerX = gridX * gridSize + extensionSize;
-        const centerZ = gridZ * gridSize + extensionSize;
+        const centerX = gridX * gridSize + extensionSize + gridSize / 2;
+        const centerZ = gridZ * gridSize + extensionSize + gridSize / 2;
 
         // Calculate affected vertex range (add buffer for smooth transitions)
-        const updateRadius = radius * gridSize + gridSize;
+        const updateRadius = radius * gridSize;
         const minX = Math.max(0, centerX - updateRadius);
         const maxX = Math.min(extendedSize, centerX + updateRadius);
         const minZ = Math.max(0, centerZ - updateRadius);
