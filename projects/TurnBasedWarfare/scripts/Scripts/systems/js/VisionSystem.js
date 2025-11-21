@@ -17,7 +17,7 @@ class VisionSystem extends engine.BaseSystem {
         const dz = to.z - from.z;
         const distanceSq = dx * dx + dz * dz;
         const distance = Math.sqrt(distanceSq);
-        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const gridSize = this.game.gameManager.call('getGridSize');
 
         if (distance < gridSize*2) return true;
 
@@ -88,7 +88,7 @@ class VisionSystem extends engine.BaseSystem {
 
     checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
         const terrainSize = this.game.gameManager.call("getTerrainSize");
-        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const gridSize = this.game.gameManager.call('getGridSize');
 
         const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
         const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);

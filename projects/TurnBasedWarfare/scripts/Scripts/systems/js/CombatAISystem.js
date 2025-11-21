@@ -21,7 +21,7 @@ class CombatAISystem extends engine.BaseSystem {
         this.DAMAGE_TIMING_RATIO = 0.5;
 
         // Use placement grid size (half of terrain grid) for position threshold
-        this.TARGET_POSITION_THRESHOLD = this.game.getCollections().configs.game.gridSize / 2 * 0.5;
+        this.TARGET_POSITION_THRESHOLD = this.game.gameManager.call('getPlacementGridSize') * 0.5;
         // Debug logging
         this.DEBUG_ENEMY_DETECTION = true; // Set to false to disable debug
     }

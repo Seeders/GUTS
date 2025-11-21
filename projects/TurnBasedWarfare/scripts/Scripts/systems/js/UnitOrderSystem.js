@@ -542,7 +542,7 @@ class UnitOrderSystem extends engine.BaseSystem {
     getFormationTargetPositions(targetPosition, placementIds){
         let targetPositions = [];
         // Use placement grid size (half of terrain grid) for unit formation spacing
-        const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+        const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
         const unitPadding = 1;
 
         // Round to 2 decimal places to avoid floating-point precision issues that cause desync

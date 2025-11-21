@@ -464,7 +464,7 @@ class ServerPlacementSystem extends engine.BaseSystem {
                                 const dx = position.x - targetPosition.x;
                                 const dz = position.z - targetPosition.z;
                                 const distSq = dx * dx + dz * dz;
-                                const placementGridSize = this.game.getCollections().configs.game.gridSize / 2;
+                                const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
                                 const threshold = placementGridSize * 0.5;
 
                                 if (distSq <= threshold * threshold) {

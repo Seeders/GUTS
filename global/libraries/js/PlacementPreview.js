@@ -196,13 +196,40 @@ class PlacementPreview {
     
     showAtGridPositions(gridPositions, isValid = true, isBuilding = false) {
         // Convert grid positions to world positions
-        // For terrain editor: grid position = world position at center of tile
-        const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
-        const worldPositions = gridPositions.map(gridPos => ({
-            x: gridPos.x * gridSize,
-            y: 0,
-            z: gridPos.z * gridSize
-        }));
+        // Use game's CoordinateTranslator if available, otherwise fallback to simple multiplication
+        let worldPositions;
+
+        if (this.game && this.game.gameManager) {
+            const coordinateTranslator = this.game.gameManager.call('getCoordinateTranslator');
+            if (coordinateTranslator && !isBuilding) {
+                // Use centralized coordinate transformation for placement grid
+                worldPositions = gridPositions.map(gridPos =>
+                    coordinateTranslator.placementGridToWorld(gridPos.x, gridPos.z)
+                );
+            } else if (coordinateTranslator && isBuilding) {
+                // Use centralized coordinate transformation for terrain grid (buildings)
+                worldPositions = gridPositions.map(gridPos =>
+                    coordinateTranslator.tileToWorld(gridPos.x, gridPos.z)
+                );
+            } else {
+                // Fallback to simple multiplication
+                const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
+                worldPositions = gridPositions.map(gridPos => ({
+                    x: gridPos.x * gridSize,
+                    y: 0,
+                    z: gridPos.z * gridSize
+                }));
+            }
+        } else {
+            // Editor mode or legacy: grid position = world position at center of tile
+            const gridSize = isBuilding ? this.config.terrainGridSize : this.config.placementGridSize;
+            worldPositions = gridPositions.map(gridPos => ({
+                x: gridPos.x * gridSize,
+                y: 0,
+                z: gridPos.z * gridSize
+            }));
+        }
+
         this.showAtWorldPositions(worldPositions, isValid, isBuilding);
     }
 

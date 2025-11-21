@@ -53,7 +53,7 @@ class MultiplayerPlacementSystem extends engine.BaseSystem {
         this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
         this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
-        this.mouseWorldOffset = { x: this.game.getCollections().configs.game.gridSize / 4, z: this.game.getCollections().configs.game.gridSize / 4 };
+        this.mouseWorldOffset = { x: this.game.gameManager.call('getPlacementGridSize') / 2, z: this.game.gameManager.call('getPlacementGridSize') / 2 };
 
     }
 

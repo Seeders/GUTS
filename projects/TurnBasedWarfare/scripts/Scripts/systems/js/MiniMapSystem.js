@@ -137,13 +137,13 @@ class MiniMapSystem extends engine.BaseSystem {
     }
 
     createIconMaterials() {
-        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const gridSize = this.game.gameManager.call('getGridSize');
         // Unit icons - slightly bigger
         this.unitIconGeometry = new THREE.CircleGeometry(gridSize, 4);
-        
+
         // Building icons - much bigger
         this.buildingIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
-        
+
         // Gold vein icons - medium size
         this.goldVeinIconGeometry = new THREE.CircleGeometry(gridSize*2, 4);
         

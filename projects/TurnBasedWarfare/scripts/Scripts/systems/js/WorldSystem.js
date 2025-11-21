@@ -116,6 +116,21 @@ class WorldSystem extends engine.BaseSystem {
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper,
             terrainDataManager.heightMapSettings);
 
+        // Pass CoordinateTranslator to WorldRenderer for centralized coordinate transforms
+        const coordinateTranslator = this.game.gameManager.call('getCoordinateTranslator');
+        if (coordinateTranslator) {
+            this.worldRenderer.coordinateTranslator = coordinateTranslator;
+            // Update extension configuration if available
+            if (terrainDataManager.extensionSize) {
+                coordinateTranslator.updateConfig({
+                    extensionSize: terrainDataManager.extensionSize,
+                    extendedSize: terrainDataManager.extendedSize
+                });
+            }
+        } else {
+            console.warn('[WorldSystem] CoordinateTranslator not available');
+        }
+
         // Render terrain textures
         this.worldRenderer.renderTerrain();
 

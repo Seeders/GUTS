@@ -69,7 +69,7 @@ class PathfindingSystem extends engine.BaseSystem {
         }
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
-        this.navGridSize = collections.configs.game.gridSize / 2;
+        this.navGridSize = this.game.gameManager.call('getPlacementGridSize');
         console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
 
         // Load ramps data
@@ -99,7 +99,7 @@ class PathfindingSystem extends engine.BaseSystem {
     // Convert nav grid coordinates to terrain grid coordinates
     navGridToTerrainGrid(navGridX, navGridZ) {
         const worldPos = this.navGridToWorld(navGridX, navGridZ);
-        const gridSize = this.game.getCollections().configs.game.gridSize;
+        const gridSize = this.game.gameManager.call('getGridSize');
         const terrainSize = this.game.gameManager.call('getTerrainSize');
 
         const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);

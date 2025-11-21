@@ -46,6 +46,7 @@ class WorldRenderer {
         this.terrainDataManager = null;
         this.tileMapper = null;
         this.collections = null;
+        this.coordinateTranslator = null;  // For centralized coordinate transformations
 
         // Configuration
         this.config = {
@@ -787,57 +788,73 @@ class WorldRenderer {
 
         console.log(`[WorldRenderer] Spawning ${cliffData.length} cliffs...`);
 
-        const gridSize = this.terrainDataManager.gridSize;
-        const terrainSize = this.terrainDataManager.tileMap.size * gridSize;
         const heightStep = this.terrainDataManager.heightStep;
+
+        // Use CoordinateTranslator if available, otherwise fallback to manual calculation
+        const useCoordinateTranslator = this.coordinateTranslator !== null;
+
+        if (!useCoordinateTranslator) {
+            console.warn('[WorldRenderer] CoordinateTranslator not set, using fallback coordinate calculations');
+        }
 
         // Spawn each cliff
         let spawnedCount = 0;
         for (const cliff of cliffData) {
-            // Calculate cliff position
-            const tileWorldX = useExtension
-                ? (cliff.gridX + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
-                : cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
-            const tileWorldZ = useExtension
-                ? (cliff.gridZ + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
-                : cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
+            let tileWorldPos, worldPos;
 
-            // Quadrant offsets - each quadrant centered at 1/4 and 3/4 positions
-            const quarterGrid = gridSize / 4;
-            let worldX = tileWorldX;
-            let worldZ = tileWorldZ;
+            if (useCoordinateTranslator) {
+                // Use centralized coordinate translation
+                tileWorldPos = this.coordinateTranslator.tileToWorld(cliff.gridX, cliff.gridZ, useExtension);
+                worldPos = this.coordinateTranslator.applyQuadrantOffset(tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
+            } else {
+                // Fallback: manual calculation
+                const gridSize = this.terrainDataManager.gridSize;
+                const terrainSize = this.terrainDataManager.tileMap.size * gridSize;
 
-            // Position based on quadrant
-            switch (cliff.quadrant) {
-                case 'TL':
-                    worldX -= quarterGrid;
-                    worldZ -= quarterGrid;
-                    break;
-                case 'TR':
-                    worldX += quarterGrid;
-                    worldZ -= quarterGrid;
-                    break;
-                case 'BL':
-                    worldX -= quarterGrid;
-                    worldZ += quarterGrid;
-                    break;
-                case 'BR':
-                    worldX += quarterGrid;
-                    worldZ += quarterGrid;
-                    break;
+                const tileWorldX = useExtension
+                    ? (cliff.gridX + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                    : cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
+                const tileWorldZ = useExtension
+                    ? (cliff.gridZ + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                    : cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
+
+                // Quadrant offsets
+                const quarterGrid = gridSize / 4;
+                let worldX = tileWorldX;
+                let worldZ = tileWorldZ;
+
+                switch (cliff.quadrant) {
+                    case 'TL':
+                        worldX -= quarterGrid;
+                        worldZ -= quarterGrid;
+                        break;
+                    case 'TR':
+                        worldX += quarterGrid;
+                        worldZ -= quarterGrid;
+                        break;
+                    case 'BL':
+                        worldX -= quarterGrid;
+                        worldZ += quarterGrid;
+                        break;
+                    case 'BR':
+                        worldX += quarterGrid;
+                        worldZ += quarterGrid;
+                        break;
+                }
+
+                worldPos = { x: worldX, z: worldZ };
             }
 
             // Cliffs sit 2 levels below tile height
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
             const cliffBottomHeight = (mapHeight - 2) * heightStep;
 
-            const worldPos = { x: worldX, y: cliffBottomHeight, z: worldZ };
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
 
             const spawned = await entityRenderer.spawnEntity(entityId, {
                 collection: 'cliffs',
                 type: cliff.type,
-                position: worldPos,
+                position: { x: worldPos.x, y: cliffBottomHeight, z: worldPos.z },
                 rotation: cliff.rotation
             });
 

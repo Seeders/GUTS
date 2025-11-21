@@ -2,15 +2,18 @@ class GridSystem extends engine.BaseSystem {
     constructor(game) {
         super(game);
         this.game.gridSystem = this;
-        
+
         this.state = new Map();
 
         // NEW: track which half each team owns
         this.teamSides = { player: 'left', enemy: 'right' };
         this.leftBounds = null;
         this.rightBounds = null;
+
+        // CoordinateTranslator for all coordinate space transformations
+        this.coordinateTranslator = null;
     }
-    
+
     init() {
         this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
         this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
@@ -19,20 +22,24 @@ class GridSystem extends engine.BaseSystem {
         this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
         this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
+        this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
+        this.game.gameManager.register('getPlacementGridSize', () => this.cellSize);
+        this.game.gameManager.register('getCoordinateTranslator', () => this.coordinateTranslator);
 
         const collections = this.game.getCollections();
 
         const terrainGridSize = collections.configs.game.gridSize;
         const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
         const currentLevel = collections.configs.state.level;
-        const terrainSize = collections.levels[currentLevel]?.tileMap?.size * terrainGridSize;
+        const tileMapSize = collections.levels[currentLevel]?.tileMap?.size || 32;
+        const terrainSize = tileMapSize * terrainGridSize;
 
         this.cellSize = placementGridSize;
         this.terrainGridSize = terrainGridSize;
         this.showGrid = true;
         this.snapToGrid = true;
         this.highlightValidCells = true;
-        
+
         this.dimensions = {
             width: Math.floor(terrainSize / placementGridSize),
             height: Math.floor(terrainSize / placementGridSize),
@@ -40,7 +47,19 @@ class GridSystem extends engine.BaseSystem {
             startX: -terrainSize / 2,
             startZ: -terrainSize / 2
         };
+
+        // Initialize CoordinateTranslator for centralized coordinate transformations
+        this.coordinateTranslator = new CoordinateTranslator({
+            gridSize: terrainGridSize,
+            tileMapSize: tileMapSize,
+            placementGridDimensions: {
+                startX: this.dimensions.startX,
+                startZ: this.dimensions.startZ
+            }
+        });
+
         console.log("dimensions", this.dimensions);
+        console.log("[GridSystem] Initialized CoordinateTranslator with gridSize:", terrainGridSize, "tileMapSize:", tileMapSize);
         
         this.gridVisualization = null;
 
@@ -151,19 +170,13 @@ class GridSystem extends engine.BaseSystem {
     }
     
     worldToGrid(worldX, worldZ) {
-        const { cellSize, startX, startZ } = this.dimensions;
-        return {
-            x: Math.floor((worldX - startX) / cellSize),
-            z: Math.floor((worldZ - startZ) / cellSize)
-        };
+        // Use CoordinateTranslator for placement grid conversions
+        return this.coordinateTranslator.worldToPlacementGrid(worldX, worldZ);
     }
-    
+
     gridToWorld(gridX, gridZ) {
-        const { cellSize, startX, startZ } = this.dimensions;
-        return {
-            x: startX + (gridX * cellSize),
-            z: startZ + (gridZ * cellSize)
-        };
+        // Use CoordinateTranslator for placement grid conversions
+        return this.coordinateTranslator.placementGridToWorld(gridX, gridZ);
     }
     
     // OPTIMIZED: Early bounds checking
