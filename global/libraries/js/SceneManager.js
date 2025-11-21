@@ -53,7 +53,8 @@ class SceneManager {
                 if(baseClassId){
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(GUTS?.app?.appClasses){
+                    // Check if using webpack bundle or if GUTS classes are available
+                    if(typeof GUTS !== 'undefined' && (GUTS[baseClassId] || window.COMPILED_GAME)){
                         const BaseClassDef = GUTS[baseClassId];
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     } else {
@@ -61,11 +62,12 @@ class SceneManager {
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     }
                 }
-                for(const collectionClassId in classCollection) {    
-                    if(baseClassId && collectionClassId == baseClassId) continue;                
+                for(const collectionClassId in classCollection) {
+                    if(baseClassId && collectionClassId == baseClassId) continue;
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(GUTS?.app?.appClasses){
+                    // Check if using webpack bundle or if GUTS classes are available
+                    if(typeof GUTS !== 'undefined' && (GUTS[collectionClassId] || window.COMPILED_GAME)){
                         const ClassDef = GUTS[collectionClassId];
                         this.game.addClass(collectionClassId, ClassDef, params);
                     } else {
@@ -78,8 +80,9 @@ class SceneManager {
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
                 let ManagerClass = null;
-                if(GUTS?.app?.appClasses){
-                    ManagerClass = GUTS[managerDef.type];        
+                // Check if using webpack bundle or if GUTS classes are available
+                if(typeof GUTS !== 'undefined' && (GUTS[managerDef.type] || window.COMPILED_GAME)){
+                    ManagerClass = GUTS[managerDef.type];
                 } else {
                     ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
                 }     
@@ -91,10 +94,11 @@ class SceneManager {
 
             sceneEntity.systems.forEach((systemDef) => {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
-             
+
                 let SystemClass = null;
-                if(GUTS?.app?.appClasses){
-                    SystemClass = GUTS[systemDef.type];            
+                // Check if using webpack bundle or if GUTS classes are available
+                if(typeof GUTS !== 'undefined' && (GUTS[systemDef.type] || window.COMPILED_GAME)){
+                    SystemClass = GUTS[systemDef.type];
                 } else {
                     SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
                 }    
