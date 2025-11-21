@@ -100,8 +100,8 @@ class WorldRenderer {
                 cameraSettings.far || 30000
             );
         } else if (cameraSettings.zoom) {
-            // Orthographic camera - increase frustum size to prevent clipping when rotated
-            const frustumScale = 2.0;  // Make frustum larger than viewport to prevent clipping
+            // Orthographic camera - make frustum smaller to prevent hitting terrain when rotated
+            const frustumScale = 0.6;  // Smaller frustum stays above terrain
             this.camera = new THREE.OrthographicCamera(
                 (width / -2) * frustumScale,
                 (width / 2) * frustumScale,

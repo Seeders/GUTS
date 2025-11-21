@@ -1644,7 +1644,7 @@ class TerrainMapEditor {
             position: { x: 0, y: 600, z: 600 },
             lookAt: { x: 0, y: 0, z: 0 },
             zoom: 1,
-            near: 1,
+            near: 300,  // Position near plane far enough to never intersect terrain mesh
             far: 30000
         };
 
