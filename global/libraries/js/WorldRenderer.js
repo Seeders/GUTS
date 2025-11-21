@@ -100,12 +100,13 @@ class WorldRenderer {
                 cameraSettings.far || 30000
             );
         } else if (cameraSettings.zoom) {
-            // Orthographic camera
+            // Orthographic camera - increase frustum size to prevent clipping when rotated
+            const frustumScale = 2.0;  // Make frustum larger than viewport to prevent clipping
             this.camera = new THREE.OrthographicCamera(
-                width / -2,
-                width / 2,
-                height / 2,
-                height / -2,
+                (width / -2) * frustumScale,
+                (width / 2) * frustumScale,
+                (height / 2) * frustumScale,
+                (height / -2) * frustumScale,
                 cameraSettings.near || 0.1,
                 cameraSettings.far || 30000
             );
@@ -191,7 +192,7 @@ class WorldRenderer {
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.maxPolarAngle = Math.PI / 2.6;  // Limit to ~69° - prevent orthographic frustum clipping
+        this.controls.maxPolarAngle = Math.PI / 2.05;  // Limit to ~88° - allow nearly horizontal viewing
         this.controls.minPolarAngle = 0.1;
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
