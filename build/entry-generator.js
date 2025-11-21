@@ -37,9 +37,54 @@ class EntryGenerator {
             seen.add(moduleName);
 
             const varName = `${varPrefix}_${mod.fileName || mod.name}`;
-            const relativePath = mod.path.replace(/\\/g, '/');
-            imports.push(`import ${varName} from '${relativePath}';`);
-            exports.push(`  ${moduleName}: ${varName}`);
+            let importPath = mod.path.replace(/\\/g, '/');
+
+            // Special handling for Three.js - use 'three' package name
+            if (importPath.includes('node_modules/three/build/')) {
+                importPath = 'three';
+            }
+            // Three.js examples should use their full path from node_modules
+            else if (importPath.includes('node_modules/three/examples/')) {
+                importPath = importPath.replace(/.*node_modules\//, '');
+            }
+
+            let importStatement;
+            let exportValue = varName;
+
+            // Three.js and its addons use named exports, need namespace import
+            if (moduleName === 'THREE' || mod.name === 'threejs') {
+                importStatement = `import * as ${varName} from '${importPath}';`;
+            }
+            // Three.js addons (GLTFLoader, OrbitControls, EffectComposer, etc.) export named classes
+            else if (mod.name && (
+                mod.name.startsWith('three_') ||
+                mod.name.includes('GLTF') ||
+                mod.name.includes('Orbit') ||
+                mod.name.includes('Effect') ||
+                mod.name.includes('Pass') ||
+                mod.name.includes('Skeleton') ||
+                mod.name.includes('MeshBVH') ||
+                importPath.includes('/three/examples/jsm/') ||
+                importPath.includes('three_')
+            )) {
+                // These modules export specific classes, use namespace import
+                importStatement = `import * as ${varName} from '${importPath}';`;
+                // Try to extract the specific class if requireName exists, with fallback to namespace
+                if (mod.requireName && mod.requireName !== mod.fileName && mod.requireName !== mod.name) {
+                    // Use fallback: try .moduleName first, fall back to whole namespace
+                    exportValue = `(${varName}.${moduleName} || ${varName})`;
+                } else {
+                    // Export the whole namespace (for modules like three_MeshBVH that export multiple things)
+                    exportValue = `${varName}`;
+                }
+            }
+            // Standard default import for other modules
+            else {
+                importStatement = `import ${varName} from '${importPath}';`;
+            }
+
+            imports.push(importStatement);
+            exports.push(`  ${moduleName}: ${exportValue}`);
         });
 
         return { imports, exports };
@@ -149,6 +194,25 @@ class EntryGenerator {
         sections.push('');
         sections.push('// Register all libraries in window.GUTS');
         sections.push('Object.assign(window.GUTS, Libraries);');
+        sections.push('');
+        sections.push('// Setup window.THREE if it exists in libraries');
+        sections.push('if (Libraries.THREE) {');
+        sections.push('  window.THREE = Libraries.THREE;');
+        sections.push('  ');
+        sections.push('  // Add Three.js addons to window.THREE namespace');
+        sections.push('  Object.keys(Libraries).forEach(key => {');
+        sections.push('    if (key.startsWith(\'three_\') || [\'OrbitControls\', \'GLTFLoader\', \'EffectComposer\', \'OutputPass\', \'RenderPixelatedPass\', \'SkeletonUtils\'].includes(key)) {');
+        sections.push('      const addon = Libraries[key];');
+        sections.push('      if (typeof addon === \'object\' && addon !== null) {');
+        sections.push('        // If it\'s a namespace with multiple exports, merge them');
+        sections.push('        Object.assign(window.THREE, addon);');
+        sections.push('      } else {');
+        sections.push('        // If it\'s a single class, add it by name');
+        sections.push('        window.THREE[key] = addon;');
+        sections.push('      }');
+        sections.push('    }');
+        sections.push('  });');
+        sections.push('}');
         sections.push('');
         sections.push('// Setup window.engine context for class inheritance');
         sections.push('if (!window.engine) {');

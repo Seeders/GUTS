@@ -1,6 +1,6 @@
 /**
  * GUTS Game Client Bundle
- * Generated: 2025-11-21T21:58:06.826Z
+ * Generated: 2025-11-21T22:13:47.021Z
  * Project: TurnBasedWarfare
  */
 
@@ -10,10 +10,10 @@ import BaseEngine from '/home/user/GUTS/engine/BaseEngine.js';
 import Engine from '/home/user/GUTS/engine/Engine.js';
 
 // ========== LIBRARIES ==========
-import lib_threejs from '/home/user/GUTS/node_modules/three/build/three.module.min.js';
+import * as lib_threejs from 'three';
 import lib_BaseECSGame from '/home/user/GUTS/global/libraries/js/BaseECSGame.js';
-import lib_three_MeshBVH from '/home/user/GUTS/global/libraries/js/three_MeshBVH.js';
-import lib_three_SkeletonUtils from '/home/user/GUTS/global/libraries/js/three_SkeletonUtils.js';
+import * as lib_three_MeshBVH from '/home/user/GUTS/global/libraries/js/three_MeshBVH.js';
+import * as lib_three_SkeletonUtils from '/home/user/GUTS/global/libraries/js/three_SkeletonUtils.js';
 import lib_SceneManager from '/home/user/GUTS/global/libraries/js/SceneManager.js';
 import lib_ShapeFactory from '/home/user/GUTS/global/libraries/js/ShapeFactory.js';
 import lib_EnvironmentObjectSpawner from '/home/user/GUTS/global/libraries/js/EnvironmentObjectSpawner.js';
@@ -27,8 +27,12 @@ import lib_Entity from '/home/user/GUTS/global/libraries/js/Entity.js';
 import lib_Component from '/home/user/GUTS/global/libraries/js/Component.js';
 import lib_GameState from '/home/user/GUTS/global/libraries/js/GameState.js';
 import lib_ModelManager from '/home/user/GUTS/global/libraries/js/ModelManager.js';
-import lib_GLTFLoader from '/home/user/GUTS/global/libraries/js/GLTFLoader.js';
+import * as lib_three_OrbitControls from 'three/examples/jsm/controls/OrbitControls.js';
+import * as lib_GLTFLoader from '/home/user/GUTS/global/libraries/js/GLTFLoader.js';
 import lib_ECSGame from '/home/user/GUTS/global/libraries/js/ECSGame.js';
+import * as lib_three_EffectComposer from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import * as lib_three_RenderPixelatedPass from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
+import * as lib_three_OutputPass from 'three/examples/jsm/postprocessing/OutputPass.js';
 import lib_GameModeConfigs from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/GameModeConfigs.js';
 import lib_UIComponents from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/UIComponents.js';
 import lib_NotificationSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/NotificationSystem.js';
@@ -54,7 +58,7 @@ const Libraries = {
   THREE: lib_threejs,
   BaseECSGame: lib_BaseECSGame,
   three_MeshBVH: lib_three_MeshBVH,
-  SkeletonUtils: lib_three_SkeletonUtils,
+  SkeletonUtils: (lib_three_SkeletonUtils.SkeletonUtils || lib_three_SkeletonUtils),
   SceneManager: lib_SceneManager,
   ShapeFactory: lib_ShapeFactory,
   EnvironmentObjectSpawner: lib_EnvironmentObjectSpawner,
@@ -68,8 +72,12 @@ const Libraries = {
   Component: lib_Component,
   GameState: lib_GameState,
   ModelManager: lib_ModelManager,
+  OrbitControls: (lib_three_OrbitControls.OrbitControls || lib_three_OrbitControls),
   GLTFLoader: lib_GLTFLoader,
   ECSGame: lib_ECSGame,
+  EffectComposer: (lib_three_EffectComposer.EffectComposer || lib_three_EffectComposer),
+  RenderPixelatedPass: (lib_three_RenderPixelatedPass.RenderPixelatedPass || lib_three_RenderPixelatedPass),
+  OutputPass: (lib_three_OutputPass.OutputPass || lib_three_OutputPass),
   GameModeConfigs: lib_GameModeConfigs,
   UIComponents: lib_UIComponents,
   NotificationSystem: lib_NotificationSystem,
@@ -134,7 +142,7 @@ import sys_CombatAISystem from '/home/user/GUTS/projects/TurnBasedWarfare/script
 import sys_ProjectileSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ProjectileSystem.js';
 import sys_AnimationSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/AnimationSystem.js';
 import sys_ArmyDisplaySystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js';
-import sys_EffectsSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EffectsSystem.js';
+import * as sys_EffectsSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/EffectsSystem.js';
 import sys_MultiplayerPlacementSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerPlacementSystem.js';
 import sys_MultiplayerUISystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js';
 import sys_ShopSystem from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ShopSystem.js';
@@ -306,6 +314,25 @@ if (!window.GUTS) {
 
 // Register all libraries in window.GUTS
 Object.assign(window.GUTS, Libraries);
+
+// Setup window.THREE if it exists in libraries
+if (Libraries.THREE) {
+  window.THREE = Libraries.THREE;
+  
+  // Add Three.js addons to window.THREE namespace
+  Object.keys(Libraries).forEach(key => {
+    if (key.startsWith('three_') || ['OrbitControls', 'GLTFLoader', 'EffectComposer', 'OutputPass', 'RenderPixelatedPass', 'SkeletonUtils'].includes(key)) {
+      const addon = Libraries[key];
+      if (typeof addon === 'object' && addon !== null) {
+        // If it's a namespace with multiple exports, merge them
+        Object.assign(window.THREE, addon);
+      } else {
+        // If it's a single class, add it by name
+        window.THREE[key] = addon;
+      }
+    }
+  });
+}
 
 // Setup window.engine context for class inheritance
 if (!window.engine) {
