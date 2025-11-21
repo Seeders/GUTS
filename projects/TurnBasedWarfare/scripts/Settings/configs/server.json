@@ -21,6 +21,7 @@
     "MinHeap",
     "DesyncDebugger",
     "TerrainDataManager",
-    "EnvironmentObjectSpawner"
+    "EnvironmentObjectSpawner",
+    "CoordinateTranslator"
   ]
 }
