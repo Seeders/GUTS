@@ -433,7 +433,11 @@ class WorldRenderer {
             const extensionSize = this.terrainDataManager.extensionSize;
             const heightStep = this.terrainDataManager.heightStep;
 
-            const heightMapData = new Float32Array(extendedSize * extendedSize);
+            // Use terrainDataManager's heightMapData instead of creating a local copy
+            if (!this.terrainDataManager.heightMapData) {
+                this.terrainDataManager.heightMapData = new Float32Array(extendedSize * extendedSize);
+            }
+            const heightMapData = this.terrainDataManager.heightMapData;
 
             // Set extension area to extension terrain height
             const extensionTerrainType = this.terrainDataManager.tileMap.extensionTerrainType || 0;
@@ -511,6 +515,26 @@ class WorldRenderer {
     }
 
     /**
+     * Apply height from heightMapData to a single vertex
+     * @private
+     */
+    _updateVertexHeight(x, z, segments, verticesPerRow, positions, heightMapData, extendedSize) {
+        const vertexIndex = (z * verticesPerRow + x);
+        const idx = vertexIndex * 3;
+
+        const nx = x / segments;
+        const nz = z / segments;
+
+        const terrainX = Math.floor(nx * extendedSize);
+        const terrainZ = Math.floor(nz * extendedSize);
+
+        const heightIndex = terrainZ * extendedSize + terrainX;
+        const height = heightMapData[heightIndex] || 0;
+
+        positions[idx + 2] = height;
+    }
+
+    /**
      * Apply height map data to ground geometry
      */
     applyHeightMapToGeometry(heightMapData) {
@@ -524,22 +548,10 @@ class WorldRenderer {
         const segments = extendedSize / (heightMapSettings?.resolutionDivisor || 1);
         const verticesPerRow = segments + 1;
 
-        // Update vertex heights
+        // Update all vertex heights using shared logic
         for (let z = 0; z < verticesPerRow; z++) {
             for (let x = 0; x < verticesPerRow; x++) {
-                const vertexIndex = (z * verticesPerRow + x);
-                const idx = vertexIndex * 3;
-
-                const nx = x / segments;
-                const nz = z / segments;
-
-                const terrainX = Math.floor(nx * extendedSize);
-                const terrainZ = Math.floor(nz * extendedSize);
-
-                const heightIndex = terrainZ * extendedSize + terrainX;
-                const height = heightMapData[heightIndex] || 0;
-
-                positions[idx + 2] = height;
+                this._updateVertexHeight(x, z, segments, verticesPerRow, positions, heightMapData, extendedSize);
             }
         }
 
@@ -587,7 +599,7 @@ class WorldRenderer {
         const minZ = Math.max(0, centerZ - updateRadius);
         const maxZ = Math.min(extendedSize, centerZ + updateRadius);
 
-        // Update only affected vertices
+        // Update only affected vertices using shared logic
         for (let z = 0; z < verticesPerRow; z++) {
             for (let x = 0; x < verticesPerRow; x++) {
                 const nx = x / segments;
@@ -601,13 +613,7 @@ class WorldRenderer {
                     continue;
                 }
 
-                const vertexIndex = (z * verticesPerRow + x);
-                const idx = vertexIndex * 3;
-
-                const heightIndex = terrainZ * extendedSize + terrainX;
-                const height = heightMapData[heightIndex] || 0;
-
-                positions[idx + 2] = height;
+                this._updateVertexHeight(x, z, segments, verticesPerRow, positions, heightMapData, extendedSize);
             }
         }
 
