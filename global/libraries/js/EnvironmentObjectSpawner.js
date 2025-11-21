@@ -167,13 +167,16 @@ class EnvironmentObjectSpawner {
         // Create unique entity ID for editor
         const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
 
+        // Editor mode needs 32x scale multiplier for proper visualization
+        const editorScale = scale * 32;
+
         // Spawn using EntityRenderer
         const spawned = await this.entityRenderer.spawnEntity(entityId, {
             collection: 'worldObjects',
             type: envObj.type,
             position: { x: worldX, y: height, z: worldZ },
             rotation: rotation,
-            scale: scale,
+            scale: editorScale,
             facing: rotation
         });
 
