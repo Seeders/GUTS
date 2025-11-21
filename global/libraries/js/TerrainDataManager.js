@@ -353,6 +353,7 @@ class TerrainDataManager {
      * @returns {number|null} Height level (0, 1, 2, etc.), or null if outside bounds
      */
     getHeightLevelAtGridPosition(gridX, gridZ) {
+        console.log('getHeightLevelAtGridPosition', gridX, gridZ);
         // If we have a separate heightMap in tileMap, use it
         if (this.tileMap?.heightMap && this.tileMap.heightMap.length > 0) {
             const heightData = this.tileMap.heightMap;

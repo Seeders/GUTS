@@ -33,8 +33,10 @@ class TerrainSystem extends engine.BaseSystem {
         this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
         this.game.gameManager.register('getTerrainSize', () => this.terrainDataManager.terrainSize);
         this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
+        this.game.gameManager.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
         this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
         this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
+        this.game.gameManager.register('getTileMap', () => this.terrainDataManager.tileMap);
 
         // Spawn environment objects (trees, rocks, etc.) - runs on both client and server
         this.spawnEnvironmentObjects();
