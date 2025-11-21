@@ -35,7 +35,7 @@ class EnvironmentObjectSpawner {
         const terrainSize = terrainDataManager.terrainSize;
         return {
             worldX: envObj.x - (terrainSize / 2),
-            worldZ: envObj.y + (terrainSize / 2)
+            worldZ: envObj.y - (terrainSize / 2)
         };
     }
 
