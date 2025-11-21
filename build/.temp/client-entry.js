@@ -1,6 +1,6 @@
 /**
  * GUTS Game Client Bundle
- * Generated: 2025-11-21T23:00:16.317Z
+ * Generated: 2025-11-21T23:22:16.774Z
  * Project: TurnBasedWarfare
  */
 
@@ -209,88 +209,88 @@ const Systems = {
 };
 
 // ========== ABILITIES ==========
-import ability_ArenaPresenceAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js';
-import ability_BaseAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js';
-import ability_BattleCryAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js';
-import ability_BlizzardAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js';
-import ability_BloodlustAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js';
-import ability_BuildAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js';
-import ability_BurningAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BurningAuraAbility.js';
-import ability_ChainLightningAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js';
-import ability_ChargeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChargeAbility.js';
-import ability_ConsecrationAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ConsecrationAbility.js';
-import ability_CorruptingAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js';
-import ability_CurseAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js';
-import ability_DisruptionBombAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js';
-import ability_DrainLifeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js';
-import ability_EnchantWeaponAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js';
-import ability_ExplosiveTrapAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js';
-import ability_FireBallAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js';
-import ability_FireStormAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js';
-import ability_FreezingAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js';
-import ability_HealAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js';
-import ability_IceShardAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js';
-import ability_InfernoAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js';
-import ability_LightningBoltAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js';
-import ability_MassHealAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js';
-import ability_MeteorStrikeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js';
-import ability_MindControlAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js';
-import ability_MineGoldAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js';
-import ability_MirrorImagesAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js';
-import ability_MultiShotAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js';
-import ability_PhalanxFormationAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js';
-import ability_PiercingShotAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js';
-import ability_RageAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js';
-import ability_RaiseDeadAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js';
-import ability_ShadowStrikeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js';
-import ability_ShieldWallAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js';
-import ability_SmiteAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js';
-import ability_SummonWolfAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js';
-import ability_Tornado from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js';
-import ability_TrackingMark from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js';
-import ability_WindShieldAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js';
+import abilities_ArenaPresenceAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js';
+import abilities_BaseAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js';
+import abilities_BattleCryAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js';
+import abilities_BlizzardAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js';
+import abilities_BloodlustAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js';
+import abilities_BuildAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BuildAbility.js';
+import abilities_BurningAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BurningAuraAbility.js';
+import abilities_ChainLightningAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChainLightningAbility.js';
+import abilities_ChargeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ChargeAbility.js';
+import abilities_ConsecrationAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ConsecrationAbility.js';
+import abilities_CorruptingAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CorruptingAuraAbility.js';
+import abilities_CurseAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/CurseAbility.js';
+import abilities_DisruptionBombAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DisruptionBombAbility.js';
+import abilities_DrainLifeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/DrainLifeAbility.js';
+import abilities_EnchantWeaponAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/EnchantWeaponAbility.js';
+import abilities_ExplosiveTrapAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ExplosiveTrapAbility.js';
+import abilities_FireBallAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireBallAbility.js';
+import abilities_FireStormAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FireStormAbility.js';
+import abilities_FreezingAuraAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/FreezingAuraAbility.js';
+import abilities_HealAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/HealAbility.js';
+import abilities_IceShardAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/IceShardAbility.js';
+import abilities_InfernoAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/InfernoAbility.js';
+import abilities_LightningBoltAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/LightningBoltAbility.js';
+import abilities_MassHealAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MassHealAbility.js';
+import abilities_MeteorStrikeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MeteorStrikeAbility.js';
+import abilities_MindControlAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MindControlAbility.js';
+import abilities_MineGoldAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js';
+import abilities_MirrorImagesAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MirrorImagesAbility.js';
+import abilities_MultiShotAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MultiShotAbility.js';
+import abilities_PhalanxFormationAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PhalanxFormationAbility.js';
+import abilities_PiercingShotAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/PiercingShotAbility.js';
+import abilities_RageAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RageAbility.js';
+import abilities_RaiseDeadAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/RaiseDeadAbility.js';
+import abilities_ShadowStrikeAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShadowStrikeAbility.js';
+import abilities_ShieldWallAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ShieldWallAbility.js';
+import abilities_SmiteAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SmiteAbility.js';
+import abilities_SummonWolfAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/SummonWolfAbility.js';
+import abilities_Tornado from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/Tornado.js';
+import abilities_TrackingMark from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/TrackingMark.js';
+import abilities_WindShieldAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js';
 
 const Abilities = {
-  ArenaPresenceAbility: ability_ArenaPresenceAbility,
-  BaseAbility: ability_BaseAbility,
-  BattleCryAbility: ability_BattleCryAbility,
-  BlizzardAbility: ability_BlizzardAbility,
-  BloodlustAbility: ability_BloodlustAbility,
-  BuildAbility: ability_BuildAbility,
-  BurningAuraAbility: ability_BurningAuraAbility,
-  ChainLightningAbility: ability_ChainLightningAbility,
-  ChargeAbility: ability_ChargeAbility,
-  ConsecrationAbility: ability_ConsecrationAbility,
-  CorruptingAuraAbility: ability_CorruptingAuraAbility,
-  CurseAbility: ability_CurseAbility,
-  DisruptionBombAbility: ability_DisruptionBombAbility,
-  DrainLifeAbility: ability_DrainLifeAbility,
-  EnchantWeaponAbility: ability_EnchantWeaponAbility,
-  ExplosiveTrapAbility: ability_ExplosiveTrapAbility,
-  FireBallAbility: ability_FireBallAbility,
-  FireStormAbility: ability_FireStormAbility,
-  FreezingAuraAbility: ability_FreezingAuraAbility,
-  HealAbility: ability_HealAbility,
-  IceShardAbility: ability_IceShardAbility,
-  InfernoAbility: ability_InfernoAbility,
-  LightningBoltAbility: ability_LightningBoltAbility,
-  MassHealAbility: ability_MassHealAbility,
-  MeteorStrikeAbility: ability_MeteorStrikeAbility,
-  MindControlAbility: ability_MindControlAbility,
-  MineGoldAbility: ability_MineGoldAbility,
-  MirrorImagesAbility: ability_MirrorImagesAbility,
-  MultiShotAbility: ability_MultiShotAbility,
-  PhalanxFormationAbility: ability_PhalanxFormationAbility,
-  PiercingShotAbility: ability_PiercingShotAbility,
-  RageAbility: ability_RageAbility,
-  RaiseDeadAbility: ability_RaiseDeadAbility,
-  ShadowStrikeAbility: ability_ShadowStrikeAbility,
-  ShieldWallAbility: ability_ShieldWallAbility,
-  SmiteAbility: ability_SmiteAbility,
-  SummonWolfAbility: ability_SummonWolfAbility,
-  Tornado: ability_Tornado,
-  TrackingMark: ability_TrackingMark,
-  WindShieldAbility: ability_WindShieldAbility
+  ArenaPresenceAbility: abilities_ArenaPresenceAbility,
+  BaseAbility: abilities_BaseAbility,
+  BattleCryAbility: abilities_BattleCryAbility,
+  BlizzardAbility: abilities_BlizzardAbility,
+  BloodlustAbility: abilities_BloodlustAbility,
+  BuildAbility: abilities_BuildAbility,
+  BurningAuraAbility: abilities_BurningAuraAbility,
+  ChainLightningAbility: abilities_ChainLightningAbility,
+  ChargeAbility: abilities_ChargeAbility,
+  ConsecrationAbility: abilities_ConsecrationAbility,
+  CorruptingAuraAbility: abilities_CorruptingAuraAbility,
+  CurseAbility: abilities_CurseAbility,
+  DisruptionBombAbility: abilities_DisruptionBombAbility,
+  DrainLifeAbility: abilities_DrainLifeAbility,
+  EnchantWeaponAbility: abilities_EnchantWeaponAbility,
+  ExplosiveTrapAbility: abilities_ExplosiveTrapAbility,
+  FireBallAbility: abilities_FireBallAbility,
+  FireStormAbility: abilities_FireStormAbility,
+  FreezingAuraAbility: abilities_FreezingAuraAbility,
+  HealAbility: abilities_HealAbility,
+  IceShardAbility: abilities_IceShardAbility,
+  InfernoAbility: abilities_InfernoAbility,
+  LightningBoltAbility: abilities_LightningBoltAbility,
+  MassHealAbility: abilities_MassHealAbility,
+  MeteorStrikeAbility: abilities_MeteorStrikeAbility,
+  MindControlAbility: abilities_MindControlAbility,
+  MineGoldAbility: abilities_MineGoldAbility,
+  MirrorImagesAbility: abilities_MirrorImagesAbility,
+  MultiShotAbility: abilities_MultiShotAbility,
+  PhalanxFormationAbility: abilities_PhalanxFormationAbility,
+  PiercingShotAbility: abilities_PiercingShotAbility,
+  RageAbility: abilities_RageAbility,
+  RaiseDeadAbility: abilities_RaiseDeadAbility,
+  ShadowStrikeAbility: abilities_ShadowStrikeAbility,
+  ShieldWallAbility: abilities_ShieldWallAbility,
+  SmiteAbility: abilities_SmiteAbility,
+  SummonWolfAbility: abilities_SummonWolfAbility,
+  Tornado: abilities_Tornado,
+  TrackingMark: abilities_TrackingMark,
+  WindShieldAbility: abilities_WindShieldAbility
 };
 
 // ========== CLASS REGISTRY ==========
@@ -298,7 +298,7 @@ const ClassRegistry = {
   getManager: (name) => Managers[name],
   getSystem: (name) => Systems[name],
   getLibrary: (name) => Libraries[name],
-  getAbility: (name) => Abilities[name],
+  getAbilities: (name) => Abilities[name],
   getAllManagers: () => Managers,
   getAllSystems: () => Systems,
   getAllLibraries: () => Libraries,
@@ -334,7 +334,6 @@ if (Libraries.THREE) {
   });
 }
 
-// Also expose managers, systems, abilities in GUTS namespace
 Object.assign(window.GUTS, {
   managers: Managers,
   systems: Systems,
