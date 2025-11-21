@@ -1090,6 +1090,9 @@ class WorldRenderer {
     getGroundMesh() {
         return this.ground;
     }
+    getGroundTexture() {
+        return this.groundTexture;
+    }
 
     /**
      * Get the scene
