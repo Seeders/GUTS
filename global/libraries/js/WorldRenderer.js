@@ -717,10 +717,10 @@ class WorldRenderer {
         // Update mesh for the bounding box of all changes
         const centerX = Math.floor((minGridX + maxGridX) / 2);
         const centerZ = Math.floor((minGridZ + maxGridZ) / 2);
-        const radius = Math.max(
-            Math.abs(maxGridX - minGridX),
-            Math.abs(maxGridZ - minGridZ)
-        ) + 2;
+        // Calculate radius to cover all changed tiles: (span + 1) / 2
+        const spanX = maxGridX - minGridX + 1;
+        const spanZ = maxGridZ - minGridZ + 1;
+        const radius = Math.max(spanX, spanZ) / 2;
 
         this.updateHeightMapRegion(centerX, centerZ, radius);
     }
