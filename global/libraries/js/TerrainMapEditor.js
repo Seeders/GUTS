@@ -1647,10 +1647,10 @@ class TerrainMapEditor {
         // Get world and camera settings
         const world = collections.worlds?.[this.objectData.world];
         const cameraSettings = {
-            position: { x: 0, y: 600, z: 600 },
-            lookAt: { x: 0, y: 0, z: 0 },
+            position: { x: 0, y: 16000, z: 600 },
+            lookAt: { x: 0, y: 500, z: 0 },
             zoom: 1,
-            near: 300,  // Position near plane far enough to never intersect terrain mesh
+            near: -1,  // Position near plane far enough to never intersect terrain mesh
             far: 30000
         };
 
