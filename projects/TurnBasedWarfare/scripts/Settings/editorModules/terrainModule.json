@@ -17,7 +17,8 @@
     "RaycastHelper",
     "PlacementPreview",
     "three_MeshBVH",
-    "EntityRenderer"
+    "EntityRenderer",
+    "EnvironmentObjectSpawner"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

@@ -2035,7 +2035,8 @@
           "RaycastHelper",
           "PlacementPreview",
           "three_MeshBVH",
-          "EntityRenderer"
+          "EntityRenderer",
+          "EnvironmentObjectSpawner"
         ],
         "propertyName": "tileMap",
         "interface": "terrainEditor",
@@ -18613,6 +18614,18 @@
       "EntityRenderer": {
         "filePath": "/global/libraries/js/EntityRenderer.js",
         "fileName": "EntityRenderer"
+      },
+      "EnvironmentObjectSpawner": {
+        "name": "EnvironmentObjectSpawner",
+        "description": "Shared library for spawning environment objects in both runtime (ECS) and editor (visual) modes",
+        "version": "1.0.0",
+        "author": "GUTS Engine",
+        "dependencies": [],
+        "exports": {
+          "EnvironmentObjectSpawner": "class"
+        },
+        "filePath": "/global/libraries/js/EnvironmentObjectSpawner.js",
+        "fileName": "EnvironmentObjectSpawner"
       },
       "ExportScripts": {
         "fileName": "ExportScripts",

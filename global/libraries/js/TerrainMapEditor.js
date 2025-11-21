@@ -1640,9 +1640,9 @@ class TerrainMapEditor {
 
         // Get world and camera settings
         const world = collections.worlds?.[this.objectData.world];
-        const cameraSettings = world ? collections.cameras?.[world.camera] : {
+        const cameraSettings = {
             position: { x: 0, y: 600, z: 600 },
-            lookAt: { x: 0, y: 0, z: 0 },
+            lookAt: { x: 0, y: 300, z: 0 },
             zoom: 1,
             near: 0.1,
             far: 30000
