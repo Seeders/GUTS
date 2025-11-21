@@ -26,14 +26,6 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Seeded random for consistent values between client and server
-     */
-    seededRandom(x, y) {
-        const seed = x * 12.9898 + y * 78.233;
-        return (Math.sin(seed) * 43758.5453) % 1;
-    }
-
-    /**
      * Calculate world position from environment object grid position
      */
     calculateWorldPosition(envObj, terrainDataManager) {
@@ -95,9 +87,9 @@ class EnvironmentObjectSpawner {
         // Get terrain height
         const height = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
 
-        // Calculate rotation and scale (consistent between runtime and editor)
-        const rotation = this.seededRandom(envObj.x, envObj.y) * Math.PI * 2;
-        const scale = (0.8 + this.seededRandom(envObj.y, envObj.x) * 0.4) * (envObj.type === 'rock' ? 1 : 50);
+        // Fixed rotation and scale (no random variation)
+        const rotation = 0;
+        const scale = 32;
 
         if (this.mode === 'runtime') {
             // Runtime mode: Create ECS entity with components
