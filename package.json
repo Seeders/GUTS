@@ -10,6 +10,9 @@
     "build:watch": "node build/build.js TurnBasedWarfare --watch",
     "dev": "webpack serve --config webpack.dev.config.js",
     "dev:server": "node server_editor.js",
+    "game:server": "node projects/TurnBasedWarfare/server_game.js",
+    "game:build-and-start": "npm run build && npm run game:server",
+    "start:editor": "node server_editor.js 5000",
     "build:seeders": "PROJECT_NAME=Seeders node build/build.js Seeders",
     "webpack": "webpack --config webpack.config.js"
   },
