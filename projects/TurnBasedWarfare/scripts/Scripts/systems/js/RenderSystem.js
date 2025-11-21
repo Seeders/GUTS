@@ -52,8 +52,18 @@ class RenderSystem extends engine.BaseSystem {
         console.log('[RenderSystem] Initialized with EntityRenderer');
     }
 
+    /**
+     * Remove entity instance and mark for re-spawn
+     * Used when RENDERABLE component changes (e.g., construction completion)
+     */
     removeInstance(entityId) {
+        // Remove from renderer
         this.entityRenderer.removeEntity(entityId);
+
+        // Mark as not spawned so it will be re-spawned with new model on next update
+        this.spawnedEntities.delete(entityId);
+
+        console.log(`[RenderSystem] Removed instance ${entityId} for re-spawn`);
     }
     /**
      * Get batch information for animation system
