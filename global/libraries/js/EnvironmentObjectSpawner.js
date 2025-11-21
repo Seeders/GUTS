@@ -30,11 +30,9 @@ class EnvironmentObjectSpawner {
      */
     calculateWorldPosition(envObj, terrainDataManager) {
         // Convert grid coordinates to world coordinates by multiplying by gridSize
-        // Offset by half grid size to center objects in their tile
         const gridSize = terrainDataManager.gridSize;
-        const halfGrid = gridSize / 2;
-        const worldX = ((envObj.x * gridSize) + halfGrid + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
-        const worldZ = ((envObj.y * gridSize) + halfGrid + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
+        const worldX = ((envObj.x * gridSize) + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
+        const worldZ = ((envObj.y * gridSize) + terrainDataManager.extensionSize) - terrainDataManager.extendedSize / 2;
         return { worldX, worldZ };
     }
 
