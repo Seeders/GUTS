@@ -1,6 +1,6 @@
 /**
  * GUTS Game Client Bundle
- * Generated: 2025-11-21T23:28:36.525Z
+ * Generated: 2025-11-21T23:30:41.912Z
  * Project: TurnBasedWarfare
  */
 
@@ -209,8 +209,10 @@ const Systems = {
 };
 
 // ========== ABILITIES ==========
-import abilities_ArenaPresenceAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js';
+// Import BaseAbility first so other abilities can extend from it
 import abilities_BaseAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BaseAbility.js';
+
+import abilities_ArenaPresenceAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/ArenaPresenceAbility.js';
 import abilities_BattleCryAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BattleCryAbility.js';
 import abilities_BlizzardAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BlizzardAbility.js';
 import abilities_BloodlustAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/BloodlustAbility.js';
@@ -251,8 +253,8 @@ import abilities_TrackingMark from '/home/user/GUTS/projects/TurnBasedWarfare/sc
 import abilities_WindShieldAbility from '/home/user/GUTS/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/WindShieldAbility.js';
 
 const Abilities = {
-  ArenaPresenceAbility: abilities_ArenaPresenceAbility,
   BaseAbility: abilities_BaseAbility,
+  ArenaPresenceAbility: abilities_ArenaPresenceAbility,
   BattleCryAbility: abilities_BattleCryAbility,
   BlizzardAbility: abilities_BlizzardAbility,
   BloodlustAbility: abilities_BloodlustAbility,
