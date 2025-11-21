@@ -2267,34 +2267,57 @@ class TerrainMapEditor {
             }
 
         } else if (this.placementMode === 'environment') {
-            // Place environment object at this position
+            // Place environment object(s) with brush size support
             if (this.selectedObjectType && this.lastPaintedTile === null) {
-                // Check if environment object already exists at this position
                 if (!this.tileMap.environmentObjects) {
                     this.tileMap.environmentObjects = [];
                 }
 
-                // Convert grid position to uncentered coordinate format
-                // (spawner will apply centering offset when reading)
                 const gridSize = this.terrainDataManager.gridSize;
                 const terrainSize = this.terrainDataManager.terrainSize;
                 const halfGrid = gridSize / 2;
-                const x = (gridX * gridSize) + halfGrid;
-                const y = (gridZ * gridSize) + halfGrid;
+                const radius = Math.floor(this.brushSize / 2);
+                let objectsPlaced = 0;
 
-                const existingIndex = this.tileMap.environmentObjects.findIndex(
-                    obj => obj.x === x && obj.y === y
-                );
+                // Place objects in circular brush pattern
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const targetGridX = gridX + dx;
+                        const targetGridZ = gridZ + dy;
 
-                if (existingIndex === -1) {
-                    // Add new environment object with world position (x, y where y=worldZ)
-                    this.tileMap.environmentObjects.push({
-                        type: this.selectedObjectType,
-                        x: x,
-                        y: y
-                    });
+                        // Check bounds
+                        if (targetGridX >= 0 && targetGridX < this.mapSize &&
+                            targetGridZ >= 0 && targetGridZ < this.mapSize) {
 
-                    // Respawn all environment objects to include the new one
+                            // Check if within brush radius (circular brush)
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance <= radius + 0.5) {
+                                // Convert grid position to uncentered coordinate format
+                                // (spawner will apply centering offset when reading)
+                                const x = (targetGridX * gridSize) + halfGrid;
+                                const y = (targetGridZ * gridSize) + halfGrid;
+
+                                // Check if object already exists at this position
+                                const existingIndex = this.tileMap.environmentObjects.findIndex(
+                                    obj => obj.x === x && obj.y === y
+                                );
+
+                                if (existingIndex === -1) {
+                                    // Add new environment object
+                                    this.tileMap.environmentObjects.push({
+                                        type: this.selectedObjectType,
+                                        x: x,
+                                        y: y
+                                    });
+                                    objectsPlaced++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Respawn all environment objects if any were placed
+                if (objectsPlaced > 0) {
                     this.updateEnvironmentObjects();
                 }
 
