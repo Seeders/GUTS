@@ -163,6 +163,12 @@ class WorldRenderer {
 
         this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
 
+        // Disable built-in keyboard controls (we handle modifier keys manually)
+        this.controls.enableKeys = false;
+        if (this.controls.keys) {
+            this.controls.keys = {}; // Clear any default key bindings
+        }
+
         // Use Ctrl+Right Click for rotation, Right Click alone for pan
         this.controls.mouseButtons = {
             LEFT: null,                    // Left click disabled (used for editing)
