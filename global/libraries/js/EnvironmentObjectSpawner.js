@@ -72,6 +72,11 @@ class EnvironmentObjectSpawner {
             return;
         }
 
+        // Debug: log first environment object to see format
+        if (tileMap.environmentObjects.length > 0) {
+            console.log('[EnvironmentObjectSpawner] First env object format:', tileMap.environmentObjects[0]);
+        }
+
         // Clear existing spawned objects
         this.clearEnvironmentObjects();
 
