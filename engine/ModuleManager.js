@@ -206,7 +206,7 @@ class ModuleManager {
                                     // Flatten exports (skip if already defined to avoid read-only errors)
                                     if (typeof module === 'object' && module !== null) {
                                         for (const key in module) {
-                                            if (!window.THREE.hasOwnProperty(key)) {
+                                            if (!(key in window.THREE)) {
                                                 try {
                                                     window.THREE[key] = module[key];
                                                 } catch (e) {
@@ -226,7 +226,7 @@ class ModuleManager {
                                     }
                                     if (typeof module === 'object' && module !== null) {
                                         for (const key in module) {
-                                            if (!window.THREE.hasOwnProperty(key)) {
+                                            if (!(key in window.THREE)) {
                                                 try {
                                                     window.THREE[key] = module[key];
                                                 } catch (e) {
