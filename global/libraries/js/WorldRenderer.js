@@ -1099,6 +1099,11 @@ class WorldRenderer {
 
         // Draw terrain tiles
         const heightMap = this.terrainDataManager.tileMap.heightMap || null;
+
+        // Pass ramps data to tileMapper for cliff texture suppression
+        const ramps = this.terrainDataManager.tileMap.ramps || [];
+        this.tileMapper.setRamps(ramps);
+
         this.tileMapper.draw(this.terrainDataManager.tileMap.terrainMap, heightMap);
 
         // Update ground texture

@@ -147,6 +147,27 @@ class TileMap {
 		return this.heightMapCtx.getImageData(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
 	}
 
+	/**
+	 * Set ramps data for cliff texture suppression
+	 * @param {Array} ramps - Array of ramp positions {x, z}
+	 */
+	setRamps(ramps) {
+		this.ramps = ramps || [];
+	}
+
+	/**
+	 * Check if there's a ramp at a specific grid position
+	 * @param {number} x - Grid X coordinate
+	 * @param {number} y - Grid Y coordinate (Z in 3D)
+	 * @returns {boolean} True if ramp exists at this tile
+	 */
+	hasRampAt(x, y) {
+		if (!this.ramps || this.ramps.length === 0) {
+			return false;
+		}
+		return this.ramps.some(r => r.x === x && r.z === y);
+	}
+
     draw(map, heightMap = null){
 		this.tileMap = map;
 		this.heightMap = heightMap; // NEW: Store heightMap separately
@@ -907,6 +928,28 @@ class TileMap {
 		analyzeHeight(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');
 		analyzeHeight(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');
 
+		// Suppress cliff textures where ramps are present
+		// Check if this tile or neighboring tiles have ramps
+		const hasRamp = this.hasRampAt(col, row);
+		const topNeighborHasRamp = row > 0 && this.hasRampAt(col, row - 1);
+		const botNeighborHasRamp = row < this.numColumns - 1 && this.hasRampAt(col, row + 1);
+		const leftNeighborHasRamp = col > 0 && this.hasRampAt(col - 1, row);
+		const rightNeighborHasRamp = col < this.numColumns - 1 && this.hasRampAt(col + 1, row);
+
+		// Suppress cardinal direction cliffs if either this tile or the neighbor has a ramp
+		if (hasRamp || topNeighborHasRamp) result.heightAnalysis.topLess = false;
+		if (hasRamp || botNeighborHasRamp) result.heightAnalysis.botLess = false;
+		if (hasRamp || leftNeighborHasRamp) result.heightAnalysis.leftLess = false;
+		if (hasRamp || rightNeighborHasRamp) result.heightAnalysis.rightLess = false;
+
+		// Suppress corner cliffs if this tile has a ramp
+		if (hasRamp) {
+			result.heightAnalysis.cornerTopLeftLess = false;
+			result.heightAnalysis.cornerTopRightLess = false;
+			result.heightAnalysis.cornerBottomLeftLess = false;
+			result.heightAnalysis.cornerBottomRightLess = false;
+		}
+
 		// Analyze terrain types for texture tiling
 		result.terrainAnalysis.heightIndex = this.tileMap[row][col];
 
@@ -1214,6 +1257,11 @@ class TileMap {
 	paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col) {
 		// Skip cliff supporting textures if in editor mode (2D without 3D cliff meshes)
 		if (this.skipCliffTextures) {
+			return;
+		}
+
+		// Skip cliff supporting textures if there's a ramp at this tile
+		if (this.hasRampAt(col, row)) {
 			return;
 		}
 
