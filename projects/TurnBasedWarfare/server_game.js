@@ -41,24 +41,18 @@ function loadCompiledGame() {
 
     console.log('✓ Loaded compiled game_server.js');
 
-    // Make server classes and game classes available via global.GUTS
-    global.GUTS = {
+    // Merge server infrastructure classes into existing global.GUTS (populated by webpack bundle)
+    // Don't overwrite global.GUTS - the webpack bundle already assigned game classes to it
+    Object.assign(global.GUTS, {
         // Server infrastructure classes
         ServerEngine,
         ServerModuleManager,
-        BaseECSGame,
-        ServerSceneManager,
-        GameState,
-        GameRoom,
-        ServerNetworkManager,
+        // Don't override classes that came from the bundle (BaseECSGame, etc.)
+        // Only add infrastructure that's not in the bundle
         ServerMatchmakingService,
-        MinHeap,
-        DesyncDebugger,
-        // Game classes from compiled bundle
-        ...global.GUTS?.app?.appClasses,
         // Collections available from compiled game
         getCollections: () => global.COMPILED_GAME?.collections
-    };
+    });
 
     console.log('✓ Game classes loaded and available in global.GUTS');
 }
