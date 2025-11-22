@@ -214,23 +214,42 @@ class PathfindingSystem extends GUTS.BaseSystem {
         const level = collections.levels?.[this.game.state.level];
         const tileMap = level?.tileMap;
 
+        console.log('PathfindingSystem: Checking for worldObjects...');
+        console.log('  - collections exists:', !!collections);
+        console.log('  - level:', this.game.state.level);
+        console.log('  - tileMap exists:', !!tileMap);
+        console.log('  - worldObjects exists:', !!tileMap?.worldObjects);
+        console.log('  - worldObjects count:', tileMap?.worldObjects?.length);
+
         if (tileMap?.worldObjects) {
             let markedCells = 0;
+            let processedObjects = 0;
+
             for (const worldObj of tileMap.worldObjects) {
+                processedObjects++;
+
                 // Get unit type definition to check if object blocks movement
                 const unitType = collections.worldObjects?.[worldObj.type];
 
+                console.log(`WorldObj #${processedObjects}: type=${worldObj.type}, x=${worldObj.x}, y=${worldObj.y}`);
+                console.log(`  - unitType exists:`, !!unitType);
+                console.log(`  - impassable:`, unitType?.impassable);
+                console.log(`  - size:`, unitType?.size);
+
                 // Skip if object doesn't block movement (impassable === false) or has no size
                 if (!unitType || unitType.impassable === false || !unitType.size) {
+                    console.log(`  - SKIPPED (not impassable or no size)`);
                     continue;
                 }
 
                 // Convert terrain tile position to world position using GridSystem
                 // worldObj.x and worldObj.y are in terrain tile coordinates
                 const worldPos = this.game.gameManager.call('tileToWorld', worldObj.x, worldObj.y);
+                console.log(`  - worldPos:`, worldPos);
 
                 // Convert world position to nav grid coordinates
                 const navGrid = this.worldToNavGrid(worldPos.x, worldPos.z);
+                console.log(`  - navGrid: (${navGrid.x}, ${navGrid.z})`);
 
                 // Each terrain tile covers a 2x2 area of nav grid cells
                 // Mark all 4 nav grid cells as impassable
@@ -241,13 +260,19 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
                         if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
                             const idx = nz * this.navGridWidth + nx;
+                            const oldValue = this.navMesh[idx];
                             this.navMesh[idx] = 255;
                             markedCells++;
+                            console.log(`  - Marked nav cell (${nx}, ${nz}) idx=${idx} (was ${oldValue}, now 255)`);
+                        } else {
+                            console.log(`  - OUT OF BOUNDS: (${nx}, ${nz}) grid is ${this.navGridWidth}x${this.navGridHeight}`);
                         }
                     }
                 }
             }
-            console.log(`PathfindingSystem: Marked ${markedCells} nav cells as impassable due to worldObjects`);
+            console.log(`PathfindingSystem: Processed ${processedObjects} worldObjects, marked ${markedCells} nav cells as impassable`);
+        } else {
+            console.warn('PathfindingSystem: No worldObjects found in tileMap!');
         }
 
         console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight}`);
