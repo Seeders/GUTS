@@ -2393,6 +2393,87 @@ class TerrainMapEditor {
 
                 this.lastPaintedTile = `${gridX},${gridZ}`;
             }
+
+        } else if (this.placementMode === 'ramp') {
+            // Place or remove ramps at cliff edges
+            if (this.lastPaintedTile === null) {
+                if (!this.tileMap.ramps) {
+                    this.tileMap.ramps = [];
+                }
+
+                const heightMap = this.tileMap.heightMap;
+                if (!heightMap || heightMap.length === 0) {
+                    console.warn('TerrainMapEditor: Cannot place ramps without height map');
+                    return;
+                }
+
+                const currentHeight = heightMap[gridZ]?.[gridX];
+                if (currentHeight === undefined) return;
+
+                const mapSize = this.tileMap.size;
+
+                // Check all 4 edges for height differences
+                const edges = [
+                    { edge: 'north', dx: 0, dz: -1 },
+                    { edge: 'south', dx: 0, dz: 1 },
+                    { edge: 'west', dx: -1, dz: 0 },
+                    { edge: 'east', dx: 1, dz: 0 }
+                ];
+
+                let rampPlaced = false;
+
+                for (const { edge, dx, dz } of edges) {
+                    const neighborX = gridX + dx;
+                    const neighborZ = gridZ + dz;
+
+                    // Check if neighbor exists and is lower
+                    if (neighborX >= 0 && neighborX < mapSize &&
+                        neighborZ >= 0 && neighborZ < mapSize) {
+                        const neighborHeight = heightMap[neighborZ][neighborX];
+
+                        if (neighborHeight < currentHeight) {
+                            // This edge has a cliff - toggle ramp
+                            const existingRampIndex = this.tileMap.ramps.findIndex(
+                                r => r.gridX === gridX && r.gridZ === gridZ && r.edge === edge
+                            );
+
+                            if (existingRampIndex !== -1) {
+                                // Remove existing ramp
+                                this.tileMap.ramps.splice(existingRampIndex, 1);
+                            } else {
+                                // Add new ramp
+                                this.tileMap.ramps.push({ gridX, gridZ, edge });
+                                rampPlaced = true;
+                                // Only place one ramp per click
+                                break;
+                            }
+
+                            rampPlaced = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (rampPlaced) {
+                    // Update ramp count display
+                    this.updateRampCount();
+
+                    // Respawn cliffs to reflect ramp changes
+                    if (this.worldRenderer && this.entityRenderer) {
+                        this.worldRenderer.spawnCliffs(this.entityRenderer, false);
+                    }
+
+                    // Update terrain mesh to show ramp slopes
+                    if (this.worldRenderer) {
+                        this.worldRenderer.updateHeightMap();
+                    }
+
+                    // Save the map
+                    this.exportMap();
+                }
+
+                this.lastPaintedTile = `${gridX},${gridZ}`;
+            }
         }
     }
 

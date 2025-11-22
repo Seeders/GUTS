@@ -548,7 +548,119 @@ class WorldRenderer {
         const heightIndex = clampedZ * extendedSize + clampedX;
         let height = heightMapData[heightIndex] || 0;
 
-        // Check immediate neighbors to create vertical walls instead of slopes
+        // Check for ramps at this position
+        const gridSize = this.terrainDataManager.gridSize;
+        const extensionSize = this.terrainDataManager.extensionSize;
+
+        // Get grid position for this pixel
+        const gridX = Math.floor((clampedX - extensionSize) / gridSize);
+        const gridZ = Math.floor((clampedZ - extensionSize) / gridSize);
+
+        // Get position within the tile (0 to 1)
+        const tileX = ((clampedX - extensionSize) % gridSize) / gridSize;
+        const tileZ = ((clampedZ - extensionSize) % gridSize) / gridSize;
+
+        // Check if there's a ramp affecting this position
+        let rampHeight = null;
+        const heightMap = this.terrainDataManager.tileMap?.heightMap;
+
+        if (heightMap && gridX >= 0 && gridX < heightMap[0]?.length &&
+            gridZ >= 0 && gridZ < heightMap.length) {
+
+            const currentTileHeight = heightMap[gridZ][gridX];
+            const heightStep = this.terrainDataManager.heightStep;
+
+            // Check all 4 edges for ramps on current tile
+            const checkRampSlope = (edge, neighborGridX, neighborGridZ, distanceInTile) => {
+                const ramp = this.terrainDataManager.getRampAt(gridX, gridZ, edge);
+                if (!ramp) return null;
+
+                // Check if neighbor is valid and lower
+                if (neighborGridX >= 0 && neighborGridX < heightMap[0]?.length &&
+                    neighborGridZ >= 0 && neighborGridZ < heightMap.length) {
+                    const neighborHeight = heightMap[neighborGridZ][neighborGridX];
+
+                    if (neighborHeight < currentTileHeight) {
+                        // Create a gradual slope extending across the tile
+                        // distanceInTile should be 0 at the edge with ramp, 1 at the far edge
+
+                        // Interpolate between current tile height and neighbor height
+                        // Using a smooth curve for the ramp
+                        const t = Math.max(0, Math.min(1, distanceInTile));
+                        const smoothT = t * t * (3 - 2 * t); // Smoothstep function
+
+                        return currentTileHeight * heightStep * (1 - smoothT) +
+                               neighborHeight * heightStep * smoothT;
+                    }
+                }
+                return null;
+            };
+
+            // Check for ramps on neighboring tiles that extend into this tile
+            const checkNeighborRampSlope = (neighborGridX, neighborGridZ, neighborEdge, distanceFromNeighborEdge) => {
+                const ramp = this.terrainDataManager.getRampAt(neighborGridX, neighborGridZ, neighborEdge);
+                if (!ramp) return null;
+
+                // Check if neighbor tile is valid and higher
+                if (neighborGridX >= 0 && neighborGridX < heightMap[0]?.length &&
+                    neighborGridZ >= 0 && neighborGridZ < heightMap.length) {
+                    const neighborHeight = heightMap[neighborGridZ][neighborGridX];
+
+                    if (neighborHeight > currentTileHeight) {
+                        // This is the lower tile - create slope extending from the higher tile
+                        // distanceFromNeighborEdge: 0 at this tile's edge nearest to neighbor, 1 at far edge
+                        const t = Math.max(0, Math.min(1, distanceFromNeighborEdge));
+                        const smoothT = t * t * (3 - 2 * t); // Smoothstep function
+
+                        return neighborHeight * heightStep * (1 - smoothT) +
+                               currentTileHeight * heightStep * smoothT;
+                    }
+                }
+                return null;
+            };
+
+            // Check ramps on current tile
+            // North ramp (top edge) - slopes from north (tileZ=0) toward south (tileZ=1)
+            let northSlope = checkRampSlope('north', gridX, gridZ - 1, tileZ);
+            if (northSlope !== null) rampHeight = northSlope;
+
+            // South ramp (bottom edge) - slopes from south (tileZ=1) toward north (tileZ=0)
+            let southSlope = checkRampSlope('south', gridX, gridZ + 1, 1 - tileZ);
+            if (southSlope !== null) rampHeight = southSlope;
+
+            // West ramp (left edge) - slopes from west (tileX=0) toward east (tileX=1)
+            let westSlope = checkRampSlope('west', gridX - 1, gridZ, tileX);
+            if (westSlope !== null) rampHeight = westSlope;
+
+            // East ramp (right edge) - slopes from east (tileX=1) toward west (tileX=0)
+            let eastSlope = checkRampSlope('east', gridX + 1, gridZ, 1 - tileX);
+            if (eastSlope !== null) rampHeight = eastSlope;
+
+            // Check ramps from neighboring higher tiles that extend into this tile
+            // Tile to the north has a south-facing ramp
+            let northNeighborSlope = checkNeighborRampSlope(gridX, gridZ - 1, 'south', 1 - tileZ);
+            if (northNeighborSlope !== null) rampHeight = northNeighborSlope;
+
+            // Tile to the south has a north-facing ramp
+            let southNeighborSlope = checkNeighborRampSlope(gridX, gridZ + 1, 'north', tileZ);
+            if (southNeighborSlope !== null) rampHeight = southNeighborSlope;
+
+            // Tile to the west has an east-facing ramp
+            let westNeighborSlope = checkNeighborRampSlope(gridX - 1, gridZ, 'east', 1 - tileX);
+            if (westNeighborSlope !== null) rampHeight = westNeighborSlope;
+
+            // Tile to the east has a west-facing ramp
+            let eastNeighborSlope = checkNeighborRampSlope(gridX + 1, gridZ, 'west', tileX);
+            if (eastNeighborSlope !== null) rampHeight = eastNeighborSlope;
+        }
+
+        // If there's a ramp at this position, use the ramp height
+        if (rampHeight !== null) {
+            positions[idx + 2] = rampHeight;
+            return;
+        }
+
+        // Otherwise, check immediate neighbors to create vertical walls instead of slopes
         // Use the lowest neighbor height to pull terrain back from cliff edges
         const neighbors = [
             { x: clampedX - 1, z: clampedZ },     // Left
