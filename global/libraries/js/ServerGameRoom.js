@@ -1,4 +1,4 @@
-class ServerGameRoom extends global.GameRoom {
+class ServerGameRoom extends global.GUTS.GameRoom {
     constructor(engine, roomId, gameInstance, maxPlayers = 2, gameConfig = {}) {
         super(engine, roomId, gameInstance, maxPlayers);
         
