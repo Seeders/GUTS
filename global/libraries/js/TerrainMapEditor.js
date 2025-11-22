@@ -2421,16 +2421,10 @@ class TerrainMapEditor {
                     // Remove existing ramp
                     this.tileMap.ramps.splice(existingRampIndex, 1);
                 } else {
-                    // Validate: ramps can only be placed on tiles with at least one lower cardinal neighbor
-                    // (no corners - must have top, bottom, left, or right cliff edge)
-                    const hasLowerNeighbor =
-                        (gridZ > 0 && heightMap[gridZ - 1][gridX] < currentHeight) ||           // North
-                        (gridZ < mapSize - 1 && heightMap[gridZ + 1][gridX] < currentHeight) || // South
-                        (gridX > 0 && heightMap[gridZ][gridX - 1] < currentHeight) ||           // West
-                        (gridX < mapSize - 1 && heightMap[gridZ][gridX + 1] < currentHeight);   // East
-
-                    if (!hasLowerNeighbor) {
-                        console.warn('TerrainMapEditor: Cannot place ramp - tile must have at least one lower cardinal neighbor');
+                    // Validate: ramps can only be placed on tiles with exactly one lower cardinal neighbor
+                    // (topless, botless, leftless, or rightless)
+                    if (!this.isValidRampPlacement(gridX, gridZ)) {
+                        console.warn('TerrainMapEditor: Cannot place ramp - tile must have exactly one lower cardinal neighbor');
                         this.lastPaintedTile = `${gridX},${gridZ}`;
                         return;
                     }
@@ -2493,11 +2487,19 @@ class TerrainMapEditor {
             z: (tile.y * gridSize) - halfSize + (gridSize / 2)
         }));
 
-        // Check if any tiles would actually be modified
-        const wouldModify = this.wouldModifyTiles(affectedTiles);
+        // Check if placement is valid
+        let isValid = true;
 
-        // Show preview (green if would modify, yellow/orange if no change)
-        this.placementPreview.showAtWorldPositions(worldPositions, wouldModify, true);
+        if (this.placementMode === 'ramp') {
+            // For ramp placement, validate that tile has exactly one lower adjacent neighbor
+            isValid = this.isValidRampPlacement(gridX, gridZ);
+        } else {
+            // For other modes, check if any tiles would actually be modified
+            isValid = this.wouldModifyTiles(affectedTiles);
+        }
+
+        // Show preview (green if valid, red if invalid)
+        this.placementPreview.showAtWorldPositions(worldPositions, isValid, true);
     }
 
     /**
@@ -2529,6 +2531,47 @@ class TerrainMapEditor {
     /**
      * Check if any of the affected tiles would actually be modified
      */
+    /**
+     * Check if a ramp can be validly placed at the given position
+     * Valid placement requires exactly one lower adjacent neighbor (topless, botless, leftless, or rightless)
+     */
+    isValidRampPlacement(gridX, gridZ) {
+        const heightMap = this.tileMap.heightMap;
+        if (!heightMap || heightMap.length === 0) {
+            return false;
+        }
+
+        const currentHeight = heightMap[gridZ]?.[gridX];
+        if (currentHeight === undefined) {
+            return false;
+        }
+
+        const mapSize = this.tileMap.size;
+
+        // Count lower adjacent neighbors (cardinal directions only)
+        let lowerNeighborCount = 0;
+
+        // North
+        if (gridZ > 0 && heightMap[gridZ - 1][gridX] < currentHeight) {
+            lowerNeighborCount++;
+        }
+        // South
+        if (gridZ < mapSize - 1 && heightMap[gridZ + 1][gridX] < currentHeight) {
+            lowerNeighborCount++;
+        }
+        // West
+        if (gridX > 0 && heightMap[gridZ][gridX - 1] < currentHeight) {
+            lowerNeighborCount++;
+        }
+        // East
+        if (gridX < mapSize - 1 && heightMap[gridZ][gridX + 1] < currentHeight) {
+            lowerNeighborCount++;
+        }
+
+        // Valid ramp placement requires exactly one lower neighbor
+        return lowerNeighborCount === 1;
+    }
+
     wouldModifyTiles(tiles) {
         if (this.placementMode === 'terrain') {
             return tiles.some(tile =>
