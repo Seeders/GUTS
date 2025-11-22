@@ -189,6 +189,15 @@ const editorConfig = entries.editor ? {
         filename: '[name].js',
         globalObject: 'window'
     },
+    module: {
+        rules: [
+            ...baseConfig.module.rules,
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
+            }
+        ]
+    },
     plugins: [
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify(mode),
