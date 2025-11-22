@@ -184,50 +184,7 @@ class EditorController {
                     }
                 });
                     
-                // Load property module classes dynamically
-              //  this.editorModuleClasses = await this.moduleManager.loadModules(editorModules);
-                
-                // Setup script execution environment for modules
-               // this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
-               // await this.preCompileComponentScripts();
-                // Instantiate editor modules with controller context
-                this.editorModuleInstances = {};
-                Object.keys(project.objectTypes.editorModules).forEach((moduleId) => {
-                    const module = project.objectTypes.editorModules[moduleId];
-                    if (!module) return;
-
-                    // Handle single library case
-                    if (module.library) {
-                        const libName = module.library;
-                        if (window.GUTS[libName]) {
-                            try {
-                                this.editorModuleInstances[libName] = new window.GUTS[libName](
-                                    this,
-                                    module,
-                                    window.GUTS
-                                );
-                            } catch (e) {
-                                console.error(`Failed to instantiate ${libName}:`, e);
-                            }
-                        }
-                    }
-                    // Handle multiple libraries case
-                    else if (Array.isArray(module.libraries)) {
-                        module.libraries.forEach((library) => {
-                            if (window.GUTS[library]) {
-                                try {
-                                    this.editorModuleInstances[library] = new window.GUTS[library](
-                                        this,
-                                        module,
-                                        window.GUTS
-                                    );
-                                } catch (e) {
-                                    console.error(`Failed to instantiate ${library}:`, e);
-                                }
-                            }
-                        });
-                    }
-                });
+       
 
                 // Set up event listeners for module UI interactions
                 this.view.setupModuleEventListeners(project.objectTypes.editorModules);
