@@ -517,19 +517,24 @@ class TerrainDataManager {
             for (let x = 0; x < mapSize; x++) {
                 const currentHeight = heightMap[z][x];
 
-                // Check if this tile has a ramp (ramps suppress ALL cliff edges at this tile)
+                // Check if this tile or neighboring tiles have ramps
                 const hasRamp = this.hasRampAt(x, z);
+                const topNeighborHasRamp = z > 0 && this.hasRampAt(x, z - 1);
+                const botNeighborHasRamp = z < mapSize - 1 && this.hasRampAt(x, z + 1);
+                const leftNeighborHasRamp = x > 0 && this.hasRampAt(x - 1, z);
+                const rightNeighborHasRamp = x < mapSize - 1 && this.hasRampAt(x + 1, z);
 
-                // Analyze all neighbors
-                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight && !hasRamp;
-                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight && !hasRamp;
-                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight && !hasRamp;
-                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight && !hasRamp;
+                // Analyze all neighbors - suppress cliffs if either this tile or the neighbor has a ramp
+                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight && !hasRamp && !topNeighborHasRamp;
+                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight && !hasRamp && !botNeighborHasRamp;
+                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight && !hasRamp && !leftNeighborHasRamp;
+                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight && !hasRamp && !rightNeighborHasRamp;
 
-                const cornerTopLeftLess = z > 0 && x > 0 && heightMap[z - 1][x - 1] < currentHeight;
-                const cornerTopRightLess = z > 0 && x < mapSize - 1 && heightMap[z - 1][x + 1] < currentHeight;
-                const cornerBottomLeftLess = z < mapSize - 1 && x > 0 && heightMap[z + 1][x - 1] < currentHeight;
-                const cornerBottomRightLess = z < mapSize - 1 && x < mapSize - 1 && heightMap[z + 1][x + 1] < currentHeight;
+                // Suppress corner pieces if this tile has a ramp
+                const cornerTopLeftLess = z > 0 && x > 0 && heightMap[z - 1][x - 1] < currentHeight && !hasRamp;
+                const cornerTopRightLess = z > 0 && x < mapSize - 1 && heightMap[z - 1][x + 1] < currentHeight && !hasRamp;
+                const cornerBottomLeftLess = z < mapSize - 1 && x > 0 && heightMap[z + 1][x - 1] < currentHeight && !hasRamp;
+                const cornerBottomRightLess = z < mapSize - 1 && x < mapSize - 1 && heightMap[z + 1][x + 1] < currentHeight && !hasRamp;
 
                 // Track which quadrants are occupied by corners
                 const topLeftOccupied = (topLess && leftLess) || (cornerTopLeftLess && !topLess && !leftLess);
