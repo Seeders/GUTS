@@ -22,7 +22,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         const unitAbilities = [];
         
         abilityIds.forEach(abilityId => {
-            const AbilityClass = this.game.app.appClasses[abilityId];
+            const AbilityClass = GUTS[abilityId];
             if (AbilityClass) {
                 const abilityInstance = new AbilityClass(this.game, this.game.getCollections().abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
@@ -233,7 +233,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     createAbility(abilityId) {
-        const AbilityClass = this.game.app.appClasses[abilityId];
+        const AbilityClass = GUTS[abilityId];
         return AbilityClass ? new AbilityClass() : null;
     }
     

@@ -32,9 +32,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
             // Initialize deterministic RNG for this battle
             // Seed based on room ID and round number for reproducibility
-            const roomIdHash = room.id ? SeededRandom.hashString(room.id) : 1;
-            const battleSeed = SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
-            this.game.rng = new SeededRandom(battleSeed);
+            const roomIdHash = room.id ? GUTS.SeededRandom.hashString(room.id) : 1;
+            const battleSeed = GUTS.SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
+            this.game.rng = new GUTS.SeededRandom(battleSeed);
 
             return { success: true };
 

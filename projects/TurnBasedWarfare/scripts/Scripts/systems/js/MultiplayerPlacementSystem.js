@@ -279,9 +279,9 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
             // Initialize deterministic RNG for this battle (must match server seed)
             const roomId = this.game.clientNetworkManager?.roomId || 'default';
-            const roomIdHash = SeededRandom.hashString(roomId);
-            const battleSeed = SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
-            this.game.rng = new SeededRandom(battleSeed);
+            const roomIdHash = GUTS.SeededRandom.hashString(roomId);
+            const battleSeed = GUTS.SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
+            this.game.rng = new GUTS.SeededRandom(battleSeed);
 
             // Track battle start time for duration limiting
             this.battleStartTime = 0; // Will be set after resetCurrentTime
