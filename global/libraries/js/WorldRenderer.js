@@ -578,8 +578,11 @@ class WorldRenderer {
 
         // If no tiles of this type, skip mesh generation
         if (usedPositions.size === 0) {
+            console.log(`WorldRenderer: No tiles found for terrain type ${terrainType}, skipping mesh generation`);
             return;
         }
+
+        console.log(`WorldRenderer: Found ${usedPositions.size} vertex positions for terrain type ${terrainType}`);
 
         // Step 2: Create vertices for all used positions and store their original positions
         const positionToVertexIndex = new Map();
@@ -717,6 +720,8 @@ class WorldRenderer {
         liquidMesh.userData.terrainType = terrainType;
         this.scene.add(liquidMesh);
         this.liquidMeshes.push(liquidMesh);
+
+        console.log(`WorldRenderer: Added liquid mesh for terrain type ${terrainType} at height ${liquidMesh.position.y}, vertices: ${vertices.length / 3}, triangles: ${indices.length / 3}`);
     }
 
     /**
@@ -724,32 +729,46 @@ class WorldRenderer {
      */
     generateAllLiquidSurfaces() {
         if (!this.config.enableLiquidSurfaces) {
+            console.log('WorldRenderer: Liquid surfaces disabled in config');
             return;
         }
 
         const tileMap = this.terrainDataManager?.tileMap;
         if (!tileMap || !tileMap.terrainTypes) {
+            console.warn('WorldRenderer: No tileMap or terrainTypes available for liquid generation');
             return;
         }
+
+        console.log('WorldRenderer: Generating liquid surfaces...');
+        console.log('WorldRenderer: Available terrain types:', tileMap.terrainTypes);
 
         // Clear existing liquid meshes
         this.clearLiquidSurfaces();
 
         // Generate liquid surfaces for each terrain type that should have liquid
+        let liquidTypesFound = 0;
         Object.keys(tileMap.terrainTypes).forEach(terrainTypeId => {
             const terrainType = tileMap.terrainTypes[terrainTypeId];
 
             // Check if this terrain type should have liquid surface
             // (water, lava, or any terrain type with 'liquid' property)
-            if (terrainType.liquid ||
+            const isLiquid = terrainType.liquid ||
                 (terrainType.name && (
                     terrainType.name.toLowerCase().includes('water') ||
                     terrainType.name.toLowerCase().includes('lava') ||
                     terrainType.name.toLowerCase().includes('liquid')
-                ))) {
+                ));
+
+            console.log(`WorldRenderer: Terrain type ${terrainTypeId} (${terrainType.name}): isLiquid=${isLiquid}, liquid property=${terrainType.liquid}`);
+
+            if (isLiquid) {
+                liquidTypesFound++;
+                console.log(`WorldRenderer: Generating liquid mesh for terrain type ${terrainTypeId}`);
                 this.generateLiquidSurfaceMesh(parseInt(terrainTypeId));
             }
         });
+
+        console.log(`WorldRenderer: Generated liquid surfaces for ${liquidTypesFound} terrain types, total meshes: ${this.liquidMeshes.length}`);
     }
 
     /**
