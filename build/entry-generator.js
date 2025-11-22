@@ -586,6 +586,25 @@ class EntryGenerator {
  */
 `);
 
+        // Import codemirror
+        sections.push('// CodeMirror');
+        sections.push(`import CodeMirror from 'codemirror';`);
+        sections.push(`import 'codemirror/lib/codemirror.css';`);
+        sections.push(`import 'codemirror/addon/hint/show-hint.css';`);
+        sections.push(`import 'codemirror/mode/javascript/javascript.js';`);
+        sections.push(`import 'codemirror/addon/hint/show-hint.js';`);
+        sections.push(`import 'codemirror/addon/hint/javascript-hint.js';`);
+        sections.push('');
+
+        // Import editor engine files
+        const engineDir = path.join(__dirname, '..', 'engine');
+        sections.push('// Editor Engine Files');
+        sections.push(`import FileSystemSyncService from '${engineDir}/FileSystemSyncService.js';`);
+        sections.push(`import EditorModel from '${engineDir}/EditorModel.js';`);
+        sections.push(`import EditorView from '${engineDir}/EditorView.js';`);
+        sections.push(`import EditorController from '${engineDir}/EditorController.js';`);
+        sections.push('');
+
         // Import libraries
         let libraryExports = [];
         if (editor.libraries && editor.libraries.length > 0) {
@@ -609,6 +628,15 @@ class EntryGenerator {
         sections.push('// Make libraries available globally');
         sections.push('if (!window.GUTS) window.GUTS = {};');
         sections.push('Object.assign(window.GUTS, Libraries);');
+        sections.push('');
+
+        // Make editor engine classes and CodeMirror available globally
+        sections.push('// Make editor engine classes and CodeMirror available globally');
+        sections.push('window.CodeMirror = CodeMirror;');
+        sections.push('window.FileSystemSyncService = FileSystemSyncService;');
+        sections.push('window.EditorModel = EditorModel;');
+        sections.push('window.EditorView = EditorView;');
+        sections.push('window.EditorController = EditorController;');
         sections.push('');
 
         // Set up window.THREE with core library and addons
@@ -639,7 +667,7 @@ class EntryGenerator {
         sections.push('');
 
         // Export
-        sections.push('export { Libraries };');
+        sections.push('export { Libraries, CodeMirror, FileSystemSyncService, EditorModel, EditorView, EditorController };');
         sections.push('export default Libraries;');
 
         const entryPath = path.join(this.tempDir, 'editor-entry.js');
