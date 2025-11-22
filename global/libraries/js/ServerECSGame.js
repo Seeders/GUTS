@@ -11,20 +11,12 @@ class ServerECSGame extends global.BaseECSGame {
 
 
 }
-      
-if(typeof ServerECSGame != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.ServerECSGame = ServerECSGame;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ServerECSGame;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = ServerECSGame;
-        exports.ServerECSGame = ServerECSGame;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.ServerECSGame = ServerECSGame;
 }
+
+// ES6 exports for webpack bundling
+export default ServerECSGame;
+export { ServerECSGame };
