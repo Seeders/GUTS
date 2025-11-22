@@ -603,12 +603,14 @@ class WorldRenderer {
                 const northHeight = heightMap[gridZ - 1][gridX];
                 if (currentTileHeight > northHeight) {
                     // Current tile is higher - check for north ramp on current tile
-                    const pos = 1 + (1 - tileZ); // 1 at edge, 2 at far south
+                    // pos: 0 at far south (full high), 1 at north edge (cliff)
+                    const pos = 1 - tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ, gridX, gridZ - 1, pos);
                     if (slope !== null) rampHeight = slope;
                 } else if (northHeight > currentTileHeight) {
                     // North tile is higher - check for south ramp on north tile extending here
-                    const pos = 1 + tileZ; // 1 at edge, 2 at far south
+                    // pos: 1 at south edge (cliff), 2 at far north (full low)
+                    const pos = 2 - tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ - 1, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -619,12 +621,14 @@ class WorldRenderer {
                 const southHeight = heightMap[gridZ + 1][gridX];
                 if (currentTileHeight > southHeight) {
                     // Current tile is higher - check for south ramp on current tile
-                    const pos = 1 + tileZ; // 1 at edge, 2 at far north
+                    // pos: 0 at far north (full high), 1 at south edge (cliff)
+                    const pos = tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ, gridX, gridZ + 1, pos);
                     if (slope !== null) rampHeight = slope;
                 } else if (southHeight > currentTileHeight) {
                     // South tile is higher - check for north ramp on south tile extending here
-                    const pos = 1 + (1 - tileZ); // 1 at edge, 2 at far north
+                    // pos: 1 at north edge (cliff), 2 at far south (full low)
+                    const pos = 1 + tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ + 1, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -635,12 +639,14 @@ class WorldRenderer {
                 const westHeight = heightMap[gridZ][gridX - 1];
                 if (currentTileHeight > westHeight) {
                     // Current tile is higher - check for west ramp on current tile
-                    const pos = 1 + (1 - tileX); // 1 at edge, 2 at far east
+                    // pos: 0 at far east (full high), 1 at west edge (cliff)
+                    const pos = 1 - tileX;
                     const slope = checkContinuousRamp(gridX, gridZ, gridX - 1, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 } else if (westHeight > currentTileHeight) {
                     // West tile is higher - check for east ramp on west tile extending here
-                    const pos = 1 + tileX; // 1 at edge, 2 at far east
+                    // pos: 1 at east edge (cliff), 2 at far west (full low)
+                    const pos = 2 - tileX;
                     const slope = checkContinuousRamp(gridX - 1, gridZ, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -651,12 +657,14 @@ class WorldRenderer {
                 const eastHeight = heightMap[gridZ][gridX + 1];
                 if (currentTileHeight > eastHeight) {
                     // Current tile is higher - check for east ramp on current tile
-                    const pos = 1 + tileX; // 1 at edge, 2 at far west
+                    // pos: 0 at far west (full high), 1 at east edge (cliff)
+                    const pos = tileX;
                     const slope = checkContinuousRamp(gridX, gridZ, gridX + 1, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 } else if (eastHeight > currentTileHeight) {
                     // East tile is higher - check for west ramp on east tile extending here
-                    const pos = 1 + (1 - tileX); // 1 at edge, 2 at far west
+                    // pos: 1 at west edge (cliff), 2 at far east (full low)
+                    const pos = 1 + tileX;
                     const slope = checkContinuousRamp(gridX + 1, gridZ, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
