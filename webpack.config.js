@@ -194,7 +194,20 @@ const editorConfig = entries.editor ? {
         fallback: {
             "fs": false,
             "path": false,
-            "crypto": false
+            "crypto": false,
+            "querystring": false,
+            "url": false,
+            "timers": false,
+            "zlib": false,
+            "http": false,
+            "https": false,
+            "stream": false,
+            "buffer": false,
+            "util": false,
+            "net": false,
+            "tls": false,
+            "child_process": false,
+            "os": false
         }
     },
     plugins: [

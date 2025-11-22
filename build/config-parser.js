@@ -289,6 +289,7 @@ class ConfigParser {
 
     /**
      * Generate editor entry point data
+     * Includes ALL global libraries by default
      */
     getEditorEntry() {
         const editorConfig = this.config.objectTypes.configs?.editor;
@@ -297,37 +298,18 @@ class ConfigParser {
             return null;
         }
 
-        const editorModules = this.config.objectTypes.editorModules || {};
         const libraryMap = this.config.objectTypes.libraries || {};
 
-        // Collect all unique libraries from editor modules
-        const libraryNames = new Set();
-        const moduleList = editorConfig.editorModules || [];
+        // Include ALL libraries from global libraries
+        const allLibraryNames = Object.keys(libraryMap);
+        console.log(`✓ Including ${allLibraryNames.length} global libraries in editor bundle`);
 
-        for (const moduleName of moduleList) {
-            const module = editorModules[moduleName];
-            if (!module) {
-                console.warn(`⚠️ Editor module not found: ${moduleName}`);
-                continue;
-            }
-
-            // Handle single library
-            if (module.library) {
-                libraryNames.add(module.library);
-            }
-
-            // Handle multiple libraries
-            if (Array.isArray(module.libraries)) {
-                module.libraries.forEach(lib => libraryNames.add(lib));
-            }
-        }
-
-        const libraries = this.getLibraryPaths(Array.from(libraryNames));
+        const libraries = this.getLibraryPaths(allLibraryNames);
 
         return {
             libraries,
             config: editorConfig,
-            modules: moduleList
+            modules: editorConfig.editorModules || []
         };
     }
 
