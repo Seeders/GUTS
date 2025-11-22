@@ -147,6 +147,17 @@ class ModuleManager {
                 // Try to find the library in window.GUTS (already bundled)
                 let libraryClass = window.GUTS[libName] || window.COMPILED_GAME.libraryClasses?.[libName];
 
+                // Also check window.THREE for THREE.js modules
+                if (!libraryClass && window.THREE && (library.includes('three') || libName.includes('three') || libraryDef?.windowContext === 'THREE')) {
+                    // For three_ prefixed modules, check the cleaned name
+                    if (library.startsWith('three_')) {
+                        const cleanName = library.replace('three_', '');
+                        libraryClass = window.THREE[cleanName];
+                    } else {
+                        libraryClass = window.THREE[libName];
+                    }
+                }
+
                 if (libraryClass) {
                     this.registeredLibraries[libName] = libraryClass;
                     pendingLibraries.delete(library);
@@ -166,32 +177,78 @@ class ModuleManager {
                             if (!window[libraryDef.windowContext]) {
                                 window[libraryDef.windowContext] = {};
                             }
-                            window[libraryDef.windowContext][libName] = module[libName] || module;
-                            this.registeredLibraries[libName] =  module[libName];
 
-                            // Also add THREE.js addons to window.THREE namespace
+                            // Only assign if not already present (avoid read-only conflicts)
+                            const existingLib = window[libraryDef.windowContext][libName];
+                            if (!existingLib) {
+                                try {
+                                    window[libraryDef.windowContext][libName] = module[libName] || module;
+                                } catch (e) {
+                                    // Ignore read-only errors - library already loaded
+                                }
+                            }
+                            this.registeredLibraries[libName] = existingLib || module[libName] || module;
+
+                            // Also add THREE.js addons to window.THREE namespace (if not already there)
                             if (libraryDef.windowContext === 'THREE' || library.includes('three') || libName.includes('three')) {
                                 if (!window.THREE) window.THREE = {};
                                 // If library name starts with 'three_', add as both namespaced and flattened
                                 if (library.startsWith('three_')) {
                                     const cleanName = library.replace('three_', '');
-                                    window.THREE[cleanName] = module; // Add as namespace
+                                    // Only add if not already present
+                                    if (!window.THREE[cleanName]) {
+                                        try {
+                                            window.THREE[cleanName] = module; // Add as namespace
+                                        } catch (e) {
+                                            // Ignore read-only errors
+                                        }
+                                    }
+                                    // Flatten exports (skip if already defined to avoid read-only errors)
                                     if (typeof module === 'object' && module !== null) {
-                                        Object.assign(window.THREE, module); // Also flatten exports
+                                        for (const key in module) {
+                                            if (!window.THREE.hasOwnProperty(key)) {
+                                                try {
+                                                    window.THREE[key] = module[key];
+                                                } catch (e) {
+                                                    // Ignore read-only errors
+                                                }
+                                            }
+                                        }
                                     }
                                 } else {
                                     // For other THREE.js addons (OrbitControls, GLTFLoader, etc.)
-                                    window.THREE[libName] = module[libName] || module;
+                                    if (!window.THREE[libName]) {
+                                        try {
+                                            window.THREE[libName] = module[libName] || module;
+                                        } catch (e) {
+                                            // Ignore read-only errors
+                                        }
+                                    }
                                     if (typeof module === 'object' && module !== null) {
-                                        Object.assign(window.THREE, module);
+                                        for (const key in module) {
+                                            if (!window.THREE.hasOwnProperty(key)) {
+                                                try {
+                                                    window.THREE[key] = module[key];
+                                                } catch (e) {
+                                                    // Ignore read-only errors
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
 
                             resolve();
                         } else {
-                            window[libName] = module[libName] || module;
-                            this.registeredLibraries[libName] =  module[libName];
+                            // Only assign if not already present
+                            if (!window[libName]) {
+                                try {
+                                    window[libName] = module[libName] || module;
+                                } catch (e) {
+                                    // Ignore read-only errors
+                                }
+                            }
+                            this.registeredLibraries[libName] = window[libName] || module[libName] || module;
                             resolve();
                         }
                     });
