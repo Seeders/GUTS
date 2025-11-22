@@ -216,6 +216,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         if (tileMap?.worldObjects) {
             let markedCells = 0;
+            const gridSize = this.game.gameManager.call('getGridSize'); // Terrain grid size (48)
+            const centeringOffset = gridSize / 2; // Objects are centered in tiles
 
             for (const worldObj of tileMap.worldObjects) {
                 // Get unit type definition to check if object blocks movement
@@ -227,9 +229,16 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 }
 
                 // Convert worldObject position to world position
-                // worldObj.x and worldObj.y are in pixel/absolute coordinates, not tile coordinates
+                // worldObj.x and worldObj.y are in pixel/absolute coordinates (centered in tile)
                 // Use centralized coordinate conversion from CoordinateTranslator
-                const worldPos = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+                const worldPosCentered = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+
+                // Subtract centering offset to get upper-left corner position
+                // This ensures consistent placement regardless of rounding
+                const worldPos = {
+                    x: worldPosCentered.x - centeringOffset,
+                    z: worldPosCentered.z - centeringOffset
+                };
 
                 // Convert world position to nav grid coordinates
                 const navGrid = this.worldToNavGrid(worldPos.x, worldPos.z);
