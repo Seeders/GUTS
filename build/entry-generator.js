@@ -617,7 +617,15 @@ class EntryGenerator {
         sections.push('Object.assign(window.GUTS, Libraries);');
         sections.push('');
 
-        // Add Three.js addons to window.THREE namespace
+        // Set up window.THREE with core library and addons
+        sections.push('// Set up window.THREE with core library and addons');
+        sections.push('Object.keys(Libraries).forEach(key => {');
+        sections.push('  // Core THREE.js library');
+        sections.push('  if (key === \'threejs\' || key === \'THREE\') {');
+        sections.push('    window.THREE = Libraries[key];');
+        sections.push('  }');
+        sections.push('});');
+        sections.push('');
         sections.push('// Add Three.js addons to window.THREE namespace');
         sections.push('if (!window.THREE) window.THREE = {};');
         sections.push('Object.keys(Libraries).forEach(key => {');

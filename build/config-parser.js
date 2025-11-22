@@ -289,7 +289,7 @@ class ConfigParser {
 
     /**
      * Generate editor entry point data
-     * Includes ALL global libraries by default
+     * Includes ALL global libraries by default, except server-only libraries
      */
     getEditorEntry() {
         const editorConfig = this.config.objectTypes.configs?.editor;
@@ -300,9 +300,23 @@ class ConfigParser {
 
         const libraryMap = this.config.objectTypes.libraries || {};
 
-        // Include ALL libraries from global libraries
-        const allLibraryNames = Object.keys(libraryMap);
-        console.log(`✓ Including ${allLibraryNames.length} global libraries in editor bundle`);
+        // Filter out server-only libraries and libraries that require Node.js modules
+        const skipLibraries = [
+            'io', // socket.io requires Node.js modules
+            'Compiler', // requires fs
+            'ServerNetworkManager',
+            'ServerEngine',
+            'ServerModuleManager',
+            'ServerECSGame',
+            'ServerGameRoom',
+            'ServerSceneManager',
+            'GameRoom',
+            'MatchmakingService'
+        ];
+
+        // Include ALL libraries except those in skipLibraries
+        const allLibraryNames = Object.keys(libraryMap).filter(name => !skipLibraries.includes(name));
+        console.log(`✓ Including ${allLibraryNames.length} global libraries in editor bundle (skipped ${Object.keys(libraryMap).length - allLibraryNames.length} server-only libraries)`);
 
         const libraries = this.getLibraryPaths(allLibraryNames);
 
