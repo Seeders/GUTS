@@ -940,34 +940,31 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
         const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
         console.log("goldVeinLocations", goldVeinLocations);
+        let nearestVein = null;
         if (goldVeinLocations) {
             goldVeinLocations.forEach(vein => {
                 // Skip if already claimed
                 if (vein.claimed) return;
-                
+
                 // Calculate distance from start position to vein
                 const dx = vein.gridPos.x - startPosition.x;
                 const dz = vein.gridPos.z - startPosition.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (distance < minDistance) {
                     minDistance = distance;
+                    nearestVein = vein;
                     nearestGoldVeinLocation = vein.gridPos;
                     console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
         }
 
-        // Reserve the vein immediately to prevent other players from getting it
-        if (nearestGoldVeinLocation) {
-            const reserveResult = this.game.gameManager.call('reserveGoldVein', nearestGoldVeinLocation);
-            if (!reserveResult.success) {
-                console.warn('[ServerPlacementSystem] Failed to reserve vein at', nearestGoldVeinLocation, reserveResult.error);
-                // Vein was claimed by another player, try to find next nearest
-                // For now, just log the error - the buildGoldMine will fail gracefully
-            } else {
-                console.log('[ServerPlacementSystem] Reserved vein at', nearestGoldVeinLocation, 'for player', player.stats.side);
-            }
+        // Mark the vein as claimed immediately to prevent other players from getting it
+        if (nearestVein) {
+            nearestVein.claimed = true;
+            nearestVein.claimedBy = player.stats.side;
+            console.log('[ServerPlacementSystem] Claimed vein at', nearestGoldVeinLocation, 'for player', player.stats.side);
         }
 
         // Calculate peasant positions on the same side as gold mine

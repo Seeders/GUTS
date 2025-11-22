@@ -14,7 +14,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
         this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
-        this.game.gameManager.register('reserveGoldVein', this.reserveGoldVein.bind(this));
 
         this.findGoldVeinLocations();
         console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
@@ -185,27 +184,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         });
 
         return { success: true };
-    }
-
-    /**
-     * Reserve a gold vein for a player (used during starting state calculation)
-     * This prevents multiple players from being assigned the same vein
-     */
-    reserveGoldVein(gridPos) {
-        for (const vein of this.goldVeinLocations) {
-            if (vein.gridPos.x === gridPos.x && vein.gridPos.z === gridPos.z) {
-                if (vein.claimed) {
-                    console.warn('[GoldMineSystem] Vein already claimed at', gridPos);
-                    return { success: false, error: 'Vein already claimed' };
-                }
-                vein.claimed = true;
-                vein.claimedBy = 'reserved'; // Temporary marker
-                console.log('[GoldMineSystem] Reserved vein at', gridPos);
-                return { success: true, vein: vein };
-            }
-        }
-        console.warn('[GoldMineSystem] No vein found at', gridPos);
-        return { success: false, error: 'No vein at position' };
     }
 
     destroyGoldMine(entityId) {
