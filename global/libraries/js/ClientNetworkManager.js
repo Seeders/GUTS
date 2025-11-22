@@ -29,9 +29,12 @@ class ClientNetworkManager {
         }
 
         try {
-            // Uncomment when socket.io is available
-            // const { io } = await import('/socket.io/socket.io.js');
-            this.socket = io(this.serverUrl, {
+            // Use socket.io from window.io (bundled by webpack)
+            if (typeof window.io === 'undefined') {
+                throw new Error('socket.io client not available. Make sure it is included in the build.');
+            }
+
+            this.socket = window.io(this.serverUrl, {
                 transports: ['websocket', 'polling'],
                 autoConnect: true, // Disable auto-connection
                 reconnection: false // Disable auto-reconnection during development
