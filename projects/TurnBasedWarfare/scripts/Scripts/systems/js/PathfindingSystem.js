@@ -195,12 +195,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
             for (const worldObj of tileMap.worldObjects) {
                 // Get unit type definition to check if object blocks movement
                 const unitType = collections.worldObjects?.[worldObj.type];
-
-                // Skip if object doesn't have collision (e.g., decorative objects)
-                if (!unitType || unitType.collision === false || !unitType.size) {
-                    continue;
-                }
-
+                console.log('checking unitType', unitType);
+      
                 // Calculate world position
                 const extensionSize = this.game.gameManager.call('getTerrainExtensionSize') || 0;
                 const extendedSize = this.game.gameManager.call('getTerrainExtendedSize') || terrainSize;
@@ -213,6 +209,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 // Mark nav grid cell as impassable (255)
                 if (navGrid.x >= 0 && navGrid.x < this.navGridWidth &&
                     navGrid.z >= 0 && navGrid.z < this.navGridHeight) {
+                        console.log('navgrid impassable:', navGrid.x, navGrid.z);
                     const idx = navGrid.z * this.navGridWidth + navGrid.x;
                     this.navMesh[idx] = 255;
                     markedCells++;
