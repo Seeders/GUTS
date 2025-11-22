@@ -35,6 +35,9 @@ class RenderSystem extends GUTS.BaseSystem {
         const collections = this.game.getCollections?.();
         const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
 
+        // Count instances needed for each entity type from level data
+        const capacitiesByType = this.calculateInstanceCapacities();
+
         this.entityRenderer = new GUTS.EntityRenderer({
             scene: this.game.scene,
             collections: collections,
@@ -43,13 +46,83 @@ class RenderSystem extends GUTS.BaseSystem {
             getPalette: () => collections?.palette || {},
             modelScale: 32,
             defaultCapacity: 1024,
+            capacitiesByType: capacitiesByType,
             minMovementThreshold: 0.1
         });
 
         // Register EntityRenderer for other systems to use (e.g., WorldSystem for cliff spawning)
         this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
 
+        // Register method to update capacities after terrain loads
+        this.game.gameManager.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
+
         console.log('[RenderSystem] Initialized with EntityRenderer');
+    }
+
+    /**
+     * Calculate instance capacities needed for each entity type
+     * by counting them in the level data
+     */
+    calculateInstanceCapacities() {
+        const capacities = {};
+
+        // Get tile map from TerrainSystem via gameManager
+        const tileMap = this.game.gameManager.call('getTileMap');
+        if (!tileMap?.environmentObjects) {
+            console.log('[RenderSystem] No environment objects in level, using default capacities');
+            return capacities;
+        }
+
+        // Count each type of environment object
+        const counts = {};
+        tileMap.environmentObjects.forEach(obj => {
+            const key = `worldObjects_${obj.type}`;
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        // Set capacity with some buffer (20% extra for dynamic spawning)
+        for (const [key, count] of Object.entries(counts)) {
+            capacities[key] = Math.ceil(count * 1.2);
+            console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
+        }
+
+        // Also count cliffs if present
+        if (tileMap.cliffs) {
+            const cliffCounts = {};
+            tileMap.cliffs.forEach(cliff => {
+                const key = `cliffs_${cliff.type}`;
+                cliffCounts[key] = (cliffCounts[key] || 0) + 1;
+            });
+
+            for (const [key, count] of Object.entries(cliffCounts)) {
+                capacities[key] = Math.ceil(count * 1.2);
+                console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
+            }
+        }
+
+        return capacities;
+    }
+
+    /**
+     * Update instance capacities after terrain has loaded
+     * Called by WorldSystem when terrain data is available
+     */
+    updateInstanceCapacities() {
+        console.log('[RenderSystem] updateInstanceCapacities() called');
+
+        if (!this.entityRenderer) {
+            console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
+            return;
+        }
+
+        const capacities = this.calculateInstanceCapacities();
+
+        console.log('[RenderSystem] Calculated capacities:', capacities);
+
+        // Update EntityRenderer's capacity map
+        this.entityRenderer.capacitiesByType = capacities;
+
+        console.log('[RenderSystem] Updated EntityRenderer.capacitiesByType:', this.entityRenderer.capacitiesByType);
     }
 
     /**
