@@ -46,8 +46,19 @@ class MineGoldAbility extends GUTS.BaseAbility {
         // Autocast behavior: only activate mining if there's NO current command
         const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
 
-        // If there's a current command, don't execute mining
+        // If there's a current command (player order or other), reset mining state and don't execute
         if (currentCommand) {
+            // Reset mining state when interrupted by a command
+            // This ensures we start fresh when the command completes
+            miningState.state = 'idle';
+            miningState.targetMineEntityId = null;
+            miningState.targetMinePosition = null;
+            miningState.targetTownHall = null;
+            miningState.waitingPosition = null;
+            miningState.miningStartTime = 0;
+            miningState.depositStartTime = 0;
+            // Note: Keep hasGold if they were carrying gold when interrupted
+
             return false;
         }
 
