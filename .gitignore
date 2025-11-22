@@ -10,6 +10,7 @@ cache/
 */**/dist/server/game.js
 
 build/.temp/**/*
+editor/
 
 # Logs
 logs
