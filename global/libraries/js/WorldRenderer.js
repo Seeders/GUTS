@@ -588,6 +588,10 @@ class WorldRenderer {
         const positionToVertexIndex = new Map();
         const originalPositions = []; // Store original (x, z) for each vertex
         const terrainSize = cols * gridSize; // Total terrain size
+        const heightStep = (heightMap && this.terrainDataManager.heightMapSettings?.enabled)
+            ? (this.terrainDataManager.heightMapSettings.heightStep || 1)
+            : 1;
+
         let vertexIndex = 0;
         for (const pos of usedPositions) {
             const [x, z] = pos.split(',').map(Number);
@@ -598,7 +602,26 @@ class WorldRenderer {
             const worldX = x * gridSize - terrainSize / 2;
             const worldZ = z * gridSize - terrainSize / 2;
 
-            vertices.push(worldX, 0.1, worldZ);
+            // Calculate Y height based on the tile this vertex belongs to
+            // Use the tile at (x-1, z-1) if it exists and is a liquid tile, otherwise try other adjacent tiles
+            let tileHeight = 0;
+            if (heightMap && this.terrainDataManager.heightMapSettings?.enabled) {
+                // Try to find an adjacent liquid tile to get height from
+                // Priority: bottom-left, bottom-right, top-left, top-right
+                if (x > 0 && z > 0 && terrainMap[z - 1]?.[x - 1] === terrainType) {
+                    tileHeight = heightMap[z - 1][x - 1];
+                } else if (z > 0 && x < cols && terrainMap[z - 1]?.[x] === terrainType) {
+                    tileHeight = heightMap[z - 1][x];
+                } else if (x > 0 && z < rows && terrainMap[z]?.[x - 1] === terrainType) {
+                    tileHeight = heightMap[z][x - 1];
+                } else if (x < cols && z < rows && terrainMap[z]?.[x] === terrainType) {
+                    tileHeight = heightMap[z][x];
+                }
+            }
+
+            const worldY = tileHeight * heightStep + 0.8 * heightStep;
+
+            vertices.push(worldX, worldY, worldZ);
             originalPositions.push([x, z]); // Store original grid position
             uvs.push(x, z); // UVs based on grid position
         }
@@ -708,22 +731,13 @@ class WorldRenderer {
             roughness: 0.3
         });
 
-        // Step 8: Create mesh and position it based on height
+        // Step 8: Create mesh (vertices already have correct Y coordinates)
         const liquidMesh = new THREE.Mesh(geometry, material);
-
-        // Position mesh at appropriate height (slightly above the terrain type's base height)
-        if (heightMap && this.terrainDataManager.heightMapSettings?.enabled) {
-            const heightStep = this.terrainDataManager.heightMapSettings.heightStep || 1;
-            liquidMesh.position.y = (terrainType + 2) * heightStep + 0.1;
-        } else {
-            liquidMesh.position.y = 0.1;
-        }
-
         liquidMesh.userData.terrainType = terrainType;
         this.scene.add(liquidMesh);
         this.liquidMeshes.push(liquidMesh);
 
-        console.log(`WorldRenderer: Added liquid mesh for terrain type ${terrainType} at height ${liquidMesh.position.y}, vertices: ${vertices.length / 3}, triangles: ${indices.length / 3}`);
+        console.log(`WorldRenderer: Added liquid mesh for terrain type ${terrainType}, vertices: ${vertices.length / 3}, triangles: ${indices.length / 3}`);
     }
 
     /**
