@@ -367,6 +367,8 @@ class EntryGenerator {
             // Require the module and extract the actual class from exports
             requires.push(`const ${varName}_module = require('${requirePath}');`);
             requires.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${moduleName} || ${varName}_module;`);
+            // Immediately assign to global.GUTS so it's available for inheritance
+            requires.push(`global.GUTS.${moduleName} = ${varName};`);
             exports.push(`  ${moduleName}: ${varName}`);
         });
 
@@ -401,6 +403,7 @@ class EntryGenerator {
         sections.push('');
 
         // Require libraries (synchronous, happens in order)
+        // Each library is assigned to global.GUTS immediately after being required
         if (server.libraries.length > 0) {
             sections.push('// ========== LIBRARIES ==========');
             const { requires, exports } = this.generateCommonJSImports(server.libraries, 'lib');
@@ -409,9 +412,6 @@ class EntryGenerator {
             sections.push('const Libraries = {');
             sections.push(exports.join(',\n'));
             sections.push('};');
-            sections.push('');
-            sections.push('// Make libraries available IMMEDIATELY in global.GUTS');
-            sections.push('Object.assign(global.GUTS, Libraries);');
             sections.push('');
         }
 
