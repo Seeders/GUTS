@@ -726,7 +726,7 @@ class TerrainMapEditor {
         clearButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove all environment objects?')) {
                 this.tileMap.worldObjects = [];
-                this.updateEnvironmentObjects();
+                this.updateWorldObjects();
                 this.exportMap();
                 this.updateObjectCounts();
             }
@@ -1183,7 +1183,7 @@ class TerrainMapEditor {
             this.updateObjectCounts();
 
             // Update 3D spawned environment objects
-            this.updateEnvironmentObjects();
+            this.updateWorldObjects();
 
             // Export the updated map
             this.exportMap();
@@ -1724,7 +1724,7 @@ class TerrainMapEditor {
         await this.spawnCliffEntities();
 
         // Spawn environment objects (trees, rocks, etc.)
-        await this.spawnEnvironmentObjects();
+        await this.spawnWorldObjects();
 
         // Start render loop
         this.start3DRenderLoop();
@@ -1868,14 +1868,14 @@ class TerrainMapEditor {
      * Spawn environment objects (trees, rocks, etc.)
      * Uses shared EnvironmentObjectSpawner library
      */
-    async spawnEnvironmentObjects() {
+    async spawnWorldObjects() {
         if (!this.environmentObjectSpawner || !this.terrainDataManager) {
             console.warn('[TerrainMapEditor] Cannot spawn environment objects: missing dependencies');
             return;
         }
 
         // Use the shared spawner in editor mode
-        await this.environmentObjectSpawner.spawnEnvironmentObjects(
+        await this.environmentObjectSpawner.spawnWorldObjects(
             this.tileMap,
             this.terrainDataManager
         );
@@ -1885,13 +1885,13 @@ class TerrainMapEditor {
      * Update environment objects (respawn all)
      * Called when environment objects are added/removed through the UI
      */
-    async updateEnvironmentObjects() {
+    async updateWorldObjects() {
         if (!this.environmentObjectSpawner || !this.terrainDataManager) {
             return;
         }
 
         // Respawn all environment objects
-        await this.environmentObjectSpawner.updateEnvironmentObjects(
+        await this.environmentObjectSpawner.updateWorldObjects(
             this.tileMap,
             this.terrainDataManager
         );
@@ -2403,7 +2403,7 @@ class TerrainMapEditor {
 
                 // Respawn all environment objects if any were placed
                 if (objectsPlaced > 0) {
-                    this.updateEnvironmentObjects();
+                    this.updateWorldObjects();
                 }
 
                 this.lastPaintedTile = `${gridX},${gridZ}`;
