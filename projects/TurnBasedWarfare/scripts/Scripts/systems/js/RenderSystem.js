@@ -53,6 +53,9 @@ class RenderSystem extends GUTS.BaseSystem {
         // Register EntityRenderer for other systems to use (e.g., WorldSystem for cliff spawning)
         this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
 
+        // Register method to update capacities after terrain loads
+        this.game.gameManager.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
+
         console.log('[RenderSystem] Initialized with EntityRenderer');
     }
 
@@ -98,6 +101,24 @@ class RenderSystem extends GUTS.BaseSystem {
         }
 
         return capacities;
+    }
+
+    /**
+     * Update instance capacities after terrain has loaded
+     * Called by WorldSystem when terrain data is available
+     */
+    updateInstanceCapacities() {
+        if (!this.entityRenderer) {
+            console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
+            return;
+        }
+
+        const capacities = this.calculateInstanceCapacities();
+
+        // Update EntityRenderer's capacity map
+        this.entityRenderer.capacitiesByType = capacities;
+
+        console.log('[RenderSystem] Updated instance capacities from terrain data');
     }
 
     /**

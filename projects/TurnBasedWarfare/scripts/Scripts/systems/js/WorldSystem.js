@@ -140,6 +140,12 @@ class WorldSystem extends GUTS.BaseSystem {
         // Create extension planes
         this.worldRenderer.createExtensionPlanes();
 
+        // Update instance capacities now that terrain data is loaded
+        // This must happen before spawning environment entities
+        if (this.game.gameManager.has('updateInstanceCapacities')) {
+            this.game.gameManager.call('updateInstanceCapacities');
+        }
+
         // Add environment entity visuals
         if (terrainDataManager.tileMap?.environmentObjects) {
             terrainDataManager.tileMap.environmentObjects.forEach(envObj => {
