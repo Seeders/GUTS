@@ -60,8 +60,8 @@ class EntryGenerator {
                 mod.name.startsWith('three_') ||
                 mod.name.includes('GLTF') ||
                 mod.name.includes('Orbit') ||
-                mod.name.includes('Effect') ||
-                mod.name.includes('Pass') ||
+                (mod.name.includes('Effect') && !mod.name.includes('System')) ||
+                (mod.name.includes('Pass') && !mod.name.includes('System')) ||
                 mod.name.includes('Skeleton') ||
                 mod.name.includes('MeshBVH') ||
                 importPath.includes('/three/examples/jsm/') ||
@@ -78,9 +78,10 @@ class EntryGenerator {
                     exportValue = `${varName}`;
                 }
             }
-            // Standard default import for other modules
+            // Standard namespace import for other modules
+            // Use namespace import because class-export-loader exports both default and named exports
             else {
-                importStatement = `import ${varName} from '${importPath}';`;
+                importStatement = `import * as ${varName} from '${importPath}';`;
                 // Extract the actual class from the module object
                 // The class-export-loader exports both .default and .ClassName
                 // Try named export first, then default, then the module itself
@@ -199,7 +200,8 @@ class EntryGenerator {
                 sections.push(`const ${capitalized} = {`);
                 if (baseClassFile && metadata) {
                     const baseVarName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
-                    sections.push(`  ${metadata.baseClass}: ${baseVarName},`);
+                    // Apply fallback expression to base class too
+                    sections.push(`  ${metadata.baseClass}: (${baseVarName}.${metadata.baseClass} || ${baseVarName}.default || ${baseVarName}),`);
                 }
                 sections.push(exports.join(',\n'));
                 sections.push('};');

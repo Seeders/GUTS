@@ -52,16 +52,16 @@ module.exports = function(source) {
         });
         exportCode += '}\n';
 
-        // If the file doesn't have exports, add them
+        // If the file doesn't have exports, add them using ES6 syntax
         if (!hasExports) {
             exportCode += '\n';
-            exportCode += 'if (typeof exports !== \'undefined\') {\n';
+            // Use ES6 export syntax instead of CommonJS
             const mainClass = classNames[classNames.length - 1];
-            exportCode += `  exports.default = ${mainClass};\n`;
+            exportCode += `export default ${mainClass};\n`;
+            // Export all classes as named exports
             classNames.forEach(className => {
-                exportCode += `  exports.${className} = ${className};\n`;
+                exportCode += `export { ${className} };\n`;
             });
-            exportCode += '}\n';
         }
     }
 
