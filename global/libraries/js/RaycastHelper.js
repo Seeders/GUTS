@@ -60,6 +60,16 @@ class RaycastHelper {
                 this.groundMeshCache = ground;
             }
 
+            // Check if ground has raycast method
+            if (typeof ground.raycast !== 'function') {
+                console.error('Ground object missing raycast method:', ground);
+                console.error('Ground type:', ground.type);
+                console.error('Ground constructor:', ground.constructor.name);
+                console.error('Is THREE.Mesh?:', ground instanceof THREE.Mesh);
+                console.error('Has isMesh?:', ground.isMesh);
+                return null;
+            }
+
             const intersects = this.raycaster.intersectObject(ground, false);
             if (intersects.length > 0) {
                 return intersects[0].point;
