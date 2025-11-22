@@ -96,7 +96,7 @@ class GridSystem extends GUTS.BaseSystem {
         };
 
         // Initialize CoordinateTranslator for centralized coordinate transformations
-        this.coordinateTranslator = new CoordinateTranslator({
+        this.coordinateTranslator = new GUTS.CoordinateTranslator({
             gridSize: terrainGridSize,
             tileMapSize: tileMapSize,
             placementGridDimensions: {

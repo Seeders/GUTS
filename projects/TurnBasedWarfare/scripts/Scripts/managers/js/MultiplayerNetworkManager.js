@@ -30,20 +30,20 @@ class MultiplayerNetworkManager {
                 (data, error) => {
                     if (error) {
                         console.error('Failed to get player ID:', error);
-                        this.game.uiSystem.showNotification('Failed to get player ID from server', 'error');
+                       // this.game.uiSystem.showNotification('Failed to get player ID from server', 'error');
                     } else if (data && data.playerId) {
                         this.game.clientNetworkManager.playerId = data.playerId;
                         this.game.state.playerId = data.playerId;
                     } else {
                         console.error('Server response missing player ID:', data);
-                        this.game.uiSystem.showNotification('Server did not provide player ID', 'error');
+                       // this.game.uiSystem.showNotification('Server did not provide player ID', 'error');
                     }
                 }
             );
             
         } catch (error) {
             console.error('Failed to connect to server:', error);
-            this.game.uiSystem.showNotification('Failed to connect to server', 'error');
+            //this.game.uiSystem.showNotification('Failed to connect to server', 'error');
         }
     }
 

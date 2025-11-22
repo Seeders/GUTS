@@ -23,7 +23,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.terrainDataManager.init(collections, gameConfig, currentLevel);
 
         // Initialize EnvironmentObjectSpawner in runtime mode
-        this.environmentObjectSpawner = new EnvironmentObjectSpawner({
+        this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
             mode: 'runtime',
             game: this.game,
             collections: collections

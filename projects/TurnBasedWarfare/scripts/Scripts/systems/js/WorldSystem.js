@@ -6,7 +6,7 @@ class WorldSystem extends GUTS.BaseSystem {
         this.initialized = false;
 
         // Use global WorldRenderer for all 3D rendering
-        this.worldRenderer = new WorldRenderer({
+        this.worldRenderer = new GUTS.WorldRenderer({
             enableShadows: true,
             enableFog: true,
             enablePostProcessing: true,

@@ -16,11 +16,7 @@ class GameLoader {
         }   
 
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
-        await this.loadAssets();
-        this.game.translator = new GUTS.CoordinateTranslator(this.collections.configs.game, this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.isometric);
-        
-    
-        this.game.spatialGrid = new GUTS.SpatialGrid(this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
+        await this.loadAssets();  
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
         // Use ModuleManager's script environment

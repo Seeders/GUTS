@@ -44,7 +44,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
         // Initialize RaycastHelper with scene and camera
         if (this.game.scene && this.game.camera) {
-            this.raycastHelper = new RaycastHelper(this.game.camera, this.game.scene);
+            this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
         }
 
         this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));

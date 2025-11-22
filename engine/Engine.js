@@ -22,14 +22,39 @@ class Engine extends BaseEngine {
 
         let projectConfig = this.collections.configs.game;
 
-        // If using webpack bundle, libraries are already loaded in window.GUTS
-        if (window.COMPILED_GAME) {
-            // Libraries already bundled and available in window.GUTS
-         
+        if (window.COMPILED_GAME) {         
             console.log('✅ Using webpack-bundled libraries');
         } 
 
-     
+        let ui = this.collections.interfaces[projectConfig.interface];
+        if (ui) {
+            let html = ui.html;
+            let css = ui.css;
+            let modals = ui.modals;
+            if (html) {
+                this.applicationTarget.innerHTML += html;
+            }
+            if (css) {
+                let styleTag = document.createElement('style');
+                styleTag.innerHTML = css;
+                document.head.append(styleTag);
+            }
+
+            if (modals) {
+                modals.forEach((modalId) => {
+                    let modal = document.createElement('div');
+                    modal.setAttribute('id', `modal-${modalId}`);
+                    let modalContent = document.createElement('div');
+                    modal.classList.add('modal');
+                    modalContent.classList.add('modal-content');
+                    modal.append(modalContent);
+                    modalContent.innerHTML = this.collections.modals[modalId].html;
+                    this.applicationTarget.append(modal);
+                });
+            }
+        }
+
+
 
         this.gameInstance = new GUTS[projectConfig.appLibrary](this);
         this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
