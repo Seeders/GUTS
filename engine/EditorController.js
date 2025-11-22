@@ -160,8 +160,9 @@ class EditorController {
             
                     }
                 });
-             //   this.moduleManager.libraryClasses = await this.moduleManager.loadModules(moduleLibraries);
-             //   window.GUTS = this.moduleManager.libraryClasses;
+                // Make libraries available globally for editor modules
+                window.GUTS = this.moduleManager.registeredLibraries;
+
                 Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
                     let ui = project.objectTypes.interfaces[module.interface];
                     if (ui) {
@@ -200,9 +201,9 @@ class EditorController {
                // await this.preCompileComponentScripts();
                 // Instantiate property modules with controller context
                 this.editorModuleInstances = this.moduleManager.instantiateCollection(
-                    this, 
-                    project.objectTypes.editorModules, 
-                    GUTS
+                    this,
+                    project.objectTypes.editorModules,
+                    this.moduleManager.registeredLibraries
                 );
                         
                 // Set up event listeners for module UI interactions
