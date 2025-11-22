@@ -31,7 +31,17 @@ class EnvironmentObjectSpawner {
     calculateWorldPosition(worldObj, terrainDataManager) {
         // World objects use x for worldX and y for worldZ
         // (y in the data maps to Z axis in 3D world)
-        // Apply offset to move objects left (-x) and up (+z) by half terrain size
+
+        // Use centralized coordinate conversion from CoordinateTranslator if available
+        if (this.mode === 'runtime' && this.game?.gameManager) {
+            const worldPos = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+            return {
+                worldX: worldPos.x,
+                worldZ: worldPos.z
+            };
+        }
+
+        // Fallback for editor mode or if gameManager not available
         const terrainSize = terrainDataManager.terrainSize;
         return {
             worldX: worldObj.x - (terrainSize / 2),
