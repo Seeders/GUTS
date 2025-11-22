@@ -72,7 +72,7 @@ class ThreeJsWorld extends GUTS.Component {
         );
 
         if (useControls) {
-            this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
+            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
                 lookAt.x,
                 lookAt.y,
@@ -128,9 +128,9 @@ class ThreeJsWorld extends GUTS.Component {
         );
         this.scene.add(this.hemisphereLight);
 
-        this.composer = new THREE_.EffectComposer( this.renderer );
+        this.composer = new THREE.EffectComposer( this.renderer );
         this.pixelSize = this.gameConfig.pixelSize || 1;
-        this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        this.pixelPass = new THREE.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
         if(this.pixelSize == 1) {
             this.pixelPass.enabled = false;
         }
@@ -140,7 +140,7 @@ class ThreeJsWorld extends GUTS.Component {
         this.pixelPass.normalEdgeStrength = 0;
     
         this.composer.addPass( this.pixelPass );
-        const outputPass = new THREE_.OutputPass();
+        const outputPass = new THREE.OutputPass();
         this.composer.addPass( outputPass );
 
         this.tileMap = this.game.getCollections().levels[this.game.state.level].tileMap;

@@ -54,10 +54,10 @@ class InfiniWorld extends GUTS.Component {
         }
       
       if(!this.game.isServer){
-        this.composer = new THREE_.EffectComposer( this.renderer );
+        this.composer = new THREE.EffectComposer( this.renderer );
         this.pixelSize = this.gameConfig.pixelSize || 1;
         
-        this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        this.pixelPass = new THREE.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
         if(this.pixelSize == 1) {
           this.pixelPass.enabled = false;
         }
@@ -67,7 +67,7 @@ class InfiniWorld extends GUTS.Component {
         this.pixelPass.normalEdgeStrength = 0;
         
         this.composer.addPass( this.pixelPass );
-        const outputPass = new THREE_.OutputPass();
+        const outputPass = new THREE.OutputPass();
         this.composer.addPass( outputPass );
       }
       // Terrain configuration

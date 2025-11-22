@@ -20,26 +20,16 @@ class Engine extends BaseEngine {
             return;
         }
 
-        // Initialize ModuleManager
-        this.moduleManager = new ModuleManager(this, this.collections, this.applicationTarget, this.applicationTarget);
-
         let projectConfig = this.collections.configs.game;
 
         // If using webpack bundle, libraries are already loaded in window.GUTS
         if (window.COMPILED_GAME) {
             // Libraries already bundled and available in window.GUTS
-            this.moduleManager.libraryClasses = window.GUTS;
+         
             console.log('✅ Using webpack-bundled libraries');
-        } else {
-            // Legacy mode: dynamically load libraries
-            if (projectConfig.libraries) {
-                this.moduleManager.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
-                window.GUTS = this.moduleManager.libraryClasses;
-            }
-        }
+        } 
 
-        this.setupScriptEnvironment();
-        this.preCompileScripts();
+     
 
         this.gameInstance = new GUTS[projectConfig.appLibrary](this);
         this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);

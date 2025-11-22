@@ -41,13 +41,13 @@ class WorldSystem extends GUTS.BaseSystem {
         });
 
         // Add BVH extension functions for Three.js
-        THREE.BufferGeometry.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBoundsTree;
-        THREE.BufferGeometry.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBoundsTree;
-        THREE.Mesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
+        THREE.BufferGeometry.prototype.computeBoundsTree = THREE.MeshBVH.computeBoundsTree;
+        THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBoundsTree;
+        THREE.Mesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
 
-        THREE.BatchedMesh.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
+        THREE.BatchedMesh.prototype.computeBoundsTree = THREE.MeshBVH.computeBatchedBoundsTree;
+        THREE.BatchedMesh.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBatchedBoundsTree;
+        THREE.BatchedMesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
 
         this.initializeThreeJS();
     }
@@ -186,7 +186,7 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
             enabled: pixelSize !== 1,
             create: () => {
-                const pixelPass = new THREE_.RenderPixelatedPass(pixelSize, this.scene, this.camera);
+                const pixelPass = new THREE.RenderPixelatedPass(pixelSize, this.scene, this.camera);
                 pixelPass.enabled = pixelSize !== 1;
                 pixelPass.normalEdgeStrength = 0;
                 return pixelPass;
@@ -197,7 +197,7 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.gameManager.call('registerPostProcessingPass', 'output', {
             enabled: true,
             create: () => {
-                return new THREE_.OutputPass();
+                return new THREE.OutputPass();
             }
         });
 

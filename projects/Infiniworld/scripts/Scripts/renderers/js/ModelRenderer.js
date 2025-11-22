@@ -24,7 +24,7 @@ class ModelRenderer extends GUTS.Component {
 
         // Get the model
         this.model = await this.game.modelManager.getModel(objectType, spawnType);
-        this.skeletonUtils = THREE_.SkeletonUtils;
+        this.skeletonUtils = THREE.SkeletonUtils;
         this.throwTimer = -1;
         this.leapTimer = -1;
         this.leapTime = 1;
