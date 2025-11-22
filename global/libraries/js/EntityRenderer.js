@@ -298,6 +298,9 @@ class EntityRenderer {
         console.log(`[EntityRenderer] Material:`, material.type);
 
         // Create instanced mesh - use per-type capacity if available, otherwise default
+        console.log(`[EntityRenderer] Looking up capacity for batchKey: ${batchKey}`);
+        console.log(`[EntityRenderer] capacitiesByType:`, this.capacitiesByType);
+        console.log(`[EntityRenderer] capacitiesByType[${batchKey}]:`, this.capacitiesByType[batchKey]);
         const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
