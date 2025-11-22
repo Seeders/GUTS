@@ -934,18 +934,14 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         // Get starting position from level data if available
         let startPosition = this.getStartingPositionFromLevel(player.stats.side);
         console.log('startPosition', startPosition);
-        // Find nearest unclaimed gold vein
+        // Find nearest gold vein
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
         const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
         console.log("goldVeinLocations", goldVeinLocations);
-        let nearestVein = null;
         if (goldVeinLocations) {
             goldVeinLocations.forEach(vein => {
-                // Skip if already claimed
-                if (vein.claimed) return;
-
                 // Calculate distance from start position to vein
                 const dx = vein.gridPos.x - startPosition.x;
                 const dz = vein.gridPos.z - startPosition.z;
@@ -953,18 +949,10 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
                 if (distance < minDistance) {
                     minDistance = distance;
-                    nearestVein = vein;
                     nearestGoldVeinLocation = vein.gridPos;
                     console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
-        }
-
-        // Mark the vein as claimed immediately to prevent other players from getting it
-        if (nearestVein) {
-            nearestVein.claimed = true;
-            nearestVein.claimedBy = player.stats.side;
-            console.log('[ServerPlacementSystem] Claimed vein at', nearestGoldVeinLocation, 'for player', player.stats.side);
         }
 
         // Calculate peasant positions on the same side as gold mine
