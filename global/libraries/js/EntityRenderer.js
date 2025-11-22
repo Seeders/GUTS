@@ -33,6 +33,7 @@ class EntityRenderer {
         // Configuration
         this.modelScale = options.modelScale || 32;
         this.defaultCapacity = options.defaultCapacity || 1024;
+        this.capacitiesByType = options.capacitiesByType || {}; // Per-type capacity overrides
         this.minMovementThreshold = options.minMovementThreshold || 0.1;
 
         // Stats
@@ -296,11 +297,15 @@ class EntityRenderer {
         console.log(`[EntityRenderer] Geometry vertices:`, geometry.attributes.position?.count);
         console.log(`[EntityRenderer] Material:`, material.type);
 
-        // Create instanced mesh
-        const capacity = this.defaultCapacity;
+        // Create instanced mesh - use per-type capacity if available, otherwise default
+        console.log(`[EntityRenderer] Looking up capacity for batchKey: ${batchKey}`);
+        console.log(`[EntityRenderer] capacitiesByType:`, this.capacitiesByType);
+        console.log(`[EntityRenderer] capacitiesByType[${batchKey}]:`, this.capacitiesByType[batchKey]);
+        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
-        console.log(`[EntityRenderer] Created InstancedMesh for ${batchKey}, capacity: ${capacity}`);
+        console.log(`[EntityRenderer] Created InstancedMesh for ${batchKey}, capacity: ${capacity}` +
+            (this.capacitiesByType[batchKey] ? ' (calculated from level)' : ' (default)'));
 
         // Note: scale is applied per-instance in the matrix, not on the InstancedMesh itself
         instancedMesh.castShadow = true;
@@ -764,11 +769,14 @@ class EntityRenderer {
         material.uuid = THREE.MathUtils.generateUUID();
         material.needsUpdate = true;
 
+        // Determine capacity - use per-type if available, otherwise default
+        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
+
         // Setup VAT attributes
-        this.setupVATAttributes(geometry, this.defaultCapacity);
+        this.setupVATAttributes(geometry, capacity);
 
         // Create instanced mesh
-        const mesh = new THREE.InstancedMesh(geometry, material, this.defaultCapacity);
+        const mesh = new THREE.InstancedMesh(geometry, material, capacity);
         mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         mesh.count = 0;
         mesh.castShadow = true;
@@ -794,7 +802,7 @@ class EntityRenderer {
             mesh,
             geometry,
             material,
-            capacity: this.defaultCapacity,
+            capacity: capacity,
             count: 0,
             entityMap: new Map(),
             attributes: {
@@ -810,7 +818,7 @@ class EntityRenderer {
         };
 
         // Initialize animation attributes
-        for (let i = 0; i < this.defaultCapacity; i++) {
+        for (let i = 0; i < capacity; i++) {
             batch.attributes.clipIndex.setX(i, 0);
             batch.attributes.animTime.setX(i, 0);
             batch.attributes.animSpeed.setX(i, 1);
@@ -820,7 +828,8 @@ class EntityRenderer {
         this.vatBatches.set(batchKey, batch);
         this.stats.batches++;
 
-        console.log(`[EntityRenderer] Created VAT batch: ${batchKey}`);
+        console.log(`[EntityRenderer] Created VAT batch: ${batchKey} (capacity: ${capacity}` +
+            (this.capacitiesByType[batchKey] ? ', calculated from level)' : ', default)'));
         return batch;
     }
 
