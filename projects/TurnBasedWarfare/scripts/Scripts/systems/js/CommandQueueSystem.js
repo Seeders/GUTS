@@ -202,11 +202,19 @@ class CommandQueueSystem extends GUTS.BaseSystem {
 
         // Move current command to history
         if (commandQueue.currentCommand) {
+            // Check if this was a player order
+            const isPlayerOrder = commandQueue.currentCommand.meta?.isPlayerOrder === true;
+
             commandQueue.commandHistory.push({
                 ...commandQueue.currentCommand,
                 completedTime: this.game.state.now
             });
             commandQueue.currentCommand = null;
+
+            // If a player order just completed, mark it so abilities don't auto-resume this round
+            if (isPlayerOrder) {
+                commandQueue.playerOrderCompletedThisRound = true;
+            }
         }
 
         // Execute next command in queue if available
@@ -238,11 +246,14 @@ class CommandQueueSystem extends GUTS.BaseSystem {
         for (let i = 0; i < entities.length; i++) {
             const entityId = entities[i];
             const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
-                
+
+            // Clear the player order completed flag - new round, abilities can auto-resume
+            commandQueue.playerOrderCompletedThisRound = false;
+
             if (commandQueue.currentCommand) {
                 const cmd = commandQueue.currentCommand;
                 const isPlayerOrder = cmd.meta?.isPlayerOrder === true;
-                
+
                 // Only clear non-player commands
                 if (!isPlayerOrder) {
                     this.completeCurrentCommand(entityId);

@@ -51,7 +51,14 @@ class MineGoldAbility extends GUTS.BaseAbility {
             return false;
         }
 
-        // No current command - activate mining (autocast)
+        // Check if a player order just completed this round
+        // If so, don't resume mining until next round
+        const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        if (commandQueue && commandQueue.playerOrderCompletedThisRound) {
+            return false;
+        }
+
+        // No current command and no recently completed player order - activate mining (autocast)
         // If we were interrupted (controller was changed), reset mining state to idle
         const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
         if(currentAIController !== ComponentTypes.MINING_STATE){
