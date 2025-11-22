@@ -21,19 +21,12 @@ class GameState {
     }
 }
 
-if(typeof GameState != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.GameState = GameState;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = GameState;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = GameState;
-        exports.GameState = GameState;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.GameState = GameState;
 }
+
+// ES6 exports for webpack bundling
+export default GameState;
+export { GameState };

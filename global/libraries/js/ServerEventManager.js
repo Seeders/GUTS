@@ -28,19 +28,12 @@ class ServerEventManager {
 }
 
 
-if(typeof ServerEventManager != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.ServerEventManager = ServerEventManager;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ServerEventManager;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = ServerEventManager;
-        exports.ServerEventManager = ServerEventManager;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.ServerEventManager = ServerEventManager;
 }
+
+// ES6 exports for webpack bundling
+export default ServerEventManager;
+export { ServerEventManager };
