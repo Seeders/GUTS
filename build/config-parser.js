@@ -64,10 +64,11 @@ class ConfigParser {
 
             // Handle socket.io from CDN - use socket.io-client npm package
             if (lib.href && lib.href.includes('socket.io')) {
+                const socketPath = path.join(__dirname, '..', 'node_modules', 'socket.io-client', 'build', 'esm', 'index.js');
                 console.log(`✓ Using npm package for socket.io-client`);
                 paths.push({
                     name: 'io',  // socket.io-client default export
-                    path: 'socket.io-client',  // Use package name for webpack module resolution
+                    path: socketPath,  // Use ESM build
                     isModule: true,  // ES module
                     requireName: 'io',
                     fileName: 'socket_io_client',  // Use underscores to avoid invalid var names

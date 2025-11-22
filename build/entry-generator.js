@@ -49,16 +49,11 @@ class EntryGenerator {
             else if (importPath.includes('node_modules/three/examples/')) {
                 importPath = importPath.replace(/.*node_modules\//, '');
             }
-            // Socket.io-client should use relative path from node_modules
-            else if (importPath.includes('node_modules/socket.io-client/')) {
-                importPath = importPath.replace(/.*node_modules\//, '');
-            }
-
             let importStatement;
             let exportValue = varName;
 
-            // Socket.io-client uses default export and should be available as window.io
-            if (moduleName === 'io' || importPath.includes('socket.io-client/dist')) {
+            // Socket.io-client uses default export
+            if (moduleName === 'io' || importPath.includes('socket.io-client')) {
                 importStatement = `import ${varName} from '${importPath}';`;
                 exportValue = varName;
             }
@@ -279,11 +274,6 @@ class EntryGenerator {
         sections.push('      }');
         sections.push('    }');
         sections.push('  });');
-        sections.push('}');
-        sections.push('');
-        sections.push('// Setup window.io for socket.io');
-        sections.push('if (Libraries.io) {');
-        sections.push('  window.io = Libraries.io;');
         sections.push('}');
         sections.push('');
         // Also expose managers, systems, and dynamic collections in GUTS namespace
