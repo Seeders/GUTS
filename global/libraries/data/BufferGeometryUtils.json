@@ -1,7 +1,7 @@
 {
   "title": "THREE.BufferGeometryUtils",
   "isModule": true,
-  "windowContext": "THREE_",
+  "windowContext": "THREE",
   "requireName": "BufferGeometryUtils",
   "importName": "BufferGeometryUtils",
   "filePath": "/global/libraries/js/BufferGeometryUtils.js"
