@@ -130,19 +130,11 @@ class EditorController {
             await this.fs.importProject(name);
         }
         const project = this.model.state.project;
-        // Initialize module manager for handling dynamic modules
-        this.moduleManager = new ModuleManager(
-            this.model, 
-            project.objectTypes, 
-            this.elements.mainContentContainer, 
-            this.elements.modalContainer
-        );
-        
+
         try {
             const editorConfig = project.objectTypes.configs?.editor;
-           
-            
-            // Then load property editor modules based on editor configuration
+
+            // Load property editor modules based on editor configuration
             if (editorConfig) {
                 // Filter property modules to only those specified in editor config
                 const editorModules = {};
@@ -157,11 +149,10 @@ class EditorController {
                                 moduleLibraries[libraryName] = project.objectTypes.libraries[libraryName];
                             });
                         }
-            
+
                     }
                 });
-                // Make libraries available globally for editor modules
-                window.GUTS = this.moduleManager.registeredLibraries;
+                // Libraries are already available globally via webpack bundle
 
                 Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
                     let ui = project.objectTypes.interfaces[module.interface];
@@ -199,13 +190,45 @@ class EditorController {
                 // Setup script execution environment for modules
                // this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
                // await this.preCompileComponentScripts();
-                // Instantiate property modules with controller context
-                this.editorModuleInstances = this.moduleManager.instantiateCollection(
-                    this,
-                    project.objectTypes.editorModules,
-                    this.moduleManager.registeredLibraries
-                );
-                        
+                // Instantiate editor modules with controller context
+                this.editorModuleInstances = {};
+                Object.keys(project.objectTypes.editorModules).forEach((moduleId) => {
+                    const module = project.objectTypes.editorModules[moduleId];
+                    if (!module) return;
+
+                    // Handle single library case
+                    if (module.library) {
+                        const libName = module.library;
+                        if (window.GUTS[libName]) {
+                            try {
+                                this.editorModuleInstances[libName] = new window.GUTS[libName](
+                                    this,
+                                    module,
+                                    window.GUTS
+                                );
+                            } catch (e) {
+                                console.error(`Failed to instantiate ${libName}:`, e);
+                            }
+                        }
+                    }
+                    // Handle multiple libraries case
+                    else if (Array.isArray(module.libraries)) {
+                        module.libraries.forEach((library) => {
+                            if (window.GUTS[library]) {
+                                try {
+                                    this.editorModuleInstances[library] = new window.GUTS[library](
+                                        this,
+                                        module,
+                                        window.GUTS
+                                    );
+                                } catch (e) {
+                                    console.error(`Failed to instantiate ${library}:`, e);
+                                }
+                            }
+                        });
+                    }
+                });
+
                 // Set up event listeners for module UI interactions
                 this.view.setupModuleEventListeners(project.objectTypes.editorModules);
             }

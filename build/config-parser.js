@@ -288,6 +288,50 @@ class ConfigParser {
     }
 
     /**
+     * Generate editor entry point data
+     */
+    getEditorEntry() {
+        const editorConfig = this.config.objectTypes.configs?.editor;
+        if (!editorConfig) {
+            console.warn('⚠️ Editor config not found');
+            return null;
+        }
+
+        const editorModules = this.config.objectTypes.editorModules || {};
+        const libraryMap = this.config.objectTypes.libraries || {};
+
+        // Collect all unique libraries from editor modules
+        const libraryNames = new Set();
+        const moduleList = editorConfig.editorModules || [];
+
+        for (const moduleName of moduleList) {
+            const module = editorModules[moduleName];
+            if (!module) {
+                console.warn(`⚠️ Editor module not found: ${moduleName}`);
+                continue;
+            }
+
+            // Handle single library
+            if (module.library) {
+                libraryNames.add(module.library);
+            }
+
+            // Handle multiple libraries
+            if (Array.isArray(module.libraries)) {
+                module.libraries.forEach(lib => libraryNames.add(lib));
+            }
+        }
+
+        const libraries = this.getLibraryPaths(Array.from(libraryNames));
+
+        return {
+            libraries,
+            config: editorConfig,
+            modules: moduleList
+        };
+    }
+
+    /**
      * Get engine files
      */
     getEnginePaths() {
@@ -309,6 +353,7 @@ class ConfigParser {
             projectName: this.projectName,
             client: this.getClientEntry(),
             server: this.getServerEntry(),
+            editor: this.getEditorEntry(),
             engine: this.getEnginePaths(),
             projectConfig: this.config.objectTypes.configs
         };
