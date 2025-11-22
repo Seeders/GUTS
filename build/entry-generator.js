@@ -36,7 +36,9 @@ class EntryGenerator {
             }
             seen.add(moduleName);
 
-            const varName = `${varPrefix}_${mod.fileName || mod.name}`;
+            // Sanitize variable name - replace dots, dashes, and other invalid chars with underscores
+            const fileNameSafe = (mod.fileName || mod.name).replace(/[.\-]/g, '_');
+            const varName = `${varPrefix}_${fileNameSafe}`;
             let importPath = mod.path.replace(/\\/g, '/');
 
             // Special handling for Three.js - use 'three' package name
@@ -47,12 +49,21 @@ class EntryGenerator {
             else if (importPath.includes('node_modules/three/examples/')) {
                 importPath = importPath.replace(/.*node_modules\//, '');
             }
+            // Socket.io-client should use relative path from node_modules
+            else if (importPath.includes('node_modules/socket.io-client/')) {
+                importPath = importPath.replace(/.*node_modules\//, '');
+            }
 
             let importStatement;
             let exportValue = varName;
 
+            // Socket.io-client uses default export and should be available as window.io
+            if (moduleName === 'io' || importPath.includes('socket.io-client/dist')) {
+                importStatement = `import ${varName} from '${importPath}';`;
+                exportValue = varName;
+            }
             // Three.js and its addons use named exports, need namespace import
-            if (moduleName === 'THREE' || mod.name === 'threejs') {
+            else if (moduleName === 'THREE' || mod.name === 'threejs') {
                 importStatement = `import * as ${varName} from '${importPath}';`;
             }
             // Three.js addons (GLTFLoader, OrbitControls, EffectComposer, etc.) export named classes
@@ -268,6 +279,11 @@ class EntryGenerator {
         sections.push('      }');
         sections.push('    }');
         sections.push('  });');
+        sections.push('}');
+        sections.push('');
+        sections.push('// Setup window.io for socket.io');
+        sections.push('if (Libraries.io) {');
+        sections.push('  window.io = Libraries.io;');
         sections.push('}');
         sections.push('');
         // Also expose managers, systems, and dynamic collections in GUTS namespace
