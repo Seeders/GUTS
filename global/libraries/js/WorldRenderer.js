@@ -504,6 +504,9 @@ class WorldRenderer {
         if (this.terrainDataManager.heightMapSettings?.enabled) {
             this.updateHeightMap();
         }
+
+        // Generate liquid surfaces for water/lava tiles
+        this.generateAllLiquidSurfaces();
     }
 
     /**
@@ -523,6 +526,242 @@ class WorldRenderer {
 
         this.terrainDataManager.processHeightMapFromData();
         this.applyHeightMapToGeometry(this.terrainDataManager.heightMapData);
+    }
+
+    /**
+     * Generate liquid surface mesh for a specific terrain type (water, lava, etc.)
+     * @param {number} terrainType - The terrain type ID to generate liquid surfaces for
+     */
+    generateLiquidSurfaceMesh(terrainType) {
+        if (!this.config.enableLiquidSurfaces) {
+            return;
+        }
+
+        const tileMap = this.terrainDataManager?.tileMap;
+        if (!tileMap || !tileMap.terrainMap) {
+            console.warn('WorldRenderer: Cannot generate liquid surfaces - no terrain map available');
+            return;
+        }
+
+        const terrainMap = tileMap.terrainMap;
+        const heightMap = tileMap.heightMap;
+        const gridSize = this.terrainDataManager.gridSize;
+        const rows = terrainMap.length;
+        const cols = terrainMap[0].length;
+
+        // Arrays to store vertices, indices, and UVs for the BufferGeometry
+        const vertices = [];
+        const indices = [];
+        const uvs = [];
+
+        // Amount to extend the perimeter (25% of gridSize to overlap with cliff edges)
+        const extensionAmount = gridSize * 0.25;
+
+        // Helper function to check if a tile is a liquid tile of this type
+        const isLiquidTile = (x, z) => {
+            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;
+            return terrainMap[z][x] === terrainType;
+        };
+
+        // Step 1: Generate a grid of vertices, but only for positions needed by liquid tiles
+        const usedPositions = new Set();
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    usedPositions.add(`${x},${z}`);         // Bottom-left
+                    usedPositions.add(`${x + 1},${z}`);     // Bottom-right
+                    usedPositions.add(`${x + 1},${z + 1}`); // Top-right
+                    usedPositions.add(`${x},${z + 1}`);     // Top-left
+                }
+            }
+        }
+
+        // If no tiles of this type, skip mesh generation
+        if (usedPositions.size === 0) {
+            return;
+        }
+
+        // Step 2: Create vertices for all used positions and store their original positions
+        const positionToVertexIndex = new Map();
+        const originalPositions = []; // Store original (x, z) for each vertex
+        let vertexIndex = 0;
+        for (const pos of usedPositions) {
+            const [x, z] = pos.split(',').map(Number);
+            positionToVertexIndex.set(pos, vertexIndex++);
+
+            // Convert grid coordinates to world coordinates
+            const worldX = (x * gridSize) - (rows * gridSize / 2) + (gridSize / 2);
+            const worldZ = (z * gridSize) - (cols * gridSize / 2) + (gridSize / 2);
+
+            vertices.push(worldX, 0.1, worldZ);
+            originalPositions.push([x, z]); // Store original grid position
+            uvs.push(x, z); // UVs based on grid position
+        }
+
+        // Step 3: Generate indices for liquid tiles, connecting them into a single mesh
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    const bl = positionToVertexIndex.get(`${x},${z}`);
+                    const br = positionToVertexIndex.get(`${x + 1},${z}`);
+                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`);
+                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);
+
+                    indices.push(bl, br, tl);
+                    indices.push(br, tr, tl);
+                }
+            }
+        }
+
+        // Step 4: Identify perimeter vertices and their extension directions
+        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    const isLeftEdge = !isLiquidTile(x - 1, z);
+                    const isRightEdge = !isLiquidTile(x + 1, z);
+                    const isBottomEdge = !isLiquidTile(x, z - 1); // North
+                    const isTopEdge = !isLiquidTile(x, z + 1);    // South
+
+                    // Bottom-left vertex (x, z)
+                    if (isLeftEdge || isBottomEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x},${z}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isLeftEdge) ext.extendLeft = true;
+                        if (isBottomEdge) ext.extendUp = true; // North
+                    }
+
+                    // Bottom-right vertex (x + 1, z)
+                    if (isRightEdge || isBottomEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isRightEdge) ext.extendRight = true;
+                        if (isBottomEdge) ext.extendUp = true; // North
+                    }
+
+                    // Top-right vertex (x + 1, z + 1)
+                    if (isRightEdge || isTopEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isRightEdge) ext.extendRight = true;
+                        if (isTopEdge) ext.extendDown = true; // South
+                    }
+
+                    // Top-left vertex (x, z + 1)
+                    if (isLeftEdge || isTopEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isLeftEdge) ext.extendLeft = true;
+                        if (isTopEdge) ext.extendDown = true; // South
+                    }
+                }
+            }
+        }
+
+        // Step 5: Apply perimeter extensions
+        perimeterExtensions.forEach((ext, vertexIndex) => {
+            const idx = vertexIndex * 3;
+            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left
+            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right
+            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)
+            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)
+        });
+
+        // Step 6: Create the BufferGeometry
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals(); // For lighting
+
+        // Step 7: Create material based on terrain type color
+        const terrainTypeData = tileMap.terrainTypes?.[terrainType];
+        let color = 0x0088ff; // Default blue for water
+        let opacity = 0.7;
+
+        if (terrainTypeData) {
+            // Parse hex color if available
+            if (terrainTypeData.color) {
+                color = parseInt(terrainTypeData.color.replace('#', '0x'));
+            }
+            // Check if this is lava (or other opaque liquid)
+            if (terrainTypeData.name && terrainTypeData.name.toLowerCase().includes('lava')) {
+                opacity = 0.9;
+            }
+        }
+
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            transparent: true,
+            opacity: opacity,
+            side: THREE.DoubleSide,
+            metalness: 0.1,
+            roughness: 0.3
+        });
+
+        // Step 8: Create mesh and position it based on height
+        const liquidMesh = new THREE.Mesh(geometry, material);
+
+        // Position mesh at appropriate height (slightly above the terrain type's base height)
+        if (heightMap && this.terrainDataManager.heightMapSettings?.enabled) {
+            const heightStep = this.terrainDataManager.heightMapSettings.heightStep || 1;
+            liquidMesh.position.y = (terrainType + 2) * heightStep + 0.1;
+        } else {
+            liquidMesh.position.y = 0.1;
+        }
+
+        liquidMesh.userData.terrainType = terrainType;
+        this.scene.add(liquidMesh);
+        this.liquidMeshes.push(liquidMesh);
+    }
+
+    /**
+     * Generate all liquid surface meshes for all liquid terrain types
+     */
+    generateAllLiquidSurfaces() {
+        if (!this.config.enableLiquidSurfaces) {
+            return;
+        }
+
+        const tileMap = this.terrainDataManager?.tileMap;
+        if (!tileMap || !tileMap.terrainTypes) {
+            return;
+        }
+
+        // Clear existing liquid meshes
+        this.clearLiquidSurfaces();
+
+        // Generate liquid surfaces for each terrain type that should have liquid
+        Object.keys(tileMap.terrainTypes).forEach(terrainTypeId => {
+            const terrainType = tileMap.terrainTypes[terrainTypeId];
+
+            // Check if this terrain type should have liquid surface
+            // (water, lava, or any terrain type with 'liquid' property)
+            if (terrainType.liquid ||
+                (terrainType.name && (
+                    terrainType.name.toLowerCase().includes('water') ||
+                    terrainType.name.toLowerCase().includes('lava') ||
+                    terrainType.name.toLowerCase().includes('liquid')
+                ))) {
+                this.generateLiquidSurfaceMesh(parseInt(terrainTypeId));
+            }
+        });
+    }
+
+    /**
+     * Clear all liquid surface meshes from the scene
+     */
+    clearLiquidSurfaces() {
+        this.liquidMeshes.forEach(mesh => {
+            if (mesh.geometry) mesh.geometry.dispose();
+            if (mesh.material) mesh.material.dispose();
+            this.scene.remove(mesh);
+        });
+        this.liquidMeshes = [];
     }
 
     /**
@@ -1124,6 +1363,9 @@ class WorldRenderer {
 
         // Update ground texture only for affected regions
         this.updateGroundTextureRegion(modifiedTiles);
+
+        // Regenerate liquid surfaces to reflect terrain changes
+        this.generateAllLiquidSurfaces();
     }
 
     /**
