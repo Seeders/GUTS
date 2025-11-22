@@ -28302,6 +28302,9 @@
                         "paletteColor": "greenDColor"
                       },
                       "id": 3
+                    },
+                    {
+                      "id": 0
                     }
                   ]
                 }
@@ -28349,7 +28352,24 @@
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -28407,7 +28427,15 @@
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "id": 0
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
