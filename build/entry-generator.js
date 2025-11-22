@@ -597,7 +597,7 @@ class EntryGenerator {
         sections.push('');
 
         // Import editor engine files
-        const engineDir = path.join(__dirname, '..', 'engine');
+        const engineDir = path.join(__dirname, '..', 'engine').replace(/\\/g, '/');
         sections.push('// Editor Engine Files');
         sections.push(`import FileSystemSyncService from '${engineDir}/FileSystemSyncService.js';`);
         sections.push(`import EditorModel from '${engineDir}/EditorModel.js';`);
