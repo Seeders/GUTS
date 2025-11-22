@@ -63,11 +63,10 @@ class RenderSystem extends GUTS.BaseSystem {
      * Calculate instance capacities needed for each entity type
      * by counting them in the level data
      */
-    calculateInstanceCapacities() {
+    calculateInstanceCapacities(terrainDataManager) {
         const capacities = {};
 
-        // Get terrain data manager to access level data
-        const terrainDataManager = this.game.terrainDataManager;
+        // terrainDataManager is passed as parameter from WorldSystem
         if (!terrainDataManager?.tileMap?.environmentObjects) {
             console.log('[RenderSystem] No environment objects in level, using default capacities');
             return capacities;
@@ -107,15 +106,17 @@ class RenderSystem extends GUTS.BaseSystem {
      * Update instance capacities after terrain has loaded
      * Called by WorldSystem when terrain data is available
      */
-    updateInstanceCapacities() {
+    updateInstanceCapacities(terrainDataManager) {
         console.log('[RenderSystem] updateInstanceCapacities() called');
+        console.log('[RenderSystem] terrainDataManager provided?', !!terrainDataManager);
+        console.log('[RenderSystem] environmentObjects count:', terrainDataManager?.tileMap?.environmentObjects?.length);
 
         if (!this.entityRenderer) {
             console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
             return;
         }
 
-        const capacities = this.calculateInstanceCapacities();
+        const capacities = this.calculateInstanceCapacities(terrainDataManager);
 
         console.log('[RenderSystem] Calculated capacities:', capacities);
 
