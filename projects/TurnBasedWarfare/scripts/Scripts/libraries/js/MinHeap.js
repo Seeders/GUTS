@@ -54,20 +54,12 @@ class MinHeap {
     }
 }
 
-if(typeof MinHeap != 'undefined'){
-        
-    if (typeof window !== 'undefined') {
-        window.MinHeap = MinHeap;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = MinHeap;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = MinHeap;
-        exports.MinHeap = MinHeap;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.MinHeap = MinHeap;
 }
+
+// ES6 exports for webpack bundling
+export default MinHeap;
+export { MinHeap };

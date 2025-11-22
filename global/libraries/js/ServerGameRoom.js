@@ -441,19 +441,12 @@ class ServerGameRoom extends global.GameRoom {
     }
 }
 
-if(typeof ServerGameRoom != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.ServerGameRoom = ServerGameRoom;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ServerGameRoom;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = ServerGameRoom;
-        exports.ServerGameRoom = ServerGameRoom;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.ServerGameRoom = ServerGameRoom;
 }
+
+// ES6 exports for webpack bundling
+export default ServerGameRoom;
+export { ServerGameRoom };

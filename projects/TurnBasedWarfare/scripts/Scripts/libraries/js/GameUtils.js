@@ -29,19 +29,12 @@ class GameUtils {
 }
 
 
-if(typeof GameUtils != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.GameUtils = GameUtils;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = GameUtils;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = GameUtils;
-        exports.GameUtils = GameUtils;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.GameUtils = GameUtils;
 }
+
+// ES6 exports for webpack bundling
+export default GameUtils;
+export { GameUtils };

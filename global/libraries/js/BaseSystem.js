@@ -18,19 +18,12 @@ class BaseSystem {
 
 }
 
-if(typeof BaseSystem != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.BaseSystem = BaseSystem;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = BaseSystem;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = BaseSystem;
-        exports.BaseSystem = BaseSystem;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.BaseSystem = BaseSystem;
 }
+
+// ES6 exports for webpack bundling
+export default BaseSystem;
+export { BaseSystem };

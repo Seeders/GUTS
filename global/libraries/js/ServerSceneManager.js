@@ -88,19 +88,12 @@ class ServerSceneManager {
     }
 }
       
-if(typeof ServerSceneManager != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.ServerSceneManager = ServerSceneManager;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ServerSceneManager;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = ServerSceneManager;
-        exports.ServerSceneManager = ServerSceneManager;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.ServerSceneManager = ServerSceneManager;
 }
+
+// ES6 exports for webpack bundling
+export default ServerSceneManager;
+export { ServerSceneManager };

@@ -233,19 +233,12 @@ class BaseECSGame {
     }
 }
 
-if(typeof BaseECSGame != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.BaseECSGame = BaseECSGame;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = BaseECSGame;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = BaseECSGame;
-        exports.BaseECSGame = BaseECSGame;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.BaseECSGame = BaseECSGame;
 }
+
+// ES6 exports for webpack bundling
+export default BaseECSGame;
+export { BaseECSGame };

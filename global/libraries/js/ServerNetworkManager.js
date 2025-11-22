@@ -284,19 +284,12 @@ class ServerNetworkManager {
 }
 
       
-if(typeof ServerNetworkManager != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.ServerNetworkManager = ServerNetworkManager;
-    }
 
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ServerNetworkManager;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = ServerNetworkManager;
-        exports.ServerNetworkManager = ServerNetworkManager;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.ServerNetworkManager = ServerNetworkManager;
 }
+
+// ES6 exports for webpack bundling
+export default ServerNetworkManager;
+export { ServerNetworkManager };

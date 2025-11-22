@@ -151,20 +151,12 @@ class DesyncDebugger {
     }
 }
 
-if(typeof DesyncDebugger != 'undefined'){
 
-    if (typeof window !== 'undefined') {
-        window.DesyncDebugger = DesyncDebugger;
-    }
-
-    // Make available as ES module export (new for server)  
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = DesyncDebugger;
-    }
-
-    // Make available as ES6 export (also new for server)
-    if (typeof exports !== 'undefined') {
-        exports.default = DesyncDebugger;
-        exports.DesyncDebugger = DesyncDebugger;
-    }
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.DesyncDebugger = DesyncDebugger;
 }
+
+// ES6 exports for webpack bundling
+export default DesyncDebugger;
+export { DesyncDebugger };
