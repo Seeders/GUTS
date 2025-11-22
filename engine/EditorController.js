@@ -154,32 +154,68 @@ class EditorController {
                 });
                 // Libraries are already available globally via webpack bundle
 
-                Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
-                    let ui = project.objectTypes.interfaces[module.interface];
-                    if (ui) {
-                        let html = ui.html;
-                        let css = ui.css;
-                        let modals = ui.modals;
-                        if (html) {
-                            this.elements.mainContentContainer.innerHTML += html;
-                        }
-                        if (css) {
-                            let styleTag = document.createElement('style');
-                            styleTag.innerHTML = css;
-                            document.head.append(styleTag);
-                        }
+                // Load interfaces from editor modules themselves
+                Object.entries(editorModules).forEach(([moduleId, module]) => {
+                    if (module.interface) {
+                        let ui = project.objectTypes.interfaces[module.interface];
+                        if (ui) {
+                            let html = ui.html;
+                            let css = ui.css;
+                            let modals = ui.modals;
+                            if (html) {
+                                this.elements.mainContentContainer.innerHTML += html;
+                            }
+                            if (css) {
+                                let styleTag = document.createElement('style');
+                                styleTag.innerHTML = css;
+                                document.head.append(styleTag);
+                            }
 
-                        if (modals) {
-                            modals.forEach((modalId) => {
-                                let modal = document.createElement('div');
-                                modal.setAttribute('id', `modal-${modalId}`);
-                                let modalContent = document.createElement('div');
-                                modal.classList.add('modal');
-                                modalContent.classList.add('modal-content');
-                                modal.append(modalContent);
-                                modalContent.innerHTML = project.objectTypes.modals[modalId].html;
-                                this.elements.modalContainer.append(modal);
-                            });
+                            if (modals) {
+                                modals.forEach((modalId) => {
+                                    let modal = document.createElement('div');
+                                    modal.setAttribute('id', `modal-${modalId}`);
+                                    let modalContent = document.createElement('div');
+                                    modal.classList.add('modal');
+                                    modalContent.classList.add('modal-content');
+                                    modal.append(modalContent);
+                                    modalContent.innerHTML = project.objectTypes.modals[modalId].html;
+                                    this.elements.modalContainer.append(modal);
+                                });
+                            }
+                        }
+                    }
+                });
+
+                // Also load interfaces from individual libraries
+                Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
+                    if (module.interface) {
+                        let ui = project.objectTypes.interfaces[module.interface];
+                        if (ui) {
+                            let html = ui.html;
+                            let css = ui.css;
+                            let modals = ui.modals;
+                            if (html) {
+                                this.elements.mainContentContainer.innerHTML += html;
+                            }
+                            if (css) {
+                                let styleTag = document.createElement('style');
+                                styleTag.innerHTML = css;
+                                document.head.append(styleTag);
+                            }
+
+                            if (modals) {
+                                modals.forEach((modalId) => {
+                                    let modal = document.createElement('div');
+                                    modal.setAttribute('id', `modal-${modalId}`);
+                                    let modalContent = document.createElement('div');
+                                    modal.classList.add('modal');
+                                    modalContent.classList.add('modal-content');
+                                    modal.append(modalContent);
+                                    modalContent.innerHTML = project.objectTypes.modals[modalId].html;
+                                    this.elements.modalContainer.append(modal);
+                                });
+                            }
                         }
                     }
                 });
