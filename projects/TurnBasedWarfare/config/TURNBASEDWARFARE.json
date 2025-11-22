@@ -1790,8 +1790,7 @@
           "aiPromptModule",
           "audioModule",
           "exportScriptModule",
-          "textureEditor",
-          "compilerModule"
+          "textureEditor"
         ],
         "path": "/",
         "fileName": "editor"
@@ -18749,6 +18748,10 @@
         "filePath": "/global/libraries/js/InstancePool.js",
         "fileName": "InstancePool"
       },
+      "MapRenderer": {
+        "fileName": "MapRenderer",
+        "filePath": "/global/libraries/js/MapRenderer.js"
+      },
       "MinHeap": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
         "fileName": "MinHeap"
@@ -19678,10 +19681,6 @@
       "Health": {
         "fileName": "Health",
         "filePath": "/global/renderers/js/Health.js"
-      },
-      "MapRenderer": {
-        "filePath": "/global/renderers/js/MapRenderer.js",
-        "fileName": "MapRenderer"
       },
       "ModelRenderer": {
         "title": "Model Renderer",

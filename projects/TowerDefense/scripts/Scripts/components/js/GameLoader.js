@@ -27,7 +27,7 @@ class GameLoader extends GUTS.Component {
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
         // Use ModuleManager's script environment
-        this.game.terrainTileMapper = new GUTS.TileMap(this, {}, {CanvasUtility: GUTS.CanvasUtility});
+        this.terrainTileMapper = new GUTS.TileMap({});
         this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
 
         this.game.gameEntity = this.game.createEntityFromCollections('game', { gameConfig: this.collections.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.collections.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.collections.levels[this.game.state.level], palette: this.game.palette }, new THREE.Vector3());

@@ -79,8 +79,8 @@ class TerrainMapEditor {
 
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
-        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
-        this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        this.imageManager = new GUTS.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
+        this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
@@ -147,7 +147,7 @@ class TerrainMapEditor {
             this.tileMap.terrainMap = newTerrainMap;
             this.tileMap.size = newGridSize;
             this.mapSize = newGridSize;
-            this.translator = new this.engineClasses.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
+            this.translator = new GUTS.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
             
             // Resize canvas to fit new map size
             this.updateCanvasSize();
@@ -346,7 +346,7 @@ class TerrainMapEditor {
             }
 
             // Always recreate translator with current map size
-            this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
+            this.translator = new GUTS.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
 
             document.getElementById('terrainMapSize').value = this.mapSize;
             
@@ -546,14 +546,14 @@ class TerrainMapEditor {
 
     async initImageManager() {
         let palette = this.gameEditor.getPalette();
-        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
+        this.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
         await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
         if(this.worldObjects){
             await this.imageManager.loadImages("environment", this.worldObjects, false, false);
         }
         const terrainImages = this.imageManager.getImages("levels", "level");
 
-        this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+        this.terrainTileMapper = new GUTS.TileMap({});
         if(!this.terrainCanvasBuffer) {
             this.terrainCanvasBuffer = document.createElement('canvas');
         }
@@ -568,7 +568,7 @@ class TerrainMapEditor {
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
         
         // Ensure translator is up to date before creating game object
-        this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         
         this.game = { 
             state: {}, 
@@ -581,7 +581,7 @@ class TerrainMapEditor {
             translator: this.translator
         };
 
-        this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null);
+        this.mapRenderer = new GUTS.MapRenderer(this.game, null);
         this.mapRenderer.init({ 
                 environment: this.worldObjects, 
                 level: 'level', 
@@ -596,7 +596,7 @@ class TerrainMapEditor {
     }
 
     setupTerrainImageProcessor() {
-        this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
+        this.terrainImageProcessor = new GUTS.TerrainImageProcessor();
         this.terrainImageProcessor.initialize(
             document.getElementById('terrain-image-display')
         );
@@ -1578,7 +1578,7 @@ class TerrainMapEditor {
             }
 
             // Initialize TileMap with actual sprite sheets
-            this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+            this.terrainTileMapper = new GUTS.TileMap({});
             if (!this.terrainCanvasBuffer) {
                 this.terrainCanvasBuffer = document.createElement('canvas');
             }
@@ -1610,7 +1610,7 @@ class TerrainMapEditor {
 
         // Initialize TerrainDataManager
         if (!this.terrainDataManager) {
-            this.terrainDataManager = new TerrainDataManager();
+            this.terrainDataManager = new GUTS.TerrainDataManager();
         }
 
         // Create a level structure for the editor
@@ -1624,7 +1624,7 @@ class TerrainMapEditor {
 
         // Initialize WorldRenderer
         if (!this.worldRenderer) {
-            this.worldRenderer = new WorldRenderer({
+            this.worldRenderer = new GUTS.WorldRenderer({
                 enableShadows: true,
                 enableFog: false,
                 enablePostProcessing: false,
@@ -1671,7 +1671,7 @@ class TerrainMapEditor {
         this.worldRenderer.createExtensionPlanes();
 
         // Recreate RaycastHelper to ensure fresh camera/scene references
-        this.raycastHelper = new RaycastHelper(
+        this.raycastHelper = new GUTS.RaycastHelper(
             this.worldRenderer.getCamera(),
             this.worldRenderer.getScene()
         );
@@ -1681,7 +1681,7 @@ class TerrainMapEditor {
             this.placementPreview.dispose();
         }
 
-        this.placementPreview = new PlacementPreview({
+        this.placementPreview = new GUTS.PlacementPreview({
             scene: this.worldRenderer.getScene(),
             gridSize: gameConfig.gridSize,
             getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
@@ -1703,7 +1703,7 @@ class TerrainMapEditor {
         }
 
         // Initialize EntityRenderer for spawning cliffs and other entities
-        this.entityRenderer = new EntityRenderer({
+        this.entityRenderer = new GUTS.EntityRenderer({
             scene: this.worldRenderer.getScene(),
             collections: collections,
             projectName: this.gameEditor.getCurrentProject(),
@@ -1712,7 +1712,7 @@ class TerrainMapEditor {
         });
 
         // Initialize EnvironmentObjectSpawner in editor mode
-        this.environmentObjectSpawner = new EnvironmentObjectSpawner({
+        this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
             mode: 'editor',
             entityRenderer: this.entityRenderer,
             terrainDataManager: this.terrainDataManager,
