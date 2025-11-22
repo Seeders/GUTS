@@ -41,13 +41,19 @@ class WorldSystem extends GUTS.BaseSystem {
         });
 
         // Add BVH extension functions for Three.js
-        THREE.BufferGeometry.prototype.computeBoundsTree = THREE.MeshBVH.computeBoundsTree;
-        THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBoundsTree;
-        THREE.Mesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
+        if (!THREE.MeshBVH) {
+            console.error('THREE.MeshBVH not found! Available THREE properties:', Object.keys(THREE).filter(k => k.includes('Mesh') || k.includes('BVH')));
+            console.error('Checking if MeshBVH module is in GUTS:', GUTS.three_MeshBVH || GUTS.MeshBVH);
+        } else {
+            console.log('✓ THREE.MeshBVH found, patching prototypes');
+            THREE.BufferGeometry.prototype.computeBoundsTree = THREE.MeshBVH.computeBoundsTree;
+            THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBoundsTree;
+            THREE.Mesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
 
-        THREE.BatchedMesh.prototype.computeBoundsTree = THREE.MeshBVH.computeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBatchedBoundsTree;
-        THREE.BatchedMesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
+            THREE.BatchedMesh.prototype.computeBoundsTree = THREE.MeshBVH.computeBatchedBoundsTree;
+            THREE.BatchedMesh.prototype.disposeBoundsTree = THREE.MeshBVH.disposeBatchedBoundsTree;
+            THREE.BatchedMesh.prototype.raycast = THREE.MeshBVH.acceleratedRaycast;
+        }
 
         this.initializeThreeJS();
     }
