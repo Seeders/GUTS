@@ -40,25 +40,25 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getTerrainExtensionSize', () => this.terrainDataManager.extensionSize);
         this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager.extendedSize);
 
-        // Spawn environment objects (trees, rocks, etc.) - runs on both client and server
-        this.spawnEnvironmentObjects();
+        // Spawn world objects (trees, rocks, etc.) - runs on both client and server
+        this.spawnWorldObjects();
 
         this.initialized = true;
     }
 
     /**
-     * Spawn environment objects from level data
+     * Spawn world objects from level data
      * Uses shared EnvironmentObjectSpawner library
      * Creates entities with gameplay components (POSITION, COLLISION, TEAM, UNIT_TYPE)
      * Visual components (RENDERABLE, ANIMATION) are added by WorldSystem on client
      */
-    spawnEnvironmentObjects() {
+    spawnWorldObjects() {
         if (!this.environmentObjectSpawner || !this.terrainDataManager) {
-            console.warn('[TerrainSystem] Cannot spawn environment objects: missing dependencies');
+            console.warn('[TerrainSystem] Cannot spawn world objects: missing dependencies');
             return;
         }
 
-        this.environmentObjectSpawner.spawnEnvironmentObjects(
+        this.environmentObjectSpawner.spawnWorldObjects(
             this.terrainDataManager.tileMap,
             this.terrainDataManager
         );

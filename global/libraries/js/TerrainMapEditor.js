@@ -46,7 +46,7 @@ class TerrainMapEditor {
             heightMap: [],  // Height levels independent of terrain types
             extensionHeight: 0  // Height for extension area
         };
-        this.environmentObjects = this.tileMap.environmentObjects || [];
+        this.worldObjects = this.tileMap.worldObjects || [];
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
         this.placementMode = 'terrain'; // can be 'terrain', 'environment', 'ramp', 'height', or 'placements'
@@ -192,7 +192,7 @@ class TerrainMapEditor {
         // Add mouse down event for canvas
         this.canvasEl.addEventListener('mousedown', (e) => {
             if (e.button === 0) { // Left click
-                if (this.deleteMode && this.tileMap.environmentObjects) {
+                if (this.deleteMode && this.tileMap.worldObjects) {
                     this.deleteEnvironmentObjectAt(e);
                 } else {
                     this.isMouseDown = true;
@@ -277,8 +277,8 @@ class TerrainMapEditor {
                 this.tileMap.extensionTerrainType = defaultIndex;
             }
 
-            if (!this.tileMap.environmentObjects) {
-                this.tileMap.environmentObjects = [];
+            if (!this.tileMap.worldObjects) {
+                this.tileMap.worldObjects = [];
             }
 
             // Load placements data
@@ -539,7 +539,7 @@ class TerrainMapEditor {
         this.canvasEl.addEventListener('contextmenu', (e) => {
             e.preventDefault(); // Prevent default context menu
 
-            if (this.placementMode === 'environment' && this.tileMap.environmentObjects) {
+            if (this.placementMode === 'environment' && this.tileMap.worldObjects) {
                 this.deleteEnvironmentObjectAt(e);
             }
         });
@@ -725,7 +725,7 @@ class TerrainMapEditor {
         clearButton.innerHTML = 'Clear All Objects';
         clearButton.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove all environment objects?')) {
-                this.tileMap.environmentObjects = [];
+                this.tileMap.worldObjects = [];
                 this.updateEnvironmentObjects();
                 this.exportMap();
                 this.updateObjectCounts();
@@ -760,7 +760,7 @@ class TerrainMapEditor {
                 typeContainer.className = 'terrain-editor__environment-type';
                 
                 // Count objects of this type
-                const objectCount = (this.tileMap.environmentObjects || [])
+                const objectCount = (this.tileMap.worldObjects || [])
                     .filter(obj => obj.type === type).length;
                 
                 const typeHeader = document.createElement('div');
@@ -1145,8 +1145,8 @@ class TerrainMapEditor {
                         const worldZ = (targetGridZ * gridSize) + halfGrid;
 
                         // Find any environment objects at this position
-                        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
-                            const obj = this.tileMap.environmentObjects[i];
+                        for (let i = this.tileMap.worldObjects.length - 1; i >= 0; i--) {
+                            const obj = this.tileMap.worldObjects[i];
 
                             // Check if object is at this grid position (with small tolerance)
                             const tolerance = gridSize * 0.1;
@@ -1166,7 +1166,7 @@ class TerrainMapEditor {
             objectsToDelete.sort((a, b) => b - a);
 
             for (const index of objectsToDelete) {
-                this.tileMap.environmentObjects.splice(index, 1);
+                this.tileMap.worldObjects.splice(index, 1);
             }
 
             // Show feedback
@@ -1204,7 +1204,7 @@ class TerrainMapEditor {
         
         // Update count badges
         for (const type in this.worldObjects) {
-            const objectCount = (this.tileMap.environmentObjects || [])
+            const objectCount = (this.tileMap.worldObjects || [])
                 .filter(obj => obj.type === type).length;
 
             // Find all headers first
@@ -2354,8 +2354,8 @@ class TerrainMapEditor {
         } else if (this.placementMode === 'environment') {
             // Place environment object(s) with brush size support
             if (this.selectedObjectType && this.lastPaintedTile === null) {
-                if (!this.tileMap.environmentObjects) {
-                    this.tileMap.environmentObjects = [];
+                if (!this.tileMap.worldObjects) {
+                    this.tileMap.worldObjects = [];
                 }
 
                 const gridSize = this.terrainDataManager.gridSize;
@@ -2383,13 +2383,13 @@ class TerrainMapEditor {
                                 const y = (targetGridZ * gridSize) + halfGrid;
 
                                 // Check if object already exists at this position
-                                const existingIndex = this.tileMap.environmentObjects.findIndex(
+                                const existingIndex = this.tileMap.worldObjects.findIndex(
                                     obj => obj.x === x && obj.y === y
                                 );
 
                                 if (existingIndex === -1) {
                                     // Add new environment object
-                                    this.tileMap.environmentObjects.push({
+                                    this.tileMap.worldObjects.push({
                                         type: this.selectedObjectType,
                                         x: x,
                                         y: y

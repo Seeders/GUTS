@@ -1220,7 +1220,7 @@
       ]
     ],
     "terrainBGColor": "#467554",
-    "environmentObjects": []
+    "worldObjects": []
   },
   "world": "shire"
 }

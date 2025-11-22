@@ -449,21 +449,21 @@ class TerrainDataManager {
     }
 
     /**
-     * Get environment objects from tileMap
-     * @returns {Array} Array of environment object definitions
+     * Get world objects from tileMap
+     * @returns {Array} Array of world object definitions
      */
-    getEnvironmentObjects() {
-        return this.tileMap?.environmentObjects || [];
+    getWorldObjects() {
+        return this.tileMap?.worldObjects || [];
     }
 
     /**
-     * Calculate world position for environment object
-     * @param {Object} envObj - Environment object with x, y properties
+     * Calculate world position for world object
+     * @param {Object} worldObj - World object with x, y properties
      * @returns {Object} World position {x, y, z}
      */
-    getEnvironmentObjectWorldPosition(envObj) {
-        const worldX = (envObj.x + this.extensionSize) - this.extendedSize / 2;
-        const worldZ = (envObj.y + this.extensionSize) - this.extendedSize / 2;
+    getWorldObjectWorldPosition(worldObj) {
+        const worldX = (worldObj.x + this.extensionSize) - this.extendedSize / 2;
+        const worldZ = (worldObj.y + this.extensionSize) - this.extendedSize / 2;
 
         let height = 0;
         if (this.heightMapSettings?.enabled) {

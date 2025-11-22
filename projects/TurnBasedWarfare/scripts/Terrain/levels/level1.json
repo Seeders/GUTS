@@ -4239,7 +4239,7 @@
     "terrainBGColor": {
       "paletteColor": "greenMColor"
     },
-    "environmentObjects": [
+    "worldObjects": [
       {
         "type": "goldVein",
         "x": 72,

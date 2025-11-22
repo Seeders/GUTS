@@ -18776,7 +18776,7 @@
           "terrainBGColor": {
             "paletteColor": "greenMColor"
           },
-          "environmentObjects": [
+          "worldObjects": [
             {
               "type": "tree",
               "imageIndex": 1,
@@ -21212,7 +21212,7 @@
             ]
           ],
           "terrainBGColor": "#467554",
-          "environmentObjects": []
+          "worldObjects": []
         },
         "world": "shire"
       }

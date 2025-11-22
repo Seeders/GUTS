@@ -21,15 +21,15 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     findGoldVeinLocations() {
         const tileMap = this.game.gameManager.call('getTileMap');
-        if (!tileMap?.environmentObjects) {
-            console.warn('[GoldMineSystem] No environment objects found');
+        if (!tileMap?.worldObjects) {
+            console.warn('[GoldMineSystem] No world objects found');
             return;
         }
 
         const extensionSize = this.game.gameManager.call('getTerrainExtensionSize');
         const extendedSize = this.game.gameManager.call('getTerrainExtendedSize');
 
-        this.goldVeinLocations = tileMap.environmentObjects
+        this.goldVeinLocations = tileMap.worldObjects
             .filter(obj => obj.type === 'goldVein')
             .map(obj => {
                 const worldX = (obj.x + extensionSize) - extendedSize / 2;
@@ -59,7 +59,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
                     claimed: false,
                     claimedBy: null,
                     instanceIndex: null,
-                    originalIndex: tileMap.environmentObjects.indexOf(obj)
+                    originalIndex: tileMap.worldObjects.indexOf(obj)
                 };
             });
 
