@@ -1,6 +1,7 @@
-class AudioManager extends GUTS.Component {
+class AudioManager {
     constructor(game, parent, params) {
-        super(game, parent, params);
+        this.game = game;
+        this.parent = parent;
     }
 
     init() {

@@ -207,12 +207,3 @@ class CompilerModule {
         }
     }
 }
-
-if(typeof CompilerModule != 'undefined'){
-    if (typeof window !== 'undefined') {
-        window.CompilerModule = CompilerModule;    
-    }
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { CompilerModule, compilerModuleDefinition, compilerCSS };
-    }
-}
