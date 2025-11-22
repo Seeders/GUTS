@@ -18578,7 +18578,7 @@
       "BufferGeometryUtils": {
         "title": "THREE.BufferGeometryUtils",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "BufferGeometryUtils",
         "importName": "BufferGeometryUtils",
         "filePath": "/global/libraries/js/BufferGeometryUtils.js",
@@ -18706,7 +18706,7 @@
       "GLTFLoader": {
         "title": "GLTF Loader",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "GLTFLoader",
         "importName": "GLTFLoader",
         "fileName": "GLTFLoader",
@@ -18930,7 +18930,7 @@
         "title": "THREE.EffectComposer",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/EffectComposer.js",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "EffectComposer",
         "importName": "EffectComposer",
         "fileName": "three_EffectComposer"
@@ -18938,7 +18938,7 @@
       "three_MeshBVH": {
         "title": "THREE MeshBVH",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "fileName": "three_MeshBVH",
         "filePath": "/global/libraries/js/three_MeshBVH.js"
       },
@@ -18946,7 +18946,7 @@
         "title": "THREE.OrbitControls",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "OrbitControls",
         "importName": "OrbitControls",
         "fileName": "three_OrbitControls"
@@ -18955,7 +18955,7 @@
         "title": "THREE.OutputPass",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/OutputPass.js",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "OutputPass",
         "importName": "OutputPass",
         "fileName": "three_OutputPass"
@@ -18964,7 +18964,7 @@
         "title": "THREE.PointerLockControls",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/PointerLockControls.js",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "PointerLockControls",
         "importName": "PointerLockControls",
         "fileName": "three_PointerLockControls"
@@ -18973,7 +18973,7 @@
         "title": "THREE.RenderPixelatedPass",
         "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/RenderPixelatedPass.js",
         "isModule": true,
-        "windowContext": "THREE_",
+        "windowContext": "THREE",
         "requireName": "RenderPixelatedPass",
         "importName": "RenderPixelatedPass",
         "fileName": "three_RenderPixelatedPass"

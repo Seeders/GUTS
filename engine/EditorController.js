@@ -160,21 +160,49 @@ class EditorController {
             
                     }
                 });
-                this.moduleManager.libraryClasses = await this.moduleManager.loadModules(moduleLibraries);
-                window.GUTS = this.moduleManager.libraryClasses;
+             //   this.moduleManager.libraryClasses = await this.moduleManager.loadModules(moduleLibraries);
+             //   window.GUTS = this.moduleManager.libraryClasses;
+                Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
+                    let ui = project.objectTypes.interfaces[module.interface];
+                    if (ui) {
+                        let html = ui.html;
+                        let css = ui.css;
+                        let modals = ui.modals;
+                        if (html) {
+                            this.elements.mainContentContainer.innerHTML += html;
+                        }
+                        if (css) {
+                            let styleTag = document.createElement('style');
+                            styleTag.innerHTML = css;
+                            document.head.append(styleTag);
+                        }
 
-                
+                        if (modals) {
+                            modals.forEach((modalId) => {
+                                let modal = document.createElement('div');
+                                modal.setAttribute('id', `modal-${modalId}`);
+                                let modalContent = document.createElement('div');
+                                modal.classList.add('modal');
+                                modalContent.classList.add('modal-content');
+                                modal.append(modalContent);
+                                modalContent.innerHTML = project.objectTypes.modals[modalId].html;
+                                this.elements.modalContainer.append(modal);
+                            });
+                        }
+                    }
+                });
+                    
                 // Load property module classes dynamically
-                this.editorModuleClasses = await this.moduleManager.loadModules(editorModules);
+              //  this.editorModuleClasses = await this.moduleManager.loadModules(editorModules);
                 
                 // Setup script execution environment for modules
-                this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
-                await this.preCompileComponentScripts();
+               // this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
+               // await this.preCompileComponentScripts();
                 // Instantiate property modules with controller context
                 this.editorModuleInstances = this.moduleManager.instantiateCollection(
                     this, 
                     project.objectTypes.editorModules, 
-                    this.editorModuleClasses
+                    GUTS
                 );
                         
                 // Set up event listeners for module UI interactions
