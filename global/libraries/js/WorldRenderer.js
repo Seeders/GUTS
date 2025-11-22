@@ -587,14 +587,16 @@ class WorldRenderer {
         // Step 2: Create vertices for all used positions and store their original positions
         const positionToVertexIndex = new Map();
         const originalPositions = []; // Store original (x, z) for each vertex
+        const terrainSize = cols * gridSize; // Total terrain size
         let vertexIndex = 0;
         for (const pos of usedPositions) {
             const [x, z] = pos.split(',').map(Number);
             positionToVertexIndex.set(pos, vertexIndex++);
 
-            // Convert grid coordinates to world coordinates
-            const worldX = (x * gridSize) - (rows * gridSize / 2) + (gridSize / 2);
-            const worldZ = (z * gridSize) - (cols * gridSize / 2) + (gridSize / 2);
+            // Convert grid coordinates to world coordinates (vertex at tile corner)
+            // Using CoordinateTranslator formula: tileToWorldCorner
+            const worldX = x * gridSize - terrainSize / 2;
+            const worldZ = z * gridSize - terrainSize / 2;
 
             vertices.push(worldX, 0.1, worldZ);
             originalPositions.push([x, z]); // Store original grid position
@@ -748,18 +750,17 @@ class WorldRenderer {
         // Generate liquid surfaces for each terrain type that should have liquid
         let liquidTypesFound = 0;
         Object.keys(tileMap.terrainTypes).forEach(terrainTypeId => {
-            const terrainType = tileMap.terrainTypes[terrainTypeId];
+            const terrainTypeName = tileMap.terrainTypes[terrainTypeId];
 
             // Check if this terrain type should have liquid surface
-            // (water, lava, or any terrain type with 'liquid' property)
-            const isLiquid = terrainType.liquid ||
-                (terrainType.name && (
-                    terrainType.name.toLowerCase().includes('water') ||
-                    terrainType.name.toLowerCase().includes('lava') ||
-                    terrainType.name.toLowerCase().includes('liquid')
-                ));
+            // terrainTypes is typically an array/object where the value is the terrain name string
+            const isLiquid = terrainTypeName && (
+                terrainTypeName.toLowerCase().includes('water') ||
+                terrainTypeName.toLowerCase().includes('lava') ||
+                terrainTypeName.toLowerCase().includes('liquid')
+            );
 
-            console.log(`WorldRenderer: Terrain type ${terrainTypeId} (${terrainType.name}): isLiquid=${isLiquid}, liquid property=${terrainType.liquid}`);
+            console.log(`WorldRenderer: Terrain type ${terrainTypeId} (${terrainTypeName}): isLiquid=${isLiquid}`);
 
             if (isLiquid) {
                 liquidTypesFound++;
@@ -1453,6 +1454,23 @@ class WorldRenderer {
     }
 
     /**
+     * Update liquid surface shader uniforms (for animation)
+     */
+    updateLiquidShaders() {
+        if (this.liquidMeshes.length === 0) return;
+
+        // Update timer
+        this.timer += this.clock.getDelta();
+
+        // Update time uniform for each liquid mesh
+        this.liquidMeshes.forEach(mesh => {
+            if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.time) {
+                mesh.material.uniforms.time.value = this.timer;
+            }
+        });
+    }
+
+    /**
      * Render the scene
      */
     render() {
@@ -1460,6 +1478,9 @@ class WorldRenderer {
             console.warn('WorldRenderer: Missing components for rendering');
             return;
         }
+
+        // Update liquid shader time uniforms
+        this.updateLiquidShaders();
 
         if (this.composer) {
             this.composer.render();
