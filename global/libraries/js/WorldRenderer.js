@@ -620,37 +620,37 @@ class WorldRenderer {
             };
 
             // Check ramps on current tile
-            // North ramp (top edge) - slopes from north (tileZ=0) toward south (tileZ=1)
-            let northSlope = checkRampSlope('north', gridX, gridZ - 1, tileZ);
+            // North ramp (top edge) - slopes from south to north edge
+            let northSlope = checkRampSlope('north', gridX, gridZ - 1, 1 - tileZ);
             if (northSlope !== null) rampHeight = northSlope;
 
-            // South ramp (bottom edge) - slopes from south (tileZ=1) toward north (tileZ=0)
-            let southSlope = checkRampSlope('south', gridX, gridZ + 1, 1 - tileZ);
+            // South ramp (bottom edge) - slopes from north to south edge
+            let southSlope = checkRampSlope('south', gridX, gridZ + 1, tileZ);
             if (southSlope !== null) rampHeight = southSlope;
 
-            // West ramp (left edge) - slopes from west (tileX=0) toward east (tileX=1)
-            let westSlope = checkRampSlope('west', gridX - 1, gridZ, tileX);
+            // West ramp (left edge) - slopes from east to west edge
+            let westSlope = checkRampSlope('west', gridX - 1, gridZ, 1 - tileX);
             if (westSlope !== null) rampHeight = westSlope;
 
-            // East ramp (right edge) - slopes from east (tileX=1) toward west (tileX=0)
-            let eastSlope = checkRampSlope('east', gridX + 1, gridZ, 1 - tileX);
+            // East ramp (right edge) - slopes from west to east edge
+            let eastSlope = checkRampSlope('east', gridX + 1, gridZ, tileX);
             if (eastSlope !== null) rampHeight = eastSlope;
 
             // Check ramps from neighboring higher tiles that extend into this tile
             // Tile to the north has a south-facing ramp
-            let northNeighborSlope = checkNeighborRampSlope(gridX, gridZ - 1, 'south', 1 - tileZ);
+            let northNeighborSlope = checkNeighborRampSlope(gridX, gridZ - 1, 'south', tileZ);
             if (northNeighborSlope !== null) rampHeight = northNeighborSlope;
 
             // Tile to the south has a north-facing ramp
-            let southNeighborSlope = checkNeighborRampSlope(gridX, gridZ + 1, 'north', tileZ);
+            let southNeighborSlope = checkNeighborRampSlope(gridX, gridZ + 1, 'north', 1 - tileZ);
             if (southNeighborSlope !== null) rampHeight = southNeighborSlope;
 
             // Tile to the west has an east-facing ramp
-            let westNeighborSlope = checkNeighborRampSlope(gridX - 1, gridZ, 'east', 1 - tileX);
+            let westNeighborSlope = checkNeighborRampSlope(gridX - 1, gridZ, 'east', tileX);
             if (westNeighborSlope !== null) rampHeight = westNeighborSlope;
 
             // Tile to the east has a west-facing ramp
-            let eastNeighborSlope = checkNeighborRampSlope(gridX + 1, gridZ, 'west', tileX);
+            let eastNeighborSlope = checkNeighborRampSlope(gridX + 1, gridZ, 'west', 1 - tileX);
             if (eastNeighborSlope !== null) rampHeight = eastNeighborSlope;
         }
 
