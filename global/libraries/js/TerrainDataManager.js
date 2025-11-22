@@ -485,60 +485,17 @@ class TerrainDataManager {
     }
 
     /**
-     * Get ramp information at a specific grid position and edge
+     * Check if there's a ramp at a specific grid position
+     * Ramps apply to ALL edges of a tile with height differences
      * @param {number} gridX - Grid X coordinate
      * @param {number} gridZ - Grid Z coordinate
-     * @param {string} edge - Edge direction ('north', 'south', 'east', 'west')
-     * @returns {Object|null} Ramp data or null
+     * @returns {boolean} True if ramp exists at this tile
      */
-    getRampAt(gridX, gridZ, edge) {
+    hasRampAt(gridX, gridZ) {
         if (!this.tileMap?.ramps || this.tileMap.ramps.length === 0) {
-            return null;
+            return false;
         }
-        return this.tileMap.ramps.find(
-            r => r.gridX === gridX && r.gridZ === gridZ && r.edge === edge
-        ) || null;
-    }
-
-    /**
-     * Check if there's a ramp at any edge of a tile at extended coordinates
-     * @param {number} extX - Extended coordinate X (pixel position)
-     * @param {number} extZ - Extended coordinate Z (pixel position)
-     * @returns {Object|null} Ramp info with gridX, gridZ, edge, and slope direction
-     */
-    getRampAtExtendedCoords(extX, extZ) {
-        // Convert extended coordinates to grid coordinates
-        const gridX = Math.floor((extX - this.extensionSize) / this.gridSize);
-        const gridZ = Math.floor((extZ - this.extensionSize) / this.gridSize);
-
-        if (!this.tileMap?.ramps || this.tileMap.ramps.length === 0) {
-            return null;
-        }
-
-        // Get position within the tile (0-gridSize)
-        const tileX = (extX - this.extensionSize) % this.gridSize;
-        const tileZ = (extZ - this.extensionSize) % this.gridSize;
-
-        // Check all ramps at this tile and neighboring tiles that could affect this position
-        const rampsToCheck = [
-            { gridX, gridZ, edge: 'north' },
-            { gridX, gridZ, edge: 'south' },
-            { gridX, gridZ, edge: 'east' },
-            { gridX, gridZ, edge: 'west' },
-            { gridX, gridZ: gridZ - 1, edge: 'south' },  // Ramp from tile above
-            { gridX, gridZ: gridZ + 1, edge: 'north' },  // Ramp from tile below
-            { gridX: gridX - 1, gridZ, edge: 'east' },   // Ramp from tile to left
-            { gridX: gridX + 1, gridZ, edge: 'west' }    // Ramp from tile to right
-        ];
-
-        for (const check of rampsToCheck) {
-            const ramp = this.getRampAt(check.gridX, check.gridZ, check.edge);
-            if (ramp) {
-                return { ...ramp, tileX, tileZ };
-            }
-        }
-
-        return null;
+        return this.tileMap.ramps.some(r => r.x === gridX && r.z === gridZ);
     }
 
     /**
@@ -555,26 +512,19 @@ class TerrainDataManager {
         const heightMap = this.tileMap.heightMap;
         const mapSize = this.tileMap.size || heightMap.length;
 
-        // Helper function to check if a ramp exists at a specific edge
-        const hasRamp = (gridX, gridZ, edge) => {
-            if (!this.tileMap.ramps || this.tileMap.ramps.length === 0) {
-                return false;
-            }
-            return this.tileMap.ramps.some(
-                r => r.gridX === gridX && r.gridZ === gridZ && r.edge === edge
-            );
-        };
-
         // For each tile, analyze height differences with all 8 neighbors (NSEW + diagonals)
         for (let z = 0; z < mapSize; z++) {
             for (let x = 0; x < mapSize; x++) {
                 const currentHeight = heightMap[z][x];
 
+                // Check if this tile has a ramp (ramps suppress ALL cliff edges at this tile)
+                const hasRamp = this.hasRampAt(x, z);
+
                 // Analyze all neighbors
-                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight && !hasRamp(x, z, 'north');
-                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight && !hasRamp(x, z, 'south');
-                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight && !hasRamp(x, z, 'west');
-                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight && !hasRamp(x, z, 'east');
+                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight && !hasRamp;
+                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight && !hasRamp;
+                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight && !hasRamp;
+                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight && !hasRamp;
 
                 const cornerTopLeftLess = z > 0 && x > 0 && heightMap[z - 1][x - 1] < currentHeight;
                 const cornerTopRightLess = z > 0 && x < mapSize - 1 && heightMap[z - 1][x + 1] < currentHeight;

@@ -570,88 +570,97 @@ class WorldRenderer {
             const currentTileHeight = heightMap[gridZ][gridX];
             const heightStep = this.terrainDataManager.heightStep;
 
-            // Check all 4 edges for ramps on current tile
-            const checkRampSlope = (edge, neighborGridX, neighborGridZ, distanceInTile) => {
-                const ramp = this.terrainDataManager.getRampAt(gridX, gridZ, edge);
-                if (!ramp) return null;
+            // Helper to create continuous ramp slope across 2 tiles
+            const checkContinuousRamp = (highGridX, highGridZ, lowGridX, lowGridZ, posInRamp) => {
+                const hasRamp = this.terrainDataManager.hasRampAt(highGridX, highGridZ);
+                if (!hasRamp) return null;
 
-                // Check if neighbor is valid and lower
-                if (neighborGridX >= 0 && neighborGridX < heightMap[0]?.length &&
-                    neighborGridZ >= 0 && neighborGridZ < heightMap.length) {
-                    const neighborHeight = heightMap[neighborGridZ][neighborGridX];
-
-                    if (neighborHeight < currentTileHeight) {
-                        // Create a gradual slope extending across the tile
-                        // distanceInTile should be 0 at the edge with ramp, 1 at the far edge
-
-                        // Interpolate between current tile height and neighbor height
-                        // Using a smooth curve for the ramp
-                        const t = Math.max(0, Math.min(1, distanceInTile));
-                        const smoothT = t * t * (3 - 2 * t); // Smoothstep function
-
-                        return currentTileHeight * heightStep * (1 - smoothT) +
-                               neighborHeight * heightStep * smoothT;
-                    }
+                // Validate both tiles exist
+                if (lowGridX < 0 || lowGridX >= heightMap[0]?.length ||
+                    lowGridZ < 0 || lowGridZ >= heightMap.length) {
+                    return null;
                 }
-                return null;
+
+                const highHeight = heightMap[highGridZ][highGridX];
+                const lowHeight = heightMap[lowGridZ][lowGridX];
+
+                if (lowHeight >= highHeight) return null; // Not a downward slope
+
+                // Create ONE continuous slope spanning 2 tiles
+                // posInRamp: 0 = far edge of high tile, 1 = cliff edge, 2 = far edge of low tile
+                // We want the slope to extend from the high tile through the low tile
+                const t = Math.max(0, Math.min(1, posInRamp / 2)); // Normalize to 0-1 over 2 tiles
+                const smoothT = t * t * (3 - 2 * t); // Smoothstep
+
+                return highHeight * heightStep * (1 - smoothT) + lowHeight * heightStep * smoothT;
             };
 
-            // Check for ramps on neighboring tiles that extend into this tile
-            const checkNeighborRampSlope = (neighborGridX, neighborGridZ, neighborEdge, distanceFromNeighborEdge) => {
-                const ramp = this.terrainDataManager.getRampAt(neighborGridX, neighborGridZ, neighborEdge);
-                if (!ramp) return null;
+            // Check all 4 directions for ramps
+            // For each direction, check both if current tile is high or low
 
-                // Check if neighbor tile is valid and higher
-                if (neighborGridX >= 0 && neighborGridX < heightMap[0]?.length &&
-                    neighborGridZ >= 0 && neighborGridZ < heightMap.length) {
-                    const neighborHeight = heightMap[neighborGridZ][neighborGridX];
-
-                    if (neighborHeight > currentTileHeight) {
-                        // This is the lower tile - create slope extending from the higher tile
-                        // distanceFromNeighborEdge: 0 at this tile's edge nearest to neighbor, 1 at far edge
-                        const t = Math.max(0, Math.min(1, distanceFromNeighborEdge));
-                        const smoothT = t * t * (3 - 2 * t); // Smoothstep function
-
-                        return neighborHeight * heightStep * (1 - smoothT) +
-                               currentTileHeight * heightStep * smoothT;
-                    }
+            // North direction (Z-)
+            if (gridZ > 0) {
+                const northHeight = heightMap[gridZ - 1][gridX];
+                if (currentTileHeight > northHeight) {
+                    // Current tile is higher - check for north ramp on current tile
+                    const pos = 1 + (1 - tileZ); // 1 at edge, 2 at far south
+                    const slope = checkContinuousRamp(gridX, gridZ, gridX, gridZ - 1, pos);
+                    if (slope !== null) rampHeight = slope;
+                } else if (northHeight > currentTileHeight) {
+                    // North tile is higher - check for south ramp on north tile extending here
+                    const pos = 1 + tileZ; // 1 at edge, 2 at far south
+                    const slope = checkContinuousRamp(gridX, gridZ - 1, gridX, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
                 }
-                return null;
-            };
+            }
 
-            // Check ramps on current tile
-            // North ramp (top edge) - slopes from south to north edge
-            let northSlope = checkRampSlope('north', gridX, gridZ - 1, 1 - tileZ);
-            if (northSlope !== null) rampHeight = northSlope;
+            // South direction (Z+)
+            if (gridZ < heightMap.length - 1) {
+                const southHeight = heightMap[gridZ + 1][gridX];
+                if (currentTileHeight > southHeight) {
+                    // Current tile is higher - check for south ramp on current tile
+                    const pos = 1 + tileZ; // 1 at edge, 2 at far north
+                    const slope = checkContinuousRamp(gridX, gridZ, gridX, gridZ + 1, pos);
+                    if (slope !== null) rampHeight = slope;
+                } else if (southHeight > currentTileHeight) {
+                    // South tile is higher - check for north ramp on south tile extending here
+                    const pos = 1 + (1 - tileZ); // 1 at edge, 2 at far north
+                    const slope = checkContinuousRamp(gridX, gridZ + 1, gridX, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
+                }
+            }
 
-            // South ramp (bottom edge) - slopes from north to south edge
-            let southSlope = checkRampSlope('south', gridX, gridZ + 1, tileZ);
-            if (southSlope !== null) rampHeight = southSlope;
+            // West direction (X-)
+            if (gridX > 0) {
+                const westHeight = heightMap[gridZ][gridX - 1];
+                if (currentTileHeight > westHeight) {
+                    // Current tile is higher - check for west ramp on current tile
+                    const pos = 1 + (1 - tileX); // 1 at edge, 2 at far east
+                    const slope = checkContinuousRamp(gridX, gridZ, gridX - 1, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
+                } else if (westHeight > currentTileHeight) {
+                    // West tile is higher - check for east ramp on west tile extending here
+                    const pos = 1 + tileX; // 1 at edge, 2 at far east
+                    const slope = checkContinuousRamp(gridX - 1, gridZ, gridX, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
+                }
+            }
 
-            // West ramp (left edge) - slopes from east to west edge
-            let westSlope = checkRampSlope('west', gridX - 1, gridZ, 1 - tileX);
-            if (westSlope !== null) rampHeight = westSlope;
-
-            // East ramp (right edge) - slopes from west to east edge
-            let eastSlope = checkRampSlope('east', gridX + 1, gridZ, tileX);
-            if (eastSlope !== null) rampHeight = eastSlope;
-
-            // Check ramps from neighboring higher tiles that extend into this tile
-            // Tile to the north has a south-facing ramp
-            let northNeighborSlope = checkNeighborRampSlope(gridX, gridZ - 1, 'south', tileZ);
-            if (northNeighborSlope !== null) rampHeight = northNeighborSlope;
-
-            // Tile to the south has a north-facing ramp
-            let southNeighborSlope = checkNeighborRampSlope(gridX, gridZ + 1, 'north', 1 - tileZ);
-            if (southNeighborSlope !== null) rampHeight = southNeighborSlope;
-
-            // Tile to the west has an east-facing ramp
-            let westNeighborSlope = checkNeighborRampSlope(gridX - 1, gridZ, 'east', tileX);
-            if (westNeighborSlope !== null) rampHeight = westNeighborSlope;
-
-            // Tile to the east has a west-facing ramp
-            let eastNeighborSlope = checkNeighborRampSlope(gridX + 1, gridZ, 'west', 1 - tileX);
-            if (eastNeighborSlope !== null) rampHeight = eastNeighborSlope;
+            // East direction (X+)
+            if (gridX < heightMap[0].length - 1) {
+                const eastHeight = heightMap[gridZ][gridX + 1];
+                if (currentTileHeight > eastHeight) {
+                    // Current tile is higher - check for east ramp on current tile
+                    const pos = 1 + tileX; // 1 at edge, 2 at far west
+                    const slope = checkContinuousRamp(gridX, gridZ, gridX + 1, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
+                } else if (eastHeight > currentTileHeight) {
+                    // East tile is higher - check for west ramp on east tile extending here
+                    const pos = 1 + (1 - tileX); // 1 at edge, 2 at far west
+                    const slope = checkContinuousRamp(gridX + 1, gridZ, gridX, gridZ, pos);
+                    if (slope !== null) rampHeight = slope;
+                }
+            }
         }
 
         // If there's a ramp at this position, use the ramp height
