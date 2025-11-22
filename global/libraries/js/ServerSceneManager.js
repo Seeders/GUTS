@@ -31,55 +31,50 @@ class ServerSceneManager {
                 if(baseClassId){
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(GUTS?.app?.appClasses){
-                        const BaseClassDef = GUTS.app.appClasses[baseClassId];
-                        this.game.addClass(baseClassId, BaseClassDef, params);
-                    } else {
-                        const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
-                        this.game.addClass(baseClassId, BaseClassDef, params);
+                    // Classes are now directly on GUTS (no .app.appClasses)
+                    const BaseClassDef = GUTS[baseClassId];
+                    if (!BaseClassDef) {
+                        throw new Error(`Base class ${baseClassId} not found in GUTS namespace`);
                     }
+                    this.game.addClass(baseClassId, BaseClassDef, params);
                 }
-                for(const collectionClassId in classCollection) {    
-                    if(baseClassId && collectionClassId == baseClassId) continue;                
+                for(const collectionClassId in classCollection) {
+                    if(baseClassId && collectionClassId == baseClassId) continue;
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(GUTS?.app?.appClasses){
-                        const ClassDef = GUTS.app.appClasses[collectionClassId];
-                        this.game.addClass(collectionClassId, ClassDef, params);
-                    } else {
-                        const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
-                        this.game.addClass(collectionClassId, ClassDef, params);
+                    // Classes are now directly on GUTS (no .app.appClasses)
+                    const ClassDef = GUTS[collectionClassId];
+                    if (!ClassDef) {
+                        throw new Error(`Class ${collectionClassId} not found in GUTS namespace`);
                     }
+                    this.game.addClass(collectionClassId, ClassDef, params);
                 }
             });         
             
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
-                let ManagerClass = null;
-                if(GUTS?.app?.appClasses){
-                    ManagerClass = GUTS.app.appClasses[managerDef.type];        
-                } else {
-                    ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
-                }     
+                // Classes are now directly on GUTS (no .app.appClasses)
+                const ManagerClass = GUTS[managerDef.type];
+                if (!ManagerClass) {
+                    throw new Error(`Manager ${managerDef.type} not found in GUTS namespace`);
+                }
                 const managerInst = new ManagerClass(this.game, this);
                 if(managerInst.init){
                     managerInst.init(params);
-                }  
+                }
             });   
 
             sceneEntity.systems.forEach((systemDef) => {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
-             
-                let SystemClass = null;
-                if(GUTS?.app?.appClasses){
-                    SystemClass = GUTS.app.appClasses[systemDef.type];            
-                } else {
-                    SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
-                }    
+                // Classes are now directly on GUTS (no .app.appClasses)
+                const SystemClass = GUTS[systemDef.type];
+                if (!SystemClass) {
+                    throw new Error(`System ${systemDef.type} not found in GUTS namespace`);
+                }
                 const systemInst = new SystemClass(this.game, this);
-   
+
                 this.game.addSystem(systemInst, params);
-                
+
             });   
             this.game.systems.forEach((system) => {
                 system.postAllInit();                
