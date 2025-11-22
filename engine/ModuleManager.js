@@ -168,6 +168,26 @@ class ModuleManager {
                             }
                             window[libraryDef.windowContext][libName] = module[libName] || module;
                             this.registeredLibraries[libName] =  module[libName];
+
+                            // Also add THREE.js addons to window.THREE namespace
+                            if (libraryDef.windowContext === 'THREE' || library.includes('three') || libName.includes('three')) {
+                                if (!window.THREE) window.THREE = {};
+                                // If library name starts with 'three_', add as both namespaced and flattened
+                                if (library.startsWith('three_')) {
+                                    const cleanName = library.replace('three_', '');
+                                    window.THREE[cleanName] = module; // Add as namespace
+                                    if (typeof module === 'object' && module !== null) {
+                                        Object.assign(window.THREE, module); // Also flatten exports
+                                    }
+                                } else {
+                                    // For other THREE.js addons (OrbitControls, GLTFLoader, etc.)
+                                    window.THREE[libName] = module[libName] || module;
+                                    if (typeof module === 'object' && module !== null) {
+                                        Object.assign(window.THREE, module);
+                                    }
+                                }
+                            }
+
                             resolve();
                         } else {
                             window[libName] = module[libName] || module;
