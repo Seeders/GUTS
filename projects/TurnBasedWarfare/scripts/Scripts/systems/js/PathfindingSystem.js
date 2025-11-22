@@ -761,7 +761,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Initialize debug visualization
+     * Initialize debug visualization using instanced rendering for performance
      */
     initDebugVisualization() {
         console.log('PathfindingSystem: initDebugVisualization called');
@@ -791,7 +791,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         // Create materials for different cell types
         const cellSize = this.navGridSize * 0.8; // Slightly smaller than grid cell
 
-        this.debugMaterials = {
+        const materials = {
             walkable: new THREE.MeshBasicMaterial({
                 color: 0x00ff00, // Green for walkable
                 transparent: true,
@@ -812,40 +812,61 @@ class PathfindingSystem extends GUTS.BaseSystem {
             })
         };
 
-        const cellGeometry = new THREE.PlaneGeometry(cellSize, cellSize);
+        // Count cells by type to create appropriately sized instanced meshes
+        const counts = { walkable: 0, impassableTerrain: 0, impassableObject: 0 };
+        const cellData = { walkable: [], impassableTerrain: [], impassableObject: [] };
 
-        // Create meshes for each nav grid cell
         for (let z = 0; z < this.navGridHeight; z++) {
             for (let x = 0; x < this.navGridWidth; x++) {
                 const idx = z * this.navGridWidth + x;
                 const terrainType = this.navMesh[idx];
 
-                // Determine material based on cell type
-                let material;
+                // Determine cell type
+                let cellType;
                 if (terrainType === 255) {
-                    material = this.debugMaterials.impassableObject;
+                    cellType = 'impassableObject';
                 } else if (!this.isTerrainWalkable(terrainType)) {
-                    material = this.debugMaterials.impassableTerrain;
+                    cellType = 'impassableTerrain';
                 } else {
-                    material = this.debugMaterials.walkable;
+                    cellType = 'walkable';
                 }
 
-                // Create mesh
-                const mesh = new THREE.Mesh(cellGeometry, material);
-
-                // Convert nav grid to world position
-                const worldPos = this.navGridToWorld(x, z);
-                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
-
-                mesh.position.set(worldPos.x, terrainHeight + 0.5, worldPos.z);
-                mesh.rotation.x = -Math.PI / 2;
-                mesh.userData = { navX: x, navZ: z, terrainType: terrainType };
-
-                this.debugVisualization.add(mesh);
+                counts[cellType]++;
+                cellData[cellType].push({ x, z });
             }
         }
 
-        console.log(`PathfindingSystem: Created debug visualization with ${this.navGridWidth * this.navGridHeight} cells`);
+        // Create instanced meshes for each cell type
+        const cellGeometry = new THREE.PlaneGeometry(cellSize, cellSize);
+        cellGeometry.rotateX(-Math.PI / 2); // Pre-rotate geometry
+
+        const matrix = new THREE.Matrix4();
+        const position = new THREE.Vector3();
+
+        for (const [cellType, material] of Object.entries(materials)) {
+            const count = counts[cellType];
+            if (count === 0) continue;
+
+            const instancedMesh = new THREE.InstancedMesh(cellGeometry, material, count);
+            instancedMesh.name = `PathfindingDebug_${cellType}`;
+
+            let instanceIndex = 0;
+            for (const cell of cellData[cellType]) {
+                const worldPos = this.navGridToWorld(cell.x, cell.z);
+                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
+
+                position.set(worldPos.x, terrainHeight + 0.5, worldPos.z);
+                matrix.makeTranslation(position.x, position.y, position.z);
+                instancedMesh.setMatrixAt(instanceIndex, matrix);
+                instanceIndex++;
+            }
+
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            this.debugVisualization.add(instancedMesh);
+        }
+
+        console.log(`PathfindingSystem: Created debug visualization with ${this.navGridWidth * this.navGridHeight} cells using instanced rendering`);
+        console.log(`  - Walkable: ${counts.walkable}, Impassable Terrain: ${counts.impassableTerrain}, Impassable Objects: ${counts.impassableObject}`);
     }
 
     /**
