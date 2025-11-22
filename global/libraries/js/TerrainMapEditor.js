@@ -2085,7 +2085,12 @@ class TerrainMapEditor {
 
         // Auto-adjust height for liquid tiles to prevent overflow
         if (modifiedTiles.length > 0 && this.isLiquidTerrainType(terrainId)) {
-            this.adjustWaterTileHeights(modifiedTiles);
+            const heightAdjustedTiles = this.adjustWaterTileHeights(modifiedTiles);
+
+            // Update 3D height mesh if heights were adjusted
+            if (heightAdjustedTiles.length > 0) {
+                this.update3DHeightRegion(heightAdjustedTiles);
+            }
         }
 
         return modifiedTiles;
@@ -2106,9 +2111,12 @@ class TerrainMapEditor {
     /**
      * Adjust water tile heights to be at least 1 level lower than non-water neighbors
      * This prevents water from overflowing cliffs
+     * @returns {Array} Array of tiles that had their heights adjusted
      */
     adjustWaterTileHeights(waterTiles) {
-        if (!this.tileMap.heightMap) return;
+        if (!this.tileMap.heightMap) return [];
+
+        const adjustedTiles = [];
 
         waterTiles.forEach(tile => {
             const { x, y } = tile;
@@ -2147,10 +2155,13 @@ class TerrainMapEditor {
                 // Only adjust if current height is too high
                 if (currentHeight >= minNonWaterNeighborHeight) {
                     this.tileMap.heightMap[y][x] = Math.max(0, requiredHeight);
+                    adjustedTiles.push(tile);
                     console.log(`Adjusted water tile at (${x}, ${y}) from height ${currentHeight} to ${this.tileMap.heightMap[y][x]}`);
                 }
             }
         });
+
+        return adjustedTiles;
     }
 
     // Paint with brush on height map
@@ -2246,7 +2257,12 @@ class TerrainMapEditor {
 
             // Auto-adjust height for liquid tiles to prevent overflow
             if (this.isLiquidTerrainType(newTerrainId)) {
-                this.adjustWaterTileHeights(tilesToModify);
+                const heightAdjustedTiles = this.adjustWaterTileHeights(tilesToModify);
+
+                // Update 3D height mesh if heights were adjusted
+                if (heightAdjustedTiles.length > 0) {
+                    this.update3DHeightRegion(heightAdjustedTiles);
+                }
             }
         }
 
