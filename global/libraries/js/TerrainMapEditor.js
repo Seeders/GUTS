@@ -2442,6 +2442,16 @@ class TerrainMapEditor {
                 // Update ramp count display
                 this.updateRampCount();
 
+                // Pass updated ramps data to tileMapper
+                if (this.worldRenderer && this.worldRenderer.tileMapper) {
+                    this.worldRenderer.tileMapper.setRamps(this.tileMap.ramps);
+                }
+
+                // Redraw the tile and neighbors to remove/update cliff supporting textures
+                if (this.worldRenderer) {
+                    this.worldRenderer.updateTerrainTiles([{ x: gridX, y: gridZ }]);
+                }
+
                 // Respawn cliffs to reflect ramp changes
                 if (this.worldRenderer && this.entityRenderer) {
                     this.worldRenderer.spawnCliffs(this.entityRenderer, false);
