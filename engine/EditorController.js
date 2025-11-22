@@ -220,12 +220,12 @@ class EditorController {
                     }
                 });
 
-                // Instantiate editor modules
+                // Instantiate editor modules specified in editorConfig.editorModules
                 // Modules with 'library' property: instantiate that class
                 // Modules with 'libraries' array: instantiate classes ending in 'Editor' or 'Module'
                 this.editorModuleInstances = {};
-                Object.keys(project.objectTypes.editorModules).forEach((moduleId) => {
-                    const module = project.objectTypes.editorModules[moduleId];
+                Object.keys(editorModules).forEach((moduleId) => {
+                    const module = editorModules[moduleId];
                     if (!module) return;
 
                     // Handle single library case
@@ -269,7 +269,7 @@ class EditorController {
                 });
 
                 // Set up event listeners for module UI interactions
-                this.view.setupModuleEventListeners(project.objectTypes.editorModules);
+                this.view.setupModuleEventListeners(editorModules);
             }
             
             // Apply theme if specified in editor config
