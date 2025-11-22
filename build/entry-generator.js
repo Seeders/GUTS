@@ -81,6 +81,10 @@ class EntryGenerator {
             // Standard default import for other modules
             else {
                 importStatement = `import ${varName} from '${importPath}';`;
+                // Extract the actual class from the module object
+                // The class-export-loader exports both .default and .ClassName
+                // Try named export first, then default, then the module itself
+                exportValue = `(${varName}.${moduleName} || ${varName}.default || ${varName})`;
             }
 
             imports.push(importStatement);
