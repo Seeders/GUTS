@@ -22,16 +22,8 @@ class BaseEngine {
         return this.collections;
     }
 
-    setupScriptEnvironment() {
-        this.scriptContext = this.moduleManager.setupScriptEnvironment(this);
-    }
 
-    preCompileScripts() {
-        for (let funcType in this.collections.functions) {
-            const funcDef = this.collections.functions[funcType];
-            this.moduleManager.compileFunction(funcDef.script, funcType);
-        }
-    }
+ 
 
     start() {
         this.running = true;

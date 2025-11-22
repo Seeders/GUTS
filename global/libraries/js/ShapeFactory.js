@@ -1,10 +1,10 @@
 class ShapeFactory {
     constructor(resourcesPath, palette, textures, libraryClasses, gltfModelScale = 32) {
         this.gltfCache = new Map();
-        this.gltfLoader = new THREE_.GLTFLoader();
+        this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
-        this.skeleUtils = THREE_.SkeletonUtils;   
+        this.skeleUtils = THREE.SkeletonUtils;   
         this.urlRoot = "/";
         this.resourcesPath = resourcesPath;
         this.gltfModelScale = gltfModelScale; // Add GLTF scale parameter

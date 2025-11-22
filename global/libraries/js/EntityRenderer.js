@@ -907,7 +907,7 @@ class EntityRenderer {
 
         const models = {};
         //THREE_ is the CORRECT prefix for GLTF ONLY.
-        const loader = new THREE_.GLTFLoader();
+        const loader = new THREE.GLTFLoader();
         const typesToLoad = entityTypes || Object.keys(collection);
 
         console.log(`[EntityRenderer] Loading ${typesToLoad.length} models from '${collectionType}':`, typesToLoad);

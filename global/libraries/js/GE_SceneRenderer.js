@@ -25,13 +25,13 @@ class GE_SceneRenderer {
     }
     initThreeJS() {
         // Scene setup
-        this.scene = new window.THREE.Scene();
+        this.scene = new THREE.Scene();
         
         // Add the root group to the scene
         this.scene.add(this.graphicsEditor.rootGroup);
 
         // Camera setup
-        this.camera = new window.THREE.PerspectiveCamera(
+        this.camera = new THREE.PerspectiveCamera(
             75, 
             this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, 
             0.1, 
@@ -41,7 +41,7 @@ class GE_SceneRenderer {
         this.camera.lookAt(0, 0, 0);
 
         // Renderer setup
-        this.renderer = new window.THREE.WebGLRenderer({ 
+        this.renderer = new THREE.WebGLRenderer({ 
             canvas: this.graphicsEditor.canvas, 
             antialias: false, 
             alpha: true 
@@ -49,14 +49,14 @@ class GE_SceneRenderer {
         this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);
 
         // Add helpers
-        const gridHelper = new window.THREE.GridHelper(100, 10);
+        const gridHelper = new THREE.GridHelper(100, 10);
         this.scene.add(gridHelper);
 
-        const axesHelper = new window.THREE.AxesHelper(10);
+        const axesHelper = new THREE.AxesHelper(10);
         this.scene.add(axesHelper);
 
         // Orbit controls
-        this.controls = new window.THREE_.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.25;
 

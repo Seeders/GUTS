@@ -142,7 +142,7 @@ class WorldRenderer {
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         // Setup OrbitControls if requested
-        if (enableControls && typeof THREE_.OrbitControls !== 'undefined') {
+        if (enableControls && typeof THREE.OrbitControls !== 'undefined') {
             this.setupOrbitControls(cameraSettings.lookAt);
         }
 
@@ -157,14 +157,14 @@ class WorldRenderer {
      * Setup OrbitControls for camera manipulation
      */
     setupOrbitControls(lookAt) {
-        if (typeof THREE_.OrbitControls === 'undefined') {
+        if (typeof THREE.OrbitControls === 'undefined') {
             console.warn('WorldRenderer: THREE.OrbitControls not found');
             return;
         }
 
         const lookAtPos = lookAt ? (typeof lookAt === 'string' ? JSON.parse(lookAt) : lookAt) : { x: 0, y: 0, z: 0 };
 
-        this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 
         // Disable built-in keyboard controls (we handle modifier keys manually)
         this.controls.enableKeys = false;
@@ -473,10 +473,10 @@ class WorldRenderer {
         this.scene.add(this.ground);
 
         // Add BVH acceleration for raycasting
-        if (typeof THREE_.three_MeshBVH !== 'undefined') {
-            THREE.BufferGeometry.prototype.computeBoundsTree = THREE_.three_MeshBVH.computeBoundsTree;
-            THREE.BufferGeometry.prototype.disposeBoundsTree = THREE_.three_MeshBVH.disposeBoundsTree;
-            THREE.Mesh.prototype.raycast = THREE_.three_MeshBVH.acceleratedRaycast;
+        if (typeof THREE.THREEMeshBVH !== 'undefined') {
+            THREE.BufferGeometry.prototype.computeBoundsTree = THREE.THREEMeshBVH.computeBoundsTree;
+            THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.THREEMeshBVH.disposeBoundsTree;
+            THREE.Mesh.prototype.raycast = THREE.THREEMeshBVH.acceleratedRaycast;
         }
     }
 
