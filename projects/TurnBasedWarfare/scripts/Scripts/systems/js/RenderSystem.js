@@ -108,6 +108,8 @@ class RenderSystem extends GUTS.BaseSystem {
      * Called by WorldSystem when terrain data is available
      */
     updateInstanceCapacities() {
+        console.log('[RenderSystem] updateInstanceCapacities() called');
+
         if (!this.entityRenderer) {
             console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
             return;
@@ -115,10 +117,12 @@ class RenderSystem extends GUTS.BaseSystem {
 
         const capacities = this.calculateInstanceCapacities();
 
+        console.log('[RenderSystem] Calculated capacities:', capacities);
+
         // Update EntityRenderer's capacity map
         this.entityRenderer.capacitiesByType = capacities;
 
-        console.log('[RenderSystem] Updated instance capacities from terrain data');
+        console.log('[RenderSystem] Updated EntityRenderer.capacitiesByType:', this.entityRenderer.capacitiesByType);
     }
 
     /**
