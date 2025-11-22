@@ -1,11 +1,7 @@
 class TileMap {
 
-  constructor(app, config, { CanvasUtility }) {
-   	this.app = app;
+  constructor(config) {
     this.config = config;
-    this.engineClasses = {
- 			"CanvasUtility": CanvasUtility
-    } 
   }
 	init(canvas, tileSize, layerSpriteSheets, isometric, options = {}) {
 		this.isometric = isometric;
@@ -16,7 +12,7 @@ class TileMap {
 		this.tileMap = [];
 		this.layerTextures = [];
 		this.baseAtoms = []; // Store base atoms per terrain type
-		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
+		this.canvasUtility = new GUTS.CanvasUtility();
 
 		// Options for editor mode: skip cliff supporting textures (for 2D editing without 3D cliff meshes)
 		this.skipCliffTextures = options.skipCliffTextures || false;
