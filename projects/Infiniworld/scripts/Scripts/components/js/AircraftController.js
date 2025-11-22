@@ -1,4 +1,4 @@
-class AircraftController extends engine.Component {
+class AircraftController extends GUTS.Component {
     init({
         acceleration = 1000,
         strafeAcceleration = 15,
@@ -56,7 +56,7 @@ class AircraftController extends engine.Component {
         this.lastStableUpdateTime = 0;
         this.stableUpdateInterval = 0.5; // Save stable state every 0.5 seconds
 
-        this.controls = new THREE_.PointerLockControls(this.camera, this.world.renderer.domElement);
+        this.controls = new THREE.PointerLockControls(this.camera, this.world.renderer.domElement);
         this.controls.pointerSpeed = 0;
         this.scene.add(this.controls.object);
 

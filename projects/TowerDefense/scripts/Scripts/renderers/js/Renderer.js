@@ -1,4 +1,4 @@
-class Renderer extends engine.Component {
+class Renderer extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

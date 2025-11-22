@@ -1,4 +1,4 @@
-class BattleCryAbility extends engine.app.appClasses['BaseAbility'] {
+class BattleCryAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'battle_cry',

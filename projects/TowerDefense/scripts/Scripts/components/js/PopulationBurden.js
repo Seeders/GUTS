@@ -1,4 +1,4 @@
-class PopulationBurden extends engine.Component {
+class PopulationBurden extends GUTS.Component {
     
     
     init(){

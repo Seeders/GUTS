@@ -1,4 +1,4 @@
-class ParticleSystem extends engine.BaseSystem {
+class ParticleSystem extends GUTS.BaseSystem {
   constructor(game) {
     super(game);
     this.game.particleSystem = this;

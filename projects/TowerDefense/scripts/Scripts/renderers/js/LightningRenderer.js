@@ -1,4 +1,4 @@
-class LightningRenderer extends engine.Component {
+class LightningRenderer extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

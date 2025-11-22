@@ -1,4 +1,4 @@
-class PathfindingSystem extends engine.BaseSystem {
+class PathfindingSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.pathfindingSystem = this;

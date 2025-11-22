@@ -1,4 +1,4 @@
-class GridSystem extends engine.BaseSystem {
+class GridSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.gridSystem = this;

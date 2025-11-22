@@ -1,4 +1,4 @@
-class Collider extends engine.Component {
+class Collider extends GUTS.Component {
     init({ debug = false, objectType, spawnType }) {
         this.id = this.parent.id;
         this.prefabData = this.game.getCollections()[objectType][spawnType];

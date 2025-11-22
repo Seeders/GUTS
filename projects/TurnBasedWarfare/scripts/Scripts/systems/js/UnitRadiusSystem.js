@@ -1,4 +1,4 @@
-class UnitRadiusSystem extends engine.BaseSystem {
+class UnitRadiusSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.unitRadiusSystem = this;        

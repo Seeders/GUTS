@@ -1,4 +1,4 @@
-class ServerPlacementSystem extends engine.BaseSystem {
+class ServerPlacementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);  
         this.game.placementSystem = this;

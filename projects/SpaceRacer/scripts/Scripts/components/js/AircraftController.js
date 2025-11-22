@@ -1,4 +1,4 @@
-class AircraftController extends engine.Component {
+class AircraftController extends GUTS.Component {
     init({
         thrustPower = 500,
         maxSpeed = 3000,

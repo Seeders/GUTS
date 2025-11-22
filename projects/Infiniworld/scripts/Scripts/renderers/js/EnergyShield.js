@@ -1,4 +1,4 @@
-class EnergyShield extends engine.Component {
+class EnergyShield extends GUTS.Component {
 
     init(){
         // Get stats component for reference

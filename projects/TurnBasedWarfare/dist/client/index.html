@@ -12,7 +12,7 @@
 <script src="./game.js"></script>
 <script>
     (() => {        
-        const engine = new Engine("appContainer");        
+        const engine = new GUTS.Engine("appContainer");        
         async function main() {
             await window.COMPILED_GAME.ready;
             await engine.init("TurnBasedWarfare");

@@ -1,4 +1,4 @@
-class ServerBattlePhaseSystem extends engine.BaseSystem {
+class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.engine = this.game.app;    

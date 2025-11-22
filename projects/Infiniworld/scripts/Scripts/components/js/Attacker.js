@@ -1,4 +1,4 @@
-class Attacker extends engine.Component {
+class Attacker extends GUTS.Component {
     
  init() {        
         this.stats = this.getComponent('stats').stats;    

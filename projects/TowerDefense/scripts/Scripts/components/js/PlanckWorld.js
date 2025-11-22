@@ -1,4 +1,4 @@
-class PlanckWorld extends engine.Component {
+class PlanckWorld extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

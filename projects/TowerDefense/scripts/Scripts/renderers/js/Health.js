@@ -1,4 +1,4 @@
-class Health extends engine.Component {
+class Health extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

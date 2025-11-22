@@ -1,4 +1,4 @@
-class MovementSystem extends engine.BaseSystem {
+class MovementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.movementSystem = this;

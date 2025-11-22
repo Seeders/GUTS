@@ -1,4 +1,4 @@
-class DisruptionBombAbility extends engine.app.appClasses['BaseAbility'] {
+class DisruptionBombAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'disruption_bomb',

@@ -1,4 +1,4 @@
-class PostProcessingSystem extends engine.BaseSystem {
+class PostProcessingSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.postProcessingSystem = this;
@@ -25,7 +25,7 @@ class PostProcessingSystem extends engine.BaseSystem {
         }
         
         
-        this.composer = new THREE_.EffectComposer(this.game.renderer);
+        this.composer = new THREE.EffectComposer(this.game.renderer);
         
         // Create depth textures for both render targets
         const depthTexture1 = new THREE.DepthTexture();

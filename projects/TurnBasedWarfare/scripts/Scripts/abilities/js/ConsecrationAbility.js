@@ -1,4 +1,4 @@
-class ConsecrationAbility extends engine.app.appClasses['BaseAbility'] {
+class ConsecrationAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'consecration',

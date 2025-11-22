@@ -1,4 +1,4 @@
-class ModelRenderer extends engine.Component {
+class ModelRenderer extends GUTS.Component {
     async init({ objectType, spawnType, frameDuration }) {
         if (!this.game.getCollections().configs.game.is3D) {
             return;
@@ -23,7 +23,7 @@ class ModelRenderer extends engine.Component {
 
         // Get the model
         this.model = await this.game.modelManager.getModel(objectType, spawnType);
-        this.skeletonUtils = THREE_.SkeletonUtils;
+        this.skeletonUtils = THREE.SkeletonUtils;
         this.throwTimer = -1;
         this.leapTimer = -1;
         this.leapTime = 1;

@@ -1,4 +1,4 @@
-class Stats extends engine.Component {
+class Stats extends GUTS.Component {
     
     
   init( {objectType, spawnType} ) {        

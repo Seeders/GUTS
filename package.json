@@ -4,7 +4,17 @@
   "description": "td game and editor",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build/build.js TurnBasedWarfare",
+    "build:prod": "node build/build.js TurnBasedWarfare --production",
+    "build:watch": "node build/build.js TurnBasedWarfare --watch",
+    "dev": "webpack serve --config webpack.dev.config.js",
+    "dev:server": "node server_editor.js",
+    "game:server": "node projects/TurnBasedWarfare/server_game.js",
+    "game:build-and-start": "npm run build && npm run game:server",
+    "start:editor": "node server_editor.js 5000",
+    "build:seeders": "PROJECT_NAME=Seeders node build/build.js Seeders",
+    "webpack": "webpack --config webpack.config.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +29,15 @@
     "three": "^0.181.0",
     "three-nebula": "^10.0.3",
     "whatwg-fetch": "^3.6.20"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/preset-env": "^7.26.0",
+    "babel-loader": "^9.2.1",
+    "html-webpack-plugin": "^5.6.3",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.0"
   }
 }

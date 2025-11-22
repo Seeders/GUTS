@@ -1,4 +1,4 @@
-class UiManager extends engine.Component {
+class UiManager extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

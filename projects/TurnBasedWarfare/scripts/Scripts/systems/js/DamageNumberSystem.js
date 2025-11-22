@@ -1,4 +1,4 @@
-class DamageNumberSystem extends engine.BaseSystem {
+class DamageNumberSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game); 
         this.game.damageNumberSystem = this;

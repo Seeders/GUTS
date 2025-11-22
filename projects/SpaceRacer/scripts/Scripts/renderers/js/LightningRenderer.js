@@ -1,4 +1,4 @@
-class LightningRenderer extends engine.Component {
+class LightningRenderer extends GUTS.Component {
     
     
     init( {owner}) {

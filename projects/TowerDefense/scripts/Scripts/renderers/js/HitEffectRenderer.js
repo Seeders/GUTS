@@ -1,4 +1,4 @@
-class HitEffectRenderer extends engine.Component {
+class HitEffectRenderer extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

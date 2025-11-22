@@ -1,4 +1,4 @@
-class RangeIndicator extends engine.Component {
+class RangeIndicator extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

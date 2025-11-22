@@ -1,4 +1,4 @@
-class BlizzardAbility extends engine.app.appClasses['BaseAbility'] {
+class BlizzardAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'blizzard',

@@ -1,4 +1,4 @@
-class CommandQueueSystem extends engine.BaseSystem {
+class CommandQueueSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.commandQueueSystem = this;

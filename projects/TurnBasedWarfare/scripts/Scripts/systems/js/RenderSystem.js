@@ -1,4 +1,4 @@
-class RenderSystem extends engine.BaseSystem {
+class RenderSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.renderSystem = this;

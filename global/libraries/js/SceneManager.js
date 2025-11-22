@@ -53,20 +53,22 @@ class SceneManager {
                 if(baseClassId){
                     const collectionClassDef = classCollection[baseClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(engine?.app?.appClasses){
-                        const BaseClassDef = engine.app.appClasses[baseClassId];
+                    // Check if using webpack bundle or if GUTS classes are available
+                    if(typeof GUTS !== 'undefined' && (GUTS[baseClassId] || window.COMPILED_GAME)){
+                        const BaseClassDef = GUTS[baseClassId];
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     } else {
                         const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
                         this.game.addClass(baseClassId, BaseClassDef, params);
                     }
                 }
-                for(const collectionClassId in classCollection) {    
-                    if(baseClassId && collectionClassId == baseClassId) continue;                
+                for(const collectionClassId in classCollection) {
+                    if(baseClassId && collectionClassId == baseClassId) continue;
                     const collectionClassDef = classCollection[collectionClassId];
                     let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    if(engine?.app?.appClasses){
-                        const ClassDef = engine.app.appClasses[collectionClassId];
+                    // Check if using webpack bundle or if GUTS classes are available
+                    if(typeof GUTS !== 'undefined' && (GUTS[collectionClassId] || window.COMPILED_GAME)){
+                        const ClassDef = GUTS[collectionClassId];
                         this.game.addClass(collectionClassId, ClassDef, params);
                     } else {
                         const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
@@ -78,8 +80,9 @@ class SceneManager {
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
                 let ManagerClass = null;
-                if(engine?.app?.appClasses){
-                    ManagerClass = engine.app.appClasses[managerDef.type];        
+                // Check if using webpack bundle or if GUTS classes are available
+                if(typeof GUTS !== 'undefined' && (GUTS[managerDef.type] || window.COMPILED_GAME)){
+                    ManagerClass = GUTS[managerDef.type];
                 } else {
                     ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
                 }     
@@ -91,10 +94,11 @@ class SceneManager {
 
             sceneEntity.systems.forEach((systemDef) => {
                 let params = {...systemDef.parameters, canvas: this.game.canvas };
-             
+
                 let SystemClass = null;
-                if(engine?.app?.appClasses){
-                    SystemClass = engine.app.appClasses[systemDef.type];            
+                // Check if using webpack bundle or if GUTS classes are available
+                if(typeof GUTS !== 'undefined' && (GUTS[systemDef.type] || window.COMPILED_GAME)){
+                    SystemClass = GUTS[systemDef.type];
                 } else {
                     SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
                 }    

@@ -1,4 +1,4 @@
-class MultiplayerPlacementSystem extends engine.BaseSystem {
+class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     constructor(game, sceneManager) {
         super(game);
         this.sceneManager = sceneManager;

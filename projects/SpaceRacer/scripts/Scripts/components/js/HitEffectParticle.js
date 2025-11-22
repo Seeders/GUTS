@@ -1,4 +1,4 @@
-class HitEffectParticle extends engine.Component {
+class HitEffectParticle extends GUTS.Component {
     
   init( {damageType}) {
         this.damageType = damageType || "default";

@@ -1,4 +1,4 @@
-class HitEffectRenderer extends engine.Component {
+class HitEffectRenderer extends GUTS.Component {
     
     
     init( ) {

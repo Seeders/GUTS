@@ -1,4 +1,4 @@
-class SpacialGridEntity extends engine.Component {
+class SpacialGridEntity extends GUTS.Component {
     
    update() {
         this.game.spatialGrid.insert(this.parent);

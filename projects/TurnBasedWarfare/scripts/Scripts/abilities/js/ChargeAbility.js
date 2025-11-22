@@ -1,4 +1,4 @@
-class ChargeAbility extends engine.app.appClasses['BaseAbility'] {
+class ChargeAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'charge',

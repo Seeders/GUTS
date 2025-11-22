@@ -1,4 +1,4 @@
-class GoldMineSystem extends engine.BaseSystem {
+class GoldMineSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.goldMineSystem = this;

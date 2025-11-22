@@ -1,4 +1,4 @@
-class TDGame extends engine.ECGame {
+class TDGame extends GUTS.ECGame {
 
     init() {
         super.init();

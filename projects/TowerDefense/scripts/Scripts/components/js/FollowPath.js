@@ -1,4 +1,4 @@
-class FollowPath extends engine.Component {
+class FollowPath extends GUTS.Component {
 
     init({ pathIndex = 0 }) {
         this.gridSize = this.game.getCollections().configs.game.gridSize;

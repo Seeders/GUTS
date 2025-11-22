@@ -1,4 +1,4 @@
-class StatisticsTrackingSystem extends engine.BaseSystem {
+class StatisticsTrackingSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.statisticsTrackingSystem = this;

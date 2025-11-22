@@ -1,4 +1,4 @@
-class GameLoader extends engine.Component {
+class GameLoader extends GUTS.Component {
     
     init() {}
     

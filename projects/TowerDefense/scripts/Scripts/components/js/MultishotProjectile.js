@@ -1,4 +1,4 @@
-class MultishotProjectile extends engine.Component {
+class MultishotProjectile extends GUTS.Component {
     
     constructor(game, parent, params) {
         super(game, parent, params);

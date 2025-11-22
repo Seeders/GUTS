@@ -1,4 +1,4 @@
-class ECSGame extends engine.BaseECSGame {
+class ECSGame extends GUTS.BaseECSGame {
     constructor(app){
         super(app);   
         this.imageManager = new GUTS.ImageManager(app, 

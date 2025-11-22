@@ -22,16 +22,16 @@ export default class ServerEngine extends BaseEngine {
         }
 
         // Initialize ServerModuleManager (no DOM dependencies)
-        this.moduleManager = new ServerModuleManager(this, this.collections);
+       // this.moduleManager = new ServerModuleManager(this, this.collections);
         
         let projectConfig = this.collections.configs.server;
         if (projectConfig.libraries) {
-            this.moduleManager.libraryClasses = await this.moduleManager.loadServerModules({ "server": projectConfig });
-            global.GUTS = this.moduleManager.libraryClasses;
+         //   this.moduleManager.libraryClasses = await this.moduleManager.loadServerModules({ "server": projectConfig });
+       //     global.GUTS = this.moduleManager.libraryClasses;
         }
 
-        this.setupScriptEnvironment();
-        this.preCompileScripts();
+      //  this.setupScriptEnvironment();
+      //  this.preCompileScripts();
         
         // Initialize network manager
         this.serverNetworkManager = new ServerNetworkManager(this);

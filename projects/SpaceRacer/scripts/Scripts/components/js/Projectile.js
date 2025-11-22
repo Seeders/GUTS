@@ -1,4 +1,4 @@
-class Projectile extends engine.Component {
+class Projectile extends GUTS.Component {
    
   init({ spawnType, owner, direction }) {
       this.projectilePrefabData = this.game.getCollections().projectilePrefabs[spawnType];

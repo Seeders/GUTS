@@ -1,4 +1,4 @@
-class SmiteAbility extends engine.app.appClasses['BaseAbility'] {
+class SmiteAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'smite',

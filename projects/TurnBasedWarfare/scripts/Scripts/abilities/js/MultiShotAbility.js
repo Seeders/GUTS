@@ -1,4 +1,4 @@
-class MultishotAbility extends engine.app.appClasses['BaseAbility'] {
+class MultishotAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'multi_shot',

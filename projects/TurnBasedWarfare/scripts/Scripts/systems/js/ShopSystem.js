@@ -1,4 +1,4 @@
-class ShopSystem extends engine.BaseSystem {
+class ShopSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.shopSystem = this;

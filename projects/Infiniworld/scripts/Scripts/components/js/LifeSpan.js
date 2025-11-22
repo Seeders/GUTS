@@ -1,4 +1,4 @@
-class LifeSpan extends engine.Component {
+class LifeSpan extends GUTS.Component {
 
     
     init( {lifeSpan}) {

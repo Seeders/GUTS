@@ -1,4 +1,4 @@
-class UiManager extends engine.Component {
+class UiManager extends GUTS.Component {
     
     init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
         this.canvas = canvas || this.game.canvas;

@@ -1,4 +1,4 @@
-class Renderer extends engine.Component {
+class Renderer extends GUTS.Component {
 
     
   init( { objectType, spawnType, setDirection = -2}) {

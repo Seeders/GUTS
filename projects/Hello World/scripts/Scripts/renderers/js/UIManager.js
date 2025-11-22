@@ -1,4 +1,4 @@
-class UIManager extends engine.Component {
+class UIManager extends GUTS.Component {
 	init() {
 		this.counter = 0;
 	}

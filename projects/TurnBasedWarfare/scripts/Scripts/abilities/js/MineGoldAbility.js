@@ -1,4 +1,4 @@
-class MineGoldAbility extends engine.app.appClasses['BaseAbility'] {
+class MineGoldAbility extends GUTS.BaseAbility {
     constructor(game, abilityData) {
         super(game, abilityData);
         this.id = 'mineGold';

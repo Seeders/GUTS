@@ -1,4 +1,4 @@
-class DrainLifeAbility extends engine.app.appClasses['BaseAbility'] {
+class DrainLifeAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'drain_life',

@@ -1,4 +1,4 @@
-class Leveler extends engine.Component {
+class Leveler extends GUTS.Component {
     
  init( {level = 1}) {
         this.level = level;

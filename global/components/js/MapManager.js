@@ -1,4 +1,4 @@
-class MapManager extends engine.Component {
+class MapManager extends GUTS.Component {
         
     init({level}) {
         this.nodeClass = class Node {

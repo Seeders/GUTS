@@ -1,4 +1,4 @@
-class MapRenderer extends engine.Component {
+class MapRenderer extends GUTS.Component {
    
     init({worldObjects, level, levelData, isEditor, palette, canvas}) {   
 
