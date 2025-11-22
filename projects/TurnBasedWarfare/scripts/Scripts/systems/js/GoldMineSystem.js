@@ -89,7 +89,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
         const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
-
+        console.log('[GOLD MINE SYSTEM] isValidGoldPlacement', gridPos, buildingGridWidth, buildingGridHeight);
         for (const vein of this.goldVeinLocations) {
             if (vein.claimed) continue;
 
@@ -102,12 +102,14 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     cellsMatch(cells1, cells2) {
+        console.log('[GOLD MINE SYSTEM] cellsMatch');
         if (cells1.length !== cells2.length) return false;
 
         const cellSet = new Set(cells2.map(c => `${c.x},${c.z}`));
         
         for (const cell of cells1) {
-            if (!cellSet.has(`${cell.x},${cell.z}`)) {
+        console.log('[GOLD MINE SYSTEM]', cell,  !cellSet.has(`${cell.x},${cell.z}`));
+            if (!cellSet.has(`${cell.x},${cell.z}`)) {                
                 return false;
             }
         }

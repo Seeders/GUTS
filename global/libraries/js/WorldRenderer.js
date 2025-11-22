@@ -619,7 +619,7 @@ class WorldRenderer {
                 }
             }
 
-            const worldY = tileHeight * heightStep + 0.8 * heightStep;
+            const worldY = tileHeight * heightStep + 0.5 * heightStep;
 
             vertices.push(worldX, worldY, worldZ);
             originalPositions.push([x, z]); // Store original grid position
