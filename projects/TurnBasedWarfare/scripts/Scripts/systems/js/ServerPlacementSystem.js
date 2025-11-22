@@ -953,12 +953,23 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearestGoldVeinLocation = vein.gridPos;
-        console.log("nearestGoldVeinLocation", vein.gridPos);
+                    console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
         }
-        
-        
+
+        // Reserve the vein immediately to prevent other players from getting it
+        if (nearestGoldVeinLocation) {
+            const reserveResult = this.game.gameManager.call('reserveGoldVein', nearestGoldVeinLocation);
+            if (!reserveResult.success) {
+                console.warn('[ServerPlacementSystem] Failed to reserve vein at', nearestGoldVeinLocation, reserveResult.error);
+                // Vein was claimed by another player, try to find next nearest
+                // For now, just log the error - the buildGoldMine will fail gracefully
+            } else {
+                console.log('[ServerPlacementSystem] Reserved vein at', nearestGoldVeinLocation, 'for player', player.stats.side);
+            }
+        }
+
         // Calculate peasant positions on the same side as gold mine
         // TownHall is 2x2, so it occupies a 2x2 area centered at startPosition
         const dx = nearestGoldVeinLocation.x - startPosition.x;
