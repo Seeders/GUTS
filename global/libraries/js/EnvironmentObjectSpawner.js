@@ -139,7 +139,8 @@ class EnvironmentObjectSpawner {
             Components.Team('neutral'));
 
         // Add Collision component if the object should block movement
-        if (unitType.collision !== false && unitType.size) {
+        // Check for impassable property (true means it blocks movement)
+        if (unitType.impassable === true && unitType.size) {
             this.game.addComponent(entityId, ComponentTypes.COLLISION,
                 Components.Collision(unitType.size, unitType.height || 100));
         }
