@@ -242,6 +242,40 @@ class CoordinateTranslator {
     }
 
     // ===========================================
+    // PIXEL → WORLD (for worldObjects)
+    // ===========================================
+
+    /**
+     * Convert pixel/absolute coordinates to world coordinates
+     * Used for worldObjects which store positions in pixel/absolute space
+     * @param {number} pixelX - Pixel X coordinate (absolute position)
+     * @param {number} pixelZ - Pixel Z coordinate (absolute position)
+     * @returns {{x: number, z: number}} World position centered at origin
+     */
+    pixelToWorld(pixelX, pixelZ) {
+        // WorldObjects use pixel/absolute coordinates
+        // Convert to world space by centering around origin
+        return {
+            x: pixelX - (this.terrainSize / 2),
+            z: pixelZ - (this.terrainSize / 2)
+        };
+    }
+
+    /**
+     * Convert world coordinates to pixel/absolute coordinates
+     * Inverse of pixelToWorld
+     * @param {number} worldX - World X coordinate
+     * @param {number} worldZ - World Z coordinate
+     * @returns {{x: number, z: number}} Pixel/absolute coordinates
+     */
+    worldToPixel(worldX, worldZ) {
+        return {
+            x: worldX + (this.terrainSize / 2),
+            z: worldZ + (this.terrainSize / 2)
+        };
+    }
+
+    // ===========================================
     // 2D CANVAS / ISOMETRIC (Legacy Support)
     // ===========================================
 
