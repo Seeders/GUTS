@@ -124,7 +124,7 @@ class EntityRenderer {
         }
 
         if (instanceIndex === -1) {
-            console.warn(`[EntityRenderer] Batch ${batchKey} is full (${batch.capacity} instances)`);
+           // console.warn(`[EntityRenderer] Batch ${batchKey} is full (${batch.capacity} instances)`);
             return false;
         }
 
@@ -189,7 +189,7 @@ class EntityRenderer {
         }
 
         if (instanceIndex === -1) {
-            console.warn(`[EntityRenderer] Batch ${batchKey} is full (${batch.capacity} instances)`);
+           // console.warn(`[EntityRenderer] Batch ${batchKey} is full (${batch.capacity} instances)`);
             return false;
         }
 

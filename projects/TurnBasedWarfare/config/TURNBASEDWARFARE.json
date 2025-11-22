@@ -28302,9 +28302,6 @@
                         "paletteColor": "greenDColor"
                       },
                       "id": 3
-                    },
-                    {
-                      "id": 0
                     }
                   ]
                 }
@@ -28345,7 +28342,8 @@
         "placementGridWidth": 2,
         "placementGridHeight": 2,
         "snapToGrid": true,
-        "height": 100
+        "height": 100,
+        "impassable": false
       },
       "rock": {
         "title": "Rock",
@@ -28420,22 +28418,15 @@
               }
             }
           }
-        }
+        },
+        "impassable": false
       },
       "tree": {
         "title": "Tree",
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    }
-                  ]
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -28469,7 +28460,8 @@
         "height": 75,
         "size": 25,
         "placementGridWidth": 1,
-        "placementGridHeight": 1
+        "placementGridHeight": 1,
+        "impassable": true
       }
     },
     "worlds": {

@@ -219,8 +219,9 @@ class PathfindingSystem extends GUTS.BaseSystem {
             for (const worldObj of tileMap.worldObjects) {
                 // Get unit type definition to check if object blocks movement
                 const unitType = collections.worldObjects?.[worldObj.type];
-                console.log('checking unitType', unitType);
-      
+                if(!unitType.impassable){
+                    continue;
+                }
                 // Calculate world position
                 const extensionSize = this.game.gameManager.call('getTerrainExtensionSize') || 0;
                 const extendedSize = this.game.gameManager.call('getTerrainExtendedSize') || terrainSize;
