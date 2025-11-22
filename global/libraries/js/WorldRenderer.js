@@ -610,7 +610,7 @@ class WorldRenderer {
                 } else if (northHeight > currentTileHeight) {
                     // North tile is higher - check for south ramp on north tile extending here
                     // pos: 1 at south edge (cliff), 2 at far north (full low)
-                    const pos = 2 - tileZ;
+                    const pos = 1 + tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ - 1, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -628,7 +628,7 @@ class WorldRenderer {
                 } else if (southHeight > currentTileHeight) {
                     // South tile is higher - check for north ramp on south tile extending here
                     // pos: 1 at north edge (cliff), 2 at south edge (full low)
-                    const pos = 1 + tileZ;
+                    const pos = 2 - tileZ;
                     const slope = checkContinuousRamp(gridX, gridZ + 1, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -646,7 +646,7 @@ class WorldRenderer {
                 } else if (westHeight > currentTileHeight) {
                     // West tile is higher - check for east ramp on west tile extending here
                     // pos: 1 at east edge (cliff), 2 at far west (full low)
-                    const pos = 2 - tileX;
+                    const pos = 1 + tileX;
                     const slope = checkContinuousRamp(gridX - 1, gridZ, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
@@ -664,7 +664,7 @@ class WorldRenderer {
                 } else if (eastHeight > currentTileHeight) {
                     // East tile is higher - check for west ramp on east tile extending here
                     // pos: 1 at west edge (cliff), 2 at east edge (full low)
-                    const pos = 1 + tileX;
+                    const pos = 2 - tileX;
                     const slope = checkContinuousRamp(gridX + 1, gridZ, gridX, gridZ, pos);
                     if (slope !== null) rampHeight = slope;
                 }
