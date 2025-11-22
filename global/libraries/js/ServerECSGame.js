@@ -1,4 +1,4 @@
-class ServerECSGame extends global.BaseECSGame {
+class ServerECSGame extends global.GUTS.BaseECSGame {
     constructor(app) {
         super(app);
         this.state = new global.GUTS.GameState(this.getCollections());
