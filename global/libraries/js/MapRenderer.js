@@ -64,11 +64,11 @@ class MapRenderer extends GUTS.Component {
         this.isMapCached = true;
     }
     renderEnvironment() {
-        if (!this.game.scene || this.tileMap.environmentObjects.length === 0) return;
-    
-        // Group environment objects by type
+        if (!this.game.scene || this.tileMap.worldObjects.length === 0) return;
+
+        // Group world objects by type
         const objectsByType = {};
-        this.tileMap.environmentObjects.forEach(obj => {
+        this.tileMap.worldObjects.forEach(obj => {
             if (!objectsByType[obj.type]) {
                 objectsByType[obj.type] = [];
             }
@@ -275,11 +275,11 @@ class MapRenderer extends GUTS.Component {
         this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
         
         let items = [];
-        
-        // Check if we have stored environment objects
-        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {
+
+        // Check if we have stored world objects
+        if (this.tileMap.worldObjects && this.tileMap.worldObjects.length > 0) {
             // Use the stored objects
-            this.tileMap.environmentObjects.forEach(obj => {
+            this.tileMap.worldObjects.forEach(obj => {
                 const images = this.imageManager.getImages("environment", obj.type);
                 if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {
                     items.push({

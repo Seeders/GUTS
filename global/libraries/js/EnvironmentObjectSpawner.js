@@ -26,16 +26,16 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Get world position from environment object
+     * Get world position from world object
      */
-    calculateWorldPosition(envObj, terrainDataManager) {
-        // Environment objects use x for worldX and y for worldZ
+    calculateWorldPosition(worldObj, terrainDataManager) {
+        // World objects use x for worldX and y for worldZ
         // (y in the data maps to Z axis in 3D world)
         // Apply offset to move objects left (-x) and up (+z) by half terrain size
         const terrainSize = terrainDataManager.terrainSize;
         return {
-            worldX: envObj.x - (terrainSize / 2),
-            worldZ: envObj.y - (terrainSize / 2)
+            worldX: worldObj.x - (terrainSize / 2),
+            worldZ: worldObj.y - (terrainSize / 2)
         };
     }
 
@@ -50,49 +50,49 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Spawn environment objects from tileMap data
-     * @param {Object} tileMap - Terrain tile map with environmentObjects array
+     * Spawn world objects from tileMap data
+     * @param {Object} tileMap - Terrain tile map with worldObjects array
      * @param {Object} terrainDataManager - TerrainDataManager instance for position/height calculations
      */
-    async spawnEnvironmentObjects(tileMap, terrainDataManager) {
-        if (!tileMap?.environmentObjects || tileMap.environmentObjects.length === 0) {
-            console.log('[EnvironmentObjectSpawner] No environment objects to spawn');
+    async spawnWorldObjects(tileMap, terrainDataManager) {
+        if (!tileMap?.worldObjects || tileMap.worldObjects.length === 0) {
+            console.log('[EnvironmentObjectSpawner] No world objects to spawn');
             return;
         }
 
-        // Debug: log first environment object to see format
-        if (tileMap.environmentObjects.length > 0) {
-            console.log('[EnvironmentObjectSpawner] First env object format:', tileMap.environmentObjects[0]);
+        // Debug: log first world object to see format
+        if (tileMap.worldObjects.length > 0) {
+            console.log('[EnvironmentObjectSpawner] First world object format:', tileMap.worldObjects[0]);
         }
 
         // Clear existing spawned objects
-        this.clearEnvironmentObjects();
+        this.clearWorldObjects();
 
         const spawnPromises = [];
 
-        for (const envObj of tileMap.environmentObjects) {
-            const promise = this.spawnSingleObject(envObj, terrainDataManager);
+        for (const worldObj of tileMap.worldObjects) {
+            const promise = this.spawnSingleObject(worldObj, terrainDataManager);
             spawnPromises.push(promise);
         }
 
         await Promise.all(spawnPromises);
 
-        console.log(`[EnvironmentObjectSpawner] Spawned ${tileMap.environmentObjects.length} environment objects in ${this.mode} mode`);
+        console.log(`[EnvironmentObjectSpawner] Spawned ${tileMap.worldObjects.length} world objects in ${this.mode} mode`);
     }
 
     /**
-     * Spawn a single environment object
+     * Spawn a single world object
      */
-    async spawnSingleObject(envObj, terrainDataManager) {
+    async spawnSingleObject(worldObj, terrainDataManager) {
         // Get unit type definition
-        const unitType = this.collections?.worldObjects?.[envObj.type];
+        const unitType = this.collections?.worldObjects?.[worldObj.type];
         if (!unitType) {
-            console.warn(`[EnvironmentObjectSpawner] Environment object type '${envObj.type}' not found in worldObjects collection`);
+            console.warn(`[EnvironmentObjectSpawner] World object type '${worldObj.type}' not found in worldObjects collection`);
             return;
         }
 
         // Calculate world position
-        const { worldX, worldZ } = this.calculateWorldPosition(envObj, terrainDataManager);
+        const { worldX, worldZ } = this.calculateWorldPosition(worldObj, terrainDataManager);
 
         // Get terrain height
         const height = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
@@ -103,17 +103,17 @@ class EnvironmentObjectSpawner {
 
         if (this.mode === 'runtime') {
             // Runtime mode: Create ECS entity with components
-            this.spawnRuntimeEntity(envObj, unitType, worldX, height, worldZ, rotation, scale);
+            this.spawnRuntimeEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale);
         } else if (this.mode === 'editor') {
             // Editor mode: Render using EntityRenderer
-            await this.spawnEditorEntity(envObj, unitType, worldX, height, worldZ, rotation, scale);
+            await this.spawnEditorEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale);
         }
     }
 
     /**
-     * Spawn environment object in runtime mode (ECS)
+     * Spawn world object in runtime mode (ECS)
      */
-    spawnRuntimeEntity(envObj, unitType, worldX, height, worldZ, rotation, scale) {
+    spawnRuntimeEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale) {
         if (!this.game) {
             console.error('[EnvironmentObjectSpawner] Game instance required for runtime mode');
             return;
@@ -123,18 +123,18 @@ class EnvironmentObjectSpawner {
         const Components = this.game.componentManager.getComponents();
 
         // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${envObj.type}_${envObj.x}_${envObj.y}`);
+        const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
 
         // Add Position component
         this.game.addComponent(entityId, ComponentTypes.POSITION,
             Components.Position(worldX, height, worldZ));
 
         // Add UnitType component
-        const unitTypeData = { ...unitType, collection: "worldObjects", id: envObj.type };
+        const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
         this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
             Components.UnitType(unitTypeData));
 
-        // Add Team component (neutral for environment objects)
+        // Add Team component (neutral for world objects)
         this.game.addComponent(entityId, ComponentTypes.TEAM,
             Components.Team('neutral'));
 
@@ -158,21 +158,21 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Spawn environment object in editor mode (visual rendering)
+     * Spawn world object in editor mode (visual rendering)
      */
-    async spawnEditorEntity(envObj, unitType, worldX, height, worldZ, rotation, scale) {
+    async spawnEditorEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale) {
         if (!this.entityRenderer) {
             console.error('[EnvironmentObjectSpawner] EntityRenderer required for editor mode');
             return;
         }
 
         // Create unique entity ID for editor
-        const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
+        const entityId = `env_${worldObj.type}_${worldObj.x}_${worldObj.y}`;
 
         // Spawn using EntityRenderer
         const spawned = await this.entityRenderer.spawnEntity(entityId, {
             collection: 'worldObjects',
-            type: envObj.type,
+            type: worldObj.type,
             position: { x: worldX, y: height, z: worldZ },
             rotation: rotation,
             scale: scale,
@@ -185,9 +185,9 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Clear all spawned environment objects
+     * Clear all spawned world objects
      */
-    clearEnvironmentObjects() {
+    clearWorldObjects() {
         if (this.mode === 'runtime' && this.game) {
             // Runtime mode: Destroy ECS entities
             for (const entityId of this.spawnedEntities) {
@@ -203,21 +203,21 @@ class EnvironmentObjectSpawner {
         }
 
         this.spawnedEntities.clear();
-        console.log('[EnvironmentObjectSpawner] Cleared all environment objects');
+        console.log('[EnvironmentObjectSpawner] Cleared all world objects');
     }
 
     /**
-     * Update environment objects (respawn)
+     * Update world objects (respawn)
      */
-    async updateEnvironmentObjects(tileMap, terrainDataManager) {
-        await this.spawnEnvironmentObjects(tileMap, terrainDataManager);
+    async updateWorldObjects(tileMap, terrainDataManager) {
+        await this.spawnWorldObjects(tileMap, terrainDataManager);
     }
 
     /**
      * Destroy and cleanup
      */
     destroy() {
-        this.clearEnvironmentObjects();
+        this.clearWorldObjects();
         this.game = null;
         this.entityRenderer = null;
         this.terrainDataManager = null;
