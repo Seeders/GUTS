@@ -1,4 +1,4 @@
-class TrackingMarkAbility extends GUTS.BaseAbility {
+class TrackingMark extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'tracking_mark',

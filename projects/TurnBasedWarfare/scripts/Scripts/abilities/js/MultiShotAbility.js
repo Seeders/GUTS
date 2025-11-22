@@ -1,4 +1,4 @@
-class MultishotAbility extends GUTS.BaseAbility {
+class MultiShotAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'multi_shot',
