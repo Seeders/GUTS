@@ -2083,7 +2083,74 @@ class TerrainMapEditor {
             }
         });
 
+        // Auto-adjust height for liquid tiles to prevent overflow
+        if (modifiedTiles.length > 0 && this.isLiquidTerrainType(terrainId)) {
+            this.adjustWaterTileHeights(modifiedTiles);
+        }
+
         return modifiedTiles;
+    }
+
+    /**
+     * Check if a terrain type is a liquid (water, lava, etc.)
+     */
+    isLiquidTerrainType(terrainId) {
+        const terrainTypeName = this.tileMap.terrainTypes?.[terrainId];
+        if (!terrainTypeName) return false;
+
+        return terrainTypeName.toLowerCase().includes('water') ||
+               terrainTypeName.toLowerCase().includes('lava') ||
+               terrainTypeName.toLowerCase().includes('liquid');
+    }
+
+    /**
+     * Adjust water tile heights to be at least 1 level lower than non-water neighbors
+     * This prevents water from overflowing cliffs
+     */
+    adjustWaterTileHeights(waterTiles) {
+        if (!this.tileMap.heightMap) return;
+
+        waterTiles.forEach(tile => {
+            const { x, y } = tile;
+            const currentTerrainId = this.tileMap.terrainMap[y][x];
+
+            // Find minimum height of non-water neighbors
+            let minNonWaterNeighborHeight = Infinity;
+            const neighbors = [
+                { dx: 0, dy: -1 },  // North
+                { dx: 0, dy: 1 },   // South
+                { dx: -1, dy: 0 },  // West
+                { dx: 1, dy: 0 }    // East
+            ];
+
+            neighbors.forEach(({ dx, dy }) => {
+                const nx = x + dx;
+                const ny = y + dy;
+
+                // Check bounds
+                if (nx >= 0 && nx < this.mapSize && ny >= 0 && ny < this.mapSize) {
+                    const neighborTerrainId = this.tileMap.terrainMap[ny][nx];
+
+                    // Only consider non-water neighbors
+                    if (!this.isLiquidTerrainType(neighborTerrainId)) {
+                        const neighborHeight = this.tileMap.heightMap[ny][nx];
+                        minNonWaterNeighborHeight = Math.min(minNonWaterNeighborHeight, neighborHeight);
+                    }
+                }
+            });
+
+            // If there are non-water neighbors, ensure water is at least 1 level lower
+            if (minNonWaterNeighborHeight !== Infinity) {
+                const requiredHeight = minNonWaterNeighborHeight - 1;
+                const currentHeight = this.tileMap.heightMap[y][x];
+
+                // Only adjust if current height is too high
+                if (currentHeight >= minNonWaterNeighborHeight) {
+                    this.tileMap.heightMap[y][x] = Math.max(0, requiredHeight);
+                    console.log(`Adjusted water tile at (${x}, ${y}) from height ${currentHeight} to ${this.tileMap.heightMap[y][x]}`);
+                }
+            }
+        });
     }
 
     // Paint with brush on height map
@@ -2176,6 +2243,11 @@ class TerrainMapEditor {
             tilesToModify.forEach(tile => {
                 this.tileMap.terrainMap[tile.y][tile.x] = newTerrainId;
             });
+
+            // Auto-adjust height for liquid tiles to prevent overflow
+            if (this.isLiquidTerrainType(newTerrainId)) {
+                this.adjustWaterTileHeights(tilesToModify);
+            }
         }
 
         return true;
