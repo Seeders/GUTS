@@ -571,6 +571,82 @@ class EntryGenerator {
     /**
      * Generate engine entry point
      */
+    /**
+     * Generate editor entry point
+     */
+    generateEditorEntry() {
+        const { editor } = this.buildConfig;
+
+        if (!editor) {
+            console.warn('⚠️ No editor configuration found');
+            return null;
+        }
+
+        const sections = [];
+
+        // Header
+        sections.push(`/**
+ * GUTS Editor Bundle
+ * Generated: ${new Date().toISOString()}
+ * Project: ${this.buildConfig.projectName}
+ */
+`);
+
+        // Import libraries
+        let libraryExports = [];
+        if (editor.libraries && editor.libraries.length > 0) {
+            sections.push('// Libraries');
+            const { imports: libraryImports, exports: libExports } = this.generateImports(editor.libraries, 'lib');
+            sections.push(...libraryImports);
+            sections.push('');
+            libraryExports = libExports;
+        }
+
+        // Create Libraries object
+        sections.push('// Create global Libraries object');
+        sections.push('const Libraries = {');
+        if (libraryExports.length > 0) {
+            sections.push(...libraryExports.map(exp => exp + ','));
+        }
+        sections.push('};');
+        sections.push('');
+
+        // Export to window.GUTS
+        sections.push('// Make libraries available globally');
+        sections.push('if (!window.GUTS) window.GUTS = {};');
+        sections.push('Object.assign(window.GUTS, Libraries);');
+        sections.push('');
+
+        // Add Three.js addons to window.THREE namespace
+        sections.push('// Add Three.js addons to window.THREE namespace');
+        sections.push('if (!window.THREE) window.THREE = {};');
+        sections.push('Object.keys(Libraries).forEach(key => {');
+        sections.push('  if (key.startsWith(\'three_\')) {');
+        sections.push('    // For three_ prefixed libraries, add as both namespaced AND flattened');
+        sections.push('    const addon = Libraries[key];');
+        sections.push('    const cleanName = key.replace(\'three_\', \'\');');
+        sections.push('    window.THREE[cleanName] = addon; // Add as namespace');
+        sections.push('    if (typeof addon === \'object\' && addon !== null) {');
+        sections.push('      Object.assign(window.THREE, addon); // Also flatten for direct access');
+        sections.push('    }');
+        sections.push('  } else if (key === \'GLTFLoader\' || key === \'BufferGeometryUtils\' || key === \'OrbitControls\') {');
+        sections.push('    // Other THREE.js libraries');
+        sections.push('    window.THREE[key] = Libraries[key];');
+        sections.push('  }');
+        sections.push('});');
+        sections.push('');
+
+        // Export
+        sections.push('export { Libraries };');
+        sections.push('export default Libraries;');
+
+        const entryPath = path.join(this.tempDir, 'editor-entry.js');
+        fs.writeFileSync(entryPath, sections.join('\n'), 'utf8');
+        console.log(`✅ Generated editor entry: ${entryPath}`);
+
+        return entryPath;
+    }
+
     generateEngineEntry() {
         const { engine } = this.buildConfig;
 
@@ -649,6 +725,7 @@ class EntryGenerator {
         return {
             client: this.generateClientEntry(),
             server: this.generateServerEntry(),
+            editor: this.generateEditorEntry(),
             engine: this.generateEngineEntry(),
             combined: this.generateCombinedEntry()
         };

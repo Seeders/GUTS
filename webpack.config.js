@@ -26,6 +26,7 @@ const entries = generator.generateAll();
 // Output directories
 const clientOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'client');
 const serverOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'server');
+const editorOutput = path.resolve(__dirname, 'editor');
 
 // Base webpack configuration
 const baseConfig = {
@@ -175,10 +176,66 @@ if (typeof global !== 'undefined') {
     }
 } : null;
 
+// Editor configuration (if exists)
+const editorConfig = entries.editor ? {
+    ...baseConfig,
+    name: 'editor',
+    target: 'web',
+    entry: {
+        editor: entries.editor
+    },
+    output: {
+        path: editorOutput,
+        filename: '[name].js',
+        globalObject: 'window'
+    },
+    resolve: {
+        ...baseConfig.resolve,
+        fallback: {
+            "fs": false,
+            "path": false,
+            "crypto": false
+        }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(mode),
+            'process.env.IS_CLIENT': JSON.stringify(false),
+            'process.env.IS_SERVER': JSON.stringify(false)
+        }),
+        new webpack.BannerPlugin({
+            banner: `
+// Setup globals for editor environment
+if (typeof window !== 'undefined') {
+    if (!window.GUTS) window.GUTS = {};
+    if (!window.THREE) window.THREE = {};
+}
+`,
+            raw: true,
+            entryOnly: true
+        }),
+        new webpack.BannerPlugin({
+            banner: `GUTS Editor Bundle
+Project: ${projectName}
+Built: ${new Date().toISOString()}
+Mode: ${mode}`,
+            entryOnly: true
+        })
+    ],
+    optimization: {
+        usedExports: true,
+        minimize: isProduction,
+        splitChunks: false
+    }
+} : null;
+
 // Export configurations
 const configs = [clientConfig];
 if (serverConfig) {
     configs.push(serverConfig);
+}
+if (editorConfig) {
+    configs.push(editorConfig);
 }
 
 module.exports = configs;
