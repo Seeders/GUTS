@@ -219,24 +219,32 @@ class PathfindingSystem extends GUTS.BaseSystem {
             for (const worldObj of tileMap.worldObjects) {
                 // Get unit type definition to check if object blocks movement
                 const unitType = collections.worldObjects?.[worldObj.type];
-                console.log('checking unitType', unitType);
-      
-                // Calculate world position
-                const extensionSize = this.game.gameManager.call('getTerrainExtensionSize') || 0;
-                const extendedSize = this.game.gameManager.call('getTerrainExtendedSize') || terrainSize;
-                const worldX = (worldObj.x + extensionSize) - extendedSize / 2;
-                const worldZ = (worldObj.y + extensionSize) - extendedSize / 2;
 
-                // Convert to nav grid coordinates
-                const navGrid = this.worldToNavGrid(worldX, worldZ);
+                // Skip if object doesn't have collision
+                if (!unitType || unitType.collision === false || !unitType.size) {
+                    continue;
+                }
 
-                // Mark nav grid cell as impassable (255)
-                if (navGrid.x >= 0 && navGrid.x < this.navGridWidth &&
-                    navGrid.z >= 0 && navGrid.z < this.navGridHeight) {
-                        console.log('navgrid impassable:', navGrid.x, navGrid.z);
-                    const idx = navGrid.z * this.navGridWidth + navGrid.x;
-                    this.navMesh[idx] = 255;
-                    markedCells++;
+                // Convert terrain tile position to world position using GridSystem
+                // worldObj.x and worldObj.y are in terrain tile coordinates
+                const worldPos = this.game.gameManager.call('tileToWorld', worldObj.x, worldObj.y);
+
+                // Convert world position to nav grid coordinates
+                const navGrid = this.worldToNavGrid(worldPos.x, worldPos.z);
+
+                // Each terrain tile covers a 2x2 area of nav grid cells
+                // Mark all 4 nav grid cells as impassable
+                for (let dz = 0; dz < 2; dz++) {
+                    for (let dx = 0; dx < 2; dx++) {
+                        const nx = navGrid.x + dx;
+                        const nz = navGrid.z + dz;
+
+                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                            const idx = nz * this.navGridWidth + nx;
+                            this.navMesh[idx] = 255;
+                            markedCells++;
+                        }
+                    }
                 }
             }
             console.log(`PathfindingSystem: Marked ${markedCells} nav cells as impassable due to worldObjects`);
