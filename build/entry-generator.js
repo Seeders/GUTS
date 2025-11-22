@@ -605,6 +605,42 @@ class EntryGenerator {
     }
 
     /**
+     * Generate combined entry point (engine + game in one file)
+     */
+    generateCombinedEntry() {
+        // First generate engine and client entries
+        const enginePath = this.generateEngineEntry();
+        const clientPath = this.generateClientEntry();
+
+        const sections = [];
+
+        // Header
+        sections.push(`/**
+ * GUTS Combined Bundle (Engine + Game)
+ * Generated: ${new Date().toISOString()}
+ * Project: ${this.buildConfig.projectName}
+ */
+`);
+
+        // Import engine entry first (this sets up Engine, BaseEngine, ModuleManager)
+        sections.push(`import './engine-entry.js';`);
+        sections.push('');
+
+        // Then import game entry (this sets up all game classes and COMPILED_GAME)
+        sections.push(`import COMPILED_GAME from './client-entry.js';`);
+        sections.push('');
+
+        // Re-export for consistency
+        sections.push('export default COMPILED_GAME;');
+
+        const entryPath = path.join(this.tempDir, 'combined-entry.js');
+        fs.writeFileSync(entryPath, sections.join('\n'), 'utf8');
+        console.log(`✅ Generated combined entry: ${entryPath}`);
+
+        return entryPath;
+    }
+
+    /**
      * Generate all entry points
      */
     generateAll() {
@@ -613,7 +649,8 @@ class EntryGenerator {
         return {
             client: this.generateClientEntry(),
             server: this.generateServerEntry(),
-            engine: this.generateEngineEntry()
+            engine: this.generateEngineEntry(),
+            combined: this.generateCombinedEntry()
         };
     }
 }

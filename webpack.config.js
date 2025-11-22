@@ -83,8 +83,7 @@ const clientConfig = {
     name: 'client',
     target: 'web',
     entry: {
-        game: entries.client,
-        engine: entries.engine
+        game: entries.combined
     },
     output: {
         path: clientOutput,
