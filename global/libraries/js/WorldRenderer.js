@@ -598,7 +598,7 @@ class WorldRenderer {
             const worldX = x * gridSize - terrainSize / 2;
             const worldZ = z * gridSize - terrainSize / 2;
 
-            vertices.push(worldX, 0.1, worldZ);
+            vertices.push(worldX, -8, worldZ);
             originalPositions.push([x, z]); // Store original grid position
             uvs.push(x, z); // UVs based on grid position
         }

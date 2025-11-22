@@ -1630,7 +1630,7 @@ class TerrainMapEditor {
                 enableFog: false,
                 enablePostProcessing: false,
                 enableGrass: false,
-                enableLiquidSurfaces: false,
+                enableLiquidSurfaces: true,
                 enableCliffs: true
             });
         }
