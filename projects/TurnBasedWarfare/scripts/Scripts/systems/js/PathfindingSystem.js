@@ -745,8 +745,19 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * Initialize debug visualization
      */
     initDebugVisualization() {
+        console.log('PathfindingSystem: initDebugVisualization called');
+        console.log('  - uiScene exists:', !!this.game.uiScene);
+        console.log('  - navMesh exists:', !!this.navMesh);
+        console.log('  - navGridWidth:', this.navGridWidth);
+        console.log('  - navGridHeight:', this.navGridHeight);
+
         if (!this.game.uiScene) {
             console.warn('PathfindingSystem: No uiScene available for debug visualization');
+            return;
+        }
+
+        if (!this.navMesh) {
+            console.warn('PathfindingSystem: No navMesh available - must bake first');
             return;
         }
 
@@ -755,6 +766,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.debugVisualization.name = 'PathfindingDebug';
         this.debugVisualization.visible = false;
         this.game.uiScene.add(this.debugVisualization);
+
+        console.log('PathfindingSystem: Created debug group, added to uiScene');
 
         // Create materials for different cell types
         const cellSize = this.navGridSize * 0.8; // Slightly smaller than grid cell
@@ -820,15 +833,31 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * Toggle debug visualization
      */
     toggleDebugVisualization() {
+        console.log('PathfindingSystem: toggleDebugVisualization called');
+        console.log('  - debugVisualization exists:', !!this.debugVisualization);
+        console.log('  - game.uiScene exists:', !!this.game.uiScene);
+        console.log('  - isServer:', this.game.isServer);
+
         if (!this.debugVisualization) {
             console.warn('PathfindingSystem: Debug visualization not initialized');
-            return;
+
+            // Try to initialize it now if on client
+            if (!this.game.isServer && this.game.uiScene) {
+                console.log('PathfindingSystem: Attempting to initialize debug visualization now...');
+                this.initDebugVisualization();
+            } else {
+                console.error('PathfindingSystem: Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.game.uiScene);
+                return;
+            }
         }
 
         this.debugEnabled = !this.debugEnabled;
         this.debugVisualization.visible = this.debugEnabled;
 
-        console.log(`PathfindingSystem: Debug visualization ${this.debugEnabled ? 'enabled' : 'disabled'}`);
+        console.log(`PathfindingSystem: Debug visualization ${this.debugEnabled ? 'ENABLED' : 'DISABLED'}`);
+        console.log('  - Group visible:', this.debugVisualization.visible);
+        console.log('  - Children count:', this.debugVisualization.children.length);
+        console.log('  - Parent:', this.debugVisualization.parent?.name);
     }
 
     /**
