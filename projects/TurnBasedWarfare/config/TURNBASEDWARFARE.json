@@ -1718,10 +1718,6 @@
         "filePath": "/global/components/js/ArrayTracker.js",
         "fileName": "ArrayTracker"
       },
-      "AudioManager": {
-        "filePath": "/global/components/js/AudioManager.js",
-        "fileName": "AudioManager"
-      },
       "Collider": {
         "filePath": "/global/components/js/Collider.js",
         "fileName": "Collider"
@@ -18566,6 +18562,10 @@
       "AudioEditor": {
         "fileName": "AudioEditor",
         "filePath": "/global/libraries/js/AudioEditor.js"
+      },
+      "AudioManager": {
+        "fileName": "AudioManager",
+        "filePath": "/global/libraries/js/AudioManager.js"
       },
       "BaseECSGame": {
         "filePath": "/global/libraries/js/BaseECSGame.js",
