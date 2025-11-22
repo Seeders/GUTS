@@ -63,18 +63,19 @@ class RenderSystem extends GUTS.BaseSystem {
      * Calculate instance capacities needed for each entity type
      * by counting them in the level data
      */
-    calculateInstanceCapacities(terrainDataManager) {
+    calculateInstanceCapacities() {
         const capacities = {};
 
-        // terrainDataManager is passed as parameter from WorldSystem
-        if (!terrainDataManager?.tileMap?.environmentObjects) {
+        // Get tile map from TerrainSystem via gameManager
+        const tileMap = this.game.gameManager.call('getTileMap');
+        if (!tileMap?.environmentObjects) {
             console.log('[RenderSystem] No environment objects in level, using default capacities');
             return capacities;
         }
 
         // Count each type of environment object
         const counts = {};
-        terrainDataManager.tileMap.environmentObjects.forEach(obj => {
+        tileMap.environmentObjects.forEach(obj => {
             const key = `worldObjects_${obj.type}`;
             counts[key] = (counts[key] || 0) + 1;
         });
@@ -86,9 +87,9 @@ class RenderSystem extends GUTS.BaseSystem {
         }
 
         // Also count cliffs if present
-        if (terrainDataManager.tileMap?.cliffs) {
+        if (tileMap.cliffs) {
             const cliffCounts = {};
-            terrainDataManager.tileMap.cliffs.forEach(cliff => {
+            tileMap.cliffs.forEach(cliff => {
                 const key = `cliffs_${cliff.type}`;
                 cliffCounts[key] = (cliffCounts[key] || 0) + 1;
             });
@@ -106,17 +107,15 @@ class RenderSystem extends GUTS.BaseSystem {
      * Update instance capacities after terrain has loaded
      * Called by WorldSystem when terrain data is available
      */
-    updateInstanceCapacities(terrainDataManager) {
+    updateInstanceCapacities() {
         console.log('[RenderSystem] updateInstanceCapacities() called');
-        console.log('[RenderSystem] terrainDataManager provided?', !!terrainDataManager);
-        console.log('[RenderSystem] environmentObjects count:', terrainDataManager?.tileMap?.environmentObjects?.length);
 
         if (!this.entityRenderer) {
             console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
             return;
         }
 
-        const capacities = this.calculateInstanceCapacities(terrainDataManager);
+        const capacities = this.calculateInstanceCapacities();
 
         console.log('[RenderSystem] Calculated capacities:', capacities);
 

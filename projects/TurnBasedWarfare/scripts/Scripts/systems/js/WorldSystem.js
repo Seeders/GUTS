@@ -143,7 +143,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // Update instance capacities now that terrain data is loaded
         // This must happen before spawning environment entities
         if (this.game.renderSystem) {
-            this.game.renderSystem.updateInstanceCapacities(terrainDataManager);
+            this.game.renderSystem.updateInstanceCapacities();
         } else {
             console.warn('[WorldSystem] RenderSystem not available to update capacities');
         }
