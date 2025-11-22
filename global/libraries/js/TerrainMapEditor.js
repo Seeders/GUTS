@@ -196,8 +196,9 @@ class TerrainMapEditor {
                     this.deleteEnvironmentObjectAt(e);
                 } else {
                     this.isMouseDown = true;
-                    // Painting will be handled by the raycast interval
-                    // which calls handlePainting when isMouseDown is true
+                    // Immediately trigger raycast and painting for instant click response
+                    // The raycast interval will continue handling during drag operations
+                    this.updateGridPositionFromRaycast();
                 }
             } else if (e.button === 1 || e.button === 2) { // Middle or right click - camera controls
                 this.isCameraControlActive = true;
