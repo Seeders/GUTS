@@ -62,6 +62,25 @@ class ConfigParser {
                 }
             }
 
+            // Handle socket.io from CDN - use socket.io-client npm package instead
+            if (lib.href && lib.href.includes('socket.io')) {
+                const socketPath = path.join(__dirname, '..', 'node_modules', 'socket.io-client', 'dist', 'socket.io.js');
+                if (fs.existsSync(socketPath)) {
+                    console.log(`✓ Using npm package for socket.io-client`);
+                    paths.push({
+                        name: 'io',  // socket.io-client exports to window.io
+                        path: socketPath,
+                        isModule: false,  // socket.io-client is a UMD module that exports to window.io
+                        requireName: 'io',
+                        fileName: 'socket_io_client',  // Use underscores to avoid invalid var names
+                        windowContext: 'io'
+                    });
+                    continue;
+                } else {
+                    console.warn(`⚠️ socket.io-client not found in node_modules`);
+                }
+            }
+
             // Skip other external CDN libraries (href)
             if (lib.href) {
                 console.log(`⚠️ Skipping external library: ${libName} (${lib.href})`);
