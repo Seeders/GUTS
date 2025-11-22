@@ -11,6 +11,7 @@
     "dev": "webpack serve --config webpack.dev.config.js",
     "dev:server": "node server_editor.js",
     "game:server": "node projects/TurnBasedWarfare/server_game.js",
+    "game:server:dev": "nodemon --watch projects/TurnBasedWarfare/dist/server projects/TurnBasedWarfare/server_game.js",
     "game:build-and-start": "npm run build && npm run game:server",
     "start:editor": "node server_editor.js 5000",
     "build:seeders": "PROJECT_NAME=Seeders node build/build.js Seeders",
@@ -37,6 +38,7 @@
     "@babel/preset-env": "^7.26.0",
     "babel-loader": "^9.2.1",
     "html-webpack-plugin": "^5.6.3",
+    "nodemon": "^3.1.11",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.2.0"
