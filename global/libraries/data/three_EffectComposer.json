@@ -2,7 +2,7 @@
   "title": "THREE.EffectComposer",
   "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/postprocessing/EffectComposer.js",
   "isModule": true,
-  "windowContext": "THREE_",
+  "windowContext": "THREE",
   "requireName": "EffectComposer",
   "importName": "EffectComposer",
   "fileName": "three.EffectComposer"

@@ -173,6 +173,11 @@ class ModuleManager {
                     let path = libraryDef.filePath || libraryDef.href;
                     import(path).then((module) => {
                         let libName = libraryDef.requireName || library;
+                        let importName = libraryDef.importName || libName;
+
+                        // Extract the actual export from the module
+                        let exportedClass = module[importName] || module.default || module;
+
                         if (libraryDef.windowContext) {
                             if (!window[libraryDef.windowContext]) {
                                 window[libraryDef.windowContext] = {};
@@ -182,12 +187,12 @@ class ModuleManager {
                             const existingLib = window[libraryDef.windowContext][libName];
                             if (!existingLib) {
                                 try {
-                                    window[libraryDef.windowContext][libName] = module[libName] || module;
+                                    window[libraryDef.windowContext][libName] = exportedClass;
                                 } catch (e) {
                                     // Ignore read-only errors - library already loaded
                                 }
                             }
-                            this.registeredLibraries[libName] = existingLib || module[libName] || module;
+                            this.registeredLibraries[libName] = existingLib || exportedClass;
 
                             // Also add THREE.js addons to window.THREE namespace (if not already there)
                             if (libraryDef.windowContext === 'THREE' || library.includes('three') || libName.includes('three')) {
@@ -219,11 +224,12 @@ class ModuleManager {
                                     // For other THREE.js addons (OrbitControls, GLTFLoader, etc.)
                                     if (!window.THREE[libName]) {
                                         try {
-                                            window.THREE[libName] = module[libName] || module;
+                                            window.THREE[libName] = exportedClass;
                                         } catch (e) {
                                             // Ignore read-only errors
                                         }
                                     }
+                                    // Also flatten module exports
                                     if (typeof module === 'object' && module !== null) {
                                         for (const key in module) {
                                             if (!(key in window.THREE)) {

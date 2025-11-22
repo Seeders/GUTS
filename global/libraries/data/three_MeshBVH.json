@@ -1,7 +1,7 @@
 {
   "title": "THREE MeshBVH",
   "isModule": true,
-  "windowContext": "THREE_",
+  "windowContext": "THREE",
   "fileName": "three_MeshBVH",
   "filePath": "/global/libraries/js/three_MeshBVH.js"
 }

@@ -1,7 +1,7 @@
 {
   "title": "GLTF Loader",
   "isModule": true,
-  "windowContext": "THREE_",
+  "windowContext": "THREE",
   "requireName": "GLTFLoader",
   "importName": "GLTFLoader",
   "fileName": "GLTFLoader",

@@ -1,7 +1,7 @@
 {
   "title": "THREE SkeletonUtils",
   "isModule": true,
-  "windowContext": "THREE_",
+  "windowContext": "THREE",
   "requireName": "SkeletonUtils",
   "importName": "SkeletonUtils",
   "fileName": "three_SkeletonUtils",
