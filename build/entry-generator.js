@@ -75,14 +75,8 @@ class EntryGenerator {
             )) {
                 // These modules export specific classes, use namespace import
                 importStatement = `import * as ${varName} from '${importPath}';`;
-                // Try to extract the specific class if requireName exists, with fallback to namespace
-                if (mod.requireName && mod.requireName !== mod.fileName && mod.requireName !== mod.name) {
-                    // Use fallback: try .moduleName first, fall back to whole namespace
-                    exportValue = `(${varName}.${moduleName} || ${varName})`;
-                } else {
-                    // Export the whole namespace (for modules like three_MeshBVH that export multiple things)
-                    exportValue = `${varName}`;
-                }
+                // Always try to extract the named export first, with fallback to namespace
+                exportValue = `(${varName}.${moduleName} || ${varName})`;
             }
             // Standard namespace import for other modules
             // Use namespace import because class-export-loader exports both default and named exports
