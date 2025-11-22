@@ -19823,9 +19823,6 @@
                 "type": "LifetimeSystem"
               },
               {
-                "type": "MultiplayerUISystem"
-              },
-              {
                 "type": "SchedulingSystem"
               },
               {

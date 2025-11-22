@@ -27,7 +27,7 @@ class AbilitySystem extends GUTS.BaseSystem {
                 const abilityInstance = new AbilityClass(this.game, this.game.getCollections().abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
             } else {
-                console.warn(`Ability '${abilityId}' not found`);
+                console.warn(`Ability '${abilityId}' not found!`);
             }
         });
         
