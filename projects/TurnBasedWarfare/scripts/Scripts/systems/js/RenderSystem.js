@@ -35,6 +35,9 @@ class RenderSystem extends GUTS.BaseSystem {
         const collections = this.game.getCollections?.();
         const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
 
+        // Count instances needed for each entity type from level data
+        const capacitiesByType = this.calculateInstanceCapacities();
+
         this.entityRenderer = new GUTS.EntityRenderer({
             scene: this.game.scene,
             collections: collections,
@@ -43,6 +46,7 @@ class RenderSystem extends GUTS.BaseSystem {
             getPalette: () => collections?.palette || {},
             modelScale: 32,
             defaultCapacity: 1024,
+            capacitiesByType: capacitiesByType,
             minMovementThreshold: 0.1
         });
 
@@ -50,6 +54,50 @@ class RenderSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
 
         console.log('[RenderSystem] Initialized with EntityRenderer');
+    }
+
+    /**
+     * Calculate instance capacities needed for each entity type
+     * by counting them in the level data
+     */
+    calculateInstanceCapacities() {
+        const capacities = {};
+
+        // Get terrain data manager to access level data
+        const terrainDataManager = this.game.terrainDataManager;
+        if (!terrainDataManager?.tileMap?.environmentObjects) {
+            console.log('[RenderSystem] No environment objects in level, using default capacities');
+            return capacities;
+        }
+
+        // Count each type of environment object
+        const counts = {};
+        terrainDataManager.tileMap.environmentObjects.forEach(obj => {
+            const key = `worldObjects_${obj.type}`;
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        // Set capacity with some buffer (20% extra for dynamic spawning)
+        for (const [key, count] of Object.entries(counts)) {
+            capacities[key] = Math.ceil(count * 1.2);
+            console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
+        }
+
+        // Also count cliffs if present
+        if (terrainDataManager.tileMap?.cliffs) {
+            const cliffCounts = {};
+            terrainDataManager.tileMap.cliffs.forEach(cliff => {
+                const key = `cliffs_${cliff.type}`;
+                cliffCounts[key] = (cliffCounts[key] || 0) + 1;
+            });
+
+            for (const [key, count] of Object.entries(cliffCounts)) {
+                capacities[key] = Math.ceil(count * 1.2);
+                console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
+            }
+        }
+
+        return capacities;
     }
 
     /**
