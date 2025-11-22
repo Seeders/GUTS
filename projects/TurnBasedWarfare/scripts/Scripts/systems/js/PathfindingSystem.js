@@ -220,11 +220,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 // Get unit type definition to check if object blocks movement
                 const unitType = collections.worldObjects?.[worldObj.type];
 
-                // Skip if object doesn't have collision
-                if (!unitType || unitType.impassable === true) {
-                    continue;
-                }
-
+        
                 // Convert terrain tile position to world position using GridSystem
                 // worldObj.x and worldObj.y are in terrain tile coordinates
                 const worldPos = this.game.gameManager.call('tileToWorld', worldObj.x, worldObj.y);
