@@ -68,13 +68,28 @@ class PlacementSystem extends GUTS.BaseSystem {
     validatePlacement(placement, player) {
         // Add your validation logic here
         // For now, basic validation
-        if (!placement || !placement.unitType) {
+        if (!placement) {
+            console.error('[PlacementSystem] Validation failed: placement is null/undefined');
+            return false;
+        }
+
+        if (!placement.unitType) {
+            console.error('[PlacementSystem] Validation failed: placement.unitType is missing', {
+                placementId: placement.placementId,
+                collection: placement.collection,
+                hasUnitType: !!placement.unitType,
+                keys: Object.keys(placement)
+            });
             return false;
         }
 
         // Check if player can afford it (if player data provided)
         if (player && placement.unitType.value > 0 && !placement.isStartingState) {
             if (player.stats.gold < placement.unitType.value) {
+                console.error('[PlacementSystem] Validation failed: insufficient gold', {
+                    cost: placement.unitType.value,
+                    playerGold: player.stats.gold
+                });
                 return false;
             }
         }

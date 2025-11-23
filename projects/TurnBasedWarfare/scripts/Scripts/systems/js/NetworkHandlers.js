@@ -135,6 +135,19 @@ class NetworkHandlers extends GUTS.BaseSystem {
             const room = this.engine.getRoom(roomId);
             const player = room.getPlayer(playerId);
 
+            // Reconstruct unitType from server's collections
+            // (Client may have sent partial data that got corrupted during network transmission)
+            if (placement.unitType && placement.unitType.id && placement.collection) {
+                const collections = this.game.getCollections();
+                const collection = collections[placement.collection];
+                if (collection) {
+                    const fullUnitType = collection[placement.unitType.id];
+                    if (fullUnitType) {
+                        placement.unitType = fullUnitType;
+                    }
+                }
+            }
+
             // Delegate to PlacementSystem
             const result = this.game.placementSystem.submitPlacement(playerId, player, placement);
 
