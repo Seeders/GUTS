@@ -1,4 +1,4 @@
 {
   "title": "Export Scripts Module",
-  "library": "ZipExporter"
+  "libraries": ["ZipExporter"]
 }
