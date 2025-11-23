@@ -50,7 +50,10 @@ class BehaviorTreeEditor {
     loadBehaviorTree(detail) {
         this.currentData = detail.data;
         this.propertyName = detail.propertyName;
-
+        Object.values(document.getElementsByClassName('editor-module')).forEach((editor) => {
+            editor.classList.remove('show');
+        });
+        document.getElementById('behavior-tree-editor-container').classList.add('show');
         // Get full object data - either from event detail or from controller
         this.objectData = detail.objectData || this.controller.getCurrentObject();
 
@@ -91,13 +94,13 @@ class BehaviorTreeEditor {
 
         actionsList.innerHTML = '';
 
-        const actions = this.controller.getCollections().actions || {};
+        const behaviorActions = this.controller.getCollections().behaviorActions || {};
 
-        Object.entries(actions).forEach(([actionId, actionData]) => {
+        Object.entries(behaviorActions).forEach(([behaviorActionId, actionData]) => {
             const actionEl = document.createElement('div');
             actionEl.className = 'bt-action-item';
             actionEl.draggable = true;
-            actionEl.dataset.actionId = actionId;
+            actionEl.dataset.behaviorActionId = behaviorActionId;
 
             actionEl.innerHTML = `
                 <div class="bt-action-item__title">${actionData.title}</div>
@@ -105,7 +108,7 @@ class BehaviorTreeEditor {
             `;
 
             actionEl.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('actionId', actionId);
+                e.dataTransfer.setData('behaviorActionId', behaviorActionId);
             });
 
             actionsList.appendChild(actionEl);
