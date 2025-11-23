@@ -57,6 +57,9 @@ class BehaviorTreeEditor {
         // Get full object data - either from event detail or from controller
         this.objectData = detail.objectData || this.controller.getCurrentObject();
 
+        // Detect if this is a script-based tree
+        this.isScriptBased = !!(this.objectData && this.objectData.script);
+
         // Update info panel with defensive checks
         const unitTypeEl = document.getElementById('bt-unit-type');
         const descriptionEl = document.getElementById('bt-description');
@@ -75,7 +78,7 @@ class BehaviorTreeEditor {
         // Load available actions from collection
         this.loadAvailableActions();
 
-        // Setup simulation variables
+        // Setup simulation (script-based uses mock entities, legacy uses blackboard)
         this.setupSimulationVars();
 
         // Render the tree
@@ -335,7 +338,40 @@ class BehaviorTreeEditor {
     // Simulation methods
     setupSimulationVars() {
         const varsContainer = document.getElementById('bt-simulation-vars');
-        if (!varsContainer || !this.currentData) return;
+        if (!varsContainer) return;
+
+        // Use different approaches for script-based vs data-driven trees
+        if (this.isScriptBased) {
+            this.setupScriptBasedSimulation(varsContainer);
+        } else {
+            this.setupDataDrivenSimulation(varsContainer);
+        }
+    }
+
+    setupScriptBasedSimulation(varsContainer) {
+        // Initialize mock game context
+        if (!this.mockGame && typeof GUTS !== 'undefined' && GUTS.MockGameContext) {
+            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
+        }
+
+        if (!this.mockGame) {
+            console.warn('MockGameContext not available');
+            return;
+        }
+
+        varsContainer.innerHTML = '<h4 style="font-size: 12px; color: #aaa; margin-bottom: 8px;">Mock Entity Components</h4>';
+
+        // Build UI for each component
+        const components = this.mockGame.getAllComponents();
+
+        for (const [componentType, componentData] of components.entries()) {
+            this.createComponentEditor(varsContainer, componentType, componentData);
+        }
+    }
+
+    setupDataDrivenSimulation(varsContainer) {
+        // Legacy blackboard-based simulation
+        if (!this.currentData) return;
 
         // Initialize blackboard if not exists
         if (!this.blackboard && typeof GUTS !== 'undefined' && GUTS.BehaviorTreeBlackboard) {
@@ -369,6 +405,123 @@ class BehaviorTreeEditor {
 
             this.createVariableInput(varsContainer, varName, varType);
         });
+    }
+
+    createComponentEditor(container, componentType, componentData) {
+        const detailsEl = document.createElement('details');
+        detailsEl.open = true;
+        detailsEl.style.marginBottom = '12px';
+        detailsEl.style.border = '1px solid #333';
+        detailsEl.style.borderRadius = '4px';
+        detailsEl.style.padding = '8px';
+
+        const summary = document.createElement('summary');
+        summary.textContent = componentType;
+        summary.style.cursor = 'pointer';
+        summary.style.fontWeight = '600';
+        summary.style.fontSize = '11px';
+        summary.style.color = '#6366f1';
+        summary.style.marginBottom = '8px';
+        detailsEl.appendChild(summary);
+
+        const propsContainer = document.createElement('div');
+        propsContainer.style.marginLeft = '8px';
+
+        // Create inputs for each property
+        for (const [key, value] of Object.entries(componentData)) {
+            this.createComponentPropertyInput(propsContainer, componentType, key, value);
+        }
+
+        detailsEl.appendChild(propsContainer);
+        container.appendChild(detailsEl);
+    }
+
+    createComponentPropertyInput(container, componentType, propertyName, value) {
+        const propDiv = document.createElement('div');
+        propDiv.style.marginBottom = '8px';
+
+        const label = document.createElement('label');
+        label.className = 'bt-sim-var__label';
+        label.textContent = propertyName;
+        propDiv.appendChild(label);
+
+        // Create appropriate input based on value type
+        if (value === null || value === undefined) {
+            // Null/undefined - use text input with "null" placeholder
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'null';
+            input.style.width = '100%';
+            input.addEventListener('change', (e) => {
+                let newValue = e.target.value;
+                if (newValue === '' || newValue === 'null') {
+                    newValue = null;
+                } else {
+                    try {
+                        newValue = JSON.parse(newValue);
+                    } catch (err) {
+                        // Keep as string
+                    }
+                }
+                this.mockGame.updateComponent(componentType, propertyName, newValue);
+                this.runSimulation();
+            });
+            propDiv.appendChild(input);
+        } else if (typeof value === 'boolean') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = value;
+            checkbox.addEventListener('change', (e) => {
+                this.mockGame.updateComponent(componentType, propertyName, e.target.checked);
+                this.runSimulation();
+            });
+            propDiv.appendChild(checkbox);
+        } else if (typeof value === 'number') {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.value = value;
+            input.style.width = '100%';
+            input.addEventListener('change', (e) => {
+                this.mockGame.updateComponent(componentType, propertyName, parseFloat(e.target.value));
+                this.runSimulation();
+            });
+            propDiv.appendChild(input);
+        } else if (typeof value === 'string') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.style.width = '100%';
+            input.addEventListener('change', (e) => {
+                this.mockGame.updateComponent(componentType, propertyName, e.target.value);
+                this.runSimulation();
+            });
+            propDiv.appendChild(input);
+        } else if (typeof value === 'object') {
+            // Object - use JSON textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = JSON.stringify(value, null, 2);
+            textarea.style.width = '100%';
+            textarea.style.minHeight = '60px';
+            textarea.style.fontFamily = 'monospace';
+            textarea.style.fontSize = '11px';
+            textarea.style.background = '#0a0a0a';
+            textarea.style.border = '1px solid #333';
+            textarea.style.borderRadius = '4px';
+            textarea.style.padding = '4px';
+            textarea.style.color = '#fff';
+            textarea.addEventListener('change', (e) => {
+                try {
+                    const newValue = JSON.parse(e.target.value);
+                    this.mockGame.updateComponent(componentType, propertyName, newValue);
+                    this.runSimulation();
+                } catch (err) {
+                    alert('Invalid JSON: ' + err.message);
+                }
+            });
+            propDiv.appendChild(textarea);
+        }
+
+        container.appendChild(propDiv);
     }
 
     createCommonVariablePresets(variables) {
@@ -573,14 +726,22 @@ class BehaviorTreeEditor {
     }
 
     runSimulation() {
-        if (!this.currentData || !this.currentData.root || !this.blackboard) return;
+        if (!GUTS || !GUTS.BehaviorTreeProcessor) return;
 
-        // Use shared BehaviorTreeProcessor
-        if (typeof GUTS !== 'undefined' && GUTS.BehaviorTreeProcessor) {
-            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
-            this.displaySimResult(result);
-            this.highlightActivePath(result.activePath);
+        let result;
+
+        if (this.isScriptBased) {
+            // Use mock game context with actual script class
+            if (!this.mockGame) return;
+            result = GUTS.BehaviorTreeProcessor.evaluate(this.objectData, this.mockGame);
+        } else {
+            // Use blackboard with data-driven evaluation
+            if (!this.currentData || !this.currentData.root || !this.blackboard) return;
+            result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
         }
+
+        this.displaySimResult(result);
+        this.highlightActivePath(result.activePath);
     }
 
     displaySimResult(result) {
@@ -626,9 +787,16 @@ class BehaviorTreeEditor {
     }
 
     resetSimulation() {
-        // Clear the blackboard
-        if (this.blackboard) {
-            this.blackboard.clear();
+        if (this.isScriptBased) {
+            // Reset mock game context to original state
+            if (GUTS && GUTS.MockGameContext) {
+                this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
+            }
+        } else {
+            // Clear the blackboard
+            if (this.blackboard) {
+                this.blackboard.clear();
+            }
         }
 
         // Reset UI
