@@ -1,6 +1,0 @@
-{
-    "title": "Game Compiler",
-    "propertyName": "compiler",
-    "libraries": ["Compiler", "CompilerModule"],
-    "interface": "compilerInterface"
-}
