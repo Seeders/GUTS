@@ -495,23 +495,27 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             placementIds,
             targetPositions,
             meta,
-            commandCreatedTime
-        );
+            commandCreatedTime,
+            null, // networkData (server only)
+            (success, responseData) => {
+                // Callback: Add visual effects AFTER server confirmation (client only)
+                if (success) {
+                    for(let i = 0; i < placementIds.length; i++){
+                        let placementId = placementIds[i];
+                        const targetPos = targetPositions[i];
+                        const placement = this.game.gameManager.call('getPlacementById', placementId);
+                        if (placement && placement.squadUnits && this.game.effectsSystem && targetPos) {
+                            placement.squadUnits.forEach((unitId) => {
+                                this.game.gameManager.call('createParticleEffect', targetPos.x, 0, targetPos.z, 'magic', { ...this.pingEffect });
+                            });
+                        }
+                    }
 
-        // Client-only: Add visual feedback effects
-        for(let i = 0; i < placementIds.length; i++){
-            let placementId = placementIds[i];
-            const targetPos = targetPositions[i];
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
-            if (placement && placement.squadUnits && this.game.effectsSystem && targetPos) {
-                placement.squadUnits.forEach((unitId) => {
-                    this.game.gameManager.call('createParticleEffect', targetPos.x, 0, targetPos.z, 'magic', { ...this.pingEffect });
-                });
+                    this.startTargeting();
+                    this.showMoveTargets();
+                }
             }
-        }
-
-        this.startTargeting();
-        this.showMoveTargets();
+        );
     }
 
     getFormationTargetPositions(targetPosition, placementIds){

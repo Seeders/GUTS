@@ -29,49 +29,74 @@ class PlayerInputInterface {
      * @param {object} meta - Metadata (isPlayerOrder, etc.)
      * @param {number} commandCreatedTime - Timestamp
      * @param {object} networkData - Network-specific data (playerId, etc.) - server only
+     * @param {function} callback - Callback for client after network confirmation
      */
-    setSquadTarget(placementId, targetPosition, meta, commandCreatedTime, networkData = null) {
-        // Apply to game state (unified logic)
-        this.game.unitOrderSystem.applySquadTargetPosition(
-            placementId,
-            targetPosition,
-            meta,
-            commandCreatedTime
-        );
-
-        // Client: Send to network
-        if (this.mode === 'client' && this.game.networkManager) {
-            this.game.networkManager.sendSquadTarget({
+    setSquadTarget(placementId, targetPosition, meta, commandCreatedTime, networkData = null, callback = null) {
+        // Server: Apply immediately, then broadcast
+        if (this.mode === 'server') {
+            // Apply to game state (unified logic)
+            this.game.unitOrderSystem.applySquadTargetPosition(
                 placementId,
                 targetPosition,
                 meta,
                 commandCreatedTime
-            });
-        }
+            );
 
-        // Server: Broadcast to other players
-        if (this.mode === 'server' && networkData && this.game.serverNetworkManager) {
-            const { playerId, roomId, room } = networkData;
+            // Broadcast to other players
+            if (networkData && this.game.serverNetworkManager) {
+                const { playerId, roomId, room } = networkData;
 
-            // Send confirmation to requesting player
-            this.game.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
-                success: true,
-                placementId,
-                targetPosition,
-                meta,
-                commandCreatedTime
-            });
+                // Send confirmation to requesting player
+                this.game.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
+                    success: true,
+                    placementId,
+                    targetPosition,
+                    meta,
+                    commandCreatedTime
+                });
 
-            // Broadcast to other players in room
-            for (const [otherPlayerId, otherPlayer] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.game.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
-                        placementId,
-                        targetPosition,
-                        meta
-                    });
+                // Broadcast to other players in room
+                for (const [otherPlayerId, otherPlayer] of room.players) {
+                    if (otherPlayerId !== playerId) {
+                        this.game.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
+                            placementId,
+                            targetPosition,
+                            meta
+                        });
+                    }
                 }
             }
+        }
+
+        // Client: Send to network, wait for confirmation, then apply
+        if (this.mode === 'client' && this.game.networkManager) {
+            this.game.networkManager.sendSquadTarget(
+                { placementId, targetPosition, meta, commandCreatedTime },
+                (success, responseData) => {
+                    if (success) {
+                        // Use server's timestamp for determinism
+                        const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
+
+                        // Now apply to game state after server confirmation
+                        this.game.unitOrderSystem.applySquadTargetPosition(
+                            placementId,
+                            targetPosition,
+                            meta,
+                            createdTime
+                        );
+
+                        // Call callback if provided
+                        if (callback) {
+                            callback(success, responseData);
+                        }
+                    } else {
+                        console.error('[PlayerInputInterface] Server rejected squad target');
+                        if (callback) {
+                            callback(success, responseData);
+                        }
+                    }
+                }
+            );
         }
     }
 
@@ -83,45 +108,70 @@ class PlayerInputInterface {
      * @param {object} meta - Metadata
      * @param {number} commandCreatedTime - Timestamp
      * @param {object} networkData - Network-specific data - server only
+     * @param {function} callback - Callback for client after network confirmation
      */
-    setSquadTargets(placementIds, targetPositions, meta, commandCreatedTime, networkData = null) {
-        // Apply to game state (unified logic)
-        this.game.unitOrderSystem.applySquadsTargetPositions(
-            placementIds,
-            targetPositions,
-            meta,
-            commandCreatedTime
-        );
-
-        // Client: Send to network
-        if (this.mode === 'client' && this.game.networkManager) {
-            this.game.networkManager.sendSquadTargets({
+    setSquadTargets(placementIds, targetPositions, meta, commandCreatedTime, networkData = null, callback = null) {
+        // Server: Apply immediately, then broadcast
+        if (this.mode === 'server') {
+            // Apply to game state (unified logic)
+            this.game.unitOrderSystem.applySquadsTargetPositions(
                 placementIds,
                 targetPositions,
                 meta,
                 commandCreatedTime
-            });
-        }
+            );
 
-        // Server: Broadcast to other players
-        if (this.mode === 'server' && networkData && this.game.serverNetworkManager) {
-            const { playerId, roomId, room } = networkData;
+            // Broadcast to other players
+            if (networkData && this.game.serverNetworkManager) {
+                const { playerId, roomId, room } = networkData;
 
-            this.game.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
-                success: true,
-                commandCreatedTime
-            });
+                this.game.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
+                    success: true,
+                    commandCreatedTime
+                });
 
-            for (const [otherPlayerId, otherPlayer] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.game.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
-                        placementIds,
-                        targetPositions,
-                        meta,
-                        commandCreatedTime
-                    });
+                for (const [otherPlayerId, otherPlayer] of room.players) {
+                    if (otherPlayerId !== playerId) {
+                        this.game.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
+                            placementIds,
+                            targetPositions,
+                            meta,
+                            commandCreatedTime
+                        });
+                    }
                 }
             }
+        }
+
+        // Client: Send to network, wait for confirmation, then apply
+        if (this.mode === 'client' && this.game.networkManager) {
+            this.game.networkManager.setSquadTargets(
+                { placementIds, targetPositions, meta, commandCreatedTime },
+                (success, responseData) => {
+                    if (success) {
+                        // Use server's timestamp for determinism
+                        const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
+
+                        // Now apply to game state after server confirmation
+                        this.game.unitOrderSystem.applySquadsTargetPositions(
+                            placementIds,
+                            targetPositions,
+                            meta,
+                            createdTime
+                        );
+
+                        // Call callback if provided
+                        if (callback) {
+                            callback(success, responseData);
+                        }
+                    } else {
+                        console.error('[PlayerInputInterface] Server rejected squad targets');
+                        if (callback) {
+                            callback(success, responseData);
+                        }
+                    }
+                }
+            );
         }
     }
 
