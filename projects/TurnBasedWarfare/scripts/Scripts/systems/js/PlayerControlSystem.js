@@ -719,7 +719,8 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const placementId = `${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const placement = {
             placementId,
-            unitType,
+            unitTypeId: unitType.id, // Send ID for network transmission
+            unitType, // Keep full object for local use
             gridPosition: gridPos,
             team,
             cells,

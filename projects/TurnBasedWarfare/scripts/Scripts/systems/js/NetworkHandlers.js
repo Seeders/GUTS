@@ -136,16 +136,27 @@ class NetworkHandlers extends GUTS.BaseSystem {
             const player = room.getPlayer(playerId);
 
             // Reconstruct unitType from server's collections
-            // (Client may have sent partial data that got corrupted during network transmission)
-            if (placement.unitType && placement.unitType.id && placement.collection) {
+            // Client sends unitTypeId (string like "townHall") instead of full object
+            // because complex objects get corrupted during network transmission
+            if (placement.unitTypeId && placement.collection) {
                 const collections = this.game.getCollections();
                 const collection = collections[placement.collection];
                 if (collection) {
-                    const fullUnitType = collection[placement.unitType.id];
+                    const fullUnitType = collection[placement.unitTypeId];
                     if (fullUnitType) {
                         placement.unitType = fullUnitType;
+                    } else {
+                        console.error(`[NetworkHandlers] Unit type not found: ${placement.unitTypeId} in collection ${placement.collection}`);
                     }
+                } else {
+                    console.error(`[NetworkHandlers] Collection not found: ${placement.collection}`);
                 }
+            } else {
+                console.error('[NetworkHandlers] Missing unitTypeId or collection on placement', {
+                    hasUnitTypeId: !!placement.unitTypeId,
+                    hasCollection: !!placement.collection,
+                    placement
+                });
             }
 
             // Recalculate cells from gridPosition and unitType

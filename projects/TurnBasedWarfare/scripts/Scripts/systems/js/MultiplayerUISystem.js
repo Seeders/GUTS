@@ -613,10 +613,13 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                         );
 
                         // Create placement object
+                        // Don't send full unitType object (gets corrupted over network)
+                        // Instead send unitTypeId and let server reconstruct from collections
                         const placementId = `${this.game.state.mySide}_start_${unitId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                         const placement = {
                             placementId,
-                            unitType,
+                            unitTypeId: unitId, // Send ID, not full object
+                            unitType, // Keep for local use
                             gridPosition: gridPos,
                             team: this.game.state.mySide,
                             cells,
