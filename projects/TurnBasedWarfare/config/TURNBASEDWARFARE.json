@@ -2076,11 +2076,10 @@
     "editorModules": {
       "aiPromptModule": {
         "title": "AI Prompt Modal",
-        "library": "AIPromptPanel",
-        "interface": "aiPromptPanel",
         "libraries": [
           "AIPromptPanel"
-        ]
+        ],
+        "interface": "aiPromptPanel"
       },
       "audioModule": {
         "title": "Audio Editor",
@@ -2113,18 +2112,20 @@
       },
       "compilerModule": {
         "title": "Game Compiler",
-        "library": "CompilerModule",
         "propertyName": "compiler",
         "libraries": [
           "jszip.min.js",
           "Compiler",
           "CompilerModule"
         ],
-        "interface": "compilerInterface"
+        "interface": "compilerInterface",
+        "library": "CompilerModule"
       },
       "exportScriptModule": {
         "title": "Export Scripts Module",
-        "library": "ZipExporter"
+        "libraries": [
+          "ZipExporter"
+        ]
       },
       "graphicsModule": {
         "title": "Graphics Editor",
@@ -2225,16 +2226,15 @@
       "textureEditor": {
         "title": "Texture Editor",
         "container": "texture-editor-container",
-        "library": "TextureEditor",
+        "libraries": [
+          "TextureEditor"
+        ],
         "propertyName": "imagePath",
         "interface": "TextureEditor",
         "inputElement": "textarea",
         "inputDataType": "string",
         "loadHook": "editTexture",
-        "saveHook": "saveTexture",
-        "libraries": [
-          "TextureEditor"
-        ]
+        "saveHook": "saveTexture"
       }
     },
     "effects": {

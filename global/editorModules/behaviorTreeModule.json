@@ -1,0 +1,15 @@
+{
+  "title": "Behavior Tree Editor",
+  "container": "behavior-tree-editor-container",
+  "interface": "behaviorTreeEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "propertyName": "mockEntities",
+  "loadHook": "editBehaviorTree",
+  "saveHook": "saveBehaviorTree",
+  "libraries": [
+    "BehaviorTreeBlackboard",
+    "BehaviorTreeProcessor",
+    "BehaviorTreeEditor"
+  ]
+}
