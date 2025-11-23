@@ -48,158 +48,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
     }
 
-    showSquadActionPanel(placementId) {
-        const actionPanel = document.getElementById('actionPanel');
-        if (!actionPanel) return;
-
-
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
-        
-        actionPanel.innerHTML = "";
-          
-        
-        const firstUnit = placement.squadUnits[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, this.CT.UNIT_TYPE) : null;
-        
-        let squadPanel = document.createElement('div');
-        squadPanel.id = 'squadActionPanel';
-        
-        actionPanel.appendChild(squadPanel);
-        
-        this.displayActionSet(null, squadPanel, firstUnit, unitType);
-    }
-
-    displayActionSet(actionSetId, panel, selectedUnitId, unitType) {
-        panel.innerHTML = ``;
-        const actionSection = document.createElement('div');
-        actionSection.className = 'action-section';
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-        
-        let actions = [];
-
-        if(!unitType.actionSet){
-            if(unitType.collection == 'units'){
-                unitType.actionSet = 'defaultUnitActions';
-            } 
-        } 
-
-        if(actionSetId || unitType.actionSet){
-            if(!actionSetId) {
-                actionSetId = unitType.actionSet;
-            }
-            let currentActionSet = this.game.getCollections().actionSets[actionSetId];
-            if(currentActionSet.actions){
-                actions = currentActionSet.actions;
-                const actionsCollection = this.game.getCollections().actions;
-                actions.forEach((actionId) => {
-                    let action = actionsCollection[actionId];
-                    const btn = this.createActionButton(action, panel, selectedUnitId, unitType);
-                    grid.appendChild(btn);
-                });
-            } else if(currentActionSet.buildings){
-                const buildings = this.game.getCollections().buildings;
-                currentActionSet.buildings.forEach(buildingId => {
-                    if (buildingId === 'underConstruction') return;
-                    
-                    const building = buildings[buildingId];            
-                    if (!building.buildTime) building.buildTime = 1;
-                    
-                    building.id = buildingId;
-                    building.collection = "buildings";
-                    const canAfford = this.game.state.playerGold >= (building.value || 0);
-                    const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
-                    const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
-                    
-                    const btn = this.createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId);
-                    grid.appendChild(btn);
-                });
-            }
-        }
-        actionSection.appendChild(grid);
-    
-        panel.appendChild(actionSection);
-    }
-
-    createActionButton(action, panel, selectedUnitId, unitType) {
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        btn.title = `${action.title}`;
-
-        const iconEl = document.createElement('div');
-        iconEl.className = 'action-btn-icon';
-        if(action.icon){
-            const icon = this.game.getCollections().icons[action.icon];
-            if(icon && icon.imagePath){
-                const img = document.createElement('img');
-                img.src = `./resources/${icon.imagePath}`;
-                iconEl.append(img);
-            } else {
-                iconEl.textContent =  '🏛️';
-            }
-        } else {
-            iconEl.textContent =  '🏛️';
-        }
-        btn.append(iconEl);
-
-        if(action.order){
-            btn.addEventListener('click', () => {
-                this[action.order]();
-            });
-        } else if(action.actionSet){
-            btn.addEventListener('click', () => {
-                this.displayActionSet(action.actionSet, panel, selectedUnitId, unitType);
-            });
-        }
-        return btn;
-    }
-
-    createBuildingButton(building, canAfford, isLocked, lockReason, selectedUnitId) {
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        btn.title = `${building.title} 💰${building.value}`;
-        const locked = isLocked || !canAfford;
-        if (locked) {
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-            btn.title = `${building.title} ${lockReason}`;
-        }
-        
-        const iconEl = document.createElement('div');
-        iconEl.className = 'action-btn-icon';
-        if(building.icon){
-            const icon = this.game.getCollections().icons[building.icon];
-            if(icon && icon.imagePath){
-                const img = document.createElement('img');
-                img.src = `./resources/${icon.imagePath}`;
-                iconEl.append(img);
-            } else {
-                iconEl.textContent =  '🏛️';
-            }
-        } else {
-            iconEl.textContent =  '🏛️';
-        }
-        btn.append(iconEl);
-
-        if (!locked) {
-            btn.addEventListener('click', () => {
-                this.activateBuildingPlacement(building, selectedUnitId);
-            });
-            
-            btn.addEventListener('mouseenter', () => {
-                btn.style.border = '2px solid var(--primary-gold)';
-                btn.style.transform = 'translateY(-2px)';
-            });
-            
-            btn.addEventListener('mouseleave', () => {
-                btn.style.border = '2px solid rgba(255, 170, 0, 0.3)';
-                btn.style.transform = 'translateY(0)';
-            });
-        }
-
-        return btn;
-    }
+    // ==========================================
+    // GAME LOGIC (called by MultiplayerUISystem)
+    // ==========================================
 
     activateBuildingPlacement(building, selectedUnitId) {
         this.game.state.selectedUnitType = {...building, id: selectedUnitId, collection: "buildings"};
@@ -282,16 +133,19 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         }
     }
     onUnitSelected(entityId){
+        // Game logic only - UI is handled by MultiplayerUISystem
         const unitType = this.game.getComponent(entityId, this.CT.UNIT_TYPE);
         if(unitType.collection == "units") {
-            const placement = this.game.getComponent(entityId, this.CT.PLACEMENT);        
-            const placementId = placement.placementId;
-            this.showSquadActionPanel(placementId);   
-            this.startTargeting();     
+            this.startTargeting();
         } else {
             this.stopTargeting();
         }
         this.showMoveTargets();
+    }
+
+    onBuildingSelected(entityId) {
+        // Called when a building is selected (no action panel for buildings)
+        this.stopTargeting();
     }
     showMoveTargets() {
         this.targetingPreview.clear();
