@@ -57,8 +57,8 @@ class BehaviorTreeEditor {
         // Get full object data - either from event detail or from controller
         this.objectData = detail.objectData || this.controller.getCurrentObject();
 
-        // Detect if this is a script-based tree
-        this.isScriptBased = !!(this.objectData && this.objectData.script);
+        // Detect if this is a script-based tree (check for script property or isBehaviorTree flag)
+        this.isScriptBased = !!(this.objectData && (this.objectData.script || this.objectData.isBehaviorTree));
 
         // Update info panel with defensive checks
         const unitTypeEl = document.getElementById('bt-unit-type');
@@ -121,6 +121,13 @@ class BehaviorTreeEditor {
 
         canvas.innerHTML = '';
 
+        // For script-based trees, show the script source
+        if (this.isScriptBased || (this.objectData && this.objectData.isBehaviorTree)) {
+            this.renderScriptBasedTree(canvas);
+            return;
+        }
+
+        // Legacy data-driven tree visualization
         if (!this.currentData || !this.currentData.root) {
             canvas.innerHTML = '<div style=\"padding: 20px; text-align: center; color: #888;\">No behavior tree defined</div>';
             return;
@@ -130,6 +137,56 @@ class BehaviorTreeEditor {
         // TODO: Implement visual node graph
         const treeHTML = this.createTreeHTML(this.currentData);
         canvas.innerHTML = `<div class=\"bt-tree-text\" style=\"padding: 20px; color: #fff; font-family: monospace;\">${treeHTML}</div>`;
+    }
+
+    async renderScriptBasedTree(canvas) {
+        if (!this.objectData) {
+            canvas.innerHTML = '<div style=\"padding: 20px; text-align: center; color: #888;\">No behavior tree data loaded</div>';
+            return;
+        }
+
+        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
+        const scriptPath = this.controller.getCurrentPath().replace(/\/[^\/]+$/, `/js/${scriptName}.js`);
+
+        canvas.innerHTML = `
+            <div style=\"padding: 20px;\">
+                <h3 style=\"color: #fff; margin-top: 0;\">Script-Based Behavior Tree</h3>
+                <div style=\"color: #aaa; margin-bottom: 15px;\">
+                    <strong>Script:</strong> ${scriptName}<br>
+                    <strong>Path:</strong> ${scriptPath}
+                </div>
+                <div style=\"background: #1e1e1e; padding: 15px; border-radius: 4px; overflow-x: auto;\">
+                    <div id=\"bt-script-source\" style=\"color: #d4d4d4; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.5; white-space: pre;\">Loading script source...</div>
+                </div>
+                <div style=\"margin-top: 15px; color: #888; font-size: 12px;\">
+                    💡 This behavior tree is defined by its JavaScript class. Use the simulation panel on the right to test different component states.
+                </div>
+            </div>
+        `;
+
+        // Try to load the script source
+        try {
+            const response = await fetch(scriptPath);
+            if (response.ok) {
+                const scriptSource = await response.text();
+                const sourceEl = document.getElementById('bt-script-source');
+                if (sourceEl) {
+                    sourceEl.textContent = scriptSource;
+                }
+            } else {
+                const sourceEl = document.getElementById('bt-script-source');
+                if (sourceEl) {
+                    sourceEl.textContent = `// Could not load script from ${scriptPath}`;
+                    sourceEl.style.color = '#ff6b6b';
+                }
+            }
+        } catch (error) {
+            const sourceEl = document.getElementById('bt-script-source');
+            if (sourceEl) {
+                sourceEl.textContent = `// Error loading script: ${error.message}`;
+                sourceEl.style.color = '#ff6b6b';
+            }
+        }
     }
 
     createTreeHTML(nodes, nodeName = 'root', depth = 0) {
@@ -178,15 +235,21 @@ class BehaviorTreeEditor {
 
         const errors = [];
 
-        if (!this.currentData) {
-            errors.push('No tree data loaded');
+        // For script-based trees, validate differently
+        if (this.isScriptBased || (this.objectData && this.objectData.isBehaviorTree)) {
+            this.validateScriptBasedTree(errors);
         } else {
-            // Check for root node
-            if (!this.currentData.root) {
-                errors.push('Missing root node');
+            // Legacy data-driven validation
+            if (!this.currentData) {
+                errors.push('No tree data loaded');
             } else {
-                // Validate tree structure
-                this.validateNode(this.currentData, 'root', errors);
+                // Check for root node
+                if (!this.currentData.root) {
+                    errors.push('Missing root node');
+                } else {
+                    // Validate tree structure
+                    this.validateNode(this.currentData, 'root', errors);
+                }
             }
         }
 
@@ -196,6 +259,44 @@ class BehaviorTreeEditor {
             errors.forEach(error => {
                 output.innerHTML += `<div class=\"bt-validation-error\">✗ ${error}</div>`;
             });
+        }
+    }
+
+    validateScriptBasedTree(errors) {
+        if (!this.objectData) {
+            errors.push('No behavior tree data loaded');
+            return;
+        }
+
+        // Check for required properties
+        if (!this.objectData.title) {
+            errors.push('Missing title property');
+        }
+
+        if (!this.objectData.unitType) {
+            errors.push('Missing unitType property');
+        }
+
+        // Check if script class exists
+        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
+        if (scriptName) {
+            const className = scriptName.charAt(0).toUpperCase() + scriptName.slice(1) + 'BehaviorTree';
+            if (typeof window[className] === 'undefined' &&
+                (!this.GUTS.behaviorTrees || !this.GUTS.behaviorTrees[scriptName])) {
+                errors.push(`Script class ${className} not found. Make sure the script is loaded.`);
+            }
+        } else {
+            errors.push('Missing script reference');
+        }
+
+        // Check mockEntity structure
+        if (!this.objectData.mockEntity) {
+            errors.push('Missing mockEntity property for simulation');
+        } else {
+            // Validate that mockEntity has at least some component data
+            if (Object.keys(this.objectData.mockEntity).length === 0) {
+                errors.push('mockEntity has no component data');
+            }
         }
     }
 
