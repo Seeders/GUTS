@@ -568,6 +568,9 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
+                // Clear any existing commands (including mining/building)
+                this.game.gameManager.call('clearCommands', unitId);
+
                 // Store player order for persistence through combat
                 const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
                 if (aiState) {
@@ -576,8 +579,20 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                         meta: meta,
                         issuedTime: createdTime
                     };
-                    aiState.targetPosition = targetPosition;
+                    aiState.meta = meta;
                 }
+
+                // Queue MOVE command through command queue system
+                // This properly interrupts abilities like mining
+                this.game.gameManager.call('queueCommand', unitId, {
+                    type: 'move',
+                    controllerId: "UnitOrderSystem",
+                    targetPosition: targetPosition,
+                    meta: meta,
+                    priority: this.game.commandQueueSystem?.PRIORITY.MOVE || 10,
+                    interruptible: true,
+                    createdTime: createdTime
+                }, true); // true = interrupt current command
             }
         });
     }
