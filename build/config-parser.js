@@ -84,19 +84,35 @@ class ConfigParser {
             }
 
             if (lib.filePath) {
-                // Convert absolute path to relative from project root
-                const absolutePath = path.join(__dirname, '..', lib.filePath);
-                if (fs.existsSync(absolutePath)) {
-                    paths.push({
-                        name: libName,
-                        path: absolutePath,
-                        isModule: lib.isModule || false,
-                        requireName: lib.requireName || lib.fileName || libName,
-                        windowContext: lib.windowContext
-                    });
+                // Extract just the filename from the configured path
+                const fileName = path.basename(lib.filePath);
+
+                // Try project folder first, then fall back to configured (global) path
+                const projectLibPath = path.join(this.projectRoot, 'scripts', 'Scripts', 'libraries', 'js', fileName);
+                const globalLibPath = path.join(__dirname, '..', lib.filePath);
+
+                let finalPath;
+                let source;
+
+                if (fs.existsSync(projectLibPath)) {
+                    finalPath = projectLibPath;
+                    source = 'project';
+                } else if (fs.existsSync(globalLibPath)) {
+                    finalPath = globalLibPath;
+                    source = 'global';
                 } else {
-                    console.warn(`⚠️ Library file not found: ${absolutePath}`);
+                    console.warn(`⚠️ Library file not found in project or global: ${libName}`);
+                    continue;
                 }
+
+                console.log(`  ✓ Library ${libName}: ${fileName} (from ${source})`);
+                paths.push({
+                    name: libName,
+                    path: finalPath,
+                    isModule: lib.isModule || false,
+                    requireName: lib.requireName || lib.fileName || libName,
+                    windowContext: lib.windowContext
+                });
             }
         }
 

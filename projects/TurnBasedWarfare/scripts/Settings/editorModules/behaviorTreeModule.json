@@ -10,6 +10,8 @@
   "libraries": [
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
-    "BehaviorTreeEditor"
+    "BehaviorTreeEditor",
+    "BaseBehaviorTree",
+    "BaseAction"
   ]
 }
