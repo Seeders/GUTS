@@ -625,16 +625,33 @@ class EntryGenerator {
         sections.push('if (!window.GUTS) window.GUTS = {};');
         sections.push('');
 
-        // Import script collections (for Scripts category collections like behaviorTrees and libraries)
-        const scriptCollectionObjects = {};
-        if (editor.scriptCollections && Object.keys(editor.scriptCollections).length > 0) {
-            for (const [collectionName, classFiles] of Object.entries(editor.scriptCollections)) {
+        // Import libraries from editor modules (in order)
+        if (editor.libraries && editor.libraries.length > 0) {
+            sections.push('// ========== LIBRARIES (from editor modules) ==========');
+            const { imports, exports } = this.generateImports(editor.libraries, 'lib');
+            sections.push(...imports);
+            sections.push('');
+            sections.push('const Libraries = {');
+            sections.push(exports.join(',\n'));
+            sections.push('};');
+            sections.push('');
 
+            // Make libraries available in window.GUTS
+            sections.push('// Make libraries available in window.GUTS');
+            sections.push('window.GUTS.libraries = Libraries;');
+            sections.push('Object.assign(window.GUTS, Libraries);');
+            sections.push('');
+        }
+
+        // Import class collections from editor modules
+        const classCollectionObjects = {};
+        if (editor.classCollections && Object.keys(editor.classCollections).length > 0) {
+            for (const [collectionName, classFiles] of Object.entries(editor.classCollections)) {
                 const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
-                sections.push(`// ========== ${collectionName.toUpperCase()} (Scripts) ==========`);
+                sections.push(`// ========== ${collectionName.toUpperCase()} ==========`);
 
                 // Find metadata for this collection to check for base class
-                const metadata = editor.scriptMetadata?.find(m => m.collection === collectionName);
+                const metadata = editor.classMetadata?.find(m => m.collection === collectionName);
                 let baseClassFile = null;
                 let otherFiles = classFiles;
 
@@ -664,19 +681,20 @@ class EntryGenerator {
                 sections.push(`const ${capitalized} = {`);
                 if (baseClassFile && metadata) {
                     const baseVarName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                    // Apply fallback expression to base class too
                     sections.push(`  ${metadata.baseClass}: (${baseVarName}.${metadata.baseClass} || ${baseVarName}.default || ${baseVarName}),`);
                 }
                 sections.push(exports.join(',\n'));
                 sections.push('};');
                 sections.push('');
 
-                // Make script collection available in window.GUTS
+                // Make class collection available in window.GUTS
                 sections.push(`// Make ${collectionName} available in window.GUTS`);
                 sections.push(`window.GUTS.${collectionName} = ${capitalized};`);
                 sections.push(`Object.assign(window.GUTS, ${capitalized});`);
                 sections.push('');
 
-                scriptCollectionObjects[collectionName] = capitalized;
+                classCollectionObjects[collectionName] = capitalized;
             }
         }
 
@@ -689,7 +707,7 @@ class EntryGenerator {
         sections.push('window.EditorController = EditorController;');
         sections.push('');
 
-        // Set up window.THREE with core library and addons (if libraries collection exists)
+        // Set up window.THREE with core library and addons (if libraries exist)
         sections.push('// Set up window.THREE with core library and addons');
         sections.push('if (window.GUTS.libraries) {');
         sections.push('  Object.keys(window.GUTS.libraries).forEach(key => {');
@@ -721,8 +739,13 @@ class EntryGenerator {
         // Build dynamic exports
         const exportsList = ['CodeMirror', 'FileSystemSyncService', 'EditorModel', 'EditorView', 'EditorController'];
 
-        // Add script collections to exports
-        Object.values(scriptCollectionObjects).forEach(varName => {
+        // Add Libraries to exports if it exists
+        if (editor.libraries && editor.libraries.length > 0) {
+            exportsList.push('Libraries');
+        }
+
+        // Add class collections to exports
+        Object.values(classCollectionObjects).forEach(varName => {
             exportsList.push(varName);
         });
 
@@ -730,7 +753,7 @@ class EntryGenerator {
         sections.push(`export { ${exportsList.join(', ')} };`);
 
         // Export Libraries as default if it exists, otherwise export window.GUTS
-        if (scriptCollectionObjects.libraries) {
+        if (editor.libraries && editor.libraries.length > 0) {
             sections.push('export default Libraries;');
         } else {
             sections.push('export default window.GUTS;');
