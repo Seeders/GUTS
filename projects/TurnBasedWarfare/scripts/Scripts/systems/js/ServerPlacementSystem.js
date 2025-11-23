@@ -201,66 +201,58 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Network handler for squad target orders
+     *
+     * THIN LAYER: This method only handles network validation and authorization.
+     * It delegates to the unified game logic in UnitOrderSystem.
+     */
     handleSetSquadTarget(eventData) {
         try {
             const { playerId, data } = eventData;
             const { placementId, targetPosition, meta, commandCreatedTime } = data;
+
+            // Validate: Phase check
             if(this.game.state.phase != "placement") {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                     success: false
                 });
                 return;
-            };
+            }
+
+            // Validate: Room and player exist
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                     error: 'Room not found'
                 });
                 return;
             }
-            
+
             const room = this.engine.getRoom(roomId);
             const player = room.getPlayer(playerId);
-            
+
             if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                     error: 'Player not found'
                 });
                 return;
             }
-            
-            // Validate placement belongs to player            
+
+            // Validate: Placement exists
             const placement = this.getPlacementById(placementId);
-            
             if (!placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                     error: 'Placement not found'
                 });
                 return;
             }
-            
-            // Store target position in placement data
-            // Use UnitOrderSystem to properly queue MOVE commands
-            if (this.game.unitOrderSystem) {
-                this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
-            } else {
-                // Fallback if UnitOrderSystem not available
-                placement.targetPosition = targetPosition;
-                placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                    if (aiState) {
-                        aiState.playerOrder = {
-                            targetPosition: targetPosition,
-                            meta: meta,
-                            issuedTime: commandCreatedTime || this.game.state.now
-                        };
-                    }
-                });
-            }
-                    
-               
-            
-            // Send success response to requesting player
+
+            // UNIFIED GAME LOGIC: Delegate to UnitOrderSystem
+            // This ensures server executes the same code as client
+            this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+
+            // Network: Send responses
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                 success: true,
                 placementId,
@@ -268,8 +260,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 meta,
                 commandCreatedTime: commandCreatedTime
             });
-            
-            // Broadcast to other players in the room
+
+            // Network: Broadcast to other players
             for (const [otherPlayerId, otherPlayer] of room.players) {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
@@ -279,12 +271,12 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     });
                 }
             }
-            
+
             console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
-            
+
         } catch (error) {
             console.error('Error setting squad target:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGET_SET', { 
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGET_SET', {
                 error: 'Server error while setting squad target'
             });
         }
@@ -318,60 +310,31 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 return;
             }
             
+            // Validate: All placements exist
             for(let i = 0; i < placementIds.length; i++){
                 let placementId = placementIds[i];
-                let targetPosition = targetPositions[i];
-                // Validate placement belongs to player            
                 const placement = this.getPlacementById(placementId);
-                
+
                 if (!placement) {
                     console.log(placementId, 'not found');
-                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
                         error: 'Placement not found'
                     });
                     return;
                 }
-                
-                // Store target position and queue MOVE command immediately
-                // This ensures abilities like mining are properly interrupted during placement phase
-                if (this.game.unitOrderSystem) {
-                    this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
-                } else {
-                    // Fallback if UnitOrderSystem not available
-                    placement.targetPosition = targetPosition;
-                    placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
-                    placement.meta = meta || {};
-                    placement.squadUnits.forEach((unitId) => {
-                        const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                        const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
-                        if(p){
-                            p.commandCreatedTime = placement.commandCreatedTime;
-                            p.targetPosition = placement.targetPosition;
-                            p.meta = placement.meta;
-                        }
-                        if (aiState) {
-                            aiState.playerOrder = {
-                                targetPosition: targetPosition,
-                                meta: meta,
-                                issuedTime: commandCreatedTime || this.game.state.now
-                            };
-                            aiState.targetPosition = targetPosition;
-                        }
-                    });
-                }
-                        
-
-                
-                console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
             }
 
-                        // Send success response to requesting player
+            // UNIFIED GAME LOGIC: Delegate to UnitOrderSystem
+            // This ensures server executes the same code as client
+            this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime);
+
+            // Network: Send responses
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
                 success: true,
                 commandCreatedTime: commandCreatedTime
             });
-            
-            // Broadcast to other players in the room
+
+            // Network: Broadcast to other players
             for (const [otherPlayerId, otherPlayer] of room.players) {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
@@ -545,44 +508,9 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
 
-        const result = this.game.gameManager.call('spawnSquadFromPlacement', playerId, placement);
-
-        if(result.success && result.squad){
-            let squadUnits = [];
-            result.squad.squadUnits.forEach((entityId) => {
-                squadUnits.push(entityId);
-            })
-            placement.squadUnits = squadUnits;
-            if (placement.placementId) {
-                this.game.gameManager.call('initializeSquad',
-                    placement.placementId,
-                    placement.unitType,
-                    placement.squadUnits,
-                    placement.team
-                );
-            }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
-                const peasantInfo = placement.peasantInfo;
-                const peasantId = peasantInfo.peasantId;
-                const entityId = placement.squadUnits[0];
-
-                // Get the build ability from the peasant's abilities
-
-                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
-                if (peasantAbilities) {
-                    //console.log("peasantAbilities", peasantAbilities);
-                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                    if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
-                    }
-                }
-                
-                
-                // Clear the flag (only once for first building entity)
-                this.game.state.peasantBuildingPlacement = null;
-            }
-        }
-
+        // Use unified placement interface (shared with client)
+        // This ensures server and client execute identical placement logic
+        const result = this.game.multiplayerPlacementSystem.applyPlacementToGame(placement, null);
 
         return { success: result.success };
     }

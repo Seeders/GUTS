@@ -555,32 +555,69 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         return true;
     }
 
+    /**
+     * Place a squad on the battlefield (CLIENT ONLY)
+     *
+     * UNIFIED INTERFACE: For actual squad placement logic, delegates to
+     * applyPlacementToGame() which is shared between client and server.
+     * This method handles client-specific UI/effects.
+     *
+     * @param {object} placement - The placement data
+     * @returns {object} The placement with squadUnits populated
+     */
     placeSquad(placement) {
-        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
         const undoInfo = this.createUndoInfo(placement);
-        
-        const squadUnits = this.createSquadUnits(placement, unitPositions, placement.team, undoInfo);
-        placement.squadUnits = squadUnits;
-        placement.isSquad = squadUnits.length > 1;
-        this.updateGameStateForPlacement(placement, undoInfo);
 
-        this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
+        // Call unified placement logic (shared with server)
+        const result = this.applyPlacementToGame(placement, undoInfo);
 
-        if (squadUnits.length <= 8) {
+        if (!result.success) {
+            console.error('Failed to place squad:', result.error);
+            return null;
+        }
+
+        // Client-only: Visual effects
+        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
+        if (result.squadUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), placement.team);
         }
-        
+
+        // Client-only: UI state updates
+        this.updateGameStateForPlacement(placement, undoInfo);
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        
+
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
 
         this.game.state.selectedUnitType = null;
         this.handleUnitSelectionChange();
-        
+
         return placement;
+    }
+
+    /**
+     * Apply placement to game state (UNIFIED INTERFACE)
+     *
+     * This method contains the core placement logic shared between client and server.
+     * Both MultiplayerPlacementSystem (client) and ServerPlacementSystem (server)
+     * call this method to ensure identical behavior.
+     *
+     * @param {object} placement - The placement data
+     * @param {object} undoInfo - Undo information (optional, client-only)
+     * @returns {object} Result with success flag and squadUnits array
+     */
+    applyPlacementToGame(placement, undoInfo = null) {
+        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
+        const squadUnits = this.createSquadUnits(placement, unitPositions, placement.team, undoInfo);
+
+        placement.squadUnits = squadUnits;
+        placement.isSquad = squadUnits.length > 1;
+
+        this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
+
+        return { success: true, squadUnits };
     }
 
     createSquadUnits(placement, unitPositions, team, undoInfo) {

@@ -25,6 +25,7 @@
         { "type": "DamageSystem" },
         { "type": "AbilitySystem" },
         { "type": "SquadExperienceSystem" },
+        { "type": "MultiplayerPlacementSystem" },
         { "type": "ServerBattlePhaseSystem" },
         { "type": "ServerPlacementSystem" },
         { "type": "LifetimeSystem" },
