@@ -36,8 +36,11 @@ class BehaviorTreeEditor {
         // Export
         document.getElementById('bt-export-btn')?.addEventListener('click', () => this.exportJSON());
 
-        // Import
-        document.getElementById('bt-import-json-btn')?.addEventListener('click', () => this.importJSON());
+        // Save JSON changes
+        document.getElementById('bt-save-json-btn')?.addEventListener('click', () => this.saveJSONChanges());
+
+        // Import from file
+        document.getElementById('bt-import-json-btn')?.addEventListener('click', () => this.importJSONFile());
     }
 
     loadBehaviorTree(detail) {
@@ -255,7 +258,7 @@ class BehaviorTreeEditor {
         URL.revokeObjectURL(url);
     }
 
-    importJSON() {
+    saveJSONChanges() {
         const jsonView = document.getElementById('bt-json-view');
         if (!jsonView) return;
 
@@ -264,9 +267,37 @@ class BehaviorTreeEditor {
             this.currentData = newData;
             this.renderTree();
             this.save();
+            alert('Changes saved successfully!');
         } catch (e) {
             alert('Invalid JSON: ' + e.message);
         }
+    }
+
+    importJSONFile() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const newData = JSON.parse(event.target.result);
+                    this.currentData = newData;
+                    this.updateJSONView();
+                    this.renderTree();
+                    alert('JSON imported successfully! Click "Save Changes" to apply.');
+                } catch (error) {
+                    alert('Error importing JSON: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        input.click();
     }
 
     fitToView() {
