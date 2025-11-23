@@ -436,15 +436,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             if (abilities) {
                 for (const ability of abilities) {
                     if (ability.id === 'build') {
-                        // Assign peasant to continue construction
-                        const peasantInfo = {
-                            peasantId: builderEntityId,
-                            buildTime: buildingPlacement.buildTime || 1
-                        };
-
-                        // Set up the peasant's building state
-                        const buildingBuildState = this.game.getComponent(buildingEntityId, CT.BUILDING_STATE);
-
+     
                         this.game.addComponent(builderEntityId, CT.BUILDING_STATE,
                             Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
 
