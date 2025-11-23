@@ -6,15 +6,76 @@
 class BehaviorTreeProcessor {
     /**
      * Evaluate a behavior tree and return the selected action
-     * @param {Object} nodes - The behavior tree nodes (from the nodes property)
-     * @param {Object|BehaviorTreeBlackboard} state - The current state/conditions (plain object or Blackboard)
+     * @param {Object} treeData - The full behavior tree data (including nodes and optional script reference)
+     * @param {Object|BehaviorTreeBlackboard|MockGameContext} context - State, blackboard, or game context
      * @param {string} rootNode - The name of the root node (default: 'root')
+     * @param {string} entityId - Entity ID (for script-based evaluation)
      * @returns {Object} - { success: boolean, action: string, target: any, priority: number, activePath: string[] }
      */
-    static evaluate(nodes, state, rootNode = 'root') {
-        // Convert plain object to blackboard if needed
-        const blackboard = this.ensureBlackboard(state);
+    static evaluate(treeData, context, rootNode = 'root', entityId = null) {
+        // If treeData has a script property, use script-based evaluation
+        if (treeData.script) {
+            return this.evaluateWithScript(treeData, context, entityId);
+        }
+
+        // Otherwise use data-driven evaluation (legacy support)
+        const nodes = treeData.nodes || treeData;
+        const blackboard = this.ensureBlackboard(context);
         return this.evaluateNode(rootNode, nodes, blackboard, []);
+    }
+
+    /**
+     * Evaluate using a behavior tree script class
+     * @private
+     */
+    static evaluateWithScript(treeData, gameContext, entityId = null) {
+        // Get the script class name
+        const scriptName = treeData.script;
+
+        // Try to find the class in GUTS collections
+        let TreeClass = null;
+
+        if (typeof GUTS !== 'undefined' && GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
+            TreeClass = GUTS.behaviorTrees[scriptName];
+        } else {
+            // Try global namespace (e.g., PeasantBehaviorTree, FootmanBehaviorTree)
+            const className = this.capitalize(scriptName) + 'BehaviorTree';
+            TreeClass = typeof window !== 'undefined' ? window[className] : null;
+        }
+
+        if (!TreeClass) {
+            console.warn(`Behavior tree script not found: ${scriptName}`);
+            return { success: false, action: null, activePath: [] };
+        }
+
+        // Instantiate the tree
+        const tree = new TreeClass();
+
+        // Use mock entity ID if not provided
+        if (!entityId) {
+            entityId = gameContext.mockEntityId || 'mock-entity-1';
+        }
+
+        // Evaluate the tree
+        const result = tree.evaluate(entityId, gameContext);
+
+        // Convert the result to our standard format
+        return {
+            success: result !== null && result.action !== null,
+            action: result ? result.action : null,
+            target: result ? result.target : null,
+            priority: result ? result.priority : 0,
+            data: result ? result.data : null,
+            activePath: result ? result.activePath : []
+        };
+    }
+
+    /**
+     * Capitalize first letter
+     * @private
+     */
+    static capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     /**
