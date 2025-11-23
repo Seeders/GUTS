@@ -338,6 +338,12 @@ class ConfigParser {
                     for (const [objectKey, objectData] of Object.entries(collectionData)) {
                         if (objectData.filePath) {
                             const absolutePath = path.join(__dirname, '..', objectData.filePath);
+
+                            // Skip non-JavaScript files (HTML, JSON, etc.)
+                            if (!absolutePath.endsWith('.js')) {
+                                continue;
+                            }
+
                             if (fs.existsSync(absolutePath)) {
                                 classFiles.push({
                                     name: objectKey,
