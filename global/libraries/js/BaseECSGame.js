@@ -26,8 +26,8 @@ class BaseECSGame {
         this.componentTypes = null;
 
         // Performance monitoring
-        if (typeof PerformanceMonitor !== 'undefined') {
-            this.performanceMonitor = new PerformanceMonitor();
+        if (typeof GUTS.PerformanceMonitor !== 'undefined') {
+            this.performanceMonitor = new GUTS.PerformanceMonitor();
         }
     }
     init() {
