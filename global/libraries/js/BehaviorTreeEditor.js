@@ -43,12 +43,24 @@ class BehaviorTreeEditor {
     loadBehaviorTree(detail) {
         this.currentData = detail.data;
         this.propertyName = detail.propertyName;
-        this.objectData = detail.objectData;
 
-        // Update info panel
-        document.getElementById('bt-unit-type').textContent = this.objectData.unitType || 'N/A';
-        document.getElementById('bt-description').textContent = this.objectData.description || '';
-        document.getElementById('bt-tree-title').textContent = this.objectData.title || 'Behavior Tree';
+        // Get full object data - either from event detail or from controller
+        this.objectData = detail.objectData || this.controller.getCurrentObject();
+
+        // Update info panel with defensive checks
+        const unitTypeEl = document.getElementById('bt-unit-type');
+        const descriptionEl = document.getElementById('bt-description');
+        const titleEl = document.getElementById('bt-tree-title');
+
+        if (unitTypeEl) {
+            unitTypeEl.textContent = (this.objectData && this.objectData.unitType) || 'N/A';
+        }
+        if (descriptionEl) {
+            descriptionEl.textContent = (this.objectData && this.objectData.description) || '';
+        }
+        if (titleEl) {
+            titleEl.textContent = (this.objectData && this.objectData.title) || 'Behavior Tree';
+        }
 
         // Load available actions from collection
         this.loadAvailableActions();
@@ -236,7 +248,8 @@ class BehaviorTreeEditor {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${this.objectData.unitType || 'tree'}_behavior_tree.json`;
+        const unitType = (this.objectData && this.objectData.unitType) || 'tree';
+        a.download = `${unitType}_behavior_tree.json`;
         a.click();
 
         URL.revokeObjectURL(url);
