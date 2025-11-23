@@ -8,6 +8,8 @@
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [
+    "BehaviorTreeBlackboard",
+    "BehaviorTreeProcessor",
     "BehaviorTreeEditor"
   ]
 }
