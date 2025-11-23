@@ -4,7 +4,7 @@
   "interface": "behaviorTreeEditor",
   "inputElement": "textarea",
   "inputDataType": "json",
-  "propertyName": "isBehaviorTree",
+  "propertyName": "mockEntities",
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [

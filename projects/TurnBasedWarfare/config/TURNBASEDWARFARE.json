@@ -567,119 +567,103 @@
       }
     },
     "behaviorTrees": {
-      "footman": {
+      "FootmanBehaviorTree": {
         "title": "Footman Behavior Tree",
         "unitType": "footman",
         "description": "Melee combat unit",
-        "nodes": {
-          "root": {
-            "type": "selector",
-            "children": [
-              "checkPlayerOrder",
-              "checkCombat",
-              "checkMoveOrder",
-              "idle"
-            ]
+        "mockEntities": [
+          {
+            "id": "footman-1",
+            "label": "Footman (Idle)",
+            "components": {
+              "POSITION": {
+                "x": 100,
+                "z": 100
+              },
+              "TEAM": {
+                "team": 1
+              },
+              "UNIT_CONTROLLER": {
+                "playerOrder": null,
+                "currentAction": null
+              },
+              "COMBAT": {
+                "attackRange": 1.5,
+                "attackDamage": 10,
+                "attackCooldown": 1
+              }
+            }
           },
-          "checkPlayerOrder": {
-            "type": "condition",
-            "condition": "hasPlayerOrder",
-            "onSuccess": "executePlayerOrder"
-          },
-          "executePlayerOrder": {
-            "type": "action",
-            "action": "playerOrder.action",
-            "target": "playerOrder.target",
-            "priority": 10
-          },
-          "checkCombat": {
-            "type": "condition",
-            "condition": "hasEnemiesInRange",
-            "onSuccess": "attackAction"
-          },
-          "attackAction": {
-            "type": "action",
-            "action": "ATTACK",
-            "target": "nearestEnemy",
-            "priority": 30
-          },
-          "checkMoveOrder": {
-            "type": "condition",
-            "condition": "hasPlayerOrder && playerOrder.action === MOVE_TO",
-            "onSuccess": "moveAction"
-          },
-          "moveAction": {
-            "type": "action",
-            "action": "MOVE_TO",
-            "target": "playerOrder.target",
-            "priority": 10
-          },
-          "idle": {
-            "type": "action",
-            "action": "IDLE",
-            "priority": 0
+          {
+            "id": "enemy-1",
+            "label": "Enemy Peasant",
+            "components": {
+              "POSITION": {
+                "x": 110,
+                "z": 105
+              },
+              "TEAM": {
+                "team": 2
+              },
+              "HEALTH": {
+                "current": 50,
+                "max": 50
+              }
+            }
           }
-        },
-        "script": "class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {\r\n    evaluate(entityId, game) {\r\n        return this.select([\r\n            () => this.checkPlayerOrder(entityId, game),\r\n            () => this.checkCombat(entityId, game),\r\n            () => this.checkMoveOrder(entityId, game),\r\n            () => ({ action: \"IDLE\", priority: 0 })\r\n        ]);\r\n    }\r\n\r\n    checkPlayerOrder(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        if (!controller.playerOrder) return null;\r\n\r\n        return {\r\n            action: controller.playerOrder.action,\r\n            target: controller.playerOrder.target,\r\n            priority: 10,\r\n            playerOrdered: true\r\n        };\r\n    }\r\n\r\n    checkCombat(entityId, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n\r\n        const enemies = game.combatSystem.findEnemiesInRange(\r\n            entityId, pos, combat.visionRange, team\r\n        );\r\n\r\n        if (enemies.length === 0) return null;\r\n\r\n        const target = this.selectTarget(pos, enemies, game);\r\n\r\n        return {\r\n            action: \"ATTACK\",\r\n            target: target,\r\n            priority: 30\r\n        };\r\n    }\r\n\r\n    checkMoveOrder(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        if (!controller.playerOrder || controller.playerOrder.action !== \"MOVE_TO\") {\r\n            return null;\r\n        }\r\n\r\n        return {\r\n            action: \"MOVE_TO\",\r\n            target: controller.playerOrder.target,\r\n            priority: 10\r\n        };\r\n    }\r\n\r\n    selectTarget(pos, enemies, game) {\r\n        // Pick closest enemy (deterministic)\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        // Sort for determinism\r\n        const sortedEnemies = enemies.sort((a, b) =>\r\n            String(a).localeCompare(String(b))\r\n        );\r\n\r\n        for (const enemyId of sortedEnemies) {\r\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\r\n            const dist = this.distance(pos, enemyPos);\r\n\r\n            if (dist < minDist) {\r\n                minDist = dist;\r\n                nearest = enemyId;\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/footman.js",
-        "fileName": "footman"
+        ],
+        "isBehaviorTree": true,
+        "fileName": "FootmanBehaviorTree",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/FootmanBehaviorTree.js",
+        "script": "class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {\n    evaluate(entityId, game) {\n        return this.select([\n            () => this.checkPlayerOrder(entityId, game),\n            () => this.checkCombat(entityId, game),\n            () => this.checkMoveOrder(entityId, game),\n            () => ({ action: \"IDLE\", priority: 0 })\n        ]);\n    }\n\n    checkPlayerOrder(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        if (!controller.playerOrder) return null;\n\n        return {\n            action: controller.playerOrder.action,\n            target: controller.playerOrder.target,\n            priority: 10,\n            playerOrdered: true\n        };\n    }\n\n    checkCombat(entityId, game) {\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\n\n        // Find enemies using gameManager or direct query\n        let enemies;\n        if (game.gameManager && game.gameManager.getEnemies) {\n            enemies = game.gameManager.getEnemies(entityId);\n        } else {\n            // Fallback: manually find enemies\n            enemies = [];\n            const allEntities = game.getAllEntityIds ? game.getAllEntityIds() : [];\n            for (const otherId of allEntities) {\n                if (otherId === entityId) continue;\n                const otherTeam = game.getComponent(otherId, game.componentTypes.TEAM);\n                if (otherTeam && otherTeam.team !== team.team) {\n                    enemies.push(otherId);\n                }\n            }\n        }\n\n        // Filter by vision range if combat component has it\n        const visionRange = combat.visionRange || combat.attackRange || 10;\n        const enemiesInRange = enemies.filter(enemyId => {\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\n            if (!enemyPos) return false;\n            const dist = this.distance(pos, enemyPos);\n            return dist <= visionRange;\n        });\n\n        if (enemiesInRange.length === 0) return null;\n\n        const target = this.selectTarget(pos, enemiesInRange, game);\n\n        return {\n            action: \"ATTACK\",\n            target: target,\n            priority: 30\n        };\n    }\n\n    checkMoveOrder(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        if (!controller.playerOrder || controller.playerOrder.action !== \"MOVE_TO\") {\n            return null;\n        }\n\n        return {\n            action: \"MOVE_TO\",\n            target: controller.playerOrder.target,\n            priority: 10\n        };\n    }\n\n    selectTarget(pos, enemies, game) {\n        // Pick closest enemy (deterministic)\n        let nearest = null;\n        let minDist = Infinity;\n\n        // Sort for determinism\n        const sortedEnemies = enemies.sort((a, b) =>\n            String(a).localeCompare(String(b))\n        );\n\n        for (const enemyId of sortedEnemies) {\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\n            const dist = this.distance(pos, enemyPos);\n\n            if (dist < minDist) {\n                minDist = dist;\n                nearest = enemyId;\n            }\n        }\n\n        return nearest;\n    }\n\n    distance(pos, target) {\n        const dx = target.x - pos.x;\n        const dz = target.z - pos.z;\n        return Math.sqrt(dx * dx + dz * dz);\n    }\n}\n"
       },
-      "peasant": {
+      "PeasantBehaviorTree": {
         "title": "Peasant Behavior Tree",
         "unitType": "peasant",
         "description": "Worker unit that builds and mines",
-        "nodes": {
-          "root": {
-            "type": "selector",
-            "children": [
-              "checkPlayerOrder",
-              "checkBuildOrder",
-              "checkMining",
-              "idle"
-            ]
+        "mockEntities": [
+          {
+            "id": "peasant-1",
+            "label": "Peasant (Idle)",
+            "components": {
+              "POSITION": {
+                "x": 100,
+                "z": 100
+              },
+              "TEAM": {
+                "team": 1
+              },
+              "UNIT_CONTROLLER": {
+                "playerOrder": null,
+                "currentAction": null
+              },
+              "BUILDER": {
+                "assignedBuilding": null
+              }
+            }
           },
-          "checkPlayerOrder": {
-            "type": "condition",
-            "condition": "hasPlayerOrder",
-            "onSuccess": "executePlayerOrder"
-          },
-          "executePlayerOrder": {
-            "type": "action",
-            "action": "playerOrder.action",
-            "target": "playerOrder.target",
-            "priority": 10
-          },
-          "checkBuildOrder": {
-            "type": "condition",
-            "condition": "hasAssignedBuilding",
-            "onSuccess": "buildAction"
-          },
-          "buildAction": {
-            "type": "action",
-            "action": "BUILD",
-            "target": "builder.assignedBuilding",
-            "priority": 20
-          },
-          "checkMining": {
-            "type": "condition",
-            "condition": "hasNearbyMine",
-            "onSuccess": "mineAction"
-          },
-          "mineAction": {
-            "type": "action",
-            "action": "MINE",
-            "target": "nearestMine",
-            "priority": 5
-          },
-          "idle": {
-            "type": "action",
-            "action": "IDLE",
-            "priority": 0
+          {
+            "id": "goldmine-1",
+            "label": "Gold Mine",
+            "components": {
+              "POSITION": {
+                "x": 150,
+                "z": 120
+              },
+              "TEAM": {
+                "team": 0
+              },
+              "RESOURCE": {
+                "type": "gold",
+                "amount": 5000
+              }
+            }
           }
-        },
-        "script": "class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {\r\n    evaluate(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n\r\n        // Selector: Pick highest priority that can run\r\n        return this.select([\r\n            () => this.checkPlayerOrder(controller),\r\n            () => this.checkBuildOrder(entityId, game),\r\n            () => this.checkMining(entityId, game),\r\n            () => ({ action: \"IDLE\", priority: 0 })\r\n        ]);\r\n    }\r\n\r\n    checkPlayerOrder(controller) {\r\n        if (!controller.playerOrder) return null;\r\n\r\n        const order = controller.playerOrder;\r\n        return {\r\n            action: order.action,\r\n            target: order.target,\r\n            priority: 10,\r\n            playerOrdered: true\r\n        };\r\n    }\r\n\r\n    checkBuildOrder(entityId, game) {\r\n        const buildState = game.getComponent(entityId, game.componentTypes.BUILDER);\r\n        if (!buildState || !buildState.assignedBuilding) return null;\r\n\r\n        return {\r\n            action: \"BUILD\",\r\n            target: buildState.assignedBuilding,\r\n            priority: 20,\r\n            data: { buildingId: buildState.assignedBuilding }\r\n        };\r\n    }\r\n\r\n    checkMining(entityId, game) {\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n        const nearbyMine = this.findNearestMine(entityId, team.team, game);\r\n\r\n        if (!nearbyMine) return null;\r\n\r\n        return {\r\n            action: \"MINE\",\r\n            target: nearbyMine,\r\n            priority: 5,\r\n            data: { mineId: nearbyMine }\r\n        };\r\n    }\r\n\r\n    findNearestMine(entityId, team, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const mines = game.goldMineSystem.getTeamMines(team);\r\n\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        // Sort for determinism\r\n        const sortedMines = Array.from(mines).sort((a, b) =>\r\n            String(a).localeCompare(String(b))\r\n        );\r\n\r\n        for (const mineId of sortedMines) {\r\n            const minePos = game.getComponent(mineId, game.componentTypes.POSITION);\r\n            const dist = this.distance(pos, minePos);\r\n\r\n            if (dist < minDist) {\r\n                minDist = dist;\r\n                nearest = mineId;\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/peasant.js",
-        "fileName": "peasant"
+        ],
+        "isBehaviorTree": true,
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/PeasantBehaviorTree.js",
+        "fileName": "PeasantBehaviorTree",
+        "script": "class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {\n    evaluate(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n\n        // Selector: Pick highest priority that can run\n        return this.select([\n            () => this.checkPlayerOrder(controller),\n            () => this.checkBuildOrder(entityId, game),\n            () => this.checkMining(entityId, game),\n            () => ({ action: \"IDLE\", priority: 0 })\n        ]);\n    }\n\n    checkPlayerOrder(controller) {\n        if (!controller.playerOrder) return null;\n\n        const order = controller.playerOrder;\n        return {\n            action: order.action,\n            target: order.target,\n            priority: 10,\n            playerOrdered: true\n        };\n    }\n\n    checkBuildOrder(entityId, game) {\n        const buildState = game.getComponent(entityId, game.componentTypes.BUILDER);\n        if (!buildState || !buildState.assignedBuilding) return null;\n\n        return {\n            action: \"BUILD\",\n            target: buildState.assignedBuilding,\n            priority: 20,\n            data: { buildingId: buildState.assignedBuilding }\n        };\n    }\n\n    checkMining(entityId, game) {\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\n        const nearbyMine = this.findNearestMine(entityId, team.team, game);\n\n        if (!nearbyMine) return null;\n\n        return {\n            action: \"MINE\",\n            target: nearbyMine,\n            priority: 5,\n            data: { mineId: nearbyMine }\n        };\n    }\n\n    findNearestMine(entityId, team, game) {\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n\n        // Query all entities with RESOURCE component (gold mines)\n        // Use gameManager if available, otherwise query directly\n        let mines;\n        if (game.gameManager && game.gameManager.getEntitiesByComponent) {\n            mines = game.gameManager.getEntitiesByComponent('RESOURCE');\n        } else if (game.getEntitiesByComponent) {\n            mines = game.getEntitiesByComponent('RESOURCE');\n        } else {\n            return null;\n        }\n\n        let nearest = null;\n        let minDist = Infinity;\n\n        // Sort for determinism\n        const sortedMines = Array.from(mines).sort((a, b) =>\n            String(a).localeCompare(String(b))\n        );\n\n        for (const mineId of sortedMines) {\n            const minePos = game.getComponent(mineId, game.componentTypes.POSITION);\n            if (!minePos) continue;\n\n            const dist = this.distance(pos, minePos);\n\n            if (dist < minDist) {\n                minDist = dist;\n                nearest = mineId;\n            }\n        }\n\n        return nearest;\n    }\n\n    distance(pos, target) {\n        const dx = target.x - pos.x;\n        const dz = target.z - pos.z;\n        return Math.sqrt(dx * dx + dz * dz);\n    }\n}\n"
       }
     },
     "buildings": {
@@ -2117,7 +2101,7 @@
         "interface": "behaviorTreeEditor",
         "inputElement": "textarea",
         "inputDataType": "json",
-        "propertyName": "nodes",
+        "propertyName": "mockEntities",
         "loadHook": "editBehaviorTree",
         "saveHook": "saveBehaviorTree",
         "libraries": [
@@ -21333,6 +21317,10 @@
       "MinHeap": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/MinHeap.js",
         "fileName": "MinHeap"
+      },
+      "MockGameContext": {
+        "filePath": "/global/libraries/js/MockGameContext.js",
+        "fileName": "MockGameContext"
       },
       "ModelManager": {
         "title": "ModelManager",
