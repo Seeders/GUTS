@@ -494,45 +494,23 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 if (success) {
                     // Use the time from the response (which came from our original request)
                     const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
+
+                    // Apply the move orders using the unified interface
+                    // This ensures client and server use the exact same code path
+                    this.applySquadsTargetPositions(placementIds, targetPositions, meta, createdTime);
+
+                    // Add visual feedback effects (client-only)
                     for(let i = 0; i < placementIds.length; i++){
                         let placementId = placementIds[i];
                         const targetPosition = targetPositions[i];
                         const placement = this.game.gameManager.call('getPlacementById', placementId);
-                        // Set placement targetPosition to match server
-                        placement.targetPosition = targetPosition;
-                        placement.squadUnits.forEach((unitId) => {
-                            if (this.game.effectsSystem && targetPosition) {
+                        if (placement && placement.squadUnits && this.game.effectsSystem && targetPosition) {
+                            placement.squadUnits.forEach((unitId) => {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
-                            }
-                            if(targetPosition){
-                                this.game.gameManager.call('clearCommands', unitId);
-
-                                // Store player order for persistence through combat
-                                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
-                                if (aiState) {
-                                    aiState.playerOrder = {
-                                        targetPosition: targetPosition,
-                                        meta: meta,
-                                        issuedTime: createdTime
-                                    };      
-                                    aiState.meta = meta;                              
-                                }
-
-                                this.game.gameManager.call('queueCommand', unitId, {
-                                    type: 'move',
-                                    controllerId: "UnitOrderSystem",
-                                    targetPosition: targetPosition,
-                                    target: null,
-                                    meta: meta,
-                                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                    interruptible: true,
-                                    createdTime: createdTime
-                                }, true); // true = interrupt current command
-
-                            }
-                        });
-
+                            });
+                        }
                     }
+
                     this.startTargeting();
                     this.showMoveTargets();
                 }
@@ -558,6 +536,21 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         return targetPositions;
     }
 
+    /**
+     * Apply a move order to a single squad
+     *
+     * UNIFIED INTERFACE: This method is called by both client and server to ensure
+     * identical behavior. Do NOT duplicate this logic elsewhere.
+     *
+     * Flow:
+     * - Client UI → issueMoveOrders → network call → callback → applySquadsTargetPositions → THIS
+     * - Server receives network → handleSetSquadTarget → THIS
+     *
+     * @param {string} placementId - The placement/squad ID
+     * @param {object} targetPosition - The target position {x, z}
+     * @param {object} meta - Metadata including isPlayerOrder flag
+     * @param {number} commandCreatedTime - Timestamp for deterministic command creation
+     */
     applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
         const placement = this.game.gameManager.call('getPlacementById', placementId);
         if(!placement){
@@ -597,6 +590,17 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         });
     }
 
+    /**
+     * Apply move orders to multiple squads
+     *
+     * UNIFIED INTERFACE: Wrapper around applySquadTargetPosition for batch operations.
+     * Both client and server call this to ensure identical behavior.
+     *
+     * @param {string[]} placementIds - Array of placement/squad IDs
+     * @param {object[]} targetPositions - Array of target positions
+     * @param {object} meta - Metadata including isPlayerOrder flag
+     * @param {number} commandCreatedTime - Timestamp for deterministic command creation
+     */
     applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime) {
         for(let i = 0; i < placementIds.length; i++){
             let placementId = placementIds[i];
