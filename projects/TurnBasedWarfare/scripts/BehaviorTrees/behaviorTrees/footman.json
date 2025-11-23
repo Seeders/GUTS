@@ -1,0 +1,49 @@
+{
+  "title": "Footman Behavior Tree",
+  "unitType": "footman",
+  "description": "Melee combat unit",
+  "nodes": {
+    "root": {
+      "type": "selector",
+      "children": ["checkPlayerOrder", "checkCombat", "checkMoveOrder", "idle"]
+    },
+    "checkPlayerOrder": {
+      "type": "condition",
+      "condition": "hasPlayerOrder",
+      "onSuccess": "executePlayerOrder"
+    },
+    "executePlayerOrder": {
+      "type": "action",
+      "action": "playerOrder.action",
+      "target": "playerOrder.target",
+      "priority": 10
+    },
+    "checkCombat": {
+      "type": "condition",
+      "condition": "hasEnemiesInRange",
+      "onSuccess": "attackAction"
+    },
+    "attackAction": {
+      "type": "action",
+      "action": "ATTACK",
+      "target": "nearestEnemy",
+      "priority": 30
+    },
+    "checkMoveOrder": {
+      "type": "condition",
+      "condition": "hasPlayerOrder && playerOrder.action === MOVE_TO",
+      "onSuccess": "moveAction"
+    },
+    "moveAction": {
+      "type": "action",
+      "action": "MOVE_TO",
+      "target": "playerOrder.target",
+      "priority": 10
+    },
+    "idle": {
+      "type": "action",
+      "action": "IDLE",
+      "priority": 0
+    }
+  }
+}

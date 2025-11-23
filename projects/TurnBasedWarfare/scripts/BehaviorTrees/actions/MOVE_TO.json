@@ -1,0 +1,9 @@
+{
+  "title": "Move To Position",
+  "type": "MOVE_TO",
+  "priority": 10,
+  "description": "Move unit to a target position",
+  "parameters": {
+    "arrivalThreshold": 20
+  }
+}

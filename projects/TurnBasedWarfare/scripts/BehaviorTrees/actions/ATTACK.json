@@ -1,0 +1,7 @@
+{
+  "title": "Attack Enemy",
+  "type": "ATTACK",
+  "priority": 30,
+  "description": "Attack an enemy unit",
+  "parameters": {}
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Behavior Tree Editor",
+  "container": "behavior-tree-editor-container",
+  "interface": "behaviorTreeEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "library": "BehaviorTreeEditor",
+  "propertyName": "nodes",
+  "loadHook": "editBehaviorTree",
+  "saveHook": "saveBehaviorTree"
+}

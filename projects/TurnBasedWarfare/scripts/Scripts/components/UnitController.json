@@ -1,0 +1,10 @@
+{
+  "title": "Unit Controller",
+  "description": "Single source of truth for unit AI state",
+  "currentAction": null,
+  "actionTarget": null,
+  "actionData": {},
+  "actionPriority": 0,
+  "actionStartTime": 0,
+  "playerOrder": null
+}
