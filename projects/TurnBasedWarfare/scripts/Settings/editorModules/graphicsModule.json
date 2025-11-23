@@ -15,7 +15,7 @@
     "GE_RotationUtils",
     "GE_SceneRenderer",
     "GE_UIManager",
-    "GE_EquipmentEditor",
+    "GE_EquipmentManager",
     "GraphicsEditor"
   ],
   "propertyName": "render",

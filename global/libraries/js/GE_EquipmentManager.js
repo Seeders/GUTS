@@ -1,8 +1,4 @@
-/**
- * @class GE_EquipmentEditor
- * @description Equipment panel extension for GraphicsEditor
- */
-class GE_EquipmentEditor {
+class GE_EquipmentManager {
     /**
      * @param {Object} gameEditor - Main game editor instance
      * @param {Object} graphicsEditor - Graphics editor instance

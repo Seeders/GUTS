@@ -614,8 +614,7 @@
         ],
         "isBehaviorTree": true,
         "fileName": "FootmanBehaviorTree",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/FootmanBehaviorTree.js",
-        "script": "class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {\n    evaluate(entityId, game) {\n        return this.select([\n            () => this.checkPlayerOrder(entityId, game),\n            () => this.checkCombat(entityId, game),\n            () => this.checkMoveOrder(entityId, game),\n            () => ({ action: \"IDLE\", priority: 0 })\n        ]);\n    }\n\n    checkPlayerOrder(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        if (!controller.playerOrder) return null;\n\n        return {\n            action: controller.playerOrder.action,\n            target: controller.playerOrder.target,\n            priority: 10,\n            playerOrdered: true\n        };\n    }\n\n    checkCombat(entityId, game) {\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\n\n        // Find enemies using gameManager or direct query\n        let enemies;\n        if (game.gameManager && game.gameManager.getEnemies) {\n            enemies = game.gameManager.getEnemies(entityId);\n        } else {\n            // Fallback: manually find enemies\n            enemies = [];\n            const allEntities = game.getAllEntityIds ? game.getAllEntityIds() : [];\n            for (const otherId of allEntities) {\n                if (otherId === entityId) continue;\n                const otherTeam = game.getComponent(otherId, game.componentTypes.TEAM);\n                if (otherTeam && otherTeam.team !== team.team) {\n                    enemies.push(otherId);\n                }\n            }\n        }\n\n        // Filter by vision range if combat component has it\n        const visionRange = combat.visionRange || combat.attackRange || 10;\n        const enemiesInRange = enemies.filter(enemyId => {\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\n            if (!enemyPos) return false;\n            const dist = this.distance(pos, enemyPos);\n            return dist <= visionRange;\n        });\n\n        if (enemiesInRange.length === 0) return null;\n\n        const target = this.selectTarget(pos, enemiesInRange, game);\n\n        return {\n            action: \"ATTACK\",\n            target: target,\n            priority: 30\n        };\n    }\n\n    checkMoveOrder(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        if (!controller.playerOrder || controller.playerOrder.action !== \"MOVE_TO\") {\n            return null;\n        }\n\n        return {\n            action: \"MOVE_TO\",\n            target: controller.playerOrder.target,\n            priority: 10\n        };\n    }\n\n    selectTarget(pos, enemies, game) {\n        // Pick closest enemy (deterministic)\n        let nearest = null;\n        let minDist = Infinity;\n\n        // Sort for determinism\n        const sortedEnemies = enemies.sort((a, b) =>\n            String(a).localeCompare(String(b))\n        );\n\n        for (const enemyId of sortedEnemies) {\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\n            const dist = this.distance(pos, enemyPos);\n\n            if (dist < minDist) {\n                minDist = dist;\n                nearest = enemyId;\n            }\n        }\n\n        return nearest;\n    }\n\n    distance(pos, target) {\n        const dx = target.x - pos.x;\n        const dz = target.z - pos.z;\n        return Math.sqrt(dx * dx + dz * dz);\n    }\n}\n"
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/FootmanBehaviorTree.js"
       },
       "PeasantBehaviorTree": {
         "title": "Peasant Behavior Tree",
@@ -662,8 +661,7 @@
         ],
         "isBehaviorTree": true,
         "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/PeasantBehaviorTree.js",
-        "fileName": "PeasantBehaviorTree",
-        "script": "class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {\n    evaluate(entityId, game) {\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n\n        // Selector: Pick highest priority that can run\n        return this.select([\n            () => this.checkPlayerOrder(controller),\n            () => this.checkBuildOrder(entityId, game),\n            () => this.checkMining(entityId, game),\n            () => ({ action: \"IDLE\", priority: 0 })\n        ]);\n    }\n\n    checkPlayerOrder(controller) {\n        if (!controller.playerOrder) return null;\n\n        const order = controller.playerOrder;\n        return {\n            action: order.action,\n            target: order.target,\n            priority: 10,\n            playerOrdered: true\n        };\n    }\n\n    checkBuildOrder(entityId, game) {\n        const buildState = game.getComponent(entityId, game.componentTypes.BUILDER);\n        if (!buildState || !buildState.assignedBuilding) return null;\n\n        return {\n            action: \"BUILD\",\n            target: buildState.assignedBuilding,\n            priority: 20,\n            data: { buildingId: buildState.assignedBuilding }\n        };\n    }\n\n    checkMining(entityId, game) {\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\n        const nearbyMine = this.findNearestMine(entityId, team.team, game);\n\n        if (!nearbyMine) return null;\n\n        return {\n            action: \"MINE\",\n            target: nearbyMine,\n            priority: 5,\n            data: { mineId: nearbyMine }\n        };\n    }\n\n    findNearestMine(entityId, team, game) {\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\n\n        // Query all entities with RESOURCE component (gold mines)\n        // Use gameManager if available, otherwise query directly\n        let mines;\n        if (game.gameManager && game.gameManager.getEntitiesByComponent) {\n            mines = game.gameManager.getEntitiesByComponent('RESOURCE');\n        } else if (game.getEntitiesByComponent) {\n            mines = game.getEntitiesByComponent('RESOURCE');\n        } else {\n            return null;\n        }\n\n        let nearest = null;\n        let minDist = Infinity;\n\n        // Sort for determinism\n        const sortedMines = Array.from(mines).sort((a, b) =>\n            String(a).localeCompare(String(b))\n        );\n\n        for (const mineId of sortedMines) {\n            const minePos = game.getComponent(mineId, game.componentTypes.POSITION);\n            if (!minePos) continue;\n\n            const dist = this.distance(pos, minePos);\n\n            if (dist < minDist) {\n                minDist = dist;\n                nearest = mineId;\n            }\n        }\n\n        return nearest;\n    }\n\n    distance(pos, target) {\n        const dx = target.x - pos.x;\n        const dz = target.z - pos.z;\n        return Math.sqrt(dx * dx + dz * dz);\n    }\n}\n"
+        "fileName": "PeasantBehaviorTree"
       }
     },
     "buildings": {
@@ -2079,7 +2077,10 @@
       "aiPromptModule": {
         "title": "AI Prompt Modal",
         "library": "AIPromptPanel",
-        "interface": "aiPromptPanel"
+        "interface": "aiPromptPanel",
+        "libraries": [
+          "AIPromptPanel"
+        ]
       },
       "audioModule": {
         "title": "Audio Editor",
@@ -2142,7 +2143,7 @@
           "GE_RotationUtils",
           "GE_SceneRenderer",
           "GE_UIManager",
-          "GE_EquipmentEditor",
+          "GE_EquipmentManager",
           "GraphicsEditor"
         ],
         "propertyName": "render",
@@ -2230,7 +2231,10 @@
         "inputElement": "textarea",
         "inputDataType": "string",
         "loadHook": "editTexture",
-        "saveHook": "saveTexture"
+        "saveHook": "saveTexture",
+        "libraries": [
+          "TextureEditor"
+        ]
       }
     },
     "effects": {
@@ -21225,9 +21229,12 @@
         "filePath": "/global/libraries/js/GE_AnimationManager.js"
       },
       "GE_EquipmentEditor": {
-        "title": "GE_EquipmentEditor",
-        "fileName": "GE_EquipmentEditor",
-        "filePath": "/global/libraries/js/GE_EquipmentEditor.js"
+        "title": "GE_EquipmentManager",
+        "fileName": "GE_EquipmentEditor"
+      },
+      "GE_EquipmentManager": {
+        "filePath": "/global/libraries/js/GE_EquipmentManager.js",
+        "fileName": "GE_EquipmentManager"
       },
       "GE_EventManager": {
         "title": "GE_EventManager",
