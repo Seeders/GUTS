@@ -600,75 +600,59 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     /**
      * Apply placement to game state (UNIFIED INTERFACE)
      *
-     * This method contains the core placement logic shared between client and server.
-     * Both MultiplayerPlacementSystem (client) and ServerPlacementSystem (server)
-     * call this method to ensure identical behavior.
+     * Delegates to SquadManager.applyPlacementToGame() which contains the core
+     * placement logic shared between client and server.
      *
      * @param {object} placement - The placement data
      * @param {object} undoInfo - Undo information (optional, client-only)
      * @returns {object} Result with success flag and squadUnits array
      */
     applyPlacementToGame(placement, undoInfo = null) {
-        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
-        const squadUnits = this.createSquadUnits(placement, unitPositions, placement.team, undoInfo);
-
-        placement.squadUnits = squadUnits;
-        placement.isSquad = squadUnits.length > 1;
-
-        this.game.gameManager.call('initializeSquad', placement.placementId, placement.unitType, squadUnits, placement.team);
-
-        return { success: true, squadUnits };
-    }
-
-    createSquadUnits(placement, unitPositions, team, undoInfo) {
-        const createdUnits = [];
-
-        const maxUnits = Math.min(unitPositions.length, 16);
-        const positions = unitPositions.slice(0, maxUnits);
-
-        // Use playerId from placement if available (for opponent units)
-        // Otherwise use local player's ID for own team units
+        // Determine playerId (client-specific logic)
         let playerId = placement.playerId || null;
-        if (!playerId && team === this.game.state.mySide) {
+        if (!playerId && placement.team === this.game.state.mySide) {
             playerId = this.game.clientNetworkManager?.playerId || null;
         }
 
-        positions.forEach(pos => {
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
-            const unitY = terrainHeight !== null ? terrainHeight : 0;
+        // Use shared placement logic from SquadManager
+        return this.game.squadManager.applyPlacementToGame(
+            placement,
+            (pos, placement) => this.createSingleUnit(pos, placement, playerId, undoInfo)
+        );
+    }
 
-            // Use placement.targetPosition to match server behavior
-            // Server passes placement.targetPosition, not each unit's pos
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, placement.targetPosition, placement, team, playerId);
-            createdUnits.push(entityId);
+    /**
+     * Create a single unit (client-specific implementation)
+     * Called by SquadManager.applyPlacementToGame()
+     */
+    createSingleUnit(pos, placement, playerId, undoInfo) {
+        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
+        const unitY = terrainHeight !== null ? terrainHeight : 0;
+
+        const entityId = this.game.unitCreationManager.create(
+            pos.x, unitY, pos.z,
+            placement.targetPosition,
+            placement,
+            placement.team,
+            playerId
+        );
+
+        if (undoInfo) {
             undoInfo.unitIds.push(entityId);
+        }
 
-            this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
+        this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
-            if(placement.unitType.id == 'goldMine'){
-                // Convert footprint (terrain grid units) to placement grid cells
-                const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
-                const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
-                const gridWidth = footprintWidth * 2;
-                const gridHeight = footprintHeight * 2;
-                this.game.gameManager.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
-            }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
-                const peasantInfo = placement.peasantInfo;
-                const peasantId = peasantInfo.peasantId;
-                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
-                if (peasantAbilities) {
-                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                    if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
-                    }
-                }
-                
-                this.game.state.peasantBuildingPlacement = null;
-            }
-        });
-        
-        return createdUnits;
+        // Handle gold mine special case
+        if (placement.unitType.id === 'goldMine') {
+            const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
+            const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+            this.game.gameManager.call('buildGoldMine', entityId, placement.team, placement.gridPosition, gridWidth, gridHeight);
+        }
+
+        return entityId;
     }
 
     createUndoInfo(placement) {

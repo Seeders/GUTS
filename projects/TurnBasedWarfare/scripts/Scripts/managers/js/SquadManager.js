@@ -347,4 +347,60 @@ class SquadManager {
         
         return validPositions;
     }
+
+    /**
+     * Apply placement to game (UNIFIED INTERFACE)
+     *
+     * This method contains core placement logic shared between client and server.
+     * Kept in SquadManager (neutral manager) to avoid coupling systems.
+     *
+     * @param {object} placement - Placement data with squadUnits array to populate
+     * @param {function} createUnitFn - Function to create a single unit (system-specific)
+     * @returns {object} Result with success flag and squadUnits array
+     */
+    applyPlacementToGame(placement, createUnitFn) {
+        const unitPositions = this.calculateUnitPositions(placement.gridPosition, placement.unitType);
+        const squadUnits = [];
+
+        const maxUnits = Math.min(unitPositions.length, 16);
+        const positions = unitPositions.slice(0, maxUnits);
+
+        // Create units using system-specific creation function
+        for (const pos of positions) {
+            const entityId = createUnitFn(pos, placement);
+            if (entityId) {
+                squadUnits.push(entityId);
+            }
+        }
+
+        placement.squadUnits = squadUnits;
+        placement.isSquad = squadUnits.length > 1;
+
+        // Initialize squad
+        this.game.gameManager.call('initializeSquad',
+            placement.placementId,
+            placement.unitType,
+            squadUnits,
+            placement.team
+        );
+
+        // Handle peasant building assignment (if applicable)
+        if (placement.peasantInfo && placement.collection === 'buildings' && squadUnits.length > 0) {
+            const peasantInfo = placement.peasantInfo;
+            const peasantId = peasantInfo.peasantId;
+            const buildingEntityId = squadUnits[0];
+
+            const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
+            if (peasantAbilities) {
+                const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                if (buildAbility) {
+                    buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo);
+                }
+            }
+
+            this.game.state.peasantBuildingPlacement = null;
+        }
+
+        return { success: true, squadUnits };
+    }
 }

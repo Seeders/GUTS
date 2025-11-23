@@ -508,11 +508,44 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
 
-        // Use unified placement interface (shared with client)
+        // Use unified placement interface (shared with client via SquadManager)
         // This ensures server and client execute identical placement logic
-        const result = this.game.multiplayerPlacementSystem.applyPlacementToGame(placement, null);
+        const result = this.game.squadManager.applyPlacementToGame(
+            placement,
+            (pos, placement) => this.createSingleUnit(pos, placement)
+        );
 
         return { success: result.success };
+    }
+
+    /**
+     * Create a single unit (server-specific implementation)
+     * Called by SquadManager.applyPlacementToGame()
+     */
+    createSingleUnit(pos, placement) {
+        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
+        const unitY = terrainHeight !== null ? terrainHeight : 0;
+
+        const entityId = this.game.unitCreationManager.create(
+            pos.x, unitY, pos.z,
+            placement.targetPosition,
+            placement,
+            placement.team,
+            placement.playerId
+        );
+
+        this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
+
+        // Handle gold mine special case
+        if (placement.unitType.id === 'goldMine') {
+            const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
+            const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+            this.game.gameManager.call('buildGoldMine', entityId, placement.team, placement.gridPosition, gridWidth, gridHeight);
+        }
+
+        return entityId;
     }
 
 
