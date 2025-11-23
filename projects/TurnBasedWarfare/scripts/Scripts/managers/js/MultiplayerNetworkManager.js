@@ -762,9 +762,9 @@ class MultiplayerNetworkManager {
                 }
 
                 // Sync experience for both player and opponent placements
-                this.game.placementSystem.setPlacementExperience(myPlayer.placements);
+                this.game.gameManager.call('setPlacementExperience', myPlayer.placements);
                 if (opponent && opponent.placements) {
-                    this.game.placementSystem.setPlacementExperience(opponent.placements);
+                    this.game.gameManager.call('setPlacementExperience', opponent.placements);
                 }
             }
 

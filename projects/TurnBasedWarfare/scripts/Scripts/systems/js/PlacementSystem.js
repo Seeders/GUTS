@@ -29,6 +29,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
         this.game.gameManager.register('submitPlacement', this.submitPlacement.bind(this));
         this.game.gameManager.register('validatePlacement', this.validatePlacement.bind(this));
+        this.game.gameManager.register('setPlacementExperience', this.setPlacementExperience.bind(this));
     }
 
     /**
@@ -203,5 +204,34 @@ class PlacementSystem extends GUTS.BaseSystem {
             this.game.gameManager.call('releaseGridCells', placement.placementId);
             this.game.gameManager.call('removeSquad', placement.placementId);
         }
+    }
+
+    /**
+     * Set experience data for placements
+     */
+    setPlacementExperience(placements) {
+        if (!placements) return;
+
+        placements.forEach(placement => {
+            if (placement.experience && placement.placementId) {
+                const experienceData = placement.experience;
+
+                // Update SquadExperienceSystem Map data
+                let squadData = this.game.gameManager.call('getSquadInfo', placement.placementId);
+
+                if (squadData) {
+                    squadData.level = experienceData.level;
+                    squadData.experience = experienceData.experience;
+                    squadData.experienceToNextLevel = experienceData.experienceToNextLevel;
+                    squadData.canLevelUp = experienceData.canLevelUp;
+                }
+
+                // Also update the local placement object's experience field
+                const localPlacement = this.getPlacementById(placement.placementId);
+                if (localPlacement) {
+                    localPlacement.experience = experienceData;
+                }
+            }
+        });
     }
 }
