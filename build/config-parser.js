@@ -320,10 +320,63 @@ class ConfigParser {
 
         const libraries = this.getLibraryPaths(allLibraryNames);
 
+        // Load scripts from collections in "Scripts" category
+        const scriptCollections = {};
+        const scriptMetadata = [];
+        const objectTypeDefinitions = this.config.objectTypeDefinitions || [];
+
+        for (const definition of objectTypeDefinitions) {
+            // Check if this collection is in the Scripts category
+            if (definition.category === 'Scripts' && definition.id) {
+                const collectionId = definition.id;
+                const collectionData = this.config.objectTypes[collectionId];
+
+                if (collectionData && typeof collectionData === 'object') {
+                    const classFiles = [];
+
+                    // Iterate through all objects in this collection
+                    for (const [objectKey, objectData] of Object.entries(collectionData)) {
+                        if (objectData.filePath) {
+                            const absolutePath = path.join(__dirname, '..', objectData.filePath);
+                            if (fs.existsSync(absolutePath)) {
+                                classFiles.push({
+                                    name: objectKey,
+                                    fileName: objectData.fileName || objectKey,
+                                    path: absolutePath
+                                });
+                            } else {
+                                console.warn(`⚠️ Script file not found: ${absolutePath}`);
+                            }
+                        }
+                    }
+
+                    if (classFiles.length > 0) {
+                        scriptCollections[collectionId] = classFiles;
+                        console.log(`✓ Loaded ${classFiles.length} scripts from ${collectionId} collection`);
+
+                        // Check for base class in scene config classes property
+                        const sceneConfig = this.config.objectTypes.configs?.scene;
+                        if (sceneConfig && sceneConfig.classes) {
+                            const classConfig = sceneConfig.classes.find(c => c.collection === collectionId);
+                            if (classConfig && classConfig.baseClass) {
+                                scriptMetadata.push({
+                                    collection: collectionId,
+                                    baseClass: classConfig.baseClass
+                                });
+                                console.log(`  ↳ Base class: ${classConfig.baseClass}`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return {
             libraries,
             config: editorConfig,
-            modules: editorConfig.editorModules || []
+            modules: editorConfig.editorModules || [],
+            scriptCollections,
+            scriptMetadata
         };
     }
 
