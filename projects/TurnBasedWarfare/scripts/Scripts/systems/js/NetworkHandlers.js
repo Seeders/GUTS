@@ -50,25 +50,37 @@ class NetworkHandlers extends GUTS.BaseSystem {
 
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', {
+                    error: 'Room not found'
+                });
                 return;
             }
 
             const room = this.engine.getRoom(roomId);
             if (!room || !room.players || !room.players.has(playerId)) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', {
+                    error: 'Player not found'
+                });
                 return;
             }
 
             const player = room.getPlayer(playerId);
             if (!player) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', {
+                    error: 'Player not found'
+                });
                 return;
             }
 
-            this.serverNetworkManager.sendToPlayer(playerId, 'STARTING_STATE', {
-                teamId: player.stats.side,
-                level: this.game.state.level
-            });
+            // Calculate starting state (units, camera)
+            const startingState = this.calculateStartingState(player);
+            this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', startingState);
+
         } catch (error) {
             console.error('[NetworkHandlers] Error getting starting state:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', {
+                error: 'Server error while getting starting state'
+            });
         }
     }
 
@@ -363,5 +375,167 @@ class NetworkHandlers extends GUTS.BaseSystem {
                 error: 'Server error'
             });
         }
+    }
+
+    // ==========================================
+    // STARTING STATE CALCULATION
+    // ==========================================
+
+    getStartingPositionFromLevel(side) {
+        // Try to get level data from game collections
+        const level = this.game.getCollections().levels[this.game.state.level];
+        if (!level || !level.tileMap || !level.tileMap.startingLocations) {
+            return null;
+        }
+
+        // Find starting location for this side
+        const startingLoc = level.tileMap.startingLocations.find(loc => loc.side === side);
+        if (startingLoc && startingLoc.gridPosition) {
+            return { x: startingLoc.gridPosition.x, z: startingLoc.gridPosition.z };
+        }
+
+        return null;
+    }
+
+    calculateStartingState(player) {
+        // Get starting position from level data if available
+        let startPosition = this.getStartingPositionFromLevel(player.stats.side);
+        console.log('startPosition', startPosition);
+
+        // Find nearest gold vein
+        let nearestGoldVeinLocation = null;
+        let minDistance = Infinity;
+
+        const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
+        console.log("goldVeinLocations", goldVeinLocations);
+        if (goldVeinLocations) {
+            goldVeinLocations.forEach(vein => {
+                // Calculate distance from start position to vein
+                const dx = vein.gridPos.x - startPosition.x;
+                const dz = vein.gridPos.z - startPosition.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestGoldVeinLocation = vein.gridPos;
+                    console.log("nearestGoldVeinLocation", vein.gridPos);
+                }
+            });
+        }
+
+        // Calculate peasant positions on the same side as gold mine
+        // TownHall is 2x2, so it occupies a 2x2 area centered at startPosition
+        const dx = nearestGoldVeinLocation.x - startPosition.x;
+        const dz = nearestGoldVeinLocation.z - startPosition.z;
+
+        let peasantPositions = [];
+
+        // Determine which side the gold mine is on and place peasants accordingly
+        if (Math.abs(dx) > Math.abs(dz)) {
+            // Gold mine is more to the east or west
+            if (dx > 0) {
+                // Gold mine is to the EAST, place peasants on east side
+                // TownHall occupies x to x+1, so peasants start at x+2
+                peasantPositions = [
+                    { x: startPosition.x + 4, z: startPosition.z - 2 },
+                    { x: startPosition.x + 4, z: startPosition.z },
+                    { x: startPosition.x + 4, z: startPosition.z + 2 },
+                    { x: startPosition.x + 4, z: startPosition.z + 4 }
+                ];
+            } else {
+                // Gold mine is to the WEST, place peasants on west side
+                // TownHall occupies x-1 to x, so peasants start at x-2
+                peasantPositions = [
+                    { x: startPosition.x - 4, z: startPosition.z - 2 },
+                    { x: startPosition.x - 4, z: startPosition.z },
+                    { x: startPosition.x - 4, z: startPosition.z + 2 },
+                    { x: startPosition.x - 4, z: startPosition.z + 4 }
+                ];
+            }
+        } else {
+            // Gold mine is more to the north or south
+            if (dz > 0) {
+                // Gold mine is to the SOUTH, place peasants on south side
+                // TownHall occupies z to z+1, so peasants start at z+2
+                peasantPositions = [
+                    { x: startPosition.x - 2, z: startPosition.z + 4 },
+                    { x: startPosition.x, z: startPosition.z + 4 },
+                    { x: startPosition.x + 2, z: startPosition.z + 4 },
+                    { x: startPosition.x + 4, z: startPosition.z + 4 }
+                ];
+            } else {
+                // Gold mine is to the NORTH, place peasants on north side
+                // TownHall occupies z-1 to z, so peasants start at z-2
+                peasantPositions = [
+                    { x: startPosition.x - 2, z: startPosition.z - 4 },
+                    { x: startPosition.x, z: startPosition.z - 4 },
+                    { x: startPosition.x + 2, z: startPosition.z - 4 },
+                    { x: startPosition.x + 4, z: startPosition.z - 4 }
+                ];
+            }
+        }
+
+        const startingUnits = [
+            {
+                type: "townHall",
+                collection: "buildings",
+                position: startPosition
+            },
+            {
+                type: "goldMine",
+                collection: "buildings",
+                position: nearestGoldVeinLocation
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: peasantPositions[0]
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: peasantPositions[1]
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: peasantPositions[2]
+            },
+            {
+                type: "peasant",
+                collection: "units",
+                position: peasantPositions[3]
+            }
+        ];
+
+        const pitch = 35.264 * Math.PI / 180;
+        const yaw = 135 * Math.PI / 180;
+        const distance = 10240;
+
+        const cdx = Math.sin(yaw) * Math.cos(pitch);
+        const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', startPosition.x, startPosition.z);
+
+        const cameraPosition = {
+            x: worldPos.x - cdx * distance,
+            y: distance,
+            z: worldPos.z - cdz * distance
+        };
+
+        const lookAt = {
+            x: worldPos.x,
+            y: 0,
+            z: worldPos.z
+        };
+
+        return {
+            success: true,
+            startingUnits,
+            camera: {
+                position: cameraPosition,
+                lookAt
+            }
+        };
     }
 }
