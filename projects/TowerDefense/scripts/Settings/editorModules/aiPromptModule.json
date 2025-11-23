@@ -1,5 +1,5 @@
 {
   "title": "AI Prompt Modal",
-  "library": "aiPromptPanel",
+  "libraries": ["AIPromptPanel"],
   "interface": "aiPromptPanel"
 }
