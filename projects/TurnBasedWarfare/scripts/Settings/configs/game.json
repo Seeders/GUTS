@@ -19,6 +19,7 @@
     "TerrainImageProcessor",
     "TileMap",
     "Entity",
+    "GameServices",
     "Component",
     "GameState",
     "ModelManager",

@@ -21293,6 +21293,10 @@
         "filePath": "/global/libraries/js/GameRoom.js",
         "fileName": "GameRoom"
       },
+      "GameServices": {
+        "filePath": "/global/libraries/js/GameServices.js",
+        "fileName": "GameServices"
+      },
       "GameState": {
         "fileName": "GameState",
         "filePath": "/global/libraries/js/GameState.js"

@@ -41,80 +41,10 @@ class MockGameContext {
         this.currentEntityId = Array.from(this.entities.keys())[0];
 
         // Mock gameManager with register functionality
-        this.gameManager = this.createMockGameManager();
+        this.gameManager = new GUTS.GameServices();
     }
 
-    /**
-     * Create mock gameManager that simulates runtime functionality
-     * Follows the gameManager.register pattern used in-game
-     */
-    createMockGameManager() {
-        const registeredFunctions = new Map();
 
-        return {
-            // Register a public function (mimics in-game systems)
-            register: (name, fn) => {
-                registeredFunctions.set(name, fn);
-            },
-
-            // Get a registered function
-            get: (name) => {
-                return registeredFunctions.get(name);
-            },
-
-            // Common entity query functions
-            getEntitiesByComponent: (componentType) => {
-                return this.getEntitiesByComponent(componentType);
-            },
-
-            getComponent: (entityId, componentType) => {
-                return this.getComponent(entityId, componentType);
-            },
-
-            getAllEntities: () => {
-                return this.getAllEntityIds();
-            },
-
-            // Distance calculation helper
-            getDistance: (entityId1, entityId2) => {
-                const pos1 = this.getComponent(entityId1, 'POSITION');
-                const pos2 = this.getComponent(entityId2, 'POSITION');
-                if (!pos1 || !pos2) return Infinity;
-
-                const dx = pos2.x - pos1.x;
-                const dz = pos2.z - pos1.z;
-                return Math.sqrt(dx * dx + dz * dz);
-            },
-
-            // Team filtering helper
-            getEntitiesByTeam: (team) => {
-                const result = [];
-                for (const entityId of this.getAllEntityIds()) {
-                    const teamComp = this.getComponent(entityId, 'TEAM');
-                    if (teamComp && teamComp.team === team) {
-                        result.push(entityId);
-                    }
-                }
-                return result;
-            },
-
-            // Enemy finding helper
-            getEnemies: (entityId) => {
-                const teamComp = this.getComponent(entityId, 'TEAM');
-                if (!teamComp) return [];
-
-                const result = [];
-                for (const otherId of this.getAllEntityIds()) {
-                    if (otherId === entityId) continue;
-                    const otherTeam = this.getComponent(otherId, 'TEAM');
-                    if (otherTeam && otherTeam.team !== teamComp.team) {
-                        result.push(otherId);
-                    }
-                }
-                return result;
-            }
-        };
-    }
 
     /**
      * Add a new mock entity
