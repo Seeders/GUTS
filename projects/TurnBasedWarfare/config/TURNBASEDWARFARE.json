@@ -21107,7 +21107,7 @@
         "fileName": "BaseAction"
       },
       "BaseBehaviorTree": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/BaseBehaviorTree.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/BaseBehaviorTree.js",
         "fileName": "BaseBehaviorTree"
       },
       "BaseECSGame": {
