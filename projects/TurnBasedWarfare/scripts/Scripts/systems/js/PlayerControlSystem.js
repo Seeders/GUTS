@@ -202,7 +202,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
-        this.game.state.selectedUnitType = {...building};
+        this.game.state.selectedUnitType = {...building, id: selectedUnitId, collection: "buildings"};
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
@@ -665,7 +665,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             this.game.uiSystem?.showNotification('Invalid placement', 'error', 1000);
             return;
         }
-
+console.log('PlayerController placement data', placement);
         // Delegate to PlayerInputInterface with callback for visual effects
         this.game.playerInputInterface.placeSquad(placement, null, (success, result) => {
             if (success && result) {
@@ -709,11 +709,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         }
 
         // Get cells for this placement
-        const cells = this.game.gameManager.call('getCellsForGridPosition',
-            gridPos,
-            unitType.placementGridWidth || 1,
-            unitType.placementGridHeight || 1
-        );
+        const cells = this.game.squadManager.getSquadCells(gridPos, unitType);
 
         // Create placement object
         const placementId = `${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

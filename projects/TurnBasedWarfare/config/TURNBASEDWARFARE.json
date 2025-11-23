@@ -21402,6 +21402,10 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/MultiplayerNetworkManager.js",
         "fileName": "MultiplayerNetworkManager"
       },
+      "PlayerInputInterface": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/PlayerInputInterface.js",
+        "fileName": "PlayerInputInterface"
+      },
       "ResultsManager": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/managers/js/ResultsManager.js",
         "fileName": "ResultsManager"
@@ -22093,6 +22097,9 @@
                 "type": "SquadManager"
               },
               {
+                "type": "PlayerInputInterface"
+              },
+              {
                 "type": "MultiplayerNetworkManager"
               },
               {
@@ -22140,7 +22147,7 @@
                 "type": "EffectsSystem"
               },
               {
-                "type": "MultiplayerPlacementSystem"
+                "type": "PlacementSystem"
               },
               {
                 "type": "MultiplayerUISystem"
@@ -22194,7 +22201,7 @@
                 "type": "SelectedUnitSystem"
               },
               {
-                "type": "UnitOrderSystem"
+                "type": "PlayerControlSystem"
               },
               {
                 "type": "MiniMapSystem"
@@ -22241,6 +22248,9 @@
               },
               {
                 "type": "SquadManager"
+              },
+              {
+                "type": "PlayerInputInterface"
               }
             ],
             "systems": [
@@ -22281,10 +22291,10 @@
                 "type": "SquadExperienceSystem"
               },
               {
-                "type": "ServerBattlePhaseSystem"
+                "type": "PlacementSystem"
               },
               {
-                "type": "ServerPlacementSystem"
+                "type": "NetworkHandlers"
               },
               {
                 "type": "LifetimeSystem"
@@ -22547,6 +22557,10 @@
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/MultiplayerUISystem.js",
         "fileName": "MultiplayerUISystem"
       },
+      "NetworkHandlers": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/NetworkHandlers.js",
+        "fileName": "NetworkHandlers"
+      },
       "ParticleSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ParticleSystem.js",
         "fileName": "ParticleSystem"
@@ -22554,6 +22568,14 @@
       "PathfindingSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PathfindingSystem.js",
         "fileName": "PathfindingSystem"
+      },
+      "PlacementSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PlacementSystem.js",
+        "fileName": "PlacementSystem"
+      },
+      "PlayerControlSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PlayerControlSystem.js",
+        "fileName": "PlayerControlSystem"
       },
       "PostProcessingSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/PostProcessingSystem.js",
@@ -22610,10 +22632,6 @@
       "UISystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UISystem.js",
         "fileName": "UISystem"
-      },
-      "UnitOrderSystem": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UnitOrderSystem.js",
-        "fileName": "UnitOrderSystem"
       },
       "UnitRadiusSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/UnitRadiusSystem.js",

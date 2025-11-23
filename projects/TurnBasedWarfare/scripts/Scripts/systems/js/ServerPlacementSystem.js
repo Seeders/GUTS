@@ -508,6 +508,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             placement.playerId
         );
 
+                console.log('createSingleUnit', cells);
         this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
         // Handle gold mine special case
@@ -594,8 +595,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         }
         
         // Validate side placement - no mirroring, direct side enforcement
-        const squadData = this.game.squadManager.getSquadData(placement.unitType);
-        const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
+        const cells = this.game.squadManager.getSquadCells(placement.gridPosition, placement.unitType);
         if(!this.game.gameManager.call('isValidGridPlacement', cells, player.stats.side)){
             console.log('Invalid Placement', placement);
             for (const cell of cells) {

@@ -36,15 +36,15 @@ class SquadManager {
     /**
      * Calculate which grid cells a squad would occupy
      * @param {Object} gridPos - Center grid position {x, z}
-     * @param {Object} squadData - Squad configuration
+     * @param {Object} unitType - Squad configuration
      * @returns {Array} Array of cell positions {x, z}
      */
-    getSquadCells(gridPos, squadData) {
+    getSquadCells(gridPos, unitType) {
         const cells = [];
-        const { placementGridWidth, placementGridHeight } = squadData;
+        const { placementGridWidth, placementGridHeight } = unitType;
         
-        if(squadData.collection == "buildings"){
-            return this.calculateFootprintCells(gridPos, squadData);
+        if(unitType.collection == "buildings"){
+            return this.calculateFootprintCells(gridPos, unitType);
         }
         // Calculate starting position to center the formation
         const startX = gridPos.x - Math.floor(placementGridWidth / 2);
@@ -289,44 +289,22 @@ class SquadManager {
         };
     }
     
-    /**
-     * Check if two squads would overlap
-     * @param {Object} pos1 - First squad position
-     * @param {Object} squad1 - First squad data
-     * @param {Object} pos2 - Second squad position  
-     * @param {Object} squad2 - Second squad data
-     * @returns {boolean} True if squads overlap
-     */
-    wouldSquadsOverlap(pos1, squad1, pos2, squad2) {
-        const cells1 = this.getSquadCells(pos1, squad1);
-        const cells2 = this.getSquadCells(pos2, squad2);
-        
-        for (const cell1 of cells1) {
-            for (const cell2 of cells2) {
-                if (cell1.x === cell2.x && cell1.z === cell2.z) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
+   
     /**
      * Find all valid positions for a squad within bounds
-     * @param {Object} squadData - Squad configuration
+     * @param {Object} unitType - Squad configuration
      * @param {Object} bounds - Zone boundaries
      * @param {Set} occupiedCells - Set of occupied cell keys "x,z"
      * @returns {Array} Array of valid grid positions
      */
-    findValidPositions(squadData, bounds, occupiedCells = new Set()) {
+    findValidPositions(unitType, bounds, occupiedCells = new Set()) {
         const validPositions = [];
         
         // Check each possible center position
         for (let x = bounds.minX; x <= bounds.maxX; x++) {
             for (let z = bounds.minZ; z <= bounds.maxZ; z++) {
                 const gridPos = { x, z };
-                const cells = this.getSquadCells(gridPos, squadData);
+                const cells = this.getSquadCells(gridPos, unitType);
                 
                 // Check if all cells are within bounds and unoccupied
                 const isValid = cells.every(cell => {

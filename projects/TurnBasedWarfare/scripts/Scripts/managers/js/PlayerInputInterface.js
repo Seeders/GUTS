@@ -312,7 +312,7 @@ class PlayerInputInterface {
                     placement.team,
                     placement.playerId
                 );
-
+console.log('PLACE SQUAD', placement);
                 this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
                 if (placement.unitType.id === 'goldMine') {
@@ -364,6 +364,7 @@ class PlayerInputInterface {
                                 playerId
                             );
 
+console.log('placeSquad client mode', placement);
                             this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
                             if (placement.unitType.id === 'goldMine') {

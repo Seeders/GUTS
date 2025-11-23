@@ -163,10 +163,9 @@ class NetworkHandlers extends GUTS.BaseSystem {
             // Recalculate cells from gridPosition and unitType
             // (Arrays don't serialize well over network, so recalculate on server)
             if (placement.gridPosition && placement.unitType) {
-                placement.cells = this.game.gameManager.call('getCellsForGridPosition',
+                placement.cells = this.game.squadManager.getSquadCells(
                     placement.gridPosition,
-                    placement.unitType.placementGridWidth || 1,
-                    placement.unitType.placementGridHeight || 1
+                    placement.unitType
                 );
             }
 
@@ -175,7 +174,9 @@ class NetworkHandlers extends GUTS.BaseSystem {
                 hasUnitType: !!placement.unitType,
                 unitTypeId: placement.unitType?.id,
                 collection: placement.collection,
-                placementId: placement.placementId
+                placementId: placement.placementId,
+                gridPosition: placement.gridPosition,
+                cells: placement.cells
             });
 
             // Delegate to PlacementSystem

@@ -68,14 +68,14 @@ class RenderSystem extends GUTS.BaseSystem {
 
         // Get tile map from TerrainSystem via gameManager
         const tileMap = this.game.gameManager.call('getTileMap');
-        if (!tileMap?.environmentObjects) {
-            console.log('[RenderSystem] No environment objects in level, using default capacities');
+        if (!tileMap?.worldObjects) {
+            console.log('[RenderSystem] No world objects in level, using default capacities');
             return capacities;
         }
 
-        // Count each type of environment object
+        // Count each type of worldObjects 
         const counts = {};
-        tileMap.environmentObjects.forEach(obj => {
+        tileMap.worldObjects.forEach(obj => {
             const key = `worldObjects_${obj.type}`;
             counts[key] = (counts[key] || 0) + 1;
         });
@@ -210,7 +210,7 @@ class RenderSystem extends GUTS.BaseSystem {
 
             // Validate renderable data
             if (typeof renderable.objectType !== 'string' || typeof renderable.spawnType !== 'string') {
-                console.error(`[RenderSystem] Invalid renderable for ${entityId}:`, renderable);
+             //   console.error(`[RenderSystem] Invalid renderable for ${entityId}:`, renderable);
                 continue;
             }
 

@@ -140,14 +140,14 @@ class UnitCreationManager {
                 gridPosition,
                 unitType
             );
-
+console.log('squadData', gridPosition, squadData);
             // Calculate cells occupied by the squad
-            const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
+            const cells = this.game.squadManager.getSquadCells(gridPosition, unitType);
 
             // Generate unique placement ID
             const placementId = `squad_${team}_${gridPosition.x}_${gridPosition.z}`;
             const squadUnits = [];
-
+            
             
             // Create individual units for the squad
             for (const pos of unitPositions) {
@@ -168,6 +168,7 @@ class UnitCreationManager {
                     this.game.placementSystem.saveBuilding(entityId, team, gridPosition, unitType)
                 }
                 squadUnits.push(entityId);
+                console.log('UNIT CREATION MANAGER', cells);
                 this.game.gameManager.call('reserveGridCells', cells, entityId);
             }
 
@@ -264,14 +265,7 @@ class UnitCreationManager {
         }
 
         try {
-            const squadData = this.game.squadManager.getSquadData(unitType);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
-            
-            if (!validation.valid) {
-                return false;
-            }
-
-            const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
+            const cells = this.game.squadManager.getSquadCells(gridPosition, unitType);
             return this.game.gridSystem.isValidPlacement(cells, team);
             
         } catch (error) {

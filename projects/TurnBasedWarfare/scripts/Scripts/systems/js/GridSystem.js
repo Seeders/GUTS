@@ -354,7 +354,7 @@ class GridSystem extends GUTS.BaseSystem {
         this.occupyCells(cells, entityId);
     }
 
-    occupyCells(cells, entityId) {       
+    occupyCells(cells, entityId) {    
         for (const cell of cells) {
             const key = `${cell.x},${cell.z}`;
             let cellState = this.state.get(key);

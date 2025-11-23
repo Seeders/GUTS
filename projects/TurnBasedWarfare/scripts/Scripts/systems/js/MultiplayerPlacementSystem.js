@@ -672,7 +672,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
     createPlacementData(gridPos, unitType, team) {
         const squadData = this.game.squadManager.getSquadData(unitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        const cells = this.game.squadManager.getSquadCells(gridPos, unitType);
         
         const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}_${this.game.state.round}`;
         return {
@@ -860,8 +860,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         let unitPositions = null;
         let isBuilding = state.selectedUnitType.collection === 'buildings';
 
-        const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        const cells = this.game.squadManager.getSquadCells(gridPos, state.selectedUnitType);
         if (this.game.squadManager.getSquadSize(squadData) > 1) {
             unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
         }
@@ -952,8 +951,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
                 isValid = gridValid && terrainValid;
             }
         } else {
-            const squadData = this.game.squadManager.getSquadData(selectedUnitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+            cells = this.game.squadManager.getSquadCells(gridPos, selectedUnitType);
             gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
             isValid = gridValid;
         }

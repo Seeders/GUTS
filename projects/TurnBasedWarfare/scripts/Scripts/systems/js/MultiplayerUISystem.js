@@ -604,13 +604,10 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
                     if (collection) {
                         const unitType = collection[unitId];
-
+                        unitType.id = unitId;
+                        unitType.collection = unitData.collection;
                         // Get cells for this placement
-                        const cells = this.game.gameManager.call('getCellsForGridPosition',
-                            gridPos,
-                            unitType.placementGridWidth || 1,
-                            unitType.placementGridHeight || 1
-                        );
+                        const cells = this.game.squadManager.getSquadCells(gridPos, unitType);
 
                         // Create placement object
                         // Don't send full unitType object (gets corrupted over network)

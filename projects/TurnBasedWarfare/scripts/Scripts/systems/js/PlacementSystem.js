@@ -155,7 +155,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                 placement.team,
                 placement.playerId
             );
-
+console.log('PLACEMENT SYSTEM submitPlacement', placement);
             this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
 
             if (placement.unitType.id === 'goldMine') {

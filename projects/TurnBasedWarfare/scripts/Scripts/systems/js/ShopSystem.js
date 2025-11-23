@@ -344,9 +344,8 @@ class ShopSystem extends GUTS.BaseSystem {
             if (buildingCellSet.has(testCellKey)) {
                 continue;
             }
-            
-            const unitSquadData = this.game.squadManager.getSquadData(unitDef);
-            const unitCells = this.game.squadManager.getSquadCells(testPos, unitSquadData);
+                        
+            const unitCells = this.game.squadManager.getSquadCells(testPos, unitDef);
             
             const overlapsBuilding = unitCells.some(cell => 
                 buildingCellSet.has(`${cell.x},${cell.z}`)
