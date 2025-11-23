@@ -145,24 +145,49 @@ class BehaviorTreeEditor {
             return;
         }
 
-        // Get the script class name
-        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
-        const className = scriptName.charAt(0).toUpperCase() + scriptName.slice(1) + 'BehaviorTree';
+        // Get the script class name from the key
+        const scriptName = this.controller.getCurrentObjectKey();
 
-        // Try to get the tree structure from the class
+        // Try multiple ways to find the class
         let TreeClass = null;
-        if (GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
+
+        // Try direct window access with exact class name
+        if (window[scriptName]) {
+            TreeClass = window[scriptName];
+            console.log('Found class via window[' + scriptName + ']');
+        }
+        // Try GUTS.behaviorTrees
+        else if (GUTS && GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
             TreeClass = GUTS.behaviorTrees[scriptName];
-        } else if (window[className]) {
-            TreeClass = window[className];
+            console.log('Found class via GUTS.behaviorTrees[' + scriptName + ']');
+        }
+        // Try with BehaviorTree suffix removed if present
+        else {
+            const baseName = scriptName.replace('BehaviorTree', '');
+            const withSuffix = baseName + 'BehaviorTree';
+            if (window[withSuffix]) {
+                TreeClass = window[withSuffix];
+                console.log('Found class via window[' + withSuffix + ']');
+            }
         }
 
         // Extract method names from the class to visualize
         let methods = [];
         if (TreeClass) {
-            const instance = new TreeClass();
-            methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
-                .filter(name => name.startsWith('check') || name === 'evaluate');
+            try {
+                const instance = new TreeClass();
+                const proto = Object.getPrototypeOf(instance);
+                methods = Object.getOwnPropertyNames(proto)
+                    .filter(name => name.startsWith('check') || name === 'evaluate');
+
+                console.log('Behavior tree class:', scriptName);
+                console.log('Extracted methods:', methods);
+            } catch (e) {
+                console.warn('Error instantiating behavior tree:', e);
+            }
+        } else {
+            console.warn('Could not find behavior tree class:', scriptName);
+            console.warn('Available on window:', Object.keys(window).filter(k => k.includes('Behavior')));
         }
 
         // Create visual tree representation
