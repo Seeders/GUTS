@@ -41,6 +41,10 @@ class BehaviorTreeEditor {
 
         // Import from file
         document.getElementById('bt-import-json-btn')?.addEventListener('click', () => this.importJSONFile());
+
+        // Simulation controls
+        document.getElementById('bt-simulate-btn')?.addEventListener('click', () => this.runSimulation());
+        document.getElementById('bt-reset-sim-btn')?.addEventListener('click', () => this.resetSimulation());
     }
 
     loadBehaviorTree(detail) {
@@ -67,6 +71,9 @@ class BehaviorTreeEditor {
 
         // Load available actions from collection
         this.loadAvailableActions();
+
+        // Setup simulation variables
+        this.setupSimulationVars();
 
         // Render the tree
         this.renderTree();
@@ -320,5 +327,220 @@ class BehaviorTreeEditor {
             cancelable: true
         });
         document.body.dispatchEvent(saveEvent);
+    }
+
+    // Simulation methods
+    setupSimulationVars() {
+        const varsContainer = document.getElementById('bt-simulation-vars');
+        if (!varsContainer || !this.currentData) return;
+
+        // Extract all conditions from the tree
+        const conditions = this.extractConditions(this.currentData);
+
+        // Initialize simulation state if not exists
+        if (!this.simState) {
+            this.simState = {};
+        }
+
+        varsContainer.innerHTML = '';
+
+        // Create UI controls for each condition
+        conditions.forEach(condition => {
+            const varDiv = document.createElement('div');
+            varDiv.className = 'bt-sim-var';
+
+            const label = document.createElement('label');
+            label.className = 'bt-sim-var__label';
+            label.textContent = condition;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = this.simState[condition] || false;
+            checkbox.addEventListener('change', (e) => {
+                this.simState[condition] = e.target.checked;
+                this.runSimulation();
+            });
+
+            varDiv.appendChild(label);
+            varDiv.appendChild(checkbox);
+            varsContainer.appendChild(varDiv);
+
+            // Initialize state
+            if (this.simState[condition] === undefined) {
+                this.simState[condition] = false;
+            }
+        });
+    }
+
+    extractConditions(nodes) {
+        const conditions = new Set();
+
+        const traverse = (nodeName) => {
+            const node = nodes[nodeName];
+            if (!node) return;
+
+            if (node.type === 'condition' && node.condition) {
+                // Extract simple condition names
+                const cond = node.condition.replace(/[^\w]/g, '');
+                conditions.add(node.condition);
+            }
+
+            if (node.children && Array.isArray(node.children)) {
+                node.children.forEach(child => traverse(child));
+            }
+            if (node.onSuccess) {
+                traverse(node.onSuccess);
+            }
+        };
+
+        if (nodes.root) {
+            traverse('root');
+        }
+
+        return Array.from(conditions);
+    }
+
+    runSimulation() {
+        if (!this.currentData || !this.currentData.root) return;
+
+        // Use shared BehaviorTreeProcessor if available
+        if (typeof GUTS !== 'undefined' && GUTS.BehaviorTreeProcessor) {
+            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.simState);
+            this.displaySimResult(result);
+            this.highlightActivePath(result.activePath);
+        } else {
+            // Fallback to simple evaluation
+            const result = this.evaluateNode('root', this.currentData, this.simState);
+            this.displaySimResult(result);
+            this.highlightActivePath(result.activePath);
+        }
+    }
+
+    evaluateNode(nodeName, nodes, state, activePath = []) {
+        const node = nodes[nodeName];
+        if (!node) return { success: false, action: null, activePath };
+
+        activePath = [...activePath, nodeName];
+
+        switch (node.type) {
+            case 'selector':
+                // Try children until one succeeds
+                for (const child of node.children || []) {
+                    const result = this.evaluateNode(child, nodes, state, activePath);
+                    if (result.success) {
+                        return result;
+                    }
+                }
+                return { success: false, action: null, activePath };
+
+            case 'sequence':
+                // Execute children in order, all must succeed
+                for (const child of node.children || []) {
+                    const result = this.evaluateNode(child, nodes, state, activePath);
+                    if (!result.success) {
+                        return { success: false, action: null, activePath };
+                    }
+                }
+                return { success: true, action: null, activePath };
+
+            case 'condition':
+                const conditionMet = this.evaluateCondition(node.condition, state);
+                if (conditionMet && node.onSuccess) {
+                    return this.evaluateNode(node.onSuccess, nodes, state, activePath);
+                }
+                return { success: conditionMet, action: null, activePath };
+
+            case 'action':
+                return {
+                    success: true,
+                    action: node.action,
+                    target: node.target,
+                    priority: node.priority || 0,
+                    activePath
+                };
+
+            default:
+                return { success: false, action: null, activePath };
+        }
+    }
+
+    evaluateCondition(condition, state) {
+        // Simple condition evaluation
+        // For complex conditions, try to evaluate them
+        try {
+            // Replace condition names with state values
+            let evalStr = condition;
+            for (const [key, value] of Object.entries(state)) {
+                evalStr = evalStr.replace(new RegExp(key, 'g'), value ? 'true' : 'false');
+            }
+            // Basic evaluation (this is simplified)
+            return eval(evalStr) || false;
+        } catch (e) {
+            // If it's a simple condition name, just return the state value
+            return state[condition] || false;
+        }
+    }
+
+    displaySimResult(result) {
+        const resultDiv = document.getElementById('bt-sim-result');
+        if (!resultDiv) return;
+
+        resultDiv.style.display = 'block';
+
+        if (result.action) {
+            resultDiv.innerHTML = `
+                <div><strong>Result:</strong> Action Selected</div>
+                <div class="bt-sim-result__action">Action: ${result.action}</div>
+                ${result.target ? `<div>Target: ${result.target}</div>` : ''}
+                ${result.priority !== undefined ? `<div>Priority: ${result.priority}</div>` : ''}
+            `;
+        } else {
+            resultDiv.innerHTML = `<div style="color: #888;">No action selected (all conditions failed)</div>`;
+        }
+    }
+
+    highlightActivePath(activePath = []) {
+        // Clear previous highlights
+        this.renderTree();
+
+        if (!activePath || activePath.length === 0) return;
+
+        // In the text visualization, we'll wrap active nodes with highlighting
+        const canvas = document.getElementById('bt-tree-canvas');
+        if (!canvas) return;
+
+        let html = canvas.innerHTML;
+
+        // Highlight each node in the active path
+        activePath.forEach(nodeName => {
+            // Find and highlight the node name in the HTML
+            const regex = new RegExp(`(<span[^>]*>\\[[^\\]]+\\]</span>\\s+)(${nodeName})(\\s|<)`, 'g');
+            html = html.replace(regex, (match, prefix, name, suffix) => {
+                return `${prefix}<span class="bt-node-active">${name}</span>${suffix}`;
+            });
+        });
+
+        canvas.innerHTML = html;
+    }
+
+    resetSimulation() {
+        // Reset all simulation variables to false
+        if (this.simState) {
+            Object.keys(this.simState).forEach(key => {
+                this.simState[key] = false;
+            });
+        }
+
+        // Reset UI
+        this.setupSimulationVars();
+
+        // Clear result
+        const resultDiv = document.getElementById('bt-sim-result');
+        if (resultDiv) {
+            resultDiv.style.display = 'none';
+        }
+
+        // Clear highlighting
+        this.renderTree();
     }
 }
