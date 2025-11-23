@@ -10,7 +10,8 @@
   "libraries": [
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
-    "BehaviorTreeEditor"
+    "BehaviorTreeEditor",
+    "MockGameContext"
   ],
   "classes": [
     {
