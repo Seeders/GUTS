@@ -192,26 +192,78 @@
       }
     },
     "actions": {
+      "ATTACK": {
+        "title": "Attack Enemy",
+        "type": "ATTACK",
+        "priority": 30,
+        "description": "Attack an enemy unit",
+        "parameters": {},
+        "script": "class AttackAction extends GUTS.BaseAction {\r\n    static TYPE = \"ATTACK\";\r\n    static PRIORITY = 30;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        const targetId = controller.actionTarget;\r\n        if (!targetId) return false;\r\n\r\n        const targetHealth = game.getComponent(targetId, game.componentTypes.HEALTH);\r\n        const targetDeathState = game.getComponent(targetId, game.componentTypes.DEATH_STATE);\r\n\r\n        if (!targetHealth || targetHealth.current <= 0) return false;\r\n        if (targetDeathState && targetDeathState.isDying) return false;\r\n\r\n        return true;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\r\n        const targetId = controller.actionTarget;\r\n\r\n        // Check if in range\r\n        if (!game.combatAISystem.isInAttackRange(entityId, targetId, combat)) {\r\n            // Move closer\r\n            const targetPos = game.getComponent(targetId, game.componentTypes.POSITION);\r\n            const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n            vel.targetX = targetPos.x;\r\n            vel.targetZ = targetPos.z;\r\n            return { complete: false };\r\n        }\r\n\r\n        // In range, attack handled by CombatAISystem\r\n        return { complete: false };\r\n    }\r\n\r\n    onEnd(entityId, controller, game) {\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = null;\r\n        vel.targetZ = null;\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/actions/js/ATTACK.js",
+        "fileName": "ATTACK"
+      },
+      "IDLE": {
+        "title": "Idle",
+        "type": "IDLE",
+        "priority": 0,
+        "description": "Do nothing",
+        "parameters": {},
+        "script": "class IdleAction extends GUTS.BaseAction {\r\n    static TYPE = \"IDLE\";\r\n    static PRIORITY = 0;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        return true;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        // Just idle\r\n        return { complete: false };\r\n    }\r\n\r\n    onEnd(entityId, controller, game) {\r\n        // Nothing to clean up\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/actions/js/IDLE.js",
+        "fileName": "IDLE"
+      },
+      "MINE": {
+        "title": "Mine Gold",
+        "type": "MINE",
+        "priority": 5,
+        "description": "Mine gold from a gold mine",
+        "parameters": {
+          "miningRange": 25,
+          "depositRange": 25,
+          "miningDuration": 2,
+          "depositDuration": 1,
+          "goldPerTrip": 10
+        },
+        "script": "class MineAction extends GUTS.BaseAction {\r\n    static TYPE = \"MINE\";\r\n    static PRIORITY = 5;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        const mineId = controller.actionTarget;\r\n        const mine = game.goldMineSystem.getMine(mineId);\r\n        return mine && mine.isActive;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        const state = controller.actionData.state || 'traveling_to_mine';\r\n\r\n        switch (state) {\r\n            case 'traveling_to_mine':\r\n                return this.travelToMine(entityId, controller, game);\r\n            case 'mining':\r\n                return this.doMining(entityId, controller, game);\r\n            case 'traveling_to_depot':\r\n                return this.travelToDepot(entityId, controller, game);\r\n            case 'depositing':\r\n                return this.doDepositing(entityId, controller, game);\r\n        }\r\n    }\r\n\r\n    travelToMine(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const minePos = game.getComponent(controller.actionTarget, game.componentTypes.POSITION);\r\n\r\n        if (this.distance(pos, minePos) < this.parameters.miningRange) {\r\n            if (game.goldMineSystem.canMine(controller.actionTarget, entityId)) {\r\n                controller.actionData.state = 'mining';\r\n                controller.actionData.miningStartTime = game.state.now;\r\n                return { complete: false };\r\n            }\r\n            return { complete: false };\r\n        }\r\n\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = minePos.x;\r\n        vel.targetZ = minePos.z;\r\n        return { complete: false };\r\n    }\r\n\r\n    doMining(entityId, controller, game) {\r\n        const elapsed = game.state.now - controller.actionData.miningStartTime;\r\n\r\n        if (elapsed >= this.parameters.miningDuration) {\r\n            controller.actionData.hasGold = true;\r\n            controller.actionData.goldAmt = this.parameters.goldPerTrip;\r\n            controller.actionData.state = 'traveling_to_depot';\r\n            game.goldMineSystem.releaseMine(controller.actionTarget, entityId);\r\n            return { complete: false };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    travelToDepot(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const depot = this.findNearestDepot(entityId, game);\r\n\r\n        if (!depot) {\r\n            return { complete: true, failed: true };\r\n        }\r\n\r\n        const depotPos = game.getComponent(depot, game.componentTypes.POSITION);\r\n\r\n        if (this.distance(pos, depotPos) < this.parameters.depositRange) {\r\n            controller.actionData.state = 'depositing';\r\n            controller.actionData.depositStartTime = game.state.now;\r\n            return { complete: false };\r\n        }\r\n\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = depotPos.x;\r\n        vel.targetZ = depotPos.z;\r\n        return { complete: false };\r\n    }\r\n\r\n    doDepositing(entityId, controller, game) {\r\n        const elapsed = game.state.now - controller.actionData.depositStartTime;\r\n\r\n        if (elapsed >= this.parameters.depositDuration) {\r\n            const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n            game.goldSystem.addGold(team.team, controller.actionData.goldAmt);\r\n\r\n            // Reset to mine again\r\n            controller.actionData.state = 'traveling_to_mine';\r\n            controller.actionData.hasGold = false;\r\n            return { complete: false };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    findNearestDepot(entityId, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n        const townHalls = game.getEntitiesWith(\r\n            game.componentTypes.POSITION,\r\n            game.componentTypes.TEAM,\r\n            game.componentTypes.UNIT_TYPE\r\n        );\r\n\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        for (const thId of townHalls) {\r\n            const thTeam = game.getComponent(thId, game.componentTypes.TEAM);\r\n            const thType = game.getComponent(thId, game.componentTypes.UNIT_TYPE);\r\n            const thPos = game.getComponent(thId, game.componentTypes.POSITION);\r\n\r\n            if (thTeam.team === team.team && thType.id === 'townHall') {\r\n                const dist = this.distance(pos, thPos);\r\n                if (dist < minDist) {\r\n                    minDist = dist;\r\n                    nearest = thId;\r\n                }\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/actions/js/MINE.js",
+        "fileName": "MINE"
+      },
+      "MOVE_TO": {
+        "title": "Move To Position",
+        "type": "MOVE_TO",
+        "priority": 10,
+        "description": "Move unit to a target position",
+        "parameters": {
+          "arrivalThreshold": 20
+        },
+        "script": "class MoveAction extends GUTS.BaseAction {\r\n    static TYPE = \"MOVE_TO\";\r\n    static PRIORITY = 10;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const target = controller.actionTarget;\r\n        if (!pos || !target) return false;\r\n\r\n        const dist = this.distance(pos, target);\r\n        return dist > this.parameters.arrivalThreshold;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        const target = controller.actionTarget;\r\n\r\n        // Set velocity target\r\n        vel.targetX = target.x;\r\n        vel.targetZ = target.z;\r\n\r\n        // Check completion\r\n        if (this.distance(pos, target) <= this.parameters.arrivalThreshold) {\r\n            return { complete: true };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    onEnd(entityId, controller, game) {\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = null;\r\n        vel.targetZ = null;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/actions/js/MOVE_TO.js",
+        "fileName": "MOVE_TO"
+      },
       "build": {
         "title": "Peasant Build",
         "icon": "building_townHall",
         "actionSet": "peasant_buildings",
-        "ability": "BuildAbility"
+        "ability": "BuildAbility",
+        "fileName": "build"
       },
       "hold": {
         "title": "Hold",
         "icon": "order_hold",
-        "order": "holdPosition"
+        "order": "holdPosition",
+        "fileName": "hold"
       },
       "mineGold": {
         "title": "Peasant Mine Gold",
         "icon": "building_goldMine",
-        "ability": "MineGoldAbility"
+        "ability": "MineGoldAbility",
+        "fileName": "mineGold"
       },
       "move": {
         "title": "Force Move",
         "icon": "order_move",
-        "order": "moveOrderAction"
+        "order": "moveOrderAction",
+        "fileName": "move"
       }
     },
     "animations": {
@@ -514,6 +566,122 @@
             "pan": 0
           }
         }
+      }
+    },
+    "behaviorTrees": {
+      "footman": {
+        "title": "Footman Behavior Tree",
+        "unitType": "footman",
+        "description": "Melee combat unit",
+        "nodes": {
+          "root": {
+            "type": "selector",
+            "children": [
+              "checkPlayerOrder",
+              "checkCombat",
+              "checkMoveOrder",
+              "idle"
+            ]
+          },
+          "checkPlayerOrder": {
+            "type": "condition",
+            "condition": "hasPlayerOrder",
+            "onSuccess": "executePlayerOrder"
+          },
+          "executePlayerOrder": {
+            "type": "action",
+            "action": "playerOrder.action",
+            "target": "playerOrder.target",
+            "priority": 10
+          },
+          "checkCombat": {
+            "type": "condition",
+            "condition": "hasEnemiesInRange",
+            "onSuccess": "attackAction"
+          },
+          "attackAction": {
+            "type": "action",
+            "action": "ATTACK",
+            "target": "nearestEnemy",
+            "priority": 30
+          },
+          "checkMoveOrder": {
+            "type": "condition",
+            "condition": "hasPlayerOrder && playerOrder.action === MOVE_TO",
+            "onSuccess": "moveAction"
+          },
+          "moveAction": {
+            "type": "action",
+            "action": "MOVE_TO",
+            "target": "playerOrder.target",
+            "priority": 10
+          },
+          "idle": {
+            "type": "action",
+            "action": "IDLE",
+            "priority": 0
+          }
+        },
+        "script": "class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {\r\n    evaluate(entityId, game) {\r\n        return this.select([\r\n            () => this.checkPlayerOrder(entityId, game),\r\n            () => this.checkCombat(entityId, game),\r\n            () => this.checkMoveOrder(entityId, game),\r\n            () => ({ action: \"IDLE\", priority: 0 })\r\n        ]);\r\n    }\r\n\r\n    checkPlayerOrder(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        if (!controller.playerOrder) return null;\r\n\r\n        return {\r\n            action: controller.playerOrder.action,\r\n            target: controller.playerOrder.target,\r\n            priority: 10,\r\n            playerOrdered: true\r\n        };\r\n    }\r\n\r\n    checkCombat(entityId, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n\r\n        const enemies = game.combatSystem.findEnemiesInRange(\r\n            entityId, pos, combat.visionRange, team\r\n        );\r\n\r\n        if (enemies.length === 0) return null;\r\n\r\n        const target = this.selectTarget(pos, enemies, game);\r\n\r\n        return {\r\n            action: \"ATTACK\",\r\n            target: target,\r\n            priority: 30\r\n        };\r\n    }\r\n\r\n    checkMoveOrder(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        if (!controller.playerOrder || controller.playerOrder.action !== \"MOVE_TO\") {\r\n            return null;\r\n        }\r\n\r\n        return {\r\n            action: \"MOVE_TO\",\r\n            target: controller.playerOrder.target,\r\n            priority: 10\r\n        };\r\n    }\r\n\r\n    selectTarget(pos, enemies, game) {\r\n        // Pick closest enemy (deterministic)\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        // Sort for determinism\r\n        const sortedEnemies = enemies.sort((a, b) =>\r\n            String(a).localeCompare(String(b))\r\n        );\r\n\r\n        for (const enemyId of sortedEnemies) {\r\n            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);\r\n            const dist = this.distance(pos, enemyPos);\r\n\r\n            if (dist < minDist) {\r\n                minDist = dist;\r\n                nearest = enemyId;\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/footman.js",
+        "fileName": "footman"
+      },
+      "peasant": {
+        "title": "Peasant Behavior Tree",
+        "unitType": "peasant",
+        "description": "Worker unit that builds and mines",
+        "nodes": {
+          "root": {
+            "type": "selector",
+            "children": [
+              "checkPlayerOrder",
+              "checkBuildOrder",
+              "checkMining",
+              "idle"
+            ]
+          },
+          "checkPlayerOrder": {
+            "type": "condition",
+            "condition": "hasPlayerOrder",
+            "onSuccess": "executePlayerOrder"
+          },
+          "executePlayerOrder": {
+            "type": "action",
+            "action": "playerOrder.action",
+            "target": "playerOrder.target",
+            "priority": 10
+          },
+          "checkBuildOrder": {
+            "type": "condition",
+            "condition": "hasAssignedBuilding",
+            "onSuccess": "buildAction"
+          },
+          "buildAction": {
+            "type": "action",
+            "action": "BUILD",
+            "target": "builder.assignedBuilding",
+            "priority": 20
+          },
+          "checkMining": {
+            "type": "condition",
+            "condition": "hasNearbyMine",
+            "onSuccess": "mineAction"
+          },
+          "mineAction": {
+            "type": "action",
+            "action": "MINE",
+            "target": "nearestMine",
+            "priority": 5
+          },
+          "idle": {
+            "type": "action",
+            "action": "IDLE",
+            "priority": 0
+          }
+        },
+        "script": "class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {\r\n    evaluate(entityId, game) {\r\n        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n\r\n        // Selector: Pick highest priority that can run\r\n        return this.select([\r\n            () => this.checkPlayerOrder(controller),\r\n            () => this.checkBuildOrder(entityId, game),\r\n            () => this.checkMining(entityId, game),\r\n            () => ({ action: \"IDLE\", priority: 0 })\r\n        ]);\r\n    }\r\n\r\n    checkPlayerOrder(controller) {\r\n        if (!controller.playerOrder) return null;\r\n\r\n        const order = controller.playerOrder;\r\n        return {\r\n            action: order.action,\r\n            target: order.target,\r\n            priority: 10,\r\n            playerOrdered: true\r\n        };\r\n    }\r\n\r\n    checkBuildOrder(entityId, game) {\r\n        const buildState = game.getComponent(entityId, game.componentTypes.BUILDER);\r\n        if (!buildState || !buildState.assignedBuilding) return null;\r\n\r\n        return {\r\n            action: \"BUILD\",\r\n            target: buildState.assignedBuilding,\r\n            priority: 20,\r\n            data: { buildingId: buildState.assignedBuilding }\r\n        };\r\n    }\r\n\r\n    checkMining(entityId, game) {\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n        const nearbyMine = this.findNearestMine(entityId, team.team, game);\r\n\r\n        if (!nearbyMine) return null;\r\n\r\n        return {\r\n            action: \"MINE\",\r\n            target: nearbyMine,\r\n            priority: 5,\r\n            data: { mineId: nearbyMine }\r\n        };\r\n    }\r\n\r\n    findNearestMine(entityId, team, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const mines = game.goldMineSystem.getTeamMines(team);\r\n\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        // Sort for determinism\r\n        const sortedMines = Array.from(mines).sort((a, b) =>\r\n            String(a).localeCompare(String(b))\r\n        );\r\n\r\n        for (const mineId of sortedMines) {\r\n            const minePos = game.getComponent(mineId, game.componentTypes.POSITION);\r\n            const dist = this.distance(pos, minePos);\r\n\r\n            if (dist < minDist) {\r\n                minDist = dist;\r\n                nearest = mineId;\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/peasant.js",
+        "fileName": "peasant"
       }
     },
     "buildings": {
@@ -1763,6 +1931,18 @@
       "Transform": {
         "fileName": "Transform",
         "filePath": "/global/components/js/Transform.js"
+      },
+      "UnitController": {
+        "title": "Unit Controller",
+        "description": "Single source of truth for unit AI state",
+        "currentAction": null,
+        "actionTarget": null,
+        "actionData": {},
+        "actionPriority": 0,
+        "actionStartTime": 0,
+        "playerOrder": null,
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/components/js/UnitController.js",
+        "fileName": "UnitController"
       }
     },
     "configs": {
@@ -1790,7 +1970,8 @@
           "aiPromptModule",
           "audioModule",
           "exportScriptModule",
-          "textureEditor"
+          "textureEditor",
+          "behaviorTreeModule"
         ],
         "path": "/",
         "fileName": "editor"
@@ -1930,6 +2111,19 @@
         "libraries": [
           "Component",
           "AudioEditor"
+        ]
+      },
+      "behaviorTreeModule": {
+        "title": "Behavior Tree Editor",
+        "container": "behavior-tree-editor-container",
+        "interface": "behaviorTreeEditor",
+        "inputElement": "textarea",
+        "inputDataType": "json",
+        "propertyName": "nodes",
+        "loadHook": "editBehaviorTree",
+        "saveHook": "saveBehaviorTree",
+        "libraries": [
+          "BehaviorTreeEditor"
         ]
       },
       "compilerModule": {
@@ -2353,6 +2547,12 @@
         "css": "/* =============================================================================\r\n   AUDIO EDITOR - MODULE-SPECIFIC STYLES\r\n   ============================================================================= */\r\n\r\n/* Value display for sliders */\r\n.audio-editor__value-display {\r\n    float: right;\r\n    font-weight: 600;\r\n    color: var(--editor-primary);\r\n    font-size: 12px;\r\n}\r\n\r\n/* Waveform display area */\r\n.audio-editor__waveform-display {\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: var(--editor-bg-dark);\r\n    position: relative;\r\n}\r\n\r\n.audio-editor__waveform-display::before {\r\n    content: '🎵 Waveform Visualization';\r\n    color: var(--editor-text-muted);\r\n    font-size: 24px;\r\n}\r\n\r\n/* Status container */\r\n#status-container {\r\n    background-color: var(--editor-bg-light);\r\n    padding: var(--editor-spacing-sm) var(--editor-spacing-md);\r\n    text-align: center;\r\n    font-size: 12px;\r\n    color: var(--editor-text-secondary);\r\n}\r\n",
         "filePath": "/global/interfaces/html/audioEditor.html",
         "html": "<div id=\"audio-editor-container\" class=\"editor-module\">\r\n    <div class=\"editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y\">\r\n        <div id=\"status-container\" class=\"editor-module__status-bar\">\r\n            <span id=\"status-message\">Ready</span>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <div class=\"editor-module__toolbar editor-module__toolbar--vertical\">\r\n                <button id=\"playBtn\" class=\"editor-module__btn editor-module__btn--primary\">Play</button>\r\n                <button id=\"exportBtn\" class=\"editor-module__btn editor-module__btn--success\">Save</button>\r\n                <button id=\"randomSoundBtn\" class=\"editor-module__btn editor-module__btn--secondary\">🎲 Randomize Sound</button>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Basic Parameters</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Waveform:</label>\r\n                <select id=\"waveform\" class=\"editor-module__select\">\r\n                    <option value=\"sine\">Sine</option>\r\n                    <option value=\"square\">Square</option>\r\n                    <option value=\"sawtooth\">Sawtooth</option>\r\n                    <option value=\"triangle\">Triangle</option>\r\n                    <option value=\"noise\">Noise</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Frequency: <span class=\"audio-editor__value-display\">440 Hz</span></label>\r\n                <input type=\"range\" id=\"frequency\" class=\"editor-module__range\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Duration: <span class=\"audio-editor__value-display\">1.00 s</span></label>\r\n                <input type=\"range\" id=\"duration\" class=\"editor-module__range\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Volume: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"volume\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Noise Generator</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Type:</label>\r\n                <select id=\"noiseType\" class=\"editor-module__select\">\r\n                    <option value=\"white\">White</option>\r\n                    <option value=\"pink\">Pink</option>\r\n                    <option value=\"brown\">Brown</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Amount: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"noiseAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter:</label>\r\n                <select id=\"noiseFilterType\" class=\"editor-module__select\">\r\n                    <option value=\"none\">None</option>\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Noise Filter Freq: <span class=\"audio-editor__value-display\">2000 Hz</span></label>\r\n                <input type=\"range\" id=\"noiseFilterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Envelope (ADSR)</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Attack: <span class=\"audio-editor__value-display\">0.010 s</span></label>\r\n                <input type=\"range\" id=\"attack\" class=\"editor-module__range\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Decay: <span class=\"audio-editor__value-display\">0.10 s</span></label>\r\n                <input type=\"range\" id=\"decay\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Sustain: <span class=\"audio-editor__value-display\">70%</span></label>\r\n                <input type=\"range\" id=\"sustain\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Release: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"release\" class=\"editor-module__range\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Pitch Envelope</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Start: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvStart\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">End: <span class=\"audio-editor__value-display\">1.00x</span></label>\r\n                <input type=\"range\" id=\"pitchEnvEnd\" class=\"editor-module__range\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"editor-module__section\">\r\n            <h3 class=\"editor-module__section-title\">Effects</h3>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Type:</label>\r\n                <select id=\"filterType\" class=\"editor-module__select\">\r\n                    <option value=\"lowpass\">Low Pass</option>\r\n                    <option value=\"highpass\">High Pass</option>\r\n                    <option value=\"bandpass\">Band Pass</option>\r\n                    <option value=\"notch\">Notch</option>\r\n                </select>\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Frequency: <span class=\"audio-editor__value-display\">1000 Hz</span></label>\r\n                <input type=\"range\" id=\"filterFreq\" class=\"editor-module__range\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Filter Q: <span class=\"audio-editor__value-display\">Q: 1.0</span></label>\r\n                <input type=\"range\" id=\"filterQ\" class=\"editor-module__range\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Distortion: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"distortion\" class=\"editor-module__range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Time: <span class=\"audio-editor__value-display\">0.30 s</span></label>\r\n                <input type=\"range\" id=\"delayTime\" class=\"editor-module__range\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Delay Feedback: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"delayFeedback\" class=\"editor-module__range\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Reverb: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"reverbAmount\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Bitcrusher: <span class=\"audio-editor__value-display\">0%</span></label>\r\n                <input type=\"range\" id=\"bitcrusher\" class=\"editor-module__range\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n            <div class=\"editor-module__form-group\">\r\n                <label class=\"editor-module__label\">Panning: <span class=\"audio-editor__value-display\">Center</span></label>\r\n                <input type=\"range\" id=\"panning\" class=\"editor-module__range\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n            </div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"editor-module__canvas-area audio-editor__waveform-display\">\r\n        <!-- Waveform visualization will go here -->\r\n    </div>\r\n</div>\r\n"
+      },
+      "behaviorTreeEditor": {
+        "title": "Behavior Tree Editor",
+        "html": "<div id=\"behavior-tree-editor-container\" class=\"editor-module\">\n    <div class=\"editor-module__sidebar editor-module__sidebar--left\">\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">Tree Info</h3>\n            <div class=\"editor-module__form-row\">\n                <label class=\"editor-module__label\">Unit Type:</label>\n                <span id=\"bt-unit-type\" class=\"editor-module__text\"></span>\n            </div>\n            <div class=\"editor-module__form-row\">\n                <label class=\"editor-module__label\">Description:</label>\n                <span id=\"bt-description\" class=\"editor-module__text\"></span>\n            </div>\n        </div>\n\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">Available Actions</h3>\n            <div id=\"available-actions\" class=\"bt-action-list\"></div>\n        </div>\n\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">Node Types</h3>\n            <div class=\"bt-node-types\">\n                <button class=\"editor-module__btn bt-node-btn\" data-type=\"selector\">Selector</button>\n                <button class=\"editor-module__btn bt-node-btn\" data-type=\"sequence\">Sequence</button>\n                <button class=\"editor-module__btn bt-node-btn\" data-type=\"condition\">Condition</button>\n                <button class=\"editor-module__btn bt-node-btn\" data-type=\"action\">Action</button>\n            </div>\n        </div>\n\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">Actions</h3>\n            <button id=\"bt-validate-btn\" class=\"editor-module__btn\">Validate Tree</button>\n            <button id=\"bt-export-btn\" class=\"editor-module__btn editor-module__btn--primary\">Export JSON</button>\n        </div>\n    </div>\n\n    <div class=\"editor-module__canvas-area\">\n        <div class=\"bt-canvas-header\">\n            <h2 id=\"bt-tree-title\">Behavior Tree</h2>\n            <div class=\"bt-canvas-controls\">\n                <button id=\"bt-zoom-in\" class=\"editor-module__btn editor-module__btn--small\">+</button>\n                <button id=\"bt-zoom-out\" class=\"editor-module__btn editor-module__btn--small\">-</button>\n                <button id=\"bt-fit\" class=\"editor-module__btn editor-module__btn--small\">Fit</button>\n            </div>\n        </div>\n        <div id=\"bt-tree-canvas\" class=\"bt-tree-canvas\"></div>\n        <div id=\"bt-validation-output\" class=\"bt-validation-output\"></div>\n    </div>\n\n    <div class=\"editor-module__sidebar editor-module__sidebar--right\">\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">Selected Node</h3>\n            <div id=\"bt-node-properties\" class=\"bt-node-properties\">\n                <p class=\"editor-module__text--muted\">Select a node to edit</p>\n            </div>\n        </div>\n\n        <div class=\"editor-module__section\">\n            <h3 class=\"editor-module__section-title\">JSON View</h3>\n            <textarea id=\"bt-json-view\" class=\"editor-module__textarea bt-json-textarea\" readonly></textarea>\n            <button id=\"bt-import-json-btn\" class=\"editor-module__btn\">Import from JSON</button>\n        </div>\n    </div>\n</div>",
+        "css": "/* Behavior Tree Editor Styles */\n\n.bt-action-list {\n    display: flex;\n    flex-direction: column;\n    gap: var(--editor-spacing-sm, 8px);\n}\n\n.bt-action-item {\n    padding: var(--editor-spacing-sm, 8px);\n    border: 1px solid var(--editor-border-color, #333);\n    border-radius: var(--editor-border-radius-sm, 4px);\n    background: var(--editor-bg-secondary, #1a1a1a);\n    cursor: grab;\n    transition: all 0.2s;\n}\n\n.bt-action-item:hover {\n    background: var(--editor-bg-hover, #252525);\n    border-color: var(--editor-primary, #6366f1);\n}\n\n.bt-action-item__title {\n    font-weight: 600;\n    color: var(--editor-text-primary, #fff);\n    margin-bottom: 4px;\n}\n\n.bt-action-item__priority {\n    font-size: 12px;\n    color: var(--editor-text-muted, #888);\n}\n\n.bt-node-types {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    gap: var(--editor-spacing-sm, 8px);\n}\n\n.bt-node-btn {\n    padding: var(--editor-spacing-sm, 8px);\n}\n\n.bt-canvas-header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: var(--editor-spacing-md, 16px);\n    border-bottom: 1px solid var(--editor-border-color, #333);\n}\n\n.bt-canvas-header h2 {\n    margin: 0;\n    font-size: 18px;\n    color: var(--editor-text-primary, #fff);\n}\n\n.bt-canvas-controls {\n    display: flex;\n    gap: var(--editor-spacing-xs, 4px);\n}\n\n.bt-tree-canvas {\n    flex: 1;\n    position: relative;\n    overflow: auto;\n    background: var(--editor-bg-primary, #0a0a0a);\n    background-image: \n        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),\n        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);\n    background-size: 20px 20px;\n}\n\n.bt-node {\n    position: absolute;\n    min-width: 150px;\n    padding: var(--editor-spacing-md, 16px);\n    border: 2px solid var(--editor-border-color, #333);\n    border-radius: var(--editor-border-radius-md, 8px);\n    background: var(--editor-bg-secondary, #1a1a1a);\n    cursor: move;\n    transition: all 0.2s;\n}\n\n.bt-node:hover {\n    border-color: var(--editor-primary, #6366f1);\n    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);\n}\n\n.bt-node--selected {\n    border-color: var(--editor-primary, #6366f1);\n    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);\n}\n\n.bt-node--selector {\n    border-color: #10b981;\n}\n\n.bt-node--sequence {\n    border-color: #f59e0b;\n}\n\n.bt-node--condition {\n    border-color: #3b82f6;\n}\n\n.bt-node--action {\n    border-color: #ef4444;\n}\n\n.bt-node__header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: var(--editor-spacing-sm, 8px);\n}\n\n.bt-node__type {\n    font-size: 10px;\n    text-transform: uppercase;\n    letter-spacing: 0.5px;\n    color: var(--editor-text-muted, #888);\n}\n\n.bt-node__title {\n    font-weight: 600;\n    color: var(--editor-text-primary, #fff);\n}\n\n.bt-node__actions {\n    display: flex;\n    gap: 4px;\n}\n\n.bt-node__btn {\n    width: 20px;\n    height: 20px;\n    padding: 0;\n    font-size: 14px;\n    border: none;\n    background: var(--editor-bg-hover, #252525);\n    color: var(--editor-text-primary, #fff);\n    border-radius: 3px;\n    cursor: pointer;\n}\n\n.bt-node__btn:hover {\n    background: var(--editor-primary, #6366f1);\n}\n\n.bt-connection {\n    position: absolute;\n    pointer-events: none;\n}\n\n.bt-connection-line {\n    stroke: var(--editor-border-color, #333);\n    stroke-width: 2;\n    fill: none;\n}\n\n.bt-connection-line--active {\n    stroke: var(--editor-primary, #6366f1);\n}\n\n.bt-node-properties {\n    display: flex;\n    flex-direction: column;\n    gap: var(--editor-spacing-sm, 8px);\n}\n\n.bt-property {\n    display: flex;\n    flex-direction: column;\n    gap: 4px;\n}\n\n.bt-property__label {\n    font-size: 12px;\n    font-weight: 600;\n    color: var(--editor-text-muted, #888);\n}\n\n.bt-property__input {\n    padding: var(--editor-spacing-sm, 8px);\n    background: var(--editor-bg-primary, #0a0a0a);\n    border: 1px solid var(--editor-border-color, #333);\n    border-radius: var(--editor-border-radius-sm, 4px);\n    color: var(--editor-text-primary, #fff);\n    font-family: inherit;\n}\n\n.bt-json-textarea {\n    min-height: 300px;\n    font-family: 'Courier New', monospace;\n    font-size: 12px;\n    resize: vertical;\n}\n\n.bt-validation-output {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    max-height: 150px;\n    overflow-y: auto;\n    background: var(--editor-bg-secondary, #1a1a1a);\n    border-top: 1px solid var(--editor-border-color, #333);\n    padding: var(--editor-spacing-md, 16px);\n    display: none;\n}\n\n.bt-validation-output--visible {\n    display: block;\n}\n\n.bt-validation-error {\n    color: #ef4444;\n    margin: 4px 0;\n}\n\n.bt-validation-success {\n    color: #10b981;\n    margin: 4px 0;\n}",
+        "fileName": "behaviorTreeEditor"
       },
       "compilerInterface": {
         "title": "Compiler Interface",
@@ -20923,6 +21123,14 @@
         "fileName": "AudioManager",
         "filePath": "/global/libraries/js/AudioManager.js"
       },
+      "BaseAction": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/BaseAction.js",
+        "fileName": "BaseAction"
+      },
+      "BaseBehaviorTree": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/BaseBehaviorTree.js",
+        "fileName": "BaseBehaviorTree"
+      },
       "BaseECSGame": {
         "filePath": "/global/libraries/js/BaseECSGame.js",
         "fileName": "BaseECSGame"
@@ -20930,6 +21138,10 @@
       "BaseSystem": {
         "filePath": "/global/libraries/js/BaseSystem.js",
         "fileName": "BaseSystem"
+      },
+      "BehaviorTreeEditor": {
+        "fileName": "BehaviorTreeEditor",
+        "filePath": "/global/libraries/js/BehaviorTreeEditor.js"
       },
       "BufferGeometryUtils": {
         "title": "THREE.BufferGeometryUtils",
@@ -22478,6 +22690,10 @@
       "ArmyDisplaySystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/ArmyDisplaySystem.js",
         "fileName": "ArmyDisplaySystem"
+      },
+      "BehaviorSystem": {
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/BehaviorSystem.js",
+        "fileName": "BehaviorSystem"
       },
       "CameraControlSystem": {
         "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/systems/js/CameraControlSystem.js",
@@ -28302,9 +28518,6 @@
                         "paletteColor": "greenDColor"
                       },
                       "id": 3
-                    },
-                    {
-                      "id": 0
                     }
                   ]
                 }
@@ -28429,15 +28642,7 @@
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    }
-                  ]
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -28783,6 +28988,12 @@
       "name": "TerrainTypes",
       "singular": "terrainType",
       "category": "Terrain"
+    },
+    {
+      "id": "behaviorTrees",
+      "name": "BehaviorTrees",
+      "singular": "behaviorTree",
+      "category": "Uncategorized"
     }
   ]
 }

@@ -4,8 +4,10 @@
   "interface": "behaviorTreeEditor",
   "inputElement": "textarea",
   "inputDataType": "json",
-  "library": "BehaviorTreeEditor",
   "propertyName": "nodes",
   "loadHook": "editBehaviorTree",
-  "saveHook": "saveBehaviorTree"
+  "saveHook": "saveBehaviorTree",
+  "libraries": [
+    "BehaviorTreeEditor"
+  ]
 }
