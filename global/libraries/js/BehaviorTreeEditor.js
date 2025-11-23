@@ -145,15 +145,14 @@ class BehaviorTreeEditor {
             return;
         }
 
-        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
-        const scriptPath = this.controller.getCurrentPath().replace(/\/[^\/]+$/, `/js/${scriptName}.js`);
+//i dont need any of this here.
+        const scriptSource = this.objectData.script;//this already has the source of the script automatically.
 
         canvas.innerHTML = `
             <div style=\"padding: 20px;\">
                 <h3 style=\"color: #fff; margin-top: 0;\">Script-Based Behavior Tree</h3>
                 <div style=\"color: #aaa; margin-bottom: 15px;\">
-                    <strong>Script:</strong> ${scriptName}<br>
-                    <strong>Path:</strong> ${scriptPath}
+                    <strong>Script:</strong> ${this.objectData.title}<br>                    
                 </div>
                 <div style=\"background: #1e1e1e; padding: 15px; border-radius: 4px; overflow-x: auto;\">
                     <div id=\"bt-script-source\" style=\"color: #d4d4d4; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.5; white-space: pre;\">Loading script source...</div>
@@ -163,30 +162,12 @@ class BehaviorTreeEditor {
                 </div>
             </div>
         `;
-
-        // Try to load the script source
-        try {
-            const response = await fetch(scriptPath);
-            if (response.ok) {
-                const scriptSource = await response.text();
+//i dont need any of this here.
                 const sourceEl = document.getElementById('bt-script-source');
                 if (sourceEl) {
                     sourceEl.textContent = scriptSource;
                 }
-            } else {
-                const sourceEl = document.getElementById('bt-script-source');
-                if (sourceEl) {
-                    sourceEl.textContent = `// Could not load script from ${scriptPath}`;
-                    sourceEl.style.color = '#ff6b6b';
-                }
-            }
-        } catch (error) {
-            const sourceEl = document.getElementById('bt-script-source');
-            if (sourceEl) {
-                sourceEl.textContent = `// Error loading script: ${error.message}`;
-                sourceEl.style.color = '#ff6b6b';
-            }
-        }
+
     }
 
     createTreeHTML(nodes, nodeName = 'root', depth = 0) {
