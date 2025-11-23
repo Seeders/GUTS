@@ -343,7 +343,7 @@ class PlayerInputInterface {
         // Client: Send to network, wait for confirmation, then apply
         if (this.mode === 'client' && this.game.networkManager) {
             this.game.networkManager.submitPlacement(
-                { placement, ready: false },
+                placement,
                 (success, responseData) => {
                     if (success) {
                         // Client-specific unit creation
