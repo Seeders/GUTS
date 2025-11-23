@@ -225,46 +225,14 @@ class PlayerInputInterface {
      *
      * @param {object} placement - Placement data
      * @param {object} networkData - Network-specific data - server only
-     * @returns {object} Result with success flag
+     * @param {function} callback - Callback for client after network confirmation
+     * @returns {object} Result with success flag (server only, client returns via callback)
      */
-    placeSquad(placement, networkData = null) {
-        // Determine mode-specific callback
-        let createUnitFn;
-
-        if (this.mode === 'client') {
-            // Client-specific unit creation
-            createUnitFn = (pos, placement) => {
-                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
-                const unitY = terrainHeight !== null ? terrainHeight : 0;
-
-                let playerId = placement.playerId || null;
-                if (!playerId && placement.team === this.game.state.mySide) {
-                    playerId = this.game.clientNetworkManager?.playerId || null;
-                }
-
-                const entityId = this.game.unitCreationManager.create(
-                    pos.x, unitY, pos.z,
-                    placement.targetPosition,
-                    placement,
-                    placement.team,
-                    playerId
-                );
-
-                this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
-
-                if (placement.unitType.id === 'goldMine') {
-                    const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
-                    const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
-                    const gridWidth = footprintWidth * 2;
-                    const gridHeight = footprintHeight * 2;
-                    this.game.gameManager.call('buildGoldMine', entityId, placement.team, placement.gridPosition, gridWidth, gridHeight);
-                }
-
-                return entityId;
-            };
-        } else {
+    placeSquad(placement, networkData = null, callback = null) {
+        // Server: Apply immediately, then broadcast
+        if (this.mode === 'server') {
             // Server-specific unit creation
-            createUnitFn = (pos, placement) => {
+            const createUnitFn = (pos, placement) => {
                 const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
@@ -288,24 +256,73 @@ class PlayerInputInterface {
 
                 return entityId;
             };
+
+            // Apply to game state (unified logic)
+            const result = this.game.squadManager.applyPlacementToGame(placement, createUnitFn);
+
+            // Send confirmation to requesting player
+            if (networkData && this.game.serverNetworkManager) {
+                const { playerId } = networkData;
+                this.game.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENT', {
+                    success: result.success
+                });
+            }
+
+            return result;
         }
 
-        // Apply to game state (unified logic)
-        const result = this.game.squadManager.applyPlacementToGame(placement, createUnitFn);
-
-        // Client: Send to network
+        // Client: Send to network, wait for confirmation, then apply
         if (this.mode === 'client' && this.game.networkManager) {
-            this.game.networkManager.submitPlacement({ placement, ready: false });
-        }
+            this.game.networkManager.submitPlacement(
+                { placement, ready: false },
+                (success, responseData) => {
+                    if (success) {
+                        // Client-specific unit creation
+                        const createUnitFn = (pos, placement) => {
+                            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
+                            const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-        // Server: Send confirmation
-        if (this.mode === 'server' && networkData && this.game.serverNetworkManager) {
-            const { playerId } = networkData;
-            this.game.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENT', {
-                success: result.success
-            });
-        }
+                            let playerId = placement.playerId || null;
+                            if (!playerId && placement.team === this.game.state.mySide) {
+                                playerId = this.game.clientNetworkManager?.playerId || null;
+                            }
 
-        return result;
+                            const entityId = this.game.unitCreationManager.create(
+                                pos.x, unitY, pos.z,
+                                placement.targetPosition,
+                                placement,
+                                placement.team,
+                                playerId
+                            );
+
+                            this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
+
+                            if (placement.unitType.id === 'goldMine') {
+                                const footprintWidth = placement.unitType.footprintWidth || placement.unitType.placementGridWidth || 2;
+                                const footprintHeight = placement.unitType.footprintHeight || placement.unitType.placementGridHeight || 2;
+                                const gridWidth = footprintWidth * 2;
+                                const gridHeight = footprintHeight * 2;
+                                this.game.gameManager.call('buildGoldMine', entityId, placement.team, placement.gridPosition, gridWidth, gridHeight);
+                            }
+
+                            return entityId;
+                        };
+
+                        // Now apply to game state after server confirmation
+                        const result = this.game.squadManager.applyPlacementToGame(placement, createUnitFn);
+
+                        // Call callback if provided
+                        if (callback) {
+                            callback(success, result);
+                        }
+                    } else {
+                        console.error('[PlayerInputInterface] Server rejected placement');
+                        if (callback) {
+                            callback(success, null);
+                        }
+                    }
+                }
+            );
+        }
     }
 }

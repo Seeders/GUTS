@@ -310,11 +310,11 @@ class ShopSystem extends GUTS.BaseSystem {
         }
         const placement = this.game.gameManager.call('createPlacementData', placementPos, unit, this.game.state.mySide);
 
-        this.game.networkManager.submitPlacement(placement, (success, response) => {
+        // Use unified player input interface
+        this.game.playerInputInterface.placeSquad(placement, null, (success, result) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.buildingProductionProgress.set(buildingId, newProgress);
-                this.game.gameManager.call('placeSquadOnBattlefield', placement);
             }
         });       
     }
