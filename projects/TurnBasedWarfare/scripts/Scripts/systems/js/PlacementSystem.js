@@ -30,6 +30,45 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('submitPlacement', this.submitPlacement.bind(this));
         this.game.gameManager.register('validatePlacement', this.validatePlacement.bind(this));
         this.game.gameManager.register('setPlacementExperience', this.setPlacementExperience.bind(this));
+        this.game.gameManager.register('registerPlacement', this.registerPlacement.bind(this));
+    }
+
+    /**
+     * Register a placement that was created outside of submitPlacement
+     * (e.g., starting state units, or units created via PlayerInputInterface.placeSquad)
+     *
+     * @param {object} placement - Placement data
+     * @param {string} playerId - Player ID who owns this placement
+     */
+    registerPlacement(placement, playerId) {
+        if (!placement || !playerId) {
+            console.error('[PlacementSystem] registerPlacement: missing placement or playerId');
+            return;
+        }
+
+        // Store placement
+        let playerPlacements = this.playerPlacements.get(playerId);
+        if (playerPlacements) {
+            // Check if already registered
+            const exists = playerPlacements.find(p => p.placementId === placement.placementId);
+            if (exists) {
+                console.warn('[PlacementSystem] Placement already registered:', placement.placementId);
+                return;
+            }
+            playerPlacements.push(placement);
+        } else {
+            playerPlacements = [placement];
+        }
+        this.playerPlacements.set(playerId, playerPlacements);
+
+        // Update side placements
+        if (placement.team === 'left') {
+            this.leftPlacements = this.playerPlacements.get(playerId);
+        } else {
+            this.rightPlacements = this.playerPlacements.get(playerId);
+        }
+
+        console.log('[PlacementSystem] Registered placement:', placement.placementId, 'for player:', playerId, 'team:', placement.team);
     }
 
     /**

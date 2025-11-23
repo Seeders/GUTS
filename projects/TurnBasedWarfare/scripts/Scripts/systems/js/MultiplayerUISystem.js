@@ -865,6 +865,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                             unitType, // Keep for local use
                             gridPosition: gridPos,
                             team: this.game.state.mySide,
+                            playerId: this.game.clientNetworkManager?.playerId, // Add playerId for PlacementSystem tracking
                             cells,
                             targetPosition: null,
                             collection: unitData.collection,

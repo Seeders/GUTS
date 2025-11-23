@@ -329,6 +329,11 @@ console.log('PLACE SQUAD', placement);
             // Apply to game state (unified logic)
             const result = this.game.squadManager.applyPlacementToGame(placement, createUnitFn);
 
+            // Register placement in PlacementSystem for tracking
+            if (result.success && placement.playerId) {
+                this.game.gameManager.call('registerPlacement', placement, placement.playerId);
+            }
+
             // Send confirmation to requesting player
             if (networkData && this.game.serverNetworkManager) {
                 const { playerId } = networkData;
@@ -380,6 +385,14 @@ console.log('placeSquad client mode', placement);
 
                         // Now apply to game state after server confirmation
                         const result = this.game.squadManager.applyPlacementToGame(placement, createUnitFn);
+
+                        // Register placement in PlacementSystem for tracking
+                        if (result.success) {
+                            const playerId = placement.playerId || this.game.clientNetworkManager?.playerId;
+                            if (playerId) {
+                                this.game.gameManager.call('registerPlacement', placement, playerId);
+                            }
+                        }
 
                         // Call callback if provided
                         if (callback) {
