@@ -11,5 +11,11 @@
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
     "BehaviorTreeEditor"
+  ],
+  "classes": [
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    }
   ]
 }

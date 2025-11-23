@@ -1,7 +1,3 @@
-/**
- * Base class for all behavior trees
- * Behavior trees evaluate unit state and decide which action to take
- */
 class BaseBehaviorTree {
     constructor(game, treeData = {}) {
         this.game = game;

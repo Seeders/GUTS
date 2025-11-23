@@ -2109,7 +2109,8 @@
           "BehaviorTreeBlackboard",
           "BehaviorTreeProcessor",
           "BehaviorTreeEditor"
-        ]
+        ],
+        "classes": []
       },
       "exportScriptModule": {
         "title": "Export Scripts Module",
@@ -21107,7 +21108,7 @@
         "fileName": "BaseAction"
       },
       "BaseBehaviorTree": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/BaseBehaviorTree.js",
+        "filePath": "/global/libraries/js/BaseBehaviorTree.js",
         "fileName": "BaseBehaviorTree"
       },
       "BaseECSGame": {
