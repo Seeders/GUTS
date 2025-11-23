@@ -3,15 +3,33 @@
   "title": "Peasant Behavior Tree",
   "unitType": "peasant",
   "description": "Worker unit that builds and mines",
-  "mockEntity": {
-    "POSITION": { "x": 100, "z": 100 },
-    "TEAM": { "team": 1 },
-    "UNIT_CONTROLLER": {
-      "playerOrder": null,
-      "currentAction": null
+  "mockEntities": [
+    {
+      "id": "peasant-1",
+      "label": "Peasant (Idle)",
+      "components": {
+        "POSITION": { "x": 100, "z": 100 },
+        "TEAM": { "team": 1 },
+        "UNIT_CONTROLLER": {
+          "playerOrder": null,
+          "currentAction": null
+        },
+        "BUILDER": {
+          "assignedBuilding": null
+        }
+      }
     },
-    "BUILDER": {
-      "assignedBuilding": null
+    {
+      "id": "goldmine-1",
+      "label": "Gold Mine",
+      "components": {
+        "POSITION": { "x": 150, "z": 120 },
+        "TEAM": { "team": 0 },
+        "RESOURCE": {
+          "type": "gold",
+          "amount": 5000
+        }
+      }
     }
-  }
+  ]
 }

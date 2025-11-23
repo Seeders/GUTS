@@ -3,12 +3,35 @@
   "title": "Footman Behavior Tree",
   "unitType": "footman",
   "description": "Melee combat unit",
-  "mockEntity": {
-    "POSITION": { "x": 100, "z": 100 },
-    "TEAM": { "team": 1 },
-    "UNIT_CONTROLLER": {
-      "playerOrder": null,
-      "currentAction": null
+  "mockEntities": [
+    {
+      "id": "footman-1",
+      "label": "Footman (Idle)",
+      "components": {
+        "POSITION": { "x": 100, "z": 100 },
+        "TEAM": { "team": 1 },
+        "UNIT_CONTROLLER": {
+          "playerOrder": null,
+          "currentAction": null
+        },
+        "COMBAT": {
+          "attackRange": 1.5,
+          "attackDamage": 10,
+          "attackCooldown": 1.0
+        }
+      }
+    },
+    {
+      "id": "enemy-1",
+      "label": "Enemy Peasant",
+      "components": {
+        "POSITION": { "x": 110, "z": 105 },
+        "TEAM": { "team": 2 },
+        "HEALTH": {
+          "current": 50,
+          "max": 50
+        }
+      }
     }
-  }
+  ]
 }
