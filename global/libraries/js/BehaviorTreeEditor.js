@@ -337,42 +337,211 @@ class BehaviorTreeEditor {
         const varsContainer = document.getElementById('bt-simulation-vars');
         if (!varsContainer || !this.currentData) return;
 
-        // Extract all conditions from the tree
-        const conditions = this.extractConditions(this.currentData);
-
-        // Initialize simulation state if not exists
-        if (!this.simState) {
-            this.simState = {};
+        // Initialize blackboard if not exists
+        if (!this.blackboard && typeof GUTS !== 'undefined' && GUTS.BehaviorTreeBlackboard) {
+            this.blackboard = new GUTS.BehaviorTreeBlackboard();
         }
+
+        if (!this.blackboard) {
+            console.warn('BehaviorTreeBlackboard not available');
+            return;
+        }
+
+        // Extract all variables from the tree
+        const variables = GUTS.BehaviorTreeBlackboard.extractVariables(this.currentData);
 
         varsContainer.innerHTML = '';
 
-        // Create UI controls for each condition
-        conditions.forEach(condition => {
-            const varDiv = document.createElement('div');
-            varDiv.className = 'bt-sim-var';
+        // Create preset variable configurations for common patterns
+        this.createCommonVariablePresets(variables);
 
-            const label = document.createElement('label');
-            label.className = 'bt-sim-var__label';
-            label.textContent = condition;
+        // Create UI controls for each variable
+        const sortedVars = Array.from(variables.entries()).sort((a, b) => {
+            // Sort: objects first, then primitives
+            if (a[1] === 'object' && b[1] !== 'object') return -1;
+            if (a[1] !== 'object' && b[1] === 'object') return 1;
+            return a[0].localeCompare(b[0]);
+        });
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = this.simState[condition] || false;
-            checkbox.addEventListener('change', (e) => {
-                this.simState[condition] = e.target.checked;
+        sortedVars.forEach(([varName, varType]) => {
+            // Skip nested paths for objects (we'll edit them as objects)
+            if (varName.includes('.')) return;
+
+            this.createVariableInput(varsContainer, varName, varType);
+        });
+    }
+
+    createCommonVariablePresets(variables) {
+        // Set up common default values for known patterns
+        const defaults = {
+            'hasPlayerOrder': { type: 'boolean', value: false },
+            'hasEnemiesInRange': { type: 'boolean', value: false },
+            'hasAssignedBuilding': { type: 'boolean', value: false },
+            'hasNearbyMine': { type: 'boolean', value: false },
+            'playerOrder': {
+                type: 'object',
+                value: {
+                    action: 'MOVE_TO',
+                    target: { x: 100, z: 100 }
+                }
+            },
+            'nearestEnemy': {
+                type: 'object',
+                value: { x: 200, z: 200 }
+            }
+        };
+
+        for (const [varName, config] of Object.entries(defaults)) {
+            if (variables.has(varName) && !this.blackboard.has(varName)) {
+                this.blackboard.set(varName, config.value, config.type);
+
+                // For objects, also set nested properties
+                if (config.type === 'object') {
+                    for (const [key, value] of Object.entries(config.value)) {
+                        const nestedPath = `${varName}.${key}`;
+                        const nestedType = typeof value === 'object' ? 'object' : typeof value;
+                        this.blackboard.set(nestedPath, value, nestedType);
+                    }
+                }
+            }
+        }
+    }
+
+    createVariableInput(container, varName, varType) {
+        const varDiv = document.createElement('div');
+        varDiv.className = 'bt-sim-var';
+
+        const label = document.createElement('label');
+        label.className = 'bt-sim-var__label';
+        label.textContent = varName;
+
+        varDiv.appendChild(label);
+
+        // Get current value or create default
+        let currentValue = this.blackboard.get(varName);
+        if (currentValue === undefined) {
+            currentValue = GUTS.BehaviorTreeBlackboard.getDefaultValue(varType);
+            this.blackboard.set(varName, currentValue, varType);
+        }
+
+        // Create appropriate input based on type
+        if (varType === 'boolean') {
+            this.createBooleanInput(varDiv, varName, currentValue);
+        } else if (varType === 'object') {
+            this.createObjectInput(varDiv, varName, currentValue);
+        } else if (varType === 'string') {
+            this.createStringInput(varDiv, varName, currentValue);
+        } else if (varType === 'number') {
+            this.createNumberInput(varDiv, varName, currentValue);
+        } else {
+            this.createTextInput(varDiv, varName, currentValue);
+        }
+
+        container.appendChild(varDiv);
+    }
+
+    createBooleanInput(container, varName, currentValue) {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = currentValue || false;
+        checkbox.addEventListener('change', (e) => {
+            this.blackboard.set(varName, e.target.checked, 'boolean');
+            this.runSimulation();
+        });
+        container.appendChild(checkbox);
+    }
+
+    createStringInput(container, varName, currentValue) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentValue || '';
+        input.addEventListener('change', (e) => {
+            this.blackboard.set(varName, e.target.value, 'string');
+            this.runSimulation();
+        });
+        container.appendChild(input);
+    }
+
+    createNumberInput(container, varName, currentValue) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.value = currentValue || 0;
+        input.addEventListener('change', (e) => {
+            this.blackboard.set(varName, parseFloat(e.target.value), 'number');
+            this.runSimulation();
+        });
+        container.appendChild(input);
+    }
+
+    createTextInput(container, varName, currentValue) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = typeof currentValue === 'object' ? JSON.stringify(currentValue) : (currentValue || '');
+        input.addEventListener('change', (e) => {
+            try {
+                const value = JSON.parse(e.target.value);
+                this.blackboard.set(varName, value);
+            } catch (err) {
+                this.blackboard.set(varName, e.target.value);
+            }
+            this.runSimulation();
+        });
+        container.appendChild(input);
+    }
+
+    createObjectInput(container, varName, currentValue) {
+        const detailsEl = document.createElement('details');
+        detailsEl.style.marginTop = '4px';
+
+        const summary = document.createElement('summary');
+        summary.textContent = 'Edit properties';
+        summary.style.cursor = 'pointer';
+        summary.style.fontSize = '11px';
+        summary.style.color = '#6366f1';
+        detailsEl.appendChild(summary);
+
+        const objContainer = document.createElement('div');
+        objContainer.style.marginLeft = '8px';
+        objContainer.style.marginTop = '4px';
+
+        // Create inputs for object properties
+        const value = currentValue || {};
+        for (const [key, val] of Object.entries(value)) {
+            const propDiv = document.createElement('div');
+            propDiv.style.marginBottom = '4px';
+
+            const propLabel = document.createElement('label');
+            propLabel.className = 'bt-sim-var__label';
+            propLabel.textContent = key;
+            propLabel.style.fontSize = '10px';
+            propDiv.appendChild(propLabel);
+
+            const propInput = document.createElement('input');
+            propInput.type = typeof val === 'number' ? 'number' : 'text';
+            propInput.value = typeof val === 'object' ? JSON.stringify(val) : val;
+            propInput.style.width = '100%';
+            propInput.addEventListener('change', (e) => {
+                const newValue = { ...this.blackboard.get(varName) };
+                try {
+                    newValue[key] = propInput.type === 'number' ? parseFloat(e.target.value) :
+                                    (e.target.value.startsWith('{') ? JSON.parse(e.target.value) : e.target.value);
+                } catch (err) {
+                    newValue[key] = e.target.value;
+                }
+                this.blackboard.set(varName, newValue, 'object');
+
+                // Also update nested path
+                const nestedPath = `${varName}.${key}`;
+                this.blackboard.set(nestedPath, newValue[key]);
+
                 this.runSimulation();
             });
+            propDiv.appendChild(propInput);
+            objContainer.appendChild(propDiv);
+        }
 
-            varDiv.appendChild(label);
-            varDiv.appendChild(checkbox);
-            varsContainer.appendChild(varDiv);
-
-            // Initialize state
-            if (this.simState[condition] === undefined) {
-                this.simState[condition] = false;
-            }
-        });
+        detailsEl.appendChild(objContainer);
+        container.appendChild(detailsEl);
     }
 
     extractConditions(nodes) {
@@ -404,83 +573,13 @@ class BehaviorTreeEditor {
     }
 
     runSimulation() {
-        if (!this.currentData || !this.currentData.root) return;
+        if (!this.currentData || !this.currentData.root || !this.blackboard) return;
 
-        // Use shared BehaviorTreeProcessor if available
+        // Use shared BehaviorTreeProcessor
         if (typeof GUTS !== 'undefined' && GUTS.BehaviorTreeProcessor) {
-            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.simState);
+            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
             this.displaySimResult(result);
             this.highlightActivePath(result.activePath);
-        } else {
-            // Fallback to simple evaluation
-            const result = this.evaluateNode('root', this.currentData, this.simState);
-            this.displaySimResult(result);
-            this.highlightActivePath(result.activePath);
-        }
-    }
-
-    evaluateNode(nodeName, nodes, state, activePath = []) {
-        const node = nodes[nodeName];
-        if (!node) return { success: false, action: null, activePath };
-
-        activePath = [...activePath, nodeName];
-
-        switch (node.type) {
-            case 'selector':
-                // Try children until one succeeds
-                for (const child of node.children || []) {
-                    const result = this.evaluateNode(child, nodes, state, activePath);
-                    if (result.success) {
-                        return result;
-                    }
-                }
-                return { success: false, action: null, activePath };
-
-            case 'sequence':
-                // Execute children in order, all must succeed
-                for (const child of node.children || []) {
-                    const result = this.evaluateNode(child, nodes, state, activePath);
-                    if (!result.success) {
-                        return { success: false, action: null, activePath };
-                    }
-                }
-                return { success: true, action: null, activePath };
-
-            case 'condition':
-                const conditionMet = this.evaluateCondition(node.condition, state);
-                if (conditionMet && node.onSuccess) {
-                    return this.evaluateNode(node.onSuccess, nodes, state, activePath);
-                }
-                return { success: conditionMet, action: null, activePath };
-
-            case 'action':
-                return {
-                    success: true,
-                    action: node.action,
-                    target: node.target,
-                    priority: node.priority || 0,
-                    activePath
-                };
-
-            default:
-                return { success: false, action: null, activePath };
-        }
-    }
-
-    evaluateCondition(condition, state) {
-        // Simple condition evaluation
-        // For complex conditions, try to evaluate them
-        try {
-            // Replace condition names with state values
-            let evalStr = condition;
-            for (const [key, value] of Object.entries(state)) {
-                evalStr = evalStr.replace(new RegExp(key, 'g'), value ? 'true' : 'false');
-            }
-            // Basic evaluation (this is simplified)
-            return eval(evalStr) || false;
-        } catch (e) {
-            // If it's a simple condition name, just return the state value
-            return state[condition] || false;
         }
     }
 
@@ -527,11 +626,9 @@ class BehaviorTreeEditor {
     }
 
     resetSimulation() {
-        // Reset all simulation variables to false
-        if (this.simState) {
-            Object.keys(this.simState).forEach(key => {
-                this.simState[key] = false;
-            });
+        // Clear the blackboard
+        if (this.blackboard) {
+            this.blackboard.clear();
         }
 
         // Reset UI

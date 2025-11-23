@@ -7,12 +7,53 @@ class BehaviorTreeProcessor {
     /**
      * Evaluate a behavior tree and return the selected action
      * @param {Object} nodes - The behavior tree nodes (from the nodes property)
-     * @param {Object} state - The current state/conditions
+     * @param {Object|BehaviorTreeBlackboard} state - The current state/conditions (plain object or Blackboard)
      * @param {string} rootNode - The name of the root node (default: 'root')
      * @returns {Object} - { success: boolean, action: string, target: any, priority: number, activePath: string[] }
      */
     static evaluate(nodes, state, rootNode = 'root') {
-        return this.evaluateNode(rootNode, nodes, state, []);
+        // Convert plain object to blackboard if needed
+        const blackboard = this.ensureBlackboard(state);
+        return this.evaluateNode(rootNode, nodes, blackboard, []);
+    }
+
+    /**
+     * Ensure we have a blackboard instance
+     * @private
+     */
+    static ensureBlackboard(state) {
+        // If it's already a Blackboard instance, return it
+        if (state && state.constructor && state.constructor.name === 'BehaviorTreeBlackboard') {
+            return state;
+        }
+
+        // If GUTS.BehaviorTreeBlackboard is available, create instance
+        if (typeof GUTS !== 'undefined' && GUTS.BehaviorTreeBlackboard) {
+            const blackboard = new GUTS.BehaviorTreeBlackboard();
+            // Copy state into blackboard
+            if (state && typeof state === 'object') {
+                for (const [key, value] of Object.entries(state)) {
+                    blackboard.set(key, value);
+                }
+            }
+            return blackboard;
+        }
+
+        // Fallback: wrap plain object with get method
+        return {
+            get: (path) => {
+                const parts = path.split('.');
+                let current = state;
+                for (const part of parts) {
+                    if (current && typeof current === 'object') {
+                        current = current[part];
+                    } else {
+                        return undefined;
+                    }
+                }
+                return current;
+            }
+        };
     }
 
     /**
@@ -38,7 +79,7 @@ class BehaviorTreeProcessor {
                 return this.evaluateCondition(node, nodes, state, activePath);
 
             case 'action':
-                return this.evaluateAction(node, activePath);
+                return this.evaluateAction(node, state, activePath);
 
             default:
                 console.warn(`Unknown node type: ${node.type}`);
@@ -99,11 +140,31 @@ class BehaviorTreeProcessor {
      * Evaluate an action node - return the action to execute
      * @private
      */
-    static evaluateAction(node, activePath) {
+    static evaluateAction(node, blackboard, activePath) {
+        // Resolve action and target from blackboard if they're variable references
+        let action = node.action;
+        let target = node.target;
+
+        if (typeof action === 'string' && !action.match(/^[A-Z_]+$/)) {
+            // It might be a variable reference
+            const resolved = blackboard.get ? blackboard.get(action) : undefined;
+            if (resolved !== undefined) {
+                action = resolved;
+            }
+        }
+
+        if (typeof target === 'string' && !target.match(/^[A-Z_]+$/)) {
+            // It might be a variable reference
+            const resolved = blackboard.get ? blackboard.get(target) : undefined;
+            if (resolved !== undefined) {
+                target = resolved;
+            }
+        }
+
         return {
             success: true,
-            action: node.action,
-            target: node.target,
+            action,
+            target,
             priority: node.priority || 0,
             activePath
         };
@@ -112,34 +173,44 @@ class BehaviorTreeProcessor {
     /**
      * Check if a condition is met given the current state
      * @param {string} condition - The condition string to evaluate
-     * @param {Object} state - The current state/conditions
+     * @param {Object|BehaviorTreeBlackboard} state - The current state/conditions
      * @returns {boolean} - Whether the condition is met
      */
     static checkCondition(condition, state) {
         if (!condition) return false;
 
+        // Use Blackboard evaluation if available
+        if (typeof GUTS !== 'undefined' && GUTS.BehaviorTreeBlackboard && GUTS.BehaviorTreeBlackboard.evaluateCondition) {
+            return GUTS.BehaviorTreeBlackboard.evaluateCondition(condition, state);
+        }
+
+        // Fallback to simple evaluation
         try {
-            // Simple condition evaluation
-            // Replace condition variable names with their values
-            let evalStr = condition;
+            // Build context from state
+            const context = {};
 
-            // Sort keys by length (longest first) to avoid partial replacements
-            const keys = Object.keys(state).sort((a, b) => b.length - a.length);
-
-            for (const key of keys) {
-                const value = state[key];
-                // Create a regex that matches the key as a whole word
-                const regex = new RegExp(`\\b${this.escapeRegex(key)}\\b`, 'g');
-                evalStr = evalStr.replace(regex, value ? 'true' : 'false');
+            if (state.getAll) {
+                // It's a blackboard
+                for (const [path, metadata] of state.getAll()) {
+                    const parts = path.split('.');
+                    if (parts.length === 1) {
+                        context[path] = metadata.value;
+                    }
+                }
+            } else {
+                // It's a plain object
+                Object.assign(context, state);
             }
 
-            // Try to evaluate the expression
-            // Note: This uses eval which is normally dangerous, but in this context
-            // the conditions are defined by the game developer, not user input
-            return eval(evalStr) || false;
+            // Replace constants (e.g., MOVE_TO) with string literals
+            let evalStr = condition.replace(/\b([A-Z_]+)\b/g, '"$1"');
+
+            // Create function with context
+            const func = new Function(...Object.keys(context), `return ${evalStr};`);
+            return func(...Object.values(context)) || false;
         } catch (e) {
             // If evaluation fails, treat as a simple boolean lookup
-            return state[condition] || false;
+            return state.get ? state.get(condition) : state[condition] || false;
         }
     }
 
