@@ -44,7 +44,7 @@ class BehaviorTreeEditor {
     }
 
     loadBehaviorTree(detail) {
-        this.currentData = detail.data;
+        this.currentData = detail.data.entities;
         this.propertyName = detail.propertyName;
         Object.values(document.getElementsByClassName('editor-module')).forEach((editor) => {
             editor.classList.remove('show');
@@ -590,9 +590,7 @@ class BehaviorTreeEditor {
         const jsonView = document.getElementById('bt-json-view');
         if (!jsonView) return;
 
-        try {
-            const newData = JSON.parse(jsonView.value);
-            this.currentData = newData;
+        try {            
             this.renderTree();
             this.save();
             alert('Changes saved successfully!');
@@ -642,7 +640,7 @@ class BehaviorTreeEditor {
         const saveEvent = new CustomEvent(this.moduleConfig.saveHook, {
             detail: {
                 propertyName: this.propertyName,
-                data: this.currentData
+                data: { "entities": this.currentData }
             },
             bubbles: true,
             cancelable: true

@@ -1,5 +1,6 @@
 class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
+console.log('evaluating', entityId, game);
         return this.select([
             () => this.checkPlayerOrder(entityId, game),
             () => this.checkCombat(entityId, game),

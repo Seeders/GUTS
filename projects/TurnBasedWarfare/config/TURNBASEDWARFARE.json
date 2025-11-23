@@ -524,8 +524,7 @@
         "description": "Attack an enemy unit",
         "parameters": "{}",
         "filePath": "/projects/TurnBasedWarfare/scripts/Uncategorized/behaviorActions/js/ATTACK.js",
-        "fileName": "ATTACK",
-        "script": "class AttackAction extends GUTS.BaseAction {\n    static TYPE = \"ATTACK\";\n    static PRIORITY = 30;\n\n    canExecute(entityId, controller, game) {\n        const targetId = controller.actionTarget;\n        if (!targetId) return false;\n\n        const targetHealth = game.getComponent(targetId, game.componentTypes.HEALTH);\n        const targetDeathState = game.getComponent(targetId, game.componentTypes.DEATH_STATE);\n\n        if (!targetHealth || targetHealth.current <= 0) return false;\n        if (targetDeathState && targetDeathState.isDying) return false;\n\n        return true;\n    }\n\n    execute(entityId, controller, game, dt) {\n        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);\n        const targetId = controller.actionTarget;\n\n        // Check if in range\n        if (!game.combatAISystem.isInAttackRange(entityId, targetId, combat)) {\n            // Move closer\n            const targetPos = game.getComponent(targetId, game.componentTypes.POSITION);\n            const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\n            vel.targetX = targetPos.x;\n            vel.targetZ = targetPos.z;\n            return { complete: false };\n        }\n\n        // In range, attack handled by CombatAISystem\n        return { complete: false };\n    }\n\n    onEnd(entityId, controller, game) {\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\n        vel.targetX = null;\n        vel.targetZ = null;\n    }\n}\n"
+        "fileName": "ATTACK"
       },
       "IDLE": {
         "title": "Idle",
@@ -533,8 +532,7 @@
         "priority": 0,
         "description": "Do nothing",
         "parameters": {},
-        "script": "class IdleAction extends GUTS.BaseAction {\r\n    static TYPE = \"IDLE\";\r\n    static PRIORITY = 0;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        return true;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        // Just idle\r\n        return { complete: false };\r\n    }\r\n\r\n    onEnd(entityId, controller, game) {\r\n        // Nothing to clean up\r\n    }\r\n}\r\n",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorActions/js/IDLE.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/IDLE.js",
         "fileName": "IDLE"
       },
       "MINE": {
@@ -549,8 +547,7 @@
           "depositDuration": 1,
           "goldPerTrip": 10
         },
-        "script": "class MineAction extends GUTS.BaseAction {\r\n    static TYPE = \"MINE\";\r\n    static PRIORITY = 5;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        const mineId = controller.actionTarget;\r\n        const mine = game.goldMineSystem.getMine(mineId);\r\n        return mine && mine.isActive;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        const state = controller.actionData.state || 'traveling_to_mine';\r\n\r\n        switch (state) {\r\n            case 'traveling_to_mine':\r\n                return this.travelToMine(entityId, controller, game);\r\n            case 'mining':\r\n                return this.doMining(entityId, controller, game);\r\n            case 'traveling_to_depot':\r\n                return this.travelToDepot(entityId, controller, game);\r\n            case 'depositing':\r\n                return this.doDepositing(entityId, controller, game);\r\n        }\r\n    }\r\n\r\n    travelToMine(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const minePos = game.getComponent(controller.actionTarget, game.componentTypes.POSITION);\r\n\r\n        if (this.distance(pos, minePos) < this.parameters.miningRange) {\r\n            if (game.goldMineSystem.canMine(controller.actionTarget, entityId)) {\r\n                controller.actionData.state = 'mining';\r\n                controller.actionData.miningStartTime = game.state.now;\r\n                return { complete: false };\r\n            }\r\n            return { complete: false };\r\n        }\r\n\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = minePos.x;\r\n        vel.targetZ = minePos.z;\r\n        return { complete: false };\r\n    }\r\n\r\n    doMining(entityId, controller, game) {\r\n        const elapsed = game.state.now - controller.actionData.miningStartTime;\r\n\r\n        if (elapsed >= this.parameters.miningDuration) {\r\n            controller.actionData.hasGold = true;\r\n            controller.actionData.goldAmt = this.parameters.goldPerTrip;\r\n            controller.actionData.state = 'traveling_to_depot';\r\n            game.goldMineSystem.releaseMine(controller.actionTarget, entityId);\r\n            return { complete: false };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    travelToDepot(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const depot = this.findNearestDepot(entityId, game);\r\n\r\n        if (!depot) {\r\n            return { complete: true, failed: true };\r\n        }\r\n\r\n        const depotPos = game.getComponent(depot, game.componentTypes.POSITION);\r\n\r\n        if (this.distance(pos, depotPos) < this.parameters.depositRange) {\r\n            controller.actionData.state = 'depositing';\r\n            controller.actionData.depositStartTime = game.state.now;\r\n            return { complete: false };\r\n        }\r\n\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = depotPos.x;\r\n        vel.targetZ = depotPos.z;\r\n        return { complete: false };\r\n    }\r\n\r\n    doDepositing(entityId, controller, game) {\r\n        const elapsed = game.state.now - controller.actionData.depositStartTime;\r\n\r\n        if (elapsed >= this.parameters.depositDuration) {\r\n            const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n            game.goldSystem.addGold(team.team, controller.actionData.goldAmt);\r\n\r\n            // Reset to mine again\r\n            controller.actionData.state = 'traveling_to_mine';\r\n            controller.actionData.hasGold = false;\r\n            return { complete: false };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    findNearestDepot(entityId, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const team = game.getComponent(entityId, game.componentTypes.TEAM);\r\n        const townHalls = game.getEntitiesWith(\r\n            game.componentTypes.POSITION,\r\n            game.componentTypes.TEAM,\r\n            game.componentTypes.UNIT_TYPE\r\n        );\r\n\r\n        let nearest = null;\r\n        let minDist = Infinity;\r\n\r\n        for (const thId of townHalls) {\r\n            const thTeam = game.getComponent(thId, game.componentTypes.TEAM);\r\n            const thType = game.getComponent(thId, game.componentTypes.UNIT_TYPE);\r\n            const thPos = game.getComponent(thId, game.componentTypes.POSITION);\r\n\r\n            if (thTeam.team === team.team && thType.id === 'townHall') {\r\n                const dist = this.distance(pos, thPos);\r\n                if (dist < minDist) {\r\n                    minDist = dist;\r\n                    nearest = thId;\r\n                }\r\n            }\r\n        }\r\n\r\n        return nearest;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorActions/js/MINE.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MINE.js",
         "fileName": "MINE"
       },
       "MOVE_TO": {
@@ -561,60 +558,65 @@
         "parameters": {
           "arrivalThreshold": 20
         },
-        "script": "class MoveAction extends GUTS.BaseAction {\r\n    static TYPE = \"MOVE_TO\";\r\n    static PRIORITY = 10;\r\n\r\n    canExecute(entityId, controller, game) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const target = controller.actionTarget;\r\n        if (!pos || !target) return false;\r\n\r\n        const dist = this.distance(pos, target);\r\n        return dist > this.parameters.arrivalThreshold;\r\n    }\r\n\r\n    execute(entityId, controller, game, dt) {\r\n        const pos = game.getComponent(entityId, game.componentTypes.POSITION);\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        const target = controller.actionTarget;\r\n\r\n        // Set velocity target\r\n        vel.targetX = target.x;\r\n        vel.targetZ = target.z;\r\n\r\n        // Check completion\r\n        if (this.distance(pos, target) <= this.parameters.arrivalThreshold) {\r\n            return { complete: true };\r\n        }\r\n\r\n        return { complete: false };\r\n    }\r\n\r\n    onEnd(entityId, controller, game) {\r\n        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);\r\n        vel.targetX = null;\r\n        vel.targetZ = null;\r\n    }\r\n\r\n    distance(pos, target) {\r\n        const dx = target.x - pos.x;\r\n        const dz = target.z - pos.z;\r\n        return Math.sqrt(dx * dx + dz * dz);\r\n    }\r\n}\r\n",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorActions/js/MOVE_TO.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MOVE_TO.js",
         "fileName": "MOVE_TO"
       }
     },
     "behaviorTrees": {
+      "BaseBehaviorTree": {
+        "fileName": "BaseBehaviorTree",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/BaseBehaviorTree.js"
+      },
       "FootmanBehaviorTree": {
         "title": "Footman Behavior Tree",
         "unitType": "footman",
         "description": "Melee combat unit",
-        "mockEntities": [
-          {
-            "id": "footman-1",
-            "label": "Footman (Idle)",
-            "components": {
-              "POSITION": {
-                "x": 100,
-                "z": 100
-              },
-              "TEAM": {
-                "team": 1
-              },
-              "UNIT_CONTROLLER": {
-                "playerOrder": null,
-                "currentAction": null
-              },
-              "COMBAT": {
-                "attackRange": 1.5,
-                "attackDamage": 10,
-                "attackCooldown": 1
+        "mockEntities": {
+          "entities": [
+            {
+              "id": "footman-1",
+              "label": "Footman (Idle)",
+              "components": {
+                "POSITION": {
+                  "x": 100,
+                  "z": 100
+                },
+                "TEAM": {
+                  "team": 1
+                },
+                "UNIT_CONTROLLER": {
+                  "playerOrder": null,
+                  "currentAction": null
+                },
+                "COMBAT": {
+                  "attackRange": 1.5,
+                  "attackDamage": 10,
+                  "attackCooldown": 1
+                }
+              }
+            },
+            {
+              "id": "enemy-1",
+              "label": "Enemy Peasant",
+              "components": {
+                "POSITION": {
+                  "x": 110,
+                  "z": 105
+                },
+                "TEAM": {
+                  "team": 2
+                },
+                "HEALTH": {
+                  "current": 50,
+                  "max": 50
+                }
               }
             }
-          },
-          {
-            "id": "enemy-1",
-            "label": "Enemy Peasant",
-            "components": {
-              "POSITION": {
-                "x": 110,
-                "z": 105
-              },
-              "TEAM": {
-                "team": 2
-              },
-              "HEALTH": {
-                "current": 50,
-                "max": 50
-              }
-            }
-          }
-        ],
+          ]
+        },
         "isBehaviorTree": true,
         "fileName": "FootmanBehaviorTree",
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/FootmanBehaviorTree.js"
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/FootmanBehaviorTree.js"
       },
       "PeasantBehaviorTree": {
         "title": "Peasant Behavior Tree",
@@ -660,7 +662,7 @@
           }
         ],
         "isBehaviorTree": true,
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/PeasantBehaviorTree.js",
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/PeasantBehaviorTree.js",
         "fileName": "PeasantBehaviorTree"
       }
     },
@@ -2110,7 +2112,12 @@
           "BehaviorTreeProcessor",
           "BehaviorTreeEditor"
         ],
-        "classes": []
+        "classes": [
+          {
+            "collection": "behaviorTrees",
+            "baseClass": "BaseBehaviorTree"
+          }
+        ]
       },
       "exportScriptModule": {
         "title": "Export Scripts Module",
@@ -21108,11 +21115,7 @@
         "fileName": "BaseAction"
       },
       "BaseBehaviorTree": {
-<<<<<<< HEAD
         "filePath": "/global/libraries/js/BaseBehaviorTree.js",
-=======
-        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/BaseBehaviorTree.js",
->>>>>>> 2bea9963f364d29a7d20a4c25e08c863b813e784
         "fileName": "BaseBehaviorTree"
       },
       "BaseECSGame": {
@@ -28998,7 +29001,7 @@
       "id": "behaviorActions",
       "name": "BehaviorActions",
       "singular": "behaviorAction",
-      "category": "BehaviorTrees"
+      "category": "Scripts"
     }
   ]
 }
