@@ -2,7 +2,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.uiSystem = this;
-        
+
         // State tracking
         this.currentScreen = null;
         this.gameState = null;
@@ -10,12 +10,68 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             maxSquadsPerRound: 2,
             numBackgrounds: 5
         };
+
+        // Mouse tracking for world position
+        this.mouseScreenPos = { x: 0, y: 0 };
+        this.mouseWorldPos = { x: 0, y: 0, z: 0 };
+        this.raycastHelper = null;
     }
 
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
+
+        // Initialize RaycastHelper with scene and camera
+        if (this.game.scene && this.game.camera) {
+            this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
+        }
+
+        // Register methods that were in MultiplayerPlacementSystem
+        this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
+
         this.initializeUI();
+        this.setupMouseTracking();
+    }
+
+    setupMouseTracking() {
+        const canvas = this.game.canvas;
+        if (!canvas) return;
+
+        const mouseWorldOffset = {
+            x: this.game.gameManager.call('getPlacementGridSize') / 2,
+            z: this.game.gameManager.call('getPlacementGridSize') / 2
+        };
+
+        canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            // Raycast to ground to get world position
+            this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);
+            if (this.mouseWorldPos) {
+                this.mouseWorldPos.x += mouseWorldOffset.x;
+                this.mouseWorldPos.z += mouseWorldOffset.z;
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            this.mouseWorldPos = { x: 0, y: 0, z: 0 };
+        });
+    }
+
+    rayCastGround(x, y) {
+        if (!this.raycastHelper) return { x: 0, y: 0, z: 0 };
+
+        const groundPlane = this.game.terrainSystem?.terrainDataManager?.groundPlane;
+        if (!groundPlane) return { x: 0, y: 0, z: 0 };
+
+        const result = this.raycastHelper.raycastToPlane(x, y, groundPlane);
+        if (result) {
+            return { x: result.x, y: result.y, z: result.z };
+        }
+
+        return { x: 0, y: 0, z: 0 };
     }
 
     initializeUI() {
