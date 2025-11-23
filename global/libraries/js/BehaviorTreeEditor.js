@@ -150,10 +150,6 @@ class BehaviorTreeEditor {
 
         canvas.innerHTML = `
             <div style=\"padding: 20px;\">
-                <h3 style=\"color: #fff; margin-top: 0;\">Script-Based Behavior Tree</h3>
-                <div style=\"color: #aaa; margin-bottom: 15px;\">
-                    <strong>Script:</strong> ${this.objectData.title}<br>                    
-                </div>
                 <div style=\"background: #1e1e1e; padding: 15px; border-radius: 4px; overflow-x: auto;\">
                     <div id=\"bt-script-source\" style=\"color: #d4d4d4; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.5; white-space: pre;\">Loading script source...</div>
                 </div>
