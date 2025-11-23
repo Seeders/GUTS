@@ -38,7 +38,7 @@ class PlayerInputInterface {
         // Server: Apply immediately, then broadcast
         if (this.mode === 'server') {
             // Apply to game state (unified logic)
-            this.game.playerControlSystem.applySquadTargetPosition(
+            this.applySquadTargetPosition(
                 placementId,
                 targetPosition,
                 meta,
@@ -81,7 +81,7 @@ class PlayerInputInterface {
                         const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
 
                         // Now apply to game state after server confirmation
-                        this.game.playerControlSystem.applySquadTargetPosition(
+                        this.applySquadTargetPosition(
                             placementId,
                             targetPosition,
                             meta,
@@ -117,7 +117,7 @@ class PlayerInputInterface {
         // Server: Apply immediately, then broadcast
         if (this.mode === 'server') {
             // Apply to game state (unified logic)
-            this.game.playerControlSystem.applySquadsTargetPositions(
+            this.applySquadsTargetPositions(
                 placementIds,
                 targetPositions,
                 meta,
@@ -156,7 +156,7 @@ class PlayerInputInterface {
                         const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
 
                         // Now apply to game state after server confirmation
-                        this.game.playerControlSystem.applySquadsTargetPositions(
+                        this.applySquadsTargetPositions(
                             placementIds,
                             targetPositions,
                             meta,
@@ -191,7 +191,7 @@ class PlayerInputInterface {
      */
     applyOpponentSquadTarget(placementId, targetPosition, meta, commandCreatedTime) {
         // Apply directly - this is already server-validated
-        this.game.playerControlSystem.applySquadTargetPosition(
+        this.applySquadTargetPosition(
             placementId,
             targetPosition,
             meta,
@@ -212,12 +212,81 @@ class PlayerInputInterface {
      */
     applyOpponentSquadTargets(placementIds, targetPositions, meta, commandCreatedTime) {
         // Apply directly - this is already server-validated
-        this.game.playerControlSystem.applySquadsTargetPositions(
+        this.applySquadsTargetPositions(
             placementIds,
             targetPositions,
             meta,
             commandCreatedTime
         );
+    }
+
+    /**
+     * Apply a move order to a single squad
+     *
+     * SHARED GAME LOGIC: This method is called by both client and server to ensure
+     * identical behavior. Do NOT duplicate this logic elsewhere.
+     *
+     * @param {string} placementId - The placement/squad ID
+     * @param {object} targetPosition - The target position {x, z}
+     * @param {object} meta - Metadata including isPlayerOrder flag
+     * @param {number} commandCreatedTime - Timestamp for deterministic command creation
+     */
+    applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
+        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        if (!placement) {
+            // Placement doesn't exist yet on client - entity sync at battle start will handle it
+            return;
+        }
+        const createdTime = commandCreatedTime || this.game.state.now;
+        placement.targetPosition = targetPosition;
+        placement.squadUnits.forEach((unitId) => {
+            if (targetPosition) {
+                // Clear any existing commands (including mining/building)
+                this.game.gameManager.call('clearCommands', unitId);
+
+                // Store player order for persistence through combat
+                const aiState = this.game.getComponent(unitId, ComponentTypes.AI_STATE);
+                if (aiState) {
+                    aiState.playerOrder = {
+                        targetPosition: targetPosition,
+                        meta: meta,
+                        issuedTime: createdTime
+                    };
+                    aiState.meta = meta;
+                }
+
+                // Queue MOVE command through command queue system
+                // This properly interrupts abilities like mining
+                this.game.gameManager.call('queueCommand', unitId, {
+                    type: 'move',
+                    controllerId: "UnitOrderSystem",
+                    targetPosition: targetPosition,
+                    meta: meta,
+                    priority: this.game.commandQueueSystem?.PRIORITY.MOVE || 10,
+                    interruptible: true,
+                    createdTime: createdTime
+                }, true); // true = interrupt current command
+            }
+        });
+    }
+
+    /**
+     * Apply move orders to multiple squads
+     *
+     * SHARED GAME LOGIC: Wrapper around applySquadTargetPosition for batch operations.
+     * Both client and server call this to ensure identical behavior.
+     *
+     * @param {string[]} placementIds - Array of placement/squad IDs
+     * @param {object[]} targetPositions - Array of target positions
+     * @param {object} meta - Metadata including isPlayerOrder flag
+     * @param {number} commandCreatedTime - Timestamp for deterministic command creation
+     */
+    applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime) {
+        for (let i = 0; i < placementIds.length; i++) {
+            let placementId = placementIds[i];
+            let targetPosition = targetPositions[i];
+            this.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+        }
     }
 
     /**

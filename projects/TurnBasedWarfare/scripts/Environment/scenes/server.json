@@ -33,8 +33,7 @@
         { "type": "PathfindingSystem" },
         { "type": "GoldMineSystem" },
         { "type": "VisionSystem" },
-        { "type": "SupplySystem" },
-        { "type": "PlayerControlSystem" }
+        { "type": "SupplySystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }
