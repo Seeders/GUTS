@@ -9,6 +9,7 @@
     "ShapeFactory",
     "GE_AnimationManager",
     "GE_EventManager",
+    "GE_EquipmentManager",
     "GE_GizmoManager",
     "GE_GroupManager",
     "GE_ShapeManager",

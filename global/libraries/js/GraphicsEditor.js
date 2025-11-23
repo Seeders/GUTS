@@ -31,7 +31,7 @@ class GraphicsEditor {
         this.animationManager = new GUTS.GE_AnimationManager(gameEditor, this);
         this.groupManager = new GUTS.GE_GroupManager(gameEditor, this);
         this.gizmoManager = new GUTS.GE_GizmoManager(gameEditor, this);
-        this.equipmentEditor = new GUTS.GE_EquipmentEditor(gameEditor, this);
+        this.equipmentEditor = new GUTS.GE_EquipmentManager(gameEditor, this);
         this.rotationUtils = GUTS.GE_RotationUtils;
         // State management (simplified)
         this.state = {
