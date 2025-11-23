@@ -44,8 +44,10 @@ class BehaviorTreeEditor {
     }
 
     loadBehaviorTree(detail) {
-        this.currentData = detail.data.entities;
+        this.currentData = detail.data;
         this.propertyName = detail.propertyName;
+
+        console.log(this.currentData, "loadBehaviorTree");
         Object.values(document.getElementsByClassName('editor-module')).forEach((editor) => {
             editor.classList.remove('show');
         });
@@ -503,13 +505,13 @@ class BehaviorTreeEditor {
             errors.push('Missing script reference');
         }
 
-        // Check mockEntity structure
-        if (!this.objectData.mockEntity) {
-            errors.push('Missing mockEntity property for simulation');
+        // Check mockEntities structure
+        if (!this.currentData) {
+            errors.push('Missing mockEntities property for simulation');
         } else {
-            // Validate that mockEntity has at least some component data
-            if (Object.keys(this.objectData.mockEntity).length === 0) {
-                errors.push('mockEntity has no component data');
+            // Validate that mockEntities has at least some component data
+            if (Object.keys(this.currentData).length === 0) {
+                errors.push('mockEntities has no component data');
             }
         }
     }
@@ -654,18 +656,16 @@ class BehaviorTreeEditor {
         if (!varsContainer) return;
 
         // Use different approaches for script-based vs data-driven trees
-        if (this.isScriptBased) {
-            this.setupScriptBasedSimulation(varsContainer);
-        } else {
-            this.setupDataDrivenSimulation(varsContainer);
-        }
+     
+        this.setupScriptBasedSimulation(varsContainer);
+
     }
 
     setupScriptBasedSimulation(varsContainer) {
         // Initialize mock game context
-        if (!this.mockGame && typeof GUTS !== 'undefined' && GUTS.MockGameContext) {
-            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
-        }
+ 
+        this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
+        
 
         if (!this.mockGame) {
             console.warn('MockGameContext not available');
@@ -843,6 +843,8 @@ class BehaviorTreeEditor {
             console.warn('BehaviorTreeBlackboard not available');
             return;
         }
+
+        console.log(this.currentData, "Current Data");
 
         // Extract all variables from the tree
         const variables = GUTS.BehaviorTreeBlackboard.extractVariables(this.currentData);

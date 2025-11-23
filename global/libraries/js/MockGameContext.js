@@ -123,6 +123,7 @@ class MockGameContext {
      * @param {string} label - Human-readable label
      */
     addEntity(entityId, componentsData = {}, label = null) {
+        console.log('added entity', entityId);
         const components = new Map();
         for (const [componentType, data] of Object.entries(componentsData)) {
             components.set(componentType, { ...data });
@@ -248,8 +249,8 @@ class MockGameContext {
      */
     static fromBehaviorTreeData(behaviorTreeData) {
         // Support both new mockEntities (array) and legacy mockEntity (object)
-        const mockData = behaviorTreeData.mockEntities ||
-                        (behaviorTreeData.mockEntity ? [{ id: 'entity-1', components: behaviorTreeData.mockEntity, label: 'Entity 1' }] : []);
+        const mockData = behaviorTreeData.mockEntities.entities;
+        console.log('reset with', behaviorTreeData.mockEntities, mockData);
         return new MockGameContext(mockData);
     }
 

@@ -30,7 +30,7 @@ class BehaviorTreeProcessor {
      */
     static evaluateWithScript(treeData, gameContext, entityId = null) {
         // Get the script class name
-        const scriptName = treeData.script;
+        const scriptName = treeData.fileName;
 
         // Try to find the class in GUTS collections
         let TreeClass = null;
