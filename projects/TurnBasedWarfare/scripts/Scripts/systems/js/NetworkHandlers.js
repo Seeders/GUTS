@@ -169,6 +169,14 @@ class NetworkHandlers extends GUTS.BaseSystem {
                 );
             }
 
+            // Debug: Check if unitType was reconstructed
+            console.log('[NetworkHandlers] About to submit placement:', {
+                hasUnitType: !!placement.unitType,
+                unitTypeId: placement.unitType?.id,
+                collection: placement.collection,
+                placementId: placement.placementId
+            });
+
             // Delegate to PlacementSystem
             const result = this.game.placementSystem.submitPlacement(playerId, player, placement);
 

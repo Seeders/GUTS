@@ -136,6 +136,13 @@ class PlacementSystem extends GUTS.BaseSystem {
             this.rightPlacements = this.playerPlacements.get(playerId);
         }
 
+        // Debug: Check placement before creating units
+        console.log('[PlacementSystem] submitPlacement - about to create units:', {
+            hasUnitType: !!placement.unitType,
+            unitTypeId: placement.unitType?.id,
+            placementId: placement.placementId
+        });
+
         // Create units using unified interface
         const createUnitFn = (pos, placement) => {
             const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
