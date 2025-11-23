@@ -28302,6 +28302,9 @@
                         "paletteColor": "greenDColor"
                       },
                       "id": 3
+                    },
+                    {
+                      "id": 0
                     }
                   ]
                 }
@@ -28426,7 +28429,15 @@
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "id": 0
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
