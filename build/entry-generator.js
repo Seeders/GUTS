@@ -605,41 +605,15 @@ class EntryGenerator {
         sections.push(`import EditorController from '${engineDir}/EditorController.js';`);
         sections.push('');
 
-        // Import libraries
-        let libraryExports = [];
-        if (editor.libraries && editor.libraries.length > 0) {
-            sections.push('// Libraries');
-            const { imports: libraryImports, exports: libExports } = this.generateImports(editor.libraries, 'lib');
-            sections.push(...libraryImports);
-            sections.push('');
-            libraryExports = libExports;
-        }
-
-        // Create Libraries object
-        sections.push('// Create global Libraries object');
-        sections.push('const Libraries = {');
-        if (libraryExports.length > 0) {
-            sections.push(...libraryExports.map(exp => exp + ','));
-        }
-        sections.push('};');
-        sections.push('');
-
-        // Export to window.GUTS
-        sections.push('// Make libraries available globally');
+        // Initialize window.GUTS
+        sections.push('// Initialize global namespace');
         sections.push('if (!window.GUTS) window.GUTS = {};');
-        sections.push('Object.assign(window.GUTS, Libraries);');
         sections.push('');
 
-        // Import script collections (for Scripts category collections like behaviorTrees)
+        // Import script collections (for Scripts category collections like behaviorTrees and libraries)
         const scriptCollectionObjects = {};
-        const reservedNames = ['libraries']; // Names already hardcoded in the entry
         if (editor.scriptCollections && Object.keys(editor.scriptCollections).length > 0) {
             for (const [collectionName, classFiles] of Object.entries(editor.scriptCollections)) {
-                // Skip reserved names that would conflict with hardcoded objects
-                if (reservedNames.includes(collectionName.toLowerCase())) {
-                    console.log(`⚠️ Skipping script collection '${collectionName}' - conflicts with reserved name`);
-                    continue;
-                }
 
                 const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
                 sections.push(`// ========== ${collectionName.toUpperCase()} (Scripts) ==========`);
@@ -700,36 +674,52 @@ class EntryGenerator {
         sections.push('window.EditorController = EditorController;');
         sections.push('');
 
-        // Set up window.THREE with core library and addons
+        // Set up window.THREE with core library and addons (if libraries collection exists)
         sections.push('// Set up window.THREE with core library and addons');
-        sections.push('Object.keys(Libraries).forEach(key => {');
-        sections.push('  // Core THREE.js library');
-        sections.push('  if (key === \'threejs\' || key === \'THREE\') {');
-        sections.push('    window.THREE = Libraries[key];');
-        sections.push('  }');
-        sections.push('});');
-        sections.push('');
-        sections.push('// Add Three.js addons to window.THREE namespace');
-        sections.push('if (!window.THREE) window.THREE = {};');
-        sections.push('Object.keys(Libraries).forEach(key => {');
-        sections.push('  if (key.startsWith(\'three_\')) {');
-        sections.push('    // For three_ prefixed libraries, add as both namespaced AND flattened');
-        sections.push('    const addon = Libraries[key];');
-        sections.push('    const cleanName = key.replace(\'three_\', \'\');');
-        sections.push('    window.THREE[cleanName] = addon; // Add as namespace');
-        sections.push('    if (typeof addon === \'object\' && addon !== null) {');
-        sections.push('      Object.assign(window.THREE, addon); // Also flatten for direct access');
+        sections.push('if (window.GUTS.libraries) {');
+        sections.push('  Object.keys(window.GUTS.libraries).forEach(key => {');
+        sections.push('    // Core THREE.js library');
+        sections.push('    if (key === \'threejs\' || key === \'THREE\') {');
+        sections.push('      window.THREE = window.GUTS.libraries[key];');
         sections.push('    }');
-        sections.push('  } else if (key === \'GLTFLoader\' || key === \'BufferGeometryUtils\' || key === \'OrbitControls\') {');
-        sections.push('    // Other THREE.js libraries');
-        sections.push('    window.THREE[key] = Libraries[key];');
-        sections.push('  }');
-        sections.push('});');
+        sections.push('  });');
+        sections.push('  ');
+        sections.push('  // Add Three.js addons to window.THREE namespace');
+        sections.push('  if (!window.THREE) window.THREE = {};');
+        sections.push('  Object.keys(window.GUTS.libraries).forEach(key => {');
+        sections.push('    if (key.startsWith(\'three_\')) {');
+        sections.push('      // For three_ prefixed libraries, add as both namespaced AND flattened');
+        sections.push('      const addon = window.GUTS.libraries[key];');
+        sections.push('      const cleanName = key.replace(\'three_\', \'\');');
+        sections.push('      window.THREE[cleanName] = addon; // Add as namespace');
+        sections.push('      if (typeof addon === \'object\' && addon !== null) {');
+        sections.push('        Object.assign(window.THREE, addon); // Also flatten for direct access');
+        sections.push('      }');
+        sections.push('    } else if (key === \'GLTFLoader\' || key === \'BufferGeometryUtils\' || key === \'OrbitControls\') {');
+        sections.push('      // Other THREE.js libraries');
+        sections.push('      window.THREE[key] = window.GUTS.libraries[key];');
+        sections.push('    }');
+        sections.push('  });');
+        sections.push('}');
         sections.push('');
 
+        // Build dynamic exports
+        const exportsList = ['CodeMirror', 'FileSystemSyncService', 'EditorModel', 'EditorView', 'EditorController'];
+
+        // Add script collections to exports
+        Object.values(scriptCollectionObjects).forEach(varName => {
+            exportsList.push(varName);
+        });
+
         // Export
-        sections.push('export { Libraries, CodeMirror, FileSystemSyncService, EditorModel, EditorView, EditorController };');
-        sections.push('export default Libraries;');
+        sections.push(`export { ${exportsList.join(', ')} };`);
+
+        // Export Libraries as default if it exists, otherwise export window.GUTS
+        if (scriptCollectionObjects.libraries) {
+            sections.push('export default Libraries;');
+        } else {
+            sections.push('export default window.GUTS;');
+        }
 
         const entryPath = path.join(this.tempDir, 'editor-entry.js');
         fs.writeFileSync(entryPath, sections.join('\n'), 'utf8');
