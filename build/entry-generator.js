@@ -632,8 +632,15 @@ class EntryGenerator {
 
         // Import script collections (for Scripts category collections like behaviorTrees)
         const scriptCollectionObjects = {};
+        const reservedNames = ['libraries']; // Names already hardcoded in the entry
         if (editor.scriptCollections && Object.keys(editor.scriptCollections).length > 0) {
             for (const [collectionName, classFiles] of Object.entries(editor.scriptCollections)) {
+                // Skip reserved names that would conflict with hardcoded objects
+                if (reservedNames.includes(collectionName.toLowerCase())) {
+                    console.log(`⚠️ Skipping script collection '${collectionName}' - conflicts with reserved name`);
+                    continue;
+                }
+
                 const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
                 sections.push(`// ========== ${collectionName.toUpperCase()} (Scripts) ==========`);
 
