@@ -38,7 +38,7 @@ class PlayerInputInterface {
         // Server: Apply immediately, then broadcast
         if (this.mode === 'server') {
             // Apply to game state (unified logic)
-            this.game.unitOrderSystem.applySquadTargetPosition(
+            this.game.playerControlSystem.applySquadTargetPosition(
                 placementId,
                 targetPosition,
                 meta,
@@ -81,7 +81,7 @@ class PlayerInputInterface {
                         const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
 
                         // Now apply to game state after server confirmation
-                        this.game.unitOrderSystem.applySquadTargetPosition(
+                        this.game.playerControlSystem.applySquadTargetPosition(
                             placementId,
                             targetPosition,
                             meta,
@@ -117,7 +117,7 @@ class PlayerInputInterface {
         // Server: Apply immediately, then broadcast
         if (this.mode === 'server') {
             // Apply to game state (unified logic)
-            this.game.unitOrderSystem.applySquadsTargetPositions(
+            this.game.playerControlSystem.applySquadsTargetPositions(
                 placementIds,
                 targetPositions,
                 meta,
@@ -156,7 +156,7 @@ class PlayerInputInterface {
                         const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
 
                         // Now apply to game state after server confirmation
-                        this.game.unitOrderSystem.applySquadsTargetPositions(
+                        this.game.playerControlSystem.applySquadsTargetPositions(
                             placementIds,
                             targetPositions,
                             meta,
@@ -191,7 +191,7 @@ class PlayerInputInterface {
      */
     applyOpponentSquadTarget(placementId, targetPosition, meta, commandCreatedTime) {
         // Apply directly - this is already server-validated
-        this.game.unitOrderSystem.applySquadTargetPosition(
+        this.game.playerControlSystem.applySquadTargetPosition(
             placementId,
             targetPosition,
             meta,
@@ -212,7 +212,7 @@ class PlayerInputInterface {
      */
     applyOpponentSquadTargets(placementIds, targetPositions, meta, commandCreatedTime) {
         // Apply directly - this is already server-validated
-        this.game.unitOrderSystem.applySquadsTargetPositions(
+        this.game.playerControlSystem.applySquadsTargetPositions(
             placementIds,
             targetPositions,
             meta,

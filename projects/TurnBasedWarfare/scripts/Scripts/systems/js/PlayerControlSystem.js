@@ -1,8 +1,20 @@
-class UnitOrderSystem extends GUTS.BaseSystem {
+/**
+ * PlayerControlSystem
+ *
+ * Handles all canvas-based player interactions:
+ * - Move orders (right-click)
+ * - Building placement (left-click when selectedUnitType is set)
+ * - Squad action panels
+ * - Builder assignment
+ *
+ * Delegates game logic to PlayerInputInterface.
+ */
+class PlayerControlSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game = game;
-        this.game.unitOrderSystem = this;
+        this.game.playerControlSystem = this;
+        this.game.unitOrderSystem = this; // Keep for backwards compatibility
 
         this.CT = this.game.componentManager.getComponentTypes();
 
@@ -11,7 +23,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.pendingCallbacks = 0;
 
         this._onCanvasClick = this._onCanvasClick.bind(this);
-       // this._onCanvasMouseMove = this._onCanvasMouseMove.bind(this);
+        this._onCanvasLeftClick = this._onCanvasLeftClick.bind(this);
 
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
@@ -20,10 +32,20 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             cellOpacity: 0.3,
             borderOpacity: 0.6
         });
+
+        // Placement preview (for building placement)
+        this.placementPreview = new GUTS.PlacementPreview(this.game);
     }
 
     init() {
-        // No longer needed - entity sync at battle start handles opponent orders
+        // Add canvas left-click listener for building placement
+        const canvas = this.game.canvas;
+        if (canvas) {
+            canvas.addEventListener('click', this._onCanvasLeftClick);
+        }
+
+        // Register placement methods
+        this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
     }
 
     showSquadActionPanel(placementId) {
@@ -608,10 +630,117 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             this.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
         }
     }
+
+    /**
+     * Handle left-click for building placement
+     */
+    _onCanvasLeftClick(event) {
+        const state = this.game.state;
+
+        // Only handle clicks during placement phase with a selected unit type
+        if (state.phase !== 'placement') return;
+        if (!state.selectedUnitType) return;
+
+        // Get world position from mouse
+        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
+        if (!worldPos) return;
+
+        // Check if player can afford
+        if (state.playerGold < state.selectedUnitType.value) {
+            this.game.uiSystem?.showNotification('Not enough gold', 'error', 1000);
+            return;
+        }
+
+        // Check supply
+        if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(state.mySide, state.selectedUnitType)) {
+            this.game.uiSystem?.showNotification('Not enough supply', 'error', 1000);
+            return;
+        }
+
+        // Create placement data
+        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
+        const placement = this.createPlacementData(gridPos, state.selectedUnitType, state.mySide);
+
+        if (!placement) {
+            this.game.uiSystem?.showNotification('Invalid placement', 'error', 1000);
+            return;
+        }
+
+        // Delegate to PlayerInputInterface with callback for visual effects
+        this.game.playerInputInterface.placeSquad(placement, null, (success, result) => {
+            if (success && result) {
+                // Visual effects AFTER server confirmation
+                const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, placement.unitType);
+                if (unitPositions.length <= 8 && this.game.effectsSystem) {
+                    unitPositions.slice(0, 8).forEach(pos => {
+                        this.game.gameManager.call('createParticleEffect', pos.x, 0, pos.z, 'magic', {
+                            count: 8,
+                            color: placement.team === 'left' ? 0x00ff00 : 0xff0000
+                        });
+                    });
+                }
+
+                // Clear selection and preview
+                this.game.state.selectedUnitType = null;
+                if (this.placementPreview) {
+                    this.placementPreview.clear();
+                }
+            } else {
+                console.error('[PlayerControlSystem] Placement failed:', result?.error);
+                this.game.uiSystem?.showNotification('Placement failed', 'error', 1000);
+            }
+        });
+    }
+
+    /**
+     * Create placement data from grid position and unit type
+     */
+    createPlacementData(gridPos, unitType, team) {
+        // Validate grid position
+        const isValid = this.game.gameManager.call('isGridPositionAvailable',
+            gridPos,
+            unitType.placementGridWidth || 1,
+            unitType.placementGridHeight || 1,
+            team
+        );
+
+        if (!isValid) {
+            return null;
+        }
+
+        // Get cells for this placement
+        const cells = this.game.gameManager.call('getCellsForGridPosition',
+            gridPos,
+            unitType.placementGridWidth || 1,
+            unitType.placementGridHeight || 1
+        );
+
+        // Create placement object
+        const placementId = `${team}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const placement = {
+            placementId,
+            unitType,
+            gridPosition: gridPos,
+            team,
+            cells,
+            targetPosition: null,
+            collection: unitType.collection || 'units'
+        };
+
+        // Add peasant info if this is a building being placed by a peasant
+        if (this.game.state.peasantBuildingPlacement) {
+            placement.peasantInfo = this.game.state.peasantBuildingPlacement;
+            this.game.state.peasantBuildingPlacement = null;
+        }
+
+        return placement;
+    }
+
     onBattleStart() {
         this.stopTargeting();
     }
-    onDeSelectAll() {        
+
+    onDeSelectAll() {
         this.targetingPreview.clear();
     }
 
@@ -619,6 +748,15 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.stopTargeting();
         if (this.targetingPreview) {
             this.targetingPreview.dispose();
+        }
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
+        }
+
+        // Remove canvas listeners
+        const canvas = this.game.canvas;
+        if (canvas) {
+            canvas.removeEventListener('click', this._onCanvasLeftClick);
         }
     }
 }

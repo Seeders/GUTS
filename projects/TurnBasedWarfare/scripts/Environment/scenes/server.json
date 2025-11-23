@@ -34,7 +34,7 @@
         { "type": "GoldMineSystem" },
         { "type": "VisionSystem" },
         { "type": "SupplySystem" },
-        { "type": "UnitOrderSystem" }
+        { "type": "PlayerControlSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }
