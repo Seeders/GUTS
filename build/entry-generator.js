@@ -630,6 +630,60 @@ class EntryGenerator {
         sections.push('Object.assign(window.GUTS, Libraries);');
         sections.push('');
 
+        // Import script collections (for Scripts category collections like behaviorTrees)
+        const scriptCollectionObjects = {};
+        if (editor.scriptCollections && Object.keys(editor.scriptCollections).length > 0) {
+            for (const [collectionName, classFiles] of Object.entries(editor.scriptCollections)) {
+                const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+                sections.push(`// ========== ${collectionName.toUpperCase()} (Scripts) ==========`);
+
+                // Find metadata for this collection to check for base class
+                const metadata = editor.scriptMetadata?.find(m => m.collection === collectionName);
+                let baseClassFile = null;
+                let otherFiles = classFiles;
+
+                if (metadata && metadata.baseClass) {
+                    // Separate base class from other files
+                    baseClassFile = classFiles.find(f =>
+                        f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                    );
+                    otherFiles = classFiles.filter(f =>
+                        f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                    );
+
+                    // Import base class first
+                    if (baseClassFile) {
+                        sections.push(`// Import ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                        const { imports: baseImports, exports: baseExports } = this.generateImports([baseClassFile], collectionName.toLowerCase());
+                        sections.push(...baseImports);
+                        sections.push('');
+                    }
+                }
+
+                // Import remaining classes
+                const { imports, exports } = this.generateImports(otherFiles, collectionName.toLowerCase());
+                sections.push(...imports);
+                sections.push('');
+
+                sections.push(`const ${capitalized} = {`);
+                if (baseClassFile && metadata) {
+                    const baseVarName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                    sections.push(`  ${metadata.baseClass}: (${baseVarName}.${metadata.baseClass} || ${baseVarName}.default || ${baseVarName}),`);
+                }
+                sections.push(exports.join(',\n'));
+                sections.push('};');
+                sections.push('');
+
+                // Make script collection available in window.GUTS
+                sections.push(`// Make ${collectionName} available in window.GUTS`);
+                sections.push(`window.GUTS.${collectionName} = ${capitalized};`);
+                sections.push(`Object.assign(window.GUTS, ${capitalized});`);
+                sections.push('');
+
+                scriptCollectionObjects[collectionName] = capitalized;
+            }
+        }
+
         // Make editor engine classes and CodeMirror available globally
         sections.push('// Make editor engine classes and CodeMirror available globally');
         sections.push('window.CodeMirror = CodeMirror;');

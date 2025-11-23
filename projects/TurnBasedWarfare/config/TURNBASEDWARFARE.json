@@ -28990,7 +28990,7 @@
       "id": "behaviorTrees",
       "name": "BehaviorTrees",
       "singular": "behaviorTree",
-      "category": "BehaviorTrees"
+      "category": "Scripts"
     },
     {
       "id": "behaviorActions",
