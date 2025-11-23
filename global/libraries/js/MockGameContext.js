@@ -3,9 +3,12 @@
  * Simulates the game's component system for testing behavior trees
  */
 class MockGameContext {
-    constructor(mockEntityData = {}) {
-        this.mockEntityId = 'mock-entity-1';
-        this.components = new Map();
+    constructor(mockEntitiesData = []) {
+        // Store multiple entities, each with their own components
+        // entities is a Map: entityId -> Map(componentType -> componentData)
+        this.entities = new Map();
+        this.currentEntityId = null;
+        this.nextEntityId = 1;
 
         // Set up component types (matching game's componentTypes)
         this.componentTypes = {
@@ -14,81 +17,161 @@ class MockGameContext {
             UNIT_CONTROLLER: 'UNIT_CONTROLLER',
             BUILDER: 'BUILDER',
             VELOCITY: 'VELOCITY',
-            COMBAT: 'COMBAT'
+            COMBAT: 'COMBAT',
+            HEALTH: 'HEALTH',
+            RESOURCE: 'RESOURCE'
         };
 
-        // Initialize components from mock data
-        for (const [componentType, data] of Object.entries(mockEntityData)) {
-            this.components.set(componentType, { ...data });
+        // Initialize entities from mock data
+        if (Array.isArray(mockEntitiesData)) {
+            mockEntitiesData.forEach(entityData => {
+                this.addEntity(entityData.id, entityData.components, entityData.label);
+            });
+        } else if (Object.keys(mockEntitiesData).length > 0) {
+            // Legacy support: single entity passed as object
+            this.addEntity('entity-1', mockEntitiesData, 'Entity 1');
         }
+
+        // If no entities were added, create a default one
+        if (this.entities.size === 0) {
+            this.addEntity('entity-1', {}, 'Entity 1');
+        }
+
+        // Set current entity to first one
+        this.currentEntityId = Array.from(this.entities.keys())[0];
 
         // Mock systems
         this.goldMineSystem = {
             getTeamMines: (team) => {
-                // Return mock mine IDs
-                return this.mockMines || [];
+                // Return entity IDs that have RESOURCE component
+                return this.getEntitiesByComponent('RESOURCE');
             }
         };
-
-        this.mockMines = [];
-        this.mockEnemies = [];
     }
 
     /**
-     * Get a component from the mock entity
-     * @param {string} entityId - Entity ID (always the mock entity)
+     * Add a new mock entity
+     * @param {string} entityId - Unique entity ID
+     * @param {Object} componentsData - Component data for this entity
+     * @param {string} label - Human-readable label
+     */
+    addEntity(entityId, componentsData = {}, label = null) {
+        const components = new Map();
+        for (const [componentType, data] of Object.entries(componentsData)) {
+            components.set(componentType, { ...data });
+        }
+
+        this.entities.set(entityId, {
+            id: entityId,
+            label: label || entityId,
+            components: components
+        });
+
+        return entityId;
+    }
+
+    /**
+     * Remove an entity
+     * @param {string} entityId - Entity to remove
+     */
+    removeEntity(entityId) {
+        this.entities.delete(entityId);
+
+        // Update current entity if we deleted it
+        if (this.currentEntityId === entityId) {
+            this.currentEntityId = this.entities.size > 0 ? Array.from(this.entities.keys())[0] : null;
+        }
+    }
+
+    /**
+     * Get entity by ID
+     * @param {string} entityId - Entity ID
+     * @returns {Object|null} - Entity data or null
+     */
+    getEntity(entityId) {
+        return this.entities.get(entityId) || null;
+    }
+
+    /**
+     * Get all entity IDs
+     * @returns {Array} - Array of entity IDs
+     */
+    getAllEntityIds() {
+        return Array.from(this.entities.keys());
+    }
+
+    /**
+     * Get all entities
+     * @returns {Array} - Array of entity objects
+     */
+    getAllEntities() {
+        return Array.from(this.entities.values());
+    }
+
+    /**
+     * Get entities that have a specific component
+     * @param {string} componentType - Component type to filter by
+     * @returns {Array} - Array of entity IDs
+     */
+    getEntitiesByComponent(componentType) {
+        const result = [];
+        for (const [entityId, entity] of this.entities.entries()) {
+            if (entity.components.has(componentType)) {
+                result.push(entityId);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get a component from an entity
+     * @param {string} entityId - Entity ID
      * @param {string} componentType - Component type to get
      * @returns {Object|null} - The component data or null
      */
     getComponent(entityId, componentType) {
-        // For simplicity, always return the mock entity's components
-        return this.components.get(componentType) || null;
+        const entity = this.entities.get(entityId);
+        if (!entity) return null;
+        return entity.components.get(componentType) || null;
     }
 
     /**
-     * Set a component on the mock entity
+     * Set a component on an entity
+     * @param {string} entityId - Entity ID
      * @param {string} componentType - Component type to set
      * @param {Object} data - Component data
      */
-    setComponent(componentType, data) {
-        this.components.set(componentType, { ...data });
+    setComponent(entityId, componentType, data) {
+        const entity = this.entities.get(entityId);
+        if (entity) {
+            entity.components.set(componentType, { ...data });
+        }
     }
 
     /**
-     * Update a component property
+     * Update a component property on an entity
+     * @param {string} entityId - Entity ID
      * @param {string} componentType - Component type
      * @param {string} property - Property name
      * @param {any} value - New value
      */
-    updateComponent(componentType, property, value) {
-        const component = this.components.get(componentType);
+    updateComponent(entityId, componentType, property, value) {
+        const component = this.getComponent(entityId, componentType);
         if (component) {
             component[property] = value;
         }
     }
 
     /**
-     * Get all components (for UI display)
-     * @returns {Map} - All components
+     * Update entity label
+     * @param {string} entityId - Entity ID
+     * @param {string} label - New label
      */
-    getAllComponents() {
-        return this.components;
-    }
-
-    /**
-     * Set mock mines for testing
-     * @param {Array} mineIds - Array of mine entity IDs
-     */
-    setMockMines(mineIds) {
-        this.mockMines = mineIds;
-    }
-
-    /**
-     * Set mock enemies for testing
-     * @param {Array} enemyIds - Array of enemy entity IDs
-     */
-    setMockEnemies(enemyIds) {
-        this.mockEnemies = enemyIds;
+    updateEntityLabel(entityId, label) {
+        const entity = this.entities.get(entityId);
+        if (entity) {
+            entity.label = label;
+        }
     }
 
     /**
@@ -97,18 +180,28 @@ class MockGameContext {
      * @returns {MockGameContext} - Mock game context instance
      */
     static fromBehaviorTreeData(behaviorTreeData) {
-        const mockEntityData = behaviorTreeData.mockEntity || {};
-        return new MockGameContext(mockEntityData);
+        // Support both new mockEntities (array) and legacy mockEntity (object)
+        const mockData = behaviorTreeData.mockEntities ||
+                        (behaviorTreeData.mockEntity ? [{ id: 'entity-1', components: behaviorTreeData.mockEntity, label: 'Entity 1' }] : []);
+        return new MockGameContext(mockData);
     }
 
     /**
-     * Export the current mock entity state
-     * @returns {Object} - Component data
+     * Export all entities state
+     * @returns {Array} - Array of entity data
      */
     export() {
-        const exported = {};
-        for (const [type, data] of this.components.entries()) {
-            exported[type] = { ...data };
+        const exported = [];
+        for (const entity of this.entities.values()) {
+            const components = {};
+            for (const [type, data] of entity.components.entries()) {
+                components[type] = { ...data };
+            }
+            exported.push({
+                id: entity.id,
+                label: entity.label,
+                components: components
+            });
         }
         return exported;
     }
