@@ -586,6 +586,75 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
         // Show game menu button when game starts
         this.showGameMenu();
+
+        // Request starting state from server (starting units, camera position)
+        this.requestStartingState();
+    }
+
+    requestStartingState() {
+        this.game.networkManager.getStartingState((success, response) => {
+            if (success) {
+                console.log('[MultiplayerUISystem] Received starting state:', response);
+                const collections = this.game.getCollections();
+
+                response.startingUnits.forEach((unitData) => {
+                    const unitId = unitData.type;
+                    const gridPos = unitData.position;
+                    const collection = collections[unitData.collection];
+
+                    if (collection) {
+                        const unitType = collection[unitId];
+
+                        // Get cells for this placement
+                        const cells = this.game.gameManager.call('getCellsForGridPosition',
+                            gridPos,
+                            unitType.placementGridWidth || 1,
+                            unitType.placementGridHeight || 1
+                        );
+
+                        // Create placement object
+                        const placementId = `${this.game.state.mySide}_start_${unitId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        const placement = {
+                            placementId,
+                            unitType,
+                            gridPosition: gridPos,
+                            team: this.game.state.mySide,
+                            cells,
+                            targetPosition: null,
+                            collection: unitData.collection,
+                            isStartingState: true
+                        };
+
+                        // Use PlayerInputInterface to place starting units
+                        this.game.playerInputInterface.placeSquad(
+                            placement,
+                            null, // networkData
+                            (success, result) => {
+                                if (success && result) {
+                                    console.log(`[MultiplayerUISystem] Placed starting ${unitId}`);
+                                    // Add building to building registry if it's a building
+                                    if (unitData.collection === "buildings" && result.squadUnits && result.squadUnits[0]) {
+                                        this.game.gameManager.call('addBuilding', unitId, result.squadUnits[0]);
+                                    }
+                                }
+                            }
+                        );
+                    }
+                });
+
+                // Set camera position and lookAt
+                if (response.camera) {
+                    const pos = response.camera.position;
+                    const look = response.camera.lookAt;
+                    if (this.game.camera) {
+                        this.game.camera.position.set(pos.x, pos.y, pos.z);
+                        this.game.camera.lookAt(look.x, look.y, look.z);
+                    }
+                }
+            } else {
+                console.error('[MultiplayerUISystem] Failed to get starting state');
+            }
+        });
     }
 
     showNotification(message, type = 'info', duration = 4000) {
