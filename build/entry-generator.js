@@ -89,7 +89,22 @@ class EntryGenerator {
             }
 
             imports.push(importStatement);
-            exports.push(`  ${moduleName}: ${exportValue}`);
+
+            // Quote the property name if it contains special characters
+            const needsQuoting = /[^a-zA-Z0-9_$]/.test(moduleName);
+            const propertyName = needsQuoting ? `'${moduleName}'` : moduleName;
+
+            // For the export value, if moduleName has special chars, use bracket notation
+            let finalExportValue = exportValue;
+            if (needsQuoting && exportValue.includes(`${varName}.${moduleName}`)) {
+                // Replace dot notation with bracket notation for names with special chars
+                finalExportValue = exportValue.replace(
+                    `${varName}.${moduleName}`,
+                    `${varName}['${moduleName}']`
+                );
+            }
+
+            exports.push(`  ${propertyName}: ${finalExportValue}`);
         });
 
         return { imports, exports };
