@@ -46,19 +46,10 @@ class MineGoldAbility extends GUTS.BaseAbility {
         // Autocast behavior: only activate mining if there's NO current command
         const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
 
-        // If there's a current command (player order or other), reset mining state and don't execute
+        // If there's a current command, mark that we were interrupted and don't execute mining
         if (currentCommand) {
-            // Reset mining state when interrupted by a command
-            // This ensures we start fresh when the command completes
-            miningState.state = 'idle';
-            miningState.targetMineEntityId = null;
-            miningState.targetMinePosition = null;
-            miningState.targetTownHall = null;
-            miningState.waitingPosition = null;
-            miningState.miningStartTime = 0;
-            miningState.depositStartTime = 0;
-            // Note: Keep hasGold if they were carrying gold when interrupted
-
+            // Mark that mining was interrupted - we'll reset state when resuming
+            miningState.wasInterrupted = true;
             return false;
         }
 
@@ -70,6 +61,19 @@ class MineGoldAbility extends GUTS.BaseAbility {
         }
 
         // No current command and no recently completed player order - activate mining (autocast)
+        // If we were interrupted, reset state to start fresh
+        if (miningState.wasInterrupted) {
+            miningState.state = 'idle';
+            miningState.targetMineEntityId = null;
+            miningState.targetMinePosition = null;
+            miningState.targetTownHall = null;
+            miningState.waitingPosition = null;
+            miningState.miningStartTime = 0;
+            miningState.depositStartTime = 0;
+            miningState.wasInterrupted = false;
+            // Note: Keep hasGold if they were carrying gold when interrupted
+        }
+
         // If we were interrupted (controller was changed), reset mining state to idle
         const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
         if(currentAIController !== ComponentTypes.MINING_STATE){

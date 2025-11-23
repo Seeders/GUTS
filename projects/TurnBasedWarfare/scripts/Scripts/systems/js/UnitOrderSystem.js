@@ -181,14 +181,15 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     activateBuildingPlacement(building, selectedUnitId) {
         this.game.state.selectedUnitType = {...building};
-        
+
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
-            buildTime: building.buildTime
+            buildTime: building.buildTime,
+            isPlayerOrder: true  // Mark as player order so it's tracked correctly
         };
-        
+
         this.stopTargeting();
-        
+
         this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
     }
     moveOrderAction() {
