@@ -5,11 +5,14 @@
  * This class handles all player input actions and applies them to the game.
  *
  * Architecture:
- * - Client: Player UI → PlayerInputInterface → Game Logic + Network Send
- * - Server: Network Receive → PlayerInputInterface → Game Logic
+ * - Client (own actions): Player UI → PlayerInputInterface → Network Send → Wait → Game Logic
+ * - Server: Network Receive → PlayerInputInterface → Game Logic + Broadcast
+ * - Client (opponent actions): Network Receive → PlayerInputInterface → Game Logic
  *
- * The interface doesn't care where input comes from (player or network).
- * It just applies the action to the game state.
+ * ALL game state changes go through this interface, ensuring:
+ * - Consistent application of game logic
+ * - Single source of truth for state changes
+ * - Server authority with client wait-for-confirmation
  */
 class PlayerInputInterface {
     constructor(game) {
@@ -173,6 +176,48 @@ class PlayerInputInterface {
                 }
             );
         }
+    }
+
+    /**
+     * Apply opponent's squad target (received from server broadcast)
+     *
+     * Called when other clients' move orders are broadcast to this client.
+     * Already server-validated, so just apply directly.
+     *
+     * @param {string} placementId - Squad/placement ID
+     * @param {object} targetPosition - Target position {x, z}
+     * @param {object} meta - Metadata
+     * @param {number} commandCreatedTime - Server timestamp
+     */
+    applyOpponentSquadTarget(placementId, targetPosition, meta, commandCreatedTime) {
+        // Apply directly - this is already server-validated
+        this.game.unitOrderSystem.applySquadTargetPosition(
+            placementId,
+            targetPosition,
+            meta,
+            commandCreatedTime
+        );
+    }
+
+    /**
+     * Apply opponent's squad targets (batch, received from server broadcast)
+     *
+     * Called when other clients' move orders are broadcast to this client.
+     * Already server-validated, so just apply directly.
+     *
+     * @param {string[]} placementIds - Array of squad/placement IDs
+     * @param {object[]} targetPositions - Array of target positions
+     * @param {object} meta - Metadata
+     * @param {number} commandCreatedTime - Server timestamp
+     */
+    applyOpponentSquadTargets(placementIds, targetPositions, meta, commandCreatedTime) {
+        // Apply directly - this is already server-validated
+        this.game.unitOrderSystem.applySquadsTargetPositions(
+            placementIds,
+            targetPositions,
+            meta,
+            commandCreatedTime
+        );
     }
 
     /**

@@ -713,13 +713,15 @@ class MultiplayerNetworkManager {
 
     handleOpponentSquadTarget(data) {
         const { placementId, targetPosition, meta, commandCreatedTime } = data;
-        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+        // Use unified interface to ensure consistent game state handling
+        this.game.playerInputInterface.applyOpponentSquadTarget(placementId, targetPosition, meta, commandCreatedTime);
     }
 
     handleOpponentSquadTargets(data) {
         const { placementIds, targetPositions, meta, commandCreatedTime } = data;
         console.log('[MultiplayerNetworkManager] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, commandCreatedTime });
-        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime);
+        // Use unified interface to ensure consistent game state handling
+        this.game.playerInputInterface.applyOpponentSquadTargets(placementIds, targetPositions, meta, commandCreatedTime);
     }
 
     syncWithServerState(data) {
