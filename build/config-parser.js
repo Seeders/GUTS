@@ -289,7 +289,7 @@ class ConfigParser {
 
     /**
      * Generate editor entry point data
-     * Includes ALL global libraries by default, except server-only libraries
+     * Loads libraries and classes from editor modules specified in editor config
      */
     getEditorEntry() {
         const editorConfig = this.config.objectTypes.configs?.editor;
@@ -298,101 +298,78 @@ class ConfigParser {
             return null;
         }
 
-        const libraryMap = this.config.objectTypes.libraries || {};
+        const editorModules = editorConfig.editorModules || [];
+        const globalModulesPath = path.join(__dirname, '..', 'global', 'editorModules');
 
-        // Filter out server-only libraries and libraries that require Node.js modules
-        const skipLibraries = [
-            'io', // socket.io requires Node.js modules
-            'Compiler', // requires fs
-            'ServerNetworkManager',
-            'ServerEngine',
-            'ServerModuleManager',
-            'ServerECSGame',
-            'ServerGameRoom',
-            'ServerSceneManager',
-            'ServerEventManager',
-            'ServerGameLoader',
-            'ServerMatchmakingService',
-            'GameRoom',
-            'MatchmakingService'
-        ];
+        const allLibraries = [];
+        const classCollections = {};
+        const classMetadata = [];
+        const moduleConfigs = {};
 
-        // Include ALL libraries except those in skipLibraries
-        const allLibraryNames = Object.keys(libraryMap).filter(name => !skipLibraries.includes(name));
-        console.log(`✓ Including ${allLibraryNames.length} global libraries in editor bundle (skipped ${Object.keys(libraryMap).length - allLibraryNames.length} server-only libraries)`);
+        console.log(`✓ Processing ${editorModules.length} editor modules`);
 
-        const libraries = this.getLibraryPaths(allLibraryNames);
+        // Process each editor module in order
+        for (const moduleName of editorModules) {
+            const moduleConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
 
-        // Load scripts from collections in "Scripts" category
-        const scriptCollections = {};
-        const scriptMetadata = [];
-        const objectTypeDefinitions = this.config.objectTypeDefinitions || [];
+            if (!fs.existsSync(moduleConfigPath)) {
+                console.warn(`⚠️ Editor module config not found: ${moduleConfigPath}`);
+                continue;
+            }
 
-        for (const definition of objectTypeDefinitions) {
-            // Check if this collection is in the Scripts category
-            if (definition.category === 'Scripts' && definition.id) {
-                const collectionId = definition.id;
-                const collectionData = this.config.objectTypes[collectionId];
+            const moduleConfig = JSON.parse(fs.readFileSync(moduleConfigPath, 'utf8'));
+            moduleConfigs[moduleName] = moduleConfig;
+            console.log(`  ✓ Loaded module: ${moduleName}`);
 
-                if (collectionData && typeof collectionData === 'object') {
-                    const classFiles = [];
+            // Add libraries from this module (in order)
+            if (moduleConfig.libraries && Array.isArray(moduleConfig.libraries)) {
+                const libraryPaths = this.getLibraryPaths(moduleConfig.libraries);
+                allLibraries.push(...libraryPaths);
+                console.log(`    ↳ Added ${libraryPaths.length} libraries`);
+            }
 
-                    // Iterate through all objects in this collection
-                    for (const [objectKey, objectData] of Object.entries(collectionData)) {
-                        if (objectData.filePath) {
-                            const absolutePath = path.join(__dirname, '..', objectData.filePath);
-
-                            // Skip non-JavaScript files (HTML, JSON, etc.)
-                            if (!absolutePath.endsWith('.js')) {
-                                continue;
-                            }
-
-                            // Skip libraries that require Node.js modules or are server-only
-                            // This is especially important for the "libraries" collection
-                            if (collectionId === 'libraries' && skipLibraries.includes(objectKey)) {
-                                console.log(`⚠️ Skipping server/Node.js library from script collection: ${objectKey}`);
-                                continue;
-                            }
-
-                            if (fs.existsSync(absolutePath)) {
-                                classFiles.push({
-                                    name: objectKey,
-                                    fileName: objectData.fileName || objectKey,
-                                    path: absolutePath
-                                });
-                            } else {
-                                console.warn(`⚠️ Script file not found: ${absolutePath}`);
-                            }
-                        }
+            // Process classes if present
+            if (moduleConfig.classes && Array.isArray(moduleConfig.classes)) {
+                for (const classRef of moduleConfig.classes) {
+                    const collectionName = classRef.collection;
+                    if (!collectionName) {
+                        console.warn('⚠️ Class reference missing collection name');
+                        continue;
                     }
 
-                    if (classFiles.length > 0) {
-                        scriptCollections[collectionId] = classFiles;
-                        console.log(`✓ Loaded ${classFiles.length} scripts from ${collectionId} collection`);
+                    // Get all classes from this collection
+                    const allClasses = this.getAllClassesFromCollection(collectionName);
 
-                        // Check for base class in scene config classes property
-                        const sceneConfig = this.config.objectTypes.configs?.scene;
-                        if (sceneConfig && sceneConfig.classes) {
-                            const classConfig = sceneConfig.classes.find(c => c.collection === collectionId);
-                            if (classConfig && classConfig.baseClass) {
-                                scriptMetadata.push({
-                                    collection: collectionId,
-                                    baseClass: classConfig.baseClass
-                                });
-                                console.log(`  ↳ Base class: ${classConfig.baseClass}`);
-                            }
-                        }
+                    // Store in dynamic collection
+                    if (!classCollections[collectionName]) {
+                        classCollections[collectionName] = [];
+                    }
+                    classCollections[collectionName].push(...allClasses);
+
+                    // Track base class if specified
+                    if (classRef.baseClass) {
+                        classMetadata.push({
+                            collection: collectionName,
+                            baseClass: classRef.baseClass,
+                            files: allClasses
+                        });
+                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName} (base: ${classRef.baseClass})`);
+                    } else {
+                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName}`);
                     }
                 }
             }
         }
 
+        console.log(`✓ Editor entry complete: ${allLibraries.length} libraries, ${Object.keys(classCollections).length} class collections`);
+
         return {
-            libraries,
+            libraries: allLibraries,
             config: editorConfig,
-            modules: editorConfig.editorModules || [],
-            scriptCollections,
-            scriptMetadata
+            modules: editorModules,
+            moduleConfigs: moduleConfigs,
+            classCollections: classCollections,
+            classMetadata: classMetadata
         };
     }
 
