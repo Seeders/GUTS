@@ -1,7 +1,3 @@
-/**
- * Behavior Tree Visual Editor
- * Provides a graphical interface for editing behavior tree nodes
- */
 class BehaviorTreeEditor {
     constructor(controller, moduleConfig, GUTS) {
         this.controller = controller;
@@ -146,7 +142,7 @@ class BehaviorTreeEditor {
         }
 
         // Get the script class name from the key
-        const scriptName = this.controller.getCurrentObjectKey();
+        const scriptName = this.controller.getSelectedObject();
 
         // Try multiple ways to find the class
         let TreeClass = null;
