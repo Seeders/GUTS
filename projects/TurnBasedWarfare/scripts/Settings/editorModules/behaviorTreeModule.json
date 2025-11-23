@@ -4,7 +4,7 @@
   "interface": "behaviorTreeEditor",
   "inputElement": "textarea",
   "inputDataType": "json",
-  "propertyName": "nodes",
+  "propertyName": "isBehaviorTree",
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [

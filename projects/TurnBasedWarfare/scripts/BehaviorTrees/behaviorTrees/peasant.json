@@ -1,8 +1,8 @@
 {
+  "isBehaviorTree": true,
   "title": "Peasant Behavior Tree",
   "unitType": "peasant",
   "description": "Worker unit that builds and mines",
-  "script": "peasant",
   "mockEntity": {
     "POSITION": { "x": 100, "z": 100 },
     "TEAM": { "team": 1 },
@@ -12,50 +12,6 @@
     },
     "BUILDER": {
       "assignedBuilding": null
-    }
-  },
-  "nodes": {
-    "root": {
-      "type": "selector",
-      "children": ["checkPlayerOrder", "checkBuildOrder", "checkMining", "idle"]
-    },
-    "checkPlayerOrder": {
-      "type": "condition",
-      "condition": "hasPlayerOrder",
-      "onSuccess": "executePlayerOrder"
-    },
-    "executePlayerOrder": {
-      "type": "action",
-      "action": "playerOrder.action",
-      "target": "playerOrder.target",
-      "priority": 10
-    },
-    "checkBuildOrder": {
-      "type": "condition",
-      "condition": "hasAssignedBuilding",
-      "onSuccess": "buildAction"
-    },
-    "buildAction": {
-      "type": "action",
-      "action": "BUILD",
-      "target": "builder.assignedBuilding",
-      "priority": 20
-    },
-    "checkMining": {
-      "type": "condition",
-      "condition": "hasNearbyMine",
-      "onSuccess": "mineAction"
-    },
-    "mineAction": {
-      "type": "action",
-      "action": "MINE",
-      "target": "nearestMine",
-      "priority": 5
-    },
-    "idle": {
-      "type": "action",
-      "action": "IDLE",
-      "priority": 0
     }
   }
 }
