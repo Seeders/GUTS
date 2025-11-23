@@ -10,7 +10,8 @@
         { "type": "ComponentManager" },
         { "type": "GameManager" },
         { "type": "UnitCreationManager" },
-        { "type": "SquadManager" }
+        { "type": "SquadManager" },
+        { "type": "PlayerInputInterface" }
       ],
       "systems": [
         { "type": "GridSystem" },

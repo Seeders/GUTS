@@ -482,40 +482,36 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     issueMoveOrders(placementIds, targetPosition) {
         if(this.game.state.phase != "placement") {
             return;
-        };
+        }
+
         const meta = { ...this.orderMeta, isPlayerOrder: true };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
-        // Capture client time for deterministic command creation
         const commandCreatedTime = this.game.state.now;
-        this.game.networkManager.setSquadTargets(
-            { placementIds, targetPositions, meta, commandCreatedTime },
-            (success, responseData) => {
-                if (success) {
-                    // Use the time from the response (which came from our original request)
-                    const createdTime = responseData?.commandCreatedTime || commandCreatedTime;
 
-                    // Apply the move orders using the unified interface
-                    // This ensures client and server use the exact same code path
-                    this.applySquadsTargetPositions(placementIds, targetPositions, meta, createdTime);
-
-                    // Add visual feedback effects (client-only)
-                    for(let i = 0; i < placementIds.length; i++){
-                        let placementId = placementIds[i];
-                        const targetPosition = targetPositions[i];
-                        const placement = this.game.gameManager.call('getPlacementById', placementId);
-                        if (placement && placement.squadUnits && this.game.effectsSystem && targetPosition) {
-                            placement.squadUnits.forEach((unitId) => {
-                                this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
-                            });
-                        }
-                    }
-
-                    this.startTargeting();
-                    this.showMoveTargets();
-                }
-            }
+        // Use unified player input interface
+        // This handles: apply to game + send to network (client) or broadcast (server)
+        this.game.playerInputInterface.setSquadTargets(
+            placementIds,
+            targetPositions,
+            meta,
+            commandCreatedTime
         );
+
+        // Client-only: Add visual feedback effects
+        for(let i = 0; i < placementIds.length; i++){
+            let placementId = placementIds[i];
+            const targetPos = targetPositions[i];
+            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            if (placement && placement.squadUnits && this.game.effectsSystem && targetPos) {
+                placement.squadUnits.forEach((unitId) => {
+                    this.game.gameManager.call('createParticleEffect', targetPos.x, 0, targetPos.z, 'magic', { ...this.pingEffect });
+                });
+            }
+        }
+
+        this.startTargeting();
+        this.showMoveTargets();
     }
 
     getFormationTargetPositions(targetPosition, placementIds){

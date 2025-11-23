@@ -248,29 +248,15 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            // UNIFIED GAME LOGIC: Delegate to UnitOrderSystem
-            // This ensures server executes the same code as client
-            this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
-
-            // Network: Send responses
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
-                success: true,
+            // UNIFIED INPUT INTERFACE: Delegates to PlayerInputInterface
+            // Same interface used by client, but with network data for broadcasting
+            this.game.playerInputInterface.setSquadTarget(
                 placementId,
                 targetPosition,
                 meta,
-                commandCreatedTime: commandCreatedTime
-            });
-
-            // Network: Broadcast to other players
-            for (const [otherPlayerId, otherPlayer] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
-                        placementId,
-                        targetPosition,
-                        meta
-                    });
-                }
-            }
+                commandCreatedTime,
+                { playerId, roomId, room }
+            );
 
             console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
 
@@ -324,27 +310,15 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 }
             }
 
-            // UNIFIED GAME LOGIC: Delegate to UnitOrderSystem
-            // This ensures server executes the same code as client
-            this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta, commandCreatedTime);
-
-            // Network: Send responses
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
-                success: true,
-                commandCreatedTime: commandCreatedTime
-            });
-
-            // Network: Broadcast to other players
-            for (const [otherPlayerId, otherPlayer] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
-                        placementIds,
-                        targetPositions,
-                        meta,
-                        commandCreatedTime: commandCreatedTime
-                    });
-                }
-            }
+            // UNIFIED INPUT INTERFACE: Delegates to PlayerInputInterface
+            // Same interface used by client, but with network data for broadcasting
+            this.game.playerInputInterface.setSquadTargets(
+                placementIds,
+                targetPositions,
+                meta,
+                commandCreatedTime,
+                { playerId, roomId, room }
+            );
             
         } catch (error) {
             console.error('Error setting squad target:', error);

@@ -17,9 +17,10 @@
         { "type": "ResultsManager" },
         { "type": "SaveManager" },
         { "type": "ScreenManager" },
-        { "type": "UnitCreationManager" },     
-        { "type": "SquadManager" },         
-        { "type": "MultiplayerNetworkManager" },    
+        { "type": "UnitCreationManager" },
+        { "type": "SquadManager" },
+        { "type": "PlayerInputInterface" },
+        { "type": "MultiplayerNetworkManager" },
         { "type": "InputManager" }
       ],
       "systems": [
