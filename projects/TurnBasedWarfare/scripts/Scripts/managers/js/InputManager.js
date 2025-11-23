@@ -17,17 +17,20 @@ class InputManager {
     }
         
     setupCanvasEvents() {
-        const canvas = document.getElementById('gameCanvas');
-        if (!canvas) return;
-        
-        canvas.addEventListener('click', (event) => {
-            this.game.placementSystem.handleCanvasClick(event);
-        });
-        
-        canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            this.handleRightClick(event);
-        });
+        // Disabled for multiplayer - SelectedUnitSystem handles canvas clicks
+        // If using single-player mode, re-enable these listeners
+
+        // const canvas = document.getElementById('gameCanvas');
+        // if (!canvas) return;
+        //
+        // canvas.addEventListener('click', (event) => {
+        //     this.game.placementSystem.handleCanvasClick(event);
+        // });
+        //
+        // canvas.addEventListener('contextmenu', (event) => {
+        //     event.preventDefault();
+        //     this.handleRightClick(event);
+        // });
     }
     
     setupButtonEvents() {        
