@@ -21108,7 +21108,11 @@
         "fileName": "BaseAction"
       },
       "BaseBehaviorTree": {
+<<<<<<< HEAD
         "filePath": "/global/libraries/js/BaseBehaviorTree.js",
+=======
+        "filePath": "/projects/TurnBasedWarfare/scripts/BehaviorTrees/behaviorTrees/js/BaseBehaviorTree.js",
+>>>>>>> 2bea9963f364d29a7d20a4c25e08c863b813e784
         "fileName": "BaseBehaviorTree"
       },
       "BaseECSGame": {
