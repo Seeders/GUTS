@@ -2,6 +2,15 @@
   "title": "Footman Behavior Tree",
   "unitType": "footman",
   "description": "Melee combat unit",
+  "script": "footman",
+  "mockEntity": {
+    "POSITION": { "x": 100, "z": 100 },
+    "TEAM": { "team": 1 },
+    "UNIT_CONTROLLER": {
+      "playerOrder": null,
+      "currentAction": null
+    }
+  },
   "nodes": {
     "root": {
       "type": "selector",
