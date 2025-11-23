@@ -310,6 +310,9 @@ class ConfigParser {
             'ServerECSGame',
             'ServerGameRoom',
             'ServerSceneManager',
+            'ServerEventManager',
+            'ServerGameLoader',
+            'ServerMatchmakingService',
             'GameRoom',
             'MatchmakingService'
         ];
@@ -341,6 +344,13 @@ class ConfigParser {
 
                             // Skip non-JavaScript files (HTML, JSON, etc.)
                             if (!absolutePath.endsWith('.js')) {
+                                continue;
+                            }
+
+                            // Skip libraries that require Node.js modules or are server-only
+                            // This is especially important for the "libraries" collection
+                            if (collectionId === 'libraries' && skipLibraries.includes(objectKey)) {
+                                console.log(`⚠️ Skipping server/Node.js library from script collection: ${objectKey}`);
                                 continue;
                             }
 
