@@ -141,29 +141,226 @@ class BehaviorTreeEditor {
 
     async renderScriptBasedTree(canvas) {
         if (!this.objectData) {
-            canvas.innerHTML = '<div style=\"padding: 20px; text-align: center; color: #888;\">No behavior tree data loaded</div>';
+            canvas.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No behavior tree data loaded</div>';
             return;
         }
 
-//i dont need any of this here.
-        const scriptSource = this.objectData.script;//this already has the source of the script automatically.
+        // Get the script class name
+        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
+        const className = scriptName.charAt(0).toUpperCase() + scriptName.slice(1) + 'BehaviorTree';
 
+        // Try to get the tree structure from the class
+        let TreeClass = null;
+        if (GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
+            TreeClass = GUTS.behaviorTrees[scriptName];
+        } else if (window[className]) {
+            TreeClass = window[className];
+        }
+
+        // Extract method names from the class to visualize
+        let methods = [];
+        if (TreeClass) {
+            const instance = new TreeClass();
+            methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+                .filter(name => name.startsWith('check') || name === 'evaluate');
+        }
+
+        // Create visual tree representation
         canvas.innerHTML = `
-            <div style=\"padding: 20px;\">
-                <div style=\"background: #1e1e1e; padding: 15px; border-radius: 4px; overflow-x: auto;\">
-                    <div id=\"bt-script-source\" style=\"color: #d4d4d4; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.5; white-space: pre;\">Loading script source...</div>
-                </div>
-                <div style=\"margin-top: 15px; color: #888; font-size: 12px;\">
-                    💡 This behavior tree is defined by its JavaScript class. Use the simulation panel on the right to test different component states.
+            <div id="bt-graph-container" style="padding: 20px; overflow: auto;">
+                <svg id="bt-graph-svg" width="100%" height="500" style="background: #0a0a0a; border-radius: 4px;">
+                    <!-- Tree will be rendered here -->
+                </svg>
+                <div style="margin-top: 15px; color: #888; font-size: 12px;">
+                    💡 Use the simulation panel to test the behavior tree. Active paths will be highlighted in green.
                 </div>
             </div>
         `;
-//i dont need any of this here.
-                const sourceEl = document.getElementById('bt-script-source');
-                if (sourceEl) {
-                    sourceEl.textContent = scriptSource;
-                }
 
+        this.renderTreeGraph(methods);
+    }
+
+    renderTreeGraph(methods) {
+        const svg = document.getElementById('bt-graph-svg');
+        if (!svg) return;
+
+        // Clear existing content
+        svg.innerHTML = '';
+
+        const nodeWidth = 160;
+        const nodeHeight = 50;
+        const verticalSpacing = 80;
+        const horizontalSpacing = 20;
+
+        // Root node (Selector)
+        const rootY = 40;
+        const rootX = svg.clientWidth / 2 - nodeWidth / 2;
+
+        this.createNode(svg, rootX, rootY, nodeWidth, nodeHeight, 'ROOT SELECTOR', 'selector', 'root');
+
+        // Child nodes (check methods)
+        const childMethods = methods.filter(m => m.startsWith('check'));
+        const totalWidth = (nodeWidth + horizontalSpacing) * childMethods.length - horizontalSpacing;
+        const startX = (svg.clientWidth - totalWidth) / 2;
+
+        childMethods.forEach((method, index) => {
+            const x = startX + index * (nodeWidth + horizontalSpacing);
+            const y = rootY + verticalSpacing;
+
+            // Draw connecting line
+            this.createLine(
+                svg,
+                rootX + nodeWidth / 2,
+                rootY + nodeHeight,
+                x + nodeWidth / 2,
+                y
+            );
+
+            // Create node
+            const label = this.formatMethodName(method);
+            this.createNode(svg, x, y, nodeWidth, nodeHeight, label, 'condition', method);
+
+            // Add potential action below each condition
+            const actionY = y + verticalSpacing;
+            this.createLine(
+                svg,
+                x + nodeWidth / 2,
+                y + nodeHeight,
+                x + nodeWidth / 2,
+                actionY
+            );
+
+            const actionLabel = this.extractActionFromMethod(method);
+            this.createNode(svg, x, actionY, nodeWidth, nodeHeight, actionLabel, 'action', `${method}-action`);
+        });
+
+        // Add IDLE fallback
+        const idleX = startX + childMethods.length * (nodeWidth + horizontalSpacing);
+        const idleY = rootY + verticalSpacing;
+
+        this.createLine(
+            svg,
+            rootX + nodeWidth / 2,
+            rootY + nodeHeight,
+            idleX + nodeWidth / 2,
+            idleY
+        );
+
+        this.createNode(svg, idleX, idleY, nodeWidth, nodeHeight, 'IDLE', 'action', 'idle');
+    }
+
+    createNode(svg, x, y, width, height, label, type, id) {
+        const colors = {
+            'selector': { fill: '#1e3a2f', stroke: '#10b981', text: '#10b981' },
+            'condition': { fill: '#1e2a3a', stroke: '#3b82f6', text: '#3b82f6' },
+            'action': { fill: '#3a1e1e', stroke: '#ef4444', text: '#ef4444' }
+        };
+        const color = colors[type] || colors.action;
+
+        // Create group
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('data-node-id', id);
+        g.setAttribute('class', 'bt-graph-node');
+
+        // Rectangle
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', width);
+        rect.setAttribute('height', height);
+        rect.setAttribute('fill', color.fill);
+        rect.setAttribute('stroke', color.stroke);
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('rx', '6');
+
+        // Text
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x + width / 2);
+        text.setAttribute('y', y + height / 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('fill', color.text);
+        text.setAttribute('font-size', '12');
+        text.setAttribute('font-weight', '600');
+        text.textContent = label;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        svg.appendChild(g);
+    }
+
+    createLine(svg, x1, y1, x2, y2) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#444');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+    }
+
+    formatMethodName(method) {
+        // Convert checkPlayerOrder -> Player Order
+        return method.replace('check', '').replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+    }
+
+    extractActionFromMethod(method) {
+        // Extract likely action from method name
+        const mapping = {
+            'checkPlayerOrder': 'PLAYER ORDER',
+            'checkBuildOrder': 'BUILD',
+            'checkBuild': 'BUILD',
+            'checkMining': 'MINE',
+            'checkMine': 'MINE',
+            'checkCombat': 'ATTACK',
+            'checkAttack': 'ATTACK',
+            'checkMoveOrder': 'MOVE TO'
+        };
+        return mapping[method] || 'ACTION';
+    }
+
+    highlightActiveNode(action) {
+        // Remove previous highlights
+        const nodes = document.querySelectorAll('.bt-graph-node');
+        nodes.forEach(node => {
+            const rect = node.querySelector('rect');
+            if (rect) {
+                rect.setAttribute('stroke-width', '2');
+            }
+        });
+
+        // Highlight active nodes based on action
+        if (!action) return;
+
+        // Highlight root
+        this.highlightNode('root');
+
+        // Highlight specific action node
+        const actionMapping = {
+            'BUILD': 'checkBuildOrder',
+            'MINE': 'checkMining',
+            'ATTACK': 'checkCombat',
+            'MOVE_TO': 'checkMoveOrder',
+            'IDLE': 'idle'
+        };
+
+        const methodName = actionMapping[action];
+        if (methodName) {
+            this.highlightNode(methodName);
+            this.highlightNode(`${methodName}-action`);
+        }
+    }
+
+    highlightNode(nodeId) {
+        const node = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (node) {
+            const rect = node.querySelector('rect');
+            if (rect) {
+                rect.setAttribute('stroke', '#22c55e');
+                rect.setAttribute('stroke-width', '4');
+            }
+        }
     }
 
     createTreeHTML(nodes, nodeName = 'root', depth = 0) {
@@ -1020,6 +1217,18 @@ class BehaviorTreeEditor {
         if (!results || results.length === 0) {
             resultDiv.innerHTML += `<div style="color: #888;">No results</div>`;
             return;
+        }
+
+        // Highlight active node in graph based on first result with action
+        let highlightedAction = null;
+        for (const { result } of results) {
+            if (result && result.action) {
+                highlightedAction = result.action;
+                break;
+            }
+        }
+        if (this.isScriptBased && highlightedAction) {
+            this.highlightActiveNode(highlightedAction);
         }
 
         results.forEach(({ entityId, entity, result }) => {
