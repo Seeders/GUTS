@@ -173,6 +173,8 @@ class BehaviorTreeEditor {
 
         // Extract method names from the class to visualize
         let methods = [];
+
+        // Method 1: Try to extract from class instance
         if (TreeClass) {
             try {
                 const instance = new TreeClass();
@@ -181,11 +183,28 @@ class BehaviorTreeEditor {
                     .filter(name => name.startsWith('check') || name === 'evaluate');
 
                 console.log('Behavior tree class:', scriptName);
-                console.log('Extracted methods:', methods);
+                console.log('Extracted methods via class:', methods);
             } catch (e) {
                 console.warn('Error instantiating behavior tree:', e);
             }
-        } else {
+        }
+
+        // Method 2: If class not found or methods empty, parse from script source
+        if (methods.length === 0 && this.objectData.script) {
+            const scriptSource = this.objectData.script;
+            // Match method definitions like "checkPlayerOrder(", "checkMining(", etc.
+            const methodRegex = /\s+(check\w+)\s*\(/g;
+            let match;
+            const foundMethods = new Set();
+            while ((match = methodRegex.exec(scriptSource)) !== null) {
+                foundMethods.add(match[1]);
+            }
+            methods = Array.from(foundMethods);
+            methods.unshift('evaluate'); // Add evaluate at the beginning
+            console.log('Extracted methods via script parsing:', methods);
+        }
+
+        if (methods.length === 0) {
             console.warn('Could not find behavior tree class:', scriptName);
             console.warn('Available on window:', Object.keys(window).filter(k => k.includes('Behavior')));
         }
