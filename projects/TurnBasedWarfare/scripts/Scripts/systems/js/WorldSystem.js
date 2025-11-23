@@ -149,9 +149,9 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Add environment entity visuals
-        if (terrainDataManager.tileMap?.environmentObjects) {
-            terrainDataManager.tileMap.environmentObjects.forEach(envObj => {
-                this.addEnvironmentEntityVisuals(envObj);
+        if (terrainDataManager.tileMap?.worldObjects) {
+            terrainDataManager.tileMap.worldObjects.forEach(envObj => {
+                this.addWorldEntityVisuals(envObj);
             });
         }
 
@@ -220,27 +220,27 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Add visual components (RENDERABLE) to existing environment entities
+     * Add visual components (RENDERABLE) to existing world entities
      * Entities are created by TerrainSystem with gameplay components
      * WorldSystem only adds the visual representation on the client
      */
-    addEnvironmentEntityVisuals(envObj) {
+    addWorldEntityVisuals(worldObj) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
 
         // Find the existing entity created by TerrainSystem
-        const entityId = `env_${envObj.type}_${envObj.x}_${envObj.y}`;
+        const entityId = `env_${worldObj.type}_${worldObj.x}_${worldObj.y}`;
 
         // Check if entity exists
         if (!this.game.entities.has(entityId)) {
-            console.warn(`WorldSystem: Environment entity ${entityId} not found - TerrainSystem may not have created it`);
+            console.warn(`WorldSystem: World entity ${entityId} not found - TerrainSystem may not have created it`);
             return;
         }
 
         // Add Renderable component for visual representation
         if (!this.game.hasComponent(entityId, ComponentTypes.RENDERABLE)) {
             this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
-                Components.Renderable('worldObjects', envObj.type, 1024));
+                Components.Renderable('worldObjects', worldObj.type, 1024));
         }
 
         this.game.triggerEvent('onEntityPositionUpdated', entityId);

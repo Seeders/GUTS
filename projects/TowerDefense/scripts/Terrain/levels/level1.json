@@ -429,7 +429,7 @@
     "terrainBGColor": {
       "paletteColor": "greenMColor"
     },
-    "environmentObjects": [
+    "worldObjects": [
       {
         "type": "tree",
         "imageIndex": 1,

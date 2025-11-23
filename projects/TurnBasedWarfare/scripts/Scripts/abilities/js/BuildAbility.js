@@ -91,7 +91,11 @@ class BuildAbility extends GUTS.BaseAbility {
                 controllerId: ComponentTypes.BUILDING_STATE,
                 targetPosition: buildingPos,
                 target: buildingEntityId,
-                meta: this.meta,
+                meta: {
+                    ...this.meta,
+                    // Preserve isPlayerOrder flag from peasantInfo
+                    isPlayerOrder: peasantInfo.isPlayerOrder
+                },
                 priority: this.game.commandQueueSystem.PRIORITY.BUILD,
                 interruptible: true,
                 // Use client's timestamp for deterministic command creation

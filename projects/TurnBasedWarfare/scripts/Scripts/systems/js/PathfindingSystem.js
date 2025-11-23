@@ -23,7 +23,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
         // Lower values = less aggressive smoothing = less corner cutting
         // Higher values = more aggressive smoothing = smoother but riskier paths
         this.MAX_SMOOTH_LOOKAHEAD = 3; // Maximum waypoints to look ahead when smoothing
-        
+
+        // Debug visualization
+        this.debugVisualization = null;
+        this.debugEnabled = false;
+
         this.initialized = false;
     }
 
@@ -32,9 +36,10 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        this.game.gameManager.register('requestPath', this.requestPath.bind(this));  
-        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));  
-        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this)); // ADD THIS
+        this.game.gameManager.register('requestPath', this.requestPath.bind(this));
+        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));
+        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
+        this.game.gameManager.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
 
 
         const collections = this.game.getCollections();
@@ -76,6 +81,12 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.loadRamps(level.tileMap);
 
         this.bakeNavMesh();
+
+        // Initialize debug visualization (only on client)
+        if (!this.game.isServer && this.game.uiScene) {
+            this.initDebugVisualization();
+        }
+
         this.initialized = true;
         console.log('PathfindingSystem: Initialized');
     }
@@ -162,6 +173,19 @@ class PathfindingSystem extends GUTS.BaseSystem {
         return false;
     }
 
+    /**
+     * Bake navigation mesh from terrain and worldObjects
+     *
+     * Debug visualization available via: game.gameManager.call('togglePathfindingDebug')
+     * Color coding:
+     * - Green (0x00ff00): Walkable terrain
+     * - Red (0xff0000): Impassable terrain (unwalkable terrain types)
+     * - Orange (0xffaa00): Impassable worldObjects (trees, rocks, etc. with collision)
+     *
+     * NavMesh values:
+     * - 0-254: Terrain type indices (walkability determined by terrainTypes collection)
+     * - 255: Impassable (marked for worldObjects or other obstacles)
+     */
     bakeNavMesh() {
         const terrainSize = this.game.gameManager.call('getTerrainSize');
         
@@ -185,48 +209,59 @@ class PathfindingSystem extends GUTS.BaseSystem {
             }
         }
         
-        // Second pass: mark cells adjacent to impassable terrain as impassable
-        // Create a copy to read from while we modify
-        // const originalNavMesh = new Uint8Array(this.navMesh);
-        
-        // for (let z = 0; z < this.navGridHeight; z++) {
-        //     for (let x = 0; x < this.navGridWidth; x++) {
-        //         const idx = z * this.navGridWidth + x;
-        //         const currentTerrain = originalNavMesh[idx];
-        //         const currentWorldPos = this.navGridToWorld(x, z);
-        //         const currentWorldHeight = this.game.gameManager.call('getTerrainHeightAtPosition', currentWorldPos.x, currentWorldPos.z);
-        //         if(this.hasRampAtNav(x, z)){
-        //             continue;
-        //         }
-        //         // Check if this cell is walkable
-        //         if (this.isTerrainWalkable(currentTerrain)) {
-        //             // Check all 8 neighbors
-        //             const neighbors = [
-        //                 {dx: 1, dz: 0}, {dx: -1, dz: 0}, 
-        //                 {dx: 0, dz: 1}, {dx: 0, dz: -1},
-        //                 {dx: 1, dz: 1}, {dx: -1, dz: 1}, 
-        //                 {dx: 1, dz: -1}, {dx: -1, dz: -1}
-        //             ];
-                    
-        //             for (const {dx, dz} of neighbors) {
-        //                 const nx = x + dx;
-        //                 const nz = z + dz;
-        //                 const neighborWorldPos = this.navGridToWorld(nx, nz);
-        //                 const neighborWorldHeight = this.game.gameManager.call('getTerrainHeightAtPosition', neighborWorldPos.x, neighborWorldPos.z);
-        //                 if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
-        //                                   // If neighbor is impassable or we can't walk to it
-        //                     if (currentWorldHeight != neighborWorldHeight) {
-        //                         // Mark this cell as impassable (use 255 as a special marker)
-        //                         this.navMesh[idx] = 255;
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        
-        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight} with buffer zones`);
+        // Second pass: mark cells occupied by impassable worldObjects as impassable
+        const collections = this.game.getCollections();
+        const level = collections.levels?.[this.game.state.level];
+        const tileMap = level?.tileMap;
+
+        if (tileMap?.worldObjects) {
+            let markedCells = 0;
+            const gridSize = this.game.gameManager.call('getGridSize'); // Terrain grid size (48)
+            const centeringOffset = gridSize / 2; // Objects are centered in tiles
+
+            for (const worldObj of tileMap.worldObjects) {
+                // Get unit type definition to check if object blocks movement
+                const unitType = collections.worldObjects?.[worldObj.type];
+
+                // Skip if object doesn't block movement (impassable === false) or has no size
+                if (!unitType || unitType.impassable === false || !unitType.size) {
+                    continue;
+                }
+
+                // Convert worldObject position to world position
+                // worldObj.x and worldObj.y are in pixel/absolute coordinates (centered in tile)
+                // Use centralized coordinate conversion from CoordinateTranslator
+                const worldPosCentered = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+
+                // Subtract centering offset to get upper-left corner position
+                // This ensures consistent placement regardless of rounding
+                const worldPos = {
+                    x: worldPosCentered.x - centeringOffset,
+                    z: worldPosCentered.z - centeringOffset
+                };
+
+                // Convert world position to nav grid coordinates
+                const navGrid = this.worldToNavGrid(worldPos.x, worldPos.z);
+
+                // Each terrain tile covers a 2x2 area of nav grid cells
+                // Mark all 4 nav grid cells as impassable
+                for (let dz = 0; dz < 2; dz++) {
+                    for (let dx = 0; dx < 2; dx++) {
+                        const nx = navGrid.x + dx;
+                        const nz = navGrid.z + dz;
+
+                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                            const idx = nz * this.navGridWidth + nx;
+                            this.navMesh[idx] = 255;
+                            markedCells++;
+                        }
+                    }
+                }
+            }
+            console.log(`[PathfindingSystem] Marked ${markedCells} nav cells as impassable for ${tileMap.worldObjects.length} worldObjects`);
+        }
+
+        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight}`);
     }
     
     isTerrainWalkable(terrainTypeIndex) {
@@ -723,6 +758,178 @@ class PathfindingSystem extends GUTS.BaseSystem {
         
         const terrain = this.getTerrainAtNavGrid(grid.x, grid.z);
         return this.isTerrainWalkable(terrain);
+    }
+
+    /**
+     * Initialize debug visualization using instanced rendering for performance
+     */
+    initDebugVisualization() {
+        console.log('PathfindingSystem: initDebugVisualization called');
+        console.log('  - uiScene exists:', !!this.game.uiScene);
+        console.log('  - navMesh exists:', !!this.navMesh);
+        console.log('  - navGridWidth:', this.navGridWidth);
+        console.log('  - navGridHeight:', this.navGridHeight);
+
+        if (!this.game.uiScene) {
+            console.warn('PathfindingSystem: No uiScene available for debug visualization');
+            return;
+        }
+
+        if (!this.navMesh) {
+            console.warn('PathfindingSystem: No navMesh available - must bake first');
+            return;
+        }
+
+        // Create debug group
+        this.debugVisualization = new THREE.Group();
+        this.debugVisualization.name = 'PathfindingDebug';
+        this.debugVisualization.visible = false;
+        this.game.uiScene.add(this.debugVisualization);
+
+        console.log('PathfindingSystem: Created debug group, added to uiScene');
+
+        // Create materials for different cell types
+        const cellSize = this.navGridSize * 0.8; // Slightly smaller than grid cell
+
+        const materials = {
+            walkable: new THREE.MeshBasicMaterial({
+                color: 0x00ff00, // Green for walkable
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            }),
+            impassableTerrain: new THREE.MeshBasicMaterial({
+                color: 0xff0000, // Red for impassable terrain
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            }),
+            impassableObject: new THREE.MeshBasicMaterial({
+                color: 0xffaa00, // Orange for worldObjects
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            })
+        };
+
+        // Count cells by type to create appropriately sized instanced meshes
+        const counts = { walkable: 0, impassableTerrain: 0, impassableObject: 0 };
+        const cellData = { walkable: [], impassableTerrain: [], impassableObject: [] };
+
+        for (let z = 0; z < this.navGridHeight; z++) {
+            for (let x = 0; x < this.navGridWidth; x++) {
+                const idx = z * this.navGridWidth + x;
+                const terrainType = this.navMesh[idx];
+
+                // Determine cell type
+                let cellType;
+                if (terrainType === 255) {
+                    cellType = 'impassableObject';
+                } else if (!this.isTerrainWalkable(terrainType)) {
+                    cellType = 'impassableTerrain';
+                } else {
+                    cellType = 'walkable';
+                }
+
+                counts[cellType]++;
+                cellData[cellType].push({ x, z });
+            }
+        }
+
+        // Create instanced meshes for each cell type
+        const cellGeometry = new THREE.PlaneGeometry(cellSize, cellSize);
+        cellGeometry.rotateX(-Math.PI / 2); // Pre-rotate geometry
+
+        const matrix = new THREE.Matrix4();
+        const position = new THREE.Vector3();
+
+        for (const [cellType, material] of Object.entries(materials)) {
+            const count = counts[cellType];
+            if (count === 0) continue;
+
+            const instancedMesh = new THREE.InstancedMesh(cellGeometry, material, count);
+            instancedMesh.name = `PathfindingDebug_${cellType}`;
+
+            let instanceIndex = 0;
+            for (const cell of cellData[cellType]) {
+                const worldPos = this.navGridToWorld(cell.x, cell.z);
+                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
+
+                position.set(worldPos.x, terrainHeight + 0.5, worldPos.z);
+                matrix.makeTranslation(position.x, position.y, position.z);
+                instancedMesh.setMatrixAt(instanceIndex, matrix);
+                instanceIndex++;
+            }
+
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            this.debugVisualization.add(instancedMesh);
+        }
+
+        console.log(`PathfindingSystem: Created debug visualization with ${this.navGridWidth * this.navGridHeight} cells using instanced rendering`);
+        console.log(`  - Walkable: ${counts.walkable}, Impassable Terrain: ${counts.impassableTerrain}, Impassable Objects: ${counts.impassableObject}`);
+    }
+
+    /**
+     * Toggle debug visualization
+     */
+    toggleDebugVisualization() {
+        console.log('PathfindingSystem: toggleDebugVisualization called');
+        console.log('  - debugVisualization exists:', !!this.debugVisualization);
+        console.log('  - game.uiScene exists:', !!this.game.uiScene);
+        console.log('  - isServer:', this.game.isServer);
+
+        if (!this.debugVisualization) {
+            console.warn('PathfindingSystem: Debug visualization not initialized');
+
+            // Try to initialize it now if on client
+            if (!this.game.isServer && this.game.uiScene) {
+                console.log('PathfindingSystem: Attempting to initialize debug visualization now...');
+                this.initDebugVisualization();
+            } else {
+                console.error('PathfindingSystem: Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.game.uiScene);
+                return;
+            }
+        }
+
+        this.debugEnabled = !this.debugEnabled;
+        this.debugVisualization.visible = this.debugEnabled;
+
+        console.log(`PathfindingSystem: Debug visualization ${this.debugEnabled ? 'ENABLED' : 'DISABLED'}`);
+        console.log('  - Group visible:', this.debugVisualization.visible);
+        console.log('  - Children count:', this.debugVisualization.children.length);
+        console.log('  - Parent:', this.debugVisualization.parent?.name);
+    }
+
+    /**
+     * Update debug visualization (call after navmesh changes)
+     */
+    updateDebugVisualization() {
+        if (!this.debugVisualization) return;
+
+        let meshIndex = 0;
+        for (let z = 0; z < this.navGridHeight; z++) {
+            for (let x = 0; x < this.navGridWidth; x++) {
+                const idx = z * this.navGridWidth + x;
+                const terrainType = this.navMesh[idx];
+                const mesh = this.debugVisualization.children[meshIndex];
+
+                if (mesh) {
+                    // Update material based on current cell type
+                    if (terrainType === 255) {
+                        mesh.material = this.debugMaterials.impassableObject;
+                    } else if (!this.isTerrainWalkable(terrainType)) {
+                        mesh.material = this.debugMaterials.impassableTerrain;
+                    } else {
+                        mesh.material = this.debugMaterials.walkable;
+                    }
+                    mesh.userData.terrainType = terrainType;
+                }
+
+                meshIndex++;
+            }
+        }
+
+        console.log('PathfindingSystem: Debug visualization updated');
     }
 
     ping() {

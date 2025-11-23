@@ -7004,7 +7004,7 @@
           "terrainBGColor": {
             "paletteColor": "greenMColor"
           },
-          "environmentObjects": [
+          "worldObjects": [
             {
               "type": "goldVein",
               "x": 72,
@@ -18149,7 +18149,7 @@
           "terrainBGColor": {
             "paletteColor": "greenMColor"
           },
-          "environmentObjects": [
+          "worldObjects": [
             {
               "type": "tree",
               "imageIndex": 0,
@@ -28342,14 +28342,32 @@
         "placementGridWidth": 2,
         "placementGridHeight": 2,
         "snapToGrid": true,
-        "height": 100
+        "height": 100,
+        "impassable": false
       },
       "rock": {
         "title": "Rock",
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -28400,7 +28418,8 @@
               }
             }
           }
-        }
+        },
+        "impassable": false
       },
       "tree": {
         "title": "Tree",
@@ -28441,7 +28460,8 @@
         "height": 75,
         "size": 25,
         "placementGridWidth": 1,
-        "placementGridHeight": 1
+        "placementGridHeight": 1,
+        "impassable": true
       }
     },
     "worlds": {

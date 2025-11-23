@@ -63,6 +63,22 @@ class GridSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('pixelToTile', (pixelX, pixelZ) =>
             this.coordinateTranslator.pixelToTile(pixelX, pixelZ));
 
+        // Pixel ↔ World coordinate transformations (for worldObjects)
+        this.game.gameManager.register('pixelToWorld', (pixelX, pixelZ) => {
+            if (!this.coordinateTranslator) {
+                console.error('[GridSystem] pixelToWorld called before CoordinateTranslator initialized!');
+                return { x: 0, z: 0 };
+            }
+            return this.coordinateTranslator.pixelToWorld(pixelX, pixelZ);
+        });
+        this.game.gameManager.register('worldToPixel', (worldX, worldZ) => {
+            if (!this.coordinateTranslator) {
+                console.error('[GridSystem] worldToPixel called before CoordinateTranslator initialized!');
+                return { x: 0, z: 0 };
+            }
+            return this.coordinateTranslator.worldToPixel(worldX, worldZ);
+        });
+
         // Coordinate validation
         this.game.gameManager.register('isValidTile', (tileX, tileZ) =>
             this.coordinateTranslator.isValidTile(tileX, tileZ));
