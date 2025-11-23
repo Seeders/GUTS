@@ -29,10 +29,6 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
         this.game.gameManager.register('submitPlacement', this.submitPlacement.bind(this));
         this.game.gameManager.register('validatePlacement', this.validatePlacement.bind(this));
-
-        // Listen to phase events
-        this.game.addEventListener('onPlacementPhaseStart', this.onPlacementPhaseStart.bind(this));
-        this.game.addEventListener('onBattleEnd', this.onBattleEnd.bind(this));
     }
 
     /**
