@@ -113,25 +113,28 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
         // Mouse up - complete box selection
         this.canvas.addEventListener('mouseup', (event) => {
+            console.log('[SelectedUnitSystem] mouseup event fired, boxSelection.active:', this.boxSelection.active);
             if (!this.boxSelection.active) return;
-            
+
             const dx = this.boxSelection.currentX - this.boxSelection.startX;
             const dy = this.boxSelection.currentY - this.boxSelection.startY;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
+            console.log('[SelectedUnitSystem] mouseup distance:', distance);
+
             // If dragged significantly, do box selection
             if (distance > 5) {
+                console.log('[SelectedUnitSystem] Box selection path (distance > 5)');
                 requestAnimationFrame(() => {
                     this.completeBoxSelection(event);
                 });
             } else {
                 // Single click selection
-                
+                console.log('[SelectedUnitSystem] Single click path (distance <= 5)');
                 requestAnimationFrame(() => {
                     this.checkUnitSelectionClick(event);
                 });
             }
-            
+
             // Reset box selection state
             this.boxSelection.active = false;
             this.boxSelection.element.style.display = 'none';
@@ -296,16 +299,26 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     checkUnitSelectionClick(event) {
+        console.log('[SelectedUnitSystem] checkUnitSelectionClick called');
         const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
-    
-        if (!worldPos) return;
-    
+        console.log('[SelectedUnitSystem] worldPos:', worldPos);
+
+        if (!worldPos) {
+            console.log('[SelectedUnitSystem] No worldPos, returning');
+            return;
+        }
+
         const placementId = this.getPlacementAtWorldPosition(worldPos);
-    
+        console.log('[SelectedUnitSystem] placementId at worldPos:', placementId);
+
         if (placementId) {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
+            console.log('[SelectedUnitSystem] placement:', placement);
+            console.log('[SelectedUnitSystem] placement.team:', placement?.team, 'mySide:', this.game.state.mySide);
+
             if (placement && placement.team === this.game.state.mySide) {
                 let entityId = placement.squadUnits[0];
+                console.log('[SelectedUnitSystem] Selecting entityId:', entityId);
                 // Check if shift is held for additive selection
                 if (event.shiftKey) {
                     if (this.selectedUnitIds.has(entityId)) {
@@ -322,8 +335,11 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                     this.selectedUnitIds.add(entityId);
                     this.selectUnit(entityId, placementId);
                 }
+            } else {
+                console.log('[SelectedUnitSystem] Placement team does not match mySide or placement is null');
             }
         } else {
+            console.log('[SelectedUnitSystem] Clicked on empty space');
             // Clicked on empty space - deselect all
             if (!event.shiftKey) {
                 this.deselectAll();
