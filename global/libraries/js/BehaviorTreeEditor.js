@@ -460,13 +460,161 @@ class BehaviorTreeEditor {
             return;
         }
 
-        varsContainer.innerHTML = '<h4 style="font-size: 12px; color: #aaa; margin-bottom: 8px;">Mock Entity Components</h4>';
+        varsContainer.innerHTML = '';
 
-        // Build UI for each component
-        const components = this.mockGame.getAllComponents();
+        // Add header and entity management controls
+        const headerDiv = document.createElement('div');
+        headerDiv.style.marginBottom = '12px';
+        headerDiv.innerHTML = `
+            <h4 style="font-size: 12px; color: #aaa; margin: 0 0 8px 0;">Mock Entities</h4>
+            <button id="bt-add-entity-btn" style="padding: 4px 8px; font-size: 11px; background: #22c55e; border: none; color: white; border-radius: 3px; cursor: pointer;">+ Add Entity</button>
+        `;
+        varsContainer.appendChild(headerDiv);
 
-        for (const [componentType, componentData] of components.entries()) {
-            this.createComponentEditor(varsContainer, componentType, componentData);
+        // Container for all entities
+        const entitiesContainer = document.createElement('div');
+        entitiesContainer.id = 'bt-entities-container';
+        varsContainer.appendChild(entitiesContainer);
+
+        // Render all entities
+        this.renderAllEntities(entitiesContainer);
+
+        // Add entity button handler
+        const addBtn = document.getElementById('bt-add-entity-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const newId = `entity-${Date.now()}`;
+                this.mockGame.addEntity(newId, {
+                    POSITION: { x: 0, z: 0 },
+                    TEAM: { team: 1 }
+                }, `Entity ${this.mockGame.getAllEntityIds().length}`);
+                this.renderAllEntities(entitiesContainer);
+            });
+        }
+    }
+
+    renderAllEntities(container) {
+        container.innerHTML = '';
+
+        const entities = this.mockGame.getAllEntities();
+
+        entities.forEach(entity => {
+            this.createEntityEditor(container, entity);
+        });
+    }
+
+    createEntityEditor(container, entity) {
+        const entityCard = document.createElement('div');
+        entityCard.style.marginBottom = '16px';
+        entityCard.style.border = '1px solid #444';
+        entityCard.style.borderRadius = '6px';
+        entityCard.style.padding = '10px';
+        entityCard.style.backgroundColor = '#1a1a1a';
+
+        // Entity header with label and remove button
+        const headerDiv = document.createElement('div');
+        headerDiv.style.display = 'flex';
+        headerDiv.style.justifyContent = 'space-between';
+        headerDiv.style.alignItems = 'center';
+        headerDiv.style.marginBottom = '10px';
+
+        const labelInput = document.createElement('input');
+        labelInput.type = 'text';
+        labelInput.value = entity.label;
+        labelInput.style.flex = '1';
+        labelInput.style.padding = '4px 8px';
+        labelInput.style.fontSize = '12px';
+        labelInput.style.fontWeight = '600';
+        labelInput.style.backgroundColor = '#2a2a2a';
+        labelInput.style.border = '1px solid #444';
+        labelInput.style.color = '#fff';
+        labelInput.style.borderRadius = '3px';
+        labelInput.addEventListener('change', () => {
+            this.mockGame.updateEntityLabel(entity.id, labelInput.value);
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.style.marginLeft = '8px';
+        removeBtn.style.padding = '2px 8px';
+        removeBtn.style.fontSize = '16px';
+        removeBtn.style.background = '#ef4444';
+        removeBtn.style.border = 'none';
+        removeBtn.style.color = 'white';
+        removeBtn.style.borderRadius = '3px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.addEventListener('click', () => {
+            if (this.mockGame.getAllEntityIds().length <= 1) {
+                alert('Cannot remove the last entity');
+                return;
+            }
+            this.mockGame.removeEntity(entity.id);
+            const entitiesContainer = document.getElementById('bt-entities-container');
+            if (entitiesContainer) {
+                this.renderAllEntities(entitiesContainer);
+            }
+        });
+
+        headerDiv.appendChild(labelInput);
+        headerDiv.appendChild(removeBtn);
+        entityCard.appendChild(headerDiv);
+
+        // Entity ID display
+        const idDiv = document.createElement('div');
+        idDiv.textContent = `ID: ${entity.id}`;
+        idDiv.style.fontSize = '10px';
+        idDiv.style.color = '#666';
+        idDiv.style.marginBottom = '10px';
+        entityCard.appendChild(idDiv);
+
+        // Components section
+        const componentsDiv = document.createElement('div');
+
+        for (const [componentType, componentData] of entity.components.entries()) {
+            this.createComponentEditor(componentsDiv, entity.id, componentType, componentData);
+        }
+
+        // Add component button
+        const addComponentBtn = document.createElement('button');
+        addComponentBtn.textContent = '+ Add Component';
+        addComponentBtn.style.marginTop = '8px';
+        addComponentBtn.style.padding = '4px 8px';
+        addComponentBtn.style.fontSize = '10px';
+        addComponentBtn.style.background = '#3b82f6';
+        addComponentBtn.style.border = 'none';
+        addComponentBtn.style.color = 'white';
+        addComponentBtn.style.borderRadius = '3px';
+        addComponentBtn.style.cursor = 'pointer';
+        addComponentBtn.addEventListener('click', () => {
+            this.showAddComponentDialog(entity.id);
+        });
+
+        componentsDiv.appendChild(addComponentBtn);
+        entityCard.appendChild(componentsDiv);
+
+        container.appendChild(entityCard);
+    }
+
+    showAddComponentDialog(entityId) {
+        const availableTypes = Object.keys(this.mockGame.componentTypes).filter(type => {
+            return !this.mockGame.getComponent(entityId, type);
+        });
+
+        if (availableTypes.length === 0) {
+            alert('All component types are already added');
+            return;
+        }
+
+        const componentType = prompt(`Add component:\n\n${availableTypes.join('\n')}\n\nEnter component type:`);
+        if (componentType && this.mockGame.componentTypes[componentType.toUpperCase()]) {
+            const normalizedType = componentType.toUpperCase();
+            this.mockGame.setComponent(entityId, normalizedType, {});
+            const entitiesContainer = document.getElementById('bt-entities-container');
+            if (entitiesContainer) {
+                this.renderAllEntities(entitiesContainer);
+            }
+        } else if (componentType) {
+            alert('Invalid component type');
         }
     }
 
@@ -508,7 +656,7 @@ class BehaviorTreeEditor {
         });
     }
 
-    createComponentEditor(container, componentType, componentData) {
+    createComponentEditor(container, entityId, componentType, componentData) {
         const detailsEl = document.createElement('details');
         detailsEl.open = true;
         detailsEl.style.marginBottom = '12px';
@@ -530,14 +678,37 @@ class BehaviorTreeEditor {
 
         // Create inputs for each property
         for (const [key, value] of Object.entries(componentData)) {
-            this.createComponentPropertyInput(propsContainer, componentType, key, value);
+            this.createComponentPropertyInput(propsContainer, entityId, componentType, key, value);
         }
+
+        // Add property button
+        const addPropBtn = document.createElement('button');
+        addPropBtn.textContent = '+ Add Property';
+        addPropBtn.style.marginTop = '4px';
+        addPropBtn.style.padding = '2px 6px';
+        addPropBtn.style.fontSize = '9px';
+        addPropBtn.style.background = '#8b5cf6';
+        addPropBtn.style.border = 'none';
+        addPropBtn.style.color = 'white';
+        addPropBtn.style.borderRadius = '2px';
+        addPropBtn.style.cursor = 'pointer';
+        addPropBtn.addEventListener('click', () => {
+            const propName = prompt('Enter property name:');
+            if (propName) {
+                this.mockGame.updateComponent(entityId, componentType, propName, null);
+                const entitiesContainer = document.getElementById('bt-entities-container');
+                if (entitiesContainer) {
+                    this.renderAllEntities(entitiesContainer);
+                }
+            }
+        });
+        propsContainer.appendChild(addPropBtn);
 
         detailsEl.appendChild(propsContainer);
         container.appendChild(detailsEl);
     }
 
-    createComponentPropertyInput(container, componentType, propertyName, value) {
+    createComponentPropertyInput(container, entityId, componentType, propertyName, value) {
         const propDiv = document.createElement('div');
         propDiv.style.marginBottom = '8px';
 
@@ -564,7 +735,7 @@ class BehaviorTreeEditor {
                         // Keep as string
                     }
                 }
-                this.mockGame.updateComponent(componentType, propertyName, newValue);
+                this.mockGame.updateComponent(entityId, componentType, propertyName, newValue);
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -573,7 +744,7 @@ class BehaviorTreeEditor {
             checkbox.type = 'checkbox';
             checkbox.checked = value;
             checkbox.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(componentType, propertyName, e.target.checked);
+                this.mockGame.updateComponent(entityId, componentType, propertyName, e.target.checked);
                 this.runSimulation();
             });
             propDiv.appendChild(checkbox);
@@ -583,7 +754,7 @@ class BehaviorTreeEditor {
             input.value = value;
             input.style.width = '100%';
             input.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(componentType, propertyName, parseFloat(e.target.value));
+                this.mockGame.updateComponent(entityId, componentType, propertyName, parseFloat(e.target.value));
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -593,7 +764,7 @@ class BehaviorTreeEditor {
             input.value = value;
             input.style.width = '100%';
             input.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(componentType, propertyName, e.target.value);
+                this.mockGame.updateComponent(entityId, componentType, propertyName, e.target.value);
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -613,7 +784,7 @@ class BehaviorTreeEditor {
             textarea.addEventListener('change', (e) => {
                 try {
                     const newValue = JSON.parse(e.target.value);
-                    this.mockGame.updateComponent(componentType, propertyName, newValue);
+                    this.mockGame.updateComponent(entityId, componentType, propertyName, newValue);
                     this.runSimulation();
                 } catch (err) {
                     alert('Invalid JSON: ' + err.message);
@@ -829,38 +1000,94 @@ class BehaviorTreeEditor {
     runSimulation() {
         if (!GUTS || !GUTS.BehaviorTreeProcessor) return;
 
-        let result;
-
         if (this.isScriptBased) {
             // Use mock game context with actual script class
             if (!this.mockGame) return;
-            result = GUTS.BehaviorTreeProcessor.evaluate(this.objectData, this.mockGame);
-        } else {
-            // Use blackboard with data-driven evaluation
-            if (!this.currentData || !this.currentData.root || !this.blackboard) return;
-            result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
-        }
 
-        this.displaySimResult(result);
-        this.highlightActivePath(result.activePath);
+            // Evaluate behavior tree for each entity
+            const results = [];
+            const entityIds = this.mockGame.getAllEntityIds();
+
+            entityIds.forEach(entityId => {
+                const entity = this.mockGame.getEntity(entityId);
+                const result = GUTS.BehaviorTreeProcessor.evaluate(
+                    this.objectData,
+                    this.mockGame,
+                    'root',
+                    entityId
+                );
+                results.push({
+                    entityId,
+                    entity,
+                    result
+                });
+            });
+
+            this.displaySimResult(results);
+        } else {
+            // Use blackboard with data-driven evaluation (single result)
+            if (!this.currentData || !this.currentData.root || !this.blackboard) return;
+            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
+            this.displaySimResult([{ result }]);
+            this.highlightActivePath(result.activePath);
+        }
     }
 
-    displaySimResult(result) {
+    displaySimResult(results) {
         const resultDiv = document.getElementById('bt-sim-result');
         if (!resultDiv) return;
 
         resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<h4 style="font-size: 12px; color: #aaa; margin: 0 0 8px 0;">Simulation Results</h4>';
 
-        if (result.action) {
-            resultDiv.innerHTML = `
-                <div><strong>Result:</strong> Action Selected</div>
-                <div class="bt-sim-result__action">Action: ${result.action}</div>
-                ${result.target ? `<div>Target: ${result.target}</div>` : ''}
-                ${result.priority !== undefined ? `<div>Priority: ${result.priority}</div>` : ''}
-            `;
-        } else {
-            resultDiv.innerHTML = `<div style="color: #888;">No action selected (all conditions failed)</div>`;
+        if (!results || results.length === 0) {
+            resultDiv.innerHTML += `<div style="color: #888;">No results</div>`;
+            return;
         }
+
+        results.forEach(({ entityId, entity, result }) => {
+            const entityCard = document.createElement('div');
+            entityCard.style.marginBottom = '12px';
+            entityCard.style.padding = '8px';
+            entityCard.style.border = '1px solid #333';
+            entityCard.style.borderRadius = '4px';
+            entityCard.style.backgroundColor = '#1a1a1a';
+
+            if (entity) {
+                const entityHeader = document.createElement('div');
+                entityHeader.style.fontSize = '11px';
+                entityHeader.style.fontWeight = '600';
+                entityHeader.style.color = '#fff';
+                entityHeader.style.marginBottom = '6px';
+                entityHeader.textContent = entity.label || entityId;
+                entityCard.appendChild(entityHeader);
+
+                const entityIdDiv = document.createElement('div');
+                entityIdDiv.style.fontSize = '9px';
+                entityIdDiv.style.color = '#666';
+                entityIdDiv.style.marginBottom = '6px';
+                entityIdDiv.textContent = `ID: ${entityId}`;
+                entityCard.appendChild(entityIdDiv);
+            }
+
+            const resultContent = document.createElement('div');
+            resultContent.style.fontSize = '11px';
+
+            if (result && result.action) {
+                resultContent.innerHTML = `
+                    <div style="color: #22c55e;"><strong>✓ Action Selected</strong></div>
+                    <div style="margin-top: 4px;"><strong>Action:</strong> ${result.action}</div>
+                    ${result.target ? `<div><strong>Target:</strong> ${JSON.stringify(result.target)}</div>` : ''}
+                    ${result.priority !== undefined ? `<div><strong>Priority:</strong> ${result.priority}</div>` : ''}
+                    ${result.data ? `<div><strong>Data:</strong> ${JSON.stringify(result.data)}</div>` : ''}
+                `;
+            } else {
+                resultContent.innerHTML = `<div style="color: #888;">✗ No action (all conditions failed)</div>`;
+            }
+
+            entityCard.appendChild(resultContent);
+            resultDiv.appendChild(entityCard);
+        });
     }
 
     highlightActivePath(activePath = []) {
