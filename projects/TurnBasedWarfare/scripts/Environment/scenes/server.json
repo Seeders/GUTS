@@ -28,11 +28,12 @@
         { "type": "ServerBattlePhaseSystem" },
         { "type": "ServerPlacementSystem" },
         { "type": "LifetimeSystem" },
-        { "type": "SchedulingSystem" },    
-        { "type": "PathfindingSystem" }, 
-        { "type": "GoldMineSystem" },    
+        { "type": "SchedulingSystem" },
+        { "type": "PathfindingSystem" },
+        { "type": "GoldMineSystem" },
         { "type": "VisionSystem" },
-        { "type": "SupplySystem" }
+        { "type": "SupplySystem" },
+        { "type": "UnitOrderSystem" }
       ],
       "classes": [
         { "collection": "abilities", "baseClass": "BaseAbility" }
