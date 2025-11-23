@@ -29,8 +29,8 @@ class BehaviorSystem extends BaseSystem {
 
         // Register actions
         if (collections.actions) {
-            Object.entries(collections.actions).forEach(([actionId, actionData]) => {
-                this.registerActionFromData(actionId, actionData);
+            Object.entries(collections.actions).forEach(([behaviorActionId, actionData]) => {
+                this.registerActionFromData(behaviorActionId, actionData);
             });
         }
 
@@ -45,15 +45,15 @@ class BehaviorSystem extends BaseSystem {
     /**
      * Register an action executor from collection data
      */
-    registerActionFromData(actionId, actionData) {
+    registerActionFromData(behaviorActionId, actionData) {
         // The action class should be compiled and available via game context
-        const ActionClass = this.game[actionId + 'Action'] || this.game[actionData.type + 'Action'];
+        const ActionClass = this.game[behaviorActionId + 'Action'] || this.game[actionData.type + 'Action'];
 
         if (ActionClass) {
             const actionInstance = new ActionClass(this.game, actionData.parameters);
             this.actions.set(actionData.type, actionInstance);
         } else {
-            console.warn(`Action class not found for: ${actionId}`);
+            console.warn(`Action class not found for: ${behaviorActionId}`);
         }
     }
 
