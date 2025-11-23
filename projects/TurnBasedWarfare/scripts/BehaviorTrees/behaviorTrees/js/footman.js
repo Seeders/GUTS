@@ -25,13 +25,35 @@ class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
         const combat = game.getComponent(entityId, game.componentTypes.COMBAT);
         const team = game.getComponent(entityId, game.componentTypes.TEAM);
 
-        const enemies = game.combatSystem.findEnemiesInRange(
-            entityId, pos, combat.visionRange, team
-        );
+        // Find enemies using gameManager or direct query
+        let enemies;
+        if (game.gameManager && game.gameManager.getEnemies) {
+            enemies = game.gameManager.getEnemies(entityId);
+        } else {
+            // Fallback: manually find enemies
+            enemies = [];
+            const allEntities = game.getAllEntityIds ? game.getAllEntityIds() : [];
+            for (const otherId of allEntities) {
+                if (otherId === entityId) continue;
+                const otherTeam = game.getComponent(otherId, game.componentTypes.TEAM);
+                if (otherTeam && otherTeam.team !== team.team) {
+                    enemies.push(otherId);
+                }
+            }
+        }
 
-        if (enemies.length === 0) return null;
+        // Filter by vision range if combat component has it
+        const visionRange = combat.visionRange || combat.attackRange || 10;
+        const enemiesInRange = enemies.filter(enemyId => {
+            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);
+            if (!enemyPos) return false;
+            const dist = this.distance(pos, enemyPos);
+            return dist <= visionRange;
+        });
 
-        const target = this.selectTarget(pos, enemies, game);
+        if (enemiesInRange.length === 0) return null;
+
+        const target = this.selectTarget(pos, enemiesInRange, game);
 
         return {
             action: "ATTACK",
