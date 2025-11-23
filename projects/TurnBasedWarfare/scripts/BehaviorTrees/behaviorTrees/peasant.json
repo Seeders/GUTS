@@ -2,6 +2,18 @@
   "title": "Peasant Behavior Tree",
   "unitType": "peasant",
   "description": "Worker unit that builds and mines",
+  "script": "peasant",
+  "mockEntity": {
+    "POSITION": { "x": 100, "z": 100 },
+    "TEAM": { "team": 1 },
+    "UNIT_CONTROLLER": {
+      "playerOrder": null,
+      "currentAction": null
+    },
+    "BUILDER": {
+      "assignedBuilding": null
+    }
+  },
   "nodes": {
     "root": {
       "type": "selector",
