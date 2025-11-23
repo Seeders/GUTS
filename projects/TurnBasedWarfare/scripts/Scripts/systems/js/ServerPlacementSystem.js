@@ -240,19 +240,23 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             }
             
             // Store target position in placement data
-            placement.targetPosition = targetPosition;
-            placement.squadUnits.forEach((unitId) => {
-                // Store player order for persistence through combat
-                const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                if (aiState) {
-                    aiState.playerOrder = {
-                        targetPosition: targetPosition,
-                        meta: meta,
-                        issuedTime: commandCreatedTime || this.game.state.now
-                    };
-                }       
-
-            });
+            // Use UnitOrderSystem to properly queue MOVE commands
+            if (this.game.unitOrderSystem) {
+                this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+            } else {
+                // Fallback if UnitOrderSystem not available
+                placement.targetPosition = targetPosition;
+                placement.squadUnits.forEach((unitId) => {
+                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                    if (aiState) {
+                        aiState.playerOrder = {
+                            targetPosition: targetPosition,
+                            meta: meta,
+                            issuedTime: commandCreatedTime || this.game.state.now
+                        };
+                    }
+                });
+            }
                     
                
             
@@ -328,29 +332,33 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     return;
                 }
                 
-                // Store target position in placement data with timing for deterministic command creation
-                // Don't queue command here - do it at battle start in applyTargetPositions for determinism
-                placement.targetPosition = targetPosition;
-                placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
-                placement.meta = meta || {};
-                placement.squadUnits.forEach((unitId) => {
-                    // Store player order for persistence through combat
-                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                    const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
-                    if(p){
-                        p.commandCreatedTime = placement.commandCreatedTime;
-                        p.targetPosition = placement.targetPosition;
-                        p.meta = placement.meta;
-                    }
-                    if (aiState) {
-                        aiState.playerOrder = {
-                            targetPosition: targetPosition,
-                            meta: meta,
-                            issuedTime: commandCreatedTime || this.game.state.now
-                        };
-                        aiState.targetPosition = targetPosition;
-                    }
-                });
+                // Store target position and queue MOVE command immediately
+                // This ensures abilities like mining are properly interrupted during placement phase
+                if (this.game.unitOrderSystem) {
+                    this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+                } else {
+                    // Fallback if UnitOrderSystem not available
+                    placement.targetPosition = targetPosition;
+                    placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
+                    placement.meta = meta || {};
+                    placement.squadUnits.forEach((unitId) => {
+                        const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                        const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
+                        if(p){
+                            p.commandCreatedTime = placement.commandCreatedTime;
+                            p.targetPosition = placement.targetPosition;
+                            p.meta = placement.meta;
+                        }
+                        if (aiState) {
+                            aiState.playerOrder = {
+                                targetPosition: targetPosition,
+                                meta: meta,
+                                issuedTime: commandCreatedTime || this.game.state.now
+                            };
+                            aiState.targetPosition = targetPosition;
+                        }
+                    });
+                }
                         
 
                 
