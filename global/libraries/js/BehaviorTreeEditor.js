@@ -1218,24 +1218,27 @@ class BehaviorTreeEditor {
             // Use mock game context with actual script class
             if (!this.mockGame) return;
 
-            // Evaluate behavior tree for each entity
+            // Evaluate behavior tree only for the main entity (first entity)
+            // Other entities in mockEntities are just part of the environment
             const results = [];
             const entityIds = this.mockGame.getAllEntityIds();
 
-            entityIds.forEach(entityId => {
-                const entity = this.mockGame.getEntity(entityId);
+            // Only run for the first entity (the main entity)
+            if (entityIds.length > 0) {
+                const mainEntityId = entityIds[0];
+                const entity = this.mockGame.getEntity(mainEntityId);
                 const result = GUTS.BehaviorTreeProcessor.evaluate(
                     this.objectData,
                     this.mockGame,
                     'root',
-                    entityId
+                    mainEntityId
                 );
                 results.push({
-                    entityId,
+                    entityId: mainEntityId,
                     entity,
                     result
                 });
-            });
+            }
 
             this.displaySimResult(results);
         } else {
