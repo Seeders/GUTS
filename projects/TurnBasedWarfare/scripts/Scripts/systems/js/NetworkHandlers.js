@@ -144,7 +144,8 @@ class NetworkHandlers extends GUTS.BaseSystem {
                 if (collection) {
                     const fullUnitType = collection[placement.unitTypeId];
                     if (fullUnitType) {
-                        placement.unitType = fullUnitType;
+                        // Add the id property since it's the key, not part of the object
+                        placement.unitType = { ...fullUnitType, id: placement.unitTypeId };
                     } else {
                         console.error(`[NetworkHandlers] Unit type not found: ${placement.unitTypeId} in collection ${placement.collection}`);
                     }
