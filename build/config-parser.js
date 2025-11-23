@@ -300,6 +300,7 @@ class ConfigParser {
 
         const editorModules = editorConfig.editorModules || [];
         const globalModulesPath = path.join(__dirname, '..', 'global', 'editorModules');
+        const projectModulesPath = path.join(this.projectRoot, 'scripts', 'Settings', 'editorModules');
 
         const allLibraries = [];
         const classCollections = {};
@@ -310,16 +311,27 @@ class ConfigParser {
 
         // Process each editor module in order
         for (const moduleName of editorModules) {
-            const moduleConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
+            // Try project folder first, then fall back to global folder
+            const projectConfigPath = path.join(projectModulesPath, `${moduleName}.json`);
+            const globalConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
 
-            if (!fs.existsSync(moduleConfigPath)) {
-                console.warn(`⚠️ Editor module config not found: ${moduleConfigPath}`);
+            let moduleConfigPath;
+            let configSource;
+
+            if (fs.existsSync(projectConfigPath)) {
+                moduleConfigPath = projectConfigPath;
+                configSource = 'project';
+            } else if (fs.existsSync(globalConfigPath)) {
+                moduleConfigPath = globalConfigPath;
+                configSource = 'global';
+            } else {
+                console.warn(`⚠️ Editor module config not found: ${moduleName}`);
                 continue;
             }
 
             const moduleConfig = JSON.parse(fs.readFileSync(moduleConfigPath, 'utf8'));
             moduleConfigs[moduleName] = moduleConfig;
-            console.log(`  ✓ Loaded module: ${moduleName}`);
+            console.log(`  ✓ Loaded module: ${moduleName} (from ${configSource})`);
 
             // Add libraries from this module (in order)
             if (moduleConfig.libraries && Array.isArray(moduleConfig.libraries)) {
