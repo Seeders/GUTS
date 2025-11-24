@@ -652,9 +652,8 @@
                 "team": {
                   "team": 1
                 },
-                "resource": {
-                  "type": "gold",
-                  "amount": 5000
+                "building": {
+                  "type": "goldMine"
                 }
               }
             }

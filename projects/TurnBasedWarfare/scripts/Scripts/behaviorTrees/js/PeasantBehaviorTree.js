@@ -55,30 +55,32 @@ console.log('check player order', aiState);
     }
 
     findNearestMine(entityId, team, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
+        const pos = game.getComponent(entityId, "position");
 
         // Query all entities with RESOURCE component (gold mines)
         // Use gameManager if available, otherwise query directly
-        let mines = game.getEntitiesWith('resource');
+        let buildings = game.getEntitiesWith('building');
   
 
         let nearest = null;
         let minDist = Infinity;
 
         // Sort for determinism
-        const sortedMines = Array.from(mines).sort((a, b) =>
+        const sortedBuildings = Array.from(buildings).sort((a, b) =>
             String(a).localeCompare(String(b))
         );
 
-        for (const mineId of sortedMines) {
-            const minePos = game.getComponent(mineId, game.componentTypes.POSITION);
-            if (!minePos) continue;
+        for (const buildingId of sortedBuildings) {
+            const buildingComp = game.getComponent(buildingId, "building");
+            if(buildingComp.type != "goldMine") continue;
+            const buildingPos = game.getComponent(buildingId, "position");
+            if (!buildingPos) continue;
 
-            const dist = this.distance(pos, minePos);
+            const dist = this.distance(pos, buildingPos);
 
             if (dist < minDist) {
                 minDist = dist;
-                nearest = mineId;
+                nearest = buildingId;
             }
         }
 
