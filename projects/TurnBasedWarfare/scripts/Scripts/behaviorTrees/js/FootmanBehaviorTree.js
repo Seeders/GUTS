@@ -25,9 +25,17 @@ class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
     }
 
     checkCombat(entityId, game) {
+        const aiState = game.getComponent(entityId, "aiState");
         const pos = game.getComponent(entityId, "position");
         const combat = game.getComponent(entityId, "combat");
         const team = game.getComponent(entityId, "team");
+
+        // Respect preventEnemiesInRangeCheck flag (for force move orders)
+        // This matches old CombatAISystem behavior: line 105
+        const preventEnemiesInRangeCheck = aiState.meta && aiState.meta.preventEnemiesInRangeCheck;
+        if (preventEnemiesInRangeCheck) {
+            return null; // Skip combat when player wants to force move
+        }
 
         // Find enemies using gameManager or direct query
         let enemies;
