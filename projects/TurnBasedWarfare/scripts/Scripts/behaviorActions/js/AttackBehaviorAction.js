@@ -102,19 +102,21 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
         if (combat.projectile) {
             this.scheduleProjectileLaunch(attackerId, targetId, game, combat);
         } else if (combat.damage > 0) {
-            // Melee attack - apply damage with slight delay for animation
-            if (game.schedulingSystem) {
-                const damageDelay = (1 / combat.attackSpeed) * 0.5; // 50% through attack
-                game.schedulingSystem.scheduleEvent({
-                    time: game.state.now + damageDelay,
-                    callback: () => {
-                        const targetHealth = game.getComponent(targetId, 'health');
-                        if (targetHealth && targetHealth.current > 0) {
-                            game.gameManager.call('applyDamage', attackerId, targetId, combat.damage);
-                        }
-                    }
-                });
-            }
+            // Melee attack - schedule damage with proper element
+            const damageDelay = (1 / combat.attackSpeed) * 0.5; // 50% through attack
+            const element = this.getDamageElement(attackerId, game, combat);
+
+            game.gameManager.call('scheduleDamage',
+                attackerId,
+                targetId,
+                combat.damage,
+                element,
+                damageDelay,
+                {
+                    isMelee: true,
+                    weaponRange: (combat.range || combat.attackRange || 50) + 10
+                }
+            );
         } else if (game.abilitySystem) {
             // Ability-only units (damage = 0) - rely on abilities for combat
             // This matches old CombatAISystem.handleCombat() lines 479-492
@@ -142,7 +144,14 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
             callback: () => {
                 const targetHealth = game.getComponent(targetId, 'health');
                 if (targetHealth && targetHealth.current > 0) {
-                    game.gameManager.call('spawnProjectile', attackerId, targetId, combat);
+                    // Get projectile data from collections
+                    const projectileData = game.getCollections().projectiles[combat.projectile];
+                    if (projectileData) {
+                        game.gameManager.call('fireProjectile', attackerId, targetId, {
+                            id: combat.projectile,
+                            ...projectileData
+                        });
+                    }
                 }
             }
         });
@@ -157,5 +166,48 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
         return animSpeed;
+    }
+
+    getDamageElement(entityId, game, combat) {
+        // Check combat component first
+        if (combat.element) {
+            return combat.element;
+        }
+
+        // Check weapon element
+        const weaponElement = this.getWeaponElement(entityId, game);
+        if (weaponElement) {
+            return weaponElement;
+        }
+
+        // Default to physical
+        return game.damageSystem?.ELEMENT_TYPES?.PHYSICAL || 'physical';
+    }
+
+    getWeaponElement(entityId, game) {
+        if (!game.equipmentSystem) return null;
+
+        const equipment = game.getComponent(entityId, 'equipment');
+        if (!equipment) return null;
+
+        // Check main hand weapon
+        const mainHandItem = equipment.slots?.mainHand;
+        if (mainHandItem) {
+            const itemData = game.gameManager.call('getItemData', mainHandItem);
+            if (itemData && itemData.stats && itemData.stats.element) {
+                return itemData.stats.element;
+            }
+        }
+
+        // Check off hand weapon
+        const offHandItem = equipment.slots?.offHand;
+        if (offHandItem) {
+            const itemData = game.gameManager.call('getItemData', offHandItem);
+            if (itemData && itemData.stats && itemData.stats.element) {
+                return itemData.stats.element;
+            }
+        }
+
+        return null;
     }
 }
