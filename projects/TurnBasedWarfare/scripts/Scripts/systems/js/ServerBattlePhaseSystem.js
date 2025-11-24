@@ -129,7 +129,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         if( this.currentBattleTime < this.minBattleDuration){
             return;
         }
-        if( this.currentBattleTime > this.maxBattleDuration){
+        if( this.currentBattleTime >= this.maxBattleDuration){
             this.endBattle(this.game.room, null);
             return;
         }
