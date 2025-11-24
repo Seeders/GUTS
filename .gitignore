@@ -2,6 +2,7 @@
 node_modules/
 cache/
 
+projects/**/config/*
 */**/dist/client/game.js
 */**/dist/client/engine.js
 */**/dist/client/resources/**/*

@@ -1,13 +1,4 @@
-/**
- * BehaviorSystem - Master controller for unit AI
- * Evaluates behavior trees and executes actions for all units
- *
- * This system replaces the scattered AI logic with a unified approach:
- * - Behavior trees define WHAT units should do (goals)
- * - Actions define HOW to do it (execution)
- * - Single source of truth: UnitController component
- */
-class BehaviorSystem extends BaseSystem {
+class BehaviorSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
 
