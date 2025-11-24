@@ -6,9 +6,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         
         // Battle configuration
-        this.maxBattleDuration = 30; // 90 seconds max
+        this.maxBattleDuration = 30; // 30 seconds max
         this.minBattleDuration = 29;
-        this.currentBattleTime = 0;
+        this.battleStartTime = 0;
         // Battle state tracking
         this.battleResults = new Map();
         this.createdSquads = new Map();
@@ -29,6 +29,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
+
+            // Record battle start time (use global game time like client does)
+            this.battleStartTime = this.game.state.now || 0;
 
             // Initialize deterministic RNG for this battle
             // Seed based on room ID and round number for reproducibility
@@ -91,13 +94,15 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         if (this.game.state?.phase !== 'battle') {
             return;
         }
-        this.currentBattleTime += this.game.state.deltaTime;
         // Check for battle end conditions
         this.checkForBattleEnd();
     }
 
     checkForBattleEnd() {
         if (!this.game.componentManager) return;
+
+        // Calculate battle duration same way as client
+        const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
         const allBattleEntities = this.game.getEntitiesWith(
             "team",
@@ -122,14 +127,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             }
         }
         const aliveTeams = Array.from(teams.keys());
-           
+
         const noCombatActive = this.checkNoCombatActive(aliveEntities);
         const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
-        
-        if( this.currentBattleTime < this.minBattleDuration){
+
+        if( battleDuration < this.minBattleDuration){
             return;
         }
-        if( this.currentBattleTime >= this.maxBattleDuration){
+        if( battleDuration >= this.maxBattleDuration){
             this.endBattle(this.game.room, null);
             return;
         }
@@ -209,7 +214,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             result: battleResult,
             gameState: room.getGameState(), // This will also have updated player health
             entitySync: entitySync,
-            serverTime: this.game.state.now // Server's simulation time when battle ended
+            serverTime: this.game.state.now // Server's global game time when battle ended
         });
         // Check for game end or continue to next round
         if (this.shouldEndGame(room)) {
@@ -335,7 +340,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         if (!this.game.componentManager) return;
 
-        this.currentBattleTime = 0;
+        this.battleStartTime = 0;
 
         const entitiesToDestroy = new Set();
 
