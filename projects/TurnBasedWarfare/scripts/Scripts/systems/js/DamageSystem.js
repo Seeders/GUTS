@@ -2,7 +2,6 @@ class DamageSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.damageSystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Element types
         this.ELEMENT_TYPES = {
@@ -62,10 +61,10 @@ class DamageSystem extends GUTS.BaseSystem {
      * @param {Object} options - Additional options (splash, crit, etc.)
      */
     applyDamage(sourceId, targetId, baseDamage, element = this.ELEMENT_TYPES.PHYSICAL, options = {}) {
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetHealth = this.game.getComponent(targetId, "health");
+        const targetDeathState = this.game.getComponent(targetId, "deathState");
+        const targetUnitType = this.game.getComponent(targetId, "unitType");
+        const targetPos = this.game.getComponent(targetId, "position");
 
         if (!targetHealth || (targetDeathState && targetDeathState.isDying)) {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
@@ -114,7 +113,7 @@ class DamageSystem extends GUTS.BaseSystem {
         };
     }
     getAttackerModifiers(attackerId) {
-        const buff = this.game.getComponent(attackerId, this.componentTypes.BUFF);
+        const buff = this.game.getComponent(attackerId, "buff");
         if (!buff || !buff.isActive) return { 
             damageMultiplier: 1.0,
             attackSpeedMultiplier: 1.0 
@@ -132,7 +131,7 @@ class DamageSystem extends GUTS.BaseSystem {
         };
     }
     getDefenderModifiers(defenderId) {
-        const buff = this.game.getComponent(defenderId, this.componentTypes.BUFF);
+        const buff = this.game.getComponent(defenderId, "buff");
         if (!buff || !buff.isActive) return { 
             armorMultiplier: 1.0, 
             damageTakenMultiplier: 1.0, 
@@ -167,23 +166,23 @@ class DamageSystem extends GUTS.BaseSystem {
      */
     applySplashDamage(sourceId, centerPos, baseDamage, element, radius, options = {}) {
         const results = [];
-        const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
+        const sourceTeam = this.game.getComponent(sourceId, "team");
         
         if (!sourceTeam) return results;
 
         // Find all entities within splash radius
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
         // Sort for deterministic processing order (prevents desync)
         allEntities.sort((a, b) => String(a).localeCompare(String(b)));
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
             
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTeam = this.game.getComponent(entityId, "team");
             
             if (!entityPos || !entityTeam) return;
             if (entityTeam.team === sourceTeam.team && !options.allowFriendlyFire) return;
@@ -296,7 +295,7 @@ class DamageSystem extends GUTS.BaseSystem {
         };
 
         // Get base defenses from combat component
-        const combatComponent = this.game.getComponent(entityId, this.componentTypes.COMBAT);
+        const combatComponent = this.game.getComponent(entityId, "combat");
         if (combatComponent) {
             defenses.armor = combatComponent.armor || 0;
             defenses.fireResistance = combatComponent.fireResistance || 0;
@@ -375,8 +374,8 @@ class DamageSystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntityIds) {
             const statusEffects = this.activeStatusEffects.get(entityId);
-            const targetHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const targetDeathState = this.game.getComponent(entityId, this.componentTypes.DEATH_STATE);
+            const targetHealth = this.game.getComponent(entityId, "health");
+            const targetDeathState = this.game.getComponent(entityId, "deathState");
             
             if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
                 // Entity is dead or dying, remove all status effects
@@ -470,8 +469,8 @@ class DamageSystem extends GUTS.BaseSystem {
 
             if (this.game.state.now >= event.triggerTime) {
                 // Check if target is still valid
-                const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
-                const targetDeathState = this.game.getComponent(event.targetId, this.componentTypes.DEATH_STATE);
+                const targetHealth = this.game.getComponent(event.targetId, "health");
+                const targetDeathState = this.game.getComponent(event.targetId, "deathState");
                 
                 if (targetHealth && targetHealth.current > 0 && (!targetDeathState || !targetDeathState.isDying)) {
                     // Apply the delayed damage
@@ -507,7 +506,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
 
     applyVisualFeedback(targetId, damageResult, element) {
-        const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
+        const targetAnimation = this.game.getComponent(targetId, "animation");
         if (targetAnimation) {
             // Different flash intensities based on element
             switch (element) {

@@ -10,21 +10,19 @@ console.log('evaluating', entityId, game);
     }
 
     checkPlayerOrder(entityId, game) {
-        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);
-        if (!controller.playerOrder) return null;
-
+        if (!aiState.targetPosition) return null;
+        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
         return {
-            action: controller.playerOrder.action,
-            target: controller.playerOrder.target,
+            targetPosition: aiState.targetPosition,
             priority: 10,
             playerOrdered: true
         };
     }
 
     checkCombat(entityId, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
-        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);
-        const team = game.getComponent(entityId, game.componentTypes.TEAM);
+        const pos = game.getComponent(entityId, "position");
+        const combat = game.getComponent(entityId, "combat");
+        const team = game.getComponent(entityId, "team");
 
         // Find enemies using gameManager or direct query
         let enemies;
@@ -36,7 +34,7 @@ console.log('evaluating', entityId, game);
             const allEntities = game.getAllEntityIds ? game.getAllEntityIds() : [];
             for (const otherId of allEntities) {
                 if (otherId === entityId) continue;
-                const otherTeam = game.getComponent(otherId, game.componentTypes.TEAM);
+                const otherTeam = game.getComponent(otherId, "team");
                 if (otherTeam && otherTeam.team !== team.team) {
                     enemies.push(otherId);
                 }
@@ -46,7 +44,7 @@ console.log('evaluating', entityId, game);
         // Filter by vision range if combat component has it
         const visionRange = combat.visionRange || combat.attackRange || 10;
         const enemiesInRange = enemies.filter(enemyId => {
-            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);
+            const enemyPos = game.getComponent(enemyId, "position");
             if (!enemyPos) return false;
             const dist = this.distance(pos, enemyPos);
             return dist <= visionRange;
@@ -64,15 +62,12 @@ console.log('evaluating', entityId, game);
     }
 
     checkMoveOrder(entityId, game) {
-        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);
-        if (!controller.playerOrder || controller.playerOrder.action !== "MOVE_TO") {
-            return null;
-        }
-
+       if (!aiState.targetPosition) return null;
+        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
         return {
-            action: "MOVE_TO",
-            target: controller.playerOrder.target,
-            priority: 10
+            targetPosition: aiState.targetPosition,
+            priority: 10,
+            playerOrdered: true
         };
     }
 
@@ -87,7 +82,7 @@ console.log('evaluating', entityId, game);
         );
 
         for (const enemyId of sortedEnemies) {
-            const enemyPos = game.getComponent(enemyId, game.componentTypes.POSITION);
+            const enemyPos = game.getComponent(enemyId, "position");
             const dist = this.distance(pos, enemyPos);
 
             if (dist < minDist) {

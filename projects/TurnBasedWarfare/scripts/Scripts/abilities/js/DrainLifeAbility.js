@@ -66,7 +66,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     }
     
     canExecute(casterEntity) {
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         const enemies = this.getEnemiesInRange(casterEntity);
         
         // Use when injured and enemies are available
@@ -75,7 +75,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -86,7 +86,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
         
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(target, "position");
         if (!targetPos) return;
         
         // Immediate effects (visual, audio, logging)
@@ -108,7 +108,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         
         // DESYNC SAFE: Use scheduling system for delayed effect
         this.game.schedulingSystem.scheduleAction(() => {
-            const currentTargetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+            const currentTargetPos = this.game.getComponent(target, "position");
             if (currentTargetPos) {
                 this.performDrain(casterEntity, target, currentTargetPos);
             }
@@ -116,8 +116,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     }
     
     performDrain(casterEntity, targetId, targetPos) {
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
 
         if (!casterHealth || !casterPos || !targetPos) return;
 
@@ -252,7 +252,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         let highestHealth = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(enemyId, "health");
             if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
                 highestHealth = health.current;
                 strongest = enemyId;

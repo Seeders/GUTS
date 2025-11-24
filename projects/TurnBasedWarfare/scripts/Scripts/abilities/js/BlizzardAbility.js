@@ -83,7 +83,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
 
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -187,7 +187,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
 
     spawnIceShardWave(casterEntity, centerPos, tickIndex) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
 
         // Spawn multiple ice shards falling in the area
@@ -351,20 +351,20 @@ class BlizzardAbility extends GUTS.BaseAbility {
     applyAreaDamage(casterEntity, centerPos, tickIndex) {
         // Get all enemies in splash radius
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
 
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const casterTeam = this.game.getComponent(casterEntity, "team");
         if (!casterTeam) return;
 
         const targets = [];
 
         allEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTeam = this.game.getComponent(entityId, "team");
+            const entityHealth = this.game.getComponent(entityId, "health");
 
             if (!entityPos || !entityTeam || !entityHealth) return;
             if (entityTeam.team === casterTeam.team) return;
@@ -476,14 +476,14 @@ class BlizzardAbility extends GUTS.BaseAbility {
         let bestScore = 0;
 
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            const centerPos = this.game.getComponent(potentialCenter, "position");
             if (!centerPos) return;
 
             let targetsInRange = 0;
             let totalDistance = 0;
 
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const enemyPos = this.game.getComponent(enemyId, "position");
                 if (!enemyPos) return;
 
                 const distance = Math.sqrt(
@@ -508,7 +508,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         });
 
         if (!bestPosition && sortedEnemies.length > 0) {
-            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], this.componentTypes.POSITION);
+            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], "position");
             if (firstEnemyPos) {
                 bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
             }

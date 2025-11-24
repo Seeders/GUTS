@@ -68,8 +68,8 @@ class PiercingShotAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterFacing = this.game.getComponent(casterEntity, this.componentTypes.FACING);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterFacing = this.game.getComponent(casterEntity, "facing");
         
         if (!casterPos || !casterFacing) return null;
         
@@ -239,7 +239,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         const hitEnemies = [];
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
             
             if (this.isInLine(startPos, endPos, enemyPos, this.lineWidth)) {

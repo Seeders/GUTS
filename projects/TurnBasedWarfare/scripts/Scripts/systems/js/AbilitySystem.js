@@ -2,7 +2,6 @@ class AbilitySystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         this.abilityActionCounter = 0;
         this.entityAbilities = new Map();
         this.abilityCooldowns = new Map();
@@ -105,7 +104,7 @@ class AbilitySystem extends GUTS.BaseSystem {
             .sort((a, b) => b.priority - a.priority);
         
         // Check if unit is waiting and now has abilities available
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        const aiState = this.game.getComponent(entityId, "aiState");
         if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
             // Transition back to attacking state since we have abilities ready
             if (this.game.combatAISystems) {
@@ -186,9 +185,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         const targetId = ability.getTargetForFacing(entityId);
         if (!targetId || targetId === entityId) return;
 
-        const casterPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+        const casterPos = this.game.getComponent(entityId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const facing = this.game.getComponent(entityId, "facing");
 
         if (!casterPos || !targetPos || !facing) return;
 

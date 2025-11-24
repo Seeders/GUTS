@@ -81,7 +81,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -112,7 +112,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             return;
         }
         
-        const targetPos = this.game.getComponent(currentTarget, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(currentTarget, "position");
         if (!targetPos) return;
         
         // Add target to hit list
@@ -174,7 +174,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             // Create visual arc effect if there was a previous target
             if (jumpIndex > 0) {
                 const previousTarget = hitTargets[jumpIndex - 1];
-                const previousPos = this.game.getComponent(previousTarget, this.componentTypes.POSITION);
+                const previousPos = this.game.getComponent(previousTarget, "position");
                 if (previousPos) {
                     this.createLightningArc(previousPos, targetPos);
                 }
@@ -200,7 +200,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
@@ -210,7 +210,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -230,7 +230,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Find next chain target deterministically
     findNextChainTarget(fromTarget, availableTargets, hitTargets) {
-        const fromPos = this.game.getComponent(fromTarget, this.componentTypes.POSITION);
+        const fromPos = this.game.getComponent(fromTarget, "position");
         if (!fromPos) return null;
         
         // Sort targets deterministically first
@@ -242,7 +242,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         sortedTargets.forEach(targetId => {
             if (targetId === fromTarget || hitTargets.includes(targetId)) return;
             
-            const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            const targetPos = this.game.getComponent(targetId, "position");
             if (!targetPos) return;
             
             const distance = Math.sqrt(

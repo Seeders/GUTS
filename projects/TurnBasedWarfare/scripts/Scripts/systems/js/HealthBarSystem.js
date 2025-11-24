@@ -2,7 +2,6 @@ class HealthBarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.healthBarSystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Health bar configuration
         this.HEALTH_BAR_WIDTH = 32;
@@ -37,16 +36,16 @@ class HealthBarSystem extends GUTS.BaseSystem {
         
         // Get all entities with health and position
         const healthEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.UNIT_TYPE
+            "position",
+            "health",
+            "unitType"
         );
         
         // Update existing health bars and create new ones
         healthEntities.forEach(entityId => {
-            const pos    = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const team   = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const pos    = this.game.getComponent(entityId, "position");
+            const health = this.game.getComponent(entityId, "health");
+            const team   = this.game.getComponent(entityId, "team");
             if (!pos || !health) return;
 
             // === Fog-of-war visibility filter (enemies only) ===
@@ -129,7 +128,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
         
 
         // Position group above unit
-        const unitType  = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const unitType  = this.game.getComponent(entityId, "unitType");
         const collections = this.game.getCollections?.();
         const unitData = (unitType && collections && collections[unitType.collection])
             ? collections[unitType.collection][unitType.id]

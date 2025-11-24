@@ -55,7 +55,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, "position");
         if (!pos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -66,7 +66,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         const target = this.findClosestEnemy(casterEntity, enemies);
         if (!target) return;
         
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(target, "position");
         if (!targetPos) return;
         
         // Immediate cast effect
@@ -81,7 +81,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
@@ -91,7 +91,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -109,8 +109,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     }
     
     performShadowStrike(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
 
         if (!casterPos || !targetPos) return;
 

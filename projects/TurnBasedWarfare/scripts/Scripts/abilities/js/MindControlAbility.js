@@ -64,8 +64,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         
         // Filter out enemies that are already being controlled or targeted
         const validTargets = enemies.filter(enemyId => {
-            const enemyTeam = this.game.getComponent(enemyId, this.componentTypes.TEAM);
-            const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+            const enemyTeam = this.game.getComponent(enemyId, "team");
+            const casterTeam = this.game.getComponent(casterEntity, "team");
             
             if (!enemyTeam || !casterTeam) return false;
             
@@ -80,15 +80,15 @@ class MindControlAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterTeam = this.game.getComponent(casterEntity, "team");
         
         if (!casterPos || !casterTeam) return;
 
         // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         const validTargets = enemies.filter(enemyId => {
-            const enemyTeam = this.game.getComponent(enemyId, this.componentTypes.TEAM);
+            const enemyTeam = this.game.getComponent(enemyId, "team");
             return enemyTeam && enemyTeam.team !== casterTeam.team && !this.pendingControls.has(enemyId);
         });
 
@@ -110,7 +110,7 @@ class MindControlAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
 
         // Sort enemies deterministically first
@@ -120,7 +120,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
 
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
 
             const distance = Math.sqrt(
@@ -139,9 +139,9 @@ class MindControlAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Start mind control process
     startMindControl(casterId, targetId) {
-        const casterTeam = this.game.getComponent(casterId, this.componentTypes.TEAM);
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const casterTeam = this.game.getComponent(casterId, "team");
+        const targetTeam = this.game.getComponent(targetId, "team");
+        const targetPos = this.game.getComponent(targetId, "position");
         
         if (!casterTeam || !targetTeam || !targetPos) return;
 
@@ -185,8 +185,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         const controlData = this.pendingControls.get(targetId);
         if (!controlData) return;
 
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetTeam = this.game.getComponent(targetId, "team");
+        const targetPos = this.game.getComponent(targetId, "position");
         
         if (!targetTeam || !targetPos) {
             this.cancelMindControl(targetId);
@@ -195,8 +195,8 @@ class MindControlAbility extends GUTS.BaseAbility {
 
         // Check if any contributors are still alive and in range
         const validContributors = Array.from(controlData.contributors).filter(casterId => {
-            const casterHealth = this.game.getComponent(casterId, this.componentTypes.HEALTH);
-            const casterPos = this.game.getComponent(casterId, this.componentTypes.POSITION);
+            const casterHealth = this.game.getComponent(casterId, "health");
+            const casterPos = this.game.getComponent(casterId, "position");
             
             if (!casterHealth || casterHealth.current <= 0 || !casterPos) return false;
             
@@ -219,8 +219,8 @@ class MindControlAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Apply mind control effect
     applyMindControl(targetId, controlData) {
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetTeam = this.game.getComponent(targetId, "team");
+        const targetPos = this.game.getComponent(targetId, "position");
         
         if (!targetTeam || !targetPos) return;
 
@@ -329,8 +329,8 @@ class MindControlAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Expire mind control effect
     expireMindControl(targetId, originalTeam) {
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const targetTeam = this.game.getComponent(targetId, "team");
+        const targetPos = this.game.getComponent(targetId, "position");
         
         if (!targetTeam) return; // Target might be dead
 
@@ -350,8 +350,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         // Only create visual beams on client
         if (this.game.isServer) return;
 
-        const casterPos = this.game.getComponent(casterId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
 
         if (!casterPos || !targetPos || !this.game.effectsSystem) return;
 

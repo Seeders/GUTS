@@ -31,7 +31,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
     startAuraCycle(casterEntity) {
         if (this.hasActiveAura) return;
 
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
 
         this.hasActiveAura = true;
@@ -100,8 +100,8 @@ class BurningAuraAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Execute a single aura tick deterministically
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
@@ -117,8 +117,8 @@ class BurningAuraAbility extends GUTS.BaseAbility {
         
         // Process enemies - burn their health
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const enemyPos = this.game.getComponent(enemyId, "position");
+            const enemyHealth = this.game.getComponent(enemyId, "health");
             
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
             

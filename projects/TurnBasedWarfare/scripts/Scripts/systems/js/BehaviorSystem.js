@@ -76,10 +76,8 @@ class BehaviorSystem extends BaseSystem {
      * Main update loop - runs for all units with UnitController
      */
     update(dt) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-
         // Get all entities with UnitController
-        const entities = this.game.getEntitiesWith(CT.UNIT_CONTROLLER);
+        const entities = this.game.getEntitiesWith("position");
 
         // Sort for determinism
         entities.sort((a, b) => String(a).localeCompare(String(b)));
@@ -93,9 +91,8 @@ class BehaviorSystem extends BaseSystem {
      * Update a single unit's behavior
      */
     updateUnit(entityId, dt) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+        const controller = this.game.getComponent(entityId, "position");
+        const unitType = this.game.getComponent(entityId, "unitType");
 
         if (!controller || !unitType) return;
 
@@ -206,15 +203,14 @@ class BehaviorSystem extends BaseSystem {
      * Public API: Issue a player command to a unit
      */
     issuePlayerCommand(entityId, action, target, data = {}) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
+        const aiState = this.game.getComponent(entityId, "aiState");
 
-        if (!controller) {
+        if (!aiState) {
             console.warn(`Cannot issue command to entity ${entityId}: no UnitController component`);
             return;
         }
 
-        controller.playerOrder = {
+        aiState.playerOrder = {
             action: action,
             target: target,
             data: data,
@@ -227,11 +223,10 @@ class BehaviorSystem extends BaseSystem {
      * Public API: Clear player command for a unit
      */
     clearPlayerCommand(entityId) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
+        const aiState = this.game.getComponent(entityId, "aiState");
 
-        if (controller) {
-            controller.playerOrder = null;
+        if (aiState) {
+            aiState.playerOrder = null;
         }
     }
 
@@ -239,15 +234,15 @@ class BehaviorSystem extends BaseSystem {
      * Debug: Get current action for an entity
      */
     getCurrentAction(entityId) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
+        const aiState = this.game.getComponent(entityId, "aiState");
 
-        if (!controller) return null;
+        if (!aiState) return null;
 
         return {
-            action: controller.currentAction,
-            target: controller.actionTarget,
-            priority: controller.actionPriority
+            action: aiState.currentAction,
+            target: aiState.actionTarget,
+            playerOrder: aiState.playerOrder,
+            priority: aiState.actionPriority
         };
     }
 }

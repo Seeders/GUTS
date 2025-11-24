@@ -196,7 +196,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Last resort: use unit type component directly
-        const unitTypeComponent = this.game.getComponent(unitId, this.componentTypes.UNIT_TYPE);
+        const unitTypeComponent = this.game.getComponent(unitId, "unitType");
         if (unitTypeComponent) {
             return {
                 placementId: `unknown_${unitId}`,

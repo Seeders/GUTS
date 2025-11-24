@@ -2,7 +2,6 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.unitRadiusSystem = this;        
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
         this.enabled = false; // Toggle this to show/hide circles
         
@@ -21,8 +20,8 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         }
         
         const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.UNIT_TYPE
+            "position", 
+            "unitType"
         );
         
         entities.forEach(entityId => {
@@ -34,9 +33,9 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     }
     
     updateEntityCircles(entityId) {
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
+        const pos = this.game.getComponent(entityId, "position");
+        const collision = this.game.getComponent(entityId, "collision");
+        const combat = this.game.getComponent(entityId, "combat");
         
         if (!pos || !collision) return;
         
@@ -69,7 +68,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         circles.sizeCircle.visible = true;
         
         // Show/hide attack circle based on entity state
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        const aiState = this.game.getComponent(entityId, "aiState");
         if (aiState && (aiState.state === 'attacking' || aiState.state === 'chasing')) {
             circles.attackCircle.visible = true;
             if (aiState.state === 'attacking') {

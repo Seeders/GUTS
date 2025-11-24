@@ -11,8 +11,8 @@ class DesyncDebugger {
     displaySync(detailed) {    
         if(this.enabled){
             const entities = this.game.getEntitiesWith(
-                this.game.componentManager.getComponentTypes().POSITION,
-                this.game.componentManager.getComponentTypes().COMBAT
+                "position",
+                "combat"
             );
             // Create deterministic state snapshot
             const stateData = this.createStateSnapshot(entities);
@@ -33,7 +33,6 @@ class DesyncDebugger {
     }
 
     createStateSnapshot(entities) {
-        const CT = this.game.gameManager.call('getComponentTypes');
         
         const snapshot = {
             gameTime: parseFloat(this.game.state.now.toFixed(6)), // Round to avoid float precision issues
@@ -41,11 +40,11 @@ class DesyncDebugger {
         };
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const vel = this.game.getComponent(entityId, CT.VELOCITY);
-            const combat = this.game.getComponent(entityId, CT.COMBAT);
-            const health = this.game.getComponent(entityId, CT.HEALTH);
-            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            const pos = this.game.getComponent(entityId, "position");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const combat = this.game.getComponent(entityId, "combat");
+            const health = this.game.getComponent(entityId, "health");
+            const aiState = this.game.getComponent(entityId, "aiState");
 
             const entityData = {
                 id: String(entityId),

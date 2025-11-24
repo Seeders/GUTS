@@ -50,7 +50,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -61,7 +61,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
         
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(target, "position");
         if (!targetPos) return;
         
         // Immediate cast effect
@@ -74,7 +74,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
     }
     
     strikeLightning(casterEntity, targetId, targetPos) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
 
         // Create lightning bolt visual effect
@@ -196,7 +196,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         let highestHealth = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(enemyId, "health");
             if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
                 highestHealth = health.current;
                 strongest = enemyId;

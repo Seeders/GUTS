@@ -2,7 +2,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.equipmentSystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.entityEquipment = new Map();
         this.equipmentCache = new Map();
@@ -46,8 +45,8 @@ class EquipmentSystem extends GUTS.BaseSystem {
 
     update() {
         const entities = this.game.getEntitiesWith(
-            this.componentTypes.EQUIPMENT,
-            this.componentTypes.POSITION
+            "equipment",
+            "position"
         );
         
         entities.forEach(entityId => {
@@ -61,8 +60,8 @@ class EquipmentSystem extends GUTS.BaseSystem {
         const equipmentData = this.equipmentInstances.get(entityId);
         if (!equipmentData) return;
         
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+        const pos = this.game.getComponent(entityId, "position");
+        const facing = this.game.getComponent(entityId, "facing");
         
         if (!pos) return;
         
@@ -229,7 +228,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
    
     async equipItem(entityId, slotData, itemData) {
         return false;
-        // const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
+        // const equipment = this.game.getComponent(entityId, "equipment");
         // const slotType = slotData.slot;
         // if (!equipment) return false;
         
@@ -381,7 +380,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
     }
     
     async unequipItem(entityId, slotType) {
-        const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
+        const equipment = this.game.getComponent(entityId, "equipment");
         if (!equipment || !equipment.slots[slotType]) return true;
         
         const equipInstance = this.equipmentInstances.get(entityId)?.get(slotType);

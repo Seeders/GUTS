@@ -2,7 +2,6 @@ class MovementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.movementSystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
@@ -57,19 +56,19 @@ class MovementSystem extends GUTS.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
+        const entities = this.game.getEntitiesWith("position", "velocity");
         // Sort for deterministic processing order (prevents desync)
         entities.sort((a, b) => String(a).localeCompare(String(b)));
 
         const unitData = new Map();
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-            const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
+            const pos = this.game.getComponent(entityId, "position");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const unitType = this.game.getComponent(entityId, "unitType");
+            const collision = this.game.getComponent(entityId, "collision");
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const projectile = this.game.getComponent(entityId, "projectile");
             
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
@@ -107,11 +106,11 @@ class MovementSystem extends GUTS.BaseSystem {
         this.updatePathfindingStaggered(unitData);
         
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const collision = this.game.getComponent(entityId, "collision");
+            const projectile = this.game.getComponent(entityId, "projectile");
+            const unitType = this.game.getComponent(entityId, "unitType");
             
             const isAffectedByGravity = vel.affectedByGravity;
             
@@ -276,8 +275,8 @@ class MovementSystem extends GUTS.BaseSystem {
             
             checksPerformed++;
             
-            const otherPos = this.game.getComponent(otherEntityId, this.componentTypes.POSITION);
-            const otherCollision = this.game.getComponent(otherEntityId, this.componentTypes.COLLISION);
+            const otherPos = this.game.getComponent(otherEntityId, "position");
+            const otherCollision = this.game.getComponent(otherEntityId, "collision");
             
             if (!otherPos) continue;
             
@@ -337,7 +336,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const targetEntityId = aiState.target;
 
         if(targetEntityId){
-            targetPos = this.game.getComponent(targetEntityId, this.componentTypes.POSITION);
+            targetPos = this.game.getComponent(targetEntityId, "position");
         }
         
         if (!targetPos) {
@@ -417,8 +416,8 @@ class MovementSystem extends GUTS.BaseSystem {
                 
                 checksPerformed++;
                 
-                const otherPos = this.game.getComponent(otherEntityId, this.componentTypes.POSITION);
-                const otherCollision = this.game.getComponent(otherEntityId, this.componentTypes.COLLISION);
+                const otherPos = this.game.getComponent(otherEntityId, "position");
+                const otherCollision = this.game.getComponent(otherEntityId, "collision");
                 
                 if (!otherPos) continue;
                 
@@ -550,7 +549,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
         let targetPos = aiState.targetPosition;
         if (aiState.target) {
-            const currentTargetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+            const currentTargetPos = this.game.getComponent(aiState.target, "position");
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
@@ -591,7 +590,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
             let targetPos = aiState.targetPosition;
             if (aiState.target) {
-                targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+                targetPos = this.game.getComponent(aiState.target, "position");
             }
 
             if ((!aiState.path || aiState.path.length == 0) && targetPos) {
@@ -681,7 +680,7 @@ class MovementSystem extends GUTS.BaseSystem {
             const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
 
             if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
-                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                const facing = this.game.getComponent(entityId, "facing");
                 currentDirection = facing ? facing.angle : 0;
             } else {
                 currentDirection = Math.atan2(vel.vz, vel.vx);
@@ -699,7 +698,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
 
-                    const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                    const facing = this.game.getComponent(entityId, "facing");
                     if (facing) {
                         facing.angle = smoothedDirection;
                     }
@@ -722,7 +721,7 @@ class MovementSystem extends GUTS.BaseSystem {
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
             // Preserve facing direction before zeroing velocity
             if (speedSqrd > 0.001) {
-                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                const facing = this.game.getComponent(entityId, "facing");
                 if (facing) {
                     facing.angle = Math.atan2(vel.vz, vel.vx);
                 }

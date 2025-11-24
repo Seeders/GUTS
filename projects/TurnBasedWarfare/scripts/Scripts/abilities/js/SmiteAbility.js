@@ -69,7 +69,7 @@ class SmiteAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -79,7 +79,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemyDeterministic(enemies);
         if (!target) return null;
         
-        const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(target, "position");
         if (!targetPos) return null;
         
         // Show immediate cast effect
@@ -94,7 +94,7 @@ class SmiteAbility extends GUTS.BaseAbility {
     
     performDivineSmite(casterEntity, targetId, originalTargetPos) {
         // Get current target position (target may have moved)
-        const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const currentTargetPos = this.game.getComponent(targetId, "position");
         const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
 
         // Create pillar of light effect
@@ -203,14 +203,14 @@ class SmiteAbility extends GUTS.BaseAbility {
     
     applySmiteDamage(casterEntity, targetId, targetPos) {
         // Validate target still exists
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetHealth = this.game.getComponent(targetId, "health");
         if (!targetHealth || targetHealth.current <= 0) {
             this.logAbilityUsage(casterEntity, `Divine judgment finds no target!`);
             return;
         }
         
         // Calculate damage (bonus vs undead)
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        const targetUnitType = this.game.getComponent(targetId, "unitType");
         let damage = this.damage;
         let isUndeadTarget = false;
         
@@ -296,7 +296,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         
         // Process enemies in deterministic order
         sortedEnemies.forEach(enemyId => {
-            const health = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(enemyId, "health");
             if (!health) return;
             
             // Use >= for consistent tie-breaking (first in sorted order wins when health is equal)
@@ -311,7 +311,7 @@ class SmiteAbility extends GUTS.BaseAbility {
     
     // Helper method to check if target is undead (for potential future use)
     isUndeadTarget(targetId) {
-        const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        const targetUnitType = this.game.getComponent(targetId, "unitType");
         if (!targetUnitType) return false;
         
         return targetUnitType.title.includes('undead') || 
