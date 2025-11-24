@@ -6,28 +6,18 @@
 class MockGameContext extends GUTS.BaseECSGame {
     constructor(mockEntitiesData = [], app = null) {
         // Use provided app (e.g., editor controller) or create minimal mock
-        const mockApp = app || {
-            moduleManager: null,
-            getCollections: () => ({
-                configs: {},
-                textures: {},
-                models: {}
-            })
-        };
-
-        super(mockApp);
+        super(app);
 
         // Track entity labels separately (not part of core ECS)
         this.entityLabels = new Map();
         this.currentEntityId = null;
 
-        // Initialize componentManager to get componentTypes
-        // Note: componentManager sets this.componentTypes via BaseECSGame
-        this.componentManager = new GUTS.ComponentManager(this);
-
+        this.componentGenerator = new GUTS.ComponentGenerator(app.getCollections().components);
+        this.componentTypes = this.componentGenerator.getComponentTypes();
         // Initialize gameManager with GameServices
-        this.gameManager = new GUTS.GameServices();
-
+        this.gameManager = new GUTS.GameServices();        
+        this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
+        this.gameManager.register("getComponentTypes", () => this.componentTypes);
         // Initialize state (needed by BaseECSGame update loop)
         this.state = {
             isPaused: false,
