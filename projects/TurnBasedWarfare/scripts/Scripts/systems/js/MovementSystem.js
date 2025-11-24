@@ -509,9 +509,26 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // NEW: Read velocity targets set by behavior tree actions
+        // Read velocity targets set by behavior tree actions
         // Actions set vel.targetX and vel.targetZ to indicate where to move
         if (vel.targetX != null && vel.targetZ != null) {
+            // Use pathfinding if aiState available and useDirectMovement not set
+            if (aiState && !aiState.useDirectMovement) {
+                // Check if we have a path to follow
+                if (aiState.path && aiState.path.length > 0) {
+                    this.followPath(entityId, data);
+                    return;
+                }
+
+                // No path yet, request one
+                this.requestPathIfNeeded(entityId, data);
+
+                // While waiting for path, move directly
+                this.moveDirectlyToTarget(entityId, data);
+                return;
+            }
+
+            // Direct movement (for units with useDirectMovement flag or no aiState)
             const dx = vel.targetX - pos.x;
             const dz = vel.targetZ - pos.z;
             const distToTarget = Math.sqrt(dx * dx + dz * dz);
@@ -572,7 +589,7 @@ class MovementSystem extends GUTS.BaseSystem {
     }
 
     requestPathIfNeeded(entityId, data) {
-        const { pos, aiState } = data;
+        const { pos, vel, aiState } = data;
         const now = this.game.state.now;
         if(!aiState.aiBehavior){
             aiState.aiBehavior = {};
@@ -580,18 +597,26 @@ class MovementSystem extends GUTS.BaseSystem {
         if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
             aiState.aiBehavior.lastPathRequest = now;
 
-            let targetPos = aiState.targetPosition;
+            // Get target from vel.targetX/targetZ (set by behavior actions)
+            let targetX = vel.targetX;
+            let targetZ = vel.targetZ;
+
+            // If targeting an entity, use its current position
             if (aiState.target) {
-                targetPos = this.game.getComponent(aiState.target, "position");
+                const targetPos = this.game.getComponent(aiState.target, "position");
+                if (targetPos) {
+                    targetX = targetPos.x;
+                    targetZ = targetPos.z;
+                }
             }
 
-            if ((!aiState.path || aiState.path.length == 0) && targetPos) {
+            if ((!aiState.path || aiState.path.length == 0) && targetX != null && targetZ != null) {
                 aiState.path = this.game.gameManager.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
-                    targetPos.x,
-                    targetPos.z,
+                    targetX,
+                    targetZ,
                     1
                 );
             }
