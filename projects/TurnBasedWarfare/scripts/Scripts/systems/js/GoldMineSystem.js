@@ -174,7 +174,8 @@ class GoldMineSystem extends GUTS.BaseSystem {
             veinIndex: vein.originalIndex,
             currentMiner: null,
             minerQueue: [],
-            cells: vein.cells
+            cells: vein.cells,
+            isActive: true
         });
 
         return { success: true };
