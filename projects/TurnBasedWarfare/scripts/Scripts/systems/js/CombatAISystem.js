@@ -736,8 +736,12 @@ class CombatAISystem extends GUTS.BaseSystem {
         if (this.game.damageSystem) {
             this.game.gameManager.call('clearAllStatusEffects', entityId);
         }
-        
-        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, Components.DeathState(true, this.game.state.now, 2.0));
+
+        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, {
+            isDying: true,
+            deathStartTime: this.game.state.now,
+            deathAnimationDuration: 2.0
+        });
         if (this.game.hasComponent(entityId, ComponentTypes.AI_STATE)) {
             this.game.removeComponent(entityId, ComponentTypes.AI_STATE);
         }

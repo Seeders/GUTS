@@ -80,8 +80,18 @@ class BuildAbility extends GUTS.BaseAbility {
         }
 
         this.peasantId = peasantEntityId;
-        this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
-        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, Components.BuildingState('planned_for_construction', buildingEntityId, buildingPos, null));
+        this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, {
+            state: 'walking_to_construction',
+            targetBuildingEntityId: buildingEntityId,
+            targetBuildingPosition: buildingPos,
+            constructionStartTime: this.game.state.round
+        });
+        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, {
+            state: 'planned_for_construction',
+            targetBuildingEntityId: buildingEntityId,
+            targetBuildingPosition: buildingPos,
+            constructionStartTime: null
+        });
 
         // Use command queue system to issue build command
         // This will properly interrupt current movement and clear the path
@@ -176,10 +186,12 @@ class BuildAbility extends GUTS.BaseAbility {
     constructBuilding(buildState) {
 
         const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const Components = this.game.gameManager.call('getComponents');
         const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
         const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
-        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, Components.Health(unitType.hp));
+        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, {
+            max: unitType.hp,
+            current: unitType.hp
+        });
         
 
         const elapsed = this.game.state.round - buildState.constructionStartTime;

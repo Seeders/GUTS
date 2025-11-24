@@ -84,14 +84,21 @@ class BloodlustAbility extends GUTS.BaseAbility {
         }
         
         // Apply bloodlust buff
-        const Components = this.game.gameManager.call('getComponents');
-        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
-            Components.Buff('bloodlust', { 
-                lifeSteal: this.lifeStealAmount, 
-                damagePerKill: this.damagePerKill, 
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        this.game.addComponent(casterEntity, ComponentTypes.BUFF, {
+            buffType: 'bloodlust',
+            modifiers: {
+                lifeSteal: this.lifeStealAmount,
+                damagePerKill: this.damagePerKill,
                 maxStacks: this.maxStacks,
                 currentStacks: 0 // Start with 0 kill stacks
-            }, this.game.state.now + this.duration, true, 1, this.game.state.now));
+            },
+            endTime: this.game.state.now + this.duration,
+            stackable: true,
+            stacks: 1,
+            appliedTime: this.game.state.now,
+            isActive: true
+        });
         
         // Visual bloodlust effect
         this.createVisualEffect(casterPos, 'bloodlust');

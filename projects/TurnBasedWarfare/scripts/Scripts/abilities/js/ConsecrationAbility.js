@@ -93,22 +93,31 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         
         // Create consecrated ground entity
         const consecrationId = this.game.createEntity();
-        const Components = this.game.gameManager.call('getComponents');
-        
-        this.game.addComponent(consecrationId, this.componentTypes.POSITION, 
-            Components.Position(consecrationPos.x, consecrationPos.y, consecrationPos.z));
-        
-        this.game.addComponent(consecrationId, this.componentTypes.TEMPORARY_EFFECT, 
-            Components.TemporaryEffect('consecrated_ground', {
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
+        this.game.addComponent(consecrationId, ComponentTypes.POSITION, {
+            x: consecrationPos.x,
+            y: consecrationPos.y,
+            z: consecrationPos.z
+        });
+
+        this.game.addComponent(consecrationId, ComponentTypes.TEMPORARY_EFFECT, {
+            effectType: 'consecrated_ground',
+            data: {
                 caster: casterEntity,
                 radius: this.consecrationRadius,
                 tickInterval: this.tickInterval,
                 tickDamage: this.tickDamage,
                 tickHeal: this.tickHeal
-            }, this.game.state.now));
-        
-        this.game.addComponent(consecrationId, this.componentTypes.RENDERABLE, 
-            Components.Renderable("effects", "consecration"));
+            },
+            createdTime: this.game.state.now
+        });
+
+        this.game.addComponent(consecrationId, ComponentTypes.RENDERABLE, {
+            objectType: "effects",
+            spawnType: "consecration",
+            capacity: 128
+        });
         
         // DESYNC SAFE: Schedule all consecration ticks using the scheduling system
         const totalTicks = Math.floor(this.duration / this.tickInterval);

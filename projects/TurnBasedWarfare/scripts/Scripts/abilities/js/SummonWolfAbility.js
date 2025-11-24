@@ -143,9 +143,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     createSummonedCreature(pos, unitDefId, team, summoner) {
         try {
             const creatureId = this.game.createEntity();
-            const components = this.game.gameManager.call('getComponents');
-            const componentTypes = this.game.gameManager.call('getComponentTypes');
-            
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
             // Get unit definition for stats (with fallbacks)
             const collections = this.game.getCollections();
             const unitDef = collections?.units?.[unitDefId] || {
@@ -156,45 +155,91 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 speed: 40,
                 size: 20
             };
-            
+
             // Add all standard unit components
-            this.game.addComponent(creatureId, componentTypes.POSITION, 
-                components.Position(pos.x, pos.y, pos.z));
-            
-            this.game.addComponent(creatureId, componentTypes.VELOCITY, 
-                components.Velocity(0, 0, 0, (unitDef.speed) * 20));
-            
-            this.game.addComponent(creatureId, componentTypes.RENDERABLE, 
-                components.Renderable("units", unitDefId));
-            
-            this.game.addComponent(creatureId, componentTypes.HEALTH, 
-                components.Health(unitDef.hp));
-            
-            this.game.addComponent(creatureId, componentTypes.COMBAT, 
-                components.Combat(unitDef.damage, unitDef.range, unitDef.attackSpeed));
-            
-            this.game.addComponent(creatureId, componentTypes.COLLISION, 
-                components.Collision(unitDef.size, unitDef.height));
-            
-            this.game.addComponent(creatureId, componentTypes.TEAM, 
-                components.Team(team));
-            
-            this.game.addComponent(creatureId, componentTypes.UNIT_TYPE, 
-                components.UnitType(unitDefId, 'Summoned Wolf', 0));
-            
-            this.game.addComponent(creatureId, componentTypes.AI_STATE, 
-                components.AIState('idle'));
-            
-            this.game.addComponent(creatureId, componentTypes.ANIMATION, 
-                components.Animation());
-            
-            this.game.addComponent(creatureId, componentTypes.FACING, 
-                components.Facing(0));
-            
+            this.game.addComponent(creatureId, ComponentTypes.POSITION, {
+                x: pos.x,
+                y: pos.y,
+                z: pos.z
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.VELOCITY, {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: (unitDef.speed) * 20,
+                affectedByGravity: true,
+                anchored: false
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.RENDERABLE, {
+                objectType: "units",
+                spawnType: unitDefId,
+                capacity: 128
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.HEALTH, {
+                max: unitDef.hp,
+                current: unitDef.hp
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.COMBAT, {
+                damage: unitDef.damage,
+                range: unitDef.range,
+                attackSpeed: unitDef.attackSpeed,
+                projectile: null,
+                lastAttack: 0,
+                element: 'physical',
+                armor: 0,
+                fireResistance: 0,
+                coldResistance: 0,
+                lightningResistance: 0,
+                poisonResistance: 0,
+                visionRange: 300
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.COLLISION, {
+                radius: unitDef.size,
+                height: unitDef.height || 50
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.TEAM, {
+                team: team
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.UNIT_TYPE, {
+                id: unitDefId,
+                title: 'Summoned Wolf',
+                value: 0
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.AI_STATE, {
+                state: 'idle',
+                targetPosition: null,
+                target: null,
+                aiControllerId: null,
+                meta: {}
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.ANIMATION, {
+                scale: 1,
+                rotation: 0,
+                flash: 0
+            });
+
+            this.game.addComponent(creatureId, ComponentTypes.FACING, {
+                angle: 0
+            });
+
             // DESYNC SAFE: Use game time for summoned component
-            this.game.addComponent(creatureId, componentTypes.SUMMONED, 
-                components.Summoned(summoner, unitDefId, null, this.game.state.now || 0));
-            
+            this.game.addComponent(creatureId, ComponentTypes.SUMMONED, {
+                summoner: summoner,
+                summonType: unitDefId,
+                originalStats: null,
+                createdTime: this.game.state.now || 0,
+                isSummoned: true
+            });
+
             return creatureId;
         } catch (error) {
             console.error('Failed to create summoned creature:', error);

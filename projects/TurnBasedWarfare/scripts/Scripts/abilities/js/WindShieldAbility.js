@@ -75,12 +75,19 @@ class WindShieldAbility extends GUTS.BaseAbility {
             this.createVisualEffect(allyPos, 'shield');            
             
             // DESYNC SAFE: Add shield component using scheduling system for duration
-            const Components = this.game.gameManager.call('getComponents');
-            this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                Components.Buff('wind_shield', { 
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+            this.game.addComponent(allyId, ComponentTypes.BUFF, {
+                buffType: 'wind_shield',
+                modifiers: {
                     deflectionChance: this.deflectionChance,
                     projectileReflection: true
-                }, this.game.state.now + this.shieldDuration, false, 1, this.game.state.now));
+                },
+                endTime: this.game.state.now + this.shieldDuration,
+                stackable: false,
+                stacks: 1,
+                appliedTime: this.game.state.now,
+                isActive: true
+            });
             
             // DESYNC SAFE: Schedule shield removal
             this.game.schedulingSystem.scheduleAction(() => {

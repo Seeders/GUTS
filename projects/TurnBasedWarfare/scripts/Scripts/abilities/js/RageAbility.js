@@ -165,24 +165,23 @@ class RageAbility extends GUTS.BaseAbility {
         }, 0.5, casterEntity);
         
         // Apply rage buff with proper timing
-        const Components = this.game.gameManager.call('getComponents');
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
-            Components.Buff(
-                'rage', 
-                { 
-                    damageMultiplier: this.damageMultiplier, 
-                    attackSpeedMultiplier: this.attackSpeedMultiplier,
-                    moveSpeedMultiplier: 1.1 // Slight movement speed bonus
-                }, 
-                endTime,     // Proper end time
-                false,       // Not stackable
-                1,           // Single stack
-                currentTime  // Applied time
-            )
-        );
+
+        this.game.addComponent(casterEntity, ComponentTypes.BUFF, {
+            buffType: 'rage',
+            modifiers: {
+                damageMultiplier: this.damageMultiplier,
+                attackSpeedMultiplier: this.attackSpeedMultiplier,
+                moveSpeedMultiplier: 1.1 // Slight movement speed bonus
+            },
+            endTime: endTime,
+            stackable: false,
+            stacks: 1,
+            appliedTime: currentTime,
+            isActive: true
+        });
         
         // Screen effects for dramatic impact
         if (this.game.effectsSystem) {

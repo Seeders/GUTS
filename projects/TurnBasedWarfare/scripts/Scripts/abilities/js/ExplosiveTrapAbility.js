@@ -100,31 +100,39 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         
         // Create trap entity
         const trapId = this.game.createEntity();
-        const Components = this.game.gameManager.call('getComponents');
-        
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
         // Position component
-        this.game.addComponent(trapId, this.componentTypes.POSITION, 
-            Components.Position(trapPos.x, trapPos.y, trapPos.z));
-        
+        this.game.addComponent(trapId, ComponentTypes.POSITION, {
+            x: trapPos.x,
+            y: trapPos.y,
+            z: trapPos.z
+        });
+
         // DESYNC SAFE: Trap component with proper game time
-        this.game.addComponent(trapId, this.componentTypes.TRAP, 
-            Components.Trap(
-                this.trapDamage, 
-                this.explosionRadius, 
-                this.triggerRadius, 
-                'physical', 
-                casterEntity, 
-                false, 
-                1
-            ));
-        
+        this.game.addComponent(trapId, ComponentTypes.TRAP, {
+            damage: this.trapDamage,
+            radius: this.explosionRadius,
+            triggerRadius: this.triggerRadius,
+            element: 'physical',
+            caster: casterEntity,
+            triggered: false,
+            triggerCount: 0,
+            maxTriggers: 1
+        });
+
         // Visual indicator (hidden from enemies in actual gameplay)
-        this.game.addComponent(trapId, this.componentTypes.RENDERABLE, 
-            Components.Renderable("effects", "hidden_trap"));
-        
+        this.game.addComponent(trapId, ComponentTypes.RENDERABLE, {
+            objectType: "effects",
+            spawnType: "hidden_trap",
+            capacity: 128
+        });
+
         // DESYNC SAFE: Add lifetime to prevent permanent traps
-        this.game.addComponent(trapId, this.componentTypes.LIFETIME, 
-            Components.Lifetime(60.0, this.game.state.now)); // 60 second lifetime
+        this.game.addComponent(trapId, ComponentTypes.LIFETIME, {
+            duration: 60.0,
+            startTime: this.game.state.now
+        });
         
         // Visual trap placement effect
         this.createVisualEffect(trapPos, 'trap_place');

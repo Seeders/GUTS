@@ -133,14 +133,21 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
                     existingBuff.appliedTime = this.game.state.now;
                 } else {
                     // Apply new disruption buff
-                    const Components = this.game.gameManager.call('getComponents');
-                    this.game.addComponent(enemyId, this.componentTypes.BUFF, 
-                        Components.Buff('disrupted', { 
+                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+                    this.game.addComponent(enemyId, ComponentTypes.BUFF, {
+                        buffType: 'disrupted',
+                        modifiers: {
                             abilitiesDisabled: true,
                             accuracyReduction: this.accuracyReduction,
                             movementSlowed: this.movementSlowed
-                        }, this.game.state.now + this.disruptionDuration, false, 1, this.game.state.now));
-                    
+                        },
+                        endTime: this.game.state.now + this.disruptionDuration,
+                        stackable: false,
+                        stacks: 1,
+                        appliedTime: this.game.state.now,
+                        isActive: true
+                    });
+
                     // DESYNC SAFE: Schedule disruption removal
                     this.game.schedulingSystem.scheduleAction(() => {
                         this.removeDisruption(enemyId);

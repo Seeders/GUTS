@@ -100,18 +100,17 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         const originalArmor = casterCombat ? casterCombat.armor : 0;
         
         // Apply shield wall component with proper timing
-        const Components = this.game.gameManager.call('getComponents');
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.wallDuration;
-        
-        this.game.addComponent(casterEntity, this.componentTypes.SHIELD_WALL, 
-            Components.ShieldWall(
-                this.damageReduction,
-                endTime,
-                this.tauntRadius,
-                originalArmor
-            )
-        );
+
+        this.game.addComponent(casterEntity, ComponentTypes.SHIELD_WALL, {
+            damageReduction: this.damageReduction,
+            endTime: endTime,
+            tauntRadius: this.tauntRadius,
+            originalArmor: originalArmor,
+            isActive: true
+        });
         
         // Schedule defensive stance visual effect
         this.game.schedulingSystem.scheduleAction(() => {
@@ -159,18 +158,16 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             if (!enemyPos || !enemyAI) return;
             
             // Apply taunt component
-            const Components = this.game.gameManager.call('getComponents');
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
-            
-            this.game.addComponent(enemyId, this.componentTypes.TAUNT, 
-                Components.Taunt(
-                    casterEntity,     // Taunter
-                    tauntEndTime,     // End time
-                    this.tauntRadius, // Radius
-                    true              // Is taunted
-                )
-            );
+
+            this.game.addComponent(enemyId, ComponentTypes.TAUNT, {
+                taunter: casterEntity,
+                endTime: tauntEndTime,
+                radius: this.tauntRadius,
+                isTaunted: true
+            });
             
             // Force AI to target the shield wall user
   

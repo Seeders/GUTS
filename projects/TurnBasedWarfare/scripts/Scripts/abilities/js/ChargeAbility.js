@@ -129,10 +129,16 @@ class ChargeAbility extends GUTS.BaseAbility {
         if (distance === 0) return; // Avoid division by zero
         
         // DESYNC SAFE: Add charging component for state tracking
-        const Components = this.game.gameManager.call('getComponents');
-        this.game.addComponent(casterEntity, this.componentTypes.CHARGING, 
-            Components.Charging(targetId, this.chargeSpeed, this.chargeDamage, 
-                this.game.state.now, 0, distance));
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        this.game.addComponent(casterEntity, ComponentTypes.CHARGING, {
+            target: targetId,
+            chargeSpeed: this.chargeSpeed,
+            chargeDamage: this.chargeDamage,
+            chargeStartTime: this.game.state.now,
+            chargeDistance: 0,
+            maxChargeDistance: distance,
+            isCharging: true
+        });
         
         // Set velocity for charge
         velocity.vx = (dx / distance) * this.chargeSpeed;
@@ -333,12 +339,19 @@ class ChargeAbility extends GUTS.BaseAbility {
             });
 
             // DESYNC SAFE: Apply stun using buff system
-            const Components = this.game.gameManager.call('getComponents');
-            this.game.addComponent(targetId, this.componentTypes.BUFF,
-                Components.Buff('stunned', {
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+            this.game.addComponent(targetId, ComponentTypes.BUFF, {
+                buffType: 'stunned',
+                modifiers: {
                     movementDisabled: true,
                     attackDisabled: true
-                }, this.game.state.now + this.stunDuration, false, 1, this.game.state.now));
+                },
+                endTime: this.game.state.now + this.stunDuration,
+                stackable: false,
+                stacks: 1,
+                appliedTime: this.game.state.now,
+                isActive: true
+            });
 
             // DESYNC SAFE: Schedule stun removal
             this.game.schedulingSystem.scheduleAction(() => {

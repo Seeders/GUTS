@@ -436,9 +436,14 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             if (abilities) {
                 for (const ability of abilities) {
                     if (ability.id === 'build') {
-     
+
                         this.game.addComponent(builderEntityId, CT.BUILDING_STATE,
-                            Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
+                            {
+                                state: 'walking_to_construction',
+                                targetBuildingEntityId: buildingEntityId,
+                                targetBuildingPosition: buildingPos,
+                                constructionStartTime: this.game.state.round
+                            });
 
                         // Update building's assigned builder
                         buildingPlacement.assignedBuilder = builderEntityId;

@@ -116,26 +116,25 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             if (!unitType || !position || unitType.id !== 'hoplite') return;
             
             // Apply phalanx buff
-            const Components = this.game.gameManager.call('getComponents');
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
-            
-            this.game.addComponent(hopliteId, this.componentTypes.BUFF, 
-                Components.Buff(
-                    'phalanx', 
-                    { 
-                        armorMultiplier: armorMultiplier,
-                        counterAttackChance: counterAttackChance,
-                        formationSize: phalanxSize,
-                        formationLeader: casterEntity,
-                        formationRole: (hopliteId === casterEntity) ? 'leader' : 'member'
-                    }, 
-                    endTime,     // Proper end time
-                    false,       // Not stackable
-                    1,           // Single stack  
-                    currentTime  // Applied time
-                )
-            );
+
+            this.game.addComponent(hopliteId, ComponentTypes.BUFF, {
+                buffType: 'phalanx',
+                modifiers: {
+                    armorMultiplier: armorMultiplier,
+                    counterAttackChance: counterAttackChance,
+                    formationSize: phalanxSize,
+                    formationLeader: casterEntity,
+                    formationRole: (hopliteId === casterEntity) ? 'leader' : 'member'
+                },
+                endTime: endTime,
+                stackable: false,
+                stacks: 1,
+                appliedTime: currentTime,
+                isActive: true
+            });
             
             // Create phalanx effect on each member
             this.createVisualEffect(position, 'phalanx');

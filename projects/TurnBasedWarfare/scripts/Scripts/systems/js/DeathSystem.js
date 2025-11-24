@@ -66,14 +66,16 @@ class DeathSystem extends GUTS.BaseSystem {
 
         // Remove death state
         this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        
-        
+
+
         this.game.triggerEvent('onUnitKilled', entityId);
         // Add corpse component
-        this.game.addComponent(entityId, this.componentTypes.CORPSE, Components.Corpse(
-            { ...unitType }, 
-            (this.game.state.now || 0), 
-            team.team
-        ));
+        this.game.addComponent(entityId, this.componentTypes.CORPSE, {
+            originalUnitType: { ...unitType },
+            deathTime: (this.game.state.now || 0),
+            teamAtDeath: team.team,
+            isCorpse: true
+        });
         
     }
     

@@ -38,23 +38,24 @@ class CommandQueueSystem extends GUTS.BaseSystem {
         // Ensure unit has a command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
         if (!commandQueue) {
-            commandQueue = Components.CommandQueue();
+            commandQueue = { commands: [], currentCommand: null, commandHistory: [] };
             this.game.addComponent(entityId, ComponentTypes.COMMAND_QUEUE, commandQueue);
         }
 
         // Create the command
         // Use provided createdTime if available (for client->server sync), otherwise use current time
         const createdTime = commandData.createdTime || this.game.state.now;
-        const command = Components.Command(
-            commandData.type,
-            commandData.controllerId,
-            commandData.targetPosition,
-            commandData.target,
-            commandData.meta || {},
-            commandData.priority || this.PRIORITY.MOVE,
-            commandData.interruptible !== false, // Default to true
-            createdTime
-        );
+        const command = {
+            type: commandData.type,
+            controllerId: commandData.controllerId,
+            targetPosition: commandData.targetPosition,
+            target: commandData.target,
+            meta: commandData.meta || {},
+            priority: commandData.priority || this.PRIORITY.MOVE,
+            interruptible: commandData.interruptible !== false, // Default to true
+            createdTime: createdTime,
+            id: null
+        };
 
         // Override the command ID with a deterministic ID based on entity ID and time
         // This ensures the same command has the same ID on both client and server
@@ -105,7 +106,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
         // Get command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
         if (!commandQueue) {
-            commandQueue = Components.CommandQueue();
+            commandQueue = { commands: [], currentCommand: null, commandHistory: [] };
             this.game.addComponent(entityId, ComponentTypes.COMMAND_QUEUE, commandQueue);
         }
 

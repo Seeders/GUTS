@@ -65,11 +65,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const spawnHeight = Math.max(sourcePos.y + 20, 20);           
         
         // Add components with full 3D support
-        this.game.addComponent(projectileId, this.componentTypes.POSITION, 
-            components.Position(sourcePos.x, spawnHeight, sourcePos.z));
-        
-        this.game.addComponent(projectileId, this.componentTypes.VELOCITY, 
-            components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed, projectileData.ballistic || false));
+        this.game.addComponent(projectileId, this.componentTypes.POSITION,
+            { x: sourcePos.x, y: spawnHeight, z: sourcePos.z });
+
+        this.game.addComponent(projectileId, this.componentTypes.VELOCITY,
+            { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic || false, anchored: false });
         
          // Enhanced projectile component with element
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
@@ -97,20 +97,20 @@ class ProjectileSystem extends GUTS.BaseSystem {
         });
 
         const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
-        
+
         // Add UNIT_TYPE component for projectiles
-        this.game.addComponent(projectileId, this.componentTypes.UNIT_TYPE, 
-            components.UnitType(projectileData.id, projectileData.title, 0));
-        
+        this.game.addComponent(projectileId, this.componentTypes.UNIT_TYPE,
+            {});
+
         // Add TEAM component (same team as source)
         if (sourceTeam) {
-            this.game.addComponent(projectileId, this.componentTypes.TEAM, 
-                components.Team(sourceTeam.team));
+            this.game.addComponent(projectileId, this.componentTypes.TEAM,
+                { team: sourceTeam.team });
         }
 
-        // Visual component        
-        this.game.addComponent(projectileId, this.componentTypes.RENDERABLE, 
-            components.Renderable("projectiles", projectileData.id));
+        // Visual component
+        this.game.addComponent(projectileId, this.componentTypes.RENDERABLE,
+            { objectType: "projectiles", spawnType: projectileData.id });
         
         // Use LifetimeSystem instead of direct component
         if (this.game.gameManager) {
@@ -124,15 +124,15 @@ class ProjectileSystem extends GUTS.BaseSystem {
         } else {
             // Fallback to old method if LifetimeSystem not available
             this.game.addComponent(projectileId, this.componentTypes.LIFETIME,
-                components.Lifetime(this.PROJECTILE_LIFETIME, this.game.state.now));
+                { duration: this.PROJECTILE_LIFETIME, startTime: this.game.state.now });
         }
         
         // Homing component if specified
         if (projectileData.homing && projectileData.homingStrength > 0) {
-            const homingStrength = projectileData.ballistic ? 
+            const homingStrength = projectileData.ballistic ?
                 projectileData.homingStrength * 0.3 : projectileData.homingStrength;
-            this.game.addComponent(projectileId, this.componentTypes.HOMING_TARGET, 
-                components.HomingTarget(targetId, homingStrength, { x: targetPos.x, y: targetPos.y, z: targetPos.z }));
+            this.game.addComponent(projectileId, this.componentTypes.HOMING_TARGET,
+                { targetId: targetId, homingStrength: homingStrength, lastKnownPosition: { x: targetPos.x, y: targetPos.y, z: targetPos.z } });
         }
         
         return projectileId;

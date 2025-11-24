@@ -137,67 +137,105 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     createMirrorImage(originalId, imagePos, team, unitType, combat, health, collision, velocity) {
         // Use deterministic entity creation if available, otherwise use standard method
         const imageId = this.game.createEntity ? this.game.createEntity() : this.generateDeterministicId(originalId);
-        
+
         if (imageId === null || imageId === undefined) return null;
-        
-        const components = this.game.gameManager.call('getComponents');
-        
+
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
         try {
             // Add components in deterministic order (alphabetical by component type)
-            this.game.addComponent(imageId, this.componentTypes.AI_STATE, 
-                components.AIState('idle'));
-                
-            this.game.addComponent(imageId, this.componentTypes.ANIMATION, 
-                components.Animation());
-                
-            this.game.addComponent(imageId, this.componentTypes.COLLISION, 
-                components.Collision(collision?.radius, collision.height));
-                
-            this.game.addComponent(imageId, this.componentTypes.COMBAT, 
-                components.Combat(
-                    Math.floor(combat.damage * this.imageDamageRatio),
-                    combat.range,
-                    combat.attackSpeed,
-                    combat.projectile,
-                    0,
-                    combat.element || 'physical',
-                    Math.floor((combat.armor || 0) * 0.5), // Half armor
-                    combat.fireResistance || 0,
-                    combat.coldResistance || 0,
-                    combat.lightningResistance || 0
-                ));
-                
-            this.game.addComponent(imageId, this.componentTypes.EQUIPMENT, 
-                components.Equipment());
-                
-            this.game.addComponent(imageId, this.componentTypes.FACING, 
-                components.Facing(0));
-                
-            this.game.addComponent(imageId, this.componentTypes.HEALTH, 
-                components.Health(Math.floor(health.max * this.imageHealthRatio)));
-                
-            this.game.addComponent(imageId, this.componentTypes.MIRROR_IMAGE, 
-                components.MirrorImage(originalId, true, this.game.state.now || 0));
-                
-            this.game.addComponent(imageId, this.componentTypes.POSITION, 
-                components.Position(imagePos.x, imagePos.y, imagePos.z));
-                
-            this.game.addComponent(imageId, this.componentTypes.RENDERABLE, 
-                components.Renderable("units", unitType.id || unitType.title));
-                
-            this.game.addComponent(imageId, this.componentTypes.TEAM, 
-                components.Team(team.team));
-                
-            this.game.addComponent(imageId, this.componentTypes.UNIT_TYPE, 
-                components.UnitType(
-                    unitType.id || unitType.title,
-                    `Mirror Image`,
-                    0 // No value - they're illusions
-                ));
-                
-            this.game.addComponent(imageId, this.componentTypes.VELOCITY, 
-                components.Velocity(0, 0, 0, velocity?.maxSpeed || 40));
-            
+            this.game.addComponent(imageId, ComponentTypes.AI_STATE, {
+                state: 'idle',
+                targetPosition: null,
+                target: null,
+                aiControllerId: null,
+                meta: {}
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.ANIMATION, {
+                scale: 1,
+                rotation: 0,
+                flash: 0
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.COLLISION, {
+                radius: collision?.radius || 10,
+                height: collision?.height || 50
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.COMBAT, {
+                damage: Math.floor(combat.damage * this.imageDamageRatio),
+                range: combat.range,
+                attackSpeed: combat.attackSpeed,
+                projectile: combat.projectile || null,
+                lastAttack: 0,
+                element: combat.element || 'physical',
+                armor: Math.floor((combat.armor || 0) * 0.5),
+                fireResistance: combat.fireResistance || 0,
+                coldResistance: combat.coldResistance || 0,
+                lightningResistance: combat.lightningResistance || 0,
+                poisonResistance: 0,
+                visionRange: 300
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.EQUIPMENT, {
+                slots: {
+                    mainHand: null,
+                    offHand: null,
+                    helmet: null,
+                    chest: null,
+                    legs: null,
+                    feet: null,
+                    back: null
+                }
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.FACING, {
+                angle: 0
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.HEALTH, {
+                max: Math.floor(health.max * this.imageHealthRatio),
+                current: Math.floor(health.max * this.imageHealthRatio)
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.MIRROR_IMAGE, {
+                originalEntity: originalId,
+                isIllusion: true,
+                createdTime: this.game.state.now || 0
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.POSITION, {
+                x: imagePos.x,
+                y: imagePos.y,
+                z: imagePos.z
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.RENDERABLE, {
+                objectType: "units",
+                spawnType: unitType.id || unitType.title,
+                capacity: 128
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.TEAM, {
+                team: team.team
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.UNIT_TYPE, {
+                id: unitType.id || unitType.title,
+                title: `Mirror Image`,
+                value: 0
+            });
+
+            this.game.addComponent(imageId, ComponentTypes.VELOCITY, {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: velocity?.maxSpeed || 40,
+                affectedByGravity: true,
+                anchored: false
+            });
+
             return imageId;
             
         } catch (error) {

@@ -123,67 +123,66 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     applyOrStackMark(casterEntity, targetId) {
-        const Components = this.game.gameManager.call('getComponents');
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.markDuration;
-        
+
         // Check for existing tracking mark
-        let existingMark = this.game.getComponent(targetId, this.componentTypes.BUFF);
-        
+        let existingMark = this.game.getComponent(targetId, ComponentTypes.BUFF);
+
         if (existingMark && existingMark.buffType === 'marked') {
             // Stack the mark up to the maximum
             if (existingMark.stacks < this.maxMarks) {
                 existingMark.stacks++;
-                existingMark.damageTakenMultiplier = 1 + (this.markDamageIncrease * existingMark.stacks);
+                existingMark.modifiers.damageTakenMultiplier = 1 + (this.markDamageIncrease * existingMark.stacks);
                 existingMark.endTime = endTime; // Refresh duration
                 existingMark.appliedTime = currentTime; // Update applied time
-                
+
                 // Track who applied this stack (for potential future features)
-                if (!existingMark.appliedBy) {
-                    existingMark.appliedBy = [];
+                if (!existingMark.modifiers.appliedBy) {
+                    existingMark.modifiers.appliedBy = [];
                 }
-                if (!existingMark.appliedBy.includes(casterEntity)) {
-                    existingMark.appliedBy.push(casterEntity);
+                if (!existingMark.modifiers.appliedBy.includes(casterEntity)) {
+                    existingMark.modifiers.appliedBy.push(casterEntity);
                 }
-                
+
                 return {
                     isNewMark: false,
                     wasStacked: true,
                     wasRefreshed: false,
                     currentStacks: existingMark.stacks,
-                    damageMultiplier: existingMark.damageTakenMultiplier
+                    damageMultiplier: existingMark.modifiers.damageTakenMultiplier
                 };
             } else {
                 // Just refresh duration if at max stacks
                 existingMark.endTime = endTime;
                 existingMark.appliedTime = currentTime;
-                
+
                 return {
                     isNewMark: false,
                     wasStacked: false,
                     wasRefreshed: true,
                     currentStacks: existingMark.stacks,
-                    damageMultiplier: existingMark.damageTakenMultiplier
+                    damageMultiplier: existingMark.modifiers.damageTakenMultiplier
                 };
             }
         } else {
             // Apply new tracking mark
-            this.game.addComponent(targetId, this.componentTypes.BUFF, 
-                Components.Buff(
-                    'marked', 
-                    { 
-                        damageTakenMultiplier: 1 + this.markDamageIncrease,
-                        revealed: true,
-                        markedBy: casterEntity,
-                        appliedBy: [casterEntity]
-                    }, 
-                    endTime,      // End time
-                    true,         // Stackable
-                    1,            // Initial stack count
-                    currentTime   // Applied time
-                )
-            );
-            
+            this.game.addComponent(targetId, ComponentTypes.BUFF, {
+                buffType: 'marked',
+                modifiers: {
+                    damageTakenMultiplier: 1 + this.markDamageIncrease,
+                    revealed: true,
+                    markedBy: casterEntity,
+                    appliedBy: [casterEntity]
+                },
+                endTime: endTime,
+                stackable: true,
+                stacks: 1,
+                appliedTime: currentTime,
+                isActive: true
+            });
+
             return {
                 isNewMark: true,
                 wasStacked: false,

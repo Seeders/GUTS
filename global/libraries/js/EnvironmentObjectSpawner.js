@@ -136,7 +136,7 @@ class EnvironmentObjectSpawner {
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
 
         // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION, { worldX, height, worldZ });
+        this.game.addComponent(entityId, ComponentTypes.POSITION, { x: worldX, y: height, z: worldZ });
 
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
@@ -148,15 +148,15 @@ class EnvironmentObjectSpawner {
         // Add Collision component if the object should block movement
         // Check for impassable property (true means it blocks movement)
         if (unitType.impassable === true && unitType.size) {
-            this.game.addComponent(entityId, ComponentTypes.COLLISION,{ size: unitType.size, height: unitType.height || 100 });
+            this.game.addComponent(entityId, ComponentTypes.COLLISION, { radius: unitType.size, height: unitType.height || 100 });
         }
 
         // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING,{rotation});
+        this.game.addComponent(entityId, ComponentTypes.FACING, { angle: rotation });
 
         // Store scale in Animation component
         if (!this.game.hasComponent(entityId, ComponentTypes.ANIMATION)) {
-            this.game.addComponent(entityId, ComponentTypes.ANIMATION,{scale, rotation, flash: 0});
+            this.game.addComponent(entityId, ComponentTypes.ANIMATION, { scale, rotation, flash: 0 });
         }
 
         this.spawnedEntities.add(entityId);

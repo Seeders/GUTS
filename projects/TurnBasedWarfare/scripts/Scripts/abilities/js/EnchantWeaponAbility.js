@@ -114,14 +114,21 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
                 existingBuff.modifiers.weaponElement = selectedElement;
             } else {
                 // Apply new weapon enchantment
-                const Components = this.game.gameManager.call('getComponents');
-                this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                    Components.Buff('enchant_weapon', { 
+                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+                this.game.addComponent(allyId, ComponentTypes.BUFF, {
+                    buffType: 'enchant_weapon',
+                    modifiers: {
                         weaponElement: selectedElement,
                         elementalDamage: this.elementalDamage,
                         glowing: true
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
-                
+                    },
+                    endTime: this.game.state.now + this.duration,
+                    stackable: false,
+                    stacks: 1,
+                    appliedTime: this.game.state.now,
+                    isActive: true
+                });
+
                 // DESYNC SAFE: Schedule enchantment removal
                 this.game.schedulingSystem.scheduleAction(() => {
                     this.removeEnchantment(allyId);

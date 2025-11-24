@@ -240,68 +240,102 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     createSkeletonFromCorpse(corpsePos, skeletonDef, team, creationIndex) {
         const skeletonId = this.game.createEntity ? this.game.createEntity() : null;
         if (skeletonId === null || skeletonId === undefined) return null;
-        
-        const components = this.game.gameManager.call('getComponents');
-        const componentTypes = this.game.gameManager.call('getComponentTypes');
-        
+
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
         // FIXED: Deterministic facing based on creation order, not team
         const initialFacing = (creationIndex % 2 === 0) ? 0 : Math.PI;
-        
+
         try {
             // Add components in deterministic alphabetical order
-            this.game.addComponent(skeletonId, componentTypes.AI_STATE, 
-                components.AIState('idle'));
-                
-            this.game.addComponent(skeletonId, componentTypes.ANIMATION, 
-                components.Animation());
-                
-            this.game.addComponent(skeletonId, componentTypes.COLLISION, 
-                components.Collision(skeletonDef.size, skeletonDef.height));
-                
-            this.game.addComponent(skeletonId, componentTypes.COMBAT, 
-                components.Combat(
-                    skeletonDef.damage || 15, 
-                    skeletonDef.range || 25, 
-                    skeletonDef.attackSpeed || 1.0,
-                    skeletonDef.projectile || null, 
-                    0, 
-                    skeletonDef.element || 'physical',
-                    skeletonDef.armor || 0, 
-                    skeletonDef.fireResistance || 0,
-                    skeletonDef.coldResistance || 0, 
-                    skeletonDef.lightningResistance || 0
-                ));
-                
-            this.game.addComponent(skeletonId, componentTypes.EQUIPMENT, 
-                components.Equipment());
-                
-            this.game.addComponent(skeletonId, componentTypes.FACING, 
-                components.Facing(initialFacing));
-                
-            this.game.addComponent(skeletonId, componentTypes.HEALTH, 
-                components.Health(skeletonDef.hp || 50));
-                
-            this.game.addComponent(skeletonId, componentTypes.POSITION, 
-                components.Position(corpsePos.x, corpsePos.y, corpsePos.z));
-                
-            this.game.addComponent(skeletonId, componentTypes.RENDERABLE, 
-                components.Renderable("units", this.raisedUnitType));
-                
-            this.game.addComponent(skeletonId, componentTypes.TEAM, 
-                components.Team(team));
-                
-            this.game.addComponent(skeletonId, componentTypes.UNIT_TYPE, 
-                components.UnitType(
-                    this.raisedUnitType, 
-                    skeletonDef.title || "Skeleton", 
-                    skeletonDef.value || 25
-                ));
-                
-            this.game.addComponent(skeletonId, componentTypes.VELOCITY, 
-                components.Velocity(0, 0, 0, (skeletonDef.speed || 1) * 20));
-            
+            this.game.addComponent(skeletonId, ComponentTypes.AI_STATE, {
+                state: 'idle',
+                targetPosition: null,
+                target: null,
+                aiControllerId: null,
+                meta: {}
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.ANIMATION, {
+                scale: 1,
+                rotation: 0,
+                flash: 0
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.COLLISION, {
+                radius: skeletonDef.size,
+                height: skeletonDef.height || 50
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.COMBAT, {
+                damage: skeletonDef.damage || 15,
+                range: skeletonDef.range || 25,
+                attackSpeed: skeletonDef.attackSpeed || 1.0,
+                projectile: skeletonDef.projectile || null,
+                lastAttack: 0,
+                element: skeletonDef.element || 'physical',
+                armor: skeletonDef.armor || 0,
+                fireResistance: skeletonDef.fireResistance || 0,
+                coldResistance: skeletonDef.coldResistance || 0,
+                lightningResistance: skeletonDef.lightningResistance || 0,
+                poisonResistance: 0,
+                visionRange: 300
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.EQUIPMENT, {
+                slots: {
+                    mainHand: null,
+                    offHand: null,
+                    helmet: null,
+                    chest: null,
+                    legs: null,
+                    feet: null,
+                    back: null
+                }
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.FACING, {
+                angle: initialFacing
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.HEALTH, {
+                max: skeletonDef.hp || 50,
+                current: skeletonDef.hp || 50
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.POSITION, {
+                x: corpsePos.x,
+                y: corpsePos.y,
+                z: corpsePos.z
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.RENDERABLE, {
+                objectType: "units",
+                spawnType: this.raisedUnitType,
+                capacity: 128
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.TEAM, {
+                team: team
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.UNIT_TYPE, {
+                id: this.raisedUnitType,
+                title: skeletonDef.title || "Skeleton",
+                value: skeletonDef.value || 25
+            });
+
+            this.game.addComponent(skeletonId, ComponentTypes.VELOCITY, {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: (skeletonDef.speed || 1) * 20,
+                affectedByGravity: true,
+                anchored: false
+            });
+
             return skeletonId;
-            
+
         } catch (error) {
             console.error(`Failed to create skeleton from corpse:`, error);
             return null;

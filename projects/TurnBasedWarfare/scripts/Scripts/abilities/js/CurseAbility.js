@@ -94,13 +94,20 @@ class CurseAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(enemyPos, 'curse');
                 
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
-                const Components = this.game.gameManager.call('getComponents');
-                this.game.addComponent(enemyId, this.componentTypes.BUFF, 
-                    Components.Buff('curse', { 
+                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+                this.game.addComponent(enemyId, ComponentTypes.BUFF, {
+                    buffType: 'curse',
+                    modifiers: {
                         damageMultiplier: this.damageReduction,
                         damageTakenMultiplier: this.vulnerabilityIncrease,
                         isCursed: true
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
+                    },
+                    endTime: this.game.state.now + this.duration,
+                    stackable: false,
+                    stacks: 1,
+                    appliedTime: this.game.state.now,
+                    isActive: true
+                });
                 
                 // Create dark aura effect (client only)
                 if (!this.game.isServer && this.game.effectsSystem) {

@@ -134,12 +134,19 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
                 const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
                 
                 if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
-                    const Components = this.game.gameManager.call('getComponents');
-                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                        Components.Buff('ice_armor', { 
+                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+                    this.game.addComponent(allyId, ComponentTypes.BUFF, {
+                        buffType: 'ice_armor',
+                        modifiers: {
                             armorMultiplier: 1.5
-                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
-                    
+                        },
+                        endTime: this.game.state.now + 3.0,
+                        stackable: false,
+                        stacks: 1,
+                        appliedTime: this.game.state.now,
+                        isActive: true
+                    });
+
                     // Visual empowerment effect
                     this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
                 }
