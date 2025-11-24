@@ -13,11 +13,9 @@ class MockGameContext extends GUTS.BaseECSGame {
         this.currentEntityId = null;
 
         this.componentGenerator = new GUTS.ComponentGenerator(app.getCollections().components);
-        this.componentTypes = this.componentGenerator.getComponentTypes();
         // Initialize gameManager with GameServices
         this.gameManager = new GUTS.GameServices();        
         this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
-        this.gameManager.register("getComponentTypes", () => this.componentTypes);
         // Initialize state (needed by BaseECSGame update loop)
         this.state = {
             isPaused: false,

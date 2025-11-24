@@ -30,18 +30,4 @@ class ComponentGenerator {
         return components;
     }
 
-    getComponentTypes() {
-        // Auto-generate component types from models collection
-        // Convert camelCase keys to UPPER_SNAKE_CASE
-        const types = {};
-        Object.keys(this.components).forEach(key => {
-            // Convert camelCase to UPPER_SNAKE_CASE
-            const upperKey = key
-                .replace(/([A-Z])/g, '_$1')  // Add underscore before capitals
-                .toUpperCase()                // Convert to uppercase
-                .replace(/^_/, '');           // Remove leading underscore if present
-            types[upperKey] = key;
-        });
-        return types;
-    }
 }
