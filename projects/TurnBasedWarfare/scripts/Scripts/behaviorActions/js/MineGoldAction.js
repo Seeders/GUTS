@@ -1,4 +1,4 @@
-class MineAction extends GUTS.BaseAction {
+class MineGoldAction extends GUTS.BaseAction {
     static TYPE = "MINE";
     static PRIORITY = 5;
 

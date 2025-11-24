@@ -1,6 +1,6 @@
 {
   "title": "Move To Position",
-  "type": "MOVE_TO",
+  "type": "MoveAction",
   "priority": 10,
   "description": "Move unit to a target position",
   "parameters": {

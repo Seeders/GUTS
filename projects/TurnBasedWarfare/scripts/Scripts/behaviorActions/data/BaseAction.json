@@ -1,0 +1,7 @@
+{
+  "title": "Base Action",
+  "type": "BaseAction",
+  "priority": 0,
+  "description": "n/a",
+  "parameters": {}
+}

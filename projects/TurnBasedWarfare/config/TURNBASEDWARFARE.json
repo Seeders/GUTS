@@ -517,25 +517,34 @@
       }
     },
     "behaviorActions": {
-      "ATTACK": {
+      "AttackAction": {
         "title": "Attack Enemy",
-        "type": "ATTACK",
+        "type": "AttackAction",
         "priority": 30,
         "description": "Attack an enemy unit",
         "parameters": {},
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/ATTACK.js",
-        "fileName": "ATTACK"
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/AttackAction.js",
+        "fileName": "AttackAction"
       },
-      "IDLE": {
+      "BaseAction": {
+        "title": "Base Action",
+        "type": "BaseAction",
+        "priority": 0,
+        "description": "n/a",
+        "parameters": {},
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/BaseAction.js",
+        "fileName": "BaseAction"
+      },
+      "IdleAction": {
         "title": "Idle",
         "type": "IDLE",
         "priority": 0,
         "description": "Do nothing",
         "parameters": {},
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/IDLE.js",
-        "fileName": "IDLE"
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/IdleAction.js",
+        "fileName": "IdleAction"
       },
-      "MINE": {
+      "MineGoldAction": {
         "title": "Mine Gold",
         "type": "MINE",
         "priority": 5,
@@ -547,19 +556,19 @@
           "depositDuration": 1,
           "goldPerTrip": 10
         },
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MINE.js",
-        "fileName": "MINE"
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MineGoldAction.js",
+        "fileName": "MineGoldAction"
       },
-      "MOVE_TO": {
+      "MoveAction": {
         "title": "Move To Position",
-        "type": "MOVE_TO",
+        "type": "MoveAction",
         "priority": 10,
         "description": "Move unit to a target position",
         "parameters": {
           "arrivalThreshold": 20
         },
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MOVE_TO.js",
-        "fileName": "MOVE_TO"
+        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MoveAction.js",
+        "fileName": "MoveAction"
       }
     },
     "behaviorTrees": {
@@ -21581,10 +21590,6 @@
       "AudioManager": {
         "fileName": "AudioManager",
         "filePath": "/global/libraries/js/AudioManager.js"
-      },
-      "BaseAction": {
-        "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/libraries/js/BaseAction.js",
-        "fileName": "BaseAction"
       },
       "BaseBehaviorTree": {
         "filePath": "/global/libraries/js/BaseBehaviorTree.js",
