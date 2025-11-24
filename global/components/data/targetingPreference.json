@@ -1,0 +1,9 @@
+{
+  "preferredTargets": [],
+  "avoidedTargets": [],
+  "targetPriority": "nearest",
+  "maxTargetRange": 200,
+  "requiresLineOfSight": false,
+  "currentTarget": null,
+  "targetLockTime": 0
+}

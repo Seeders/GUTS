@@ -1,0 +1,11 @@
+{
+  "type": "move",
+  "controllerId": null,
+  "targetPosition": null,
+  "target": null,
+  "meta": {},
+  "priority": 0,
+  "interruptible": true,
+  "createdTime": 0,
+  "id": null
+}

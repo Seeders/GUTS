@@ -1,0 +1,10 @@
+{
+  "squadId": null,
+  "squadRole": "member",
+  "squadPosition": {
+    "x": 0,
+    "z": 0
+  },
+  "squadBonuses": {},
+  "joinedTime": 0
+}

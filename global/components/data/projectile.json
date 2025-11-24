@@ -1,0 +1,9 @@
+{
+  "damage": 10,
+  "speed": 200,
+  "range": 100,
+  "target": null,
+  "source": null,
+  "startTime": 0,
+  "element": "physical"
+}

@@ -1,0 +1,7 @@
+{
+  "threatLevel": 0,
+  "maxThreat": 100,
+  "threatDecay": 1,
+  "lastThreatUpdate": 0,
+  "threatSources": {}
+}

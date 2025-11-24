@@ -1,0 +1,11 @@
+{
+  "mana": 100,
+  "maxMana": 100,
+  "manaRegen": 5,
+  "stamina": 100,
+  "maxStamina": 100,
+  "staminaRegen": 10,
+  "focus": 100,
+  "maxFocus": 100,
+  "lastRegenTick": 0
+}
