@@ -1,6 +1,9 @@
 {
-  "originalUnitType": null,
-  "deathTime": 0,
-  "teamAtDeath": "neutral",
-  "isCorpse": true
+  "title": "corpse",
+  "schema": {
+    "originalUnitType": null,
+    "deathTime": 0,
+    "teamAtDeath": "neutral",
+    "isCorpse": true
+  }
 }

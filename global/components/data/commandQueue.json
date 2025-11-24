@@ -1,5 +1,8 @@
 {
-  "commands": [],
-  "currentCommand": null,
-  "commandHistory": []
+  "title": "commandQueue",
+  "schema": {
+    "commands": [],
+    "currentCommand": null,
+    "commandHistory": []
+  }
 }

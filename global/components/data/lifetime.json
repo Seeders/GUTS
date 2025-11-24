@@ -1,4 +1,7 @@
 {
-  "duration": 5,
-  "startTime": 0
+  "title": "lifetime",
+  "schema": {
+    "duration": 5,
+    "startTime": 0
+  }
 }

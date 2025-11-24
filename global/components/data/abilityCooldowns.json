@@ -1,5 +1,8 @@
 {
-  "cooldowns": {},
-  "lastAbilityUsed": null,
-  "lastAbilityTime": 0
+  "title": "abilityCooldowns",
+  "schema": {
+    "cooldowns": {},
+    "lastAbilityUsed": null,
+    "lastAbilityTime": 0
+  }
 }

@@ -1,5 +1,8 @@
 {
-  "originalEntity": null,
-  "isIllusion": true,
-  "createdTime": 0
+  "title": "mirrorImage",
+  "schema": {
+    "originalEntity": null,
+    "isIllusion": true,
+    "createdTime": 0
+  }
 }
