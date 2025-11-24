@@ -20,35 +20,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     // Behavior contribution for UniversalBehaviorTree
-    getBehavior(entityId, game) {
-        if (!this.enabled) return null;
 
-        // Check if unit is doing a player command
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState && aiState.meta && aiState.meta.isPlayerOrder) {
-            return null; // Player commands take priority
-        }
-
-        // Check if unit is building
-        if (aiState && aiState.meta && aiState.meta.buildingId) {
-            return null; // Building takes priority
-        }
-
-        // Find nearest gold mine
-        const team = game.getComponent(entityId, 'team');
-        if (!team) return null;
-
-        const nearbyMine = this.findNearestMine(entityId, team.team, game);
-        if (!nearbyMine) return null;
-
-        // Return mining behavior
-        return {
-            action: "MineGoldBehaviorAction",
-            target: nearbyMine,
-            priority: 5,
-            data: { mineId: nearbyMine }
-        };
-    }
 
     findNearestMine(entityId, team, game) {
         const pos = game.getComponent(entityId, "position");
@@ -88,55 +60,56 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     canExecute(entityId) {
-        if(!this.enabled){
-            return false;
-        }
-        let miningState = this.game.getComponent(entityId, "miningState");
-        if (!miningState) {
-            const team = this.game.getComponent(entityId, "team");
+        return false;
+        // if(!this.enabled){
+        //     return false;
+        // }
+        // let miningState = this.game.getComponent(entityId, "miningState");
+        // if (!miningState) {
+        //     const team = this.game.getComponent(entityId, "team");
 
-            this.game.addComponent(entityId, "miningState", {
-                state: 'idle',
-                targetMineEntityId: null,
-                targetMinePosition: null,
-                targetTownHall: null,
-                waitingPosition: null,
-                hasGold: false,
-                miningStartTime: 0,
-                depositStartTime: 0,
-                team: team?.team,
-                entityId: entityId
-            });
-            miningState = this.game.getComponent(entityId, "miningState");
-        }
+        //     this.game.addComponent(entityId, "miningState", {
+        //         state: 'idle',
+        //         targetMineEntityId: null,
+        //         targetMinePosition: null,
+        //         targetTownHall: null,
+        //         waitingPosition: null,
+        //         hasGold: false,
+        //         miningStartTime: 0,
+        //         depositStartTime: 0,
+        //         team: team?.team,
+        //         entityId: entityId
+        //     });
+        //     miningState = this.game.getComponent(entityId, "miningState");
+        // }
 
-        // With behavior tree system, priority evaluation handles interruption automatically
-        // No need to check for commands - behavior tree will choose higher priority actions
+        // // With behavior tree system, priority evaluation handles interruption automatically
+        // // No need to check for commands - behavior tree will choose higher priority actions
 
-        // Check if a player order just completed this round
-        // If so, don't resume mining until next round
-        const commandQueue = this.game.getComponent(entityId, "commandQueue");
-        if (commandQueue && commandQueue.playerOrderCompletedThisRound) {
-            return false;
-        }
+        // // Check if a player order just completed this round
+        // // If so, don't resume mining until next round
+        // const commandQueue = this.game.getComponent(entityId, "commandQueue");
+        // if (commandQueue && commandQueue.playerOrderCompletedThisRound) {
+        //     return false;
+        // }
 
-        // No current command and no recently completed player order - activate mining (autocast)
-        // If we were interrupted, reset state to start fresh
-        if (miningState.wasInterrupted) {
-            miningState.state = 'idle';
-            miningState.targetMineEntityId = null;
-            miningState.targetMinePosition = null;
-            miningState.targetTownHall = null;
-            miningState.waitingPosition = null;
-            miningState.miningStartTime = 0;
-            miningState.depositStartTime = 0;
-            miningState.wasInterrupted = false;
-            // Note: Keep hasGold if they were carrying gold when interrupted
-        }
+        // // No current command and no recently completed player order - activate mining (autocast)
+        // // If we were interrupted, reset state to start fresh
+        // if (miningState.wasInterrupted) {
+        //     miningState.state = 'idle';
+        //     miningState.targetMineEntityId = null;
+        //     miningState.targetMinePosition = null;
+        //     miningState.targetTownHall = null;
+        //     miningState.waitingPosition = null;
+        //     miningState.miningStartTime = 0;
+        //     miningState.depositStartTime = 0;
+        //     miningState.wasInterrupted = false;
+        //     // Note: Keep hasGold if they were carrying gold when interrupted
+        // }
 
-        // With behavior tree system, interruption is handled automatically through priority evaluation
-        // No need to manually check controller state
-        return true;
+        // // With behavior tree system, interruption is handled automatically through priority evaluation
+        // // No need to manually check controller state
+        // return true;
     }
 
     execute(entityId, targetData) {

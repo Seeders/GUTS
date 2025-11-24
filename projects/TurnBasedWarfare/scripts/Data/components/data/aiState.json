@@ -1,7 +1,6 @@
 {
   "title": "aiState",
   "schema": {
-    "state": "idle",
     "currentAction": null,
     "actionTarget": null,
     "actionData": {},

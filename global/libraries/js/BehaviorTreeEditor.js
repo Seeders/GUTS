@@ -272,7 +272,7 @@ class BehaviorTreeEditor {
                 actionY
             );
 
-            const actionLabel = this.extractActionFromMethod(method);
+            const actionLabel = method;
             this.createNode(svg, x, actionY, nodeWidth, nodeHeight, actionLabel, 'action', `${method}-action`);
         });
 
@@ -288,7 +288,7 @@ class BehaviorTreeEditor {
             idleY
         );
 
-        this.createNode(svg, idleX, idleY, nodeWidth, nodeHeight, 'IDLE', 'action', 'idle');
+        this.createNode(svg, idleX, idleY, nodeWidth, nodeHeight, 'IdleBehaviorAction', 'action', 'IdleBehaviorAction');
     }
 
     createNode(svg, x, y, width, height, label, type, id) {
@@ -347,21 +347,6 @@ class BehaviorTreeEditor {
         return method.replace('check', '').replace(/([A-Z])/g, ' $1').trim().toUpperCase();
     }
 
-    extractActionFromMethod(method) {
-        // Extract likely action from method name
-        const mapping = {
-            'checkPlayerOrder': 'PLAYER ORDER',
-            'checkBuildOrder': 'BUILD',
-            'checkBuild': 'BUILD',
-            'checkMining': 'MINE',
-            'checkMine': 'MINE',
-            'checkCombat': 'ATTACK',
-            'checkAttack': 'ATTACK',
-            'checkMoveOrder': 'MOVE TO'
-        };
-        return mapping[method] || 'ACTION';
-    }
-
     highlightActiveNode(result) {
         // Remove previous highlights
         const nodes = document.querySelectorAll('.bt-graph-node');
@@ -379,27 +364,16 @@ class BehaviorTreeEditor {
         this.highlightNode('root');
 
         // If this is a player-ordered action, highlight the player order method
-        if (result.playerOrdered) {
+        if (result.data.playerOrdered) {
             this.highlightNode('checkPlayerOrder');
             this.highlightNode('checkPlayerOrder-action');
             return;
         }
 
-        // Otherwise, highlight specific action node based on action mapping
-        const actionMapping = {
-            'BUILD': 'checkBuildOrder',
-            'MINE': 'checkMining',
-            'ATTACK': 'checkCombat',
-            'MOVE': 'checkMoveOrder',
-            'MOVE_TO': 'checkMoveOrder',
-            'IDLE': 'idle'
-        };
 
-        const methodName = actionMapping[result.action];
-        if (methodName) {
-            this.highlightNode(methodName);
-            this.highlightNode(`${methodName}-action`);
-        }
+        this.highlightNode(result.action);
+        this.highlightNode(`${result.action}-action`);
+    
     }
 
     highlightNode(nodeId) {

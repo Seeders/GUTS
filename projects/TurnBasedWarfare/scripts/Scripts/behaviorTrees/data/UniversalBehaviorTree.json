@@ -11,16 +11,12 @@
             "x": 100,
             "z": 100
           },
-          "team": {
-            "team": 1
-          },
-          "aiState": {
-            "targetPosition": null,
-            "target": null,
-            "meta": {}
-          },
-          "unitType": {
-            "id": "peasant"
+          "aiState": {},
+          "playerOrder": {
+            "targetPosition": {
+              "x": 12,
+              "z": 15
+            }
           }
         }
       },

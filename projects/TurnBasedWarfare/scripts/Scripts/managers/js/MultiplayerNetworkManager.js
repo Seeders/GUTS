@@ -634,7 +634,7 @@ class MultiplayerNetworkManager {
                 for (const diff of item.diffs) {
                     const clientStr = JSON.stringify(diff.client);
                     const serverStr = JSON.stringify(diff.server);
-                    console.log(`    ${diff.property}: ${clientStr} -> ${serverStr}`);
+                    console.log(`    ${diff.property}: c:${clientStr} -> s:${serverStr}`);
                 }
                 console.groupEnd();
             }

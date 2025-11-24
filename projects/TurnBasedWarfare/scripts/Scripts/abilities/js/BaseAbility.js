@@ -1,6 +1,7 @@
 class BaseAbility {
     constructor(game, config = {}) {
         this.game = game;
+        this.config = config;
         this.id = config.id || 'unknown';
         this.name = config.name || 'Unknown Ability';
         this.description = config.description || '';
@@ -15,7 +16,12 @@ class BaseAbility {
 
         this.effects = this.defineEffects();
     }
-    
+    getBehaviorAction(entityId, game) {
+        if(this.config.behaviorAction){
+            return game.getCollections().behaviorActions[this.config.behaviorAction];
+        }
+        return null;
+    }
     defineEffects() {
         return {
             cast: { type: 'magic', options: { count: 15, scaleMultiplier: 0.8, speedMultiplier: 0.6 } },

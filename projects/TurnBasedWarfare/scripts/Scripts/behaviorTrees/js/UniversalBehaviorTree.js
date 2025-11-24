@@ -2,7 +2,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
-        this.pathSize = this.game.gameManager.call('getPlacementGridSize');
+        this.pathSize = game.gameManager.call('getPlacementGridSize');
         // Selector: Pick highest priority that can run
         const results = [
             () => this.checkPlayerOrder(pos, aiState, entityId, game),
@@ -11,7 +11,13 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             () => this.checkAbilityBehaviors(entityId, game),
             () => ({ action: "IdleBehaviorAction", priority: 0 })
         ];
-
+        // console.log([
+        //     results[0](),
+        //     results[1](),
+        //     results[2](),
+        //     results[3](),
+        //     results[4]()
+        // ]);
         return this.select(results);
     }
 
@@ -19,7 +25,6 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         // Read from playerOrder component
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.targetPosition) return null;
-        if (!playerOrder.meta || !playerOrder.meta.isPlayerOrder) return null;
 
         // Use aiState.meta for behavior tree's own state tracking
         if(aiState.meta.reachedTarget || this.distance(pos, playerOrder.targetPosition) < this.pathSize){
@@ -179,24 +184,24 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         if (!abilities || abilities.length === 0) return null;
 
         // Collect all behaviors from abilities that can provide them
-        const behaviors = [];
+        const behaviorActions = [];
 
         for (const ability of abilities) {
             // Check if ability can provide a behavior
             if (typeof ability.getBehavior === 'function') {
-                const behavior = ability.getBehavior(entityId, game);
-                if (behavior) {
-                    behaviors.push(behavior);
+                const behaviorAction = ability.getBehaviorAction(entityId, game);
+                if (behaviorAction) {
+                    behaviorActions.push(behaviorAction);
                 }
             }
         }
 
         // If no behaviors available, return null
-        if (behaviors.length === 0) return null;
+        if (behaviorActions.length === 0) return null;
 
         // Sort by priority (highest first) and return the best one
-        behaviors.sort((a, b) => b.priority - a.priority);
-        return behaviors[0];
+        behaviorActions.sort((a, b) => b.priority - a.priority);
+        return behaviorActions[0];
     }
 
     distance(pos, target) {
