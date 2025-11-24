@@ -101,8 +101,8 @@ class AttackAction extends GUTS.BaseAction {
         // Handle projectile or melee damage
         if (combat.projectile) {
             this.scheduleProjectileLaunch(attackerId, targetId, game, combat);
-        } else {
-            // Melee attack - apply damage immediately with slight delay for animation
+        } else if (combat.damage > 0) {
+            // Melee attack - apply damage with slight delay for animation
             if (game.schedulingSystem) {
                 const damageDelay = (1 / combat.attackSpeed) * 0.5; // 50% through attack
                 game.schedulingSystem.scheduleEvent({
@@ -114,6 +114,21 @@ class AttackAction extends GUTS.BaseAction {
                         }
                     }
                 });
+            }
+        } else if (game.abilitySystem) {
+            // Ability-only units (damage = 0) - rely on abilities for combat
+            // This matches old CombatAISystem.handleCombat() lines 479-492
+            const abilities = game.gameManager.call('getEntityAbilities', attackerId);
+            if (abilities && abilities.length > 0) {
+                // Find available offensive abilities
+                const availableAbilities = abilities
+                    .filter(ability => game.abilitySystem.isAbilityOffCooldown(attackerId, ability.id))
+                    .filter(ability => ability.canExecute && ability.canExecute(attackerId))
+                    .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id));
+
+                if (availableAbilities.length > 0) {
+                    game.abilitySystem.useAbility(attackerId, availableAbilities[0].id);
+                }
             }
         }
     }
