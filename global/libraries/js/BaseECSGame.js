@@ -22,9 +22,6 @@ class BaseECSGame {
         this.FIXED_DELTA_TIME = 1/20;
 
         this.isServer = false;
-
-        this.componentTypes = null;
-
         // Performance monitoring
         if (typeof GUTS.PerformanceMonitor !== 'undefined') {
             this.performanceMonitor = new GUTS.PerformanceMonitor();
@@ -36,6 +33,7 @@ class BaseECSGame {
                 this.triggerEvent('onKeyDown', e.key);
             });
         }
+        console.log('init base ECS Game');
     }
     getEntityId() {
         return this.nextEntityId++;
@@ -150,11 +148,12 @@ class BaseECSGame {
         }
     }
     
-    addComponent(entityId, componentId, componentData) {
+    addComponent(entityId, componentId, data) {
         if (!this.entities.has(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
-        }
-        
+        }  
+        const componentMethods = this.gameManager.call('getComponents');
+        const componentData = componentMethods[componentId](data);
         if (!this.components.has(componentId)) {
             this.components.set(componentId, new Map());
         }

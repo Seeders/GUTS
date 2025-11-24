@@ -383,7 +383,7 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     onLostTarget(entityId) {
-        let aiState = this.game.getComponent(entityId, this.game.componentTypes.AI_STATE);
+        let aiState = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').AI_STATE);
         aiState.useDirectMovement = false;
         aiState.target = null;
 

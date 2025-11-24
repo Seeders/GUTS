@@ -32,7 +32,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @returns {boolean} - Whether the command was queued/executed
      */
     queueCommand(entityId, commandData, interrupt = true) {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
 
         // Ensure unit has a command queue
@@ -99,7 +99,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {object} command - The command to execute
      */
     executeCommand(entityId, command) {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
 
         // Get command queue
@@ -148,7 +148,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {string} entityId - The unit entity ID
      */
     clearCommands(entityId) {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
 
         if (commandQueue) {
@@ -170,7 +170,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @returns {object|null} - The current command or null
      */
     getCurrentCommand(entityId) {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
         return commandQueue?.currentCommand || null;
     }
@@ -195,7 +195,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {string} entityId - The unit entity ID
      */
     completeCurrentCommand(entityId) {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
 
         if (!commandQueue) return;
@@ -240,7 +240,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * Update command queue system
      */
     onPlacementPhaseStart() {
-        const ComponentTypes = this.game.componentTypes;
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const entities = this.game.getEntitiesWith(ComponentTypes.COMMAND_QUEUE, ComponentTypes.AI_STATE);
 
         for (let i = 0; i < entities.length; i++) {

@@ -2483,7 +2483,8 @@
           "TerrainDataManager",
           "WorldRenderer",
           "EntityRenderer",
-          "RaycastHelper"
+          "RaycastHelper",
+          "ComponentGenerator"
         ],
         "fileName": "game",
         "interface": "main",
@@ -22768,10 +22769,10 @@
             "children": [],
             "managers": [
               {
-                "type": "ComponentManager"
+                "type": "GameManager"
               },
               {
-                "type": "GameManager"
+                "type": "ComponentManager"
               },
               {
                 "type": "GameModeManager"

@@ -41,7 +41,7 @@ class AISystem extends GUTS.BaseSystem {
         this.setAIControllerData(entityId, aiControllerId, data);
         this.setAIControllerData(entityId, "AISystem", data, false);
 
-        let aiState = this.game.getComponent(entityId, this.game.componentTypes.AI_STATE);
+        let aiState = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').AI_STATE);
         aiState.targetPosition = data.targetPosition;
         aiState.target = data.target;
         aiState.meta = data.meta;

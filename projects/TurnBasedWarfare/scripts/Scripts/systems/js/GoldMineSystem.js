@@ -372,9 +372,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     
     onBattleEnd() {
-        const entities = this.game.getEntitiesWith(this.game.componentTypes.MINING_STATE);        
+        const entities = this.game.getEntitiesWith(this.game.gameManager.call('getComponentTypes').MINING_STATE);        
         entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, this.game.componentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').MINING_STATE);
             if (miningState) {
                 miningState.miningStartTime = 0;
                 miningState.depositStartTime = 0;
@@ -383,7 +383,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     onDestroyBuilding(entityId){
-        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').UNIT_TYPE);
         if (unitType.id === 'goldMine') {
             this.game.goldMineSystem.destroyGoldMine(entityId);
         } 

@@ -9,8 +9,8 @@
       "parent": null,
       "children": [],
       "managers": [
-        { "type": "ComponentManager" },
         { "type": "GameManager" },
+        { "type": "ComponentManager" },
         { "type": "GameModeManager" },
         { "type": "KeyboardManager" },
         { "type": "LoadingManager" },

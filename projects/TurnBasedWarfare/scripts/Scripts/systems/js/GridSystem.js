@@ -265,8 +265,8 @@ class GridSystem extends GUTS.BaseSystem {
 
     getUnitCells(entityId) {
 
-        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
-        const pos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
+        const unitType = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').UNIT_TYPE);
+        const pos = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').POSITION);
 
         if(!unitType) return null;
         const cells = [];
@@ -321,8 +321,8 @@ class GridSystem extends GUTS.BaseSystem {
                 for (const entityId of cellState.entities) {
                     if (entityId === excludeEntityId || seen.has(entityId)) continue;
 
-                    const entityPos = this.game.getComponent(entityId, this.game.componentTypes.POSITION);
-                    const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+                    const entityPos = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').POSITION);
+                    const unitType = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').UNIT_TYPE);
                     
                     if (!entityPos || !unitType) continue;
 

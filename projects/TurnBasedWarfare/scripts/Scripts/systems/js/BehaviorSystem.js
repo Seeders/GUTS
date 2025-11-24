@@ -76,7 +76,7 @@ class BehaviorSystem extends BaseSystem {
      * Main update loop - runs for all units with UnitController
      */
     update(dt) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
 
         // Get all entities with UnitController
         const entities = this.game.getEntitiesWith(CT.UNIT_CONTROLLER);
@@ -93,7 +93,7 @@ class BehaviorSystem extends BaseSystem {
      * Update a single unit's behavior
      */
     updateUnit(entityId, dt) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
         const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
 
@@ -206,7 +206,7 @@ class BehaviorSystem extends BaseSystem {
      * Public API: Issue a player command to a unit
      */
     issuePlayerCommand(entityId, action, target, data = {}) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
 
         if (!controller) {
@@ -227,7 +227,7 @@ class BehaviorSystem extends BaseSystem {
      * Public API: Clear player command for a unit
      */
     clearPlayerCommand(entityId) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
 
         if (controller) {
@@ -239,7 +239,7 @@ class BehaviorSystem extends BaseSystem {
      * Debug: Get current action for an entity
      */
     getCurrentAction(entityId) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
 
         if (!controller) return null;

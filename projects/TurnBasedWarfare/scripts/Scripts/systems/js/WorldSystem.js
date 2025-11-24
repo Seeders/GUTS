@@ -240,7 +240,11 @@ class WorldSystem extends GUTS.BaseSystem {
         // Add Renderable component for visual representation
         if (!this.game.hasComponent(entityId, ComponentTypes.RENDERABLE)) {
             this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
-                Components.Renderable('worldObjects', worldObj.type, 1024));
+                {
+                    objectType:'worldObjects', 
+                    spawnType: worldObj.type, 
+                    capacity: 1024
+                });
         }
 
         this.game.triggerEvent('onEntityPositionUpdated', entityId);

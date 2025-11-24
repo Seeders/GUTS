@@ -315,7 +315,7 @@ class BehaviorSystem extends BaseSystem {
     }
 
     update(dt) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const entities = this.game.getEntitiesWith(CT.UNIT_CONTROLLER);
 
         // Sort for determinism
@@ -327,7 +327,7 @@ class BehaviorSystem extends BaseSystem {
     }
 
     updateUnit(entityId, dt) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
         const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
 
@@ -426,7 +426,7 @@ class BehaviorSystem extends BaseSystem {
 
     // Public API for issuing commands
     issuePlayerCommand(entityId, action, target, data = {}) {
-        const CT = this.game.componentTypes;
+        const CT = this.game.gameManager.call('getComponentTypes');
         const controller = this.game.getComponent(entityId, CT.UNIT_CONTROLLER);
 
         controller.playerOrder = {

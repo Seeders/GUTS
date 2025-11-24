@@ -48,7 +48,8 @@
     "TerrainDataManager",
     "WorldRenderer",
     "EntityRenderer",
-    "RaycastHelper"
+    "RaycastHelper",
+    "ComponentGenerator"
   ],
   "fileName": "game",
   "interface": "main",

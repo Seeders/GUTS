@@ -247,7 +247,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
+                    const aiState = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').AI_STATE);
                     if (aiState) {
                         aiState.playerOrder = {
                             targetPosition: targetPosition,
@@ -342,8 +342,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
                     placement.meta = meta || {};
                     placement.squadUnits.forEach((unitId) => {
-                        const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                        const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
+                        const aiState = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').AI_STATE);
+                        const p = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').PLACEMENT);
                         if(p){
                             p.commandCreatedTime = placement.commandCreatedTime;
                             p.targetPosition = placement.targetPosition;
