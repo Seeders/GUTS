@@ -540,7 +540,7 @@
       },
       "IdleAction": {
         "title": "Idle",
-        "type": "IDLE",
+        "type": "IdleAction",
         "priority": 0,
         "description": "Do nothing",
         "parameters": {},
@@ -549,7 +549,7 @@
       },
       "MineGoldAction": {
         "title": "Mine Gold",
-        "type": "MINE",
+        "type": "MineGoldAction",
         "priority": 5,
         "description": "Mine gold from a gold mine",
         "parameters": {

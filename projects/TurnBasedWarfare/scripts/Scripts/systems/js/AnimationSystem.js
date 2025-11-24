@@ -42,7 +42,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (!this.game.renderSystem?.isInstanced(entityId)) return;
 
             // Skip static entities (worldObjects, cliffs) that don't have animations
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const unitType = this.game.getComponent(entityId, "unitType");
             if (unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs')) {
                 return;
             }

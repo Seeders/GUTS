@@ -78,7 +78,7 @@ class AISystem extends GUTS.BaseSystem {
         const currentAiControllerId = this.getCurrentAIControllerId();
         this.removeAIController(entityId, currentAiControllerId);
         const CT = this.game.gameManager.call('getComponents');        
-        this.setAIControllerData(entityId, "AISystem", CT.AIState('idle'), false);
+        this.setAIControllerData(entityId, "AISystem", CT.aiState('idle'), false);
     }
 
     getEntityAIControllers(entityId) {
