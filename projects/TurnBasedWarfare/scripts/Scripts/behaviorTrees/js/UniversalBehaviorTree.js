@@ -35,9 +35,10 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         }
         return {
             action: "MoveBehaviorAction",
-            target: playerOrder.targetPosition,
+            target: null,
             priority: 10,
             data: {
+                targetPos: playerOrder.targetPosition,
                 preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
             }
         };

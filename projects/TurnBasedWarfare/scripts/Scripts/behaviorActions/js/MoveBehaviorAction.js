@@ -2,7 +2,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     canExecute(entityId, controller, game) {
         const pos = game.getComponent(entityId, 'position');
-        const target = controller.actionTarget;
+        const target = controller.actionData?.targetPos;
         if (!pos || !target) return false;
 
         const dist = this.distance(pos, target);
@@ -10,10 +10,10 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     execute(entityId, controller, game, dt) {
-        
-  
+
+
         const pos = game.getComponent(entityId, 'position');
-        const target = controller.actionTarget;
+        const target = controller.actionData?.targetPos;
 
         if (!target) return { complete: true, failed: true };
 
