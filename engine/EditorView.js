@@ -39,16 +39,20 @@ class EditorView {
   
       // Generate HTML
       let html = `<div class="type-selector">`;
-      for (const [category, types] of Object.entries(categories)) {
+      // Sort categories alphabetically
+      const sortedCategories = Object.entries(categories).sort((a, b) => a[0].localeCompare(b[0]));
+      for (const [category, types] of sortedCategories) {
         const isExpanded = this.controller.getExpandedCategories()[category];
         const isCurrentCategory = category === currentTypeDef.category;
-        
+
         html += `
           <div class="category ${isExpanded || isCurrentCategory ? 'highlight' : ''}">
             <div class="category-header">${category}</div>
             <div class="category-types" style="display: ${isExpanded ? 'block' : 'none'};">`;
-        
-        types.forEach(type => {
+
+        // Sort types alphabetically by name
+        const sortedTypes = types.sort((a, b) => a.name.localeCompare(b.name));
+        sortedTypes.forEach(type => {
           const isSelected = this.controller.getSelectedType() === type.id;
           html += `
             <div class="object-type-item ${isSelected ? 'selected' : ''}" data-type="${type.id}">
@@ -57,10 +61,17 @@ class EditorView {
   
           if (isSelected) {
             html += `<div class="object-list">`;
-            Object.keys(this.controller.getCollections()[type.id] || {}).forEach(objId => {
-              const obj = this.controller.getCollections()[type.id][objId];
+            // Sort objects alphabetically by title
+            const collection = this.controller.getCollections()[type.id] || {};
+            const sortedObjectIds = Object.keys(collection).sort((a, b) => {
+              const titleA = (collection[a].title || a).toLowerCase();
+              const titleB = (collection[b].title || b).toLowerCase();
+              return titleA.localeCompare(titleB);
+            });
+            sortedObjectIds.forEach(objId => {
+              const obj = collection[objId];
               html += `
-                <div class="object-item ${this.controller.getSelectedObject() === objId ? 'selected' : ''}" 
+                <div class="object-item ${this.controller.getSelectedObject() === objId ? 'selected' : ''}"
                      data-object="${objId}">
                   ${obj.title || objId}
                 </div>`;
@@ -392,8 +403,15 @@ class EditorView {
     
     populateSelectOptions(selectElement, typeId) {
         const collection = this.controller.getCollections()[typeId] || {};
-        
-        Object.keys(collection).forEach(objId => {
+
+        // Sort objects alphabetically by title
+        const sortedObjectIds = Object.keys(collection).sort((a, b) => {
+            const titleA = (collection[a].title || a).toLowerCase();
+            const titleB = (collection[b].title || b).toLowerCase();
+            return titleA.localeCompare(titleB);
+        });
+
+        sortedObjectIds.forEach(objId => {
             const option = document.createElement('option');
             option.value = objId;
             option.textContent = collection[objId].title || objId;
