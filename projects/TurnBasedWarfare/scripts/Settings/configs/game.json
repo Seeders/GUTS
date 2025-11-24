@@ -70,7 +70,6 @@
     "WorldSystem",
     "PostProcessingSystem",
     "RenderSystem",
-    "AISystem",
     "BehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",

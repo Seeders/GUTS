@@ -502,46 +502,38 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored || !aiState) {
+        if (isAnchored) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
             return;
         }
-        
-        if (aiState.state === 'waiting' || aiState.state === 'idle') {
-            data.desiredVelocity.vx = 0;
-            data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
-            return;
-        }
-        
-        if (aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
-            // Check if we should use direct movement (line of sight to target)
-            if (aiState.useDirectMovement) {
-                // Move directly toward target using steering behaviors
-                this.moveDirectlyToTarget(entityId, data);
-            } else {
-                // Use pathfinding for navigation
-                this.requestPathIfNeeded(entityId, data);
 
-                if (aiState.path && aiState.path.length > 0) {
-                    this.followPath(entityId, data);
-                } else {
-                    data.desiredVelocity.vx = 0;
-                    data.desiredVelocity.vy = 0;
-                    data.desiredVelocity.vz = 0;
-                }
+        // NEW: Read velocity targets set by behavior tree actions
+        // Actions set vel.targetX and vel.targetZ to indicate where to move
+        if (vel.targetX != null && vel.targetZ != null) {
+            const dx = vel.targetX - pos.x;
+            const dz = vel.targetZ - pos.z;
+            const distToTarget = Math.sqrt(dx * dx + dz * dz);
+
+            if (distToTarget < 0.1) {
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vz = 0;
+                data.desiredVelocity.vy = 0;
+                return;
             }
-        } else if (aiState.state === 'attacking') {
-            data.desiredVelocity.vx = 0;
+
+            const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+            data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
+            data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
             data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
-        } else {
-            data.desiredVelocity.vx = 0;
-            data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
+            return;
         }
+
+        // No velocity target, don't move
+        data.desiredVelocity.vx = 0;
+        data.desiredVelocity.vy = 0;
+        data.desiredVelocity.vz = 0;
     }
     
     moveDirectlyToTarget(entityId, data) {

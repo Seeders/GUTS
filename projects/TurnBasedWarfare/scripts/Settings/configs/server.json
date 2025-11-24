@@ -34,7 +34,6 @@
   "systems": [
     "GridSystem",
     "TerrainSystem",
-    "AISystem",
     "BehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",
