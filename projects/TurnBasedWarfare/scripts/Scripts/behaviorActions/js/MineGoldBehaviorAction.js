@@ -28,11 +28,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const minePos = game.getComponent(controller.actionTarget, 'position');
 
         if (this.distance(pos, minePos) < this.parameters.miningRange) {
-            if (game.goldMineSystem.canMine(controller.actionTarget, entityId)) {
-                controller.actionData.state = 'mining';
-                controller.actionData.miningStartTime = game.state.now;
-                return { complete: false };
-            }
+            controller.actionData.state = 'mining';
+            controller.actionData.miningStartTime = game.state.now;
             return { complete: false };
         }
 
