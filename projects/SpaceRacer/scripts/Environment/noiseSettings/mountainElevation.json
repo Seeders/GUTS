@@ -1,8 +1,0 @@
-{
-  "title": "Mountain Elevation",
-  "scale": 0.00005,
-  "octaves": 6,
-  "persistence": 0.7,
-  "lacunarity": 2.5,
-  "heightScale": 200
-}

@@ -1,7 +1,0 @@
-{
-  "title": "AI",
-  "aiEndPoint": "http://localhost:11434/api/generate",
-  "aiModel": "deepseek-r1:32b",
-  "defaultPrompt": "I am developing an app.  Generate a new object based on the following context. Please provide ONLY a valid JSON object with keys MATCHING EXACTLY to the context above. It absolutely MUST have an appropriate 'id' field. Ensure all existing key types are maintained. Do not wrap the json object with any other text.",
-  "fileName": "ai"
-}

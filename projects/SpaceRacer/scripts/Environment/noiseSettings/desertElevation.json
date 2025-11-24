@@ -1,8 +1,0 @@
-{
-  "title": "Desert Elevation",
-  "scale": 0.0001,
-  "octaves": 3,
-  "persistence": 0.4,
-  "lacunarity": 1.8,
-  "heightScale": 5
-}

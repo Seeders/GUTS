@@ -1,9 +1,0 @@
-{
-  "title": "Plasma Ball",
-  "speed": 400,
-  "hitSound": "",
-  "attackSound": "",
-  "particlePrefab": "",
-  "impactParticlePrefab": "",
-  "offset": "{ \"x\": -1.5, \"y\": 17, \"z\": 3 }"
-}
