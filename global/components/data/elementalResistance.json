@@ -1,10 +1,13 @@
 {
-  "fireResistance": 0,
-  "coldResistance": 0,
-  "lightningResistance": 0,
-  "poisonResistance": 0,
-  "physicalResistance": 0,
-  "divineResistance": 0,
-  "duration": null,
-  "permanent": true
+  "title": "elementalResistance",
+  "schema": {
+    "fireResistance": 0,
+    "coldResistance": 0,
+    "lightningResistance": 0,
+    "poisonResistance": 0,
+    "physicalResistance": 0,
+    "divineResistance": 0,
+    "duration": null,
+    "permanent": true
+  }
 }

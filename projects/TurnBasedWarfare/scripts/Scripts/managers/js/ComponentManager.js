@@ -25,10 +25,12 @@ class ComponentManager {
     getModels() {
         let components = {};
         Object.keys(this.models).forEach((modelId) => {
-            const data = this.models[modelId];
+            const model = this.models[modelId];
+            // Extract schema if model has title/schema structure, otherwise use model directly
+            const data = model.schema || model;
             components[modelId] = (params = {}) => {
                 return this.deepMerge(data, params);
-            };        
+            };
         });
         return components;
     }

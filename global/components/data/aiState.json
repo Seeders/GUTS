@@ -1,7 +1,10 @@
 {
-  "state": "idle",
-  "targetPosition": null,
-  "target": null,
-  "aiControllerId": null,
-  "meta": {}
+  "title": "aiState",
+  "schema": {
+    "state": "idle",
+    "targetPosition": null,
+    "target": null,
+    "aiControllerId": null,
+    "meta": {}
+  }
 }

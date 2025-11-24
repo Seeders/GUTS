@@ -1,5 +1,8 @@
 {
-  "effectType": "generic",
-  "data": {},
-  "createdTime": 0
+  "title": "temporaryEffect",
+  "schema": {
+    "effectType": "generic",
+    "data": {},
+    "createdTime": 0
+  }
 }

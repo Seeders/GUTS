@@ -1,10 +1,13 @@
 {
-  "state": null,
-  "targetMine": null,
-  "targetTownHall": null,
-  "hasGold": null,
-  "miningStartTime": null,
-  "depositStartTime": null,
-  "team": null,
-  "entityId": null
+  "title": "miningState",
+  "schema": {
+    "state": null,
+    "targetMine": null,
+    "targetTownHall": null,
+    "hasGold": null,
+    "miningStartTime": null,
+    "depositStartTime": null,
+    "team": null,
+    "entityId": null
+  }
 }

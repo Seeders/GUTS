@@ -1,7 +1,10 @@
 {
-  "damageReduction": 0.75,
-  "endTime": 0,
-  "tauntRadius": 200,
-  "originalArmor": 0,
-  "isActive": true
+  "title": "shieldWall",
+  "schema": {
+    "damageReduction": 0.75,
+    "endTime": 0,
+    "tauntRadius": 200,
+    "originalArmor": 0,
+    "isActive": true
+  }
 }
