@@ -8,7 +8,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             () => this.checkCombat(entityId, game),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkAbilityBehaviors(entityId, game),
-            () => ({ action: "IDLE", priority: 0 })
+            () => ({ action: "IdleBehaviorAction", priority: 0 })
         ];
 
         return this.select(results);
@@ -19,7 +19,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         if (!aiState.meta || !aiState.meta.isPlayerOrder) return null;
 
         return {
-            action: "MOVE_TO",
+            action: "MoveBehaviorAction",
             target: aiState.targetPosition,
             priority: 10,
             data: {
@@ -65,7 +65,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         const target = this.selectCombatTarget(entityId, pos, enemies, game);
 
         return {
-            action: "ATTACK",
+            action: "AttackBehaviorAction",
             target: target,
             priority: 30
         };

@@ -41,15 +41,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     registerActionFromData(behaviorActionId, actionData) {
         // The action class should be compiled and available via game context or global scope
-        // behaviorActionId is typically already the class name (e.g., "MoveAction")
+        // behaviorActionId is the collection key (e.g., "MoveBehaviorAction")
         const ActionClass = this.game[behaviorActionId] || window[behaviorActionId];
 
         if (ActionClass) {
             const actionInstance = new ActionClass(this.game, actionData.parameters);
-            // Use the TYPE static property from the action class for registration
-            const actionType = ActionClass.TYPE || actionData.type;
-            this.actions.set(actionType, actionInstance);
-            console.log(`Registered behavior action: ${actionType} from ${behaviorActionId}`);
+            // Use the collection key (behaviorActionId) for registration
+            this.actions.set(behaviorActionId, actionInstance);
+            console.log(`Registered behavior action: ${behaviorActionId}`);
         } else {
             console.warn(`Action class not found for: ${behaviorActionId}`);
         }

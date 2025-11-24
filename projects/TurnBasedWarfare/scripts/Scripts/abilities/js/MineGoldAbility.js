@@ -44,7 +44,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
         // Return mining behavior
         return {
-            action: "MINE",
+            action: "MineGoldBehaviorAction",
             target: nearbyMine,
             priority: 5,
             data: { mineId: nearbyMine }
