@@ -362,7 +362,7 @@ class BehaviorTreeEditor {
         return mapping[method] || 'ACTION';
     }
 
-    highlightActiveNode(action) {
+    highlightActiveNode(result) {
         // Remove previous highlights
         const nodes = document.querySelectorAll('.bt-graph-node');
         nodes.forEach(node => {
@@ -372,22 +372,30 @@ class BehaviorTreeEditor {
             }
         });
 
-        // Highlight active nodes based on action
-        if (!action) return;
+        // Highlight active nodes based on result
+        if (!result || !result.action) return;
 
         // Highlight root
         this.highlightNode('root');
 
-        // Highlight specific action node
+        // If this is a player-ordered action, highlight the player order method
+        if (result.playerOrdered) {
+            this.highlightNode('checkPlayerOrder');
+            this.highlightNode('checkPlayerOrder-action');
+            return;
+        }
+
+        // Otherwise, highlight specific action node based on action mapping
         const actionMapping = {
             'BUILD': 'checkBuildOrder',
             'MINE': 'checkMining',
             'ATTACK': 'checkCombat',
+            'MOVE': 'checkMoveOrder',
             'MOVE_TO': 'checkMoveOrder',
             'IDLE': 'idle'
         };
 
-        const methodName = actionMapping[action];
+        const methodName = actionMapping[result.action];
         if (methodName) {
             this.highlightNode(methodName);
             this.highlightNode(`${methodName}-action`);
@@ -1286,15 +1294,15 @@ class BehaviorTreeEditor {
         }
 
         // Highlight active node in graph based on first result with action
-        let highlightedAction = null;
+        let highlightedResult = null;
         for (const { result } of results) {
             if (result && result.action) {
-                highlightedAction = result.action;
+                highlightedResult = result;
                 break;
             }
         }
-        if (this.isScriptBased && highlightedAction) {
-            this.highlightActiveNode(highlightedAction);
+        if (this.isScriptBased && highlightedResult) {
+            this.highlightActiveNode(highlightedResult);
         }
 
         results.forEach(({ entityId, entityLabel, result }) => {
