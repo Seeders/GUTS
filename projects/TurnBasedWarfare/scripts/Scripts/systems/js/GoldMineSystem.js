@@ -193,7 +193,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
 
         // Clear any miners targeting this mine
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         
         for (const minerEntityId of miners) {
@@ -223,7 +223,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Check if a mine is currently occupied by looking at component states
     isMineOccupied(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         
         for (const minerEntityId of miners) {
@@ -240,7 +240,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get the current miner at a mine by checking component states
     getCurrentMiner(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         
         for (const minerEntityId of miners) {
@@ -257,7 +257,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get all miners in queue (waiting_at_mine state) for a specific mine
     getMinersInQueue(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
         const queuedMiners = [];
         
@@ -294,7 +294,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
         
         const nextMinerId = queue[0];
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
         
         if (miningState && miningState.state === 'waiting_at_mine') {

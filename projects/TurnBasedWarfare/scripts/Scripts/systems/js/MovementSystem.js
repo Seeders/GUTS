@@ -2,7 +2,7 @@ class MovementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.movementSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;

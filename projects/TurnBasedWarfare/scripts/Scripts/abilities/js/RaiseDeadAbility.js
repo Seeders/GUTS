@@ -241,8 +241,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
         const skeletonId = this.game.createEntity ? this.game.createEntity() : null;
         if (skeletonId === null || skeletonId === undefined) return null;
         
-        const components = this.game.componentManager.getComponents();
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const components = this.game.gameManager.call('getComponents');
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // FIXED: Deterministic facing based on creation order, not team
         const initialFacing = (creationIndex % 2 === 0) ? 0 : Math.PI;

@@ -134,7 +134,7 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
                 const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
                 
                 if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
-                    const Components = this.game.componentManager.getComponents();
+                    const Components = this.game.gameManager.call('getComponents');
                     this.game.addComponent(allyId, this.componentTypes.BUFF, 
                         Components.Buff('ice_armor', { 
                             armorMultiplier: 1.5

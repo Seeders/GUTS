@@ -94,7 +94,7 @@ class CurseAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(enemyPos, 'curse');
                 
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
-                const Components = this.game.componentManager.getComponents();
+                const Components = this.game.gameManager.call('getComponents');
                 this.game.addComponent(enemyId, this.componentTypes.BUFF, 
                     Components.Buff('curse', { 
                         damageMultiplier: this.damageReduction,

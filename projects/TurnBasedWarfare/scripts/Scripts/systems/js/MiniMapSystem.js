@@ -2,7 +2,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.miniMapSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.MINIMAP_SIZE = 200;
         this.MINIMAP_PADDING = 10;

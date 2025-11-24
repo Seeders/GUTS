@@ -165,7 +165,7 @@ class RageAbility extends GUTS.BaseAbility {
         }, 0.5, casterEntity);
         
         // Apply rage buff with proper timing
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
         

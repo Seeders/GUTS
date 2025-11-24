@@ -33,7 +33,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      */
     queueCommand(entityId, commandData, interrupt = true) {
         const ComponentTypes = this.game.componentTypes;
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
 
         // Ensure unit has a command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
@@ -100,7 +100,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      */
     executeCommand(entityId, command) {
         const ComponentTypes = this.game.componentTypes;
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
 
         // Get command queue
         let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);

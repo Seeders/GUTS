@@ -18,7 +18,7 @@ class BuildAbility extends GUTS.BaseAbility {
         if(!this.enabled){
             return false;
         }
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         let buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
         
         if (!buildingState) {
@@ -28,7 +28,7 @@ class BuildAbility extends GUTS.BaseAbility {
         return this.game.aiSystem.getCurrentAIControllerId(entityId) == ComponentTypes.BUILDING_STATE;
     }
     execute(entityId, targetData) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const buildState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
         const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
         const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
@@ -57,8 +57,8 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
         const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
 
@@ -122,7 +122,7 @@ class BuildAbility extends GUTS.BaseAbility {
             return;
         }
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
         const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.BUILDING_STATE);
         
@@ -175,8 +175,8 @@ class BuildAbility extends GUTS.BaseAbility {
 
     constructBuilding(buildState) {
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
         const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
         this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, Components.Health(unitType.hp));
@@ -200,7 +200,7 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     completeConstruction(buildState) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
         const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
         const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);

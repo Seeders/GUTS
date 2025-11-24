@@ -2,7 +2,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.equipmentSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.entityEquipment = new Map();
         this.equipmentCache = new Map();

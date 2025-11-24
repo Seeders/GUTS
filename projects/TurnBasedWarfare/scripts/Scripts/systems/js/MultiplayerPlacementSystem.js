@@ -312,7 +312,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     resetAI() {
-        const componentTypes = this.game.componentManager.getComponentTypes();            
+        const componentTypes = this.game.gameManager.call('getComponentTypes');            
         const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
         AIEntities.forEach((entityId) => {
             const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
@@ -325,7 +325,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     applyTargetPositions(){
         // This function updates local placement data from entity AI state
         // The actual AI state and commands are handled by the server and synced at battle start
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
             placement.squadUnits.forEach(entityId => {
@@ -340,7 +340,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     removeOpponentPlacement(placementId) {
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
         
         // Find and remove from opponent placements
         const index = this.opponentPlacements.findIndex(p => p.placementId === placementId);
@@ -1010,7 +1010,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         this.playerPlacements = this.filterDeadSquads(this.playerPlacements, ComponentTypes);
         this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements, ComponentTypes);
     }

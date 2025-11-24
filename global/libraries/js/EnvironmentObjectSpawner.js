@@ -129,8 +129,8 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
 
         // Create entity with unique ID
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);

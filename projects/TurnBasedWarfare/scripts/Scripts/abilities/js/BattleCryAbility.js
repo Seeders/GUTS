@@ -94,7 +94,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
                 existingBuff.appliedTime = this.game.state.now; // Update applied time
             } else {
                 // Apply new rally buff
-                const Components = this.game.componentManager.getComponents();
+                const Components = this.game.gameManager.call('getComponents');
                 this.game.addComponent(allyId, this.componentTypes.BUFF, 
                     Components.Buff('rallied', { 
                         damageMultiplier: this.damageMultiplier, 

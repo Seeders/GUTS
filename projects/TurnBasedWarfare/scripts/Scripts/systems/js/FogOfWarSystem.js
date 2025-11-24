@@ -2,7 +2,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.fogOfWarSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');

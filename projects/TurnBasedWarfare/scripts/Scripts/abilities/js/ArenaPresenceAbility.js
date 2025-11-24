@@ -156,7 +156,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
             return { success: true, wasRefreshed: true };
         } else {
             // Apply new intimidation buff
-            const Components = this.game.componentManager.getComponents();
+            const Components = this.game.gameManager.call('getComponents');
             
             this.game.addComponent(enemyId, this.componentTypes.BUFF, 
                 Components.Buff(

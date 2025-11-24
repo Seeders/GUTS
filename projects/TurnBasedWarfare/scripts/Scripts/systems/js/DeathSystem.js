@@ -49,7 +49,7 @@ class DeathSystem extends GUTS.BaseSystem {
     }
     
     convertToCorpse(entityId) {
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         
         // Get current components before conversion
         const position = this.game.getComponent(entityId, this.componentTypes.POSITION);

@@ -84,7 +84,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
         }
         
         // Apply bloodlust buff
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         this.game.addComponent(casterEntity, this.componentTypes.BUFF, 
             Components.Buff('bloodlust', { 
                 lifeSteal: this.lifeStealAmount, 

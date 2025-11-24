@@ -37,7 +37,7 @@ class ShopSystem extends GUTS.BaseSystem {
         this.game.state.selectedEntity.collection = null;
     }
     onUnitSelected(entityId){
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
         const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
         if(unitType.collection == "buildings") {
             const placement = this.game.getComponent(entityId, CT.PLACEMENT);        
@@ -76,7 +76,7 @@ class ShopSystem extends GUTS.BaseSystem {
             }
         } else {
             // Building is under construction - show cancel button
-            const CT = this.game.componentManager.getComponentTypes();
+            const CT = this.game.gameManager.call('getComponentTypes');
             const buildingEntityId = this.game.state.selectedEntity.entityId;
 
             if (placement.isUnderConstruction) {
@@ -617,7 +617,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     cancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
 
         if (!placement || !placement.isUnderConstruction) {
             this.game.uiSystem?.showNotification('Building is not under construction', 'warning', 1000);
@@ -646,7 +646,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     performLocalCancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
 
         // Refund the gold
         const refundAmount = placement.unitType.value || 0;

@@ -100,7 +100,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         const originalArmor = casterCombat ? casterCombat.armor : 0;
         
         // Apply shield wall component with proper timing
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.wallDuration;
         
@@ -159,7 +159,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             if (!enemyPos || !enemyAI) return;
             
             // Apply taunt component
-            const Components = this.game.componentManager.getComponents();
+            const Components = this.game.gameManager.call('getComponents');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
             

@@ -2,7 +2,7 @@ class BaseSystem {
     constructor(game) {
         this.game = game;
         this.engine = game.app;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
     }
     postAllInit() {
 

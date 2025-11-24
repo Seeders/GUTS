@@ -95,7 +95,7 @@ class UnitCreationManager {
 
             // Set playerId on team component if provided
             if (playerId) {
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
+                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
                 const teamComponent = this.game.getComponent(entity, ComponentTypes.TEAM);
                 if (teamComponent) {
                     teamComponent.playerId = playerId;
@@ -158,7 +158,7 @@ class UnitCreationManager {
 
                 // Add playerId to the team component if provided
                 if (playerId && this.game.componentManager) {
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();
+                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
                     const teamComponent = this.game.getComponent(entityId, ComponentTypes.TEAM);
                     if (teamComponent) {
                         teamComponent.playerId = playerId;
@@ -292,8 +292,8 @@ class UnitCreationManager {
      */
     addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
         const unitType = placement.unitType;
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         
         // Position component
         this.game.addComponent(entity, ComponentTypes.POSITION, 
@@ -328,8 +328,8 @@ class UnitCreationManager {
      * @param {Object} unitType - Unit type definition
      */
     addCombatComponents(entity, unitType) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         // Health component
         const maxHP = unitType.hp || this.defaults.hp;
         this.game.addComponent(entity, ComponentTypes.HEALTH, 
@@ -362,8 +362,8 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         // AI state for behavior control
         this.game.addComponent(entity, ComponentTypes.AI_STATE, 
             Components.AIState('idle', targetPosition));
@@ -384,8 +384,8 @@ class UnitCreationManager {
      * @param {Object} teamConfig - Team configuration
      */
     addVisualComponents(entity, unitType, teamConfig) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         
         // Renderable component for visual representation
         this.game.addComponent(entity, ComponentTypes.RENDERABLE, 

@@ -2,7 +2,7 @@ class DamageSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.damageSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Element types
         this.ELEMENT_TYPES = {

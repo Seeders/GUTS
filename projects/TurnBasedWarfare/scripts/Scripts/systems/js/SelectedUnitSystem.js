@@ -4,7 +4,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.game.selectedUnitSystem = this;
         this.canvas = this.game.canvas;
         
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Selection circle configuration
         this.CIRCLE_RADIUS = 25;
@@ -403,7 +403,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     setSelectedEntity(entityId){         
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
         const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);     
         this.game.state.selectedEntity.entityId = entityId;
         this.game.state.selectedEntity.collection = unitType.collection;      
@@ -669,7 +669,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     // Get all currently selected squad IDs
     getSelectedSquads() {
         let placementIds = new Set();
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
         Array.from(this.selectedUnitIds).forEach((unitId) => {
             const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
             placementIds.add(placement.placementId);

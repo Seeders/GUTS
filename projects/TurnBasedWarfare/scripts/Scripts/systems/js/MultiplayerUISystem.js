@@ -661,7 +661,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     onBattleEnd() {
 
             
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const entitiesToDestroy = new Set();
         
         [
@@ -685,7 +685,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     startVictoryCelebration(victoriousUnits) {
         // Determine which team won
         const firstUnit = victoriousUnits[0];
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
         const teamType = team?.team || 'player';
 

@@ -2,7 +2,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.lifetimeSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Configuration
         this.CHECK_INTERVAL = 0.1; // Check lifetimes every 100ms for performance

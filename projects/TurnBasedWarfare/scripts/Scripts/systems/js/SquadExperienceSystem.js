@@ -292,7 +292,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         placement.unitType = { id: specializationId, ...specializationUnitType };
         
         // Recreate all units in the squad with the new unit type
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         const newUnitIds = [];
         
         console.log('applying specialization to ', squadData, squadData.unitIds);
@@ -461,7 +461,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             return;
         }
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         squadData.unitIds.forEach(entityId => {
             const unitType = this.game.getComponent(entityId, componentTypes.UNIT_TYPE);
             if (unitType) {
@@ -500,7 +500,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const squadData = this.squadExperience.get(placementId);
         if (!squadData) return 100; // Default fallback
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         let totalHealth = 0;
         
         squadData.unitIds.forEach(entityId => {
@@ -673,7 +673,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     }
     unitsAliveInSquad(squadData) {
         if (!squadData || !squadData.unitIds?.length) return 0;
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         let count = 0;
         for (const id of squadData.unitIds) {
             const h = this.game.getComponent(id, componentTypes.HEALTH);
@@ -689,7 +689,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         
         this.saveSquadExperience();
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
+        const componentTypes = this.game.gameManager.call('getComponentTypes');
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
             const validUnits = squadData.unitIds.filter(entityId => {

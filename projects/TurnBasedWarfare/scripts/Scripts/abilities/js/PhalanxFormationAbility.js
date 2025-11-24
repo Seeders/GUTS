@@ -116,7 +116,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             if (!unitType || !position || unitType.id !== 'hoplite') return;
             
             // Apply phalanx buff
-            const Components = this.game.componentManager.getComponents();
+            const Components = this.game.gameManager.call('getComponents');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
             

@@ -2,7 +2,7 @@ class CombatAISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.combatAISystems = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.DEFAULT_UNIT_RADIUS = 25;
         this.ATTACK_RANGE_BUFFER = 10;
@@ -728,8 +728,8 @@ class CombatAISystem extends GUTS.BaseSystem {
 
     startDeathProcess(entityId) {
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+        const Components = this.game.gameManager.call('getComponents');
         const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
         if (existingDeathState && existingDeathState.isDying) return;
         

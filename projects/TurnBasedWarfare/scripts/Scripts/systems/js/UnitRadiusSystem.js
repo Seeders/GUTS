@@ -2,7 +2,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.unitRadiusSystem = this;        
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
         this.enabled = false; // Toggle this to show/hide circles
         

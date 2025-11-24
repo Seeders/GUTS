@@ -33,7 +33,7 @@ class DesyncDebugger {
     }
 
     createStateSnapshot(entities) {
-        const CT = this.game.componentManager.getComponentTypes();
+        const CT = this.game.gameManager.call('getComponentTypes');
         
         const snapshot = {
             gameTime: parseFloat(this.game.state.now.toFixed(6)), // Round to avoid float precision issues

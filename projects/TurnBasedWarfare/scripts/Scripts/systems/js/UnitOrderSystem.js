@@ -4,7 +4,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.game = game;
         this.game.unitOrderSystem = this;
 
-        this.CT = this.game.componentManager.getComponentTypes();
+        this.CT = this.game.gameManager.call('getComponentTypes');
 
         this.isTargeting = false;
         this.isForceMove = false;
@@ -423,7 +423,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
         const CT = this.CT;
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
 
         const buildingPos = this.game.getComponent(buildingEntityId, CT.POSITION);
         const buildingPlacement = this.game.getComponent(buildingEntityId, CT.PLACEMENT);

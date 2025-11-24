@@ -2,7 +2,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.projectileSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
 
         // Configuration
         this.HIT_DETECTION_RADIUS = 24;
@@ -50,7 +50,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         
         // Create projectile entity
         const projectileId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
+        const components = this.game.gameManager.call('getComponents');
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);

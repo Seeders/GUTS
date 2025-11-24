@@ -99,7 +99,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     checkForBattleEnd() {
         if (!this.game.componentManager) return;
         
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const allBattleEntities = this.game.getEntitiesWith(
             ComponentTypes.TEAM,
             ComponentTypes.HEALTH,
@@ -156,7 +156,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkNoCombatActive(aliveEntities) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         
         for (const entityId of aliveEntities) {
             const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
@@ -170,7 +170,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkAllUnitsAtTargetPosition(aliveEntities) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const TARGET_POSITION_THRESHOLD = 20;
         
         for (const entityId of aliveEntities) {
@@ -259,7 +259,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let sideSurvivors = [];
             for (const squad of squads) {
                 if (squad.squadUnits && this.game.componentManager) {
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();
+                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
                     
                     for (const entityId of squad.squadUnits) {
                         const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
@@ -343,7 +343,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         
         this.currentBattleTime = 0;
         
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const entitiesToDestroy = new Set();
         
         // Collect battle entities (but not players)

@@ -93,7 +93,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         
         // Create consecrated ground entity
         const consecrationId = this.game.createEntity();
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         
         this.game.addComponent(consecrationId, this.componentTypes.POSITION, 
             Components.Position(consecrationPos.x, consecrationPos.y, consecrationPos.z));

@@ -27,13 +27,13 @@ class AISystem extends GUTS.BaseSystem {
 
     hasAIControllerData(entityId, aiControllerId){
         let entityControllersMap = this.getEntityAIControllers(entityId);
-        const CT = this.game.componentManager.getComponents();        
+        const CT = this.game.gameManager.call('getComponents');        
         return entityControllersMap.has(aiControllerId);
     }
 
     getAIControllerData(entityId, aiControllerId) {
         let entityControllersMap = this.getEntityAIControllers(entityId);
-        const CT = this.game.componentManager.getComponents();        
+        const CT = this.game.gameManager.call('getComponents');        
         return entityControllersMap.get(aiControllerId) || CT.AIState('idle');
     }
 
@@ -78,7 +78,7 @@ class AISystem extends GUTS.BaseSystem {
     removeCurrentAIController(entityId){    
         const currentAiControllerId = this.getCurrentAIControllerId();
         this.removeAIController(entityId, currentAiControllerId);
-        const CT = this.game.componentManager.getComponents();        
+        const CT = this.game.gameManager.call('getComponents');        
         this.setAIControllerData(entityId, "AISystem", CT.AIState('idle'), false);
     }
 

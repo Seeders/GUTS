@@ -2,7 +2,7 @@ class RenderSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.renderSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
 
         // EntityRenderer handles ALL rendering
         this.entityRenderer = null;

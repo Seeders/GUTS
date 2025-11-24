@@ -140,7 +140,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         
         if (imageId === null || imageId === undefined) return null;
         
-        const components = this.game.componentManager.getComponents();
+        const components = this.game.gameManager.call('getComponents');
         
         try {
             // Add components in deterministic order (alphabetical by component type)

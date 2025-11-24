@@ -40,7 +40,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     getUnitsDeployed() {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const playerUnits = this.game.getEntitiesWith(ComponentTypes.TEAM, ComponentTypes.UNIT_TYPE) || [];
             
             return playerUnits.filter(entityId => {
@@ -54,7 +54,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     getUnitsRemaining() {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const alivePlayerUnits = this.game.getEntitiesWith(
                 ComponentTypes.TEAM, ComponentTypes.HEALTH, ComponentTypes.UNIT_TYPE
             ) || [];
@@ -88,7 +88,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     calculateArmyValue() {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const playerUnits = this.game.getEntitiesWith(ComponentTypes.TEAM, ComponentTypes.UNIT_TYPE) || [];
             
             return playerUnits.reduce((total, entityId) => {

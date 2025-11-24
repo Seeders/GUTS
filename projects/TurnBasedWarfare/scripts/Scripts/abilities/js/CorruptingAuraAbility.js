@@ -147,7 +147,7 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                     const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
                     
                     if (!existingBuff || existingBuff.buffType !== 'dark_empowerment') {
-                        const Components = this.game.componentManager.getComponents();
+                        const Components = this.game.gameManager.call('getComponents');
                         this.game.addComponent(allyId, this.componentTypes.BUFF, 
                             Components.Buff('dark_empowerment', { 
                                 damageMultiplier: 1.3,

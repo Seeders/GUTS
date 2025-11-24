@@ -143,8 +143,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     createSummonedCreature(pos, unitDefId, team, summoner) {
         try {
             const creatureId = this.game.createEntity();
-            const components = this.game.componentManager.getComponents();
-            const componentTypes = this.game.componentManager.getComponentTypes();
+            const components = this.game.gameManager.call('getComponents');
+            const componentTypes = this.game.gameManager.call('getComponentTypes');
             
             // Get unit definition for stats (with fallbacks)
             const collections = this.game.getCollections();

@@ -2,7 +2,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.healthBarSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         // Health bar configuration
         this.HEALTH_BAR_WIDTH = 32;

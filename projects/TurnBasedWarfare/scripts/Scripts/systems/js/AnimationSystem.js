@@ -2,7 +2,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.animationSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
 
         // Animation state tracking (VAT-only, no mixers)
         this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. }

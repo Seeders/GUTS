@@ -100,7 +100,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         
         // Create trap entity
         const trapId = this.game.createEntity();
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         
         // Position component
         this.game.addComponent(trapId, this.componentTypes.POSITION, 

@@ -445,7 +445,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
     
     resetAI() {
-        const componentTypes = this.game.componentManager.getComponentTypes();            
+        const componentTypes = this.game.gameManager.call('getComponentTypes');            
         const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
         AIEntities.forEach((entityId) => {
             const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
@@ -456,7 +456,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
 
     applyTargetPositions() {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach((placement) => {
                 const targetPosition = placement.targetPosition;
@@ -598,7 +598,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
         this.playerPlacements.forEach((placements, playerId) => {
             const survivingPlacements = placements.filter(placement => {
@@ -753,7 +753,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             // Clean up the builder if assigned
             const assignedBuilder = placement.assignedBuilder;
             if (assignedBuilder) {
-                const CT = this.game.componentManager.getComponentTypes();
+                const CT = this.game.gameManager.call('getComponentTypes');
                 
                 // Complete/clear the build command
                 if (this.game.commandQueueSystem) {

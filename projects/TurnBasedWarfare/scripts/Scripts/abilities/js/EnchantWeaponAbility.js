@@ -114,7 +114,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
                 existingBuff.modifiers.weaponElement = selectedElement;
             } else {
                 // Apply new weapon enchantment
-                const Components = this.game.componentManager.getComponents();
+                const Components = this.game.gameManager.call('getComponents');
                 this.game.addComponent(allyId, this.componentTypes.BUFF, 
                     Components.Buff('enchant_weapon', { 
                         weaponElement: selectedElement,

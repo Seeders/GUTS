@@ -2,7 +2,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         this.abilityActionCounter = 0;
         this.entityAbilities = new Map();
         this.abilityCooldowns = new Map();

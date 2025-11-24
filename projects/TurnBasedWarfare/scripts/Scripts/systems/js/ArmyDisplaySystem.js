@@ -47,7 +47,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
     
     getArmyData() {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const allUnits = this.game.getEntitiesWith(
                 ComponentTypes.TEAM, 
                 ComponentTypes.UNIT_TYPE, 
@@ -113,7 +113,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
     
     getUnitStatus(entityId) {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
+            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
             const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
             
@@ -287,7 +287,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         if (this.game.effectsSystem) {
             // Get unit position and show highlight effect
             try {
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
+                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
                 const position = this.game.getComponent(unitId, ComponentTypes.POSITION);
                 if (position) {
                     // Convert world position to screen position and show highlight

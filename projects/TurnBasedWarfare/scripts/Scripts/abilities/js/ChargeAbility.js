@@ -129,7 +129,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         if (distance === 0) return; // Avoid division by zero
         
         // DESYNC SAFE: Add charging component for state tracking
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
         this.game.addComponent(casterEntity, this.componentTypes.CHARGING, 
             Components.Charging(targetId, this.chargeSpeed, this.chargeDamage, 
                 this.game.state.now, 0, distance));
@@ -333,7 +333,7 @@ class ChargeAbility extends GUTS.BaseAbility {
             });
 
             // DESYNC SAFE: Apply stun using buff system
-            const Components = this.game.componentManager.getComponents();
+            const Components = this.game.gameManager.call('getComponents');
             this.game.addComponent(targetId, this.componentTypes.BUFF,
                 Components.Buff('stunned', {
                     movementDisabled: true,

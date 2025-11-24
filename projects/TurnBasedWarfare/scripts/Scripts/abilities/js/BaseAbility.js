@@ -12,7 +12,7 @@ class BaseAbility {
         this.priority = config.priority || 5;
         this.castTime = config.castTime || 1.5;
         this.autoTrigger = config.autoTrigger || 'combat';
-        this.componentTypes = this.game.componentManager.getComponentTypes();
+        this.componentTypes = this.game.gameManager.call('getComponentTypes');
         
         this.effects = this.defineEffects();
     }
