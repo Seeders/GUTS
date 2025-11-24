@@ -1258,7 +1258,7 @@ class BehaviorTreeEditor {
                 );
                 results.push({
                     entityId: mainEntityId,
-                    entity,
+                    entityLabel: this.mockGame.getEntityLabel(mainEntityId),
                     result
                 });
             }
@@ -1297,7 +1297,7 @@ class BehaviorTreeEditor {
             this.highlightActiveNode(highlightedAction);
         }
 
-        results.forEach(({ entityId, entity, result }) => {
+        results.forEach(({ entityId, entityLabel, result }) => {
             const entityCard = document.createElement('div');
             entityCard.style.marginBottom = '12px';
             entityCard.style.padding = '8px';
@@ -1305,13 +1305,13 @@ class BehaviorTreeEditor {
             entityCard.style.borderRadius = '4px';
             entityCard.style.backgroundColor = '#1a1a1a';
 
-            if (entity) {
+            if (entityId) {
                 const entityHeader = document.createElement('div');
                 entityHeader.style.fontSize = '11px';
                 entityHeader.style.fontWeight = '600';
                 entityHeader.style.color = '#fff';
                 entityHeader.style.marginBottom = '6px';
-                entityHeader.textContent = entity.label || entityId;
+                entityHeader.textContent = entityLabel || entityId;
                 entityCard.appendChild(entityHeader);
 
                 const entityIdDiv = document.createElement('div');
