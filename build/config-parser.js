@@ -153,19 +153,11 @@ class ConfigParser {
     /**
      * Get all scripts for a scene based on its managers and systems
      */
-    getSceneScripts(sceneName) {
-        const scenes = this.config.objectTypes.scenes || {};
-        const scene = scenes[sceneName];
-
-        if (!scene || !scene.sceneData || !scene.sceneData[0]) {
-            console.warn(`⚠️ Scene not found or empty: ${sceneName}`);
-            return { managers: [], systems: [], classes: [] };
-        }
-
-        const sceneData = scene.sceneData[0];
-        const managerNames = (sceneData.managers || []).map(m => m.type);
-        const systemNames = (sceneData.systems || []).map(s => s.type);
-        const classCollections = sceneData.classes || [];
+    getScripts(config) {
+        console.log("getScripts", config.managers, config.systems);
+        const managerNames = config.managers;
+        const systemNames = config.systems;
+        const classCollections = config.classes || [];
 
         return {
             managers: this.getScriptPaths('managers', managerNames),
@@ -192,14 +184,8 @@ class ConfigParser {
             throw new Error('Game config not found');
         }
 
-        // Get the initial scene from game config (don't hardcode "client")
-        const initialScene = gameConfig.initialScene;
-        if (!initialScene) {
-            throw new Error('Game config missing initialScene');
-        }
-
         const clientLibraries = this.getLibraryPaths(gameConfig.libraries || []);
-        const clientScripts = this.getSceneScripts(initialScene);
+        const clientScripts = this.getScripts(gameConfig);
 
         // Get all classes from each collection, track base classes
         const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
@@ -260,7 +246,7 @@ class ConfigParser {
         }
 
         const serverLibraries = this.getLibraryPaths(serverConfig.libraries || []);
-        const serverScripts = this.getSceneScripts(initialScene);
+        const serverScripts = this.getScripts(serverConfig);
 
         // Get all classes from each collection, track base classes
         const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }

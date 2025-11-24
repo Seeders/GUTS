@@ -41,75 +41,11 @@ class SceneManager {
     }
 
     loadECS() {
+
         
         const sceneEntities = this.currentSceneData.sceneData;
-          sceneEntities.forEach(async (sceneEntity) => {   
-
-            sceneEntity.classes.forEach((sceneClassDef) => {
-                const collectionName = sceneClassDef.collection;
-                const baseClassId = sceneClassDef.baseClass;
-                const classCollection = this.game.getCollections()[collectionName];
+        sceneEntities.forEach(async (sceneEntity) => {   
                 
-                if(baseClassId){
-                    const collectionClassDef = classCollection[baseClassId];
-                    let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    // Check if using webpack bundle or if GUTS classes are available
-                    if(typeof GUTS !== 'undefined' && (GUTS[baseClassId] || window.COMPILED_GAME)){
-                        const BaseClassDef = GUTS[baseClassId];
-                        this.game.addClass(baseClassId, BaseClassDef, params);
-                    } else {
-                        const BaseClassDef = this.game.moduleManager.getCompiledScript(baseClassId, collectionName);
-                        this.game.addClass(baseClassId, BaseClassDef, params);
-                    }
-                }
-                for(const collectionClassId in classCollection) {
-                    if(baseClassId && collectionClassId == baseClassId) continue;
-                    const collectionClassDef = classCollection[collectionClassId];
-                    let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.game.canvas };
-                    // Check if using webpack bundle or if GUTS classes are available
-                    if(typeof GUTS !== 'undefined' && (GUTS[collectionClassId] || window.COMPILED_GAME)){
-                        const ClassDef = GUTS[collectionClassId];
-                        this.game.addClass(collectionClassId, ClassDef, params);
-                    } else {
-                        const ClassDef = this.game.moduleManager.getCompiledScript(collectionClassId, collectionName);
-                        this.game.addClass(collectionClassId, ClassDef, params);
-                    }
-                }
-            });         
-            
-            sceneEntity.managers.forEach((managerDef) => {
-                let params = {...managerDef.parameters, canvas: this.game.canvas };
-                let ManagerClass = null;
-                // Check if using webpack bundle or if GUTS classes are available
-                if(typeof GUTS !== 'undefined' && (GUTS[managerDef.type] || window.COMPILED_GAME)){
-                    ManagerClass = GUTS[managerDef.type];
-                } else {
-                    ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
-                }     
-                const managerInst = new ManagerClass(this.game, this);
-                if(managerInst.init){
-                    managerInst.init(params);
-                }  
-            });   
-
-            sceneEntity.systems.forEach((systemDef) => {
-                let params = {...systemDef.parameters, canvas: this.game.canvas };
-
-                let SystemClass = null;
-                // Check if using webpack bundle or if GUTS classes are available
-                if(typeof GUTS !== 'undefined' && (GUTS[systemDef.type] || window.COMPILED_GAME)){
-                    SystemClass = GUTS[systemDef.type];
-                } else {
-                    SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
-                }    
-                const systemInst = new SystemClass(this.game, this);
-   
-                this.game.addSystem(systemInst, params);
-                
-            });   
-            this.game.systems.forEach((system) => {
-                system.postAllInit();                
-            });                      
         });
     }
 
