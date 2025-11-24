@@ -11,20 +11,21 @@ class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
             () => ({ action: "IDLE", priority: 0 })
         ];
 
-        let logResults = [];
-        results.forEach((result) => { logResults.push(result()); });
-        console.log('Peasant Results:', logResults);
         return this.select(results);
     }
 
     checkPlayerOrder(aiState) {
-console.log('check player order', aiState);
-        if (!aiState.targetPosition) return null;
-        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
+        if (!aiState || !aiState.targetPosition) return null;
+        if (!aiState.meta || !aiState.meta.isPlayerOrder) return null;
+
         return {
-            targetPosition: aiState.targetPosition,
+            action: "MOVE_TO",
+            target: aiState.targetPosition,
             priority: 10,
-            playerOrdered: true
+            data: {
+                playerOrdered: true,
+                preventEnemiesInRangeCheck: aiState.meta.preventEnemiesInRangeCheck || false
+            }
         };
     }
 

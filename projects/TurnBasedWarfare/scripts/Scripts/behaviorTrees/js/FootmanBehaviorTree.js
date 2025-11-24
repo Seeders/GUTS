@@ -1,6 +1,5 @@
 class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
-console.log('evaluating', entityId, game);
         return this.select([
             () => this.checkPlayerOrder(entityId, game),
             () => this.checkCombat(entityId, game),
@@ -11,12 +10,17 @@ console.log('evaluating', entityId, game);
 
     checkPlayerOrder(entityId, game) {
         const aiState = game.getComponent(entityId, "aiState");
-        if (!aiState.targetPosition) return null;
-        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
+        if (!aiState || !aiState.targetPosition) return null;
+        if (!aiState.meta || !aiState.meta.isPlayerOrder) return null;
+
         return {
-            targetPosition: aiState.targetPosition,
+            action: "MOVE_TO",
+            target: aiState.targetPosition,
             priority: 10,
-            playerOrdered: true
+            data: {
+                playerOrdered: true,
+                preventEnemiesInRangeCheck: aiState.meta.preventEnemiesInRangeCheck || false
+            }
         };
     }
 
@@ -63,12 +67,16 @@ console.log('evaluating', entityId, game);
     }
 
     checkMoveOrder(entityId, game) {
-       if (!aiState.targetPosition) return null;
-        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
+        const aiState = game.getComponent(entityId, "aiState");
+        if (!aiState || !aiState.targetPosition) return null;
+        if (aiState.meta && aiState.meta.isPlayerOrder) return null; // Already handled by checkPlayerOrder
+
+        // This is for non-player move orders (e.g., autonomous movement)
         return {
-            targetPosition: aiState.targetPosition,
-            priority: 10,
-            playerOrdered: true
+            action: "MOVE_TO",
+            target: aiState.targetPosition,
+            priority: 5,
+            data: {}
         };
     }
 

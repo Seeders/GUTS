@@ -27,9 +27,9 @@ class BehaviorSystem extends BaseSystem {
     initializeFromCollections() {
         const collections = this.game.collections;
 
-        // Register actions
-        if (collections.actions) {
-            Object.entries(collections.actions).forEach(([behaviorActionId, actionData]) => {
+        // Register behavior actions (not UI actions)
+        if (collections.behaviorActions) {
+            Object.entries(collections.behaviorActions).forEach(([behaviorActionId, actionData]) => {
                 this.registerActionFromData(behaviorActionId, actionData);
             });
         }
@@ -46,12 +46,16 @@ class BehaviorSystem extends BaseSystem {
      * Register an action executor from collection data
      */
     registerActionFromData(behaviorActionId, actionData) {
-        // The action class should be compiled and available via game context
-        const ActionClass = this.game[behaviorActionId + 'Action'] || this.game[actionData.type + 'Action'];
+        // The action class should be compiled and available via game context or global scope
+        // behaviorActionId is typically already the class name (e.g., "MoveAction")
+        const ActionClass = this.game[behaviorActionId] || window[behaviorActionId];
 
         if (ActionClass) {
             const actionInstance = new ActionClass(this.game, actionData.parameters);
-            this.actions.set(actionData.type, actionInstance);
+            // Use the TYPE static property from the action class for registration
+            const actionType = ActionClass.TYPE || actionData.type;
+            this.actions.set(actionType, actionInstance);
+            console.log(`Registered behavior action: ${actionType} from ${behaviorActionId}`);
         } else {
             console.warn(`Action class not found for: ${behaviorActionId}`);
         }
@@ -61,23 +65,26 @@ class BehaviorSystem extends BaseSystem {
      * Register a behavior tree from collection data
      */
     registerBehaviorTreeFromData(treeId, treeData) {
-        // The tree class should be compiled and available via game context
-        const TreeClass = this.game[treeId + 'BehaviorTree'] || this.game[treeData.unitType + 'BehaviorTree'];
+        // The tree class should be compiled and available via game context or global scope
+        // treeId is typically already the class name (e.g., "FootmanBehaviorTree")
+        const TreeClass = this.game[treeId] || window[treeId];
 
         if (TreeClass) {
             const treeInstance = new TreeClass(this.game, treeData);
-            this.behaviorTrees.set(treeData.unitType, treeInstance);
+            const unitType = treeData.unitType || treeId.replace('BehaviorTree', '').toLowerCase();
+            this.behaviorTrees.set(unitType, treeInstance);
+            console.log(`Registered behavior tree: ${treeId} for unit type: ${unitType}`);
         } else {
             console.warn(`Behavior tree class not found for: ${treeId}`);
         }
     }
 
     /**
-     * Main update loop - runs for all units with UnitController
+     * Main update loop - runs for all units with aiState
      */
     update(dt) {
-        // Get all entities with UnitController
-        const entities = this.game.getEntitiesWith("position");
+        // Get all entities with aiState (AI-controlled units)
+        const entities = this.game.getEntitiesWith("aiState", "unitType");
 
         // Sort for determinism
         entities.sort((a, b) => String(a).localeCompare(String(b)));
@@ -91,10 +98,10 @@ class BehaviorSystem extends BaseSystem {
      * Update a single unit's behavior
      */
     updateUnit(entityId, dt) {
-        const controller = this.game.getComponent(entityId, "position");
+        const aiState = this.game.getComponent(entityId, "aiState");
         const unitType = this.game.getComponent(entityId, "unitType");
 
-        if (!controller || !unitType) return;
+        if (!aiState || !unitType) return;
 
         // Get behavior tree for this unit type
         const tree = this.behaviorTrees.get(unitType.id);
@@ -107,32 +114,35 @@ class BehaviorSystem extends BaseSystem {
         const desiredAction = tree.evaluate(entityId, this.game);
 
         // Check if we need to switch actions
-        if (this.shouldSwitchAction(controller, desiredAction)) {
-            this.switchAction(entityId, controller, desiredAction);
+        if (this.shouldSwitchAction(aiState, desiredAction)) {
+            this.switchAction(entityId, aiState, desiredAction);
         }
 
         // Execute current action
-        if (controller.currentAction) {
-            this.executeAction(entityId, controller, dt);
+        if (aiState.currentAction) {
+            this.executeAction(entityId, aiState, dt);
         }
     }
 
     /**
      * Determine if we should switch from current action to desired action
      */
-    shouldSwitchAction(controller, desiredAction) {
+    shouldSwitchAction(aiState, desiredAction) {
+        // No desired action, don't switch
+        if (!desiredAction || !desiredAction.action) return false;
+
         // No current action, start new one
-        if (!controller.currentAction) return true;
+        if (!aiState.currentAction) return true;
 
         // Different action type
-        if (controller.currentAction !== desiredAction.action) {
+        if (aiState.currentAction !== desiredAction.action) {
             // Only switch if higher or equal priority
-            return desiredAction.priority >= controller.actionPriority;
+            return desiredAction.priority >= aiState.actionPriority;
         }
 
         // Same action, different target
-        if (controller.actionTarget !== desiredAction.target) {
-            return desiredAction.priority >= controller.actionPriority;
+        if (aiState.actionTarget !== desiredAction.target) {
+            return desiredAction.priority >= aiState.actionPriority;
         }
 
         return false;
@@ -141,60 +151,60 @@ class BehaviorSystem extends BaseSystem {
     /**
      * Switch from current action to a new action
      */
-    switchAction(entityId, controller, desiredAction) {
+    switchAction(entityId, aiState, desiredAction) {
         // End current action
-        if (controller.currentAction) {
-            const currentExecutor = this.actions.get(controller.currentAction);
+        if (aiState.currentAction) {
+            const currentExecutor = this.actions.get(aiState.currentAction);
             if (currentExecutor) {
-                currentExecutor.onEnd(entityId, controller, this.game);
+                currentExecutor.onEnd(entityId, aiState, this.game);
             }
         }
 
         // Start new action
-        controller.currentAction = desiredAction.action;
-        controller.actionTarget = desiredAction.target;
-        controller.actionData = desiredAction.data || {};
-        controller.actionPriority = desiredAction.priority;
-        controller.actionStartTime = this.game.state.now;
+        aiState.currentAction = desiredAction.action;
+        aiState.actionTarget = desiredAction.target;
+        aiState.actionData = desiredAction.data || {};
+        aiState.actionPriority = desiredAction.priority;
+        aiState.actionStartTime = this.game.state.now;
 
         // Call onStart if exists
-        const newExecutor = this.actions.get(controller.currentAction);
+        const newExecutor = this.actions.get(aiState.currentAction);
         if (newExecutor && newExecutor.onStart) {
-            newExecutor.onStart(entityId, controller, this.game);
+            newExecutor.onStart(entityId, aiState, this.game);
         }
     }
 
     /**
      * Execute the current action
      */
-    executeAction(entityId, controller, dt) {
-        const executor = this.actions.get(controller.currentAction);
+    executeAction(entityId, aiState, dt) {
+        const executor = this.actions.get(aiState.currentAction);
         if (!executor) {
-            console.warn(`No executor for action: ${controller.currentAction}`);
+            console.warn(`No executor for action: ${aiState.currentAction}`);
             return;
         }
 
         // Check if action can still run
-        if (!executor.canExecute(entityId, controller, this.game)) {
+        if (!executor.canExecute(entityId, aiState, this.game)) {
             // Action is no longer valid, clear it
-            executor.onEnd(entityId, controller, this.game);
-            controller.currentAction = null;
-            controller.actionTarget = null;
+            executor.onEnd(entityId, aiState, this.game);
+            aiState.currentAction = null;
+            aiState.actionTarget = null;
             return;
         }
 
         // Execute action
-        const result = executor.execute(entityId, controller, this.game, dt);
+        const result = executor.execute(entityId, aiState, this.game, dt);
 
         // Handle completion
         if (result.complete) {
-            executor.onEnd(entityId, controller, this.game);
-            controller.currentAction = null;
-            controller.actionTarget = null;
+            executor.onEnd(entityId, aiState, this.game);
+            aiState.currentAction = null;
+            aiState.actionTarget = null;
 
             // Clear player order if it was a one-time command
-            if (controller.playerOrder && !controller.playerOrder.persistent) {
-                controller.playerOrder = null;
+            if (aiState.playerOrder && !aiState.playerOrder.persistent) {
+                aiState.playerOrder = null;
             }
         }
     }
