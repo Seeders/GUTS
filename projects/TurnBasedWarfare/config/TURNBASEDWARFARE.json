@@ -206,12 +206,15 @@
       "mineGold": {
         "title": "Peasant Mine Gold",
         "icon": "building_goldMine",
-        "ability": "MineGoldAbility"
+        "ability": "MineGoldAbility",
+        "behaviorAction": "MineGoldAction"
       },
       "move": {
         "title": "Force Move",
         "icon": "order_move",
-        "order": "moveOrderAction"
+        "order": "moveOrderAction",
+        "behaviorAction": "MoveAction",
+        "parameters": "{\"preventEnemiesInRangeCheck\": true}"
       }
     },
     "animations": {
