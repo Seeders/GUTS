@@ -21,8 +21,9 @@ class MockGameContext extends GUTS.BaseECSGame {
         this.entityLabels = new Map();
         this.currentEntityId = null;
 
-        // Auto-generate componentTypes from models collection
-        this.componentTypes = this.generateComponentTypes();
+        // Initialize componentManager to get componentTypes
+        // Note: componentManager sets this.componentTypes via BaseECSGame
+        this.componentManager = new GUTS.ComponentManager(this);
 
         // Initialize gameManager with GameServices
         this.gameManager = new GUTS.GameServices();
@@ -50,28 +51,6 @@ class MockGameContext extends GUTS.BaseECSGame {
 
         // Set current entity to first one
         this.currentEntityId = Array.from(this.entities.keys())[0];
-    }
-
-    /**
-     * Generate component types from models collection
-     * Converts camelCase keys to UPPER_SNAKE_CASE
-     * @returns {Object} - Component types enum
-     */
-    generateComponentTypes() {
-        const collections = this.app.getCollections();
-        const models = collections.models || {};
-        const types = {};
-
-        Object.keys(models).forEach(key => {
-            // Convert camelCase to UPPER_SNAKE_CASE
-            const upperKey = key
-                .replace(/([A-Z])/g, '_$1')  // Add underscore before capitals
-                .toUpperCase()                // Convert to uppercase
-                .replace(/^_/, '');           // Remove leading underscore if present
-            types[upperKey] = key;
-        });
-
-        return types;
     }
 
     /**
