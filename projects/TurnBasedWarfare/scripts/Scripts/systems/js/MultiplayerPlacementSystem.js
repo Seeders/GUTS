@@ -1,7 +1,6 @@
 class MultiplayerPlacementSystem extends GUTS.BaseSystem {
-    constructor(game, sceneManager) {
+    constructor(game) {
         super(game);
-        this.sceneManager = sceneManager;
         this.game.placementSystem = this;
 
         // Use global RaycastHelper for raycasting operations

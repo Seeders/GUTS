@@ -2,7 +2,6 @@ class BaseECSGame {
     constructor(app) {
         this.app = app;
         this.state = null; // Will be set by subclasses
-        this.sceneManager = null; // Will be set by subclasses
         this.moduleManager = app.moduleManager;
 
         this.entityId = 0;

@@ -56,8 +56,7 @@ class GameRoom {
         this.game.init(true);
         // Initialize game scene
         console.log('GameRoom startGame()')
-        this.game.sceneManager.load(this.game.getCollections().configs.server.initialScene);
-
+   
     }
 
     processPlayerInput(playerId, inputData) {

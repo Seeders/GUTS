@@ -2456,7 +2456,6 @@
           "Rapier",
           "three_MeshBVH",
           "three_SkeletonUtils",
-          "SceneManager",
           "ShapeFactory",
           "EnvironmentObjectSpawner",
           "ImageManager",
@@ -2592,7 +2591,6 @@
           "ServerECSGame",
           "ServerEventManager",
           "ServerNetworkManager",
-          "SceneManager",
           "SeededRandom",
           "MinHeap",
           "DesyncDebugger",
@@ -21960,10 +21958,6 @@
       "SceneEditor": {
         "filePath": "/global/libraries/js/SceneEditor.js",
         "fileName": "SceneEditor"
-      },
-      "SceneManager": {
-        "filePath": "/global/libraries/js/SceneManager.js",
-        "fileName": "SceneManager"
       },
       "ScriptEditor": {
         "fileName": "ScriptEditor",

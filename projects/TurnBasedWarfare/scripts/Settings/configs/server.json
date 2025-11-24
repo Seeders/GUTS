@@ -17,7 +17,6 @@
     "ServerECSGame",
     "ServerEventManager",
     "ServerNetworkManager",
-    "SceneManager",
     "SeededRandom",
     "MinHeap",
     "DesyncDebugger",
