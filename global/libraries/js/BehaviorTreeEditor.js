@@ -695,10 +695,10 @@ class BehaviorTreeEditor {
         if (addBtn) {
             addBtn.addEventListener('click', () => {
                 const newId = `entity-${Date.now()}`;
-                this.mockGame.addEntity(newId, {
+                this.mockGame.initializeEntity(newId, {
                     POSITION: { x: 0, z: 0 },
                     TEAM: { team: 1 }
-                }, `Entity ${this.mockGame.getAllEntityIds().length}`);
+                }, `Entity ${this.mockGame.entities.size}`);
                 this.renderAllEntities(entitiesContainer);
             });
         }
@@ -707,14 +707,13 @@ class BehaviorTreeEditor {
     renderAllEntities(container) {
         container.innerHTML = '';
 
-        const entities = this.mockGame.getAllEntities();
-
-        entities.forEach(entity => {
-            this.createEntityEditor(container, entity);
-        });
+        // Iterate over all entity IDs from BaseECSGame
+        for (const entityId of this.mockGame.entities.keys()) {
+            this.createEntityEditor(container, entityId);
+        }
     }
 
-    createEntityEditor(container, entity) {
+    createEntityEditor(container, entityId) {
         const entityCard = document.createElement('div');
         entityCard.style.marginBottom = '16px';
         entityCard.style.border = '1px solid #444';
@@ -731,7 +730,7 @@ class BehaviorTreeEditor {
 
         const labelInput = document.createElement('input');
         labelInput.type = 'text';
-        labelInput.value = entity.label;
+        labelInput.value = this.mockGame.getEntityLabel(entityId);
         labelInput.style.flex = '1';
         labelInput.style.padding = '4px 8px';
         labelInput.style.fontSize = '12px';
@@ -741,7 +740,7 @@ class BehaviorTreeEditor {
         labelInput.style.color = '#fff';
         labelInput.style.borderRadius = '3px';
         labelInput.addEventListener('change', () => {
-            this.mockGame.updateEntityLabel(entity.id, labelInput.value);
+            this.mockGame.setEntityLabel(entityId, labelInput.value);
         });
 
         const removeBtn = document.createElement('button');
@@ -755,11 +754,12 @@ class BehaviorTreeEditor {
         removeBtn.style.borderRadius = '3px';
         removeBtn.style.cursor = 'pointer';
         removeBtn.addEventListener('click', () => {
-            if (this.mockGame.getAllEntityIds().length <= 1) {
+            if (this.mockGame.entities.size <= 1) {
                 alert('Cannot remove the last entity');
                 return;
             }
-            this.mockGame.removeEntity(entity.id);
+            this.mockGame.destroyEntity(entityId);
+            this.mockGame.entityLabels.delete(entityId);
             const entitiesContainer = document.getElementById('bt-entities-container');
             if (entitiesContainer) {
                 this.renderAllEntities(entitiesContainer);
@@ -772,7 +772,7 @@ class BehaviorTreeEditor {
 
         // Entity ID display
         const idDiv = document.createElement('div');
-        idDiv.textContent = `ID: ${entity.id}`;
+        idDiv.textContent = `ID: ${entityId}`;
         idDiv.style.fontSize = '10px';
         idDiv.style.color = '#666';
         idDiv.style.marginBottom = '10px';
@@ -781,8 +781,15 @@ class BehaviorTreeEditor {
         // Components section
         const componentsDiv = document.createElement('div');
 
-        for (const [componentType, componentData] of entity.components.entries()) {
-            this.createComponentEditor(componentsDiv, entity.id, componentType, componentData);
+        // Get component types for this entity from BaseECSGame
+        const componentTypes = this.mockGame.entities.get(entityId);
+        if (componentTypes) {
+            for (const componentType of componentTypes) {
+                const componentData = this.mockGame.getComponent(entityId, componentType);
+                if (componentData) {
+                    this.createComponentEditor(componentsDiv, entityId, componentType, componentData);
+                }
+            }
         }
 
         // Add component button
@@ -797,7 +804,7 @@ class BehaviorTreeEditor {
         addComponentBtn.style.borderRadius = '3px';
         addComponentBtn.style.cursor = 'pointer';
         addComponentBtn.addEventListener('click', () => {
-            this.showAddComponentDialog(entity.id);
+            this.showAddComponentDialog(entityId);
         });
 
         componentsDiv.appendChild(addComponentBtn);
@@ -819,7 +826,7 @@ class BehaviorTreeEditor {
         const componentType = prompt(`Add component:\n\n${availableTypes.join('\n')}\n\nEnter component type:`);
         if (componentType && this.mockGame.componentTypes[componentType.toUpperCase()]) {
             const normalizedType = componentType.toUpperCase();
-            this.mockGame.setComponent(entityId, normalizedType, {});
+            this.mockGame.addComponent(entityId, normalizedType, {});
             const entitiesContainer = document.getElementById('bt-entities-container');
             if (entitiesContainer) {
                 this.renderAllEntities(entitiesContainer);
@@ -908,7 +915,10 @@ class BehaviorTreeEditor {
         addPropBtn.addEventListener('click', () => {
             const propName = prompt('Enter property name:');
             if (propName) {
-                this.mockGame.updateComponent(entityId, componentType, propName, null);
+                const component = this.mockGame.getComponent(entityId, componentType);
+                if (component) {
+                    component[propName] = null;
+                }
                 const entitiesContainer = document.getElementById('bt-entities-container');
                 if (entitiesContainer) {
                     this.renderAllEntities(entitiesContainer);
@@ -948,7 +958,10 @@ class BehaviorTreeEditor {
                         // Keep as string
                     }
                 }
-                this.mockGame.updateComponent(entityId, componentType, propertyName, newValue);
+                const component = this.mockGame.getComponent(entityId, componentType);
+                if (component) {
+                    component[propertyName] = newValue;
+                }
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -957,7 +970,10 @@ class BehaviorTreeEditor {
             checkbox.type = 'checkbox';
             checkbox.checked = value;
             checkbox.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(entityId, componentType, propertyName, e.target.checked);
+                const component = this.mockGame.getComponent(entityId, componentType);
+                if (component) {
+                    component[propertyName] = e.target.checked;
+                }
                 this.runSimulation();
             });
             propDiv.appendChild(checkbox);
@@ -967,7 +983,10 @@ class BehaviorTreeEditor {
             input.value = value;
             input.style.width = '100%';
             input.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(entityId, componentType, propertyName, parseFloat(e.target.value));
+                const component = this.mockGame.getComponent(entityId, componentType);
+                if (component) {
+                    component[propertyName] = parseFloat(e.target.value);
+                }
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -977,7 +996,10 @@ class BehaviorTreeEditor {
             input.value = value;
             input.style.width = '100%';
             input.addEventListener('change', (e) => {
-                this.mockGame.updateComponent(entityId, componentType, propertyName, e.target.value);
+                const component = this.mockGame.getComponent(entityId, componentType);
+                if (component) {
+                    component[propertyName] = e.target.value;
+                }
                 this.runSimulation();
             });
             propDiv.appendChild(input);
@@ -997,7 +1019,10 @@ class BehaviorTreeEditor {
             textarea.addEventListener('change', (e) => {
                 try {
                     const newValue = JSON.parse(e.target.value);
-                    this.mockGame.updateComponent(entityId, componentType, propertyName, newValue);
+                    const component = this.mockGame.getComponent(entityId, componentType);
+                    if (component) {
+                        component[propertyName] = newValue;
+                    }
                     this.runSimulation();
                 } catch (err) {
                     alert('Invalid JSON: ' + err.message);
@@ -1220,12 +1245,11 @@ class BehaviorTreeEditor {
             // Evaluate behavior tree only for the main entity (first entity)
             // Other entities in mockEntities are just part of the environment
             const results = [];
-            const entityIds = this.mockGame.getAllEntityIds();
+            const entityIds = Array.from(this.mockGame.entities.keys());
 
             // Only run for the first entity (the main entity)
             if (entityIds.length > 0) {
                 const mainEntityId = entityIds[0];
-                const entity = this.mockGame.getEntity(mainEntityId);
                 const result = GUTS.BehaviorTreeProcessor.evaluate(
                     this.objectData,
                     this.mockGame,
