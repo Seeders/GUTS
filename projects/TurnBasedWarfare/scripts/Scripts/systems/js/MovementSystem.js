@@ -332,14 +332,14 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Get target from velocity targets (set by behavior tree)
+        // Get target from aiState
         let targetPos = null;
-        const targetEntityId = aiState.target;
+        const targetEntityId = aiState.actionTarget;
 
         if(targetEntityId){
             targetPos = this.game.getComponent(targetEntityId, "position");
-        } else if (vel.targetX != null && vel.targetZ != null) {
-            targetPos = { x: vel.targetX, z: vel.targetZ };
+        } else if (aiState.actionData?.targetPos) {
+            targetPos = aiState.actionData.targetPos;
         }
 
         if (!targetPos) {
@@ -512,9 +512,20 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Read velocity targets set by behavior tree actions
-        // Actions set vel.targetX and vel.targetZ to indicate where to move
-        if (vel.targetX != null && vel.targetZ != null) {
+        // Get movement target from aiState
+        let targetPos = null;
+
+        // Check for entity target first
+        if (aiState && aiState.actionTarget) {
+            targetPos = this.game.getComponent(aiState.actionTarget, "position");
+        }
+
+        // Then check for position target in actionData
+        if (!targetPos && aiState && aiState.actionData?.targetPos) {
+            targetPos = aiState.actionData.targetPos;
+        }
+
+        if (targetPos) {
             // Get pathfinding component
             const pathfinding = this.game.getComponent(entityId, "pathfinding");
 
@@ -534,9 +545,9 @@ class MovementSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            // Direct movement (for units with useDirectMovement flag or no aiState)
-            const dx = vel.targetX - pos.x;
-            const dz = vel.targetZ - pos.z;
+            // Direct movement (for units with useDirectMovement flag or no pathfinding)
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
             const distToTarget = Math.sqrt(dx * dx + dz * dz);
 
             if (distToTarget < 0.1) {
@@ -562,15 +573,15 @@ class MovementSystem extends GUTS.BaseSystem {
     moveDirectlyToTarget(entityId, data) {
         const { pos, vel, aiState } = data;
 
-        // Get target from velocity targets (set by behavior tree) or entity target
+        // Get target from aiState
         let targetPos = null;
-        if (aiState.target) {
-            const currentTargetPos = this.game.getComponent(aiState.target, "position");
+        if (aiState.actionTarget) {
+            const currentTargetPos = this.game.getComponent(aiState.actionTarget, "position");
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
-        } else if (vel.targetX != null && vel.targetZ != null) {
-            targetPos = { x: vel.targetX, z: vel.targetZ };
+        } else if (aiState.actionData?.targetPos) {
+            targetPos = aiState.actionData.targetPos;
         }
 
         if (!targetPos) {
@@ -607,17 +618,20 @@ class MovementSystem extends GUTS.BaseSystem {
         if (!pathfinding.lastPathRequest || (now - pathfinding.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
             pathfinding.lastPathRequest = now;
 
-            // Get target from vel.targetX/targetZ (set by behavior actions)
-            let targetX = vel.targetX;
-            let targetZ = vel.targetZ;
+            // Get target from aiState
+            let targetX = null;
+            let targetZ = null;
 
             // If targeting an entity, use its current position
-            if (aiState && aiState.target) {
-                const targetPos = this.game.getComponent(aiState.target, "position");
+            if (aiState && aiState.actionTarget) {
+                const targetPos = this.game.getComponent(aiState.actionTarget, "position");
                 if (targetPos) {
                     targetX = targetPos.x;
                     targetZ = targetPos.z;
                 }
+            } else if (aiState && aiState.actionData?.targetPos) {
+                targetX = aiState.actionData.targetPos.x;
+                targetZ = aiState.actionData.targetPos.z;
             }
 
             if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {

@@ -6,8 +6,6 @@
     "vz": 0,
     "maxSpeed": 100,
     "affectedByGravity": true,
-    "anchored": false,
-    "targetX": null,
-    "targetZ": null
+    "anchored": false
   }
 }

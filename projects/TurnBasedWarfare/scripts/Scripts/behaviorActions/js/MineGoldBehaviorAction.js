@@ -74,9 +74,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             return { complete: false };
         }
 
-        const vel = game.getComponent(entityId, 'velocity');
-        vel.targetX = minePos.x;
-        vel.targetZ = minePos.z;
+        // Move to mine position
+        aiState.actionData.targetPos = { x: minePos.x, z: minePos.z };
         return { complete: false };
     }
 
@@ -118,9 +117,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             return { complete: false };
         }
 
-        const vel = game.getComponent(entityId, 'velocity');
-        vel.targetX = depotPos.x;
-        vel.targetZ = depotPos.z;
+        // Move to depot position
+        aiState.actionData.targetPos = { x: depotPos.x, z: depotPos.z };
         return { complete: false };
     }
 

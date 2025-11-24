@@ -473,25 +473,20 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
                             if (distSq <= threshold * threshold) {
                                 // Reached target - clear movement
-                                const vel = this.game.getComponent(entityId, "velocity");
-                                if (vel) {
-                                    vel.targetX = null;
-                                    vel.targetZ = null;
-                                }
                                 const aiState = this.game.getComponent(entityId, "aiState");
                                 if (aiState) {
+                                    if (aiState.actionData) {
+                                        aiState.actionData.targetPos = null;
+                                    }
                                     aiState.meta = {};
                                 }
                                 placement.targetPosition = null;
                             } else {
-                                // Set movement target via velocity for behavior tree to handle
-                                const vel = this.game.getComponent(entityId, "velocity");
-                                if (vel && targetPosition) {
-                                    vel.targetX = targetPosition.x;
-                                    vel.targetZ = targetPosition.z;
-                                }
+                                // Set movement target via aiState for MovementSystem to handle
                                 const aiState = this.game.getComponent(entityId, "aiState");
-                                if (aiState) {
+                                if (aiState && targetPosition) {
+                                    if (!aiState.actionData) aiState.actionData = {};
+                                    aiState.actionData.targetPos = { x: targetPosition.x, z: targetPosition.z };
                                     aiState.meta = placement.meta || {};
                                     aiState.meta.isPlayerOrder = true;
                                 }
@@ -766,13 +761,9 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 if (aiState) {
                     aiState.state = 'idle';
                     aiState.target = null;
-                }
-
-                // Clear velocity targets
-                const vel = this.game.getComponent(assignedBuilder, "velocity");
-                if (vel) {
-                    vel.targetX = null;
-                    vel.targetZ = null;
+                    if (aiState.actionData) {
+                        aiState.actionData.targetPos = null;
+                    }
                 }
             }
 

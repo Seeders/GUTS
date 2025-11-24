@@ -59,11 +59,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const distance = this.distance(pos, buildingPos);
 
         if (distance < this.parameters.buildRange) {
-            // Reached building - position builder near it
+            // Reached building - stop movement
+            aiState.actionData.targetPos = null;
             const vel = game.getComponent(entityId, 'velocity');
             if (vel) {
-                vel.targetX = null;
-                vel.targetZ = null;
                 vel.vx = 0;
                 vel.vz = 0;
             }
@@ -86,12 +85,8 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return { complete: false };
         }
 
-        // Continue moving to building
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            vel.targetX = buildingPos.x;
-            vel.targetZ = buildingPos.z;
-        }
+        // Continue moving to building - set target position in actionData
+        aiState.actionData.targetPos = { x: buildingPos.x, z: buildingPos.z };
         return { complete: false };
     }
 

@@ -4,7 +4,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     canExecute(entityId, controller, game) {
         const pos = game.getComponent(entityId, 'position');
-        const target = controller.actionTarget;
+        const target = controller.actionData?.targetPos;
         if (!pos || !target) return false;
 
         const dist = this.distance(pos, target);
@@ -13,12 +13,9 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, controller, game, dt) {
         const pos = game.getComponent(entityId, 'position');
-        const vel = game.getComponent(entityId, 'velocity');
-        const target = controller.actionTarget;
+        const target = controller.actionData?.targetPos;
 
-        // Set velocity target
-        vel.targetX = target.x;
-        vel.targetZ = target.z;
+        if (!target) return { complete: true, failed: true };
 
         // Check completion
         if (this.distance(pos, target) <= this.parameters.arrivalThreshold) {
@@ -29,9 +26,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, controller, game) {
-        const vel = game.getComponent(entityId, 'velocity');
-        vel.targetX = null;
-        vel.targetZ = null;
+        // No cleanup needed - actionData is managed by BehaviorSystem
     }
 
     distance(pos, target) {
