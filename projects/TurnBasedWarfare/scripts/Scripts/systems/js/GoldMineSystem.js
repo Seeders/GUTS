@@ -172,8 +172,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         // Add goldMine component to the entity
         this.game.addComponent(entityId, "goldMine", {
             veinIndex: vein.originalIndex,
-            currentMiner: null,
-            minerQueue: [],
+            currentOccupant: null,
             cells: vein.cells
         });
 

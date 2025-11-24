@@ -23,11 +23,31 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
+    onEnd(entityId, controller, game) {
+        // Release mine if we were occupying it
+        if (controller.actionTarget) {
+            const mine = game.getComponent(controller.actionTarget, 'goldMine');
+            if (mine && mine.currentOccupant === entityId) {
+                mine.currentOccupant = null;
+            }
+        }
+    }
+
     travelToMine(entityId, controller, game) {
         const pos = game.getComponent(entityId, 'position');
         const minePos = game.getComponent(controller.actionTarget, 'position');
 
         if (this.distance(pos, minePos) < this.parameters.miningRange) {
+            const mine = game.getComponent(controller.actionTarget, 'goldMine');
+
+            // Check if mine is occupied by another unit
+            if (mine.currentOccupant && mine.currentOccupant !== entityId) {
+                // Mine is occupied, wait
+                return { complete: false };
+            }
+
+            // Claim the mine
+            mine.currentOccupant = entityId;
             controller.actionData.state = 'mining';
             controller.actionData.miningStartTime = game.state.now;
             return { complete: false };
@@ -46,7 +66,13 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             controller.actionData.hasGold = true;
             controller.actionData.goldAmt = this.parameters.goldPerTrip;
             controller.actionData.state = 'traveling_to_depot';
-            game.goldMineSystem.releaseMine(controller.actionTarget, entityId);
+
+            // Release the mine
+            const mine = game.getComponent(controller.actionTarget, 'goldMine');
+            if (mine && mine.currentOccupant === entityId) {
+                mine.currentOccupant = null;
+            }
+
             return { complete: false };
         }
 
@@ -80,7 +106,21 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (elapsed >= this.parameters.depositDuration) {
             const team = game.getComponent(entityId, 'team');
-            game.goldSystem.addGold(team.team, controller.actionData.goldAmt);
+
+            // Award gold
+            if (game.isServer) {
+                const room = game.room;
+                for (const [playerId, player] of room.players) {
+                    if (player.stats.side === team.team) {
+                        player.stats.gold += controller.actionData.goldAmt;
+                        break;
+                    }
+                }
+            } else {
+                if (team.team === game.state.mySide) {
+                    game.state.playerGold += controller.actionData.goldAmt;
+                }
+            }
 
             // Reset to mine again
             controller.actionData.state = 'traveling_to_mine';
