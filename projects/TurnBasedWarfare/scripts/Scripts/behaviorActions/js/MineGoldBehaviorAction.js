@@ -8,8 +8,17 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         return !!mine;
     }
 
+    onStart(entityId, controller, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState.meta) aiState.meta = {};
+
+        // Initialize mining state
+        aiState.meta.mineState = 'traveling_to_mine';
+    }
+
     execute(entityId, controller, game, dt) {
-        const state = controller.actionData.state || 'traveling_to_mine';
+        const aiState = game.getComponent(entityId, 'aiState');
+        const state = aiState.meta.mineState || 'traveling_to_mine';
 
         switch (state) {
             case 'traveling_to_mine':
@@ -24,6 +33,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, controller, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
+
         // Release mine if we were occupying it
         if (controller.actionTarget) {
             const mine = game.getComponent(controller.actionTarget, 'goldMine');
@@ -31,9 +42,19 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
                 mine.currentOccupant = null;
             }
         }
+
+        // Clean up mining meta data
+        if (aiState && aiState.meta) {
+            delete aiState.meta.mineState;
+            delete aiState.meta.miningStartTime;
+            delete aiState.meta.depositStartTime;
+            delete aiState.meta.hasGold;
+            delete aiState.meta.goldAmt;
+        }
     }
 
     travelToMine(entityId, controller, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
         const minePos = game.getComponent(controller.actionTarget, 'position');
 
@@ -48,8 +69,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
             // Claim the mine
             mine.currentOccupant = entityId;
-            controller.actionData.state = 'mining';
-            controller.actionData.miningStartTime = game.state.now;
+            aiState.meta.mineState = 'mining';
+            aiState.meta.miningStartTime = game.state.now;
             return { complete: false };
         }
 
@@ -60,12 +81,13 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     doMining(entityId, controller, game) {
-        const elapsed = game.state.now - controller.actionData.miningStartTime;
+        const aiState = game.getComponent(entityId, 'aiState');
+        const elapsed = game.state.now - aiState.meta.miningStartTime;
 
         if (elapsed >= this.parameters.miningDuration) {
-            controller.actionData.hasGold = true;
-            controller.actionData.goldAmt = this.parameters.goldPerTrip;
-            controller.actionData.state = 'traveling_to_depot';
+            aiState.meta.hasGold = true;
+            aiState.meta.goldAmt = this.parameters.goldPerTrip;
+            aiState.meta.mineState = 'traveling_to_depot';
 
             // Release the mine
             const mine = game.getComponent(controller.actionTarget, 'goldMine');
@@ -80,6 +102,7 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     travelToDepot(entityId, controller, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
         const depot = this.findNearestDepot(entityId, game);
 
@@ -90,8 +113,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const depotPos = game.getComponent(depot, 'position');
 
         if (this.distance(pos, depotPos) < this.parameters.depositRange) {
-            controller.actionData.state = 'depositing';
-            controller.actionData.depositStartTime = game.state.now;
+            aiState.meta.mineState = 'depositing';
+            aiState.meta.depositStartTime = game.state.now;
             return { complete: false };
         }
 
@@ -102,7 +125,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     doDepositing(entityId, controller, game) {
-        const elapsed = game.state.now - controller.actionData.depositStartTime;
+        const aiState = game.getComponent(entityId, 'aiState');
+        const elapsed = game.state.now - aiState.meta.depositStartTime;
 
         if (elapsed >= this.parameters.depositDuration) {
             const team = game.getComponent(entityId, 'team');
@@ -112,19 +136,19 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
                 const room = game.room;
                 for (const [playerId, player] of room.players) {
                     if (player.stats.side === team.team) {
-                        player.stats.gold += controller.actionData.goldAmt;
+                        player.stats.gold += aiState.meta.goldAmt;
                         break;
                     }
                 }
             } else {
                 if (team.team === game.state.mySide) {
-                    game.state.playerGold += controller.actionData.goldAmt;
+                    game.state.playerGold += aiState.meta.goldAmt;
                 }
             }
 
             // Reset to mine again
-            controller.actionData.state = 'traveling_to_mine';
-            controller.actionData.hasGold = false;
+            aiState.meta.mineState = 'traveling_to_mine';
+            aiState.meta.hasGold = false;
             return { complete: false };
         }
 
