@@ -821,11 +821,13 @@ class BehaviorTreeEditor {
     }
 
     showAddComponentDialog(entityId) {
-        const availableKeys = Object.keys(this.mockGame.componentTypes).filter(type => {
+        // Get available component types directly from componentGenerator (lowercase names)
+        const allComponentTypes = Object.keys(this.mockGame.componentGenerator.components);
+        const availableTypes = allComponentTypes.filter(type => {
             return !this.mockGame.getComponent(entityId, type);
         });
 
-        if (availableKeys.length === 0) {
+        if (availableTypes.length === 0) {
             alert('All component types are already added');
             return;
         }
@@ -879,11 +881,11 @@ class BehaviorTreeEditor {
         placeholderOption.selected = true;
         select.appendChild(placeholderOption);
 
-        // Add available component types (sorted alphabetically by key)
-        availableKeys.sort().forEach(key => {
+        // Add available component types (sorted alphabetically)
+        availableTypes.sort().forEach(type => {
             const option = document.createElement('option');
-            option.value = key;  // Use the key (e.g., "ABILITY_COOLDOWNS")
-            option.textContent = key;  // Display the key
+            option.value = type;  // Use lowercase name (e.g., "health")
+            option.textContent = type;  // Display lowercase name
             select.appendChild(option);
         });
 
@@ -924,11 +926,10 @@ class BehaviorTreeEditor {
             const selectedType = select.value;
             if (selectedType) {
                 // Get component definition and initialize with default values
-                const componentTypeLower = this.mockGame.componentTypes[selectedType];
-                const componentDefinition = this.mockGame.componentGenerator.components[componentTypeLower];
+                const componentDefinition = this.mockGame.componentGenerator.components[selectedType];
                 const defaultData = componentDefinition?.schema || componentDefinition || {};
 
-                // Add component with default values
+                // Add component with default values (using lowercase name)
                 this.mockGame.addComponent(entityId, selectedType, { ...defaultData });
 
                 const entitiesContainer = document.getElementById('bt-entities-container');
@@ -1040,8 +1041,7 @@ class BehaviorTreeEditor {
         propsContainer.style.marginLeft = '8px';
 
         // Get component definition to ensure all properties are shown
-        const componentTypeLower = this.mockGame.componentTypes[componentType];
-        const componentDefinition = this.mockGame.componentGenerator.components[componentTypeLower];
+        const componentDefinition = this.mockGame.componentGenerator.components[componentType];
         const defaultSchema = componentDefinition?.schema || componentDefinition || {};
 
         // Merge default schema with actual component data to show all properties
