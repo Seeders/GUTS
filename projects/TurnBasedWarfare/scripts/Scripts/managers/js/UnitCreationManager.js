@@ -411,18 +411,6 @@ class UnitCreationManager {
             spawnType: unitType.id || 'default',
             capacity: 128
         });
-
-        // Add team-specific visual modifications
-        if (teamConfig.colorTint && this.game.addComponent) {
-            // Optional: Add color tint component if available
-            try {
-                this.game.addComponent(entity, "colorTint", {
-                    color: teamConfig.colorTint
-                });
-            } catch (error) {
-                // Color tint not available, continue without it
-            }
-        }
     }
     
     /**

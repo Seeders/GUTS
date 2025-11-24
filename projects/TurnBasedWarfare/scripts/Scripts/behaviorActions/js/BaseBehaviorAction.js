@@ -2,7 +2,7 @@
  * Base class for all unit actions
  * Actions are stateless executors that perform specific unit behaviors
  */
-class BaseAction {
+class BaseBehaviorAction {
     constructor(game, parameters = {}) {
         this.game = game;
         this.parameters = parameters;

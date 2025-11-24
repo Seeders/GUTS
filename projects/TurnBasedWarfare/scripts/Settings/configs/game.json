@@ -102,10 +102,9 @@
     "SupplySystem" 
   ],
   "classes": [
-    {
-      "collection": "abilities",
-      "baseClass": "BaseAbility"
-    }
+    { "collection": "abilities","baseClass": "BaseAbility" },
+    { "collection": "behaviorTrees", "baseClass": "BaseBehaviorTree" },
+    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" }  
   ],
   "fileName": "game",
   "interface": "main",

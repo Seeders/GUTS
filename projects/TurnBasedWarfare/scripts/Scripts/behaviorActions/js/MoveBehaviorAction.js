@@ -1,4 +1,4 @@
-class MoveAction extends GUTS.BaseAction {
+class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
     static TYPE = "MOVE_TO";
     static PRIORITY = 10;
 

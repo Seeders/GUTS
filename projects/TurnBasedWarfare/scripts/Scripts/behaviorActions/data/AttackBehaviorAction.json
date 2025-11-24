@@ -1,6 +1,6 @@
 {
   "title": "Attack Enemy",
-  "type": "AttackAction",
+  "type": "AttackBehaviorAction",
   "priority": 30,
   "description": "Attack an enemy unit",
   "parameters": {}

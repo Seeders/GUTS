@@ -1,6 +1,6 @@
 {
   "title": "Base Action",
-  "type": "BaseAction",
+  "type": "BaseBehaviorAction",
   "priority": 0,
   "description": "n/a",
   "parameters": {}

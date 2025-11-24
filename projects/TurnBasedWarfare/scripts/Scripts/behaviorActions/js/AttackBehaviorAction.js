@@ -1,4 +1,4 @@
-class AttackAction extends GUTS.BaseAction {
+class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
     static TYPE = "ATTACK";
     static PRIORITY = 30;
 

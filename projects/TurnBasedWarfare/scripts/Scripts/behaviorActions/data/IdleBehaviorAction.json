@@ -1,6 +1,6 @@
 {
   "title": "Idle",
-  "type": "IdleAction",
+  "type": "IdleBehaviorAction",
   "priority": 0,
   "description": "Do nothing",
   "parameters": {}

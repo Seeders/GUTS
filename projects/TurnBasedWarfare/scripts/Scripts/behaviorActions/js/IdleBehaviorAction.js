@@ -1,4 +1,4 @@
-class IdleAction extends GUTS.BaseAction {
+class IdleBehaviorAction extends GUTS.BaseBehaviorAction {
     static TYPE = "IDLE";
     static PRIORITY = 0;
 
