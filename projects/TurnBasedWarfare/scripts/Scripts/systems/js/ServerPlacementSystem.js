@@ -472,21 +472,22 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                             const threshold = placementGridSize * 0.5;
 
                             if (distSq <= threshold * threshold) {
-                                // Reached target - clear movement
+                                // Reached target - stop movement
+                                const vel = this.game.getComponent(entityId, "velocity");
+                                if (vel) {
+                                    vel.vx = 0;
+                                    vel.vz = 0;
+                                }
                                 const aiState = this.game.getComponent(entityId, "aiState");
                                 if (aiState) {
-                                    if (aiState.actionData) {
-                                        aiState.actionData.targetPos = null;
-                                    }
                                     aiState.meta = {};
                                 }
                                 placement.targetPosition = null;
                             } else {
-                                // Set movement target via aiState for MovementSystem to handle
+                                // Movement is handled by behavior actions now
+                                // Just ensure the placement target is set for the behavior tree
                                 const aiState = this.game.getComponent(entityId, "aiState");
-                                if (aiState && targetPosition) {
-                                    if (!aiState.actionData) aiState.actionData = {};
-                                    aiState.actionData.targetPos = { x: targetPosition.x, z: targetPosition.z };
+                                if (aiState) {
                                     aiState.meta = placement.meta || {};
                                     aiState.meta.isPlayerOrder = true;
                                 }
@@ -756,14 +757,17 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     this.game.removeComponent(assignedBuilder, "buildingState");
                 }
 
-                // Reset builder's AI state
+                // Reset builder's AI state and stop movement
                 const aiState = this.game.getComponent(assignedBuilder, "aiState");
                 if (aiState) {
                     aiState.state = 'idle';
                     aiState.target = null;
-                    if (aiState.actionData) {
-                        aiState.actionData.targetPos = null;
-                    }
+                }
+
+                const builderVel = this.game.getComponent(assignedBuilder, "velocity");
+                if (builderVel) {
+                    builderVel.vx = 0;
+                    builderVel.vz = 0;
                 }
             }
 

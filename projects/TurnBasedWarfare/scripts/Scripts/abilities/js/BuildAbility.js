@@ -200,10 +200,11 @@ class BuildAbility extends GUTS.BaseAbility {
             aiState.meta = {};
         }
 
-        // Clear movement target
-        const buildingAiState = this.game.getComponent(buildingId, "aiState");
-        if (buildingAiState && buildingAiState.actionData) {
-            buildingAiState.actionData.targetPos = null;
+        // Stop movement
+        const buildingVel = this.game.getComponent(buildingId, "velocity");
+        if (buildingVel) {
+            buildingVel.vx = 0;
+            buildingVel.vz = 0;
         }
 
         this.game.removeComponent(this.peasantId, "buildingState");
