@@ -1,0 +1,40 @@
+{
+  "itemType": null,
+  "modelPath": null,
+  "stats": {
+    "armor": 0,
+    "fireResistance": 0,
+    "coldResistance": 0,
+    "lightningResistance": 0,
+    "poisonResistance": 0,
+    "element": null
+  },
+  "attachmentData": {
+    "mainHand": {
+      "bone": "Hand_R",
+      "offset": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    "offHand": {
+      "bone": "Hand_L",
+      "offset": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  }
+}

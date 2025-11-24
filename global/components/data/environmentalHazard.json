@@ -1,0 +1,9 @@
+{
+  "hazardType": "generic",
+  "damagePerTick": 10,
+  "tickInterval": 1.0,
+  "element": "physical",
+  "affectsTeams": ["all"],
+  "lastTickTime": 0,
+  "createdTime": 0
+}

@@ -1,0 +1,9 @@
+{
+  "effectType": "buff",
+  "element": null,
+  "duration": 0,
+  "startTime": 0,
+  "sourceId": null,
+  "stacks": 1,
+  "maxStacks": 1
+}
