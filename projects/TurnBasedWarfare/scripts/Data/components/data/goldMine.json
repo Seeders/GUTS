@@ -1,0 +1,9 @@
+{
+  "title": "goldMine",
+  "schema": {
+    "veinIndex": null,
+    "currentMiner": null,
+    "minerQueue": [],
+    "cells": []
+  }
+}

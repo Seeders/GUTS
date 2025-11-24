@@ -57,20 +57,24 @@ class MineGoldAbility extends GUTS.BaseAbility {
         let nearest = null;
         let minDist = Infinity;
 
-        // Get sorted mine entityIds for deterministic iteration
-        const sortedMineIds = Array.from(game.goldMineSystem.claimedGoldMines.keys()).sort((a, b) =>
+        // Get all entities with goldMine component
+        const goldMineEntities = game.getEntitiesWith("goldMine", "position", "team");
+
+        // Sort for deterministic iteration
+        const sortedMineIds = goldMineEntities.sort((a, b) =>
             String(a).localeCompare(String(b))
         );
 
-        // Search through all claimed gold mines in deterministic order
+        // Search through all gold mines in deterministic order
         for (const mineEntityId of sortedMineIds) {
-            const goldMine = game.goldMineSystem.claimedGoldMines.get(mineEntityId);
+            const mineTeam = game.getComponent(mineEntityId, "team");
+            const minePos = game.getComponent(mineEntityId, "position");
 
             // Check if this mine belongs to our team
-            if (goldMine.team === team) {
+            if (mineTeam && mineTeam.team === team) {
                 // Calculate distance to this mine
-                const dx = goldMine.worldPosition.x - pos.x;
-                const dz = goldMine.worldPosition.z - pos.z;
+                const dx = minePos.x - pos.x;
+                const dz = minePos.z - pos.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
 
                 if (distance < minDist) {
@@ -166,7 +170,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     findMineTarget(miningState) {
-        let closestMine = null;
+        let closestMinePos = null;
         let closestDistance = Infinity;
         let closestMineEntityId = null;
 
@@ -175,39 +179,43 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
         if (!pos) return;
 
-        // Get sorted mine entityIds for deterministic iteration
-        const sortedMineIds = Array.from(this.game.goldMineSystem.claimedGoldMines.keys()).sort((a, b) =>
+        // Get all entities with goldMine component
+        const goldMineEntities = this.game.getEntitiesWith("goldMine", "position", "team");
+
+        // Sort for deterministic iteration
+        const sortedMineIds = goldMineEntities.sort((a, b) =>
             String(a).localeCompare(String(b))
         );
 
-        // Search through all claimed gold mines in deterministic order
+        // Search through all gold mines in deterministic order
         for (const mineEntityId of sortedMineIds) {
-            const goldMine = this.game.goldMineSystem.claimedGoldMines.get(mineEntityId);
+            const mineTeam = this.game.getComponent(mineEntityId, "team");
+            const minePos = this.game.getComponent(mineEntityId, "position");
 
             // Check if this mine belongs to our team
-            if (goldMine.team === miningState.team) {
+            if (mineTeam && mineTeam.team === miningState.team) {
                 // Calculate distance to this mine
-                const dx = goldMine.worldPosition.x - pos.x;
-                const dz = goldMine.worldPosition.z - pos.z;
+                const dx = minePos.x - pos.x;
+                const dz = minePos.z - pos.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
 
                 if (distance < closestDistance) {
                     closestDistance = distance;
-                    closestMine = goldMine;
+                    closestMinePos = minePos;
                     closestMineEntityId = mineEntityId;
                 }
             }
         }
 
-        if (!closestMine) {
+        if (!closestMinePos) {
             return;
         }
 
         miningState.targetMineEntityId = closestMineEntityId;
         miningState.targetMinePosition = {
-            x: closestMine.worldPosition.x,
-            y: closestMine.worldPosition.y || 0,
-            z: closestMine.worldPosition.z
+            x: closestMinePos.x,
+            y: closestMinePos.y || 0,
+            z: closestMinePos.z
         };
         miningState.state = 'walking_to_mine';
 
@@ -258,8 +266,11 @@ class MineGoldAbility extends GUTS.BaseAbility {
             }
         }
 
-        const mine = this.game.goldMineSystem.claimedGoldMines.get(miningState.targetMineEntityId);
-        if (!mine || mine.team !== miningState.team) {
+        // Check if mine still exists and belongs to our team
+        const mineComponent = this.game.getComponent(miningState.targetMineEntityId, "goldMine");
+        const mineTeam = this.game.getComponent(miningState.targetMineEntityId, "team");
+
+        if (!mineComponent || !mineTeam || mineTeam.team !== miningState.team) {
             // Mine no longer exists or changed teams - reset to idle
             miningState.targetMineEntityId = null;
             miningState.targetMinePosition = null;

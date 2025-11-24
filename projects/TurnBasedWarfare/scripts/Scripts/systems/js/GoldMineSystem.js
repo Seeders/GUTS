@@ -3,8 +3,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         super(game);
         this.game.goldMineSystem = this;
         this.goldVeinLocations = [];
-        this.claimedGoldMines = new Map();
-        
+
         console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
     }
 
@@ -166,30 +165,31 @@ class GoldMineSystem extends GUTS.BaseSystem {
         vein.claimed = true;
         vein.claimedBy = team;
 
-        let mineModel = null;
         if (!this.game.isServer) {
-            mineModel = this.replaceVeinWithMine(vein);
+            this.replaceVeinWithMine(vein);
         }
 
-        this.claimedGoldMines.set(entityId, {
-            entityId: entityId,
-            position: { x: vein.x, z: vein.y },
-            worldPosition: { x: vein.worldX, z: vein.worldZ },
-            gridPos: vein.gridPos,
-            cells: vein.cells,
+        // Add goldMine component to the entity
+        this.game.addComponent(entityId, "goldMine", {
             veinIndex: vein.originalIndex,
-            veinData: vein,
-            team: team,
-            model: mineModel
+            currentMiner: null,
+            minerQueue: [],
+            cells: vein.cells
         });
 
         return { success: true };
     }
 
     destroyGoldMine(entityId) {
-        const goldMine = this.claimedGoldMines.get(entityId);
+        const goldMine = this.game.getComponent(entityId, "goldMine");
         if (!goldMine) {
-            return { success: false, error: 'No gold mine to destroy' };
+            return { success: false, error: 'No gold mine component found' };
+        }
+
+        // Get the vein data
+        const vein = this.goldVeinLocations[goldMine.veinIndex];
+        if (!vein) {
+            console.warn('[GoldMineSystem] Could not find vein data for veinIndex:', goldMine.veinIndex);
         }
 
         // Clear any miners targeting this mine
@@ -205,18 +205,22 @@ class GoldMineSystem extends GUTS.BaseSystem {
             }
         }
 
-        if (!this.game.isServer) {
-            console.log('[GoldMineSystem] CLIENT: Restoring vein');
-            this.restoreVein(goldMine.veinData);
-        } else {
-            console.log('[GoldMineSystem] SERVER: Releasing mine claim');
-            goldMine.veinData.claimed = false;
-            goldMine.veinData.claimedBy = null;
+        if (vein) {
+            if (!this.game.isServer) {
+                console.log('[GoldMineSystem] CLIENT: Restoring vein');
+                this.restoreVein(vein);
+            } else {
+                console.log('[GoldMineSystem] SERVER: Releasing mine claim');
+                vein.claimed = false;
+                vein.claimedBy = null;
+            }
         }
-        
-        this.claimedGoldMines.delete(entityId);
 
-        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', this.claimedGoldMines.size);
+        // Remove the goldMine component from the entity
+        this.game.removeComponent(entityId, "goldMine");
+
+        const remainingMines = this.game.getEntitiesWith("goldMine").length;
+        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', remainingMines);
         return { success: true };
     }
 
@@ -385,19 +389,21 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     reset() {
-        
-        if (!this.game.isServer) {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                this.restoreVein(goldMine.veinData, goldMine.model);
-            }
-        } else {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                goldMine.veinData.claimed = false;
-                goldMine.veinData.claimedBy = null;
+        const goldMines = this.game.getEntitiesWith("goldMine");
+
+        for (const entityId of goldMines) {
+            const goldMine = this.game.getComponent(entityId, "goldMine");
+            if (!goldMine) continue;
+
+            const vein = this.goldVeinLocations[goldMine.veinIndex];
+            if (vein) {
+                if (!this.game.isServer) {
+                    this.restoreVein(vein);
+                } else {
+                    vein.claimed = false;
+                    vein.claimedBy = null;
+                }
             }
         }
-        
-        this.claimedGoldMines.clear();
-        
     }
 }
