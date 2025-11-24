@@ -45,7 +45,6 @@
       }
     ]
   },
-  "isBehaviorTree": true,
   "fileName": "FootmanBehaviorTree",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/FootmanBehaviorTree.js"
 }

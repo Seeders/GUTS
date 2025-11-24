@@ -8,19 +8,17 @@
         "id": "peasant-1",
         "label": "Peasant (Idle)",
         "components": {
-          "POSITION": {
+          "position": {
             "x": 100,
             "z": 100
           },
-          "TEAM": {
+          "team": {
             "team": 1
           },
-          "UNIT_CONTROLLER": {
-            "playerOrder": null,
-            "currentAction": null
-          },
-          "BUILDER": {
-            "assignedBuilding": null
+          "aiState": {
+            "targetPosition": null,
+            "target": null,
+            "meta": {}
           }
         }
       },
@@ -28,14 +26,14 @@
         "id": "goldmine-1",
         "label": "Gold Mine",
         "components": {
-          "POSITION": {
+          "position": {
             "x": 150,
             "z": 120
           },
-          "TEAM": {
-            "team": 0
+          "team": {
+            "team": 1
           },
-          "RESOURCE": {
+          "resource": {
             "type": "gold",
             "amount": 5000
           }
@@ -43,7 +41,6 @@
       }
     ]
   },
-  "isBehaviorTree": true,
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/PeasantBehaviorTree.js",
   "fileName": "PeasantBehaviorTree"
 }

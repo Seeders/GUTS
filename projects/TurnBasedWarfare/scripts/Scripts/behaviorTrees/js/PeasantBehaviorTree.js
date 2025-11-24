@@ -1,11 +1,11 @@
 class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
-        const controller = game.getComponent(entityId, game.componentTypes.UNIT_CONTROLLER);
+        const aiState = game.getComponent(entityId, game.componentTypes.AI_STATE);
         const pos = game.getComponent(entityId, game.componentTypes.POSITION);
 
         // Selector: Pick highest priority that can run
         const results = [
-            () => this.checkPlayerOrder(controller),
+            () => this.checkPlayerOrder(aiState),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkMining(entityId, game),
             () => ({ action: "IDLE", priority: 0 })
@@ -17,16 +17,12 @@ class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
         return this.select(results);
     }
 
-    checkPlayerOrder(controller) {
-console.log('check player order', controller);
-        if (!controller.playerOrder) return null;
-
-        const order = controller.playerOrder;
-console.log('order', order);
-
+    checkPlayerOrder(aiState) {
+console.log('check player order', aiState);
+        if (!aiState.targetPosition) return null;
+        if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
         return {
-            action: order.action,
-            target: order.target,
+            targetPosition: aiState.targetPosition,
             priority: 10,
             playerOrdered: true
         };
@@ -63,7 +59,7 @@ console.log('order', order);
 
         // Query all entities with RESOURCE component (gold mines)
         // Use gameManager if available, otherwise query directly
-        let mines = game.getEntitiesWith('RESOURCE');
+        let mines = game.getEntitiesWith('resource');
   
 
         let nearest = null;
