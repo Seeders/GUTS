@@ -608,7 +608,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     targetX = targetPos.x;
                     targetZ = targetPos.z;
                 }
-            }
+            }           
 
             if ((!aiState.path || aiState.path.length == 0) && targetX != null && targetZ != null) {
                 aiState.path = this.game.gameManager.call('requestPath',
