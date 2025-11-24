@@ -662,10 +662,9 @@ class BehaviorTreeEditor {
     }
 
     setupScriptBasedSimulation(varsContainer) {
-        // Initialize mock game context
- 
-        this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
-        
+        // Initialize mock game context with editor controller for getCollections()
+        this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
+
 
         if (!this.mockGame) {
             console.warn('MockGameContext not available');
@@ -1347,7 +1346,7 @@ class BehaviorTreeEditor {
         if (this.isScriptBased) {
             // Reset mock game context to original state
             if (GUTS && GUTS.MockGameContext) {
-                this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData);
+                this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
             }
         } else {
             // Clear the blackboard

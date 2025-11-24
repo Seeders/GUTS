@@ -4,9 +4,9 @@
  * Extends BaseECSGame to match the actual game's ECS structure
  */
 class MockGameContext extends GUTS.BaseECSGame {
-    constructor(mockEntitiesData = []) {
-        // Create minimal mock app object for BaseECSGame
-        const mockApp = {
+    constructor(mockEntitiesData = [], app = null) {
+        // Use provided app (e.g., editor controller) or create minimal mock
+        const mockApp = app || {
             moduleManager: null,
             getCollections: () => ({
                 configs: {},
@@ -220,13 +220,14 @@ class MockGameContext extends GUTS.BaseECSGame {
     /**
      * Create a mock game context from behavior tree data
      * @param {Object} behaviorTreeData - The behavior tree JSON data
+     * @param {Object} app - Optional app object (e.g., editor controller) with getCollections()
      * @returns {MockGameContext} - Mock game context instance
      */
-    static fromBehaviorTreeData(behaviorTreeData) {
+    static fromBehaviorTreeData(behaviorTreeData, app = null) {
         // Support both new mockEntities (array) and legacy mockEntity (object)
         const mockData = behaviorTreeData.mockEntities.entities;
         console.log('reset with', behaviorTreeData.mockEntities, mockData);
-        return new MockGameContext(mockData);
+        return new MockGameContext(mockData, app);
     }
 
     /**
