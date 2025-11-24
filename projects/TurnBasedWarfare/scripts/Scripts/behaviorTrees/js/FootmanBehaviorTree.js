@@ -10,6 +10,7 @@ console.log('evaluating', entityId, game);
     }
 
     checkPlayerOrder(entityId, game) {
+        const aiState = game.getComponent(entityId, "aiState");
         if (!aiState.targetPosition) return null;
         if(!aiState.meta || !aiState.meta.isPlayerOrder) return 
         return {
