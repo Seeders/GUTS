@@ -73,11 +73,13 @@ class MovementSystem extends GUTS.BaseSystem {
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
+                // Unit is anchored if explicitly set, or if attacking and in range of target
                 const isAnchored = vel.anchored ||
                     (!!aiState &&
-                    (aiState.state === 'attacking' || aiState.state === 'waiting') &&
-                    aiState.aiBehavior &&
-                    !!aiState.target);
+                    aiState.currentAction &&
+                    aiState.currentAction.type === 'AttackBehaviorAction' &&
+                    !!aiState.actionTarget &&
+                    this.isInAttackRange(pos, aiState.actionTarget, entityId));
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
@@ -87,7 +89,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     separationForce: { x: 0, y: 0, z: 0 },
                     avoidanceForce: { x: 0, y: 0, z: 0 }
                 });
-                
+
                 this.updateUnitState(entityId, pos, vel);
                 this.updateMovementHistory(entityId, vel);
             }
@@ -195,14 +197,20 @@ class MovementSystem extends GUTS.BaseSystem {
             const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
             sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
-                if (data.aiState?.state === 'chasing') {
+                // Chasing means: has a target or targetPosition they're moving toward but not in range yet
+                const isChasing = data.aiState &&
+                    data.aiState.currentAction &&
+                    (data.aiState.actionTarget || (data.aiState.actionData && data.aiState.actionData.targetPos)) &&
+                    !data.isAnchored;
+
+                if (isChasing) {
                     this.pathfindingQueue.push(entityId);
                 }
             });
         }
-        
+
         const unitsPerFrame = Math.max(1, Math.ceil(this.pathfindingQueue.length / this.PATHFINDING_UPDATE_INTERVAL));
-        
+
         for (let i = 0; i < unitsPerFrame && this.pathfindingQueueIndex < this.pathfindingQueue.length; i++) {
             const entityId = this.pathfindingQueue[this.pathfindingQueueIndex];
             if (unitData.has(entityId)) {
@@ -210,7 +218,7 @@ class MovementSystem extends GUTS.BaseSystem {
             }
             this.pathfindingQueueIndex++;
         }
-        
+
         if (this.pathfindingQueueIndex >= this.pathfindingQueue.length) {
             this.pathfindingQueueIndex = 0;
             this.pathfindingQueue = [];
@@ -326,7 +334,13 @@ class MovementSystem extends GUTS.BaseSystem {
     calculatePathfindingAvoidanceOptimized(entityId, data, allUnitData) {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
 
-        if (isAnchored || !aiState || aiState.state !== 'chasing') {
+        // Only apply avoidance if chasing (has target but not anchored)
+        const isChasing = aiState &&
+            aiState.currentAction &&
+            (aiState.actionTarget || (aiState.actionData && aiState.actionData.targetPos)) &&
+            !isAnchored;
+
+        if (!isChasing) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
             return;
@@ -847,18 +861,34 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     entityDestroyed(entityId) {
-        
+
         if (this.unitStates) {
             this.unitStates.delete(entityId);
         }
-        
+
         if (this.movementTracking) {
             this.movementTracking.delete(entityId);
         }
-        
+
         if (this.movementHistory) {
             this.movementHistory.delete(entityId);
         }
+    }
+
+    isInAttackRange(pos, targetEntityId, entityId) {
+        if (!targetEntityId) return false;
+
+        const targetPos = this.game.getComponent(targetEntityId, 'position');
+        if (!targetPos) return false;
+
+        const combat = this.game.getComponent(entityId, 'combat');
+        if (!combat) return false;
+
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+
+        return distance <= (combat.range || combat.attackRange || 50);
     }
 
     ping() {

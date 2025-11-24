@@ -757,13 +757,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     this.game.removeComponent(assignedBuilder, "buildingState");
                 }
 
-                // Reset builder's AI state and stop movement
-                const aiState = this.game.getComponent(assignedBuilder, "aiState");
-                if (aiState) {
-                    aiState.state = 'idle';
-                    aiState.target = null;
-                }
-
+                // Stop movement
                 const builderVel = this.game.getComponent(assignedBuilder, "velocity");
                 if (builderVel) {
                     builderVel.vx = 0;

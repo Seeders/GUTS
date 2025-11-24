@@ -143,7 +143,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         if (!aiState.currentAction) return true;
 
         // Different action type
-        if (aiState.currentAction !== desiredAction.action) {
+        if (aiState.currentAction.type !== desiredAction.action) {
             // Only switch if higher or equal priority
             return desiredAction.priority >= aiState.actionPriority;
         }
@@ -162,21 +162,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
     switchAction(entityId, aiState, desiredAction) {
         // End current action
         if (aiState.currentAction) {
-            const currentExecutor = this.actions.get(aiState.currentAction);
+            const currentExecutor = this.actions.get(aiState.currentAction.type);
             if (currentExecutor) {
                 currentExecutor.onEnd(entityId, aiState, this.game);
             }
         }
 
-        // Start new action
-        aiState.currentAction = desiredAction.action;
+        // Start new action - store as object with type property
+        aiState.currentAction = { type: desiredAction.action };
         aiState.actionTarget = desiredAction.target;
         aiState.actionData = desiredAction.data || {};
         aiState.actionPriority = desiredAction.priority;
         aiState.actionStartTime = this.game.state.now;
 
         // Call onStart if exists
-        const newExecutor = this.actions.get(aiState.currentAction);
+        const newExecutor = this.actions.get(aiState.currentAction.type);
         if (newExecutor && newExecutor.onStart) {
             newExecutor.onStart(entityId, aiState, this.game);
         }
@@ -186,9 +186,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Execute the current action
      */
     executeAction(entityId, aiState, dt) {
-        const executor = this.actions.get(aiState.currentAction);
+        const executor = this.actions.get(aiState.currentAction.type);
         if (!executor) {
-            console.warn(`No executor for action: ${aiState.currentAction}`);
+            console.warn(`No executor for action: ${aiState.currentAction.type}`);
             return;
         }
 
@@ -257,7 +257,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         if (!aiState) return null;
 
         return {
-            action: aiState.currentAction,
+            action: aiState.currentAction ? aiState.currentAction.type : null,
             target: aiState.actionTarget,
             playerOrder: aiState.playerOrder,
             priority: aiState.actionPriority

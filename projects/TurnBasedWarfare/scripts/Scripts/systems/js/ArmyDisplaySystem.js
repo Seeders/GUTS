@@ -114,13 +114,17 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         try {
             const aiState = this.game.getComponent(entityId, "aiState");
             const health = this.game.getComponent(entityId, "health");
-            
+
             if (health?.current <= 0) return 'dead';
-            if (aiState?.state === 'attacking') return 'attacking';
-            if (aiState?.state === 'moving') return 'moving';
-            if (aiState?.state === 'idle') return 'idle';
-            
-            return 'unknown';
+
+            if (aiState?.currentAction) {
+                const actionType = aiState.currentAction.type;
+                if (actionType === 'AttackBehaviorAction') return 'attacking';
+                if (actionType === 'MoveBehaviorAction') return 'moving';
+                if (actionType === 'IdleBehaviorAction') return 'idle';
+            }
+
+            return 'idle';
         } catch (error) {
             return 'unknown';
         }

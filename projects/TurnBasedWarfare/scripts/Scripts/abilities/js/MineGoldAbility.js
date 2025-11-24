@@ -295,19 +295,13 @@ class MineGoldAbility extends GUTS.BaseAbility {
                 // Mine is occupied, need to wait
                 const queuePosition = this.game.goldMineSystem.getQueuePosition(mineEntityId, miningState.entityId);
                 const waitPos = this.getWaitingPosition(miningState.targetMinePosition, queuePosition);
-                
+
                 miningState.waitingPosition = waitPos;
                 miningState.state = 'waiting_at_mine';
 
-                if (aiState) {
-                    aiState.state = 'chasing';
-                }
                 // MovementSystem will use velocity targets set by behavior action
             } else if (!isOccupied) {
                 // Mine is free, start mining
-                if (aiState) {
-                    aiState.state = 'idle';
-                }
                 pos.x = miningState.targetMinePosition.x;
                 pos.z = miningState.targetMinePosition.z;
                 vel.vx = 0;
@@ -336,11 +330,6 @@ class MineGoldAbility extends GUTS.BaseAbility {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.depositRange) {
-            const aiState = this.game.getComponent(miningState.entityId, "aiState");
-            
-            if (aiState) {
-                aiState.state = 'idle';
-            }
             pos.x = miningState.targetTownHall.x - 5;
             pos.z = miningState.targetTownHall.z - 5;
             vel.vx = 0;
@@ -348,42 +337,34 @@ class MineGoldAbility extends GUTS.BaseAbility {
             miningState.state = 'depositing';
             miningState.depositStartTime = this.game.state.now;
         } else {
-            const aiState = this.game.getComponent(miningState.entityId, "aiState");
-
             // Behavior tree system handles aiState - don't manipulate it here
         }
     }
 
     waitAtMine(miningState, pos, vel) {
-        const aiState = this.game.getComponent(miningState.entityId, "aiState");
-
         // Check if we're next in queue
         const isNextInQueue = this.game.goldMineSystem.isNextInQueue(
-            miningState.targetMineEntityId, 
+            miningState.targetMineEntityId,
             miningState.entityId
         );
-        
+
         const isMineOccupied = this.game.goldMineSystem.isMineOccupied(miningState.targetMineEntityId);
-        
+
         // If we're next and the mine is free, start mining
         if (isNextInQueue && !isMineOccupied) {
             // The goldMineSystem.processNextInQueue will be called from mineGold when mining completes
             // But we can also transition directly here if we detect we're next
-            if (aiState) {
-                aiState.state = 'idle';
-            }
             pos.x = miningState.targetMinePosition.x;
             pos.z = miningState.targetMinePosition.z;
             vel.vx = 0;
             vel.vz = 0;
-            
+
             miningState.state = 'mining';
             miningState.miningStartTime = this.game.state.now;
             miningState.waitingPosition = null;
         } else {
             // Otherwise stay at waiting position
-            if (miningState.waitingPosition && aiState && aiState.state !== 'idle') {
-                aiState.state = 'idle';
+            if (miningState.waitingPosition) {
                 pos.x = miningState.waitingPosition.x;
                 pos.z = miningState.waitingPosition.z;
                 vel.vx = 0;

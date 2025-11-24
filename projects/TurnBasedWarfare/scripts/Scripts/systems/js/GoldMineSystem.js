@@ -307,13 +307,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
                 pos.z = miningState.targetMinePosition.z;
                 vel.vx = 0;
                 vel.vz = 0;
-                
+
                 miningState.state = 'mining';
                 miningState.miningStartTime = this.game.state.now;
-                
-                if (aiState) {
-                    aiState.state = 'idle';
-                }
 
                 // Stop movement
                 const builderVel = this.game.getComponent(this.builderEntityId, "velocity");

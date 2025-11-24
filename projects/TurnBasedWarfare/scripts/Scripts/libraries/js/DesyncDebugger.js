@@ -68,9 +68,8 @@ class DesyncDebugger {
                     attackSpeed: combat.attackSpeed
                 } : null),
                 aiStateHash: this.hash(aiState ? {
-                    state: aiState.state,
-                    currentAction: aiState.currentAction || 'null',
-                    target: aiState.target || 'null'
+                    currentAction: aiState.currentAction ? aiState.currentAction.type : 'null',
+                    actionTarget: aiState.actionTarget || 'null'
                 } : null),
                 aiState: JSON.stringify(aiState)
             };

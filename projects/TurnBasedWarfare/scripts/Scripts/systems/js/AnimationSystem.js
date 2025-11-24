@@ -144,33 +144,28 @@ class AnimationSystem extends GUTS.BaseSystem {
         if(this.game.state.phase == 'battle'){
             // Check movement first
             const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
-            
+
             if (isMoving) {
                 clip = 'walk';
                 speed = this.calculateWalkSpeed(velocity);
             }
 
-            // AI state overrides
-            if (aiState) {
-                switch (aiState.state) {
-                    case 'attacking':
-                    case 'combat':
+            // AI action overrides based on currentAction.type
+            if (aiState && aiState.currentAction) {
+                const actionType = aiState.currentAction.type;
+
+                switch (actionType) {
+                    case 'AttackBehaviorAction':
                         // During combat, prefer walking if moving, otherwise idle
                         if (!isMoving) {
                             clip = 'idle';
                             speed = 1.0;
                         }
                         break;
-                        
-                    case 'chasing':
-                    case 'moving':
+
+                    case 'MoveBehaviorAction':
                         clip = 'walk';
                         speed = this.calculateWalkSpeed(velocity);
-                        break;
-                        
-                    case 'waiting':
-                        clip = isMoving ? 'walk' : 'idle';
-                        if (isMoving) speed = this.calculateWalkSpeed(velocity);
                         break;
                 }
             }

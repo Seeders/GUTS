@@ -66,16 +66,18 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         
         // Always show size circle
         circles.sizeCircle.visible = true;
-        
-        // Show/hide attack circle based on entity state
+
+        // Show/hide attack circle based on entity action
         const aiState = this.game.getComponent(entityId, "aiState");
-        if (aiState && (aiState.state === 'attacking' || aiState.state === 'chasing')) {
+        const isAttacking = aiState && aiState.currentAction && aiState.currentAction.type === 'AttackBehaviorAction';
+        const isChasing = aiState && aiState.currentAction && (aiState.actionTarget || (aiState.actionData && aiState.actionData.targetPos));
+
+        if (isAttacking) {
             circles.attackCircle.visible = true;
-            if (aiState.state === 'attacking') {
-                circles.attackCircle.material.color.setHex(0xff0000); // Bright red when attacking
-            } else {
-                circles.attackCircle.material.color.setHex(0xffaa00); // Orange when chasing
-            }
+            circles.attackCircle.material.color.setHex(0xff0000); // Bright red when attacking
+        } else if (isChasing) {
+            circles.attackCircle.visible = true;
+            circles.attackCircle.material.color.setHex(0xffaa00); // Orange when chasing
         } else {
             circles.attackCircle.visible = true; // Show it anyway for debugging
             circles.attackCircle.material.color.setHex(0x0000ff); // Blue when idle
