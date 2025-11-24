@@ -704,8 +704,7 @@ class BehaviorTreeEditor {
             addBtn.addEventListener('click', () => {
                 const newId = `entity-${Date.now()}`;
                 this.mockGame.initializeEntity(newId, {
-                    POSITION: { x: 0, z: 0 },
-                    TEAM: { team: 1 }
+                    position: { x: 0, y: 0, z: 0 },                    
                 }, `Entity ${this.mockGame.entities.size}`);
                 this.renderAllEntities(entitiesContainer);
             });
@@ -822,9 +821,13 @@ class BehaviorTreeEditor {
     }
 
     showAddComponentDialog(entityId) {
-        const availableTypes = Object.keys(this.mockGame.componentTypes).filter(type => {
+        const availableKeys = Object.keys(this.mockGame.componentTypes).filter(type => {
             return !this.mockGame.getComponent(entityId, type);
         });
+        const availableTypes = [];
+        availableKeys.forEach((key) => {
+            availableTypes.push(this.mockGame.componentTypes[key])
+        })
 
         if (availableTypes.length === 0) {
             alert('All component types are already added');
