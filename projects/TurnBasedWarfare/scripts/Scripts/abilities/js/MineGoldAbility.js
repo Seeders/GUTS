@@ -20,7 +20,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     // Behavior contribution for UniversalBehaviorTree
-    getBehavior(entityId, game) {
+    getBehavior(entityId, game, context = null) {
         if (!this.enabled) return null;
 
         // Check if unit is doing a player command
@@ -42,11 +42,46 @@ class MineGoldAbility extends GUTS.BaseAbility {
         const nearbyMine = this.findNearestMine(entityId, team.team, game);
         if (!nearbyMine) return null;
 
-        // Return mining behavior
+        // Calculate utility based on context (if provided)
+        let utility = 0.7; // Base utility for mining
+
+        if (context) {
+            // Reduce utility if enemies are nearby (workers should be cautious)
+            if (context.nearbyEnemies.length > 0) {
+                const closestEnemyDist = context.closestEnemyDistance;
+
+                // If enemy is very close (< 150), mining utility drops significantly
+                if (closestEnemyDist < 150) {
+                    utility -= 0.6; // High penalty for close enemies
+                } else if (closestEnemyDist < 250) {
+                    utility -= 0.3; // Moderate penalty for nearby enemies
+                } else {
+                    utility -= 0.1; // Small penalty for distant enemies
+                }
+            }
+
+            // Reduce utility if low health (should seek safety)
+            if (context.healthPercent < 0.3) {
+                utility -= 0.4;
+            } else if (context.healthPercent < 0.6) {
+                utility -= 0.2;
+            }
+
+            // Increase utility if safe and healthy (ideal mining conditions)
+            if (context.isSafe && context.healthPercent > 0.8) {
+                utility += 0.2;
+            }
+        }
+
+        // Clamp utility to 0-1 range
+        utility = Math.max(0, Math.min(1, utility));
+
+        // Return mining behavior with utility score
         return {
             action: "MINE",
             target: nearbyMine,
-            priority: 5,
+            utility: utility, // Use utility instead of fixed priority
+            priority: 5,      // Fallback priority for backward compatibility
             data: { mineId: nearbyMine }
         };
     }
