@@ -5,7 +5,7 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     canExecute(entityId, controller, game) {
         const mineId = controller.actionTarget;
         const mine = game.getComponent(mineId, 'goldMine');
-        return mine && mine.isActive;
+        return !!mine;
     }
 
     execute(entityId, controller, game, dt) {
