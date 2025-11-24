@@ -1,8 +1,0 @@
-{
-  "title": "commandQueue",
-  "schema": {
-    "commands": [],
-    "currentCommand": null,
-    "commandHistory": []
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "title": "deathState",
-  "schema": {
-    "isDying": false,
-    "deathStartTime": 0,
-    "deathAnimationDuration": 2.0
-  }
-}
