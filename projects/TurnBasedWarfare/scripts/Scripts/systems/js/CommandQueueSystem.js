@@ -12,16 +12,29 @@ class CommandQueueSystem extends GUTS.BaseSystem {
             ABILITY: 40,       // Special abilities
             FORCED: 100        // Force commands (cannot be interrupted)
         };
+
+        // Store per-entity AI controller data (migrated from AISystem)
+        this.entityAIControllers = new Map();
     }
 
     init() {
-        // Register methods with GameManager
+        // Register command queue methods with GameManager
         this.game.gameManager.register('queueCommand', this.queueCommand.bind(this));
         this.game.gameManager.register('executeCommand', this.executeCommand.bind(this));
         this.game.gameManager.register('clearCommands', this.clearCommands.bind(this));
         this.game.gameManager.register('getCurrentCommand', this.getCurrentCommand.bind(this));
         this.game.gameManager.register('canInterruptCommand', this.canInterruptCommand.bind(this));
         this.game.gameManager.register('completeCurrentCommand', this.completeCurrentCommand.bind(this));
+
+        // Register AI controller methods with GameManager (migrated from AISystem)
+        this.game.gameManager.register('getAIControllerData', this.getAIControllerData.bind(this));
+        this.game.gameManager.register('setAIControllerData', this.setAIControllerData.bind(this));
+        this.game.gameManager.register('setCurrentAIController', this.setCurrentAIController.bind(this));
+        this.game.gameManager.register('getCurrentAIController', this.getCurrentAIController.bind(this));
+        this.game.gameManager.register('getCurrentAIControllerId', this.getCurrentAIControllerId.bind(this));
+        this.game.gameManager.register('removeAIController', this.removeAIController.bind(this));
+        this.game.gameManager.register('removeCurrentAIController', this.removeCurrentAIController.bind(this));
+        this.game.gameManager.register('hasAIControllerData', this.hasAIControllerData.bind(this));
     }
 
     /**
@@ -121,7 +134,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
         aiState.useDirectMovement = false;
 
         // Get controller data for this command
-        let controllerData = this.game.aiSystem.getAIControllerData(entityId, command.controllerId);
+        let controllerData = this.getAIControllerData(entityId, command.controllerId);
 
         // Update controller data with command parameters
         controllerData.targetPosition = command.targetPosition;
@@ -130,7 +143,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
         controllerData.state = command.targetPosition || command.target ? 'chasing' : 'idle';
 
         // Switch to the command's controller
-        this.game.aiSystem.setCurrentAIController(entityId, command.controllerId, controllerData);
+        this.setCurrentAIController(entityId, command.controllerId, controllerData);
 
         // Debug logging
         if (this.game.debug) {
@@ -272,6 +285,132 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * Clean up command queue when entity is destroyed
      */
     entityDestroyed(entityId) {
-        // Nothing to clean up - component will be removed automatically
+        // Clean up AI controller data
+        this.entityAIControllers.delete(entityId);
+    }
+
+    // ============================================
+    // AI Controller Management Methods (migrated from AISystem)
+    // ============================================
+
+    /**
+     * Get AI controller data for an entity
+     * @param {string} entityId - The entity ID
+     * @param {string} aiControllerId - The controller ID
+     * @returns {object} - The controller data
+     */
+    getAIControllerData(entityId, aiControllerId) {
+        let entityControllersMap = this.getEntityAIControllers(entityId);
+        const CT = this.game.gameManager.call('getComponents');
+        return entityControllersMap.get(aiControllerId) || CT.aiState('idle');
+    }
+
+    /**
+     * Set AI controller data for an entity
+     * @param {string} entityId - The entity ID
+     * @param {string} aiControllerId - The controller ID
+     * @param {object} data - The controller data
+     * @param {boolean} overwriteControllerId - Whether to overwrite the controller ID in data
+     */
+    setAIControllerData(entityId, aiControllerId, data, overwriteControllerId = true) {
+        let entityControllersMap = this.getEntityAIControllers(entityId);
+        if (overwriteControllerId) {
+            data.aiControllerId = aiControllerId;
+        }
+        entityControllersMap.set(aiControllerId, data);
+    }
+
+    /**
+     * Check if AI controller data exists for an entity
+     * @param {string} entityId - The entity ID
+     * @param {string} aiControllerId - The controller ID
+     * @returns {boolean} - Whether the controller data exists
+     */
+    hasAIControllerData(entityId, aiControllerId) {
+        let entityControllersMap = this.getEntityAIControllers(entityId);
+        return entityControllersMap.has(aiControllerId);
+    }
+
+    /**
+     * Set the current AI controller for an entity
+     * @param {string} entityId - The entity ID
+     * @param {string} aiControllerId - The controller ID
+     * @param {object} data - The controller data
+     */
+    setCurrentAIController(entityId, aiControllerId, data) {
+        this.setAIControllerData(entityId, aiControllerId, data);
+        this.setAIControllerData(entityId, "AISystem", data, false);
+
+        let aiState = this.game.getComponent(entityId, "aiState");
+        aiState.targetPosition = data.targetPosition;
+        aiState.target = data.target;
+        aiState.meta = data.meta;
+        aiState.aiControllerId = aiControllerId;
+
+        // CRITICAL: Always clear path when switching controllers
+        // This prevents units from continuing old paths before executing new commands
+        aiState.path = [];
+        aiState.pathIndex = 0;
+        aiState.useDirectMovement = false;
+
+        // Update state based on new target
+        if (data.targetPosition || data.target) {
+            aiState.state = data.state || 'chasing';
+        } else {
+            aiState.state = data.state || 'idle';
+        }
+    }
+
+    /**
+     * Get the current AI controller data for an entity
+     * @param {string} entityId - The entity ID
+     * @returns {object} - The current controller data
+     */
+    getCurrentAIController(entityId) {
+        return this.getAIControllerData(entityId, "AISystem");
+    }
+
+    /**
+     * Get the current AI controller ID for an entity
+     * @param {string} entityId - The entity ID
+     * @returns {string} - The current controller ID
+     */
+    getCurrentAIControllerId(entityId) {
+        return this.getAIControllerData(entityId, "AISystem").aiControllerId;
+    }
+
+    /**
+     * Remove AI controller data for an entity
+     * @param {string} entityId - The entity ID
+     * @param {string} aiControllerId - The controller ID
+     */
+    removeAIController(entityId, aiControllerId) {
+        let entityControllersMap = this.getEntityAIControllers(entityId);
+        entityControllersMap.delete(aiControllerId);
+    }
+
+    /**
+     * Remove the current AI controller for an entity
+     * @param {string} entityId - The entity ID
+     */
+    removeCurrentAIController(entityId) {
+        const currentAiControllerId = this.getCurrentAIControllerId(entityId);
+        this.removeAIController(entityId, currentAiControllerId);
+        const CT = this.game.gameManager.call('getComponents');
+        this.setAIControllerData(entityId, "AISystem", CT.aiState('idle'), false);
+    }
+
+    /**
+     * Get the AI controllers map for an entity
+     * @param {string} entityId - The entity ID
+     * @returns {Map} - The entity's AI controllers map
+     */
+    getEntityAIControllers(entityId) {
+        let entityControllersMap = this.entityAIControllers.get(entityId);
+        if (!entityControllersMap) {
+            entityControllersMap = new Map();
+            this.entityAIControllers.set(entityId, entityControllersMap);
+        }
+        return entityControllersMap;
     }
 }
