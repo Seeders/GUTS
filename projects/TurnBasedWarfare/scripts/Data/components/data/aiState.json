@@ -2,7 +2,11 @@
   "title": "aiState",
   "schema": {
     "state": "idle",
-    "target": null,
+    "currentAction": null,
+    "actionTarget": null,
+    "actionData": {},
+    "actionPriority": 0,
+    "actionStartTime": 0,
     "meta": {}
   }
 }
