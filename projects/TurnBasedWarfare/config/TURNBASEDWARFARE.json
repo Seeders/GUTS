@@ -1966,6 +1966,7 @@
         "title": "Turn Based Warfare",
         "isIsometric": false,
         "libraries": [
+          "GameServices",
           "threejs",
           "BaseECSGame",
           "Rapier",
@@ -2039,6 +2040,7 @@
         "appLibrary": "ServerECSGame",
         "initialScene": "server",
         "libraries": [
+          "GameServices",
           "BaseSystem",
           "GameRoom",
           "ServerGameRoom",

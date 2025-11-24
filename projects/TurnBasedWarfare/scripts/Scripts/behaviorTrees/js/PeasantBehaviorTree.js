@@ -4,18 +4,26 @@ class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
         const pos = game.getComponent(entityId, game.componentTypes.POSITION);
 
         // Selector: Pick highest priority that can run
-        return this.select([
+        const results = [
             () => this.checkPlayerOrder(controller),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkMining(entityId, game),
             () => ({ action: "IDLE", priority: 0 })
-        ]);
+        ];
+
+        let logResults = [];
+        results.forEach((result) => { logResults.push(result()); });
+        console.log('Peasant Results:', logResults);
+        return this.select(results);
     }
 
     checkPlayerOrder(controller) {
+console.log('check player order', controller);
         if (!controller.playerOrder) return null;
 
         const order = controller.playerOrder;
+console.log('order', order);
+
         return {
             action: order.action,
             target: order.target,
