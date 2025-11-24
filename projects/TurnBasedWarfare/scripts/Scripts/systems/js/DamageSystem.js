@@ -101,10 +101,10 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // Track attacker for retaliation in behavior tree
         if (sourceId && damageResult.finalDamage > 0) {
-            const aiState = this.game.getComponent(targetId, "aiState");
-            if (aiState) {
-                aiState.lastAttacker = sourceId;
-                aiState.lastAttackTime = this.game.state.now;
+            const combatState = this.game.getComponent(targetId, "combatState");
+            if (combatState) {
+                combatState.lastAttacker = sourceId;
+                combatState.lastAttackTime = this.game.state.now;
             }
         }
         

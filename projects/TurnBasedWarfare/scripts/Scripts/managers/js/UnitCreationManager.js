@@ -368,13 +368,34 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
-        // AI state for behavior control
+        // AI state for behavior control (only for behavior tree state management)
         this.game.addComponent(entity, "aiState", {
             state: 'idle',
             targetPosition: targetPosition,
             target: null,
             aiControllerId: null,
             meta: {}
+        });
+
+        // Player order component (for player commands)
+        this.game.addComponent(entity, "playerOrder", {
+            targetPosition: null,
+            meta: {},
+            issuedTime: 0
+        });
+
+        // Pathfinding component (for movement paths)
+        this.game.addComponent(entity, "pathfinding", {
+            path: null,
+            pathIndex: 0,
+            lastPathRequest: 0,
+            useDirectMovement: false
+        });
+
+        // Combat state component (for combat tracking)
+        this.game.addComponent(entity, "combatState", {
+            lastAttacker: null,
+            lastAttackTime: 0
         });
 
         // Animation state

@@ -5,7 +5,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         this.pathSize = this.game.gameManager.call('getPlacementGridSize');
         // Selector: Pick highest priority that can run
         const results = [
-            () => this.checkPlayerOrder(pos, aiState),
+            () => this.checkPlayerOrder(pos, aiState, entityId, game),
             () => this.checkCombat(entityId, game),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkAbilityBehaviors(entityId, game),
@@ -15,46 +15,62 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         return this.select(results);
     }
 
-    checkPlayerOrder(pos, aiState) {
-        if (!aiState || !aiState.targetPosition) return null;
-        if (!aiState.meta || !aiState.meta.isPlayerOrder) return null;
-        if(aiState.meta.reachedTarget || this.distance(pos, aiState.targetPosition) < this.pathSize){
+    checkPlayerOrder(pos, aiState, entityId, game) {
+        // Read from playerOrder component
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder || !playerOrder.targetPosition) return null;
+        if (!playerOrder.meta || !playerOrder.meta.isPlayerOrder) return null;
+
+        // Use aiState.meta for behavior tree's own state tracking
+        if(aiState.meta.reachedTarget || this.distance(pos, playerOrder.targetPosition) < this.pathSize){
             aiState.meta.reachedTarget = true;
             return null;
         }
         return {
             action: "MoveBehaviorAction",
-            target: aiState.targetPosition,
+            target: playerOrder.targetPosition,
             priority: 10,
             data: {
                 playerOrdered: true,
-                preventEnemiesInRangeCheck: aiState.meta.preventEnemiesInRangeCheck || false
+                preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
             }
         };
     }
 
     onBattleEnd(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
         if(aiState.meta.reachedTarget){
-            aiState.targetPosition = null;
+            // Clear player order
+            if (playerOrder) {
+                playerOrder.targetPosition = null;
+            }
             aiState.meta = {};
         }
     }
 
     checkBuildOrder(entityId, game) {
+        // Read from playerOrder component
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) return null;
+
+        // Copy player order to aiState.meta for action execution
         const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState || !aiState.meta || !aiState.meta.buildingId) return null;
+        if (aiState) {
+            aiState.meta.buildingId = playerOrder.meta.buildingId;
+            aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
+            aiState.meta.isPlayerOrder = playerOrder.meta.isPlayerOrder;
+        }
 
         return {
             action: "BuildBehaviorAction",
-            target: aiState.meta.buildingId,
+            target: playerOrder.meta.buildingId,
             priority: 20,
             data: {}
         };
     }
 
     checkCombat(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
         const combat = game.getComponent(entityId, 'combat');
         const team = game.getComponent(entityId, 'team');
@@ -63,7 +79,9 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         if (!combat || !pos || !team) return null;
 
         // Respect preventEnemiesInRangeCheck flag (for force move orders)
-        const preventEnemiesInRangeCheck = aiState && aiState.meta && aiState.meta.preventEnemiesInRangeCheck;
+        // Read from playerOrder component
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        const preventEnemiesInRangeCheck = playerOrder && playerOrder.meta && playerOrder.meta.preventEnemiesInRangeCheck;
         if (preventEnemiesInRangeCheck) {
             return null; // Skip combat when player wants to force move
         }
@@ -111,22 +129,23 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     }
 
     selectCombatTarget(entityId, pos, enemies, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
+        // Read from combatState component
+        const combatState = game.getComponent(entityId, 'combatState');
 
         // Prioritize retaliating against last attacker if they're still in range
-        if (aiState && aiState.lastAttacker) {
-            const attackerHealth = game.getComponent(aiState.lastAttacker, 'health');
-            const attackerPos = game.getComponent(aiState.lastAttacker, 'position');
+        if (combatState && combatState.lastAttacker) {
+            const attackerHealth = game.getComponent(combatState.lastAttacker, 'health');
+            const attackerPos = game.getComponent(combatState.lastAttacker, 'position');
 
             // Check if attacker is still alive and in our enemy list
             if (attackerHealth && attackerHealth.current > 0 &&
-                enemies.includes(aiState.lastAttacker) && attackerPos) {
+                enemies.includes(combatState.lastAttacker) && attackerPos) {
                 // Return the last attacker as priority target
-                return aiState.lastAttacker;
+                return combatState.lastAttacker;
             } else {
                 // Attacker is dead or out of range, clear the retaliation
-                aiState.lastAttacker = null;
-                aiState.lastAttackTime = null;
+                combatState.lastAttacker = null;
+                combatState.lastAttackTime = null;
             }
         }
 

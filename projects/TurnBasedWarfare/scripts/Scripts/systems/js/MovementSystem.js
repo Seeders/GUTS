@@ -512,10 +512,13 @@ class MovementSystem extends GUTS.BaseSystem {
         // Read velocity targets set by behavior tree actions
         // Actions set vel.targetX and vel.targetZ to indicate where to move
         if (vel.targetX != null && vel.targetZ != null) {
-            // Use pathfinding if aiState available and useDirectMovement not set
-            if (aiState && !aiState.useDirectMovement) {
+            // Get pathfinding component
+            const pathfinding = this.game.getComponent(entityId, "pathfinding");
+
+            // Use pathfinding if available and useDirectMovement not set
+            if (pathfinding && !pathfinding.useDirectMovement) {
                 // Check if we have a path to follow
-                if (aiState.path && aiState.path.length > 0) {
+                if (pathfinding.path && pathfinding.path.length > 0) {
                     this.followPath(entityId, data);
                     return;
                 }
@@ -591,27 +594,28 @@ class MovementSystem extends GUTS.BaseSystem {
     requestPathIfNeeded(entityId, data) {
         const { pos, vel, aiState } = data;
         const now = this.game.state.now;
-        if(!aiState.aiBehavior){
-            aiState.aiBehavior = {};
-        }
-        if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
-            aiState.aiBehavior.lastPathRequest = now;
+
+        const pathfinding = this.game.getComponent(entityId, "pathfinding");
+        if (!pathfinding) return;
+
+        if (!pathfinding.lastPathRequest || (now - pathfinding.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
+            pathfinding.lastPathRequest = now;
 
             // Get target from vel.targetX/targetZ (set by behavior actions)
             let targetX = vel.targetX;
             let targetZ = vel.targetZ;
 
             // If targeting an entity, use its current position
-            if (aiState.target) {
+            if (aiState && aiState.target) {
                 const targetPos = this.game.getComponent(aiState.target, "position");
                 if (targetPos) {
                     targetX = targetPos.x;
                     targetZ = targetPos.z;
                 }
-            }           
+            }
 
-            if ((!aiState.path || aiState.path.length == 0) && targetX != null && targetZ != null) {
-                aiState.path = this.game.gameManager.call('requestPath',
+            if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {
+                pathfinding.path = this.game.gameManager.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
@@ -624,34 +628,37 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     followPath(entityId, data) {
-        const { pos, vel, aiState } = data;
-        
-        if (aiState.pathIndex === undefined) {
-            aiState.pathIndex = 0;
+        const { pos, vel } = data;
+
+        const pathfinding = this.game.getComponent(entityId, "pathfinding");
+        if (!pathfinding || !pathfinding.path) return;
+
+        if (pathfinding.pathIndex === undefined) {
+            pathfinding.pathIndex = 0;
         }
-        
-        if (aiState.pathIndex >= aiState.path.length) {
-            aiState.path = null;
-            aiState.pathIndex = 0;
+
+        if (pathfinding.pathIndex >= pathfinding.path.length) {
+            pathfinding.path = null;
+            pathfinding.pathIndex = 0;
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vz = 0;
             data.desiredVelocity.vy = 0;
             return;
         }
-        const waypoint = aiState.path[aiState.pathIndex];
+        const waypoint = pathfinding.path[pathfinding.pathIndex];
         const dx = waypoint.x - pos.x;
         const dz = waypoint.z - pos.z;
         const distToWaypoint = Math.sqrt(dx * dx + dz * dz);
-        
+
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
-            aiState.pathIndex++;
-            if (aiState.pathIndex >= aiState.path.length) {
-                aiState.path = null;
-                aiState.pathIndex = 0;
+            pathfinding.pathIndex++;
+            if (pathfinding.pathIndex >= pathfinding.path.length) {
+                pathfinding.path = null;
+                pathfinding.pathIndex = 0;
             }
             return;
         }
-        
+
         const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
         data.desiredVelocity.vx = (dx / distToWaypoint) * moveSpeed;
         data.desiredVelocity.vz = (dz / distToWaypoint) * moveSpeed;
