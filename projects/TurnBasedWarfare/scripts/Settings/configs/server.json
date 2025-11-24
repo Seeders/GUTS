@@ -23,6 +23,7 @@
     "DesyncDebugger",
     "TerrainDataManager",
     "EnvironmentObjectSpawner",
-    "CoordinateTranslator"
+    "CoordinateTranslator",
+    "ComponentGenerator"
   ]
 }

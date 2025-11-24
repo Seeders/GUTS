@@ -2528,7 +2528,8 @@
           "DesyncDebugger",
           "TerrainDataManager",
           "EnvironmentObjectSpawner",
-          "CoordinateTranslator"
+          "CoordinateTranslator",
+          "ComponentGenerator"
         ]
       },
       "state": {
@@ -22937,10 +22938,10 @@
             "spawnType": "multiplayer",
             "managers": [
               {
-                "type": "ComponentManager"
+                "type": "GameManager"
               },
               {
-                "type": "GameManager"
+                "type": "ComponentManager"
               },
               {
                 "type": "UnitCreationManager"

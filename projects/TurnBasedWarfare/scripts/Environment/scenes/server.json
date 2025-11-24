@@ -7,8 +7,8 @@
       "objectType": "gamePrefabs",
       "spawnType": "multiplayer",
       "managers": [
-        { "type": "ComponentManager" },
         { "type": "GameManager" },
+        { "type": "ComponentManager" },
         { "type": "UnitCreationManager" },
         { "type": "SquadManager" }
       ],
