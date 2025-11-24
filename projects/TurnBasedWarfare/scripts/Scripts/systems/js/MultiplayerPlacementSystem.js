@@ -33,7 +33,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         this.mouseScreenPos = { x: 0, y: 0 };
 
         // Battle duration tracking (client-side)
-        this.maxBattleDuration = 30; // Must match server
+        this.battleDuration = 30; // Must match server
         this.battleStartTime = 0;
         this.isBattlePaused = false;
     }
@@ -372,10 +372,10 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
             // Pause game when client reaches max battle duration
             // This prevents client from running ahead of server
-            if (battleDuration >= this.maxBattleDuration && !this.isBattlePaused) {
+            if (battleDuration >= this.battleDuration && !this.isBattlePaused) {
                 this.isBattlePaused = true;
                 this.game.state.isPaused = true;
-                console.log(`Client reached max battle duration (${this.maxBattleDuration}s), pausing until server sends BATTLE_END`);
+                console.log(`Client reached max battle duration (${this.battleDuration}s), pausing until server sends BATTLE_END`);
             }
         }
 

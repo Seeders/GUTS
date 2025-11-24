@@ -6,8 +6,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         
         // Battle configuration
-        this.maxBattleDuration = 30; // 30 seconds max
-        this.minBattleDuration = 29;
+        this.battleDuration = 30; // 30 seconds max
         this.battleStartTime = 0;
         // Battle state tracking
         this.battleResults = new Map();
@@ -134,14 +133,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         const noCombatActive = this.checkNoCombatActive(aliveEntities);
         const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
 
-        if( battleDuration < this.minBattleDuration){
-            return;
-        }
-        if( battleDuration >= this.maxBattleDuration){
+        // End battle if max duration reached
+        if( battleDuration >= this.battleDuration){
             this.endBattle(this.game.room, null);
             return;
         }
 
+        // End battle if combat has naturally concluded
         if (aliveEntities.length === 0) {
             console.log('no alive entities');
             this.endBattle(this.game.room, null);
