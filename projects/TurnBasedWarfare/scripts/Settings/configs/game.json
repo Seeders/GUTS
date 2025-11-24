@@ -95,8 +95,6 @@
     "FogOfWarSystem",
     "SelectedUnitSystem",
     "UnitOrderSystem",
-    "CombatAISystem",
-    "CommandQueueSystem",
     "MiniMapSystem",
     "CameraControlSystem",
     "DamageNumberSystem",

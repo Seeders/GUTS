@@ -44,8 +44,6 @@
     "SquadExperienceSystem",
     "ServerBattlePhaseSystem",
     "ServerPlacementSystem",
-    "CombatAISystem",
-    "CommandQueueSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "PathfindingSystem",
