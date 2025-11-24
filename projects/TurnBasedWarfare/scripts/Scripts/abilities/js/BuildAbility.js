@@ -68,6 +68,15 @@ class BuildAbility extends GUTS.BaseAbility {
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
         const buildTime = peasantInfo.buildTime;
 
+        // Set up building visual state - show as under construction
+        const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
+        if (renderComponent) {
+            renderComponent.spawnType = 'underConstruction';
+        }
+
+        // Remove health component while under construction
+        this.game.removeComponent(buildingEntityId, "health");
+
         // Set up building placement state
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = true;

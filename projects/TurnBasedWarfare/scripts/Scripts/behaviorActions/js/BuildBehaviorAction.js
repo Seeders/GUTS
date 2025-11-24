@@ -146,7 +146,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Register building with shop system
         if (game.shopSystem && buildingPlacement) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
         }
 
         // Update placement component
