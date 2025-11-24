@@ -1,10 +1,11 @@
 class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
-
+        const pos = game.getComponent(entityId, 'position');
+        this.pathSize = this.game.gameManager.call('getPlacementGridSize');
         // Selector: Pick highest priority that can run
         const results = [
-            () => this.checkPlayerOrder(aiState),
+            () => this.checkPlayerOrder(pos, aiState),
             () => this.checkCombat(entityId, game),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkAbilityBehaviors(entityId, game),
@@ -14,10 +15,13 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         return this.select(results);
     }
 
-    checkPlayerOrder(aiState) {
+    checkPlayerOrder(pos, aiState) {
         if (!aiState || !aiState.targetPosition) return null;
         if (!aiState.meta || !aiState.meta.isPlayerOrder) return null;
-
+        if(aiState.meta.reachedTarget || this.distance(pos, aiState.targetPosition) < this.pathSize){
+            aiState.meta.reachedTarget = true;
+            return null;
+        }
         return {
             action: "MoveBehaviorAction",
             target: aiState.targetPosition,
@@ -27,6 +31,14 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
                 preventEnemiesInRangeCheck: aiState.meta.preventEnemiesInRangeCheck || false
             }
         };
+    }
+
+    onBattleEnd(entityId, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
+        if(aiState.meta.reachedTarget){
+            aiState.targetPosition = null;
+            aiState.meta = {};
+        }
     }
 
     checkBuildOrder(entityId, game) {

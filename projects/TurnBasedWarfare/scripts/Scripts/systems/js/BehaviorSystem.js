@@ -75,7 +75,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     update(dt) {
         // Get all entities with aiState (AI-controlled units)
-        const entities = this.game.getEntitiesWith("aiState", "unitType");
+        const entities = this.getBehaviorEntities();
 
         // Sort for determinism
         entities.sort((a, b) => String(a).localeCompare(String(b)));
@@ -113,6 +113,25 @@ class BehaviorSystem extends GUTS.BaseSystem {
         }
     }
 
+    getBehaviorEntities() {
+        const entities = this.game.getEntitiesWith("aiState", "unitType");
+
+        // Sort for determinism
+        entities.sort((a, b) => String(a).localeCompare(String(b)));
+
+        return entities;
+    }
+
+    onBattleEnd() {
+        const entities = this.getBehaviorEntities();
+
+        // Sort for determinism
+        entities.sort((a, b) => String(a).localeCompare(String(b)));
+
+        for (const entityId of entities) {
+            this.universalTree.onBattleEnd(entityId, this.game);
+        }
+    }
     /**
      * Determine if we should switch from current action to desired action
      */
