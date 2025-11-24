@@ -2,7 +2,6 @@ class ProjectileSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.projectileSystem = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
 
         // Configuration
         this.HIT_DETECTION_RADIUS = 24;
@@ -42,9 +41,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     fireProjectile(sourceId, targetId, projectileData = {}) {
-        const sourcePos = this.game.getComponent(sourceId, this.componentTypes.POSITION);
-        const sourceCombat = this.game.getComponent(sourceId, this.componentTypes.COMBAT);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const sourcePos = this.game.getComponent(sourceId, "position");
+        const sourceCombat = this.game.getComponent(sourceId, "combat");
+        const targetPos = this.game.getComponent(targetId, "position");
         
         if (!sourcePos || !sourceCombat || !targetPos) return null;
         
@@ -62,17 +61,17 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const trajectory = this.calculateTrajectory(sourcePos, targetPos, projectileDataWithSource);
         
         // Determine spawn height - ballistic projectiles start above ground to avoid immediate impact
-        const spawnHeight = Math.max(sourcePos.y + 20, 20);           
-        
+        const spawnHeight = Math.max(sourcePos.y + 20, 20);
+
         // Add components with full 3D support
-        this.game.addComponent(projectileId, this.componentTypes.POSITION,
+        this.game.addComponent(projectileId, "position",
             { x: sourcePos.x, y: spawnHeight, z: sourcePos.z });
 
-        this.game.addComponent(projectileId, this.componentTypes.VELOCITY,
+        this.game.addComponent(projectileId, "velocity",
             { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic || false, anchored: false });
-        
+
          // Enhanced projectile component with element
-        this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
+        this.game.addComponent(projectileId, "projectile", {
             damage: projectileData.damage || sourceCombat.damage,
             speed: projectileData.speed,
             range: sourceCombat.range * 1.5,
@@ -96,20 +95,20 @@ class ProjectileSystem extends GUTS.BaseSystem {
             lastTrailTime: this.game.state.now
         });
 
-        const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
+        const sourceTeam = this.game.getComponent(sourceId, "team");
 
         // Add UNIT_TYPE component for projectiles
-        this.game.addComponent(projectileId, this.componentTypes.UNIT_TYPE,
+        this.game.addComponent(projectileId, "unitType",
             {});
 
         // Add TEAM component (same team as source)
         if (sourceTeam) {
-            this.game.addComponent(projectileId, this.componentTypes.TEAM,
+            this.game.addComponent(projectileId, "team",
                 { team: sourceTeam.team });
         }
 
         // Visual component
-        this.game.addComponent(projectileId, this.componentTypes.RENDERABLE,
+        this.game.addComponent(projectileId, "renderable",
             { objectType: "projectiles", spawnType: projectileData.id });
         
         // Use LifetimeSystem instead of direct component
@@ -123,15 +122,15 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
         } else {
             // Fallback to old method if LifetimeSystem not available
-            this.game.addComponent(projectileId, this.componentTypes.LIFETIME,
+            this.game.addComponent(projectileId, "lifetime",
                 { duration: this.PROJECTILE_LIFETIME, startTime: this.game.state.now });
         }
-        
+
         // Homing component if specified
         if (projectileData.homing && projectileData.homingStrength > 0) {
             const homingStrength = projectileData.ballistic ?
                 projectileData.homingStrength * 0.3 : projectileData.homingStrength;
-            this.game.addComponent(projectileId, this.componentTypes.HOMING_TARGET,
+            this.game.addComponent(projectileId, "homingTarget",
                 { targetId: targetId, homingStrength: homingStrength, lastKnownPosition: { x: targetPos.x, y: targetPos.y, z: targetPos.z } });
         }
         
@@ -155,7 +154,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
         
         // 2. Check combat component element
-        const sourceCombat = this.game.getComponent(sourceId, this.componentTypes.COMBAT);
+        const sourceCombat = this.game.getComponent(sourceId, "combat");
         if (sourceCombat && sourceCombat.element) {
             return sourceCombat.element;
         }
@@ -208,7 +207,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         
         // Get the firing unit's combat range to determine proper ballistic trajectory
         const sourceId = projectileData.sourceId;
-        const sourceCombat = sourceId ? this.game.getComponent(sourceId, this.componentTypes.COMBAT) : null;
+        const sourceCombat = sourceId ? this.game.getComponent(sourceId, "combat") : null;
         const weaponRange = sourceCombat ? sourceCombat.range : horizontalDistance;
         
         // Use 45-degree angle for optimal range (gives maximum distance for given initial velocity)
@@ -298,20 +297,20 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     update() {
         if (this.game.state.phase !== 'battle') return;
-        
+
         const projectiles = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.VELOCITY,
-            this.componentTypes.PROJECTILE
+            "position",
+            "velocity",
+            "projectile"
         );
         // Sort for deterministic processing order (prevents desync)
         projectiles.sort((a, b) => String(a).localeCompare(String(b)));
 
         projectiles.forEach(projectileId => {
-            const pos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
-            const vel = this.game.getComponent(projectileId, this.componentTypes.VELOCITY);
-            const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
-            const homing = this.game.getComponent(projectileId, this.componentTypes.HOMING_TARGET);
+            const pos = this.game.getComponent(projectileId, "position");
+            const vel = this.game.getComponent(projectileId, "velocity");
+            const projectile = this.game.getComponent(projectileId, "projectile");
+            const homing = this.game.getComponent(projectileId, "homingTarget");
                         
             // Update homing behavior
             if (homing && homing.targetId && projectile.isBallistic) {
@@ -345,7 +344,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     updateBallisticHoming(projectileId, pos, vel, projectile, homing) {
         // Get current target position
-        const targetPos = this.game.getComponent(homing.targetId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(homing.targetId, "position");
         
         if (targetPos) {
             // Update last known position
@@ -393,7 +392,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     updateHomingProjectile(projectileId, pos, vel, projectile, homing) {
         // Get current target position
-        const targetPos = this.game.getComponent(homing.targetId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(homing.targetId, "position");
         
         if (targetPos) {
             // Update last known position
@@ -437,12 +436,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
         
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.HEALTH
+            "position",
+            "team",
+            "health"
         );
 
-        const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
+        const sourceTeam = this.game.getComponent(projectile.source, "team");
         if (!sourceTeam) return;
 
         // Calculate distances and sort by closest first for deterministic collision (prevents desync)
@@ -450,9 +449,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
         for (const entityId of allEntities) {
             if (entityId === projectile.source) continue; // Don't hit the source
 
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTeam = this.game.getComponent(entityId, "team");
+            const entityHealth = this.game.getComponent(entityId, "health");
 
             if (!entityPos || !entityTeam || !entityHealth) continue;
             if (entityTeam.team === sourceTeam.team) continue; // Don't hit allies
@@ -477,7 +476,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Check collision in sorted order - hit closest entity first
         for (const { entityId, entityPos, distance } of entitiesWithDistance) {
             // Get entity radius for collision detection
-            const entityUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const entityUnitType = this.game.getComponent(entityId, "unitType");
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check collision for direct hit
@@ -620,7 +619,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
     
     updateProjectileTrail(projectileId, pos) {
-        const projectileVisual = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE_VISUAL);
+        const projectileVisual = this.game.getComponent(projectileId, "projectileVisual");
         if (!projectileVisual || projectileVisual.trailLength <= 0) return;
         
         if (!this.projectileTrails.has(projectileId)) {

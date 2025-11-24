@@ -58,7 +58,7 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, position);
         if (!pos) return;
         
         this.createVisualEffect(pos, 'cast');
@@ -87,8 +87,8 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Execute a single aura tick deterministically
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, health);
+        const casterPos = this.game.getComponent(casterEntity, position);
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
@@ -106,8 +106,8 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         
         // Process enemies - drain their health
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const enemyPos = this.game.getComponent(enemyId, position);
+            const enemyHealth = this.game.getComponent(enemyId, health);
             
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
             
@@ -130,8 +130,8 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            const unitType = this.game.getComponent(allyId, unitType);
+            const allyPos = this.game.getComponent(allyId, position);
             
             if (!unitType || !allyPos) return;
             
@@ -144,11 +144,10 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                 
                 if (distance <= this.range) {
                     // Check if already has empowerment buff
-                    const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                    const existingBuff = this.game.getComponent(allyId, "buff");
                     
                     if (!existingBuff || existingBuff.buffType !== 'dark_empowerment') {
-                        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                        this.game.addComponent(allyId, ComponentTypes.BUFF, {
+                        this.game.addComponent(allyId, "buff", {
                             buffType: 'dark_empowerment',
                             modifiers: {
                                 damageMultiplier: 1.3,

@@ -58,15 +58,15 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         // DESYNC SAFE: Check how many traps this trapper already has active
         const existingTraps = this.game.getEntitiesWith(
-            this.componentTypes.TRAP,
-            this.componentTypes.POSITION
+            "trap",
+            "position"
         );
         
         // Sort traps for consistent processing
         const sortedTraps = existingTraps.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         const myTraps = sortedTraps.filter(trapId => {
-            const trap = this.game.getComponent(trapId, this.componentTypes.TRAP);
+            const trap = this.game.getComponent(trapId, "trap");
             return trap && trap.caster === casterEntity && !trap.triggered;
         });
         
@@ -74,7 +74,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, "position");
         if (!pos) return;
         
         // Immediate cast effect
@@ -88,11 +88,11 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     }
     
     placeTrap(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, "position");
         if (!pos) return;
         
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
         
         // DESYNC SAFE: Calculate trap position deterministically
@@ -100,17 +100,16 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         
         // Create trap entity
         const trapId = this.game.createEntity();
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
         // Position component
-        this.game.addComponent(trapId, ComponentTypes.POSITION, {
+        this.game.addComponent(trapId, "position", {
             x: trapPos.x,
             y: trapPos.y,
             z: trapPos.z
         });
 
         // DESYNC SAFE: Trap component with proper game time
-        this.game.addComponent(trapId, ComponentTypes.TRAP, {
+        this.game.addComponent(trapId, "trap", {
             damage: this.trapDamage,
             radius: this.explosionRadius,
             triggerRadius: this.triggerRadius,
@@ -122,14 +121,14 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         });
 
         // Visual indicator (hidden from enemies in actual gameplay)
-        this.game.addComponent(trapId, ComponentTypes.RENDERABLE, {
+        this.game.addComponent(trapId, "renderable", {
             objectType: "effects",
             spawnType: "hidden_trap",
             capacity: 128
         });
 
         // DESYNC SAFE: Add lifetime to prevent permanent traps
-        this.game.addComponent(trapId, ComponentTypes.LIFETIME, {
+        this.game.addComponent(trapId, "lifetime", {
             duration: 60.0,
             startTime: this.game.state.now
         });
@@ -147,7 +146,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Calculate trap position deterministically
     calculateTrapPosition(casterEntity, casterPos) {
         // Get facing direction for consistent placement
-        const facing = this.game.getComponent(casterEntity, this.componentTypes.FACING) || { angle: 0 };
+        const facing = this.game.getComponent(casterEntity, "facing") || { angle: 0 };
         
         // Calculate position ahead of caster
         const trapPos = {
@@ -170,12 +169,12 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         
         // Check for existing traps nearby (prevent stacking)
         const existingTraps = this.game.getEntitiesWith(
-            this.componentTypes.TRAP,
-            this.componentTypes.POSITION
+            "trap",
+            "position"
         );
         
         for (const trapId of existingTraps) {
-            const trapPos = this.game.getComponent(trapId, this.componentTypes.POSITION);
+            const trapPos = this.game.getComponent(trapId, "position");
             if (trapPos) {
                 const distance = Math.sqrt(
                     Math.pow(trapPos.x - proposedPos.x, 2) + 
@@ -198,8 +197,8 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Handle trap trigger (called by game systems when enemy approaches)
     triggerTrap(trapId, triggeringEnemyId) {
-        const trapComponent = this.game.getComponent(trapId, this.componentTypes.TRAP);
-        const trapPos = this.game.getComponent(trapId, this.componentTypes.POSITION);
+        const trapComponent = this.game.getComponent(trapId, "trap");
+        const trapPos = this.game.getComponent(trapId, "position");
         
         if (!trapComponent || !trapPos || trapComponent.triggered) return;
         
@@ -323,12 +322,12 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     applyExplosionDamage(casterId, explosionPos, trapComponent) {
         // Get all entities that could be damaged
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
         
-        const casterTeam = this.game.getComponent(casterId, this.componentTypes.TEAM);
+        const casterTeam = this.game.getComponent(casterId, "team");
         if (!casterTeam) return;
         
         // Sort entities for consistent processing
@@ -337,9 +336,9 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         let damageTargets = [];
         
         sortedEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityHealth = this.game.getComponent(entityId, "health");
+            const entityTeam = this.game.getComponent(entityId, "team");
             
             if (!entityPos || !entityHealth || !entityTeam || entityHealth.current <= 0) return;
             
@@ -378,9 +377,9 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Clean up trap entity
     cleanupTrap(trapId) {
-        if (this.game.hasComponent(trapId, this.componentTypes.TRAP)) {
+        if (this.game.hasComponent(trapId, "trap")) {
             // Small visual effect for trap disappearing
-            const trapPos = this.game.getComponent(trapId, this.componentTypes.POSITION);
+            const trapPos = this.game.getComponent(trapId, "position");
             if (trapPos) {
                 this.createVisualEffect(trapPos, 'trap_place', { 
                     count: 2, 
@@ -395,12 +394,12 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
     // Helper method for other systems to check trap count
     getActiveTrapCount(trapperId) {
         const existingTraps = this.game.getEntitiesWith(
-            this.componentTypes.TRAP,
-            this.componentTypes.POSITION
+            "trap",
+            "position"
         );
         
         return existingTraps.filter(trapId => {
-            const trap = this.game.getComponent(trapId, this.componentTypes.TRAP);
+            const trap = this.game.getComponent(trapId, "trap");
             return trap && trap.caster === trapperId && !trap.triggered;
         }).length;
     }

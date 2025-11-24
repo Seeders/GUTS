@@ -247,7 +247,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').AI_STATE);
+                    const aiState = this.game.getComponent(unitId, "aiState");
                     if (aiState) {
                         aiState.playerOrder = {
                             targetPosition: targetPosition,
@@ -342,8 +342,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
                     placement.meta = meta || {};
                     placement.squadUnits.forEach((unitId) => {
-                        const aiState = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').AI_STATE);
-                        const p = this.game.getComponent(unitId, this.game.gameManager.call('getComponentTypes').PLACEMENT);
+                        const aiState = this.game.getComponent(unitId, "aiState");
+                        const p = this.game.getComponent(unitId, "placement");
                         if(p){
                             p.commandCreatedTime = placement.commandCreatedTime;
                             p.targetPosition = placement.targetPosition;
@@ -445,24 +445,22 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
     
     resetAI() {
-        const componentTypes = this.game.gameManager.call('getComponentTypes');            
-        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
+        const AIEntities = this.game.getEntitiesWith("aiState", "combat");
         AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
-            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const combat = this.game.getComponent(entityId, "combat");
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
     }
 
     applyTargetPositions() {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach((placement) => {
                 const targetPosition = placement.targetPosition;
                 placement.squadUnits.forEach(entityId => {
-                    const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                    const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                    const aiState = this.game.getComponent(entityId, "aiState");
+                    const position = this.game.getComponent(entityId, "position");
                     if (aiState && position) {
 
                         if(targetPosition){
@@ -598,8 +596,6 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-
         this.playerPlacements.forEach((placements, playerId) => {
             const survivingPlacements = placements.filter(placement => {
                 if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) {
@@ -608,9 +604,9 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 }
 
                 const aliveUnits = placement.experience.unitIds.filter(entityId => {
-                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                    const buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+                    const health = this.game.getComponent(entityId, "health");
+                    const deathState = this.game.getComponent(entityId, "deathState");
+                    const buildingState = this.game.getComponent(entityId, "buildingState");
                     if(buildingState) return true;
                     return health && health.current > 0 && (!deathState || !deathState.isDying);
                 });
@@ -753,8 +749,6 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             // Clean up the builder if assigned
             const assignedBuilder = placement.assignedBuilder;
             if (assignedBuilder) {
-                const CT = this.game.gameManager.call('getComponentTypes');
-                
                 // Complete/clear the build command
                 if (this.game.commandQueueSystem) {
                     const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
@@ -764,12 +758,12 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 }
 
                 // Remove the builder's BUILDING_STATE component
-                if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
-                    this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+                if (this.game.hasComponent(assignedBuilder, "buildingState")) {
+                    this.game.removeComponent(assignedBuilder, "buildingState");
                 }
 
                 // Reset builder's AI state
-                const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
+                const aiState = this.game.getComponent(assignedBuilder, "aiState");
                 if (aiState) {
                     aiState.state = 'idle';
                     aiState.targetPosition = null;

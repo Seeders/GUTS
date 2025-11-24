@@ -69,7 +69,7 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -90,11 +90,11 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     applyTrackingMark(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+
         // Validate target still exists
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetHealth = this.game.getComponent(targetId, "health");
         if (!targetHealth || targetHealth.current <= 0 || !targetPos) {
             this.logAbilityUsage(casterEntity, `Target has vanished from sight!`);
             return;
@@ -123,12 +123,11 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     applyOrStackMark(casterEntity, targetId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.markDuration;
 
         // Check for existing tracking mark
-        let existingMark = this.game.getComponent(targetId, ComponentTypes.BUFF);
+        let existingMark = this.game.getComponent(targetId, "buff");
 
         if (existingMark && existingMark.buffType === 'marked') {
             // Stack the mark up to the maximum
@@ -168,7 +167,7 @@ class TrackingMark extends GUTS.BaseAbility {
             }
         } else {
             // Apply new tracking mark
-            this.game.addComponent(targetId, ComponentTypes.BUFF, {
+            this.game.addComponent(targetId, "buff", {
                 buffType: 'marked',
                 modifiers: {
                     damageTakenMultiplier: 1 + this.markDamageIncrease,
@@ -225,7 +224,7 @@ class TrackingMark extends GUTS.BaseAbility {
         
         // Priority 1: Unmarked enemies (new marks are more valuable)
         const unmarkedEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            const buff = this.game.getComponent(enemyId, "buff");
             return !buff || buff.buffType !== 'marked';
         });
         
@@ -236,7 +235,7 @@ class TrackingMark extends GUTS.BaseAbility {
         
         // Priority 2: Marked enemies that can be stacked further
         const stackableEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            const buff = this.game.getComponent(enemyId, "buff");
             return buff && buff.buffType === 'marked' && buff.stacks < this.maxMarks;
         });
         
@@ -250,14 +249,14 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     selectClosestEnemy(enemies, casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos || enemies.length === 0) return null;
         
         let closest = null;
         let closestDistance = Infinity;
         
         enemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -280,7 +279,7 @@ class TrackingMark extends GUTS.BaseAbility {
         let highestStacks = 0;
         
         enemies.forEach(enemyId => {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+            const buff = this.game.getComponent(enemyId, "buff");
             if (!buff || buff.buffType !== 'marked') return;
             
             // Use >= for consistent tie-breaking (first in sorted order wins)

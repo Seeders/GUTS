@@ -4,8 +4,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.game = game;
         this.game.unitOrderSystem = this;
 
-        this.CT = this.game.gameManager.call('getComponentTypes');
-
         this.isTargeting = false;
         this.isForceMove = false;
         this.pendingCallbacks = 0;
@@ -35,9 +33,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         
         actionPanel.innerHTML = "";
           
-        
+
+
         const firstUnit = placement.squadUnits[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, this.CT.UNIT_TYPE) : null;
+        const unitType = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
         
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -236,8 +235,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placementIds.forEach((placementId) => {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             placement.squadUnits.forEach((unitId) => {
-                const position = this.game.getComponent(unitId, this.CT.POSITION);
-                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
+                const position = this.game.getComponent(unitId, "position");
+                const aiState = this.game.getComponent(unitId, "aiState");
                 if (this.game.effectsSystem && position) {
                     this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
@@ -260,9 +259,9 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         }
     }
     onUnitSelected(entityId){
-        const unitType = this.game.getComponent(entityId, this.CT.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "units") {
-            const placement = this.game.getComponent(entityId, this.CT.PLACEMENT);        
+            const placement = this.game.getComponent(entityId, "placement");        
             const placementId = placement.placementId;
             this.showSquadActionPanel(placementId);   
             this.startTargeting();     
@@ -277,8 +276,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPositions = [];
         placementIds.forEach((placementId) => {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
-            placement.squadUnits.forEach((entityId) => {                
-                const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
+            placement.squadUnits.forEach((entityId) => {
+                const aiState = this.game.getComponent(entityId, "aiState");   
                 if(aiState.targetPosition && aiState.aiControllerId == "UnitOrderSystem"){
                     targetPositions.push(aiState.targetPosition);
                 }
@@ -370,13 +369,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     getBuildingUnderConstructionAtPosition(worldPos) {
-        const CT = this.CT;
-        const buildings = this.game.getEntitiesWith(CT.PLACEMENT, CT.POSITION, CT.UNIT_TYPE);
+        const buildings = this.game.getEntitiesWith("placement", "position", "unitType");
 
         for (const entityId of buildings) {
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const placement = this.game.getComponent(entityId, "placement");
+            const pos = this.game.getComponent(entityId, "position");
+            const unitType = this.game.getComponent(entityId, "unitType");
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -397,8 +395,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     getBuilderUnitFromSelection(placementIds) {
-        const CT = this.CT;
-
         for (const placementId of placementIds) {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             if (!placement) continue;
@@ -422,11 +418,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
-        const CT = this.CT;
         const Components = this.game.gameManager.call('getComponents');
 
-        const buildingPos = this.game.getComponent(buildingEntityId, CT.POSITION);
-        const buildingPlacement = this.game.getComponent(buildingEntityId, CT.PLACEMENT);
+        const buildingPos = this.game.getComponent(buildingEntityId, "position");
+        const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
 
         if (!buildingPos || !buildingPlacement) return;
 
@@ -437,7 +432,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 for (const ability of abilities) {
                     if (ability.id === 'build') {
 
-                        this.game.addComponent(builderEntityId, CT.BUILDING_STATE,
+                        this.game.addComponent(builderEntityId, "buildingState",
                             {
                                 state: 'walking_to_construction',
                                 targetBuildingEntityId: buildingEntityId,
@@ -452,7 +447,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                         if (this.game.commandQueueSystem) {
                             this.game.gameManager.call('queueCommand', builderEntityId, {
                                 type: 'build',
-                                controllerId: CT.BUILDING_STATE,
+                                controllerId: "buildingState",
                                 targetPosition: buildingPos,
                                 target: buildingEntityId,
                                 meta: { preventEnemiesInRangeCheck: true },
@@ -505,7 +500,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                 this.game.gameManager.call('clearCommands', unitId);
 
                                 // Store player order for persistence through combat
-                                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
+                                const aiState = this.game.getComponent(unitId, "aiState");
                                 if (aiState) {
                                     aiState.playerOrder = {
                                         targetPosition: targetPosition,
@@ -569,7 +564,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 this.game.gameManager.call('clearCommands', unitId);
 
                 // Store player order for persistence through combat
-                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
+                const aiState = this.game.getComponent(unitId, "aiState");
                 if (aiState) {
                     aiState.playerOrder = {
                         targetPosition: targetPosition,

@@ -12,8 +12,7 @@ class BaseAbility {
         this.priority = config.priority || 5;
         this.castTime = config.castTime || 1.5;
         this.autoTrigger = config.autoTrigger || 'combat';
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
-        
+
         this.effects = this.defineEffects();
     }
     
@@ -46,7 +45,7 @@ class BaseAbility {
         if (this.game.damageSystem) {
             const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
 
-            const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            const targetPos = this.game.getComponent(targetId, "position");
             if (targetPos && this.game.effectsSystem) {
                 // Show impact effect - DamageSystem already handles damage numbers
                 this.createVisualEffect(targetPos, 'impact');
@@ -60,18 +59,18 @@ class BaseAbility {
     // FIXED: Entities already sorted from getEntitiesWith()
     getEnemiesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterTeam = this.game.getComponent(casterEntity, "team");
+
         if (!casterPos || !casterTeam) return [];
-        
-        return this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.TEAM, this.componentTypes.HEALTH)
+
+        return this.game.getEntitiesWith("position", "team", "health")
             .filter(entityId => {
                 if (entityId === casterEntity) return false;
-                
-                const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-                const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-                const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+
+                const pos = this.game.getComponent(entityId, "position");
+                const team = this.game.getComponent(entityId, "team");
+                const health = this.game.getComponent(entityId, "health");
                 
                 if (!pos || !team || !health || health.current <= 0) return false;
                 if (team.team === casterTeam.team) return false;
@@ -84,16 +83,16 @@ class BaseAbility {
     // FIXED: Entities already sorted from getEntitiesWith()
     getAlliesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterTeam = this.game.getComponent(casterEntity, "team");
+
         if (!casterPos || !casterTeam) return [];
-        
-        return this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.TEAM, this.componentTypes.HEALTH)
+
+        return this.game.getEntitiesWith("position", "team", "health")
             .filter(entityId => {
-                const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-                const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-                const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+                const pos = this.game.getComponent(entityId, "position");
+                const team = this.game.getComponent(entityId, "team");
+                const health = this.game.getComponent(entityId, "health");
                 
                 if (!pos || !team || !health || health.current <= 0) return false;
                 if (team.team !== casterTeam.team) return false;
@@ -111,13 +110,13 @@ class BaseAbility {
         let bestScore = 0;
         
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (!pos) return;
-            
+
             let nearbyCount = 0;
             entities.forEach(otherId => {
                 if (otherId === entityId) return;
-                const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
+                const otherPos = this.game.getComponent(otherId, "position");
                 if (!otherPos) return;
                 
                 const distance = Math.sqrt(Math.pow(pos.x - otherPos.x, 2) + Math.pow(pos.z - otherPos.z, 2));
@@ -141,7 +140,7 @@ class BaseAbility {
         // Self-targeting abilities don't need facing change
         if (this.targetType === 'self') return null;
 
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
 
         let candidates = [];
@@ -163,7 +162,7 @@ class BaseAbility {
         const sortedCandidates = candidates.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
         sortedCandidates.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (!pos) return;
 
             const distance = Math.sqrt(

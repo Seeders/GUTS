@@ -18,20 +18,18 @@ class BuildAbility extends GUTS.BaseAbility {
         if(!this.enabled){
             return false;
         }
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        let buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-        
+        let buildingState = this.game.getComponent(entityId, "buildingState");
+
         if (!buildingState) {
             return false;
         }
 
-        return this.game.aiSystem.getCurrentAIControllerId(entityId) == ComponentTypes.BUILDING_STATE;
+        return this.game.aiSystem.getCurrentAIControllerId(entityId) == "buildingState";
     }
     execute(entityId, targetData) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const buildState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
-        const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-        const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
+        const buildState = this.game.getComponent(entityId, "buildingState");
+        const pos = this.game.getComponent(entityId, "position");
+        const vel = this.game.getComponent(entityId, "velocity");
         
         if (!buildState || !pos || !vel) {
             return null;
@@ -57,18 +55,17 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
-        const aiState = this.game.getComponent(peasantEntityId, ComponentTypes.AI_STATE);
-        const buildingPos = this.game.getComponent(buildingEntityId, ComponentTypes.POSITION);
+        const aiState = this.game.getComponent(peasantEntityId, "aiState");
+        const buildingPos = this.game.getComponent(buildingEntityId, "position");
 
         if (!buildingPos) return;
 
-        const buildingPlacement = this.game.getComponent(buildingEntityId, ComponentTypes.PLACEMENT);
-        const renderComponent = this.game.getComponent(buildingEntityId, ComponentTypes.RENDERABLE);
+        const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
+        const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
         renderComponent.spawnType = 'underConstruction';
 
-        this.game.removeComponent(buildingEntityId, ComponentTypes.HEALTH);
+        this.game.removeComponent(buildingEntityId, "health");
 
         const peasantId = peasantInfo.peasantId;
         const buildTime = peasantInfo.buildTime;
@@ -80,13 +77,13 @@ class BuildAbility extends GUTS.BaseAbility {
         }
 
         this.peasantId = peasantEntityId;
-        this.game.addComponent(peasantEntityId, ComponentTypes.BUILDING_STATE, {
+        this.game.addComponent(peasantEntityId, "buildingState", {
             state: 'walking_to_construction',
             targetBuildingEntityId: buildingEntityId,
             targetBuildingPosition: buildingPos,
             constructionStartTime: this.game.state.round
         });
-        this.game.addComponent(buildingEntityId, ComponentTypes.BUILDING_STATE, {
+        this.game.addComponent(buildingEntityId, "buildingState", {
             state: 'planned_for_construction',
             targetBuildingEntityId: buildingEntityId,
             targetBuildingPosition: buildingPos,
@@ -98,7 +95,7 @@ class BuildAbility extends GUTS.BaseAbility {
         if (this.game.commandQueueSystem) {
             this.game.gameManager.call('queueCommand', peasantEntityId, {
                 type: 'build',
-                controllerId: ComponentTypes.BUILDING_STATE,
+                controllerId: "buildingState",
                 targetPosition: buildingPos,
                 target: buildingEntityId,
                 meta: {
@@ -113,10 +110,10 @@ class BuildAbility extends GUTS.BaseAbility {
             }, true); // true = interrupt current command
         } else {
             // Fallback to old method if command queue system not available
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, ComponentTypes.BUILDING_STATE);
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, "buildingState");
             currentBuildingStateAI.targetPosition = buildingPos;
             currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(peasantEntityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
+            this.game.aiSystem.setCurrentAIController(peasantEntityId, "buildingState", currentBuildingStateAI);
         }
 
         if (buildingPlacement) {
@@ -126,15 +123,14 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     walkToConstruction(buildState, pos, vel) {
-        
+
         if (!buildState.targetBuildingPosition || !buildState.targetBuildingEntityId) {
             buildState.state = 'idle';
             return;
         }
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.POSITION);
-        const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.BUILDING_STATE);
+        const buildingPosition = this.game.getComponent(buildState.targetBuildingEntityId, "position");
+        const buildingBuildState = this.game.getComponent(buildState.targetBuildingEntityId, "buildingState");
         
         if (!buildingPosition) {
             buildState.targetBuildingEntityId = null;
@@ -148,11 +144,11 @@ class BuildAbility extends GUTS.BaseAbility {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.buildRange) {
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, "buildingState");
             currentBuildingStateAI.targetPosition = null;
             currentBuildingStateAI.state = 'idle';
             currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);
+            this.game.aiSystem.setCurrentAIController(buildState.entityId, "buildingState", currentBuildingStateAI);
 
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
             pos.z = buildState.targetBuildingPosition.z;
@@ -160,7 +156,7 @@ class BuildAbility extends GUTS.BaseAbility {
             vel.vz = 0;
 
             // Make the peasant face the building
-            const facing = this.game.getComponent(buildState.entityId, ComponentTypes.FACING);
+            const facing = this.game.getComponent(buildState.entityId, "facing");
             if (facing) {
                 const dx = buildState.targetBuildingPosition.x - pos.x;
                 const dz = buildState.targetBuildingPosition.z - pos.z;
@@ -172,23 +168,22 @@ class BuildAbility extends GUTS.BaseAbility {
             buildState.constructionStartTime = this.game.state.round;
             buildingBuildState.state = 'under_construction';
             buildingBuildState.constructionStartTime = this.game.state.round;
-        } else {     
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, ComponentTypes.BUILDING_STATE);
+        } else {
+            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, "buildingState");
             if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
-                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;  
-                currentBuildingStateAI.state = 'chasing';                          
+                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;
+                currentBuildingStateAI.state = 'chasing';
                 currentBuildingStateAI.meta = this.meta;
-                this.game.aiSystem.setCurrentAIController(buildState.entityId, ComponentTypes.BUILDING_STATE, currentBuildingStateAI);   
+                this.game.aiSystem.setCurrentAIController(buildState.entityId, "buildingState", currentBuildingStateAI);
             }
         }
     }
 
     constructBuilding(buildState) {
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
-        const unitType = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.UNIT_TYPE);
-        this.game.addComponent(buildState.targetBuildingEntityId, ComponentTypes.HEALTH, {
+        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, "placement");
+        const unitType = this.game.getComponent(buildState.targetBuildingEntityId, "unitType");
+        this.game.addComponent(buildState.targetBuildingEntityId, "health", {
             max: unitType.hp,
             current: unitType.hp
         });
@@ -212,10 +207,9 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     completeConstruction(buildState) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.PLACEMENT);
-        const aiState = this.game.getComponent(this.peasantId, ComponentTypes.AI_STATE);
-        const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, ComponentTypes.RENDERABLE);
+        const buildingPlacement = this.game.getComponent(buildState.targetBuildingEntityId, "placement");
+        const aiState = this.game.getComponent(this.peasantId, "aiState");
+        const renderComponent = this.game.getComponent(buildState.targetBuildingEntityId, "renderable");
         renderComponent.spawnType = buildingPlacement.unitType.id;
         this.game.gameManager.call('removeInstance', buildState.targetBuildingEntityId);
         if (!buildingPlacement) {
@@ -237,9 +231,9 @@ class BuildAbility extends GUTS.BaseAbility {
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
 
-        // Mark command as complete in command queue system       
+        // Mark command as complete in command queue system
         this.game.gameManager.call('completeCurrentCommand', this.peasantId);
-        this.game.removeComponent(this.peasantId, ComponentTypes.BUILDING_STATE);
+        this.game.removeComponent(this.peasantId, "buildingState");
     }
     
     onPlacementPhaseStart(entityId) {

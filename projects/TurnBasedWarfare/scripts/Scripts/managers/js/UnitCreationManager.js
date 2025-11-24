@@ -95,8 +95,7 @@ class UnitCreationManager {
 
             // Set playerId on team component if provided
             if (playerId) {
-                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                const teamComponent = this.game.getComponent(entity, ComponentTypes.TEAM);
+                const teamComponent = this.game.getComponent(entity, "team");
                 if (teamComponent) {
                     teamComponent.playerId = playerId;
                 }
@@ -158,8 +157,7 @@ class UnitCreationManager {
 
                 // Add playerId to the team component if provided
                 if (playerId && this.game.componentManager) {
-                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                    const teamComponent = this.game.getComponent(entityId, ComponentTypes.TEAM);
+                    const teamComponent = this.game.getComponent(entityId, "team");
                     if (teamComponent) {
                         teamComponent.playerId = playerId;
                     }
@@ -292,10 +290,9 @@ class UnitCreationManager {
      */
     addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
         const unitType = placement.unitType;
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
         // Position component
-        this.game.addComponent(entity, ComponentTypes.POSITION, {
+        this.game.addComponent(entity, "position", {
             x: worldX,
             y: worldY,
             z: worldZ
@@ -303,7 +300,7 @@ class UnitCreationManager {
 
         // Velocity component with movement capabilities
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
-        this.game.addComponent(entity, ComponentTypes.VELOCITY, {
+        this.game.addComponent(entity, "velocity", {
             vx: 0,
             vy: 0,
             vz: 0,
@@ -313,19 +310,19 @@ class UnitCreationManager {
         });
 
         // Team identification
-        this.game.addComponent(entity, ComponentTypes.TEAM, {
+        this.game.addComponent(entity, "team", {
             team: team
         });
 
-        this.game.addComponent(entity, ComponentTypes.PLACEMENT,
+        this.game.addComponent(entity, "placement",
             placement);
 
         // Unit type information
-        this.game.addComponent(entity, ComponentTypes.UNIT_TYPE,
+        this.game.addComponent(entity, "unitType",
             unitType);
 
         // Facing direction
-        this.game.addComponent(entity, ComponentTypes.FACING, {
+        this.game.addComponent(entity, "facing", {
             angle: teamConfig.initialFacing
         });
     }
@@ -336,17 +333,15 @@ class UnitCreationManager {
      * @param {Object} unitType - Unit type definition
      */
     addCombatComponents(entity, unitType) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-
         // Health component
         const maxHP = unitType.hp || this.defaults.hp;
-        this.game.addComponent(entity, ComponentTypes.HEALTH, {
+        this.game.addComponent(entity, "health", {
             max: maxHP,
             current: maxHP
         });
 
         // Combat component with all combat stats
-        this.game.addComponent(entity, ComponentTypes.COMBAT, {
+        this.game.addComponent(entity, "combat", {
             damage: unitType.damage,
             range: unitType.range,
             attackSpeed: unitType.attackSpeed,
@@ -362,7 +357,7 @@ class UnitCreationManager {
         });
 
         // Collision component for physical interactions
-        this.game.addComponent(entity, ComponentTypes.COLLISION, {
+        this.game.addComponent(entity, "collision", {
             radius: unitType.size || this.defaults.size,
             height: unitType.height
         });
@@ -373,10 +368,8 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-
         // AI state for behavior control
-        this.game.addComponent(entity, ComponentTypes.AI_STATE, {
+        this.game.addComponent(entity, "aiState", {
             state: 'idle',
             targetPosition: targetPosition,
             target: null,
@@ -385,14 +378,14 @@ class UnitCreationManager {
         });
 
         // Animation state
-        this.game.addComponent(entity, ComponentTypes.ANIMATION, {
+        this.game.addComponent(entity, "animation", {
             scale: 1,
             rotation: 0,
             flash: 0
         });
 
         // Equipment container
-        this.game.addComponent(entity, ComponentTypes.EQUIPMENT, {
+        this.game.addComponent(entity, "equipment", {
             slots: {
                 mainHand: null,
                 offHand: null,
@@ -412,10 +405,8 @@ class UnitCreationManager {
      * @param {Object} teamConfig - Team configuration
      */
     addVisualComponents(entity, unitType, teamConfig) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-
         // Renderable component for visual representation
-        this.game.addComponent(entity, ComponentTypes.RENDERABLE, {
+        this.game.addComponent(entity, "renderable", {
             objectType: unitType.collection,
             spawnType: unitType.id || 'default',
             capacity: 128
@@ -425,11 +416,9 @@ class UnitCreationManager {
         if (teamConfig.colorTint && this.game.addComponent) {
             // Optional: Add color tint component if available
             try {
-                if (ComponentTypes.COLOR_TINT) {
-                    this.game.addComponent(entity, ComponentTypes.COLOR_TINT, {
-                        color: teamConfig.colorTint
-                    });
-                }
+                this.game.addComponent(entity, "colorTint", {
+                    color: teamConfig.colorTint
+                });
             } catch (error) {
                 // Color tint not available, continue without it
             }

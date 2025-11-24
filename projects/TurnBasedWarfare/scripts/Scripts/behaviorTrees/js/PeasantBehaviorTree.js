@@ -1,7 +1,7 @@
 class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
-        const aiState = game.getComponent(entityId, game.componentTypes.AI_STATE);
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
+        const aiState = game.getComponent(entityId, 'aiState');
+        const pos = game.getComponent(entityId, 'position');
 
         // Selector: Pick highest priority that can run
         const results = [
@@ -29,7 +29,7 @@ console.log('check player order', aiState);
     }
 
     checkBuildOrder(entityId, game) {
-        const buildState = game.getComponent(entityId, game.componentTypes.BUILDER);
+        const buildState = game.getComponent(entityId, 'builder');
         if (!buildState || !buildState.assignedBuilding) return null;
 
         return {
@@ -41,7 +41,7 @@ console.log('check player order', aiState);
     }
 
     checkMining(entityId, game) {
-        const team = game.getComponent(entityId, game.componentTypes.TEAM);
+        const team = game.getComponent(entityId, 'team');
         const nearbyMine = this.findNearestMine(entityId, team.team, game);
 
         if (!nearbyMine) return null;

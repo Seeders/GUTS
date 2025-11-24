@@ -73,7 +73,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, "position");
         if (!pos) return;
         
         // Immediate cast effect
@@ -88,20 +88,19 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     
     createConsecration(casterEntity, consecrationPos) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
-        
+
         // Create consecrated ground entity
         const consecrationId = this.game.createEntity();
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
-        this.game.addComponent(consecrationId, ComponentTypes.POSITION, {
+        this.game.addComponent(consecrationId, "position", {
             x: consecrationPos.x,
             y: consecrationPos.y,
             z: consecrationPos.z
         });
 
-        this.game.addComponent(consecrationId, ComponentTypes.TEMPORARY_EFFECT, {
+        this.game.addComponent(consecrationId, "temporaryEffect", {
             effectType: 'consecrated_ground',
             data: {
                 caster: casterEntity,
@@ -113,7 +112,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             createdTime: this.game.state.now
         });
 
-        this.game.addComponent(consecrationId, ComponentTypes.RENDERABLE, {
+        this.game.addComponent(consecrationId, "renderable", {
             objectType: "effects",
             spawnType: "consecration",
             capacity: 128
@@ -234,25 +233,25 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Execute a single consecration tick deterministically
     executeConsecrationTick(consecrationId, casterEntity, consecrationPos, tickIndex) {
         // Check if consecration entity still exists
-        if (!this.game.hasComponent(consecrationId, this.componentTypes.TEMPORARY_EFFECT)) {
+        if (!this.game.hasComponent(consecrationId, "temporaryEffect")) {
             return;
         }
-        
+
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterTeam = this.game.getComponent(casterEntity, "team");
+
         if (!casterHealth || casterHealth.current <= 0 || !casterTeam) {
             // Caster died, end consecration early
             this.cleanupConsecration(consecrationId);
             return;
         }
-        
+
         // DESYNC SAFE: Get all units in area deterministically
         const allUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
         
         // Sort units for consistent processing order
@@ -262,10 +261,10 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         let livingHealed = 0;
         
         sortedUnits.forEach(unitId => {
-            const unitPos = this.game.getComponent(unitId, this.componentTypes.POSITION);
-            const health = this.game.getComponent(unitId, this.componentTypes.HEALTH);
-            const team = this.game.getComponent(unitId, this.componentTypes.TEAM);
-            const unitType = this.game.getComponent(unitId, this.componentTypes.UNIT_TYPE);
+            const unitPos = this.game.getComponent(unitId, "position");
+            const health = this.game.getComponent(unitId, "health");
+            const team = this.game.getComponent(unitId, "team");
+            const unitType = this.game.getComponent(unitId, "unitType");
             
             if (!unitPos || !health || !team || health.current <= 0) return;
             
@@ -335,17 +334,17 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Get all units in range
     getUnitsInRange(casterEntity, radius) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return [];
-        
+
         const allUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH
+            "position",
+            "health"
         );
-        
+
         return allUnits.filter(unitId => {
-            const unitPos = this.game.getComponent(unitId, this.componentTypes.POSITION);
-            const health = this.game.getComponent(unitId, this.componentTypes.HEALTH);
+            const unitPos = this.game.getComponent(unitId, "position");
+            const health = this.game.getComponent(unitId, "health");
             
             if (!unitPos || !health || health.current <= 0) return false;
             
@@ -360,9 +359,9 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Clean up consecration
     cleanupConsecration(consecrationId) {
-        if (this.game.hasComponent(consecrationId, this.componentTypes.TEMPORARY_EFFECT)) {
+        if (this.game.hasComponent(consecrationId, "temporaryEffect")) {
             // Visual effect for consecration ending
-            const consecrationPos = this.game.getComponent(consecrationId, this.componentTypes.POSITION);
+            const consecrationPos = this.game.getComponent(consecrationId, "position");
             if (consecrationPos) {
                 this.createVisualEffect(consecrationPos, 'consecration', { 
                     count: 12, 

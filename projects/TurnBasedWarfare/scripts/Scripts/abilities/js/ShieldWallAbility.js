@@ -65,7 +65,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     
     canExecute(casterEntity) {
         // Check if already has shield wall to prevent stacking
-        const existingWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        const existingWall = this.game.getComponent(casterEntity, "shieldWall");
         if (existingWall && existingWall.isActive) return false;
         
         // Use when enemies are nearby and threatening
@@ -74,7 +74,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -88,8 +88,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     }
     
     formShieldWall(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterCombat = this.game.getComponent(casterEntity, "combat");
         
         if (!casterPos) return;
         
@@ -100,11 +100,10 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         const originalArmor = casterCombat ? casterCombat.armor : 0;
         
         // Apply shield wall component with proper timing
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.wallDuration;
 
-        this.game.addComponent(casterEntity, ComponentTypes.SHIELD_WALL, {
+        this.game.addComponent(casterEntity, "shieldWall", {
             damageReduction: this.damageReduction,
             endTime: endTime,
             tauntRadius: this.tauntRadius,
@@ -114,7 +113,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         
         // Schedule defensive stance visual effect
         this.game.schedulingSystem.scheduleAction(() => {
-            const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(casterEntity, "position");
             if (pos) {
                 this.createVisualEffect(pos, 'defensive_stance');
             }
@@ -152,17 +151,16 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         let tauntedCount = 0;
         
         sortedEnemies.forEach((enemyId, index) => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyAI = this.game.getComponent(enemyId, this.componentTypes.AI_STATE);
+            const enemyPos = this.game.getComponent(enemyId, "position");
+            const enemyAI = this.game.getComponent(enemyId, "aiState");
             
             if (!enemyPos || !enemyAI) return;
             
             // Apply taunt component
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
 
-            this.game.addComponent(enemyId, ComponentTypes.TAUNT, {
+            this.game.addComponent(enemyId, "taunt", {
                 taunter: casterEntity,
                 endTime: tauntEndTime,
                 radius: this.tauntRadius,
@@ -172,13 +170,13 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             // Force AI to target the shield wall user
   
             enemyAI.target = casterEntity;
-            enemyAI.targetPosition = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            enemyAI.targetPosition = this.game.getComponent(casterEntity, "position");
             enemyAI.path = [];
             enemyAI.meta = {};
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const pos = this.game.getComponent(enemyId, "position");
                 if (pos) {
                     this.createVisualEffect(pos, 'taunt_aura');
                 }
@@ -195,8 +193,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     
     // FIXED: Shield wall ending warning
     warnShieldWallEnding(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         // Check if shield wall still exists and is active
         if (!shieldWall || !shieldWall.isActive || !casterPos) return;
@@ -212,8 +210,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     
     // FIXED: Proper shield wall removal
     removeShieldWall(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, this.componentTypes.SHIELD_WALL);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         if (!shieldWall) return;
         
@@ -226,7 +224,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         }
         
         // Remove shield wall component
-        this.game.removeComponent(casterEntity, this.componentTypes.SHIELD_WALL);
+        this.game.removeComponent(casterEntity, "shieldWall");
         
        
     }

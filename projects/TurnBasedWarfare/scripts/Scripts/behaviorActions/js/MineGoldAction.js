@@ -24,8 +24,8 @@ class MineGoldAction extends GUTS.BaseAction {
     }
 
     travelToMine(entityId, controller, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
-        const minePos = game.getComponent(controller.actionTarget, game.componentTypes.POSITION);
+        const pos = game.getComponent(entityId, 'position');
+        const minePos = game.getComponent(controller.actionTarget, 'position');
 
         if (this.distance(pos, minePos) < this.parameters.miningRange) {
             if (game.goldMineSystem.canMine(controller.actionTarget, entityId)) {
@@ -36,7 +36,7 @@ class MineGoldAction extends GUTS.BaseAction {
             return { complete: false };
         }
 
-        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+        const vel = game.getComponent(entityId, 'velocity');
         vel.targetX = minePos.x;
         vel.targetZ = minePos.z;
         return { complete: false };
@@ -57,14 +57,14 @@ class MineGoldAction extends GUTS.BaseAction {
     }
 
     travelToDepot(entityId, controller, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
+        const pos = game.getComponent(entityId, 'position');
         const depot = this.findNearestDepot(entityId, game);
 
         if (!depot) {
             return { complete: true, failed: true };
         }
 
-        const depotPos = game.getComponent(depot, game.componentTypes.POSITION);
+        const depotPos = game.getComponent(depot, 'position');
 
         if (this.distance(pos, depotPos) < this.parameters.depositRange) {
             controller.actionData.state = 'depositing';
@@ -72,7 +72,7 @@ class MineGoldAction extends GUTS.BaseAction {
             return { complete: false };
         }
 
-        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+        const vel = game.getComponent(entityId, 'velocity');
         vel.targetX = depotPos.x;
         vel.targetZ = depotPos.z;
         return { complete: false };
@@ -82,7 +82,7 @@ class MineGoldAction extends GUTS.BaseAction {
         const elapsed = game.state.now - controller.actionData.depositStartTime;
 
         if (elapsed >= this.parameters.depositDuration) {
-            const team = game.getComponent(entityId, game.componentTypes.TEAM);
+            const team = game.getComponent(entityId, 'team');
             game.goldSystem.addGold(team.team, controller.actionData.goldAmt);
 
             // Reset to mine again
@@ -95,21 +95,21 @@ class MineGoldAction extends GUTS.BaseAction {
     }
 
     findNearestDepot(entityId, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
-        const team = game.getComponent(entityId, game.componentTypes.TEAM);
+        const pos = game.getComponent(entityId, 'position');
+        const team = game.getComponent(entityId, 'team');
         const townHalls = game.getEntitiesWith(
-            game.componentTypes.POSITION,
-            game.componentTypes.TEAM,
-            game.componentTypes.UNIT_TYPE
+            'position',
+            'team',
+            'unitType'
         );
 
         let nearest = null;
         let minDist = Infinity;
 
         for (const thId of townHalls) {
-            const thTeam = game.getComponent(thId, game.componentTypes.TEAM);
-            const thType = game.getComponent(thId, game.componentTypes.UNIT_TYPE);
-            const thPos = game.getComponent(thId, game.componentTypes.POSITION);
+            const thTeam = game.getComponent(thId, 'team');
+            const thType = game.getComponent(thId, 'unitType');
+            const thPos = game.getComponent(thId, 'position');
 
             if (thTeam.team === team.team && thType.id === 'townHall') {
                 const dist = this.distance(pos, thPos);

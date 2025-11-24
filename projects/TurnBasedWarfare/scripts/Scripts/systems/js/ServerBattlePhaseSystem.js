@@ -98,23 +98,22 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     checkForBattleEnd() {
         if (!this.game.componentManager) return;
-        
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
         const allBattleEntities = this.game.getEntitiesWith(
-            ComponentTypes.TEAM,
-            ComponentTypes.HEALTH,
-            ComponentTypes.UNIT_TYPE
+            "team",
+            "health",
+            "unitType"
         );
 
         const aliveEntities = allBattleEntities.filter(entityId => {
-            const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-            const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+            const health = this.game.getComponent(entityId, "health");
+            const deathState = this.game.getComponent(entityId, "deathState");
             return health && health.current > 0 && (!deathState || !deathState.isDying);
         });
 
         const teams = new Map();
         for (const entityId of aliveEntities) {
-            const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
+            const team = this.game.getComponent(entityId, "team");
             if (team) {
                 if (!teams.has(team.team)) {
                     teams.set(team.team, []);
@@ -156,10 +155,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkNoCombatActive(aliveEntities) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        
         for (const entityId of aliveEntities) {
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(entityId, "aiState");
          //   console.log(entityId, 'currentTarget', aiState.target);
             if (aiState && aiState.target) {
                 return false;
@@ -170,12 +167,11 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkAllUnitsAtTargetPosition(aliveEntities) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const TARGET_POSITION_THRESHOLD = 20;
-        
+
         for (const entityId of aliveEntities) {
-            const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const pos = this.game.getComponent(entityId, "position");
+            const aiState = this.game.getComponent(entityId, "aiState");
             const targetPos = aiState?.targetPosition;
 
             if (!pos || !targetPos) {
@@ -259,11 +255,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let sideSurvivors = [];
             for (const squad of squads) {
                 if (squad.squadUnits && this.game.componentManager) {
-                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                    
                     for (const entityId of squad.squadUnits) {
-                        const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                        const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+                        const health = this.game.getComponent(entityId, "health");
+                        const deathState = this.game.getComponent(entityId, "deathState");
                   
                         if (health && health.current > 0 && (!deathState || !deathState.isDying)) {
                             sideSurvivors.push(entityId);
@@ -340,15 +334,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     onBattleEnd() {
 
         if (!this.game.componentManager) return;
-        
+
         this.currentBattleTime = 0;
-        
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
+
         const entitiesToDestroy = new Set();
-        
+
         // Collect battle entities (but not players)
         [
-            ComponentTypes.CORPSE
+            "corpse"
         ].forEach(componentType => {
             const entities = this.game.getEntitiesWith(componentType);
             entities.forEach(id => {

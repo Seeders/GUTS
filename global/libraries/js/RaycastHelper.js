@@ -199,21 +199,20 @@ class RaycastHelper {
      * @param {THREE.Vector3} worldPos - World position to check
      * @param {Function} getEntitiesWithComponents - Function to get entities
      * @param {Function} getComponent - Function to get component from entity
-     * @param {Object} componentTypes - Component type constants
      * @param {number} clickRadius - Maximum search radius
      * @returns {string|null} Entity ID or null
      */
-    getEntityAtWorldPosition(worldPos, getEntitiesWithComponents, getComponent, componentTypes, clickRadius = 30) {
+    getEntityAtWorldPosition(worldPos, getEntitiesWithComponents, getComponent, clickRadius = 30) {
         let closestEntityId = null;
         let closestDistance = clickRadius;
 
         const entities = getEntitiesWithComponents(
-            componentTypes.POSITION,
-            componentTypes.TEAM
+            "position",
+            "team"
         );
 
         entities.forEach(entityId => {
-            const pos = getComponent(entityId, componentTypes.POSITION);
+            const pos = getComponent(entityId, "position");
 
             if (!pos) return;
 

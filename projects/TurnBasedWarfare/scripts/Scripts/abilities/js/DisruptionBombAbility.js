@@ -61,7 +61,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, position);
         if (!pos) return;
         
         // Immediate cast effect
@@ -75,11 +75,11 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     }
     
     throwDisruptionBomb(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, position);
         if (!pos) return;
         
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, health);
         if (!casterHealth || casterHealth.current <= 0) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -111,8 +111,8 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         let disruptedCount = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const enemyPos = this.game.getComponent(enemyId, position);
+            const enemyHealth = this.game.getComponent(enemyId, health);
             
             // Only affect living enemies
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
@@ -125,7 +125,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
             
             if (distance <= this.explosionRadius) {
                 // DESYNC SAFE: Check if already disrupted - don't stack disruptions
-                const existingBuff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+                const existingBuff = this.game.getComponent(enemyId, buff);
                 
                 if (existingBuff && existingBuff.buffType === 'disrupted') {
                     // DESYNC SAFE: Just refresh duration instead of stacking
@@ -133,8 +133,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
                     existingBuff.appliedTime = this.game.state.now;
                 } else {
                     // Apply new disruption buff
-                    const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                    this.game.addComponent(enemyId, ComponentTypes.BUFF, {
+                    this.game.addComponent(enemyId, "buff", {
                         buffType: 'disrupted',
                         modifiers: {
                             abilitiesDisabled: true,
@@ -175,14 +174,14 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         let bestScore = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const pos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(enemyId, position);
             if (!pos) return;
             
             // Count nearby enemies within explosion radius
             let nearbyCount = 0;
             sortedEnemies.forEach(otherId => {
                 if (otherId === enemyId) return;
-                const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
+                const otherPos = this.game.getComponent(otherId, position);
                 if (!otherPos) return;
                 
                 const distance = Math.sqrt(
@@ -206,13 +205,13 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove disruption effect
     removeDisruption(enemyId) {
         // Check if enemy still exists and has the disruption buff
-        if (this.game.hasComponent(enemyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+        if (this.game.hasComponent(enemyId, "buff")) {
+            const buff = this.game.getComponent(enemyId, "buff");
             if (buff && buff.buffType === 'disrupted') {
-                this.game.removeComponent(enemyId, this.componentTypes.BUFF);
+                this.game.removeComponent(enemyId, "buff");
                 
                 // Visual effect when disruption expires
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const enemyPos = this.game.getComponent(enemyId, "position");
                 if (enemyPos) {
                     this.createVisualEffect(enemyPos, 'disruption', { 
                         count: 3, 

@@ -68,7 +68,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // Immediate cast effect
@@ -83,8 +83,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     
     applyWeaponEnchantments(casterEntity) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
         
@@ -95,14 +95,14 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         let enchantedCount = 0;
         
         sortedAllies.forEach((allyId, index) => {
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            const allyHealth = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const allyPos = this.game.getComponent(allyId, "position");
+            const allyHealth = this.game.getComponent(allyId, "health");
             
             // Only enchant living allies
             if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
             
             // DESYNC SAFE: Check if already enchanted - don't stack enchantments
-            const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+            const existingBuff = this.game.getComponent(allyId, "buff");
             
             // DESYNC SAFE: Select element deterministically based on ally index and game time
             const selectedElement = this.selectDeterministicElement(allyId, index);
@@ -114,8 +114,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
                 existingBuff.modifiers.weaponElement = selectedElement;
             } else {
                 // Apply new weapon enchantment
-                const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-                this.game.addComponent(allyId, ComponentTypes.BUFF, {
+                this.game.addComponent(allyId, "buff", {
                     buffType: 'enchant_weapon',
                     modifiers: {
                         weaponElement: selectedElement,
@@ -167,15 +166,15 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove enchantment effect
     removeEnchantment(allyId) {
         // Check if ally still exists and has the enchantment buff
-        if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+        if (this.game.hasComponent(allyId, "buff")) {
+            const buff = this.game.getComponent(allyId, "buff");
             if (buff && buff.buffType === 'enchant_weapon') {
                 const element = buff.modifiers.weaponElement || 'fire';
                 
-                this.game.removeComponent(allyId, this.componentTypes.BUFF);
+                this.game.removeComponent(allyId, "buff");
                 
                 // Visual effect when enchantment expires
-                const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+                const allyPos = this.game.getComponent(allyId, "position");
                 if (allyPos) {
                     this.createVisualEffect(allyPos, `enchant_${element}`, { 
                         count: 3, 

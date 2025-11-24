@@ -58,7 +58,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     
     canExecute(casterEntity) {
         // Check if caster already has a phalanx buff to prevent re-casting
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        const existingBuff = this.game.getComponent(casterEntity, "buff");
         if (existingBuff && existingBuff.buffType === 'phalanx') return false;
         
         // Must have at least one nearby hoplite ally (not counting self)
@@ -67,8 +67,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterUnitType = this.game.getComponent(casterEntity, "unitType");
         
         if (!casterPos || !casterUnitType) return null;
         
@@ -87,7 +87,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     }
     
     createPhalanxFormation(casterEntity, nearbyHoplites) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // Sort hoplites deterministically for consistent processing
@@ -110,17 +110,16 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         // Process hoplites in deterministic order
         allHoplites.forEach((hopliteId, index) => {
             // Validate hoplite still exists and is a hoplite
-            const unitType = this.game.getComponent(hopliteId, this.componentTypes.UNIT_TYPE);
-            const position = this.game.getComponent(hopliteId, this.componentTypes.POSITION);
+            const unitType = this.game.getComponent(hopliteId, "unitType");
+            const position = this.game.getComponent(hopliteId, "position");
             
             if (!unitType || !position || unitType.id !== 'hoplite') return;
             
             // Apply phalanx buff
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
 
-            this.game.addComponent(hopliteId, ComponentTypes.BUFF, {
+            this.game.addComponent(hopliteId, "\L\1", {
                 buffType: 'phalanx',
                 modifiers: {
                     armorMultiplier: armorMultiplier,
@@ -141,7 +140,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             
             // Schedule a delayed formation link effect for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(hopliteId, this.componentTypes.POSITION);
+                const pos = this.game.getComponent(hopliteId, "position");
                 if (pos) {
                     this.createVisualEffect(pos, 'formation', { 
                         count: 3, 
@@ -174,7 +173,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         const hoplites = allAllies.filter(allyId => {
             if (allyId === casterEntity) return false; // Exclude self
             
-            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
+            const unitType = this.game.getComponent(allyId, "unitType");
             return unitType && unitType.id === 'hoplite';
         });
         
@@ -188,8 +187,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         
         hopliteIds.forEach(hopliteId => {
             // Check if hoplite still exists and has the phalanx buff
-            const buff = this.game.getComponent(hopliteId, this.componentTypes.BUFF);
-            const position = this.game.getComponent(hopliteId, this.componentTypes.POSITION);
+            const buff = this.game.getComponent(hopliteId, "buff");
+            const position = this.game.getComponent(hopliteId, "position");
             
             if (!buff || buff.buffType !== 'phalanx' || !position) return;
             

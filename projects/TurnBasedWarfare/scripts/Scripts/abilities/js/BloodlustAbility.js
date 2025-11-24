@@ -46,12 +46,12 @@ class BloodlustAbility extends GUTS.BaseAbility {
     
     canExecute(casterEntity) {
         // Check if already has bloodlust active to prevent stacking
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        const existingBuff = this.game.getComponent(casterEntity, "buff");
         return !existingBuff || existingBuff.buffType !== 'bloodlust';
     }
-    
+
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, "position");
         if (!pos) return;
         
         // Immediate cast effect
@@ -66,13 +66,13 @@ class BloodlustAbility extends GUTS.BaseAbility {
     
     activateBloodlust(casterEntity) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
+
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
-        
+
         // Check if already has bloodlust to prevent double application
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        const existingBuff = this.game.getComponent(casterEntity, "buff");
         if (existingBuff && existingBuff.buffType === 'bloodlust') {
             // DESYNC SAFE: Refresh duration instead of stacking
             existingBuff.endTime = this.game.state.now + this.duration;
@@ -82,10 +82,9 @@ class BloodlustAbility extends GUTS.BaseAbility {
             this.createVisualEffect(casterPos, 'bloodlust');
             return;
         }
-        
+
         // Apply bloodlust buff
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        this.game.addComponent(casterEntity, ComponentTypes.BUFF, {
+        this.game.addComponent(casterEntity, "buff", {
             buffType: 'bloodlust',
             modifiers: {
                 lifeSteal: this.lifeStealAmount,
@@ -120,15 +119,15 @@ class BloodlustAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove bloodlust buff
     removeBloodlust(casterEntity) {
         // Check if entity still exists and has the bloodlust buff
-        if (this.game.hasComponent(casterEntity, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        if (this.game.hasComponent(casterEntity, "buff")) {
+            const buff = this.game.getComponent(casterEntity, "buff");
             if (buff && buff.buffType === 'bloodlust') {
                 const stacksGained = buff.modifiers.currentStacks || 0;
-                
-                this.game.removeComponent(casterEntity, this.componentTypes.BUFF);
-                
+
+                this.game.removeComponent(casterEntity, "buff");
+
                 // Visual effect when bloodlust expires
-                const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+                const casterPos = this.game.getComponent(casterEntity, "position");
                 if (casterPos) {
                     this.createVisualEffect(casterPos, 'bloodlust', { 
                         count: 5, 
@@ -144,18 +143,18 @@ class BloodlustAbility extends GUTS.BaseAbility {
     
     // Helper method to handle kill stacking (called by damage system when enemy dies)
     onEnemyKilled(killerId) {
-        if (!this.game.hasComponent(killerId, this.componentTypes.BUFF)) return;
-        
-        const buff = this.game.getComponent(killerId, this.componentTypes.BUFF);
+        if (!this.game.hasComponent(killerId, "buff")) return;
+
+        const buff = this.game.getComponent(killerId, "buff");
         if (!buff || buff.buffType !== 'bloodlust') return;
-        
+
         // Increase kill stacks up to maximum
         const currentStacks = buff.modifiers.currentStacks || 0;
         if (currentStacks < this.maxStacks) {
             buff.modifiers.currentStacks = currentStacks + 1;
-            
+
             // Visual effect for gaining a kill stack
-            const killerPos = this.game.getComponent(killerId, this.componentTypes.POSITION);
+            const killerPos = this.game.getComponent(killerId, "position");
             if (killerPos) {
                 this.createVisualEffect(killerPos, 'bloodlust', { 
                     count: 3, 

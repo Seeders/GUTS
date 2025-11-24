@@ -23,12 +23,11 @@ class MineGoldAbility extends GUTS.BaseAbility {
         if(!this.enabled){
             return false;
         }
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        let miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+        let miningState = this.game.getComponent(entityId, "miningState");
         if (!miningState) {
-            const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
+            const team = this.game.getComponent(entityId, "team");
 
-            this.game.addComponent(entityId, ComponentTypes.MINING_STATE, {
+            this.game.addComponent(entityId, "miningState", {
                 state: 'idle',
                 targetMineEntityId: null,
                 targetMinePosition: null,
@@ -40,7 +39,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
                 team: team?.team,
                 entityId: entityId
             });
-            miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
+            miningState = this.game.getComponent(entityId, "miningState");
         }
 
         // Autocast behavior: only activate mining if there's NO current command
@@ -55,7 +54,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
         // Check if a player order just completed this round
         // If so, don't resume mining until next round
-        const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        const commandQueue = this.game.getComponent(entityId, "commandQueue");
         if (commandQueue && commandQueue.playerOrderCompletedThisRound) {
             return false;
         }
@@ -76,7 +75,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
         // If we were interrupted (controller was changed), reset mining state to idle
         const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
-        if(currentAIController !== ComponentTypes.MINING_STATE){
+        if(currentAIController !== "miningState"){
             // Mining was interrupted, reset state to idle so it can start fresh
             miningState.state = 'idle';
             miningState.targetMineEntityId = null;
@@ -87,19 +86,18 @@ class MineGoldAbility extends GUTS.BaseAbility {
             miningState.depositStartTime = 0;
             // Note: Keep hasGold if they were carrying gold when interrupted
 
-            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, ComponentTypes.MINING_STATE);
-            this.game.aiSystem.setCurrentAIController(entityId, ComponentTypes.MINING_STATE, currentMiningStateAI);
+            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, "miningState");
+            this.game.aiSystem.setCurrentAIController(entityId, "miningState", currentMiningStateAI);
         }
 
         return true;
     }
 
     execute(entityId, targetData) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miningState = this.game.getComponent(entityId, ComponentTypes.MINING_STATE);
-        const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-        const vel = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
-        const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+        const miningState = this.game.getComponent(entityId, "miningState");
+        const pos = this.game.getComponent(entityId, "position");
+        const vel = this.game.getComponent(entityId, "velocity");
+        const health = this.game.getComponent(entityId, "health");
         
         if (!miningState || !pos || !vel || !health || health.current <= 0) {
             this.enabled = false;
@@ -138,9 +136,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
         let closestMineEntityId = null;
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const pos = this.game.getComponent(miningState.entityId, ComponentTypes.POSITION);
-        const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+        const pos = this.game.getComponent(miningState.entityId, "position");
+        const aiState = this.game.getComponent(miningState.entityId, "aiState");
 
         if (!pos) return;
 
@@ -188,21 +185,20 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     findTownHall(miningState) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const combatUnits = this.game.getEntitiesWith(CT.POSITION, CT.TEAM, CT.UNIT_TYPE);        
-        const aiState = this.game.getComponent(miningState.entityId, CT.AI_STATE);
-        const pos = this.game.getComponent(miningState.entityId, CT.POSITION);
-        
+        const combatUnits = this.game.getEntitiesWith("position", "team", "unitType");
+        const aiState = this.game.getComponent(miningState.entityId, "aiState");
+        const pos = this.game.getComponent(miningState.entityId, "position");
+
         if (!pos) return;
-        
+
         let closestTownHall = null;
         let closestDistance = Infinity;
-    
+
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
-            const townHallPos = this.game.getComponent(entityId, CT.POSITION);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
-            const team = this.game.getComponent(entityId, CT.TEAM);
+            const townHallPos = this.game.getComponent(entityId, "position");
+            const unitType = this.game.getComponent(entityId, "unitType");
+            const team = this.game.getComponent(entityId, "team");
         
             if (team.team == miningState.team && unitType.id == "townHall") {
                 // Calculate distance to this town hall
@@ -252,8 +248,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
 
         if (dist < this.miningRange) {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(miningState.entityId, "aiState");
             
             const mineEntityId = miningState.targetMineEntityId;
             const isOccupied = this.game.goldMineSystem.isMineOccupied(mineEntityId);
@@ -285,9 +280,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
                 miningState.miningStartTime = this.game.state.now;
             }
         } else {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-            
+            const aiState = this.game.getComponent(miningState.entityId, "aiState");
+
             if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
                 aiState.state = 'chasing';
                 aiState.targetPosition = miningState.targetMinePosition;        
@@ -311,8 +305,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.depositRange) {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(miningState.entityId, "aiState");
             
             if (aiState) {
                 aiState.state = 'idle';
@@ -325,9 +318,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
             miningState.state = 'depositing';
             miningState.depositStartTime = this.game.state.now;
         } else {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
-            
+            const aiState = this.game.getComponent(miningState.entityId, "aiState");
+
             if (aiState && aiState.targetPosition != miningState.targetTownHall) {
                 aiState.state = 'chasing';
                 aiState.targetPosition = miningState.targetTownHall;
@@ -338,8 +330,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     waitAtMine(miningState, pos, vel) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const aiState = this.game.getComponent(miningState.entityId, ComponentTypes.AI_STATE);
+        const aiState = this.game.getComponent(miningState.entityId, "aiState");
 
         // Check if we're next in queue
         const isNextInQueue = this.game.goldMineSystem.isNextInQueue(

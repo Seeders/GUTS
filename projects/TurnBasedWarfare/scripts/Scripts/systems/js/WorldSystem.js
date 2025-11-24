@@ -225,7 +225,6 @@ class WorldSystem extends GUTS.BaseSystem {
      * WorldSystem only adds the visual representation on the client
      */
     addWorldEntityVisuals(worldObj) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
 
         // Find the existing entity created by TerrainSystem
@@ -238,8 +237,8 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Add Renderable component for visual representation
-        if (!this.game.hasComponent(entityId, ComponentTypes.RENDERABLE)) {
-            this.game.addComponent(entityId, ComponentTypes.RENDERABLE,
+        if (!this.game.hasComponent(entityId, "renderable")) {
+            this.game.addComponent(entityId, "renderable",
                 {
                     objectType:'worldObjects', 
                     spawnType: worldObj.type, 

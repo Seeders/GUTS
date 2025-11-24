@@ -193,11 +193,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
 
         // Clear any miners targeting this mine
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const miners = this.game.getEntitiesWith("miningState");
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && miningState.targetMineEntityId === entityId) {
                 miningState.targetMineEntityId = null;
                 miningState.targetMinePosition = null;
@@ -223,11 +222,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Check if a mine is currently occupied by looking at component states
     isMineOccupied(mineEntityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const miners = this.game.getEntitiesWith("miningState");
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && 
                 miningState.targetMineEntityId === mineEntityId && 
                 miningState.state === 'mining') {
@@ -240,11 +238,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get the current miner at a mine by checking component states
     getCurrentMiner(mineEntityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const miners = this.game.getEntitiesWith("miningState");
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && 
                 miningState.targetMineEntityId === mineEntityId && 
                 miningState.state === 'mining') {
@@ -257,12 +254,11 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get all miners in queue (waiting_at_mine state) for a specific mine
     getMinersInQueue(mineEntityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
+        const miners = this.game.getEntitiesWith("miningState");
         const queuedMiners = [];
-        
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && 
                 miningState.targetMineEntityId === mineEntityId && 
                 miningState.state === 'waiting_at_mine') {
@@ -294,13 +290,12 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
         
         const nextMinerId = queue[0];
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
-        
+        const miningState = this.game.getComponent(nextMinerId, "miningState");
+
         if (miningState && miningState.state === 'waiting_at_mine') {
-            const aiState = this.game.getComponent(nextMinerId, ComponentTypes.AI_STATE);
-            const pos = this.game.getComponent(nextMinerId, ComponentTypes.POSITION);
-            const vel = this.game.getComponent(nextMinerId, ComponentTypes.VELOCITY);
+            const aiState = this.game.getComponent(nextMinerId, "aiState");
+            const pos = this.game.getComponent(nextMinerId, "position");
+            const vel = this.game.getComponent(nextMinerId, "velocity");
             
             if (pos && vel && miningState.targetMinePosition) {
                 miningState.waitingPosition = null;
@@ -370,11 +365,11 @@ class GoldMineSystem extends GUTS.BaseSystem {
         vein.claimedBy = null;
     }
 
-    
+
     onBattleEnd() {
-        const entities = this.game.getEntitiesWith(this.game.gameManager.call('getComponentTypes').MINING_STATE);        
+        const entities = this.game.getEntitiesWith("miningState");
         entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').MINING_STATE);
+            const miningState = this.game.getComponent(entityId, "miningState");
             if (miningState) {
                 miningState.miningStartTime = 0;
                 miningState.depositStartTime = 0;
@@ -383,7 +378,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     onDestroyBuilding(entityId){
-        const unitType = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if (unitType.id === 'goldMine') {
             this.game.goldMineSystem.destroyGoldMine(entityId);
         } 

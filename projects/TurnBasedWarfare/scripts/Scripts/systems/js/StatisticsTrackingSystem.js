@@ -40,11 +40,10 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     getUnitsDeployed() {
         try {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const playerUnits = this.game.getEntitiesWith(ComponentTypes.TEAM, ComponentTypes.UNIT_TYPE) || [];
-            
+            const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
+
             return playerUnits.filter(entityId => {
-                const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
+                const team = this.game.getComponent(entityId, "team");
                 return team?.team === 'player';
             }).length;
         } catch (error) {
@@ -54,14 +53,13 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     getUnitsRemaining() {
         try {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
             const alivePlayerUnits = this.game.getEntitiesWith(
-                ComponentTypes.TEAM, ComponentTypes.HEALTH, ComponentTypes.UNIT_TYPE
+                "team", "health", "unitType"
             ) || [];
-            
+
             return alivePlayerUnits.filter(entityId => {
-                const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
+                const team = this.game.getComponent(entityId, "team");
+                const health = this.game.getComponent(entityId, "health");
                 return team?.team === 'player' && health?.current > 0;
             }).length;
         } catch (error) {
@@ -88,12 +86,11 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     
     calculateArmyValue() {
         try {
-            const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-            const playerUnits = this.game.getEntitiesWith(ComponentTypes.TEAM, ComponentTypes.UNIT_TYPE) || [];
-            
+            const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
+
             return playerUnits.reduce((total, entityId) => {
-                const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-                const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
+                const team = this.game.getComponent(entityId, "team");
+                const unitType = this.game.getComponent(entityId, "unitType");
                 
                 if (team?.team === 'player' && unitType?.value) {
                     return total + unitType.value;

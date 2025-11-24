@@ -59,14 +59,14 @@ class RageAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return false;
         
         // Don't stack rage buffs - check if already raged
-        const existingBuff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        const existingBuff = this.game.getComponent(casterEntity, "buff");
         if (existingBuff && existingBuff.buffType === 'rage') return false;
         
         return true;
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -80,7 +80,7 @@ class RageAbility extends GUTS.BaseAbility {
     }
     
     activateRage(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
 
         // Create dramatic rage effects
@@ -156,8 +156,8 @@ class RageAbility extends GUTS.BaseAbility {
 
         // Schedule a secondary fury effect for visual impact
         this.game.schedulingSystem.scheduleAction(() => {
-            if (this.game.hasComponent && this.game.hasComponent(casterEntity, this.componentTypes.POSITION)) {
-                const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+            if (this.game.hasComponent && this.game.hasComponent(casterEntity, "position")) {
+                const pos = this.game.getComponent(casterEntity, "position");
                 if (pos) {
                     this.createVisualEffect(pos, 'fury');
                 }
@@ -165,11 +165,10 @@ class RageAbility extends GUTS.BaseAbility {
         }, 0.5, casterEntity);
         
         // Apply rage buff with proper timing
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
 
-        this.game.addComponent(casterEntity, ComponentTypes.BUFF, {
+        this.game.addComponent(casterEntity, "\L\1", {
             buffType: 'rage',
             modifiers: {
                 damageMultiplier: this.damageMultiplier,
@@ -198,10 +197,10 @@ class RageAbility extends GUTS.BaseAbility {
     
     // FIXED: Add rage ending warning for better gameplay feedback
     warnRageEnding(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         // Check if entity still exists and has the buff
-        const buff = this.game.getComponent(casterEntity, this.componentTypes.BUFF);
+        const buff = this.game.getComponent(casterEntity, "buff");
         if (!buff || buff.buffType !== 'rage') return;
         
         if (casterPos) {

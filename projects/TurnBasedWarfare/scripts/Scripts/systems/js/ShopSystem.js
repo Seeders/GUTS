@@ -37,10 +37,9 @@ class ShopSystem extends GUTS.BaseSystem {
         this.game.state.selectedEntity.collection = null;
     }
     onUnitSelected(entityId){
-        const CT = this.game.gameManager.call('getComponentTypes');
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "buildings") {
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);        
+            const placement = this.game.getComponent(entityId, "placement");        
             this.renderBuildingActions(placement);
         }
     }
@@ -76,7 +75,6 @@ class ShopSystem extends GUTS.BaseSystem {
             }
         } else {
             // Building is under construction - show cancel button
-            const CT = this.game.gameManager.call('getComponentTypes');
             const buildingEntityId = this.game.state.selectedEntity.entityId;
 
             if (placement.isUnderConstruction) {
@@ -617,8 +615,6 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     cancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-
         if (!placement || !placement.isUnderConstruction) {
             this.game.uiSystem?.showNotification('Building is not under construction', 'warning', 1000);
             return;
@@ -646,8 +642,6 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     performLocalCancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-
         // Refund the gold
         const refundAmount = placement.unitType.value || 0;
         if (refundAmount > 0) {
@@ -667,12 +661,12 @@ class ShopSystem extends GUTS.BaseSystem {
             }
 
             // Remove the builder's BUILDING_STATE component
-            if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
-                this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+            if (this.game.hasComponent(assignedBuilder, "buildingState")) {
+                this.game.removeComponent(assignedBuilder, "buildingState");
             }
 
             // Reset builder's AI state
-            const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
+            const aiState = this.game.getComponent(assignedBuilder, "aiState");
             if (aiState) {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;

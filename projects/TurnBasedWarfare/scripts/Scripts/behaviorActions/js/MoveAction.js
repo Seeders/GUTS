@@ -3,7 +3,7 @@ class MoveAction extends GUTS.BaseAction {
     static PRIORITY = 10;
 
     canExecute(entityId, controller, game) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
+        const pos = game.getComponent(entityId, 'position');
         const target = controller.actionTarget;
         if (!pos || !target) return false;
 
@@ -12,8 +12,8 @@ class MoveAction extends GUTS.BaseAction {
     }
 
     execute(entityId, controller, game, dt) {
-        const pos = game.getComponent(entityId, game.componentTypes.POSITION);
-        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+        const pos = game.getComponent(entityId, 'position');
+        const vel = game.getComponent(entityId, 'velocity');
         const target = controller.actionTarget;
 
         // Set velocity target
@@ -29,7 +29,7 @@ class MoveAction extends GUTS.BaseAction {
     }
 
     onEnd(entityId, controller, game) {
-        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+        const vel = game.getComponent(entityId, 'velocity');
         vel.targetX = null;
         vel.targetZ = null;
     }

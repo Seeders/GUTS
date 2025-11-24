@@ -32,14 +32,13 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @returns {boolean} - Whether the command was queued/executed
      */
     queueCommand(entityId, commandData, interrupt = true) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
 
         // Ensure unit has a command queue
-        let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        let commandQueue = this.game.getComponent(entityId, "commandQueue");
         if (!commandQueue) {
             commandQueue = { commands: [], currentCommand: null, commandHistory: [] };
-            this.game.addComponent(entityId, ComponentTypes.COMMAND_QUEUE, commandQueue);
+            this.game.addComponent(entityId, "commandQueue", commandQueue);
         }
 
         // Create the command
@@ -100,21 +99,20 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {object} command - The command to execute
      */
     executeCommand(entityId, command) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
 
         // Get command queue
-        let commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        let commandQueue = this.game.getComponent(entityId, "commandQueue");
         if (!commandQueue) {
             commandQueue = { commands: [], currentCommand: null, commandHistory: [] };
-            this.game.addComponent(entityId, ComponentTypes.COMMAND_QUEUE, commandQueue);
+            this.game.addComponent(entityId, "commandQueue", commandQueue);
         }
 
         // Set as current command
         commandQueue.currentCommand = command;
 
         // Get AI state
-        const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+        const aiState = this.game.getComponent(entityId, "aiState");
         if (!aiState) return;
 
         // CRITICAL: Always clear the path when executing a new command
@@ -149,8 +147,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {string} entityId - The unit entity ID
      */
     clearCommands(entityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        const commandQueue = this.game.getComponent(entityId, "commandQueue");
 
         if (commandQueue) {
             commandQueue.commands = [];
@@ -171,8 +168,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @returns {object|null} - The current command or null
      */
     getCurrentCommand(entityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        const commandQueue = this.game.getComponent(entityId, "commandQueue");
         return commandQueue?.currentCommand || null;
     }
 
@@ -196,8 +192,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * @param {string} entityId - The unit entity ID
      */
     completeCurrentCommand(entityId) {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+        const commandQueue = this.game.getComponent(entityId, "commandQueue");
 
         if (!commandQueue) return;
 
@@ -224,7 +219,7 @@ class CommandQueueSystem extends GUTS.BaseSystem {
             this.executeCommand(entityId, nextCommand);
         } else {
             // No more commands, return to idle
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(entityId, "aiState");
             if (aiState) {
                 aiState.state = 'idle';
                 aiState.targetPosition = null;
@@ -241,12 +236,11 @@ class CommandQueueSystem extends GUTS.BaseSystem {
      * Update command queue system
      */
     onPlacementPhaseStart() {
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        const entities = this.game.getEntitiesWith(ComponentTypes.COMMAND_QUEUE, ComponentTypes.AI_STATE);
+        const entities = this.game.getEntitiesWith("commandQueue", "aiState");
 
         for (let i = 0; i < entities.length; i++) {
             const entityId = entities[i];
-            const commandQueue = this.game.getComponent(entityId, ComponentTypes.COMMAND_QUEUE);
+            const commandQueue = this.game.getComponent(entityId, "commandQueue");
 
             // Clear the player order completed flag - new round, abilities can auto-resume
             commandQueue.playerOrderCompletedThisRound = false;

@@ -56,7 +56,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     
     canExecute(casterEntity) {
         // Use when low on health or facing multiple enemies
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (casterHealth && casterHealth.current < casterHealth.max * 0.5) {
             return true;
         }
@@ -66,7 +66,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -80,12 +80,12 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     }
     
     createMirrorImages(casterEntity, casterPos) {
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        const casterUnitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterCollision = this.game.getComponent(casterEntity, this.componentTypes.COLLISION);
-        const casterVelocity = this.game.getComponent(casterEntity, this.componentTypes.VELOCITY);
+        const casterTeam = this.game.getComponent(casterEntity, "team");
+        const casterUnitType = this.game.getComponent(casterEntity, "unitType");
+        const casterCombat = this.game.getComponent(casterEntity, "combat");
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterCollision = this.game.getComponent(casterEntity, "collision");
+        const casterVelocity = this.game.getComponent(casterEntity, "velocity");
         
         if (!casterTeam || !casterUnitType || !casterCombat || !casterHealth) return;
         
@@ -140,11 +140,10 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
 
         if (imageId === null || imageId === undefined) return null;
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
         try {
             // Add components in deterministic order (alphabetical by component type)
-            this.game.addComponent(imageId, ComponentTypes.AI_STATE, {
+            this.game.addComponent(imageId, "aiState", {
                 state: 'idle',
                 targetPosition: null,
                 target: null,
@@ -152,18 +151,18 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 meta: {}
             });
 
-            this.game.addComponent(imageId, ComponentTypes.ANIMATION, {
+            this.game.addComponent(imageId, "animation", {
                 scale: 1,
                 rotation: 0,
                 flash: 0
             });
 
-            this.game.addComponent(imageId, ComponentTypes.COLLISION, {
+            this.game.addComponent(imageId, "collision", {
                 radius: collision?.radius || 10,
                 height: collision?.height || 50
             });
 
-            this.game.addComponent(imageId, ComponentTypes.COMBAT, {
+            this.game.addComponent(imageId, "combat", {
                 damage: Math.floor(combat.damage * this.imageDamageRatio),
                 range: combat.range,
                 attackSpeed: combat.attackSpeed,
@@ -178,7 +177,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 visionRange: 300
             });
 
-            this.game.addComponent(imageId, ComponentTypes.EQUIPMENT, {
+            this.game.addComponent(imageId, "equipment", {
                 slots: {
                     mainHand: null,
                     offHand: null,
@@ -190,44 +189,44 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 }
             });
 
-            this.game.addComponent(imageId, ComponentTypes.FACING, {
+            this.game.addComponent(imageId, "facing", {
                 angle: 0
             });
 
-            this.game.addComponent(imageId, ComponentTypes.HEALTH, {
+            this.game.addComponent(imageId, "health", {
                 max: Math.floor(health.max * this.imageHealthRatio),
                 current: Math.floor(health.max * this.imageHealthRatio)
             });
 
-            this.game.addComponent(imageId, ComponentTypes.MIRROR_IMAGE, {
+            this.game.addComponent(imageId, "mirrorImage", {
                 originalEntity: originalId,
                 isIllusion: true,
                 createdTime: this.game.state.now || 0
             });
 
-            this.game.addComponent(imageId, ComponentTypes.POSITION, {
+            this.game.addComponent(imageId, "position", {
                 x: imagePos.x,
                 y: imagePos.y,
                 z: imagePos.z
             });
 
-            this.game.addComponent(imageId, ComponentTypes.RENDERABLE, {
+            this.game.addComponent(imageId, "renderable", {
                 objectType: "units",
                 spawnType: unitType.id || unitType.title,
                 capacity: 128
             });
 
-            this.game.addComponent(imageId, ComponentTypes.TEAM, {
+            this.game.addComponent(imageId, "team", {
                 team: team.team
             });
 
-            this.game.addComponent(imageId, ComponentTypes.UNIT_TYPE, {
+            this.game.addComponent(imageId, "unitType", {
                 id: unitType.id || unitType.title,
                 title: `Mirror Image`,
                 value: 0
             });
 
-            this.game.addComponent(imageId, ComponentTypes.VELOCITY, {
+            this.game.addComponent(imageId, "velocity", {
                 vx: 0,
                 vy: 0,
                 vz: 0,
@@ -248,7 +247,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     removeMirrorImage(imageId) {
         if (!this.game.hasEntity || !this.game.hasEntity(imageId)) return;
         
-        const imagePos = this.game.getComponent(imageId, this.componentTypes.POSITION);
+        const imagePos = this.game.getComponent(imageId, "position");
         
         // Create disappearance effect
         if (imagePos) {

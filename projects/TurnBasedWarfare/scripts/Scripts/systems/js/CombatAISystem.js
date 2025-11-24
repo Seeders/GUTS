@@ -2,8 +2,7 @@ class CombatAISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.combatAISystems = this;
-        this.componentTypes = this.game.gameManager.call('getComponentTypes');
-        
+
         this.DEFAULT_UNIT_RADIUS = 25;
         this.ATTACK_RANGE_BUFFER = 10;
         this.ALLY_SPACING_DISTANCE = 10;
@@ -39,14 +38,13 @@ class CombatAISystem extends GUTS.BaseSystem {
 
     // Called once when phase transitions to placement - synchronized across all clients
     onPlacementPhaseStart() {
-        const CT = this.componentTypes;
-        const combatUnits = this.game.getEntitiesWith(CT.AI_STATE);
+        const combatUnits = this.game.getEntitiesWith("aiState");
         // Sort for deterministic processing order (prevents desync)
         combatUnits.sort((a, b) => String(a).localeCompare(String(b)));
 
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
-            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            const aiState = this.game.getComponent(entityId, "aiState");
             if (aiState) {
                 if (aiState.state !== 'idle') {
                     this.changeAIState(aiState, 'idle');
@@ -66,34 +64,33 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     update() {
-        const CT = this.componentTypes;
         if (this.game.state.phase !== 'battle') {
             return;
         }
 
         const combatUnits = this.game.getEntitiesWith(
-            CT.POSITION, CT.COMBAT, CT.TEAM, CT.AI_STATE
+            "position", "combat", "team", "aiState"
         );
         // Sort for deterministic processing order (prevents desync)
         combatUnits.sort((a, b) => String(a).localeCompare(String(b)));
 
         for (let i = 0; i < combatUnits.length; i++) {
             const entityId = combatUnits[i];
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const combat = this.game.getComponent(entityId, CT.COMBAT);
-            const team = this.game.getComponent(entityId, CT.TEAM);
-            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
-            const vel = this.game.getComponent(entityId, CT.VELOCITY);
-            const collision = this.game.getComponent(entityId, CT.COLLISION);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);
+            const pos = this.game.getComponent(entityId, "position");
+            const combat = this.game.getComponent(entityId, "combat");
+            const team = this.game.getComponent(entityId, "team");
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const collision = this.game.getComponent(entityId, "collision");
+            const unitType = this.game.getComponent(entityId, "unitType");
+            const placement = this.game.getComponent(entityId, "placement");
 
             if (!pos || !vel || !combat || !team || !aiState){
                  continue;
             }
             
             // DEBUG: Log combat range and position
-            const preventEnemiesInRangeCheck = aiState.meta ? aiState.meta.preventEnemiesInRangeCheck : false; 
+            const preventEnemiesInRangeCheck = aiState.meta ? aiState.meta.preventEnemiesInRangeCheck : false;
             if (!aiState.meta.initialized) {
                 aiState.meta = {
                     lastDecisionTime: 0,
@@ -106,11 +103,11 @@ class CombatAISystem extends GUTS.BaseSystem {
             const aiMeta = aiState.meta;
 
             const enemiesInVisionRange = preventEnemiesInRangeCheck ? [] : (this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || []);
-            
+
             // DEBUG: Log enemies found
             if (aiState.target) {
-                const targetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
-                const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
+                const targetHealth = this.game.getComponent(aiState.target, "health");
+                const targetDeathState = this.game.getComponent(aiState.target, "deathState");
                 if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
                     aiState.target = null;                                    
                     this.onLostTarget(entityId);  
@@ -189,9 +186,9 @@ class CombatAISystem extends GUTS.BaseSystem {
 
     getAllEnemiesInVision(entityId, pos, unitType, team, combat) {
         const allUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.HEALTH
+            "position",
+            "team",
+            "health"
         );
 
         const visionRange = combat.visionRange;
@@ -199,10 +196,10 @@ class CombatAISystem extends GUTS.BaseSystem {
         const enemies = allUnits.filter(otherId => {
             if (otherId === entityId) return false;
 
-            const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
-            const otherHealth = this.game.getComponent(otherId, this.componentTypes.HEALTH);
-            const otherDeathState = this.game.getComponent(otherId, this.componentTypes.DEATH_STATE);
-            const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
+            const otherTeam = this.game.getComponent(otherId, "team");
+            const otherHealth = this.game.getComponent(otherId, "health");
+            const otherDeathState = this.game.getComponent(otherId, "deathState");
+            const otherPos = this.game.getComponent(otherId, "position");
 
             if (!otherTeam || otherTeam.team === team.team) return false;
             if (!otherHealth || otherHealth.current <= 0) return false;
@@ -243,15 +240,15 @@ class CombatAISystem extends GUTS.BaseSystem {
             this.onLostTarget(entityId);
             return;
         }
-        
-        const targetHealth = this.game.getComponent(targetEnemy, this.componentTypes.HEALTH);
-        const targetDeathState = this.game.getComponent(targetEnemy, this.componentTypes.DEATH_STATE);
+
+        const targetHealth = this.game.getComponent(targetEnemy, "health");
+        const targetDeathState = this.game.getComponent(targetEnemy, "deathState");
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiState.target = null;
             return;
         }
         
-        const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
+        const enemyPos = this.game.getComponent(targetEnemy, "position");
         if (!enemyPos) return;
 
         let currentCombatAi = this.game.gameManager.call('getAIControllerData', entityId, "CombatAISystem");
@@ -262,7 +259,7 @@ class CombatAISystem extends GUTS.BaseSystem {
         aiState.target = targetEnemy;
 
         // Check if we have direct line of sight to the target
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         const hasLOS = this.game.gameManager.call('hasLineOfSight', pos, enemyPos, unitType, entityId);
         const hasDirectPath = this.game.gameManager.call('hasDirectWalkablePath', pos, enemyPos, entityId);
 
@@ -305,9 +302,9 @@ class CombatAISystem extends GUTS.BaseSystem {
         
         // If unit is currently attacking, stick with current target unless switching would be much better
         if (aiState.target && enemiesInVisionRange.includes(aiState.target)) {
-            const currentTargetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
-            const currentTargetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
-            const currentTargetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+            const currentTargetHealth = this.game.getComponent(aiState.target, "health");
+            const currentTargetDeathState = this.game.getComponent(aiState.target, "deathState");
+            const currentTargetPos = this.game.getComponent(aiState.target, "position");
 
             const isCurrentTargetValid = currentTargetHealth && 
                                        currentTargetHealth.current > 0 && 
@@ -331,9 +328,9 @@ class CombatAISystem extends GUTS.BaseSystem {
         
         // Evaluate all enemies to find the best target
         enemiesInVisionRange.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-            const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
+            const enemyPos = this.game.getComponent(enemyId, "position");
+            const enemyHealth = this.game.getComponent(enemyId, "health");
+            const enemyDeathState = this.game.getComponent(enemyId, "deathState");
             
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
             if (enemyDeathState && enemyDeathState.isDying) return;
@@ -383,15 +380,15 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     onLostTarget(entityId) {
-        let aiState = this.game.getComponent(entityId, this.game.gameManager.call('getComponentTypes').AI_STATE);
+        let aiState = this.game.getComponent(entityId, "aiState");
         aiState.useDirectMovement = false;
         aiState.target = null;
 
         // Check for nearby enemies before completing the command
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
-        const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const pos = this.game.getComponent(entityId, "position");
+        const combat = this.game.getComponent(entityId, "combat");
+        const team = this.game.getComponent(entityId, "team");
+        const unitType = this.game.getComponent(entityId, "unitType");
 
         if (pos && combat && team && unitType) {
             const enemiesInVisionRange = this.getAllEnemiesInVision(entityId, pos, unitType, team, combat) || [];
@@ -453,9 +450,9 @@ class CombatAISystem extends GUTS.BaseSystem {
             return;
         }
         
-        const targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
-        const targetHealth = this.game.getComponent(aiState.target, this.componentTypes.HEALTH);
-        const targetDeathState = this.game.getComponent(aiState.target, this.componentTypes.DEATH_STATE);
+        const targetPos = this.game.getComponent(aiState.target, "position");
+        const targetHealth = this.game.getComponent(aiState.target, "health");
+        const targetDeathState = this.game.getComponent(aiState.target, "deathState");
         
         if (!targetPos || !targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiState.target = null;
@@ -502,14 +499,14 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
     
     initiateAttack(attackerId, targetId, combat) {
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
+        const targetHealth = this.game.getComponent(targetId, "health");
+        const targetDeathState = this.game.getComponent(targetId, "deathState");
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) return;
 
         // Make the attacker face the target
-        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const facing = this.game.getComponent(attackerId, this.componentTypes.FACING);
+        const attackerPos = this.game.getComponent(attackerId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const facing = this.game.getComponent(attackerId, "facing");
 
         if (attackerPos && targetPos && facing) {
             const dx = targetPos.x - attackerPos.x;
@@ -539,8 +536,7 @@ class CombatAISystem extends GUTS.BaseSystem {
         
         if (this.game.gameManager.has('getEntityAnimations')) {
             // NEW: Get duration from VAT bundle instead of mixer actions
-            const CT = this.componentTypes;
-            const renderable = this.game.getComponent(attackerId, CT.RENDERABLE);
+            const renderable = this.game.getComponent(attackerId, "renderable");
 
             if (renderable) {
                 const batchInfo = this.game.gameManager.call('getBatchInfo',
@@ -646,8 +642,8 @@ class CombatAISystem extends GUTS.BaseSystem {
 
     getWeaponElement(entityId) {
         if (!this.game.equipmentSystem) return null;
-        
-        const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
+
+        const equipment = this.game.getComponent(entityId, "equipment");
         if (!equipment) return null;
         
         const mainHandItem = equipment.slots.mainHand;
@@ -687,10 +683,10 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     isInAttackRange(attackerId, targetId, combat, extraBuffer = 0) {
-        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const attackerCollision = this.game.getComponent(attackerId, this.componentTypes.COLLISION);
-        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        const attackerPos = this.game.getComponent(attackerId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const attackerCollision = this.game.getComponent(attackerId, "collision");
+        const targetCollision = this.game.getComponent(targetId, "collision");
         if (!attackerPos || !targetPos) return false;
 
         const distances = this.calculateDistances(attackerPos, targetPos, attackerCollision, targetCollision);
@@ -699,10 +695,10 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     isInVisionRange(viewerId, targetId, visionRange) {
-        const viewerPos = this.game.getComponent(viewerId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const viewerCollision = this.game.getComponent(viewerId, this.componentTypes.COLLISION);
-        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        const viewerPos = this.game.getComponent(viewerId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const viewerCollision = this.game.getComponent(viewerId, "collision");
+        const targetCollision = this.game.getComponent(targetId, "collision");
         if (!viewerPos || !targetPos) return false;
 
         const distances = this.calculateDistances(viewerPos, targetPos, viewerCollision, targetCollision);
@@ -710,10 +706,10 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     isWithinEdgeToEdgeRange(attackerId, targetId, maxRange) {
-        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const attackerCollision = this.game.getComponent(attackerId, this.componentTypes.COLLISION);
-        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        const attackerPos = this.game.getComponent(attackerId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const attackerCollision = this.game.getComponent(attackerId, "collision");
+        const targetCollision = this.game.getComponent(targetId, "collision");
         if (!attackerPos || !targetPos) return false;
         const distances = this.calculateDistances(attackerPos, targetPos, attackerCollision, targetCollision);
         return distances.edgeToEdge <= maxRange;
@@ -728,28 +724,27 @@ class CombatAISystem extends GUTS.BaseSystem {
 
     startDeathProcess(entityId) {
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const Components = this.game.gameManager.call('getComponents');
-        const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+        const existingDeathState = this.game.getComponent(entityId, "deathState");
         if (existingDeathState && existingDeathState.isDying) return;
-        
+
         if (this.game.damageSystem) {
             this.game.gameManager.call('clearAllStatusEffects', entityId);
         }
 
-        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, {
+        this.game.addComponent(entityId, "deathState", {
             isDying: true,
             deathStartTime: this.game.state.now,
             deathAnimationDuration: 2.0
         });
-        if (this.game.hasComponent(entityId, ComponentTypes.AI_STATE)) {
-            this.game.removeComponent(entityId, ComponentTypes.AI_STATE);
+        if (this.game.hasComponent(entityId, "aiState")) {
+            this.game.removeComponent(entityId, "aiState");
         }
-        const velocity = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
+        const velocity = this.game.getComponent(entityId, "velocity");
         if (velocity) { velocity.x = 0; velocity.y = 0; velocity.z = 0; }
-        
-        if (this.game.hasComponent(entityId, ComponentTypes.COMBAT)) {
-            this.game.removeComponent(entityId, ComponentTypes.COMBAT);
+
+        if (this.game.hasComponent(entityId, "combat")) {
+            this.game.removeComponent(entityId, "combat");
         }
         
         if (this.game.animationSystem) {
@@ -809,18 +804,18 @@ class CombatAISystem extends GUTS.BaseSystem {
     }
 
     setRetaliatoryTarget(entityId, attackerId) {
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        const aiState = this.game.getComponent(entityId, "aiState");
         if (!aiState) return;
-        
+
         if (aiState.target) return;
-        
-        const attackerHealth = this.game.getComponent(attackerId, this.componentTypes.HEALTH);
-        const attackerDeathState = this.game.getComponent(attackerId, this.componentTypes.DEATH_STATE);
+
+        const attackerHealth = this.game.getComponent(attackerId, "health");
+        const attackerDeathState = this.game.getComponent(attackerId, "deathState");
         if (!attackerHealth || attackerHealth.current <= 0) return;
         if (attackerDeathState && attackerDeathState.isDying) return;
-        
-        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
-        const defenderTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+
+        const attackerTeam = this.game.getComponent(attackerId, "team");
+        const defenderTeam = this.game.getComponent(entityId, "team");
         if (attackerTeam && defenderTeam && attackerTeam.team === defenderTeam.team) return;
         
         aiState.target = attackerId;

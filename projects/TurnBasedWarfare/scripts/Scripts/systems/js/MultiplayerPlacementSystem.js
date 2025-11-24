@@ -312,11 +312,10 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     resetAI() {
-        const componentTypes = this.game.gameManager.call('getComponentTypes');            
-        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
+        const AIEntities = this.game.getEntitiesWith("aiState", "combat");
         AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
-            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const combat = this.game.getComponent(entityId, "combat");
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
@@ -325,11 +324,10 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     applyTargetPositions(){
         // This function updates local placement data from entity AI state
         // The actual AI state and commands are handled by the server and synced at battle start
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
             placement.squadUnits.forEach(entityId => {
-                const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+                const aiState = this.game.getComponent(entityId, "aiState");
                 if (aiState) {
                     // Sync placement data with entity AI state
                     placement.targetPosition = aiState.targetPosition;
@@ -340,8 +338,6 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     removeOpponentPlacement(placementId) {
-        const CT = this.game.gameManager.call('getComponentTypes');
-        
         // Find and remove from opponent placements
         const index = this.opponentPlacements.findIndex(p => p.placementId === placementId);
         if (index === -1) {
@@ -1010,12 +1006,11 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
-        this.playerPlacements = this.filterDeadSquads(this.playerPlacements, ComponentTypes);
-        this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements, ComponentTypes);
+        this.playerPlacements = this.filterDeadSquads(this.playerPlacements);
+        this.opponentPlacements = this.filterDeadSquads(this.opponentPlacements);
     }
 
-    filterDeadSquads(placements, ComponentTypes) {
+    filterDeadSquads(placements) {
         return placements.filter(placement => {
             if (!placement.squadUnits || placement.squadUnits.length === 0) {
                 this.cleanupDeadSquad(placement);
@@ -1023,9 +1018,9 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
             }
 
             const aliveUnits = placement.squadUnits.filter(entityId => {
-                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                const buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+                const health = this.game.getComponent(entityId, "health");
+                const deathState = this.game.getComponent(entityId, "deathState");
+                const buildingState = this.game.getComponent(entityId, "buildingState");
                 if(buildingState) return true;
                 return health && health.current > 0 && (!deathState || !deathState.isDying);
             });
@@ -1087,13 +1082,13 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         let closestDistance = clickRadius;
         
         const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().TEAM
+            "position",
+            "team"
         );
-        
+
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-            const team = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().TEAM);
+            const pos = this.game.getComponent(entityId, "position");
+            const team = this.game.getComponent(entityId, "team");
             
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;

@@ -6,8 +6,8 @@ class AttackAction extends GUTS.BaseAction {
         const targetId = controller.actionTarget;
         if (!targetId) return false;
 
-        const targetHealth = game.getComponent(targetId, game.componentTypes.HEALTH);
-        const targetDeathState = game.getComponent(targetId, game.componentTypes.DEATH_STATE);
+        const targetHealth = game.getComponent(targetId, 'health');
+        const targetDeathState = game.getComponent(targetId, 'deathState');
 
         if (!targetHealth || targetHealth.current <= 0) return false;
         if (targetDeathState && targetDeathState.isDying) return false;
@@ -16,14 +16,14 @@ class AttackAction extends GUTS.BaseAction {
     }
 
     execute(entityId, controller, game, dt) {
-        const combat = game.getComponent(entityId, game.componentTypes.COMBAT);
+        const combat = game.getComponent(entityId, 'combat');
         const targetId = controller.actionTarget;
 
         // Check if in range
         if (!game.combatAISystem.isInAttackRange(entityId, targetId, combat)) {
             // Move closer
-            const targetPos = game.getComponent(targetId, game.componentTypes.POSITION);
-            const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+            const targetPos = game.getComponent(targetId, 'position');
+            const vel = game.getComponent(entityId, 'velocity');
             vel.targetX = targetPos.x;
             vel.targetZ = targetPos.z;
             return { complete: false };
@@ -34,7 +34,7 @@ class AttackAction extends GUTS.BaseAction {
     }
 
     onEnd(entityId, controller, game) {
-        const vel = game.getComponent(entityId, game.componentTypes.VELOCITY);
+        const vel = game.getComponent(entityId, 'velocity');
         vel.targetX = null;
         vel.targetZ = null;
     }

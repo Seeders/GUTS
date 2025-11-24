@@ -57,7 +57,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this.game.deathSystem) return false;
         
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return false;
         
         const validCorpses = this.getValidCorpsesInRange(casterPos);
@@ -65,8 +65,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const casterTeam = this.game.getComponent(casterEntity, "team");
         
         if (!this.game.deathSystem || !casterPos || !casterTeam) return null;
         
@@ -241,14 +241,13 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
         const skeletonId = this.game.createEntity ? this.game.createEntity() : null;
         if (skeletonId === null || skeletonId === undefined) return null;
 
-        const ComponentTypes = this.game.gameManager.call('getComponentTypes');
 
         // FIXED: Deterministic facing based on creation order, not team
         const initialFacing = (creationIndex % 2 === 0) ? 0 : Math.PI;
 
         try {
             // Add components in deterministic alphabetical order
-            this.game.addComponent(skeletonId, ComponentTypes.AI_STATE, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 state: 'idle',
                 targetPosition: null,
                 target: null,
@@ -256,18 +255,18 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 meta: {}
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.ANIMATION, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 scale: 1,
                 rotation: 0,
                 flash: 0
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.COLLISION, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 radius: skeletonDef.size,
                 height: skeletonDef.height || 50
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.COMBAT, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 damage: skeletonDef.damage || 15,
                 range: skeletonDef.range || 25,
                 attackSpeed: skeletonDef.attackSpeed || 1.0,
@@ -282,7 +281,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 visionRange: 300
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.EQUIPMENT, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 slots: {
                     mainHand: null,
                     offHand: null,
@@ -294,38 +293,38 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 }
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.FACING, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 angle: initialFacing
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.HEALTH, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 max: skeletonDef.hp || 50,
                 current: skeletonDef.hp || 50
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.POSITION, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 x: corpsePos.x,
                 y: corpsePos.y,
                 z: corpsePos.z
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.RENDERABLE, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 objectType: "units",
                 spawnType: this.raisedUnitType,
                 capacity: 128
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.TEAM, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 team: team
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.UNIT_TYPE, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 id: this.raisedUnitType,
                 title: skeletonDef.title || "Skeleton",
                 value: skeletonDef.value || 25
             });
 
-            this.game.addComponent(skeletonId, ComponentTypes.VELOCITY, {
+            this.game.addComponent(skeletonId, "\L\1", {
                 vx: 0,
                 vy: 0,
                 vz: 0,
