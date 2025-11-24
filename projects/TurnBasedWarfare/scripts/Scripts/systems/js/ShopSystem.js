@@ -652,13 +652,8 @@ class ShopSystem extends GUTS.BaseSystem {
         // Clear the assigned builder's command if there is one
         const assignedBuilder = placement.assignedBuilder;
         if (assignedBuilder) {
-            // Complete/clear the build command
-            if (this.game.commandQueueSystem) {
-                const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
-                if (currentCommand && currentCommand.type === 'build') {
-                    this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
-                }
-            }
+            // With behavior tree system, just clear the building state
+            // The behavior tree will naturally switch to other behaviors
 
             // Remove the builder's BUILDING_STATE component
             if (this.game.hasComponent(assignedBuilder, "buildingState")) {

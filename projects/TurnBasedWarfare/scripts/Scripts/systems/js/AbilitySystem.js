@@ -103,18 +103,8 @@ class AbilitySystem extends GUTS.BaseSystem {
             .filter(ability => ability.canExecute(entityId))
             .sort((a, b) => b.priority - a.priority);
         
-        // Check if unit is waiting and now has abilities available
-        const aiState = this.game.getComponent(entityId, "aiState");
-        if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
-            // Transition back to attacking state since we have abilities ready
-            if (this.game.combatAISystems) {
-                this.game.combatAISystems.changeAIState(aiState, 'attacking');
-                
-                // Re-enable movement decisions by resetting decision time
-                aiState.aiBehavior.lastDecisionTime = 0;
-                
-            }
-        }
+        // With behavior tree system, AI state transitions are handled automatically
+        // through priority evaluation - no need to manually change state
         
         if (availableAbilities.length > 0) {
             this.useAbility(entityId, availableAbilities[0].id);

@@ -240,13 +240,16 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 if (this.game.effectsSystem && position) {
                     this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
-                let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                currentOrderAI.targetPosition = position;
-                currentOrderAI.path = [];
-                currentOrderAI.meta = {
-                    allowMovement: false
-                };
-                this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);   
+                // With behavior tree system, update aiState directly for movement
+                const aiState = this.game.getComponent(unitId, "aiState");
+                if (aiState) {
+                    aiState.targetPosition = position;
+                    aiState.path = [];
+                    aiState.meta = {
+                        allowMovement: false,
+                        isPlayerOrder: true
+                    };
+                }   
             });
         });
         

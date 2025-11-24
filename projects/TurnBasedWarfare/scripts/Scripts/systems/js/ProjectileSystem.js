@@ -553,13 +553,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                     }
                 );
 
-                if (this.game.combatAISystems && projectile.source && results) {
-                    for (const result of results) {
-                        if (result.targetId && result.actualDamage > 0) {
-                            this.game.combatAISystems.setRetaliatoryTarget(result.targetId, projectile.source);
-                        }
-                    }
-                }
+                // With behavior tree system, units naturally respond to threats through
+                // enemy detection in their behavior tree evaluation - no need for manual retaliation
             }
         }
 

@@ -107,15 +107,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
             miningState = this.game.getComponent(entityId, "miningState");
         }
 
-        // Autocast behavior: only activate mining if there's NO current command
-        const currentCommand = this.game.gameManager.call('getCurrentCommand', entityId);
-
-        // If there's a current command, mark that we were interrupted and don't execute mining
-        if (currentCommand) {
-            // Mark that mining was interrupted - we'll reset state when resuming
-            miningState.wasInterrupted = true;
-            return false;
-        }
+        // With behavior tree system, priority evaluation handles interruption automatically
+        // No need to check for commands - behavior tree will choose higher priority actions
 
         // Check if a player order just completed this round
         // If so, don't resume mining until next round
@@ -138,23 +131,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
             // Note: Keep hasGold if they were carrying gold when interrupted
         }
 
-        // If we were interrupted (controller was changed), reset mining state to idle
-        const currentAIController = this.game.aiSystem.getCurrentAIControllerId(entityId);
-        if(currentAIController !== "miningState"){
-            // Mining was interrupted, reset state to idle so it can start fresh
-            miningState.state = 'idle';
-            miningState.targetMineEntityId = null;
-            miningState.targetMinePosition = null;
-            miningState.targetTownHall = null;
-            miningState.waitingPosition = null;
-            miningState.miningStartTime = 0;
-            miningState.depositStartTime = 0;
-            // Note: Keep hasGold if they were carrying gold when interrupted
-
-            let currentMiningStateAI = this.game.aiSystem.getAIControllerData(entityId, "miningState");
-            this.game.aiSystem.setCurrentAIController(entityId, "miningState", currentMiningStateAI);
-        }
-
+        // With behavior tree system, interruption is handled automatically through priority evaluation
+        // No need to manually check controller state
         return true;
     }
 

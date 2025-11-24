@@ -464,32 +464,28 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     if (aiState && position) {
 
                         if(targetPosition){
-                            const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
+                            // With behavior tree system, check distance and update aiState
+                            const dx = position.x - targetPosition.x;
+                            const dz = position.z - targetPosition.z;
+                            const distSq = dx * dx + dz * dz;
+                            const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+                            const threshold = placementGridSize * 0.5;
 
-                            if(!currentAIController || currentAIController == "UnitOrderSystem"){
-                                const dx = position.x - targetPosition.x;
-                                const dz = position.z - targetPosition.z;
-                                const distSq = dx * dx + dz * dz;
-                                const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
-                                const threshold = placementGridSize * 0.5;
-
-                                if (distSq <= threshold * threshold) {
-                                    this.game.gameManager.call('removeCurrentAIController', entityId);
-                                    placement.targetPosition = null;
-                                } else {
-                                    // Queue command at battle start for determinism        
-                                    
-                                    this.game.gameManager.call('clearCommands', entityId);        
-                                    this.game.gameManager.call('queueCommand', entityId, {
-                                        type: 'move',
-                                        controllerId: "UnitOrderSystem",
-                                        targetPosition: targetPosition,
-                                        target: null,
-                                        meta: placement.meta || {},
-                                        priority: 10, // PRIORITY.MOVE
-                                        interruptible: true,
-                                        createdTime: placement.commandCreatedTime || this.game.state.now
-                                    }, true);
+                            if (distSq <= threshold * threshold) {
+                                // Reached target - clear movement
+                                const aiState = this.game.getComponent(entityId, "aiState");
+                                if (aiState) {
+                                    aiState.targetPosition = null;
+                                    aiState.meta = {};
+                                }
+                                placement.targetPosition = null;
+                            } else {
+                                // Set movement target in aiState for behavior tree to handle
+                                const aiState = this.game.getComponent(entityId, "aiState");
+                                if (aiState) {
+                                    aiState.targetPosition = targetPosition;
+                                    aiState.meta = placement.meta || {};
+                                    aiState.meta.isPlayerOrder = true;
                                 }
                             }
                         }
@@ -749,13 +745,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             // Clean up the builder if assigned
             const assignedBuilder = placement.assignedBuilder;
             if (assignedBuilder) {
-                // Complete/clear the build command
-                if (this.game.commandQueueSystem) {
-                    const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
-                    if (currentCommand && currentCommand.type === 'build') {
-                        this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
-                    }
-                }
+                // With behavior tree system, just clear the building state
+                // The behavior tree will naturally switch to other behaviors
 
                 // Remove the builder's BUILDING_STATE component
                 if (this.game.hasComponent(assignedBuilder, "buildingState")) {

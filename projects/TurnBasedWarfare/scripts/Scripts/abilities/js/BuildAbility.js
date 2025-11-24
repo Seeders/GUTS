@@ -20,11 +20,8 @@ class BuildAbility extends GUTS.BaseAbility {
         }
         let buildingState = this.game.getComponent(entityId, "buildingState");
 
-        if (!buildingState) {
-            return false;
-        }
-
-        return this.game.aiSystem.getCurrentAIControllerId(entityId) == "buildingState";
+        // With behavior tree system, just check if buildingState exists
+        return buildingState !== undefined;
     }
     execute(entityId, targetData) {
         const buildState = this.game.getComponent(entityId, "buildingState");
@@ -90,30 +87,14 @@ class BuildAbility extends GUTS.BaseAbility {
             constructionStartTime: null
         });
 
-        // Use command queue system to issue build command
-        // This will properly interrupt current movement and clear the path
-        if (this.game.commandQueueSystem) {
-            this.game.gameManager.call('queueCommand', peasantEntityId, {
-                type: 'build',
-                controllerId: "buildingState",
-                targetPosition: buildingPos,
-                target: buildingEntityId,
-                meta: {
-                    ...this.meta,
-                    // Preserve isPlayerOrder flag from peasantInfo
-                    isPlayerOrder: peasantInfo.isPlayerOrder
-                },
-                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
-                interruptible: true,
-                // Use client's timestamp for deterministic command creation
-                createdTime: peasantInfo.commandCreatedTime
-            }, true); // true = interrupt current command
-        } else {
-            // Fallback to old method if command queue system not available
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(peasantEntityId, "buildingState");
-            currentBuildingStateAI.targetPosition = buildingPos;
-            currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(peasantEntityId, "buildingState", currentBuildingStateAI);
+        // With behavior tree system, the aiState component drives movement behavior
+        // Update aiState to move to building position
+        if (aiState) {
+            aiState.targetPosition = buildingPos;
+            aiState.meta = {
+                ...this.meta,
+                isPlayerOrder: peasantInfo.isPlayerOrder
+            };
         }
 
         if (buildingPlacement) {
@@ -144,11 +125,11 @@ class BuildAbility extends GUTS.BaseAbility {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < this.buildRange) {
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, "buildingState");
-            currentBuildingStateAI.targetPosition = null;
-            currentBuildingStateAI.state = 'idle';
-            currentBuildingStateAI.meta = this.meta;
-            this.game.aiSystem.setCurrentAIController(buildState.entityId, "buildingState", currentBuildingStateAI);
+            // Reached building - clear movement target
+            const aiState = this.game.getComponent(buildState.entityId, "aiState");
+            if (aiState) {
+                aiState.targetPosition = null;
+            }
 
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
             pos.z = buildState.targetBuildingPosition.z;
@@ -169,12 +150,11 @@ class BuildAbility extends GUTS.BaseAbility {
             buildingBuildState.state = 'under_construction';
             buildingBuildState.constructionStartTime = this.game.state.round;
         } else {
-            let currentBuildingStateAI = this.game.aiSystem.getAIControllerData(buildState.entityId, "buildingState");
-            if(currentBuildingStateAI.targetPosition != buildState.targetBuildingPosition){
-                currentBuildingStateAI.targetPosition = buildState.targetBuildingPosition;
-                currentBuildingStateAI.state = 'chasing';
-                currentBuildingStateAI.meta = this.meta;
-                this.game.aiSystem.setCurrentAIController(buildState.entityId, "buildingState", currentBuildingStateAI);
+            // Still need to move - update aiState if target changed
+            const aiState = this.game.getComponent(buildState.entityId, "aiState");
+            if (aiState && aiState.targetPosition != buildState.targetBuildingPosition) {
+                aiState.targetPosition = buildState.targetBuildingPosition;
+                aiState.meta = this.meta;
             }
         }
     }
@@ -231,8 +211,13 @@ class BuildAbility extends GUTS.BaseAbility {
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
 
-        // Mark command as complete in command queue system
-        this.game.gameManager.call('completeCurrentCommand', this.peasantId);
+        // Clear aiState to stop movement
+        const aiState = this.game.getComponent(this.peasantId, "aiState");
+        if (aiState) {
+            aiState.targetPosition = null;
+            aiState.meta = {};
+        }
+
         this.game.removeComponent(this.peasantId, "buildingState");
     }
     
