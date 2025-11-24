@@ -184,14 +184,8 @@ class BaseAbility {
 
     // Behavior contribution for UniversalBehaviorTree
     // Abilities can override this to provide behaviors that the unit's behavior tree will execute
-    // Should return null or a behavior descriptor:
-    // { action: string, target: any, priority?: number, utility?: number (0-1), data?: object }
-    // - Use 'priority' for fixed priorities (backward compatible)
-    // - Use 'utility' (0-1 score) for context-aware decision making
-    // @param {number} entityId - The entity evaluating this behavior
-    // @param {object} game - The game instance
-    // @param {object} context - Situational context (health, enemies nearby, etc.)
-    getBehavior(entityId, game, context = null) {
+    // Should return null or a behavior descriptor: { action: string, target: any, priority: number, data?: object }
+    getBehavior(entityId, game) {
         return null;
     }
 }
