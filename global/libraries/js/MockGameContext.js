@@ -126,13 +126,14 @@ class MockGameContext extends GUTS.BaseECSGame {
         }
 
         // Build entity object from BaseECSGame's structure
+        // Components must be a Map for BehaviorTreeEditor compatibility
         const componentTypes = this.entities.get(entityId);
-        const components = {};
+        const components = new Map();
 
         for (const componentType of componentTypes) {
             const componentData = this.getComponent(entityId, componentType);
             if (componentData) {
-                components[componentType] = componentData;
+                components.set(componentType, componentData);
             }
         }
 
@@ -239,10 +240,15 @@ class MockGameContext extends GUTS.BaseECSGame {
         for (const entityId of this.entities.keys()) {
             const entity = this.getEntity(entityId);
             if (entity) {
+                // Convert components Map to plain object for JSON serialization
+                const componentsObj = {};
+                for (const [type, data] of entity.components.entries()) {
+                    componentsObj[type] = data;
+                }
                 exported.push({
                     id: entity.id,
                     label: entity.label,
-                    components: entity.components
+                    components: componentsObj
                 });
             }
         }
