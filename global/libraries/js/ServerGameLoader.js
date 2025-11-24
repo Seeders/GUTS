@@ -11,7 +11,6 @@ class ServerGameLoader {
         this.game.init();
         // No canvas or image loading needed on server
         // Just load the scene
-        this.game.sceneManager.load(this.collections.configs.game.initialScene);
         
         
         console.log('Server game loaded successfully');

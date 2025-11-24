@@ -9,7 +9,6 @@ class ECGame {
             }
         );         
         this.state = new GUTS.GameState(this.getCollections());  
-        this.sceneManager = new GUTS.SceneManager(this); 
         this.moduleManager = app.moduleManager;
                 
         this.entityId = 0;
