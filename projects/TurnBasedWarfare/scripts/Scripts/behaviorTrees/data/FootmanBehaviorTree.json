@@ -8,18 +8,18 @@
         "id": "footman-1",
         "label": "Footman (Idle)",
         "components": {
-          "POSITION": {
+          "position": {
             "x": 100,
             "z": 100
           },
-          "TEAM": {
+          "team": {
             "team": 1
           },
-          "UNIT_CONTROLLER": {
+          "aiState": {
             "playerOrder": null,
             "currentAction": null
           },
-          "COMBAT": {
+          "combat": {
             "attackRange": 1.5,
             "attackDamage": 10,
             "attackCooldown": 1
@@ -30,14 +30,14 @@
         "id": "enemy-1",
         "label": "Enemy Peasant",
         "components": {
-          "POSITION": {
+          "position": {
             "x": 110,
             "z": 105
           },
-          "TEAM": {
+          "team": {
             "team": 2
           },
-          "HEALTH": {
+          "health": {
             "current": 50,
             "max": 50
           }

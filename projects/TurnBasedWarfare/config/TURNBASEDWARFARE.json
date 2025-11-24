@@ -589,18 +589,18 @@
               "id": "footman-1",
               "label": "Footman (Idle)",
               "components": {
-                "POSITION": {
+                "position": {
                   "x": 100,
                   "z": 100
                 },
-                "TEAM": {
+                "team": {
                   "team": 1
                 },
-                "UNIT_CONTROLLER": {
+                "aiState": {
                   "playerOrder": null,
                   "currentAction": null
                 },
-                "COMBAT": {
+                "combat": {
                   "attackRange": 1.5,
                   "attackDamage": 10,
                   "attackCooldown": 1
@@ -611,14 +611,14 @@
               "id": "enemy-1",
               "label": "Enemy Peasant",
               "components": {
-                "POSITION": {
+                "position": {
                   "x": 110,
                   "z": 105
                 },
-                "TEAM": {
+                "team": {
                   "team": 2
                 },
-                "HEALTH": {
+                "health": {
                   "current": 50,
                   "max": 50
                 }
@@ -2497,6 +2497,65 @@
           "RaycastHelper",
           "ComponentGenerator"
         ],
+        "managers": [
+          "GameManager",
+          "ComponentManager",
+          "GameModeManager",
+          "KeyboardManager",
+          "LoadingManager",
+          "ResultsManager",
+          "SaveManager",
+          "ScreenManager",
+          "UnitCreationManager",
+          "SquadManager",
+          "MultiplayerNetworkManager",
+          "InputManager"
+        ],
+        "systems": [
+          "GridSystem",
+          "TerrainSystem",
+          "WorldSystem",
+          "PostProcessingSystem",
+          "RenderSystem",
+          "AISystem",
+          "CommandQueueSystem",
+          "MovementSystem",
+          "CombatAISystem",
+          "ProjectileSystem",
+          "AnimationSystem",
+          "ArmyDisplaySystem",
+          "EffectsSystem",
+          "MultiplayerPlacementSystem",
+          "MultiplayerUISystem",
+          "ShopSystem",
+          "TeamHealthSystem",
+          "HealthBarSystem",
+          "UnitRadiusSystem",
+          "EquipmentSystem",
+          "DeathSystem",
+          "DamageSystem",
+          "AbilitySystem",
+          "ParticleSystem",
+          "SquadExperienceSystem",
+          "LifetimeSystem",
+          "SchedulingSystem",
+          "GoldMineSystem",
+          "PathfindingSystem",
+          "FogOfWarSystem",
+          "SelectedUnitSystem",
+          "UnitOrderSystem",
+          "MiniMapSystem",
+          "CameraControlSystem",
+          "DamageNumberSystem",
+          "VisionSystem",
+          "SupplySystem"
+        ],
+        "classes": [
+          {
+            "collection": "abilities",
+            "baseClass": "BaseAbility"
+          }
+        ],
         "fileName": "game",
         "interface": "main",
         "appLibrary": "MultiplayerECSGame",
@@ -2533,7 +2592,7 @@
           "ServerECSGame",
           "ServerEventManager",
           "ServerNetworkManager",
-          "ServerSceneManager",
+          "SceneManager",
           "SeededRandom",
           "MinHeap",
           "DesyncDebugger",
@@ -2541,6 +2600,40 @@
           "EnvironmentObjectSpawner",
           "CoordinateTranslator",
           "ComponentGenerator"
+        ],
+        "managers": [
+          "GameManager",
+          "ComponentManager",
+          "UnitCreationManager",
+          "SquadManager"
+        ],
+        "systems": [
+          "GridSystem",
+          "TerrainSystem",
+          "AISystem",
+          "CommandQueueSystem",
+          "MovementSystem",
+          "CombatAISystem",
+          "ProjectileSystem",
+          "TeamHealthSystem",
+          "DeathSystem",
+          "DamageSystem",
+          "AbilitySystem",
+          "SquadExperienceSystem",
+          "ServerBattlePhaseSystem",
+          "ServerPlacementSystem",
+          "LifetimeSystem",
+          "SchedulingSystem",
+          "PathfindingSystem",
+          "GoldMineSystem",
+          "VisionSystem",
+          "SupplySystem"
+        ],
+        "classes": [
+          {
+            "collection": "abilities",
+            "baseClass": "BaseAbility"
+          }
         ]
       },
       "state": {
@@ -21904,10 +21997,6 @@
         "filePath": "/global/libraries/js/ServerNetworkManager.js",
         "fileName": "ServerNetworkManager"
       },
-      "ServerSceneManager": {
-        "filePath": "/global/libraries/js/ServerSceneManager.js",
-        "fileName": "ServerSceneManager"
-      },
       "ShapeFactory": {
         "fileName": "ShapeFactory",
         "filePath": "/global/libraries/js/ShapeFactory.js"
@@ -22751,164 +22840,7 @@
             "objectType": "gamePrefabs",
             "spawnType": "multiplayer",
             "parent": null,
-            "children": [],
-            "managers": [
-              {
-                "type": "GameManager"
-              },
-              {
-                "type": "ComponentManager"
-              },
-              {
-                "type": "GameModeManager"
-              },
-              {
-                "type": "KeyboardManager"
-              },
-              {
-                "type": "LoadingManager"
-              },
-              {
-                "type": "ResultsManager"
-              },
-              {
-                "type": "SaveManager"
-              },
-              {
-                "type": "ScreenManager"
-              },
-              {
-                "type": "UnitCreationManager"
-              },
-              {
-                "type": "SquadManager"
-              },
-              {
-                "type": "MultiplayerNetworkManager"
-              },
-              {
-                "type": "InputManager"
-              }
-            ],
-            "systems": [
-              {
-                "type": "GridSystem"
-              },
-              {
-                "type": "TerrainSystem"
-              },
-              {
-                "type": "WorldSystem"
-              },
-              {
-                "type": "PostProcessingSystem"
-              },
-              {
-                "type": "RenderSystem"
-              },
-              {
-                "type": "AISystem"
-              },
-              {
-                "type": "CommandQueueSystem"
-              },
-              {
-                "type": "MovementSystem"
-              },
-              {
-                "type": "CombatAISystem"
-              },
-              {
-                "type": "ProjectileSystem"
-              },
-              {
-                "type": "AnimationSystem"
-              },
-              {
-                "type": "ArmyDisplaySystem"
-              },
-              {
-                "type": "EffectsSystem"
-              },
-              {
-                "type": "MultiplayerPlacementSystem"
-              },
-              {
-                "type": "MultiplayerUISystem"
-              },
-              {
-                "type": "ShopSystem"
-              },
-              {
-                "type": "TeamHealthSystem"
-              },
-              {
-                "type": "HealthBarSystem"
-              },
-              {
-                "type": "UnitRadiusSystem"
-              },
-              {
-                "type": "EquipmentSystem"
-              },
-              {
-                "type": "DeathSystem"
-              },
-              {
-                "type": "DamageSystem"
-              },
-              {
-                "type": "AbilitySystem"
-              },
-              {
-                "type": "ParticleSystem"
-              },
-              {
-                "type": "SquadExperienceSystem"
-              },
-              {
-                "type": "LifetimeSystem"
-              },
-              {
-                "type": "SchedulingSystem"
-              },
-              {
-                "type": "GoldMineSystem"
-              },
-              {
-                "type": "PathfindingSystem"
-              },
-              {
-                "type": "FogOfWarSystem"
-              },
-              {
-                "type": "SelectedUnitSystem"
-              },
-              {
-                "type": "UnitOrderSystem"
-              },
-              {
-                "type": "MiniMapSystem"
-              },
-              {
-                "type": "CameraControlSystem"
-              },
-              {
-                "type": "DamageNumberSystem"
-              },
-              {
-                "type": "VisionSystem"
-              },
-              {
-                "type": "SupplySystem"
-              }
-            ],
-            "classes": [
-              {
-                "collection": "abilities",
-                "baseClass": "BaseAbility"
-              }
-            ]
+            "children": []
           }
         ]
       },
@@ -22919,89 +22851,7 @@
           {
             "id": 1,
             "objectType": "gamePrefabs",
-            "spawnType": "multiplayer",
-            "managers": [
-              {
-                "type": "GameManager"
-              },
-              {
-                "type": "ComponentManager"
-              },
-              {
-                "type": "UnitCreationManager"
-              },
-              {
-                "type": "SquadManager"
-              }
-            ],
-            "systems": [
-              {
-                "type": "GridSystem"
-              },
-              {
-                "type": "TerrainSystem"
-              },
-              {
-                "type": "AISystem"
-              },
-              {
-                "type": "CommandQueueSystem"
-              },
-              {
-                "type": "MovementSystem"
-              },
-              {
-                "type": "CombatAISystem"
-              },
-              {
-                "type": "ProjectileSystem"
-              },
-              {
-                "type": "TeamHealthSystem"
-              },
-              {
-                "type": "DeathSystem"
-              },
-              {
-                "type": "DamageSystem"
-              },
-              {
-                "type": "AbilitySystem"
-              },
-              {
-                "type": "SquadExperienceSystem"
-              },
-              {
-                "type": "ServerBattlePhaseSystem"
-              },
-              {
-                "type": "ServerPlacementSystem"
-              },
-              {
-                "type": "LifetimeSystem"
-              },
-              {
-                "type": "SchedulingSystem"
-              },
-              {
-                "type": "PathfindingSystem"
-              },
-              {
-                "type": "GoldMineSystem"
-              },
-              {
-                "type": "VisionSystem"
-              },
-              {
-                "type": "SupplySystem"
-              }
-            ],
-            "classes": [
-              {
-                "collection": "abilities",
-                "baseClass": "BaseAbility"
-              }
-            ]
+            "spawnType": "multiplayer"
           }
         ]
       }

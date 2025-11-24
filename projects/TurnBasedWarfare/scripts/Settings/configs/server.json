@@ -17,7 +17,7 @@
     "ServerECSGame",
     "ServerEventManager",
     "ServerNetworkManager",
-    "ServerSceneManager",
+    "SceneManager",
     "SeededRandom",
     "MinHeap",
     "DesyncDebugger",
@@ -25,5 +25,36 @@
     "EnvironmentObjectSpawner",
     "CoordinateTranslator",
     "ComponentGenerator"
+  ],
+  "managers": [
+    "GameManager",
+    "ComponentManager",
+    "UnitCreationManager",
+    "SquadManager" 
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "AISystem",
+    "CommandQueueSystem",
+    "MovementSystem",
+    "CombatAISystem",
+    "ProjectileSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "ServerBattlePhaseSystem",
+    "ServerPlacementSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",    
+    "PathfindingSystem", 
+    "GoldMineSystem",    
+    "VisionSystem",
+    "SupplySystem" 
+  ],
+  "classes": [
+    { "collection": "abilities", "baseClass": "BaseAbility" }
   ]
 }

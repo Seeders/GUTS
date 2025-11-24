@@ -7,66 +7,7 @@
       "objectType": "gamePrefabs",
       "spawnType": "multiplayer",
       "parent": null,
-      "children": [],
-      "managers": [
-        { "type": "GameManager" },
-        { "type": "ComponentManager" },
-        { "type": "GameModeManager" },
-        { "type": "KeyboardManager" },
-        { "type": "LoadingManager" },
-        { "type": "ResultsManager" },
-        { "type": "SaveManager" },
-        { "type": "ScreenManager" },
-        { "type": "UnitCreationManager" },     
-        { "type": "SquadManager" },         
-        { "type": "MultiplayerNetworkManager" },    
-        { "type": "InputManager" }
-      ],
-      "systems": [
-        { "type": "GridSystem" },
-        { "type": "TerrainSystem" },
-        { "type": "WorldSystem" },
-        { "type": "PostProcessingSystem" },
-        { "type": "RenderSystem" },
-        { "type": "AISystem" },
-        { "type": "CommandQueueSystem" },
-        { "type": "MovementSystem" },
-        { "type": "CombatAISystem" },
-        { "type": "ProjectileSystem" },
-        { "type": "AnimationSystem" },
-        { "type": "ArmyDisplaySystem" },
-        { "type": "EffectsSystem" },
-        { "type": "MultiplayerPlacementSystem" },
-        { "type": "MultiplayerUISystem" },
-        { "type": "ShopSystem" },
-        { "type": "TeamHealthSystem" },
-        { "type": "HealthBarSystem" },
-        { "type": "UnitRadiusSystem" },
-        { "type": "EquipmentSystem" },
-        { "type": "DeathSystem" },
-        { "type": "DamageSystem" },
-        { "type": "AbilitySystem" },
-        { "type": "ParticleSystem" },
-        { "type": "SquadExperienceSystem" },
-        { "type": "LifetimeSystem" },
-        { "type": "SchedulingSystem" },    
-        { "type": "GoldMineSystem" },    
-        { "type": "PathfindingSystem" },    
-        { "type": "FogOfWarSystem" },    
-        { "type": "SelectedUnitSystem" },    
-        { "type": "UnitOrderSystem" },    
-        { "type": "MiniMapSystem" },    
-        { "type": "CameraControlSystem" }, 
-        { "type": "DamageNumberSystem" },    
-        { "type": "VisionSystem" },
-        { "type": "SupplySystem" }
-      ],
-      "classes": [
-        {
-          "collection": "abilities",
-          "baseClass": "BaseAbility"
-        }
-      ]
+      "children": []
     }
   ]
 }
