@@ -1004,14 +1004,41 @@ class BehaviorTreeEditor {
         detailsEl.style.borderRadius = '4px';
         detailsEl.style.padding = '8px';
 
+        // Header container with component name and remove button
+        const headerDiv = document.createElement('div');
+        headerDiv.style.display = 'flex';
+        headerDiv.style.alignItems = 'center';
+        headerDiv.style.justifyContent = 'space-between';
+        headerDiv.style.marginBottom = '8px';
+
         const summary = document.createElement('summary');
         summary.textContent = componentType;
         summary.style.cursor = 'pointer';
         summary.style.fontWeight = '600';
         summary.style.fontSize = '11px';
         summary.style.color = '#6366f1';
-        summary.style.marginBottom = '8px';
-        detailsEl.appendChild(summary);
+        summary.style.flex = '1';
+        headerDiv.appendChild(summary);
+
+        // Remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.style.padding = '0 6px';
+        removeBtn.style.fontSize = '14px';
+        removeBtn.style.background = '#ef4444';
+        removeBtn.style.border = 'none';
+        removeBtn.style.color = 'white';
+        removeBtn.style.borderRadius = '3px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.lineHeight = '1';
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.removeComponent(entityId, componentType);
+        });
+        headerDiv.appendChild(removeBtn);
+
+        detailsEl.appendChild(headerDiv);
 
         const propsContainer = document.createElement('div');
         propsContainer.style.marginLeft = '8px';
@@ -1031,6 +1058,20 @@ class BehaviorTreeEditor {
 
         detailsEl.appendChild(propsContainer);
         container.appendChild(detailsEl);
+    }
+
+    removeComponent(entityId, componentType) {
+        // Remove the component from the entity
+        this.mockGame.removeComponent(entityId, componentType);
+
+        // Re-render all entities
+        const entitiesContainer = document.getElementById('bt-entities-container');
+        if (entitiesContainer) {
+            this.renderAllEntities(entitiesContainer);
+        }
+
+        // Re-run simulation to update results
+        this.runSimulation();
     }
 
     createComponentPropertyInput(container, entityId, componentType, propertyName, value) {
