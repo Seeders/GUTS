@@ -8,6 +8,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Register behavior trees by unit type
         this.behaviorTrees = new Map();
 
+        // Universal behavior tree used by all units
+        this.universalTree = null;
+
         // Initialize from collections
         this.initializeFromCollections();
     }
@@ -62,9 +65,17 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (TreeClass) {
             const treeInstance = new TreeClass(this.game, treeData);
-            const unitType = treeData.unitType || treeId.replace('BehaviorTree', '').toLowerCase();
-            this.behaviorTrees.set(unitType, treeInstance);
-            console.log(`Registered behavior tree: ${treeId} for unit type: ${unitType}`);
+
+            // Check if this is the UniversalBehaviorTree
+            if (treeId === 'UniversalBehaviorTree') {
+                this.universalTree = treeInstance;
+                console.log(`Registered UniversalBehaviorTree for all units`);
+            } else {
+                // Legacy support: register by unit type
+                const unitType = treeData.unitType || treeId.replace('BehaviorTree', '').toLowerCase();
+                this.behaviorTrees.set(unitType, treeInstance);
+                console.log(`Registered behavior tree: ${treeId} for unit type: ${unitType}`);
+            }
         } else {
             console.warn(`Behavior tree class not found for: ${treeId}`);
         }
@@ -94,8 +105,15 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        // Get behavior tree for this unit type
-        const tree = this.behaviorTrees.get(unitType.id);
+        // Use UniversalBehaviorTree if available, otherwise use unit-specific tree
+        let tree = null;
+        if (this.universalTree) {
+            tree = this.universalTree;
+        } else {
+            // Legacy: Get behavior tree for this unit type
+            tree = this.behaviorTrees.get(unitType.id);
+        }
+
         if (!tree) {
             // No behavior tree for this unit type, skip
             return;

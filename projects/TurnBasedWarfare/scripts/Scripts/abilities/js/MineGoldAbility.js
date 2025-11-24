@@ -19,6 +19,71 @@ class MineGoldAbility extends GUTS.BaseAbility {
         this.waitingDistance = 30; // Distance to wait from mine when queued
     }
 
+    // Behavior contribution for UniversalBehaviorTree
+    getBehavior(entityId, game) {
+        if (!this.enabled) return null;
+
+        // Check if unit is doing a player command
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (aiState && aiState.meta && aiState.meta.isPlayerOrder) {
+            return null; // Player commands take priority
+        }
+
+        // Check if unit is building
+        const buildState = game.getComponent(entityId, 'builder');
+        if (buildState && buildState.assignedBuilding) {
+            return null; // Building takes priority
+        }
+
+        // Find nearest gold mine
+        const team = game.getComponent(entityId, 'team');
+        if (!team) return null;
+
+        const nearbyMine = this.findNearestMine(entityId, team.team, game);
+        if (!nearbyMine) return null;
+
+        // Return mining behavior
+        return {
+            action: "MINE",
+            target: nearbyMine,
+            priority: 5,
+            data: { mineId: nearbyMine }
+        };
+    }
+
+    findNearestMine(entityId, team, game) {
+        const pos = game.getComponent(entityId, "position");
+        if (!pos) return null;
+
+        let nearest = null;
+        let minDist = Infinity;
+
+        // Get sorted mine entityIds for deterministic iteration
+        const sortedMineIds = Array.from(game.goldMineSystem.claimedGoldMines.keys()).sort((a, b) =>
+            String(a).localeCompare(String(b))
+        );
+
+        // Search through all claimed gold mines in deterministic order
+        for (const mineEntityId of sortedMineIds) {
+            const goldMine = game.goldMineSystem.claimedGoldMines.get(mineEntityId);
+
+            // Check if this mine belongs to our team
+            if (goldMine.team === team) {
+                // Calculate distance to this mine
+                const dx = goldMine.worldPosition.x - pos.x;
+                const dz = goldMine.worldPosition.z - pos.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < minDist) {
+                    minDist = distance;
+                    nearest = mineEntityId;
+                }
+            }
+        }
+
+        return nearest;
+    }
+
     canExecute(entityId) {
         if(!this.enabled){
             return false;
