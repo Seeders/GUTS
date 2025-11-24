@@ -18,13 +18,13 @@ class BuildAbility extends GUTS.BaseAbility {
     getBehavior(entityId, game) {
         if (!this.enabled) return null;
 
-        const buildState = game.getComponent(entityId, 'buildingState');
-        if (!buildState || !buildState.targetBuildingEntityId) return null;
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState || !aiState.meta || !aiState.meta.buildingId) return null;
 
         // Building behavior
         return {
             action: "BuildBehaviorAction",
-            target: buildState.targetBuildingEntityId,
+            target: aiState.meta.buildingId,
             priority: 15,
             data: {}
         };
@@ -34,10 +34,10 @@ class BuildAbility extends GUTS.BaseAbility {
         if(!this.enabled){
             return false;
         }
-        let buildingState = this.game.getComponent(entityId, "buildingState");
+        const aiState = this.game.getComponent(entityId, "aiState");
 
-        // With behavior tree system, just check if buildingState exists
-        return buildingState !== undefined;
+        // With behavior tree system, just check if aiState.meta.buildingId exists
+        return aiState && aiState.meta && aiState.meta.buildingId !== undefined;
     }
 
     execute(entityId, targetData) {
@@ -75,20 +75,15 @@ class BuildAbility extends GUTS.BaseAbility {
             buildingPlacement.assignedBuilder = peasantEntityId;
         }
 
-        // Add buildingState component to peasant - behavior tree will handle the rest
+        // Set up aiState.meta for building - behavior tree will handle the rest
         this.peasantId = peasantEntityId;
-        this.game.addComponent(peasantEntityId, "buildingState", {
-            targetBuildingEntityId: buildingEntityId,
-            targetBuildingPosition: buildingPos,
-            isPlayerOrder: peasantInfo.isPlayerOrder
-        });
-
-        // Add buildingState to building entity
-        this.game.addComponent(buildingEntityId, "buildingState", {
-            targetBuildingEntityId: buildingEntityId,
-            targetBuildingPosition: buildingPos,
-            constructionStartTime: null
-        });
+        const aiState = this.game.getComponent(peasantEntityId, "aiState");
+        if (aiState) {
+            aiState.meta = aiState.meta || {};
+            aiState.meta.buildingId = buildingEntityId;
+            aiState.meta.buildingPosition = buildingPos;
+            aiState.meta.isPlayerOrder = peasantInfo.isPlayerOrder;
+        }
     }
 
     walkToConstruction(buildState, pos, vel) {

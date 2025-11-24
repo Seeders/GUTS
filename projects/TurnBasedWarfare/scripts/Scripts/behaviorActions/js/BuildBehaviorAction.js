@@ -3,7 +3,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     static PRIORITY = 5;
 
     canExecute(entityId, controller, game) {
-        const buildingId = controller.actionTarget;
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState || !aiState.meta || !aiState.meta.buildingId) return false;
+
+        const buildingId = aiState.meta.buildingId;
         const building = game.getEntity(buildingId);
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
@@ -12,18 +15,20 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     execute(entityId, controller, game, dt) {
-        const state = controller.actionData.state || 'traveling_to_building';
+        const aiState = game.getComponent(entityId, 'aiState');
+        const state = aiState.meta.buildState || 'traveling_to_building';
 
         switch (state) {
             case 'traveling_to_building':
-                return this.travelToBuilding(entityId, controller, game);
+                return this.travelToBuilding(entityId, game);
             case 'building':
-                return this.doBuilding(entityId, controller, game);
+                return this.doBuilding(entityId, game);
         }
     }
 
     onStart(entityId, controller, game) {
-        const buildingId = controller.actionTarget;
+        const aiState = game.getComponent(entityId, 'aiState');
+        const buildingId = aiState.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
         const renderComponent = game.getComponent(buildingId, 'renderable');
 
@@ -38,11 +43,15 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             buildingPlacement.isUnderConstruction = true;
             buildingPlacement.assignedBuilder = entityId;
         }
+
+        // Initialize build state in meta
+        aiState.meta.buildState = 'traveling_to_building';
     }
 
-    travelToBuilding(entityId, controller, game) {
+    travelToBuilding(entityId, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
-        const buildingPos = game.getComponent(controller.actionTarget, 'position');
+        const buildingPos = game.getComponent(aiState.meta.buildingId, 'position');
 
         if (!buildingPos) {
             return { complete: true, failed: true };
@@ -73,8 +82,8 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             pos.x = buildingPos.x + this.parameters.buildRange;
             pos.z = buildingPos.z;
 
-            controller.actionData.state = 'building';
-            controller.actionData.constructionStartTime = game.state.now;
+            aiState.meta.buildState = 'building';
+            aiState.meta.constructionStartTime = game.state.now;
             return { complete: false };
         }
 
@@ -87,8 +96,9 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         return { complete: false };
     }
 
-    doBuilding(entityId, controller, game) {
-        const buildingId = controller.actionTarget;
+    doBuilding(entityId, game) {
+        const aiState = game.getComponent(entityId, 'aiState');
+        const buildingId = aiState.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         if (!buildingPlacement) {
@@ -106,7 +116,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const elapsed = game.state.now - controller.actionData.constructionStartTime;
+        const elapsed = game.state.now - aiState.meta.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
         if (elapsed >= buildTime) {
@@ -153,13 +163,24 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, controller, game) {
-        const buildingId = controller.actionTarget;
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState || !aiState.meta) return;
+
+        const buildingId = aiState.meta.buildingId;
+        if (!buildingId) return;
+
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         // Clean up if action was interrupted
         if (buildingPlacement && buildingPlacement.assignedBuilder === entityId) {
             buildingPlacement.assignedBuilder = null;
         }
+
+        // Clear building meta data
+        delete aiState.meta.buildingId;
+        delete aiState.meta.buildingPosition;
+        delete aiState.meta.buildState;
+        delete aiState.meta.constructionStartTime;
     }
 
     distance(pos, target) {

@@ -30,8 +30,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         }
 
         // Check if unit is building
-        const buildState = game.getComponent(entityId, 'buildingState');
-        if (buildState && buildState.targetBuildingEntityId) {
+        if (aiState && aiState.meta && aiState.meta.buildingId) {
             return null; // Building takes priority
         }
 

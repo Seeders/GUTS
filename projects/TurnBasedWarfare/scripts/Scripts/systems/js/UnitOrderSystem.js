@@ -437,12 +437,14 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                         // Update building's assigned builder
                         buildingPlacement.assignedBuilder = builderEntityId;
 
-                        // Set buildingState component - behavior tree will handle execution
-                        this.game.addComponent(builderEntityId, "buildingState", {
-                            targetBuildingEntityId: buildingEntityId,
-                            targetBuildingPosition: buildingPos,
-                            isPlayerOrder: true
-                        });
+                        // Set aiState.meta for building - behavior tree will handle execution
+                        const aiState = this.game.getComponent(builderEntityId, "aiState");
+                        if (aiState) {
+                            aiState.meta = aiState.meta || {};
+                            aiState.meta.buildingId = buildingEntityId;
+                            aiState.meta.buildingPosition = buildingPos;
+                            aiState.meta.isPlayerOrder = true;
+                        }
 
                         // Store peasantId in ability for completion tracking
                         ability.peasantId = builderEntityId;
