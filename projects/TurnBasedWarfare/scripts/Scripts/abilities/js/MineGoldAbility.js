@@ -301,13 +301,12 @@ class MineGoldAbility extends GUTS.BaseAbility {
 
                 if (aiState) {
                     aiState.state = 'chasing';
-                    aiState.targetPosition = waitPos;
                 }
+                // MovementSystem will use velocity targets set by behavior action
             } else if (!isOccupied) {
                 // Mine is free, start mining
                 if (aiState) {
                     aiState.state = 'idle';
-                    aiState.targetPosition = null;
                 }
                 pos.x = miningState.targetMinePosition.x;
                 pos.z = miningState.targetMinePosition.z;
@@ -341,7 +340,6 @@ class MineGoldAbility extends GUTS.BaseAbility {
             
             if (aiState) {
                 aiState.state = 'idle';
-                aiState.targetPosition = null;
             }
             pos.x = miningState.targetTownHall.x - 5;
             pos.z = miningState.targetTownHall.z - 5;
@@ -373,7 +371,6 @@ class MineGoldAbility extends GUTS.BaseAbility {
             // But we can also transition directly here if we detect we're next
             if (aiState) {
                 aiState.state = 'idle';
-                aiState.targetPosition = null;
             }
             pos.x = miningState.targetMinePosition.x;
             pos.z = miningState.targetMinePosition.z;
@@ -387,7 +384,6 @@ class MineGoldAbility extends GUTS.BaseAbility {
             // Otherwise stay at waiting position
             if (miningState.waitingPosition && aiState && aiState.state !== 'idle') {
                 aiState.state = 'idle';
-                aiState.targetPosition = null;
                 pos.x = miningState.waitingPosition.x;
                 pos.z = miningState.waitingPosition.z;
                 vel.vx = 0;

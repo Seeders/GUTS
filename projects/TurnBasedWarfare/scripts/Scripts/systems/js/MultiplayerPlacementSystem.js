@@ -321,15 +321,17 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     applyTargetPositions(){
-        // This function updates local placement data from entity AI state
+        // This function updates local placement data from entity player orders
         // The actual AI state and commands are handled by the server and synced at battle start
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
             placement.squadUnits.forEach(entityId => {
                 const aiState = this.game.getComponent(entityId, "aiState");
                 if (aiState) {
-                    // Sync placement data with entity AI state
-                    placement.targetPosition = aiState.targetPosition;
+                    // Sync placement data with entity playerOrder (if exists)
+                    if (aiState.playerOrder && aiState.playerOrder.targetPosition) {
+                        placement.targetPosition = aiState.playerOrder.targetPosition;
+                    }
                     placement.meta = aiState.meta;
                 }
             });

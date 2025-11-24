@@ -118,10 +118,7 @@ class BuildAbility extends GUTS.BaseAbility {
 
         if (dist < this.buildRange) {
             // Reached building - clear movement target
-            const aiState = this.game.getComponent(buildState.entityId, "aiState");
-            if (aiState) {
-                aiState.targetPosition = null;
-            }
+            // Building reached - velocity targets cleared by behavior action
 
             pos.x = buildState.targetBuildingPosition.x + this.buildRange;
             pos.z = buildState.targetBuildingPosition.z;
@@ -142,12 +139,7 @@ class BuildAbility extends GUTS.BaseAbility {
             buildingBuildState.state = 'under_construction';
             buildingBuildState.constructionStartTime = this.game.state.round;
         } else {
-            // Still need to move - update aiState if target changed
-            const aiState = this.game.getComponent(buildState.entityId, "aiState");
-            if (aiState && aiState.targetPosition != buildState.targetBuildingPosition) {
-                aiState.targetPosition = buildState.targetBuildingPosition;
-                aiState.meta = this.meta;
-            }
+            // Still need to move - velocity targets handled by behavior action
         }
     }
 
@@ -203,10 +195,16 @@ class BuildAbility extends GUTS.BaseAbility {
         buildState.targetBuildingPosition = null;
         buildState.state = 'idle';
 
-        // Clear aiState to stop movement
+        // Clear aiState meta
         if (aiState) {
-            aiState.targetPosition = null;
             aiState.meta = {};
+        }
+
+        // Clear velocity targets to stop movement
+        const vel = this.game.getComponent(buildingId, "velocity");
+        if (vel) {
+            vel.targetX = null;
+            vel.targetZ = null;
         }
 
         this.game.removeComponent(this.peasantId, "buildingState");

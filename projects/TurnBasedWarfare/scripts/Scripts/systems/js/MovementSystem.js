@@ -331,14 +331,17 @@ class MovementSystem extends GUTS.BaseSystem {
             data.avoidanceForce.z = 0;
             return;
         }
-        
-        let targetPos = aiState.targetPosition;
+
+        // Get target from velocity targets (set by behavior tree)
+        let targetPos = null;
         const targetEntityId = aiState.target;
 
         if(targetEntityId){
             targetPos = this.game.getComponent(targetEntityId, "position");
+        } else if (vel.targetX != null && vel.targetZ != null) {
+            targetPos = { x: vel.targetX, z: vel.targetZ };
         }
-        
+
         if (!targetPos) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
@@ -559,12 +562,15 @@ class MovementSystem extends GUTS.BaseSystem {
     moveDirectlyToTarget(entityId, data) {
         const { pos, vel, aiState } = data;
 
-        let targetPos = aiState.targetPosition;
+        // Get target from velocity targets (set by behavior tree) or entity target
+        let targetPos = null;
         if (aiState.target) {
             const currentTargetPos = this.game.getComponent(aiState.target, "position");
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
+        } else if (vel.targetX != null && vel.targetZ != null) {
+            targetPos = { x: vel.targetX, z: vel.targetZ };
         }
 
         if (!targetPos) {

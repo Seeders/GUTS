@@ -730,11 +730,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
             );
             
             if (path && this.game.componentManager) {
-                const aiState = this.game.getComponent(request.entityId, "aiState");
-                
-                if (aiState) {
-                    aiState.path = path;
-                    aiState.pathIndex = 0;
+                // Store path in pathfinding component (not aiState)
+                const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
+                if (pathfindingComp) {
+                    pathfindingComp.path = path;
+                    pathfindingComp.pathIndex = 0;
                 }
             }
         }

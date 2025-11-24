@@ -664,8 +664,14 @@ class ShopSystem extends GUTS.BaseSystem {
             const aiState = this.game.getComponent(assignedBuilder, "aiState");
             if (aiState) {
                 aiState.state = 'idle';
-                aiState.targetPosition = null;
                 aiState.target = null;
+            }
+
+            // Clear velocity targets (movement is handled by velocity component)
+            const vel = this.game.getComponent(assignedBuilder, "velocity");
+            if (vel) {
+                vel.targetX = null;
+                vel.targetZ = null;
             }
         }
 

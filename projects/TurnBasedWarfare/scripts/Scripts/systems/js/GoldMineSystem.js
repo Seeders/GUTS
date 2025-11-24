@@ -313,7 +313,13 @@ class GoldMineSystem extends GUTS.BaseSystem {
                 
                 if (aiState) {
                     aiState.state = 'idle';
-                    aiState.targetPosition = null;
+                }
+
+                // Clear velocity targets
+                const vel = this.game.getComponent(this.builderEntityId, "velocity");
+                if (vel) {
+                    vel.targetX = null;
+                    vel.targetZ = null;
                 }
             }
         }

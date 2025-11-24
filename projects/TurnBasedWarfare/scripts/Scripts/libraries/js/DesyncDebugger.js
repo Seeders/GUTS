@@ -69,8 +69,7 @@ class DesyncDebugger {
                 } : null),
                 aiStateHash: this.hash(aiState ? {
                     state: aiState.state,
-                    controller: aiState.aiControllerId,
-                    targetPosition: aiState.targetPosition || 'null',
+                    currentAction: aiState.currentAction || 'null',
                     target: aiState.target || 'null'
                 } : null),
                 aiState: JSON.stringify(aiState)

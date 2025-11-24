@@ -355,7 +355,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                                 meta: meta,
                                 issuedTime: commandCreatedTime || this.game.state.now
                             };
-                            aiState.targetPosition = targetPosition;
+                            // Behavior tree will set velocity targets from playerOrder
                         }
                     });
                 }
@@ -473,17 +473,25 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
                             if (distSq <= threshold * threshold) {
                                 // Reached target - clear movement
+                                const vel = this.game.getComponent(entityId, "velocity");
+                                if (vel) {
+                                    vel.targetX = null;
+                                    vel.targetZ = null;
+                                }
                                 const aiState = this.game.getComponent(entityId, "aiState");
                                 if (aiState) {
-                                    aiState.targetPosition = null;
                                     aiState.meta = {};
                                 }
                                 placement.targetPosition = null;
                             } else {
-                                // Set movement target in aiState for behavior tree to handle
+                                // Set movement target via velocity for behavior tree to handle
+                                const vel = this.game.getComponent(entityId, "velocity");
+                                if (vel && targetPosition) {
+                                    vel.targetX = targetPosition.x;
+                                    vel.targetZ = targetPosition.z;
+                                }
                                 const aiState = this.game.getComponent(entityId, "aiState");
                                 if (aiState) {
-                                    aiState.targetPosition = targetPosition;
                                     aiState.meta = placement.meta || {};
                                     aiState.meta.isPlayerOrder = true;
                                 }
@@ -757,8 +765,14 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 const aiState = this.game.getComponent(assignedBuilder, "aiState");
                 if (aiState) {
                     aiState.state = 'idle';
-                    aiState.targetPosition = null;
                     aiState.target = null;
+                }
+
+                // Clear velocity targets
+                const vel = this.game.getComponent(assignedBuilder, "velocity");
+                if (vel) {
+                    vel.targetX = null;
+                    vel.targetZ = null;
                 }
             }
 
