@@ -75,7 +75,7 @@ class WindShieldAbility extends GUTS.BaseAbility {
             this.createVisualEffect(allyPos, 'shield');            
             
             // DESYNC SAFE: Add shield component using scheduling system for duration
-            this.game.addComponent(allyId, "\L\1", {
+            this.game.addComponent(allyId, "buff", {
                 buffType: 'wind_shield',
                 modifiers: {
                     deflectionChance: this.deflectionChance,

@@ -168,7 +168,7 @@ class RageAbility extends GUTS.BaseAbility {
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
 
-        this.game.addComponent(casterEntity, "\L\1", {
+        this.game.addComponent(casterEntity, "buff", {
             buffType: 'rage',
             modifiers: {
                 damageMultiplier: this.damageMultiplier,

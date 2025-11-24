@@ -119,7 +119,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
 
-            this.game.addComponent(hopliteId, "\L\1", {
+            this.game.addComponent(hopliteId, "buff", {
                 buffType: 'phalanx',
                 modifiers: {
                     armorMultiplier: armorMultiplier,
