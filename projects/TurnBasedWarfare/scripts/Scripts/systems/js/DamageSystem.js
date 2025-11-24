@@ -99,7 +99,14 @@ class DamageSystem extends GUTS.BaseSystem {
             this.handleEntityDeath(targetId);
         }
 
-        this.game.gameManager.call('setRetaliatoryTarget', targetId, sourceId);
+        // Track attacker for retaliation in behavior tree
+        if (sourceId && damageResult.finalDamage > 0) {
+            const aiState = this.game.getComponent(targetId, "aiState");
+            if (aiState) {
+                aiState.lastAttacker = sourceId;
+                aiState.lastAttackTime = this.game.state.now;
+            }
+        }
         
         this.game.gameManager.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
         

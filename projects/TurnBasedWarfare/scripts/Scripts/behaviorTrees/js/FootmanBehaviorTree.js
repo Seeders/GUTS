@@ -65,7 +65,7 @@ class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
 
         if (enemiesInRange.length === 0) return null;
 
-        const target = this.selectTarget(pos, enemiesInRange, game);
+        const target = this.selectTarget(entityId, pos, enemiesInRange, game);
 
         return {
             action: "ATTACK",
@@ -88,7 +88,26 @@ class FootmanBehaviorTree extends GUTS.BaseBehaviorTree {
         };
     }
 
-    selectTarget(pos, enemies, game) {
+    selectTarget(entityId, pos, enemies, game) {
+        const aiState = game.getComponent(entityId, "aiState");
+
+        // Prioritize retaliating against last attacker if they're still in range
+        if (aiState && aiState.lastAttacker) {
+            const attackerHealth = game.getComponent(aiState.lastAttacker, "health");
+            const attackerPos = game.getComponent(aiState.lastAttacker, "position");
+
+            // Check if attacker is still alive and in our enemy list
+            if (attackerHealth && attackerHealth.current > 0 &&
+                enemies.includes(aiState.lastAttacker) && attackerPos) {
+                // Return the last attacker as priority target
+                return aiState.lastAttacker;
+            } else {
+                // Attacker is dead or out of range, clear the retaliation
+                aiState.lastAttacker = null;
+                aiState.lastAttackTime = null;
+            }
+        }
+
         // Pick closest enemy (deterministic)
         let nearest = null;
         let minDist = Infinity;
