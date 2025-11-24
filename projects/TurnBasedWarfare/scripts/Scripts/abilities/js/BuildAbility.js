@@ -212,7 +212,6 @@ class BuildAbility extends GUTS.BaseAbility {
         buildState.state = 'idle';
 
         // Clear aiState to stop movement
-        const aiState = this.game.getComponent(this.peasantId, "aiState");
         if (aiState) {
             aiState.targetPosition = null;
             aiState.meta = {};

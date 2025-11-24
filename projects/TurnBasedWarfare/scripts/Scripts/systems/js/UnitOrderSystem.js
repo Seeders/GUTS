@@ -236,7 +236,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             placement.squadUnits.forEach((unitId) => {
                 const position = this.game.getComponent(unitId, "position");
-                const aiState = this.game.getComponent(unitId, "aiState");
                 if (this.game.effectsSystem && position) {
                     this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }

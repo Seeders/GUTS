@@ -1,7 +1,7 @@
 class BehaviorSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-
+        
         // Register action executors
         this.actions = new Map();
 
@@ -42,7 +42,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
     registerActionFromData(behaviorActionId, actionData) {
         // The action class should be compiled and available via game context or global scope
         // behaviorActionId is the collection key (e.g., "MoveBehaviorAction")
-        const ActionClass = this.game[behaviorActionId] || window[behaviorActionId];
+        const ActionClass = GUTS[behaviorActionId];
 
         if (ActionClass) {
             const actionInstance = new ActionClass(this.game, actionData.parameters);
@@ -60,21 +60,11 @@ class BehaviorSystem extends GUTS.BaseSystem {
     registerBehaviorTreeFromData(treeId, treeData) {
         // The tree class should be compiled and available via game context or global scope
         // treeId is typically already the class name (e.g., "FootmanBehaviorTree")
-        const TreeClass = this.game[treeId] || window[treeId];
+        const TreeClass = GUTS[treeId];
 
         if (TreeClass) {
             const treeInstance = new TreeClass(this.game, treeData);
-
-            // Check if this is the UniversalBehaviorTree
-            if (treeId === 'UniversalBehaviorTree') {
-                this.universalTree = treeInstance;
-                console.log(`Registered UniversalBehaviorTree for all units`);
-            } else {
-                // Legacy support: register by unit type
-                const unitType = treeData.unitType || treeId.replace('BehaviorTree', '').toLowerCase();
-                this.behaviorTrees.set(unitType, treeInstance);
-                console.log(`Registered behavior tree: ${treeId} for unit type: ${unitType}`);
-            }
+            this.universalTree = treeInstance;          
         } else {
             console.warn(`Behavior tree class not found for: ${treeId}`);
         }
@@ -104,22 +94,13 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        // Use UniversalBehaviorTree if available, otherwise use unit-specific tree
-        let tree = null;
-        if (this.universalTree) {
-            tree = this.universalTree;
-        } else {
-            // Legacy: Get behavior tree for this unit type
-            tree = this.behaviorTrees.get(unitType.id);
-        }
-
-        if (!tree) {
+        if (!this.universalTree) {
             // No behavior tree for this unit type, skip
             return;
         }
 
         // Evaluate behavior tree to get desired action
-        const desiredAction = tree.evaluate(entityId, this.game);
+        const desiredAction = this.universalTree.evaluate(entityId, this.game);
 
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
