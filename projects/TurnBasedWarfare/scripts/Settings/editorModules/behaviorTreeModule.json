@@ -8,10 +8,12 @@
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [
+    "BaseECSGame",
+    "GameServices",
+    "MockGameContext",
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
-    "BehaviorTreeEditor",
-    "MockGameContext"
+    "BehaviorTreeEditor"
   ],
   "classes": [
     {

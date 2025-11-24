@@ -55,14 +55,8 @@ class PeasantBehaviorTree extends GUTS.BaseBehaviorTree {
 
         // Query all entities with RESOURCE component (gold mines)
         // Use gameManager if available, otherwise query directly
-        let mines;
-        if (game.gameManager && game.gameManager.getEntitiesByComponent) {
-            mines = game.gameManager.getEntitiesByComponent('RESOURCE');
-        } else if (game.getEntitiesByComponent) {
-            mines = game.getEntitiesByComponent('RESOURCE');
-        } else {
-            return null;
-        }
+        let mines = game.getEntitiesWith('RESOURCE');
+  
 
         let nearest = null;
         let minDist = Infinity;
