@@ -106,56 +106,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // Calculate battle duration same way as client
         const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
-        const allBattleEntities = this.game.getEntitiesWith(
-            "team",
-            "health",
-            "unitType"
-        );
-
-        const aliveEntities = allBattleEntities.filter(entityId => {
-            const health = this.game.getComponent(entityId, "health");
-            const deathState = this.game.getComponent(entityId, "deathState");
-            return health && health.current > 0 && (!deathState || !deathState.isDying);
-        });
-
-        const teams = new Map();
-        for (const entityId of aliveEntities) {
-            const team = this.game.getComponent(entityId, "team");
-            if (team) {
-                if (!teams.has(team.team)) {
-                    teams.set(team.team, []);
-                }
-                teams.get(team.team).push(entityId);
-            }
-        }
-        const aliveTeams = Array.from(teams.keys());
-
-        const noCombatActive = this.checkNoCombatActive(aliveEntities);
-        const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
-
-        // End battle if max duration reached
+        // Battle always lasts exactly battleDuration seconds
         if( battleDuration >= this.battleDuration){
-            this.endBattle(this.game.room, null);
-            return;
-        }
-
-        // End battle if combat has naturally concluded
-        if (aliveEntities.length === 0) {
-            console.log('no alive entities');
-            this.endBattle(this.game.room, null);
-            return;
-        }
-        
-        if (aliveTeams.length === 1 && allUnitsAtTarget) {
-            console.log('aliveTeams length is 1', aliveTeams, aliveEntities);
-            console.log('all entities', allBattleEntities);
-            console.log('aliveEntities', aliveEntities);
-            this.endBattle(this.game.room, aliveTeams[0]);
-            return;
-        }
-     
-        if (noCombatActive && allUnitsAtTarget) {
-            console.log('no combat active and all units at target');
             this.endBattle(this.game.room, null);
         }
     }
