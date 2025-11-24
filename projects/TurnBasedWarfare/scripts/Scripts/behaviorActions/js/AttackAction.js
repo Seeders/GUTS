@@ -17,25 +17,130 @@ class AttackAction extends GUTS.BaseAction {
 
     execute(entityId, controller, game, dt) {
         const combat = game.getComponent(entityId, 'combat');
+        const pos = game.getComponent(entityId, 'position');
         const targetId = controller.actionTarget;
+        const targetPos = game.getComponent(targetId, 'position');
+        const vel = game.getComponent(entityId, 'velocity');
 
-        // Check if in range
-        if (!game.combatAISystem.isInAttackRange(entityId, targetId, combat)) {
-            // Move closer
-            const targetPos = game.getComponent(targetId, 'position');
-            const vel = game.getComponent(entityId, 'velocity');
+        if (!targetPos) return { complete: true }; // Target lost
+
+        // Check if in attack range
+        const inRange = this.isInAttackRange(pos, targetPos, combat);
+
+        if (!inRange) {
+            // Move closer to target
             vel.targetX = targetPos.x;
             vel.targetZ = targetPos.z;
             return { complete: false };
         }
 
-        // In range, attack handled by CombatAISystem
-        return { complete: false };
+        // In range - stop moving and attack
+        vel.targetX = null;
+        vel.targetZ = null;
+
+        // Handle attack timing
+        if (!combat.lastAttack) combat.lastAttack = 0;
+
+        const effectiveAttackSpeed = this.getEffectiveAttackSpeed(entityId, game, combat.attackSpeed);
+        const timeSinceLastAttack = game.state.now - combat.lastAttack;
+
+        if (timeSinceLastAttack >= 1 / effectiveAttackSpeed) {
+            this.initiateAttack(entityId, targetId, game, combat);
+            combat.lastAttack = game.state.now;
+        }
+
+        return { complete: false }; // Never complete - keep attacking until target dies or leaves
     }
 
     onEnd(entityId, controller, game) {
         const vel = game.getComponent(entityId, 'velocity');
-        vel.targetX = null;
-        vel.targetZ = null;
+        if (vel) {
+            vel.targetX = null;
+            vel.targetZ = null;
+        }
+    }
+
+    isInAttackRange(pos, targetPos, combat) {
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+        return distance <= (combat.range || combat.attackRange || 50);
+    }
+
+    getEffectiveAttackSpeed(entityId, game, baseAttackSpeed) {
+        // Check for equipment bonuses
+        if (game.equipmentSystem) {
+            const equipment = game.getComponent(entityId, 'equipment');
+            if (equipment && equipment.attackSpeed) {
+                return baseAttackSpeed * equipment.attackSpeed;
+            }
+        }
+        return baseAttackSpeed;
+    }
+
+    initiateAttack(attackerId, targetId, game, combat) {
+        // Make attacker face the target
+        const attackerPos = game.getComponent(attackerId, 'position');
+        const targetPos = game.getComponent(targetId, 'position');
+        const facing = game.getComponent(attackerId, 'facing');
+
+        if (attackerPos && targetPos && facing) {
+            const dx = targetPos.x - attackerPos.x;
+            const dz = targetPos.z - attackerPos.z;
+            const angleToTarget = Math.atan2(dz, dx);
+            facing.angle = angleToTarget;
+        }
+
+        // Trigger attack animation
+        if (game.gameManager && game.gameManager.has('triggerSinglePlayAnimation')) {
+            const animationSpeed = this.calculateAnimationSpeed(attackerId, game, combat.attackSpeed);
+            const minAnimationTime = 1 / combat.attackSpeed * 0.8;
+            game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
+        }
+
+        // Handle projectile or melee damage
+        if (combat.projectile) {
+            this.scheduleProjectileLaunch(attackerId, targetId, game, combat);
+        } else {
+            // Melee attack - apply damage immediately with slight delay for animation
+            if (game.schedulingSystem) {
+                const damageDelay = (1 / combat.attackSpeed) * 0.5; // 50% through attack
+                game.schedulingSystem.scheduleEvent({
+                    time: game.state.now + damageDelay,
+                    callback: () => {
+                        const targetHealth = game.getComponent(targetId, 'health');
+                        if (targetHealth && targetHealth.current > 0) {
+                            game.gameManager.call('applyDamage', attackerId, targetId, combat.damage);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    scheduleProjectileLaunch(attackerId, targetId, game, combat) {
+        if (!game.schedulingSystem) return;
+
+        const launchDelay = (1 / combat.attackSpeed) * 0.5;
+        game.schedulingSystem.scheduleEvent({
+            time: game.state.now + launchDelay,
+            callback: () => {
+                const targetHealth = game.getComponent(targetId, 'health');
+                if (targetHealth && targetHealth.current > 0) {
+                    game.gameManager.call('spawnProjectile', attackerId, targetId, combat);
+                }
+            }
+        });
+    }
+
+    calculateAnimationSpeed(attackerId, game, baseAttackSpeed) {
+        let animSpeed = baseAttackSpeed;
+        if (game.equipmentSystem) {
+            const equipment = game.getComponent(attackerId, 'equipment');
+            if (equipment && equipment.attackSpeed) {
+                animSpeed *= equipment.attackSpeed;
+            }
+        }
+        return animSpeed;
     }
 }

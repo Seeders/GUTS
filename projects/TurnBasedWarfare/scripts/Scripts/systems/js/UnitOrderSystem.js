@@ -432,29 +432,15 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 for (const ability of abilities) {
                     if (ability.id === 'build') {
 
-                        this.game.addComponent(builderEntityId, "buildingState",
-                            {
-                                state: 'walking_to_construction',
-                                targetBuildingEntityId: buildingEntityId,
-                                targetBuildingPosition: buildingPos,
-                                constructionStartTime: this.game.state.round
-                            });
-
                         // Update building's assigned builder
                         buildingPlacement.assignedBuilder = builderEntityId;
 
-                        // Queue build command
-                        if (this.game.commandQueueSystem) {
-                            this.game.gameManager.call('queueCommand', builderEntityId, {
-                                type: 'build',
-                                controllerId: "buildingState",
-                                targetPosition: buildingPos,
-                                target: buildingEntityId,
-                                meta: { preventEnemiesInRangeCheck: true },
-                                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
-                                interruptible: true
-                            }, true);
-                        }
+                        // Set builder component - behavior tree will handle execution
+                        const builderComp = this.game.getComponent(builderEntityId, "builder") || {};
+                        builderComp.assignedBuilding = buildingEntityId;
+                        builderComp.buildingPosition = buildingPos;
+                        builderComp.constructionStartTime = this.game.state.round;
+                        this.game.addComponent(builderEntityId, "builder", builderComp);
 
                         // Store peasantId in ability for completion tracking
                         ability.peasantId = builderEntityId;
@@ -497,30 +483,17 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
-                                this.game.gameManager.call('clearCommands', unitId);
-
-                                // Store player order for persistence through combat
+                                // Set player order - behavior tree will handle execution
                                 const aiState = this.game.getComponent(unitId, "aiState");
                                 if (aiState) {
+                                    aiState.targetPosition = targetPosition;
+                                    aiState.meta = meta;
                                     aiState.playerOrder = {
                                         targetPosition: targetPosition,
                                         meta: meta,
                                         issuedTime: createdTime
-                                    };      
-                                    aiState.meta = meta;                              
+                                    };
                                 }
-
-                                this.game.gameManager.call('queueCommand', unitId, {
-                                    type: 'move',
-                                    controllerId: "UnitOrderSystem",
-                                    targetPosition: targetPosition,
-                                    target: null,
-                                    meta: meta,
-                                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                    interruptible: true,
-                                    createdTime: createdTime
-                                }, true); // true = interrupt current command
-
                             }
                         });
 
@@ -560,31 +533,17 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
-                // Clear any existing commands (including mining/building)
-                this.game.gameManager.call('clearCommands', unitId);
-
-                // Store player order for persistence through combat
+                // Set player order - behavior tree will handle execution and interruption
                 const aiState = this.game.getComponent(unitId, "aiState");
                 if (aiState) {
+                    aiState.targetPosition = targetPosition;
+                    aiState.meta = meta;
                     aiState.playerOrder = {
                         targetPosition: targetPosition,
                         meta: meta,
                         issuedTime: createdTime
                     };
-                    aiState.meta = meta;
                 }
-
-                // Queue MOVE command through command queue system
-                // This properly interrupts abilities like mining
-                this.game.gameManager.call('queueCommand', unitId, {
-                    type: 'move',
-                    controllerId: "UnitOrderSystem",
-                    targetPosition: targetPosition,
-                    meta: meta,
-                    priority: this.game.commandQueueSystem?.PRIORITY.MOVE || 10,
-                    interruptible: true,
-                    createdTime: createdTime
-                }, true); // true = interrupt current command
             }
         });
     }
