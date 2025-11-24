@@ -137,16 +137,8 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     execute(entityId, targetData) {
-        const miningState = this.game.getComponent(entityId, "miningState");
-        const pos = this.game.getComponent(entityId, "position");
-        const vel = this.game.getComponent(entityId, "velocity");
-        const health = this.game.getComponent(entityId, "health");
-        
-        if (!miningState || !pos || !vel || !health || health.current <= 0) {
-            this.enabled = false;
-            return null;
-        }
-        this.updateMinerState(entityId, miningState, pos, vel);
+        // Behavior tree system handles mining through MineGoldBehaviorAction
+        // This execute() method is no longer used - kept for compatibility with AbilitySystem
         return null;
     }
 
@@ -220,11 +212,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         };
         miningState.state = 'walking_to_mine';
 
-        if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
-            aiState.targetPosition = miningState.targetMinePosition;
-            aiState.path = [];
-            aiState.meta = {};
-        }
+        // Behavior tree system handles aiState - don't manipulate it here
     }
 
     findTownHall(miningState) {
@@ -258,11 +246,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         
         if (closestTownHall) {
             miningState.targetTownHall = closestTownHall;
-            if (aiState) {
-                aiState.targetPosition = miningState.targetTownHall;
-                aiState.path = [];
-                aiState.meta = {};
-            }
+            // Behavior tree system handles aiState - don't manipulate it here
         }
     }
 
@@ -325,12 +309,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         } else {
             const aiState = this.game.getComponent(miningState.entityId, "aiState");
 
-            if (aiState && aiState.targetPosition != miningState.targetMinePosition) {
-                aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetMinePosition;        
-                aiState.path = [];                        
-                aiState.meta = {};
-            }
+            // Behavior tree system handles aiState - don't manipulate it here
         }
     }
 
@@ -363,12 +342,7 @@ class MineGoldAbility extends GUTS.BaseAbility {
         } else {
             const aiState = this.game.getComponent(miningState.entityId, "aiState");
 
-            if (aiState && aiState.targetPosition != miningState.targetTownHall) {
-                aiState.state = 'chasing';
-                aiState.targetPosition = miningState.targetTownHall;
-                aiState.path = [];
-                aiState.meta = {};
-            }
+            // Behavior tree system handles aiState - don't manipulate it here
         }
     }
 
