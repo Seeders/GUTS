@@ -209,43 +209,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
             executor.onEnd(entityId, aiState, this.game);
             aiState.currentAction = null;
             aiState.actionTarget = null;
-
-            // Clear player order if it was a one-time command
-            if (aiState.playerOrder && !aiState.playerOrder.persistent) {
-                aiState.playerOrder = null;
-            }
         }
     }
 
     /**
-     * Public API: Issue a player command to a unit
+     * Public API: Issue a player command to a unit (DEPRECATED - use playerOrder component)
      */
     issuePlayerCommand(entityId, action, target, data = {}) {
-        const aiState = this.game.getComponent(entityId, "aiState");
-
-        if (!aiState) {
-            console.warn(`Cannot issue command to entity ${entityId}: no UnitController component`);
-            return;
-        }
-
-        aiState.playerOrder = {
-            action: action,
-            target: target,
-            data: data,
-            issuedTime: this.game.state.now,
-            persistent: false  // One-time command
-        };
+        console.warn('issuePlayerCommand is deprecated - use playerOrder component directly');
     }
 
     /**
-     * Public API: Clear player command for a unit
+     * Public API: Clear player command for a unit (DEPRECATED - use playerOrder component)
      */
     clearPlayerCommand(entityId) {
-        const aiState = this.game.getComponent(entityId, "aiState");
-
-        if (aiState) {
-            aiState.playerOrder = null;
-        }
+        console.warn('clearPlayerCommand is deprecated - use playerOrder component directly');
     }
 
     /**
@@ -253,13 +231,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     getCurrentAction(entityId) {
         const aiState = this.game.getComponent(entityId, "aiState");
+        const playerOrder = this.game.getComponent(entityId, "playerOrder");
 
         if (!aiState) return null;
 
         return {
             action: aiState.currentAction ? aiState.currentAction.type : null,
             target: aiState.actionTarget,
-            playerOrder: aiState.playerOrder,
+            playerOrder: playerOrder,
             priority: aiState.actionPriority
         };
     }

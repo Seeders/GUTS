@@ -36,7 +36,6 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             target: playerOrder.targetPosition,
             priority: 10,
             data: {
-                playerOrdered: true,
                 preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
             }
         };
@@ -64,7 +63,6 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         if (aiState) {
             aiState.meta.buildingId = playerOrder.meta.buildingId;
             aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
-            aiState.meta.isPlayerOrder = playerOrder.meta.isPlayerOrder;
         }
 
         return {

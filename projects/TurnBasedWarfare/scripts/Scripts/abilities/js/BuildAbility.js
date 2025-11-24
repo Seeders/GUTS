@@ -91,7 +91,6 @@ class BuildAbility extends GUTS.BaseAbility {
             aiState.meta = aiState.meta || {};
             aiState.meta.buildingId = buildingEntityId;
             aiState.meta.buildingPosition = buildingPos;
-            aiState.meta.isPlayerOrder = peasantInfo.isPlayerOrder;
         }
     }
 

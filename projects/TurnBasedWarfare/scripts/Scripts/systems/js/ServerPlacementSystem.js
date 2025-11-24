@@ -247,13 +247,11 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, "aiState");
-                    if (aiState) {
-                        aiState.playerOrder = {
-                            targetPosition: targetPosition,
-                            meta: meta,
-                            issuedTime: commandCreatedTime || this.game.state.now
-                        };
+                    const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                    if (playerOrder) {
+                        playerOrder.targetPosition = targetPosition;
+                        playerOrder.meta = meta;
+                        playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
                     }
                 });
             }
@@ -339,23 +337,12 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 } else {
                     // Fallback if UnitOrderSystem not available
                     placement.targetPosition = targetPosition;
-                    placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
-                    placement.meta = meta || {};
                     placement.squadUnits.forEach((unitId) => {
-                        const aiState = this.game.getComponent(unitId, "aiState");
-                        const p = this.game.getComponent(unitId, "placement");
-                        if(p){
-                            p.commandCreatedTime = placement.commandCreatedTime;
-                            p.targetPosition = placement.targetPosition;
-                            p.meta = placement.meta;
-                        }
-                        if (aiState) {
-                            aiState.playerOrder = {
-                                targetPosition: targetPosition,
-                                meta: meta,
-                                issuedTime: commandCreatedTime || this.game.state.now
-                            };
-                            // Behavior tree will set velocity targets from playerOrder
+                        const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                        if (playerOrder) {
+                            playerOrder.targetPosition = targetPosition;
+                            playerOrder.meta = meta;
+                            playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
                         }
                     });
                 }
@@ -485,12 +472,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                                 placement.targetPosition = null;
                             } else {
                                 // Movement is handled by behavior actions now
-                                // Just ensure the placement target is set for the behavior tree
-                                const aiState = this.game.getComponent(entityId, "aiState");
-                                if (aiState) {
-                                    aiState.meta = placement.meta || {};
-                                    aiState.meta.isPlayerOrder = true;
-                                }
+                                // Behavior tree reads from playerOrder component
                             }
                         }
                     }

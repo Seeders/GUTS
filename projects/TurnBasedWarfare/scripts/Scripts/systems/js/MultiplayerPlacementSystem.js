@@ -326,13 +326,11 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         const allPlacements = [...this.playerPlacements, ...this.opponentPlacements];
         allPlacements.forEach((placement) => {
             placement.squadUnits.forEach(entityId => {
-                const aiState = this.game.getComponent(entityId, "aiState");
-                if (aiState) {
-                    // Sync placement data with entity playerOrder (if exists)
-                    if (aiState.playerOrder && aiState.playerOrder.targetPosition) {
-                        placement.targetPosition = aiState.playerOrder.targetPosition;
-                    }
-                    placement.meta = aiState.meta;
+                // Sync placement data with entity playerOrder component (if exists)
+                const playerOrder = this.game.getComponent(entityId, "playerOrder");
+                if (playerOrder && playerOrder.targetPosition) {
+                    placement.targetPosition = playerOrder.targetPosition;
+                    placement.meta = playerOrder.meta;
                 }
             });
         });
