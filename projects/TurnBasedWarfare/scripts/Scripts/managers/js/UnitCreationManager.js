@@ -369,11 +369,12 @@ class UnitCreationManager {
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
         // AI state for behavior control (only for behavior tree state management)
+        // - state: current behavior state
+        // - target: entity ID being targeted (for combat, following, etc.)
+        // - meta: behavior tree's working storage (modified only by tree/actions)
         this.game.addComponent(entity, "aiState", {
             state: 'idle',
-            targetPosition: targetPosition,
             target: null,
-            aiControllerId: null,
             meta: {}
         });
 
