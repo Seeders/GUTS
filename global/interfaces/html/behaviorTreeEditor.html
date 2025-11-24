@@ -1,0 +1,64 @@
+<div id="behavior-tree-editor-container" class="editor-module">
+    <div class="editor-module__sidebar editor-module__sidebar--left">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Tree Info</h3>
+            <div class="editor-module__form-row">
+                <label class="editor-module__label">Unit Type:</label>
+                <span id="bt-unit-type" class="editor-module__text"></span>
+            </div>
+            <div class="editor-module__form-row">
+                <label class="editor-module__label">Description:</label>
+                <span id="bt-description" class="editor-module__text"></span>
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Simulation</h3>
+            <button id="bt-simulate-btn" class="editor-module__btn editor-module__btn--primary" style="margin-top: 8px; width: 100%;">Run Simulation</button>
+            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
+            <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
+            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Available Actions</h3>
+            <div id="available-actions" class="bt-action-list" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Node Types Reference</h3>
+            <div style="font-size: 12px; color: #888; line-height: 1.6;">
+                <div><strong style="color: #10b981;">selector:</strong> Try children until one succeeds</div>
+                <div><strong style="color: #f59e0b;">sequence:</strong> Execute children in order</div>
+                <div><strong style="color: #3b82f6;">condition:</strong> Check a condition</div>
+                <div><strong style="color: #ef4444;">action:</strong> Execute an action</div>
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Actions</h3>
+            <button id="bt-validate-btn" class="editor-module__btn">Validate Tree</button>
+            <button id="bt-export-btn" class="editor-module__btn">Export to File</button>
+        </div>
+    </div>
+
+    <div class="editor-module__canvas-area">
+        <div class="bt-canvas-header">
+            <h2 id="bt-tree-title">Behavior Tree Visualization</h2>
+        </div>
+        <div id="bt-tree-canvas" class="bt-tree-canvas"></div>
+        <div id="bt-validation-output" class="bt-validation-output"></div>
+    </div>
+
+    <div class="editor-module__sidebar editor-module__sidebar--right">
+        <div class="editor-module__section" style="flex: 1; display: flex; flex-direction: column;">
+            <h3 class="editor-module__section-title">JSON Editor</h3>
+            <p style="font-size: 12px; color: #888; margin-bottom: 8px;">Edit the behavior tree structure directly in JSON format. Click "Save Changes" to apply your edits.</p>
+            <textarea id="bt-json-view" class="editor-module__textarea bt-json-textarea" style="flex: 1;"></textarea>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button id="bt-save-json-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;">Save Changes</button>
+                <button id="bt-import-json-btn" class="editor-module__btn">Import File</button>
+            </div>
+        </div>
+    </div>
+</div>
