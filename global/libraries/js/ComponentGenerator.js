@@ -19,11 +19,11 @@ class ComponentGenerator {
 
     getComponents() {
         let components = {};
-        Object.keys(this.components).forEach((modelId) => {
-            const model = this.components[modelId];
+        Object.keys(this.components).forEach((componentId) => {
+            const model = this.components[componentId];
             // Extract schema if model has title/schema structure, otherwise use model directly
             const data = model.schema || model;
-            components[modelId] = (params = {}) => {
+            components[componentId] = (params = {}) => {
                 return this.deepMerge(data, params);
             };
         });

@@ -136,33 +136,27 @@ class EnvironmentObjectSpawner {
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
 
         // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION,
-            Components.Position(worldX, height, worldZ));
+        this.game.addComponent(entityId, ComponentTypes.POSITION, { worldX, height, worldZ });
 
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
-        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
-            Components.UnitType(unitTypeData));
+        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE, unitTypeData);
 
         // Add Team component (neutral for world objects)
-        this.game.addComponent(entityId, ComponentTypes.TEAM,
-            Components.Team('neutral'));
+        this.game.addComponent(entityId, ComponentTypes.TEAM, { team: 'neutral' });
 
         // Add Collision component if the object should block movement
         // Check for impassable property (true means it blocks movement)
         if (unitType.impassable === true && unitType.size) {
-            this.game.addComponent(entityId, ComponentTypes.COLLISION,
-                Components.Collision(unitType.size, unitType.height || 100));
+            this.game.addComponent(entityId, ComponentTypes.COLLISION,{ size: unitType.size, height: unitType.height || 100 });
         }
 
         // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING,
-            Components.Facing(rotation));
+        this.game.addComponent(entityId, ComponentTypes.FACING,{rotation});
 
         // Store scale in Animation component
         if (!this.game.hasComponent(entityId, ComponentTypes.ANIMATION)) {
-            this.game.addComponent(entityId, ComponentTypes.ANIMATION,
-                Components.Animation(scale, rotation, 0));
+            this.game.addComponent(entityId, ComponentTypes.ANIMATION,{scale, rotation, flash: 0});
         }
 
         this.spawnedEntities.add(entityId);
