@@ -65,36 +65,21 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
             // Check if mine is occupied by another unit
             if (mine.currentOccupant && mine.currentOccupant !== entityId) {
-                // Mine is occupied, wait
-                const vel = game.getComponent(entityId, 'velocity');
-                if (vel) {
-                    vel.vx = 0;
-                    vel.vz = 0;
-                }
+                // Mine is occupied, wait (clear movement target)
+                aiState.actionData.targetPos = null;
                 return { complete: false };
             }
 
-            // Claim the mine - stop movement
-            const vel = game.getComponent(entityId, 'velocity');
-            if (vel) {
-                vel.vx = 0;
-                vel.vz = 0;
-            }
+            // Claim the mine - clear movement target
+            aiState.actionData.targetPos = null;
             mine.currentOccupant = entityId;
             aiState.meta.mineState = 'mining';
             aiState.meta.miningStartTime = game.state.now;
             return { complete: false };
         }
 
-        // Move to mine position
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            const dx = minePos.x - pos.x;
-            const dz = minePos.z - pos.z;
-            const speed = vel.maxSpeed || 50;
-            vel.vx = (dx / distance) * speed;
-            vel.vz = (dz / distance) * speed;
-        }
+        // Set target for MovementSystem to handle
+        aiState.actionData.targetPos = { x: minePos.x, z: minePos.z };
         return { complete: false };
     }
 
@@ -132,26 +117,15 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const distance = this.distance(pos, depotPos);
 
         if (distance < this.parameters.depositRange) {
-            // Reached depot - stop movement
-            const vel = game.getComponent(entityId, 'velocity');
-            if (vel) {
-                vel.vx = 0;
-                vel.vz = 0;
-            }
+            // Reached depot - clear movement target
+            aiState.actionData.targetPos = null;
             aiState.meta.mineState = 'depositing';
             aiState.meta.depositStartTime = game.state.now;
             return { complete: false };
         }
 
-        // Move to depot position
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            const dx = depotPos.x - pos.x;
-            const dz = depotPos.z - pos.z;
-            const speed = vel.maxSpeed || 50;
-            vel.vx = (dx / distance) * speed;
-            vel.vz = (dz / distance) * speed;
-        }
+        // Set target for MovementSystem to handle
+        aiState.actionData.targetPos = { x: depotPos.x, z: depotPos.z };
         return { complete: false };
     }
 

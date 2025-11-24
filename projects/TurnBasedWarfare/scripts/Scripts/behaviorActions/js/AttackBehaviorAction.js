@@ -18,7 +18,6 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
     execute(entityId, controller, game, dt) {
         const combat = game.getComponent(entityId, 'combat');
         const pos = game.getComponent(entityId, 'position');
-        const vel = game.getComponent(entityId, 'velocity');
         const targetId = controller.actionTarget;
         const targetPos = game.getComponent(targetId, 'position');
 
@@ -28,21 +27,11 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
         const inRange = this.isInAttackRange(pos, targetPos, combat);
 
         if (!inRange) {
-            // Move toward target
-            const dx = targetPos.x - pos.x;
-            const dz = targetPos.z - pos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-            const speed = vel.maxSpeed || 50;
-            vel.vx = (dx / distance) * speed;
-            vel.vz = (dz / distance) * speed;
+            // MovementSystem will handle movement to target entity
             return { complete: false };
         }
 
-        // In range - stop and attack
-        vel.vx = 0;
-        vel.vz = 0;
-
-        // Handle attack timing
+        // In range - attack
         if (!combat.lastAttack) combat.lastAttack = 0;
 
         const effectiveAttackSpeed = this.getEffectiveAttackSpeed(entityId, game, combat.attackSpeed);
@@ -57,12 +46,7 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, controller, game) {
-        // Stop movement
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            vel.vx = 0;
-            vel.vz = 0;
-        }
+        // MovementSystem will stop movement when no target
     }
 
     isInAttackRange(pos, targetPos, combat) {
