@@ -14,6 +14,22 @@ class BuildAbility extends GUTS.BaseAbility {
         this.buildRange = 50;
     }
 
+    // Behavior contribution for UniversalBehaviorTree
+    getBehavior(entityId, game) {
+        if (!this.enabled) return null;
+
+        const buildState = game.getComponent(entityId, 'buildingState');
+        if (!buildState || !buildState.targetBuildingEntityId) return null;
+
+        // Building behavior
+        return {
+            action: "BuildBehaviorAction",
+            target: buildState.targetBuildingEntityId,
+            priority: 15,
+            data: {}
+        };
+    }
+
     canExecute(entityId) {
         if(!this.enabled){
             return false;
@@ -23,16 +39,10 @@ class BuildAbility extends GUTS.BaseAbility {
         // With behavior tree system, just check if buildingState exists
         return buildingState !== undefined;
     }
-    execute(entityId, targetData) {
-        const buildState = this.game.getComponent(entityId, "buildingState");
-        const pos = this.game.getComponent(entityId, "position");
-        const vel = this.game.getComponent(entityId, "velocity");
-        
-        if (!buildState || !pos || !vel) {
-            return null;
-        }
 
-        this.updateBuilderState(entityId, buildState, pos, vel);
+    execute(entityId, targetData) {
+        // Behavior tree system handles building through BuildBehaviorAction
+        // This execute() method is no longer used - kept for compatibility with AbilitySystem
         return null;
     }
 
@@ -52,55 +62,33 @@ class BuildAbility extends GUTS.BaseAbility {
     }
 
     assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
-        const Components = this.game.gameManager.call('getComponents');
-        const aiState = this.game.getComponent(peasantEntityId, "aiState");
         const buildingPos = this.game.getComponent(buildingEntityId, "position");
-
         if (!buildingPos) return;
 
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
-        const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
-        renderComponent.spawnType = 'underConstruction';
-
-        this.game.removeComponent(buildingEntityId, "health");
-
-        const peasantId = peasantInfo.peasantId;
         const buildTime = peasantInfo.buildTime;
 
+        // Set up building placement state
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = true;
             buildingPlacement.buildTime = buildTime;
-            buildingPlacement.assignedBuilder = peasantId || null;
+            buildingPlacement.assignedBuilder = peasantEntityId;
         }
 
+        // Add buildingState component to peasant - behavior tree will handle the rest
         this.peasantId = peasantEntityId;
         this.game.addComponent(peasantEntityId, "buildingState", {
-            state: 'walking_to_construction',
             targetBuildingEntityId: buildingEntityId,
             targetBuildingPosition: buildingPos,
-            constructionStartTime: this.game.state.round
+            isPlayerOrder: peasantInfo.isPlayerOrder
         });
+
+        // Add buildingState to building entity
         this.game.addComponent(buildingEntityId, "buildingState", {
-            state: 'planned_for_construction',
             targetBuildingEntityId: buildingEntityId,
             targetBuildingPosition: buildingPos,
             constructionStartTime: null
         });
-
-        // With behavior tree system, the aiState component drives movement behavior
-        // Update aiState to move to building position
-        if (aiState) {
-            aiState.targetPosition = buildingPos;
-            aiState.meta = {
-                ...this.meta,
-                isPlayerOrder: peasantInfo.isPlayerOrder
-            };
-        }
-
-        if (buildingPlacement) {
-            buildingPlacement.assignedBuilder = peasantEntityId;
-            buildingPlacement.isUnderConstruction = true;
-        }
     }
 
     walkToConstruction(buildState, pos, vel) {

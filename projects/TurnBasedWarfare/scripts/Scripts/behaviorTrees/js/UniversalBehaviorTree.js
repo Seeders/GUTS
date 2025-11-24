@@ -30,14 +30,14 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     }
 
     checkBuildOrder(entityId, game) {
-        const buildState = game.getComponent(entityId, 'builder');
-        if (!buildState || !buildState.assignedBuilding) return null;
+        const buildState = game.getComponent(entityId, 'buildingState');
+        if (!buildState || !buildState.targetBuildingEntityId) return null;
 
         return {
-            action: "BUILD",
-            target: buildState.assignedBuilding,
+            action: "BuildBehaviorAction",
+            target: buildState.targetBuildingEntityId,
             priority: 20,
-            data: { buildingId: buildState.assignedBuilding }
+            data: {}
         };
     }
 
