@@ -1,34 +1,3 @@
-/**
- * Base class for all unit actions
- * Actions perform specific unit behaviors with consistent state management:
- *
- * STATE MANAGEMENT PATTERN:
- * - controller.actionData: Read-only input from behavior tree (initial config)
- * - aiState.meta: Read-write state for action-specific variables
- *
- * LIFECYCLE:
- * 1. onStart(): Initialize aiState.meta properties
- * 2. execute(): Read/modify aiState.meta as needed
- * 3. onEnd(): Clean up aiState.meta properties (delete them)
- *
- * EXAMPLE:
- * onStart(entityId, controller, game) {
- *     const aiState = game.getComponent(entityId, 'aiState');
- *     aiState.meta.myState = 'initial';
- * }
- *
- * execute(entityId, controller, game, dt) {
- *     const aiState = game.getComponent(entityId, 'aiState');
- *     if (aiState.meta.myState === 'initial') {
- *         aiState.meta.myState = 'processing';
- *     }
- * }
- *
- * onEnd(entityId, controller, game) {
- *     const aiState = game.getComponent(entityId, 'aiState');
- *     delete aiState.meta.myState;
- * }
- */
 class BaseBehaviorAction {
     constructor(game, parameters = {}) {
         this.game = game;

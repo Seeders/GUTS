@@ -1,6 +1,4 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
-    static TYPE = "BUILD";
-    static PRIORITY = 5;
 
     canExecute(entityId, controller, game) {
         const aiState = game.getComponent(entityId, 'aiState');

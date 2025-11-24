@@ -1,7 +1,5 @@
 class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
-    static TYPE = "MINE";
-    static PRIORITY = 5;
-
+   
     canExecute(entityId, controller, game) {
         const mineId = controller.actionTarget;
         const mine = game.getComponent(mineId, 'goldMine');

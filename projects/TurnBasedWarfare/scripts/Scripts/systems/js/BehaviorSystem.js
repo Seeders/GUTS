@@ -1,7 +1,7 @@
 class BehaviorSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        
+        this.game.behaviorSystem = this;
         // Register action executors
         this.actions = new Map();
 
@@ -101,7 +101,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         // Evaluate behavior tree to get desired action
         const desiredAction = this.universalTree.evaluate(entityId, this.game);
-
+  
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
             this.switchAction(entityId, aiState, desiredAction);
@@ -136,6 +136,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Determine if we should switch from current action to desired action
      */
     shouldSwitchAction(aiState, desiredAction) {
+      
         // No desired action, don't switch
         if (!desiredAction || !desiredAction.action) return false;
 

@@ -11,6 +11,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             () => this.checkAbilityBehaviors(entityId, game),
             () => ({ action: "IdleBehaviorAction", priority: 0 })
         ];
+        // if(entityId ='peasant_1248_1344_right_1'){
         // console.log([
         //     results[0](),
         //     results[1](),
@@ -18,6 +19,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         //     results[3](),
         //     results[4]()
         // ]);
+        // }
         return this.select(results);
     }
 

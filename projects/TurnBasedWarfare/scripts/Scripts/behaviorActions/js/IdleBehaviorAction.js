@@ -1,6 +1,4 @@
 class IdleBehaviorAction extends GUTS.BaseBehaviorAction {
-    static TYPE = "IDLE";
-    static PRIORITY = 0;
 
     canExecute(entityId, controller, game) {
         return true;

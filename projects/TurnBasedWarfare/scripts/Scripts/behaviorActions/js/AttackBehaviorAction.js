@@ -1,7 +1,4 @@
 class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
-    static TYPE = "ATTACK";
-    static PRIORITY = 30;
-
     canExecute(entityId, controller, game) {
         const targetId = controller.actionTarget;
         if (!targetId) return false;
