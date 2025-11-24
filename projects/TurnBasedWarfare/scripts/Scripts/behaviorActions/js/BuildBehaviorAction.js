@@ -7,11 +7,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!aiState || !aiState.meta || !aiState.meta.buildingId) return false;
 
         const buildingId = aiState.meta.buildingId;
-        const building = game.getEntity(buildingId);
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         // Check if building exists and is under construction
-        return building && buildingPlacement && buildingPlacement.isUnderConstruction;
+        return buildingPlacement && buildingPlacement.isUnderConstruction;
     }
 
     execute(entityId, controller, game, dt) {
