@@ -831,17 +831,126 @@ class BehaviorTreeEditor {
             return;
         }
 
-        const componentType = prompt(`Add component:\n\n${availableTypes.join('\n')}\n\nEnter component type:`);
-        if (componentType && this.mockGame.componentTypes[componentType.toUpperCase()]) {
-            const normalizedType = componentType.toUpperCase();
-            this.mockGame.addComponent(entityId, normalizedType, {});
-            const entitiesContainer = document.getElementById('bt-entities-container');
-            if (entitiesContainer) {
-                this.renderAllEntities(entitiesContainer);
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.right = '0';
+        overlay.style.bottom = '0';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '10000';
+
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.style.backgroundColor = '#1a1a1a';
+        modal.style.border = '1px solid #444';
+        modal.style.borderRadius = '8px';
+        modal.style.padding = '20px';
+        modal.style.minWidth = '300px';
+        modal.style.maxWidth = '400px';
+
+        // Header
+        const header = document.createElement('h3');
+        header.textContent = 'Add Component';
+        header.style.margin = '0 0 16px 0';
+        header.style.fontSize = '14px';
+        header.style.color = '#fff';
+        modal.appendChild(header);
+
+        // Dropdown
+        const select = document.createElement('select');
+        select.style.width = '100%';
+        select.style.padding = '8px';
+        select.style.fontSize = '12px';
+        select.style.backgroundColor = '#2a2a2a';
+        select.style.border = '1px solid #444';
+        select.style.color = '#fff';
+        select.style.borderRadius = '4px';
+        select.style.marginBottom = '16px';
+
+        // Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Select a component...';
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        select.appendChild(placeholderOption);
+
+        // Add available component types (sorted alphabetically)
+        availableTypes.sort().forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            select.appendChild(option);
+        });
+
+        modal.appendChild(select);
+
+        // Buttons container
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.style.display = 'flex';
+        buttonsDiv.style.gap = '8px';
+        buttonsDiv.style.justifyContent = 'flex-end';
+
+        // Cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.padding = '6px 12px';
+        cancelBtn.style.fontSize = '12px';
+        cancelBtn.style.backgroundColor = '#444';
+        cancelBtn.style.border = 'none';
+        cancelBtn.style.color = '#fff';
+        cancelBtn.style.borderRadius = '4px';
+        cancelBtn.style.cursor = 'pointer';
+        cancelBtn.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+        buttonsDiv.appendChild(cancelBtn);
+
+        // Add button
+        const addBtn = document.createElement('button');
+        addBtn.textContent = 'Add';
+        addBtn.style.padding = '6px 12px';
+        addBtn.style.fontSize = '12px';
+        addBtn.style.backgroundColor = '#3b82f6';
+        addBtn.style.border = 'none';
+        addBtn.style.color = '#fff';
+        addBtn.style.borderRadius = '4px';
+        addBtn.style.cursor = 'pointer';
+        addBtn.addEventListener('click', () => {
+            const selectedType = select.value;
+            if (selectedType) {
+                // Get component definition and initialize with default values
+                const componentTypeLower = this.mockGame.componentTypes[selectedType];
+                const componentDefinition = this.mockGame.componentGenerator.components[componentTypeLower];
+                const defaultData = componentDefinition?.schema || componentDefinition || {};
+
+                // Add component with default values
+                this.mockGame.addComponent(entityId, selectedType, { ...defaultData });
+
+                const entitiesContainer = document.getElementById('bt-entities-container');
+                if (entitiesContainer) {
+                    this.renderAllEntities(entitiesContainer);
+                }
+                document.body.removeChild(overlay);
             }
-        } else if (componentType) {
-            alert('Invalid component type');
-        }
+        });
+        buttonsDiv.appendChild(addBtn);
+
+        modal.appendChild(buttonsDiv);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        });
     }
 
     setupDataDrivenSimulation(varsContainer) {
@@ -904,36 +1013,18 @@ class BehaviorTreeEditor {
         const propsContainer = document.createElement('div');
         propsContainer.style.marginLeft = '8px';
 
+        // Get component definition to ensure all properties are shown
+        const componentTypeLower = this.mockGame.componentTypes[componentType];
+        const componentDefinition = this.mockGame.componentGenerator.components[componentTypeLower];
+        const defaultSchema = componentDefinition?.schema || componentDefinition || {};
+
+        // Merge default schema with actual component data to show all properties
+        const allProperties = { ...defaultSchema, ...componentData };
+
         // Create inputs for each property
-        for (const [key, value] of Object.entries(componentData)) {
+        for (const [key, value] of Object.entries(allProperties)) {
             this.createComponentPropertyInput(propsContainer, entityId, componentType, key, value);
         }
-
-        // Add property button
-        const addPropBtn = document.createElement('button');
-        addPropBtn.textContent = '+ Add Property';
-        addPropBtn.style.marginTop = '4px';
-        addPropBtn.style.padding = '2px 6px';
-        addPropBtn.style.fontSize = '9px';
-        addPropBtn.style.background = '#8b5cf6';
-        addPropBtn.style.border = 'none';
-        addPropBtn.style.color = 'white';
-        addPropBtn.style.borderRadius = '2px';
-        addPropBtn.style.cursor = 'pointer';
-        addPropBtn.addEventListener('click', () => {
-            const propName = prompt('Enter property name:');
-            if (propName) {
-                const component = this.mockGame.getComponent(entityId, componentType);
-                if (component) {
-                    component[propName] = null;
-                }
-                const entitiesContainer = document.getElementById('bt-entities-container');
-                if (entitiesContainer) {
-                    this.renderAllEntities(entitiesContainer);
-                }
-            }
-        });
-        propsContainer.appendChild(addPropBtn);
 
         detailsEl.appendChild(propsContainer);
         container.appendChild(detailsEl);
