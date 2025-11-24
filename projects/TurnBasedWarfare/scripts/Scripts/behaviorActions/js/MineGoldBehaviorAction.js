@@ -58,16 +58,28 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = game.getComponent(entityId, 'position');
         const minePos = game.getComponent(controller.actionTarget, 'position');
 
-        if (this.distance(pos, minePos) < this.parameters.miningRange) {
+        const distance = this.distance(pos, minePos);
+
+        if (distance < this.parameters.miningRange) {
             const mine = game.getComponent(controller.actionTarget, 'goldMine');
 
             // Check if mine is occupied by another unit
             if (mine.currentOccupant && mine.currentOccupant !== entityId) {
                 // Mine is occupied, wait
+                const vel = game.getComponent(entityId, 'velocity');
+                if (vel) {
+                    vel.vx = 0;
+                    vel.vz = 0;
+                }
                 return { complete: false };
             }
 
-            // Claim the mine
+            // Claim the mine - stop movement
+            const vel = game.getComponent(entityId, 'velocity');
+            if (vel) {
+                vel.vx = 0;
+                vel.vz = 0;
+            }
             mine.currentOccupant = entityId;
             aiState.meta.mineState = 'mining';
             aiState.meta.miningStartTime = game.state.now;
@@ -75,7 +87,14 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Move to mine position
-        aiState.actionData.targetPos = { x: minePos.x, z: minePos.z };
+        const vel = game.getComponent(entityId, 'velocity');
+        if (vel) {
+            const dx = minePos.x - pos.x;
+            const dz = minePos.z - pos.z;
+            const speed = vel.maxSpeed || 50;
+            vel.vx = (dx / distance) * speed;
+            vel.vz = (dz / distance) * speed;
+        }
         return { complete: false };
     }
 
@@ -110,15 +129,29 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         const depotPos = game.getComponent(depot, 'position');
+        const distance = this.distance(pos, depotPos);
 
-        if (this.distance(pos, depotPos) < this.parameters.depositRange) {
+        if (distance < this.parameters.depositRange) {
+            // Reached depot - stop movement
+            const vel = game.getComponent(entityId, 'velocity');
+            if (vel) {
+                vel.vx = 0;
+                vel.vz = 0;
+            }
             aiState.meta.mineState = 'depositing';
             aiState.meta.depositStartTime = game.state.now;
             return { complete: false };
         }
 
         // Move to depot position
-        aiState.actionData.targetPos = { x: depotPos.x, z: depotPos.z };
+        const vel = game.getComponent(entityId, 'velocity');
+        if (vel) {
+            const dx = depotPos.x - pos.x;
+            const dz = depotPos.z - pos.z;
+            const speed = vel.maxSpeed || 50;
+            vel.vx = (dx / distance) * speed;
+            vel.vz = (dz / distance) * speed;
+        }
         return { complete: false };
     }
 
