@@ -30,6 +30,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             // Change room phase
             this.game.state.phase = 'battle';
 
+            // Reset game time to sync with client (client also calls resetCurrentTime)
+            this.game.resetCurrentTime();
+
             // Record battle start time (use global game time like client does)
             this.battleStartTime = this.game.state.now || 0;
 
