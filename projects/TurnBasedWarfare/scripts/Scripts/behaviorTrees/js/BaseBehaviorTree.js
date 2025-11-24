@@ -16,18 +16,26 @@ class BaseBehaviorTree {
     }
 
     /**
-     * Selector node: returns first child that succeeds
+     * Selector node: evaluates all checks and returns the highest priority action
      * @param {Array<Function>} checks - Array of functions that return action descriptors or null
-     * @returns {object|null} First successful action descriptor
+     * @returns {object|null} Highest priority action descriptor, or null if none available
      */
     select(checks) {
+        let bestAction = null;
+        let highestPriority = -Infinity;
+
         for (const check of checks) {
             const result = check();
             if (result !== null) {
-                return result;
+                const priority = result.priority || 0;
+                if (priority > highestPriority) {
+                    highestPriority = priority;
+                    bestAction = result;
+                }
             }
         }
-        return null;
+
+        return bestAction;
     }
 
     /**
