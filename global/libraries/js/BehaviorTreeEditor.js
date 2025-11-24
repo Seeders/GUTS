@@ -824,12 +824,8 @@ class BehaviorTreeEditor {
         const availableKeys = Object.keys(this.mockGame.componentTypes).filter(type => {
             return !this.mockGame.getComponent(entityId, type);
         });
-        const availableTypes = [];
-        availableKeys.forEach((key) => {
-            availableTypes.push(this.mockGame.componentTypes[key])
-        })
 
-        if (availableTypes.length === 0) {
+        if (availableKeys.length === 0) {
             alert('All component types are already added');
             return;
         }
@@ -883,11 +879,11 @@ class BehaviorTreeEditor {
         placeholderOption.selected = true;
         select.appendChild(placeholderOption);
 
-        // Add available component types (sorted alphabetically)
-        availableTypes.sort().forEach(type => {
+        // Add available component types (sorted alphabetically by key)
+        availableKeys.sort().forEach(key => {
             const option = document.createElement('option');
-            option.value = type;
-            option.textContent = type;
+            option.value = key;  // Use the key (e.g., "ABILITY_COOLDOWNS")
+            option.textContent = key;  // Display the key
             select.appendChild(option);
         });
 
