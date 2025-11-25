@@ -659,6 +659,8 @@ class MovementSystem extends GUTS.BaseSystem {
                     1
                 );
             }
+        } else {
+            console.log('pathfinding too often');
         }
     }
     

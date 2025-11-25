@@ -1,6 +1,6 @@
 class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    execute(entityId, aiState, game) {
+    execute(entityId, controller, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder) {            
             return null;
@@ -9,8 +9,10 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if(targetPosition) {
             const pos = game.getComponent(entityId, 'position');
+            const aiState = game.getComponent(entityId, 'aiState');
             const distance = this.distance(pos, targetPosition);
 
+            aiState.meta.distanceToTarget = distance;
             if (distance <= this.parameters.arrivalThreshold) {
                 aiState.meta.reachedTarget = true;
             }
@@ -24,13 +26,24 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onPlacementPhaseStart(entityId, aiState, game){
-        console.log('onPlacementPhaseStart', aiState.meta, aiState.meta.reachedTarget);
-        if(aiState.meta.reachedTarget){
-        console.log('reachedTarget');
+        console.log('onPlacementPhaseStart', aiState.meta);
+        const playerOrder = game.getComponent(entityId, 'playerOrder');        
+        if (!playerOrder) {            
+            return null;
+        }
+        const targetPosition = playerOrder.targetPosition;
+        const pos = game.getComponent(entityId, 'position');
+        const distance = this.distance(pos, targetPosition);
+
+        console.log('distance', distance, this.parameters.arrivalThreshold);
+        aiState.meta.distanceToTarget = distance;
+        if (distance <= this.parameters.arrivalThreshold) {
+   
+            console.log('reachedTarget');
             const playerOrder = game.getComponent(entityId, 'playerOrder');
             // Clear player order
             if (playerOrder) {
-        console.log('clearedPlayerOrder');
+                console.log('clearedPlayerOrder');
                 game.removeComponent(entityId, 'playerOrder');
                 game.addComponent(entityId, 'playerOrder', {});
             }        
