@@ -1,11 +1,10 @@
 class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
-        const pos = game.getComponent(entityId, 'position');
         this.pathSize = game.gameManager.call('getPlacementGridSize');
         // Selector: Pick highest priority that can run
         const results = [
-            () => this.checkPlayerOrder(pos, aiState, entityId, game),
+            () => this.checkPlayerOrder(aiState, entityId, game),
             () => this.checkCombat(entityId, game),
             () => this.checkBuildOrder(entityId, game),
             () => this.checkAbilityBehaviors(entityId, game),
@@ -23,38 +22,12 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         return this.select(results);
     }
 
-    checkPlayerOrder(pos, aiState, entityId, game) {
-        // Read from playerOrder component
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder || !playerOrder.targetPosition) return null;
+    checkPlayerOrder(aiState, entityId, game) {
 
-        // Use aiState.meta for behavior tree's own state tracking
-        if(aiState.meta.reachedTarget || this.distance(pos, playerOrder.targetPosition) < this.pathSize){
-            aiState.meta.reachedTarget = true;
-            return null;
-        }
-        return {
-            action: "MoveBehaviorAction",
-            target: null,
-            priority: 10,
-            data: {
-                targetPos: playerOrder.targetPosition,
-                preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
-            }
-        };
+        const moveAction = game.gameManager.call('getActionByType', 'MoveBehaviorAction');
+        return moveAction.execute(entityId, aiState, game);
     }
 
-    onBattleEnd(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if(aiState.meta.reachedTarget){
-            // Clear player order
-            if (playerOrder) {
-                playerOrder.targetPosition = null;
-            }
-            aiState.meta = {};
-        }
-    }
 
     checkBuildOrder(entityId, game) {
         // Read from playerOrder component
@@ -192,7 +165,7 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             if (typeof ability.getBehavior === 'function') {
                 const behaviorAction = ability.getBehaviorAction(entityId, game);
                 if (behaviorAction) {
-                    behaviorActions.push(behaviorAction);
+                    behaviorActions.push({'action': behaviorAction, 'ability': ability});
                 }
             }
         }
@@ -201,8 +174,14 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         if (behaviorActions.length === 0) return null;
 
         // Sort by priority (highest first) and return the best one
-        behaviorActions.sort((a, b) => b.priority - a.priority);
-        return behaviorActions[0];
+        behaviorActions.sort((a, b) => b.action.priority - a.action.priority);
+        return { 
+            "action": behaviorActions[0].action.type,
+            "priority": behaviorActions[0].action.priority,
+            "parameters": behaviorActions[0].action.parameters,
+            "data": behaviorActions[0].action.parameters,
+            "target": behaviorActions[0].ability.getTarget(entityId, game)
+        };
     }
 
     distance(pos, target) {

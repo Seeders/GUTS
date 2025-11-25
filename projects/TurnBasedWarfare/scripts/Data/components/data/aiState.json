@@ -2,10 +2,6 @@
   "title": "aiState",
   "schema": {
     "currentAction": null,
-    "actionTarget": null,
-    "actionData": {},
-    "actionPriority": 0,
-    "actionStartTime": 0,
     "meta": {}
   }
 }

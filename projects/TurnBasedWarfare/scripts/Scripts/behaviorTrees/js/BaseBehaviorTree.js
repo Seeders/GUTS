@@ -4,6 +4,16 @@ class BaseBehaviorTree {
         this.treeData = treeData;
     }
 
+    onBattleStart() {
+        
+    }
+    onBattleEnd(entityId, game) {
+    
+    }
+
+    onPlacementPhaseStart() {
+
+    }
     /**
      * Evaluate the behavior tree and return the desired action
      * @param {string} entityId - Entity ID
@@ -21,21 +31,13 @@ class BaseBehaviorTree {
      * @returns {object|null} Highest priority action descriptor, or null if none available
      */
     select(checks) {
-        let bestAction = null;
-        let highestPriority = -Infinity;
-
         for (const check of checks) {
             const result = check();
             if (result !== null) {
-                const priority = result.priority || 0;
-                if (priority > highestPriority) {
-                    highestPriority = priority;
-                    bestAction = result;
-                }
+                return result;
             }
         }
-
-        return bestAction;
+        return null;
     }
 
     /**

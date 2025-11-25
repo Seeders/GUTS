@@ -78,8 +78,8 @@ class MovementSystem extends GUTS.BaseSystem {
                     (!!aiState &&
                     aiState.currentAction &&
                     aiState.currentAction.type === 'AttackBehaviorAction' &&
-                    !!aiState.actionTarget &&
-                    this.isInAttackRange(pos, aiState.actionTarget, entityId));
+                    !!aiState.meta.target &&
+                    this.isInAttackRange(pos, aiState.meta.target, entityId));
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
@@ -519,12 +519,13 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored) {
+        if (isAnchored || aiState.meta?.reachedTarget) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
             return;
         }
+
 
         // Get movement target from aiState
         let targetPos = null;
@@ -535,8 +536,8 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         // Then check for position target in actionData
-        if (!targetPos && aiState && aiState.actionData?.targetPos) {
-            targetPos = aiState.actionData.targetPos;
+        if (!targetPos && aiState && aiState.meta?.targetPosition) {
+            targetPos = aiState.meta.targetPosition;
         }
 
         if (targetPos) {
@@ -637,15 +638,15 @@ class MovementSystem extends GUTS.BaseSystem {
             let targetZ = null;
 
             // If targeting an entity, use its current position
-            if (aiState && aiState.actionTarget) {
-                const targetPos = this.game.getComponent(aiState.actionTarget, "position");
+            if (aiState && aiState.meta.target) {
+                const targetPos = this.game.getComponent(aiState.meta.target, "position");
                 if (targetPos) {
                     targetX = targetPos.x;
                     targetZ = targetPos.z;
                 }
-            } else if (aiState && aiState.actionData?.targetPos) {
-                targetX = aiState.actionData.targetPos.x;
-                targetZ = aiState.actionData.targetPos.z;
+            } else if (aiState && aiState.meta?.targetPosition) {
+                targetX = aiState.meta.targetPosition.x;
+                targetZ = aiState.meta.targetPosition.z;
             }
 
             if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {

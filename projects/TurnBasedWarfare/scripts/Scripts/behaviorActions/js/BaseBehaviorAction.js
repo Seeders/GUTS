@@ -4,6 +4,13 @@ class BaseBehaviorAction {
         this.parameters = parameters;
     }
 
+
+    actionResponse(meta){
+        return {
+            action: this.constructor.name,
+            meta: meta
+        }
+    }
     /**
      * Check if this action can execute for the given entity
      * @param {string} entityId - Entity ID
@@ -47,19 +54,15 @@ class BaseBehaviorAction {
         // Override in subclass
     }
 
-    /**
-     * Get action type
-     * @returns {string} Action type
-     */
-    static get TYPE() {
-        return 'BASE';
+    onBattleStart(entityId, controller, game){
+
     }
 
-    /**
-     * Get action priority
-     * @returns {number} Priority value (higher = more important)
-     */
-    static get PRIORITY() {
-        return 0;
+    onBattleEnd(entityId, controller, game){
+
+    }
+
+    onPlacementPhaseStart() {
+        
     }
 }

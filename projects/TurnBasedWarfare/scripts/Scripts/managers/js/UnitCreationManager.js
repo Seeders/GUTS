@@ -372,12 +372,7 @@ class UnitCreationManager {
         // Managed by BehaviorSystem (currentAction, actionTarget, actionData, actionPriority, actionStartTime)
         // Managed by BehaviorTree/Actions (state, meta)
         this.game.addComponent(entity, "aiState", {
-            state: 'idle',
             currentAction: null,
-            actionTarget: null,
-            actionData: {},
-            actionPriority: 0,
-            actionStartTime: 0,
             meta: {}
         });
 

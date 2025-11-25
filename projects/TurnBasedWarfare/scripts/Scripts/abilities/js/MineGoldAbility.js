@@ -20,7 +20,10 @@ class MineGoldAbility extends GUTS.BaseAbility {
     }
 
     // Behavior contribution for UniversalBehaviorTree
-
+    getTarget(entityId, game) {
+        let team = game.getComponent(entityId, 'team');
+        return this.findNearestMine(entityId, team.team, game);
+    }
 
     findNearestMine(entityId, team, game) {
         const pos = game.getComponent(entityId, "position");

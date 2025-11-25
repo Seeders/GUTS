@@ -71,7 +71,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             pos.z = buildingPos.z;
 
             // Clear movement target
-            aiState.actionData.targetPos = null;
+            aiState.actionData.targetPosition = null;
 
             aiState.meta.buildState = 'building';
             aiState.meta.constructionStartTime = game.state.now;
@@ -79,7 +79,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Set target for MovementSystem to handle
-        aiState.actionData.targetPos = { x: buildingPos.x, z: buildingPos.z };
+        aiState.actionData.targetPosition = { x: buildingPos.x, z: buildingPos.z };
         return { complete: false };
     }
 

@@ -1,37 +1,40 @@
 class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    canExecute(entityId, controller, game) {
-        const pos = game.getComponent(entityId, 'position');
-        const target = controller.actionData?.targetPos;
-        if (!pos || !target) return false;
-
-        const dist = this.distance(pos, target);
-        return dist > this.parameters.arrivalThreshold;
-    }
-
-    execute(entityId, controller, game, dt) {
-
-
-        const pos = game.getComponent(entityId, 'position');
-        const target = controller.actionData?.targetPos;
-
-        if (!target) return { complete: true, failed: true };
-
-        // Check completion
-        const dx = target.x - pos.x;
-        const dz = target.z - pos.z;
-        const distance = Math.sqrt(dx * dx + dz * dz);
-
-        if (distance <= this.parameters.arrivalThreshold) {
-            return { complete: true };
+    execute(entityId, aiState, game) {
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder) {            
+            return null;
         }
+        const targetPosition = playerOrder.targetPosition;
 
-        // MovementSystem will handle movement to target
-        return { complete: false };
+        if(targetPosition) {
+            const pos = game.getComponent(entityId, 'position');
+            const distance = this.distance(pos, targetPosition);
+
+            if (distance <= this.parameters.arrivalThreshold) {
+                aiState.meta.reachedTarget = true;
+            }
+            // MovementSystem will handle movement to target
+            return this.actionResponse({
+                targetPosition: targetPosition, 
+                preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
+            });
+        }
+        return null;
     }
 
-    onEnd(entityId, controller, game) {
-        // MovementSystem will stop movement when no target
+    onPlacementPhaseStart(entityId, aiState, game){
+        console.log('onPlacementPhaseStart', aiState.meta, aiState.meta.reachedTarget);
+        if(aiState.meta.reachedTarget){
+        console.log('reachedTarget');
+            const playerOrder = game.getComponent(entityId, 'playerOrder');
+            // Clear player order
+            if (playerOrder) {
+        console.log('clearedPlayerOrder');
+                game.removeComponent(entityId, 'playerOrder');
+                game.addComponent(entityId, 'playerOrder', {});
+            }        
+        }
     }
 
     distance(pos, target) {

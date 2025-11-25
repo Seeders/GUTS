@@ -1,10 +1,4 @@
 class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
-   
-    canExecute(entityId, controller, game) {
-        const mineId = controller.actionTarget;
-        const mine = game.getComponent(mineId, 'goldMine');
-        return !!mine;
-    }
 
     onStart(entityId, controller, game) {
         const aiState = game.getComponent(entityId, 'aiState');
@@ -17,7 +11,6 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     execute(entityId, controller, game, dt) {
         const aiState = game.getComponent(entityId, 'aiState');
         const state = aiState.meta.mineState || 'traveling_to_mine';
-
         switch (state) {
             case 'traveling_to_mine':
                 return this.travelToMine(entityId, controller, game);
@@ -54,22 +47,24 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     travelToMine(entityId, controller, game) {
         const aiState = game.getComponent(entityId, 'aiState');
         const pos = game.getComponent(entityId, 'position');
+        if(!controller.actionTarget){
+            return { complete: false }
+        }
         const minePos = game.getComponent(controller.actionTarget, 'position');
-
+        
         const distance = this.distance(pos, minePos);
-
         if (distance < this.parameters.miningRange) {
             const mine = game.getComponent(controller.actionTarget, 'goldMine');
 
             // Check if mine is occupied by another unit
             if (mine.currentOccupant && mine.currentOccupant !== entityId) {
                 // Mine is occupied, wait (clear movement target)
-                aiState.actionData.targetPos = null;
+                aiState.actionData.targetPosition = null;
                 return { complete: false };
             }
 
             // Claim the mine - clear movement target
-            aiState.actionData.targetPos = null;
+            aiState.actionData.targetPosition = null;
             mine.currentOccupant = entityId;
             aiState.meta.mineState = 'mining';
             aiState.meta.miningStartTime = game.state.now;
@@ -77,7 +72,7 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Set target for MovementSystem to handle
-        aiState.actionData.targetPos = { x: minePos.x, z: minePos.z };
+        aiState.actionData.targetPosition = { x: minePos.x, z: minePos.z };
         return { complete: false };
     }
 
@@ -116,14 +111,14 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (distance < this.parameters.depositRange) {
             // Reached depot - clear movement target
-            aiState.actionData.targetPos = null;
+            aiState.actionData.targetPosition = null;
             aiState.meta.mineState = 'depositing';
             aiState.meta.depositStartTime = game.state.now;
             return { complete: false };
         }
 
         // Set target for MovementSystem to handle
-        aiState.actionData.targetPos = { x: depotPos.x, z: depotPos.z };
+        aiState.actionData.targetPosition = { x: depotPos.x, z: depotPos.z };
         return { complete: false };
     }
 
