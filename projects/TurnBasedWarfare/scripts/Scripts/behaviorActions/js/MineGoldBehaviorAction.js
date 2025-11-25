@@ -7,6 +7,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         switch (state) {
             case 'traveling_to_mine':
                 return this.travelToMine(entityId, aiState, game);
+            case 'waiting_at_mine':
+                return this.waitAtMine(entityId, aiState, game);
             case 'mining':
                 return this.doMining(entityId, aiState, game);
             case 'traveling_to_depot':
@@ -19,16 +21,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     onEnd(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
 
-        // Release mine if we were occupying it
-        if (aiState.actionTarget) {
-            const mine = game.getComponent(aiState.actionTarget, 'goldMine');
-            if (mine && mine.currentOccupant === entityId) {
-                mine.currentOccupant = null;
-            }
-        }
         aiState.meta = {};
         aiState.currentAction = null;
-
     }
 
     travelToMine(entityId, aiState, game) {
@@ -45,22 +39,12 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         
         const distance = this.distance(pos, targetMinePosition);
         if (distance < this.parameters.miningRange) {
-            const mine = game.getComponent(targetMine, 'goldMine');
-            // Check if mine is occupied by another unit
-            if (mine.currentOccupant && mine.currentOccupant !== entityId) {   
-                const pos = game.getComponent(entityId, 'position');             
-                return { 
-                    targetPosition: pos,
-                    targetMinePosition: targetMinePosition,
-                    targetMine: targetMine,
-                    mineState: 'waiting_at_mine'
-                };
-            }
+            this.game.goldMineSystem.addMinerToQueue(targetMine, entityId); 
             return { 
                 targetPosition: targetMinePosition,
                 targetMinePosition: targetMinePosition,
                 targetMine: targetMine,
-                mineState: 'mining',
+                mineState: 'waiting_at_mine',
                 miningStartTime: game.state.now
              };
         }
@@ -89,11 +73,13 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         if (isNextInQueue && !isMineOccupied) {
             // The goldMineSystem.processNextInQueue will be called from mineGold when mining completes
             // But we can also transition directly here if we detect we're next
+            this.game.goldMineSystem.processNextInQueue(targetMine);
+            const pos = game.getComponent(entityId, 'position');
+            const vel = game.getComponent(entityId, 'velocity');
             pos.x = targetMinePosition.x;
             pos.z = targetMinePosition.z;
             vel.vx = 0;
             vel.vz = 0;
-
             return { 
                 targetPosition: targetMinePosition,
                 targetMinePosition: targetMinePosition,
@@ -101,18 +87,19 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
                 mineState: 'mining',
                 miningStartTime: this.game.state.now
             }
-        } else {
-            return { 
-                targetPosition: targetPosition,
-                targetMinePosition: targetMinePosition,
-                targetMine: targetMine,
-                mineState: 'waiting_at_mine'
-            }
+        } 
+        return { 
+            targetPosition: targetPosition,
+            targetMinePosition: targetMinePosition,
+            targetMine: targetMine,
+            mineState: 'waiting_at_mine',
+            miningStartTime: aiState.meta.miningStartTime
         }
     }
 
     doMining(entityId, aiState, game) {
         const elapsed = game.state.now - aiState.meta.miningStartTime;
+        let targetMine = aiState.meta.targetMine;
 
         if (elapsed >= this.parameters.miningDuration) {
             return { 
@@ -126,7 +113,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             hasGold: elapsed > 0,
             goldAmt: this.parameters.goldPerTrip * elapsed / this.parameters.miningDuration,
             mineState: 'mining',
-            miningStartTime: aiState.meta.miningStartTime
+            miningStartTime: aiState.meta.miningStartTime,            
+            targetMine: aiState.meta.targetMine
         };
     }
 

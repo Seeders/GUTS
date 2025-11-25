@@ -225,17 +225,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Check if a mine is currently occupied by looking at component states
     isMineOccupied(mineEntityId) {
-        const miners = this.game.getEntitiesWith("miningState");
-
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, "miningState");
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'mining') {
-                return true;
-            }
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");                    
+        if (goldMine && goldMine.currentMiner) {
+            return true;
         }
-        
         return false;
     }
 
@@ -257,25 +250,20 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get all miners in queue (waiting_at_mine state) for a specific mine
     getMinersInQueue(mineEntityId) {
-        const miners = this.game.getEntitiesWith("miningState");
-        const queuedMiners = [];
-
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, "miningState");
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'waiting_at_mine') {
-                queuedMiners.push(minerEntityId);
-            }
-        }
-        
-        return queuedMiners;
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");              
+        return goldMine.minerQueue;
     }
 
     // Get queue position for a specific miner
     getQueuePosition(mineEntityId, minerEntityId) {
         const queue = this.getMinersInQueue(mineEntityId);
         return queue.indexOf(minerEntityId);
+    }
+
+    addMinerToQueue(mineEntityId, minerEntityId){
+        console.log('addMinerToQueue', mineEntityId, minerEntityId);
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        goldMine.minerQueue.push(minerEntityId);
     }
 
     // Check if a miner is next in queue
@@ -286,39 +274,16 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Process next miner in queue when mine becomes available
     processNextInQueue(mineEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        
-        if (queue.length === 0) {
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+         if (goldMine.minerQueue.length === 0) {
+            goldMine.currentMiner = null;
             return;
-        }
+        }  
+
+        let nextMiner = goldMine.minerQueue.pop(); 
+        goldMine.currentMiner = nextMiner;
         
-        const nextMinerId = queue[0];
-        const miningState = this.game.getComponent(nextMinerId, "miningState");
-
-        if (miningState && miningState.state === 'waiting_at_mine') {
-            const aiState = this.game.getComponent(nextMinerId, "aiState");
-            const pos = this.game.getComponent(nextMinerId, "position");
-            const vel = this.game.getComponent(nextMinerId, "velocity");
-            
-            if (pos && vel && miningState.targetMinePosition) {
-                miningState.waitingPosition = null;
-                
-                pos.x = miningState.targetMinePosition.x;
-                pos.z = miningState.targetMinePosition.z;
-                vel.vx = 0;
-                vel.vz = 0;
-
-                miningState.state = 'mining';
-                miningState.miningStartTime = this.game.state.now;
-
-                // Stop movement
-                const builderVel = this.game.getComponent(this.builderEntityId, "velocity");
-                if (builderVel) {
-                    builderVel.vx = 0;
-                    builderVel.vz = 0;
-                }
-            }
-        }
+               
     }
 
     replaceVeinWithMine(vein) {

@@ -49,7 +49,7 @@
     "EntityRenderer",
     "RaycastHelper",
     "ComponentGenerator"
-  ],  
+  ],
   "managers": [
     "GameManager",
     "ComponentManager",
@@ -59,10 +59,10 @@
     "ResultsManager",
     "SaveManager",
     "ScreenManager",
-    "UnitCreationManager",     
-    "SquadManager",         
-    "MultiplayerNetworkManager",    
-    "InputManager" 
+    "UnitCreationManager",
+    "SquadManager",
+    "MultiplayerNetworkManager",
+    "InputManager"
   ],
   "systems": [
     "GridSystem",
@@ -90,8 +90,8 @@
     "ParticleSystem",
     "SquadExperienceSystem",
     "LifetimeSystem",
-    "SchedulingSystem",    
-    "GoldMineSystem",    
+    "SchedulingSystem",
+    "GoldMineSystem",
     "PathfindingSystem",
     "FogOfWarSystem",
     "SelectedUnitSystem",
@@ -100,12 +100,21 @@
     "CameraControlSystem",
     "DamageNumberSystem",
     "VisionSystem",
-    "SupplySystem" 
+    "SupplySystem"
   ],
   "classes": [
-    { "collection": "abilities","baseClass": "BaseAbility" },
-    { "collection": "behaviorTrees", "baseClass": "BaseBehaviorTree" },
-    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" }  
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    }
   ],
   "fileName": "game",
   "interface": "main",

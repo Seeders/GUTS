@@ -1,6 +1,6 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    canExecute(entityId, controller, game) {
+    canExecute(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
         if (!aiState || !aiState.meta || !aiState.meta.buildingId) return false;
 
