@@ -8,19 +8,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Register behavior trees by unit type
         this.behaviorTrees = new Map();
 
-        // Universal behavior tree used by all units
-        this.universalTree = null;
-
+        this.rootTree = null;
         // Initialize from collections
         this.initializeFromCollections();
     }
 
     init() {
         this.game.gameManager.register('getActionByType', this.getActionByType.bind(this));
+        this.game.gameManager.register('getBehaviorTreeByType', this.getBehaviorTreeByType.bind(this));
     }
 
     getActionByType(type) {
         return this.actions.get(type);
+    }
+    getBehaviorTreeByType(type) {
+        return this.behaviorTrees.get(type);
     }
 
     /**
@@ -53,11 +55,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         const ActionClass = GUTS[behaviorActionId];
 
         if (ActionClass) {
-            let parameters = actionData.parameters;
-            if(typeof parameters == 'string'){
-                parameters = JSON.parse(parameters);
-            }
-            const actionInstance = new ActionClass(this.game, parameters);
+            const actionInstance = new ActionClass(this.game, actionData);
             // Use the collection key (behaviorActionId) for registration
             this.actions.set(behaviorActionId, actionInstance);
             console.log(`Registered behavior action: ${behaviorActionId}`);
@@ -75,8 +73,8 @@ class BehaviorSystem extends GUTS.BaseSystem {
         const TreeClass = GUTS[treeId];
 
         if (TreeClass) {
-            const treeInstance = new TreeClass(this.game, treeData);
-            this.universalTree = treeInstance;          
+            const treeInstance = new TreeClass(this.game, treeData);   
+            this.behaviorTrees.set(treeId, treeInstance);    
         } else {
             console.warn(`Behavior tree class not found for: ${treeId}`);
         }
@@ -106,13 +104,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        if (!this.universalTree) {
+        this.rootTree = this.behaviorTrees.get('UniversalBehaviorTree');
+        if (!this.rootTree) {
             // No behavior tree for this unit type, skip
             return;
         }
 
         // Evaluate behavior tree to get desired action
-        const desiredAction = this.universalTree.evaluate(entityId, this.game);
+        const desiredAction = this.rootTree.evaluate(entityId, this.game);
   
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
@@ -144,7 +143,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
-            this.universalTree.onPlacementPhaseStart(entityId, this.game);
+            this.rootTree.onPlacementPhaseStart(entityId, this.game);
         }
     }
     /**
@@ -175,6 +174,10 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Start new action - store as object with type property
         aiState.currentAction = desiredAction.action;
         aiState.meta = desiredAction.meta;
+        while(aiState.meta.meta && aiState.meta.action){        
+            aiState.currentAction = desiredAction.meta.action;
+            aiState.meta = desiredAction.meta.meta;
+        }
 
         const newExecutor = this.actions.get(aiState.currentAction);
         if (newExecutor && newExecutor.onStart) {

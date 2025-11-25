@@ -1,109 +1,141 @@
 class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    onStart(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState.meta) aiState.meta = {};
 
-        // Initialize mining state
-        aiState.meta.mineState = 'traveling_to_mine';
-    }
-
-    execute(entityId, controller, game, dt) {
+    execute(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
         const state = aiState.meta.mineState || 'traveling_to_mine';
         switch (state) {
             case 'traveling_to_mine':
-                return this.travelToMine(entityId, controller, game);
+                return this.travelToMine(entityId, aiState, game);
             case 'mining':
-                return this.doMining(entityId, controller, game);
+                return this.doMining(entityId, aiState, game);
             case 'traveling_to_depot':
-                return this.travelToDepot(entityId, controller, game);
+                return this.travelToDepot(entityId, aiState, game);
             case 'depositing':
-                return this.doDepositing(entityId, controller, game);
+                return this.doDepositing(entityId, aiState, game);
         }
     }
 
-    onEnd(entityId, controller, game) {
+    onEnd(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
 
         // Release mine if we were occupying it
-        if (controller.actionTarget) {
-            const mine = game.getComponent(controller.actionTarget, 'goldMine');
+        if (aiState.actionTarget) {
+            const mine = game.getComponent(aiState.actionTarget, 'goldMine');
             if (mine && mine.currentOccupant === entityId) {
                 mine.currentOccupant = null;
             }
         }
+        aiState.meta = {};
+        aiState.currentAction = null;
 
-        // Clean up mining meta data
-        if (aiState && aiState.meta) {
-            delete aiState.meta.mineState;
-            delete aiState.meta.miningStartTime;
-            delete aiState.meta.depositStartTime;
-            delete aiState.meta.hasGold;
-            delete aiState.meta.goldAmt;
-        }
     }
 
-    travelToMine(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        const pos = game.getComponent(entityId, 'position');
-        if(!controller.actionTarget){
-            return { complete: false }
+    travelToMine(entityId, aiState, game) {
+        let targetMine = aiState.meta.targetMine;
+        let targetPosition = aiState.meta.targetPosition;
+        let targetMinePosition = aiState.meta.targetMinePosition;
+        if(!targetMine){
+            let nearestMineData = this.findNearesetGoldMine(entityId, game);
+            targetMine = nearestMineData.targetMine;
+            targetPosition = nearestMineData.targetPosition;
+            targetMinePosition = nearestMineData.targetPosition;
         }
-        const minePos = game.getComponent(controller.actionTarget, 'position');
+        const pos = game.getComponent(entityId, 'position');
         
-        const distance = this.distance(pos, minePos);
+        const distance = this.distance(pos, targetMinePosition);
         if (distance < this.parameters.miningRange) {
-            const mine = game.getComponent(controller.actionTarget, 'goldMine');
-
+            const mine = game.getComponent(targetMine, 'goldMine');
             // Check if mine is occupied by another unit
-            if (mine.currentOccupant && mine.currentOccupant !== entityId) {
-                // Mine is occupied, wait (clear movement target)
-                aiState.actionData.targetPosition = null;
-                return { complete: false };
+            if (mine.currentOccupant && mine.currentOccupant !== entityId) {   
+                const pos = game.getComponent(entityId, 'position');             
+                return { 
+                    targetPosition: pos,
+                    targetMinePosition: targetMinePosition,
+                    targetMine: targetMine,
+                    mineState: 'waiting_at_mine'
+                };
             }
-
-            // Claim the mine - clear movement target
-            aiState.actionData.targetPosition = null;
-            mine.currentOccupant = entityId;
-            aiState.meta.mineState = 'mining';
-            aiState.meta.miningStartTime = game.state.now;
-            return { complete: false };
+            return { 
+                targetPosition: targetMinePosition,
+                targetMinePosition: targetMinePosition,
+                targetMine: targetMine,
+                mineState: 'mining',
+                miningStartTime: game.state.now
+             };
         }
 
         // Set target for MovementSystem to handle
-        aiState.actionData.targetPosition = { x: minePos.x, z: minePos.z };
-        return { complete: false };
+        return {
+            targetPosition: targetMinePosition,
+            targetMinePosition: targetMinePosition,
+            targetMine: targetMine,
+            mineState: 'traveling_to_mine',
+        };
+    }
+    waitAtMine(entityId, aiState, game) {
+        let targetMine = aiState.meta.targetMine;
+        let targetPosition = aiState.meta.targetPosition;
+        let targetMinePosition = aiState.meta.targetMinePosition;
+        // Check if we're next in queue
+        const isNextInQueue = this.game.goldMineSystem.isNextInQueue(
+            targetMine,
+            entityId
+        );
+
+        const isMineOccupied = this.game.goldMineSystem.isMineOccupied(targetMine);
+
+        // If we're next and the mine is free, start mining
+        if (isNextInQueue && !isMineOccupied) {
+            // The goldMineSystem.processNextInQueue will be called from mineGold when mining completes
+            // But we can also transition directly here if we detect we're next
+            pos.x = targetMinePosition.x;
+            pos.z = targetMinePosition.z;
+            vel.vx = 0;
+            vel.vz = 0;
+
+            return { 
+                targetPosition: targetMinePosition,
+                targetMinePosition: targetMinePosition,
+                targetMine: targetMine,
+                mineState: 'mining',
+                miningStartTime: this.game.state.now
+            }
+        } else {
+            return { 
+                targetPosition: targetPosition,
+                targetMinePosition: targetMinePosition,
+                targetMine: targetMine,
+                mineState: 'waiting_at_mine'
+            }
+        }
     }
 
-    doMining(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
+    doMining(entityId, aiState, game) {
         const elapsed = game.state.now - aiState.meta.miningStartTime;
 
         if (elapsed >= this.parameters.miningDuration) {
-            aiState.meta.hasGold = true;
-            aiState.meta.goldAmt = this.parameters.goldPerTrip;
-            aiState.meta.mineState = 'traveling_to_depot';
-
-            // Release the mine
-            const mine = game.getComponent(controller.actionTarget, 'goldMine');
-            if (mine && mine.currentOccupant === entityId) {
-                mine.currentOccupant = null;
-            }
-
-            return { complete: false };
+            return { 
+                hasGold: true,
+                goldAmt: this.parameters.goldPerTrip,
+                mineState: 'traveling_to_depot'
+            };
         }
 
-        return { complete: false };
+        return { 
+            hasGold: elapsed > 0,
+            goldAmt: this.parameters.goldPerTrip * elapsed / this.parameters.miningDuration,
+            mineState: 'mining',
+            miningStartTime: aiState.meta.miningStartTime
+        };
     }
 
-    travelToDepot(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
+    travelToDepot(entityId, aiState, game) {        
         const pos = game.getComponent(entityId, 'position');
         const depot = this.findNearestDepot(entityId, game);
 
         if (!depot) {
-            return { complete: true, failed: true };
+            return null;
         }
 
         const depotPos = game.getComponent(depot, 'position');
@@ -111,19 +143,28 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (distance < this.parameters.depositRange) {
             // Reached depot - clear movement target
-            aiState.actionData.targetPosition = null;
-            aiState.meta.mineState = 'depositing';
-            aiState.meta.depositStartTime = game.state.now;
-            return { complete: false };
+            let depositStartTime = aiState.meta.depositStartTime;
+            if(!depositStartTime){
+                depositStartTime = game.state.now;
+            }
+            return { 
+                mineState: 'depositing',
+                goldAmt: aiState.meta.goldAmt,
+                hasGold: aiState.meta.goldAmt > 0,
+                depositStartTime  
+            };
         }
 
-        // Set target for MovementSystem to handle
-        aiState.actionData.targetPosition = { x: depotPos.x, z: depotPos.z };
-        return { complete: false };
+        // Set target for MovementSystem to handle        
+        return { 
+            mineState: 'traveling_to_depot',
+            goldAmt: aiState.meta.goldAmt,
+            hasGold: aiState.meta.goldAmt > 0,
+            targetPosition: { x: depotPos.x, z: depotPos.z }    
+        };
     }
 
-    doDepositing(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
+    doDepositing(entityId, aiState, game) {
         const elapsed = game.state.now - aiState.meta.depositStartTime;
 
         if (elapsed >= this.parameters.depositDuration) {
@@ -144,13 +185,18 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
                 }
             }
 
-            // Reset to mine again
-            aiState.meta.mineState = 'traveling_to_mine';
-            aiState.meta.hasGold = false;
-            return { complete: false };
+            return { 
+                mineState: 'traveling_to_mine'
+            };
         }
 
-        return { complete: false };
+        return { 
+            mineState: 'depositing',
+            goldAmt: aiState.meta.goldAmt,
+            hasGold: aiState.meta.goldAmt > 0,
+            targetPosition: aiState.meta.targetPosition,
+            depositStartTime: aiState.meta.depositStartTime    
+        };
     }
 
     findNearestDepot(entityId, game) {
@@ -180,6 +226,58 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         return nearest;
+    }
+    findNearesetGoldMine(entityId, game) {
+        let closestMinePos = null;
+        let closestDistance = Infinity;
+        let closestMineEntityId = null;
+
+        const pos = game.getComponent(entityId, "position");
+
+        if (!pos) return;
+
+        // Get all entities with goldMine component
+        const goldMineEntities = game.getEntitiesWith("goldMine", "position", "team");
+
+        // Sort for deterministic iteration
+        const sortedMineIds = goldMineEntities.sort((a, b) =>
+            String(a).localeCompare(String(b))
+        );
+
+        // Search through all gold mines in deterministic order
+        for (const mineEntityId of sortedMineIds) {
+            const mineTeam = game.getComponent(mineEntityId, "team");
+            const entityTeam = game.getComponent(entityId, "team");
+            const minePos = game.getComponent(mineEntityId, "position");
+
+            // Check if this mine belongs to our team
+            if (mineTeam && mineTeam.team === entityTeam.team) {
+                // Calculate distance to this mine
+                const dx = minePos.x - pos.x;
+                const dz = minePos.z - pos.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestMinePos = minePos;
+                    closestMineEntityId = mineEntityId;
+                }
+            }
+        }
+
+        if (!closestMinePos) {
+            return null;
+        }
+
+        return {
+            targetMine: closestMineEntityId,
+            targetPosition: {
+                x: closestMinePos.x,
+                y: closestMinePos.y || 0,
+                z: closestMinePos.z
+            }
+        }
+
     }
 
     distance(pos, target) {

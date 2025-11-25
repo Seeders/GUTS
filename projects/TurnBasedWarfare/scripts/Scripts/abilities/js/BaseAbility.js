@@ -22,6 +22,9 @@ class BaseAbility {
         }
         return null;
     }
+    getBehaviorActionType(entityId, game) {
+        return this.config.behaviorAction;
+    }
     defineEffects() {
         return {
             cast: { type: 'magic', options: { count: 15, scaleMultiplier: 0.8, speedMultiplier: 0.6 } },

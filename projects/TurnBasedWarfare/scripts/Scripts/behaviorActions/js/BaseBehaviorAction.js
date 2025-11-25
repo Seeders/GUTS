@@ -1,7 +1,11 @@
 class BaseBehaviorAction {
-    constructor(game, parameters = {}) {
+    constructor(game, config) {
         this.game = game;
-        this.parameters = parameters;
+        this.config = config;
+        this.parameters = config.parameters;
+        if(typeof this.parameters == 'string'){
+            this.parameters = JSON.parse(this.parameters);
+        }
     }
 
 

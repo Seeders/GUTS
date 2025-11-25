@@ -4,6 +4,7 @@ class RoundSystem extends GUTS.BaseSystem {
         super(game);
         this.game.roundSystem = this;
     }
+    //cant place this in UnitOrderSystem because UnitOrderSystem doesn't run on the server.
     onPlacementPhaseStart() {
         const entities = this.game.getEntitiesWith('playerOrder', 'aiState');
         entities.forEach((entityId) => {

@@ -529,11 +529,6 @@ class MovementSystem extends GUTS.BaseSystem {
         // Get movement target from aiState
         let targetPos = null;
 
-        // Check for entity target first
-        if (aiState && aiState.meta.target) {
-            targetPos = this.game.getComponent(aiState.actionTarget, "position");
-        }
-
         // Then check for position target in actionData
         if (!targetPos && aiState && aiState.meta?.targetPosition) {
             targetPos = aiState.meta.targetPosition;

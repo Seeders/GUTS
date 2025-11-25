@@ -1,7 +1,7 @@
 class BaseBehaviorTree {
-    constructor(game, treeData = {}) {
+    constructor(game, config = {}) {
         this.game = game;
-        this.treeData = treeData;
+        this.config = config;
     }
 
     onBattleStart() {
@@ -14,6 +14,18 @@ class BaseBehaviorTree {
     onPlacementPhaseStart() {
 
     }
+    
+
+    processAction(entityId, game, action, actionInstance) {
+        const result = actionInstance.execute(entityId, game);
+        if( result ){
+            return { 
+                action,
+                meta: result
+            }
+        }
+        return null;
+    }
     /**
      * Evaluate the behavior tree and return the desired action
      * @param {string} entityId - Entity ID
@@ -21,10 +33,19 @@ class BaseBehaviorTree {
      * @returns {object} Action descriptor: { action: string, target: any, priority: number, data?: object }
      */
     evaluate(entityId, game) {
-        // Override in subclass
-        return { action: 'IDLE', priority: 0 };
-    }
+        this.pathSize = game.gameManager.call('getPlacementGridSize');
 
+        let behaviorActions = this.config.behaviorActions;
+        const results = [];
+        behaviorActions.forEach((behaviorAction) => {
+            results.push(() => {
+                const actionInstance = game.gameManager.call('getActionByType', behaviorAction);
+                return this.processAction(entityId, game, behaviorAction, actionInstance);
+            })
+        });
+
+        return this.select(results);
+    }
     /**
      * Selector node: evaluates all checks and returns the highest priority action
      * @param {Array<Function>} checks - Array of functions that return action descriptors or null
