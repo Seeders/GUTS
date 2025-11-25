@@ -76,8 +76,7 @@ class MovementSystem extends GUTS.BaseSystem {
                 // Unit is anchored if explicitly set, or if attacking and in range of target
                 const isAnchored = vel.anchored ||
                     (!!aiState &&
-                    aiState.currentAction &&
-                    aiState.currentAction.type === 'AttackBehaviorAction' &&
+                    aiState.currentAction === 'AttackBehaviorAction' &&
                     !!aiState.meta.target &&
                     this.isInAttackRange(pos, aiState.meta.target, entityId));
 
@@ -519,7 +518,7 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored || aiState.meta?.reachedTarget) {
+        if (isAnchored || aiState.meta.reachedTarget) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -531,7 +530,7 @@ class MovementSystem extends GUTS.BaseSystem {
         let targetPos = null;
 
         // Check for entity target first
-        if (aiState && aiState.actionTarget) {
+        if (aiState && aiState.meta.target) {
             targetPos = this.game.getComponent(aiState.actionTarget, "position");
         }
 

@@ -1,15 +1,11 @@
 class IdleBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    canExecute(entityId, controller, game) {
-        return true;
-    }
-
-    execute(entityId, controller, game, dt) {
+    execute(entityId, game, dt) {
         // Just idle
-        return { complete: false };
+        return {};
     }
 
-    onEnd(entityId, controller, game) {
+    onEnd(entityId, game) {
         // Nothing to clean up
     }
 }

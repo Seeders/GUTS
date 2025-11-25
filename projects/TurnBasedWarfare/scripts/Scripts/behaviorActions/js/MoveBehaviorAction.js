@@ -1,6 +1,6 @@
 class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    execute(entityId, controller, game) {
+    execute(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder) {            
             return null;
@@ -9,50 +9,27 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if(targetPosition) {
             const pos = game.getComponent(entityId, 'position');
-            const aiState = game.getComponent(entityId, 'aiState');
-            const distance = this.distance(pos, targetPosition);
 
-            aiState.meta.distanceToTarget = distance;
-            if (distance <= this.parameters.arrivalThreshold) {
-                aiState.meta.reachedTarget = true;
+            const distanceToTarget = this.distance(pos, targetPosition);
+            let reachedTarget = false;
+            if (distanceToTarget <= this.parameters.arrivalThreshold) {
+                reachedTarget = true;
             }
+            
             // MovementSystem will handle movement to target
-            return this.actionResponse({
+            return {
                 targetPosition: targetPosition, 
+                reachedTarget,
+                distanceToTarget,
                 preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
-            });
+            };
         }
         return null;
-    }
-
-    onPlacementPhaseStart(entityId, aiState, game){
-        console.log('onPlacementPhaseStart', aiState.meta);
-        const playerOrder = game.getComponent(entityId, 'playerOrder');        
-        if (!playerOrder) {            
-            return null;
-        }
-        const targetPosition = playerOrder.targetPosition;
-        const pos = game.getComponent(entityId, 'position');
-        const distance = this.distance(pos, targetPosition);
-
-        console.log('distance', distance, this.parameters.arrivalThreshold);
-        aiState.meta.distanceToTarget = distance;
-        if (distance <= this.parameters.arrivalThreshold) {
-   
-            console.log('reachedTarget');
-            const playerOrder = game.getComponent(entityId, 'playerOrder');
-            // Clear player order
-            if (playerOrder) {
-                console.log('clearedPlayerOrder');
-                game.removeComponent(entityId, 'playerOrder');
-                game.addComponent(entityId, 'playerOrder', {});
-            }        
-        }
     }
 
     distance(pos, target) {
         const dx = target.x - pos.x;
         const dz = target.z - pos.z;
-        return Math.sqrt(dx * dx + dz * dz);
+        return Math.round(Math.sqrt(dx * dx + dz * dz));
     }
 }

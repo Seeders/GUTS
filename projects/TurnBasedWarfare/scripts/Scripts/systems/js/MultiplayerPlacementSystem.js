@@ -198,8 +198,9 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
         this.enablePlacementUI();
         this.elements.readyButton.textContent = 'Ready for Battle';
+ 
     }
-    
+
     respawnEnemyUnits() {
         this.respawnSquads(this.opponentPlacements, this.game.state.mySide == 'left' ? 'right' : 'left');
     }

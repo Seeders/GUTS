@@ -119,10 +119,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
             this.switchAction(entityId, aiState, desiredAction);
         }
 
-        // Execute current action
-        if (aiState.currentAction) {
-            this.executeAction(entityId, aiState, dt);
-        }
+       
     }
 
     getBehaviorEntities() {
@@ -143,8 +140,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
             if(aiState.currentAction){
-                const executor = this.actions.get(aiState.currentAction.type);
-                executor.onPlacementPhaseStart(entityId, aiState, this.game);
+                const executor = this.actions.get(aiState.currentAction);
+                console.log('executing', entityId, this.game.getComponent);
+                executor.onPlacementPhaseStart(entityId, this.game);
             }
             this.universalTree.onPlacementPhaseStart(entityId, this.game);
         }
@@ -154,7 +152,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     shouldSwitchAction(aiState, desiredAction) {
         // No desired action, don't switch
-        if (!desiredAction || !desiredAction.action) return false;
+        if (!desiredAction || !desiredAction.action || !desiredAction.meta) return false;
 
         // No current action, start new one
         if (!aiState.currentAction) return true;
@@ -168,56 +166,20 @@ class BehaviorSystem extends GUTS.BaseSystem {
     switchAction(entityId, aiState, desiredAction) {
         // End current action
         if (aiState.currentAction) {
-            const currentExecutor = this.actions.get(aiState.currentAction.type);
+            const currentExecutor = this.actions.get(aiState.currentAction);
             if (currentExecutor) {
-                currentExecutor.onEnd(entityId, aiState, this.game);
+                currentExecutor.onEnd(entityId, this.game);
             }
         }
 
         // Start new action - store as object with type property
-        aiState.currentAction = { type: desiredAction.action };
-        aiState.meta = desiredAction.meta ? desiredAction.meta : {};
+        aiState.currentAction = desiredAction.action;
+        aiState.meta = desiredAction.meta;
 
-        const newExecutor = this.actions.get(aiState.currentAction.type);
+        const newExecutor = this.actions.get(aiState.currentAction);
         if (newExecutor && newExecutor.onStart) {
-            newExecutor.onStart(entityId, aiState, this.game);
+            newExecutor.onStart(entityId, this.game);
         }
     }
 
-    /**
-     * Execute the current action
-     */
-    executeAction(entityId, aiState, dt) {
-        const executor = this.actions.get(aiState.currentAction.type);
-        if (!executor) {
-            console.warn(`No executor for action: ${aiState.currentAction.type}`);
-            return;
-        }
-
-        // Execute action
-        const result = executor.execute(entityId, aiState, this.game);
-        aiState.meta = result ? result.meta : {};
-        // Handle completion
-        if (!result) {
-            executor.onEnd(entityId, aiState, this.game);
-            aiState.currentAction = null;
-        } 
-    }
-
-    /**
-     * Debug: Get current action for an entity
-     */
-    getCurrentAction(entityId) {
-        const aiState = this.game.getComponent(entityId, "aiState");
-        const playerOrder = this.game.getComponent(entityId, "playerOrder");
-
-        if (!aiState) return null;
-
-        return {
-            action: aiState.currentAction ? aiState.currentAction.type : null,
-            target: aiState.actionTarget,
-            playerOrder: playerOrder,
-            priority: aiState.actionPriority
-        };
-    }
 }

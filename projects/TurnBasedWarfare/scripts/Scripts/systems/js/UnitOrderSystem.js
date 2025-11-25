@@ -24,6 +24,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         // No longer needed - entity sync at battle start handles opponent orders
     }
 
+
     showSquadActionPanel(placementId) {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;

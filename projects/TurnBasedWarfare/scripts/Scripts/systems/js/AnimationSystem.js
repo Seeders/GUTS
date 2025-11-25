@@ -150,9 +150,9 @@ class AnimationSystem extends GUTS.BaseSystem {
                 speed = this.calculateWalkSpeed(velocity);
             }
 
-            // AI action overrides based on currentAction.type
+            // AI action overrides based on currentAction
             if (aiState && aiState.currentAction) {
-                const actionType = aiState.currentAction.type;
+                const actionType = aiState.currentAction;
 
                 switch (actionType) {
                     case 'AttackBehaviorAction':

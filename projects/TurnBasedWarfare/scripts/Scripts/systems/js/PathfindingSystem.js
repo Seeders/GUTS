@@ -91,6 +91,14 @@ class PathfindingSystem extends GUTS.BaseSystem {
         console.log('PathfindingSystem: Initialized');
     }
 
+    onPlacementPhaseStart() {
+        const entities = this.game.getEntitiesWith('pathfinding');
+        entities.forEach((entityId) => {
+            const pathfinding = this.game.getComponent(entityId, 'pathfinding');
+            pathfinding.lastPathRequest = 0;
+        });
+    }
+
     loadRamps(tileMap) {
         this.ramps.clear();
 

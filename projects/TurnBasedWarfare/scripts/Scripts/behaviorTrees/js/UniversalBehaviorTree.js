@@ -1,14 +1,13 @@
 class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
         this.pathSize = game.gameManager.call('getPlacementGridSize');
         // Selector: Pick highest priority that can run
         const results = [
-            () => this.checkPlayerOrder(aiState, entityId, game),
-            () => this.checkCombat(entityId, game),
-            () => this.checkBuildOrder(entityId, game),
-            () => this.checkAbilityBehaviors(entityId, game),
-            () => ({ action: "IdleBehaviorAction", priority: 0 })
+            () => this.checkPlayerOrder(entityId, game),
+            // () => this.checkCombat(entityId, game),
+            // () => this.checkBuildOrder(entityId, game),
+            // () => this.checkAbilityBehaviors(entityId, game),
+            () => this.getIdleState(entityId, game)
         ];
         // if(entityId ='peasant_1248_1344_right_1'){
         // console.log([
@@ -22,10 +21,17 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
         return this.select(results);
     }
 
-    checkPlayerOrder(aiState, entityId, game) {
-
-        const moveAction = game.gameManager.call('getActionByType', 'MoveBehaviorAction');
-        return moveAction.execute(entityId, aiState, game);
+    checkPlayerOrder(entityId, game) {
+        const action = 'MoveBehaviorAction'
+        const moveAction = game.gameManager.call('getActionByType', action);
+        const result = moveAction.execute(entityId, game);
+        if( result ){
+            return { 
+                action,
+                meta: result
+            }
+        }
+        return null;
     }
 
 
@@ -182,6 +188,15 @@ class UniversalBehaviorTree extends GUTS.BaseBehaviorTree {
             "data": behaviorActions[0].action.parameters,
             "target": behaviorActions[0].ability.getTarget(entityId, game)
         };
+    }
+
+    getIdleState(entityId, game){
+        const action = 'IdleBehaviorAction';
+        const idleAction = game.gameManager.call('getActionByType', action);
+        return {
+            action,
+            meta: idleAction.execute(entityId, game) || {}
+        }
     }
 
     distance(pos, target) {

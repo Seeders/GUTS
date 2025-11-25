@@ -118,7 +118,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
             if (health?.current <= 0) return 'dead';
 
             if (aiState?.currentAction) {
-                const actionType = aiState.currentAction.type;
+                const actionType = aiState.currentAction;
                 if (actionType === 'AttackBehaviorAction') return 'attacking';
                 if (actionType === 'MoveBehaviorAction') return 'moving';
                 if (actionType === 'IdleBehaviorAction') return 'idle';
