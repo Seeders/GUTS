@@ -76,7 +76,7 @@ class MovementSystem extends GUTS.BaseSystem {
                 // Unit is anchored if explicitly set, or if attacking and in range of target
                 const isAnchored = vel.anchored ||
                     (!!aiState &&
-                    aiState.currentAction === 'AttackBehaviorAction' &&
+                    (aiState.currentAction === 'AttackBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction') &&
                     !!aiState.meta.target &&
                     this.isInAttackRange(pos, aiState.meta.target, entityId));
 

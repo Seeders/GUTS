@@ -1,0 +1,7 @@
+{
+  "title": "Combat Behavior",
+  "description": "Automatically finds and attacks nearest enemy targets",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/CombatBehaviorAction.js",
+  "fileName": "CombatBehaviorAction",
+  "parameters": {}
+}

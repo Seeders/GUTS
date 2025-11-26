@@ -156,6 +156,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
                 switch (actionType) {
                     case 'AttackBehaviorAction':
+                    case 'CombatBehaviorAction':
                         // During combat, prefer walking if moving, otherwise idle
                         if (!isMoving) {
                             clip = 'idle';
