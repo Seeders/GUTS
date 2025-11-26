@@ -26,6 +26,7 @@ class BehaviorTreeProcessor {
 
     /**
      * Evaluate using a behavior tree script class
+     * Uses the same code path as BehaviorSystem at runtime
      * @private
      */
     static evaluateWithScript(treeData, gameContext, entityId = null) {
@@ -48,15 +49,17 @@ class BehaviorTreeProcessor {
             return { success: false, action: null, activePath: [] };
         }
 
-        // Instantiate the tree
-        const tree = new TreeClass();
+        // Instantiate the tree with game context and config (same as BehaviorSystem does)
+        // treeData contains behaviorActions array which BaseBehaviorTree.evaluate() uses
+        const tree = new TreeClass(gameContext, treeData);
 
         // Use mock entity ID if not provided
         if (!entityId) {
-            entityId = gameContext.mockEntityId || 'mock-entity-1';
+            entityId = gameContext.currentEntityId || Array.from(gameContext.entities?.keys() || [])[0] || 'mock-entity-1';
         }
 
-        // Evaluate the tree
+        // Evaluate the tree - this now uses BaseBehaviorTree.evaluate()
+        // which iterates through config.behaviorActions
         const result = tree.evaluate(entityId, gameContext);
 
         // Convert the result to our standard format
