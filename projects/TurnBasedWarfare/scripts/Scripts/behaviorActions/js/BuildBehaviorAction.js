@@ -154,14 +154,22 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return;
         }
 
-        // Register building with shop system (same buildingId - no new entity created)
-        if (game.shopSystem) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
+        // Ensure unitType component points to the actual building type (not underConstruction)
+        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
+        if (unitTypeComponent && buildingPlacement.unitType) {
+            // Update the unitType component with the actual building's unit type data
+            // This ensures selection and action panels work correctly
+            Object.assign(unitTypeComponent, buildingPlacement.unitType);
         }
 
         // Update placement component - building is now complete
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
+
+        // Register building with shop system (same buildingId - no new entity created)
+        if (game.shopSystem) {
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
+        }
 
         // Change to idle animation
         if (game.animationSystem) {
