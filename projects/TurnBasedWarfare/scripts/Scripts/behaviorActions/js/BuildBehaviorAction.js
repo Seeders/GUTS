@@ -39,8 +39,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (!buildingPos) {
             return null;
-        }
-        
+        }        
 
         const pos = game.getComponent(entityId, 'position');
         const distance = this.distance(pos, buildingPos);
