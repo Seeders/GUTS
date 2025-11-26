@@ -67,7 +67,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
                 buildingId: buildingId,
                 buildingPosition: buildingPos,
                 buildState: 'building',
-                constructionStartTime: game.state.now
+                constructionStartTime: game.state.round
             };
         }
 
@@ -109,7 +109,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const elapsed = game.state.now - aiState.meta.constructionStartTime;
+        const elapsed = game.state.round - aiState.meta.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
         if (elapsed >= buildTime) {
@@ -142,17 +142,16 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return;
         }
 
-        // Register building with shop system using new entity ID
-        // After removeInstance, the new building entity is in squadUnits[0]
+        // Register building with shop system (same buildingId - no new entity created)
         if (game.shopSystem) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
         }
 
         // Update placement component - building is now complete
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
 
-        // Change to idle animation (on old buildingId like main branch)
+        // Change to idle animation
         if (game.animationSystem) {
             game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }
