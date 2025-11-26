@@ -61,34 +61,36 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         let targetMine = aiState.meta.targetMine;
         let targetPosition = aiState.meta.targetPosition;
         let targetMinePosition = aiState.meta.targetMinePosition;
-        // Check if we're next in queue
+
+        const goldMine = game.getComponent(targetMine, 'goldMine');
+        const isCurrentMiner = goldMine && goldMine.currentMiner === entityId;
         const isNextInQueue = this.game.goldMineSystem.isNextInQueue(
             targetMine,
             entityId
         );
-
         const isMineOccupied = this.game.goldMineSystem.isMineOccupied(targetMine);
 
-        // If we're next and the mine is free, start mining
-        if (isNextInQueue && !isMineOccupied) {
-            // The goldMineSystem.processNextInQueue will be called from mineGold when mining completes
-            // But we can also transition directly here if we detect we're next
-            this.game.goldMineSystem.processNextInQueue(targetMine);
+        // Start mining if we're the current miner OR if we're next and mine is free
+        if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
+            // Only call processNextInQueue if we're not already the current miner
+            if (!isCurrentMiner) {
+                this.game.goldMineSystem.processNextInQueue(targetMine);
+            }
             const pos = game.getComponent(entityId, 'position');
             const vel = game.getComponent(entityId, 'velocity');
             pos.x = targetMinePosition.x;
             pos.z = targetMinePosition.z;
             vel.vx = 0;
             vel.vz = 0;
-            return { 
+            return {
                 targetPosition: targetMinePosition,
                 targetMinePosition: targetMinePosition,
                 targetMine: targetMine,
                 mineState: 'mining',
                 miningStartTime: this.game.state.now
             }
-        } 
-        return { 
+        }
+        return {
             targetPosition: targetPosition,
             targetMinePosition: targetMinePosition,
             targetMine: targetMine,
