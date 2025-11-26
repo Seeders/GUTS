@@ -17,7 +17,16 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get current state from aiState.meta (like MineGoldBehaviorAction)
         const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState) return null;
+
+        // Initialize meta if it doesn't exist
+        if (!aiState.meta) {
+            aiState.meta = {};
+        }
+
         const state = aiState.meta.buildState || 'traveling_to_building';
+
+        console.log(`[BuildBehaviorAction] Entity ${entityId} state: ${state}, round: ${game.state.round}`);
 
         // State machine - return state objects, don't modify aiState.meta
         switch (state) {
@@ -112,7 +121,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const elapsed = game.state.round - aiState.meta.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
+        console.log(`[BuildBehaviorAction] Building progress: ${elapsed}/${buildTime} rounds`);
+
         if (elapsed >= buildTime) {
+            console.log(`[BuildBehaviorAction] Construction complete! Transforming building ${buildingId}`);
             // Complete construction
             this.completeConstruction(entityId, buildingId, buildingPlacement, game);
 
