@@ -92,7 +92,7 @@ class BehaviorTreeEditor {
 
         actionsList.innerHTML = '';
 
-        const behaviorActions = this.controller.getCollections().behaviorActions || {};
+        const behaviorActions = this.controller.getCollections().behaviorNodes || {};
 
         Object.entries(behaviorActions).forEach(([behaviorActionId, actionData]) => {
             const actionEl = document.createElement('div');
@@ -229,7 +229,7 @@ class BehaviorTreeEditor {
             );
 
             // Get action info from collections
-            const actionData = this.controller.getCollections().behaviorActions?.[actionName];
+            const actionData = this.controller.getCollections().behaviorNodes?.[actionName];
             const label = actionData?.title || this.formatActionName(actionName);
 
             // Determine node type based on action name
@@ -265,7 +265,7 @@ class BehaviorTreeEditor {
         controlsContainer.innerHTML = '';
 
         behaviorActions.forEach((actionName, index) => {
-            const actionData = this.controller.getCollections().behaviorActions?.[actionName];
+            const actionData = this.controller.getCollections().behaviorNodes?.[actionName];
             const label = actionData?.title || this.formatActionName(actionName);
 
             const controlDiv = document.createElement('div');
@@ -450,7 +450,7 @@ class BehaviorTreeEditor {
                 errors.push('behaviorActions array is empty');
             } else {
                 // Validate each action exists in collections
-                const availableActions = this.controller.getCollections().behaviorActions || {};
+                const availableActions = this.controller.getCollections().behaviorNodes || {};
                 this.objectData.behaviorActions.forEach(actionName => {
                     if (!availableActions[actionName]) {
                         errors.push(`Unknown behavior action: ${actionName}`);

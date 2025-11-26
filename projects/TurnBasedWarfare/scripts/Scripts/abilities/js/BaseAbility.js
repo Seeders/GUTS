@@ -18,7 +18,7 @@ class BaseAbility {
     }
     getBehaviorAction(entityId, game) {
         if(this.config.behaviorAction){
-            return game.getCollections().behaviorActions[this.config.behaviorAction];
+            return game.getCollections().behaviorNodes[this.config.behaviorAction];
         }
         return null;
     }

@@ -49,7 +49,8 @@
     "EntityRenderer",
     "RaycastHelper",
     "ComponentGenerator",
-    "BehaviorTreeProcessor"
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode"
   ],
   "managers": [
     "GameManager",
@@ -109,16 +110,8 @@
       "baseClass": "BaseAbility"
     },
     {
-      "collection": "behaviorTrees",
-      "baseClass": "BaseBehaviorTree"
-    },
-    {
-      "collection": "behaviorActions",
-      "baseClass": "BaseBehaviorAction"
-    },
-    {
-      "collection": "behaviorDecorators",
-      "baseClass": "BaseBehaviorDecorator"
+      "collection": "behaviorNodes",
+      "baseClass": "BaseBehaviorNode"
     }
   ],
   "fileName": "game",

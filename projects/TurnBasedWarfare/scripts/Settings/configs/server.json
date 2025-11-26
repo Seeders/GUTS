@@ -24,7 +24,8 @@
     "EnvironmentObjectSpawner",
     "CoordinateTranslator",
     "ComponentGenerator",
-    "BehaviorTreeProcessor"
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode"
   ],
   "managers": [
     "GameManager",
@@ -55,8 +56,6 @@
   ],
   "classes": [
     { "collection": "abilities", "baseClass": "BaseAbility" },
-    { "collection": "behaviorTrees", "baseClass": "BaseBehaviorTree" },
-    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" },
-    { "collection": "behaviorDecorators", "baseClass": "BaseBehaviorDecorator" }
+    { "collection": "behaviorNodes", "baseClass": "BaseBehaviorNode" }
   ]
 }
