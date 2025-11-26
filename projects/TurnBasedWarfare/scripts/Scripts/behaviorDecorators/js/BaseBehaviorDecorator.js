@@ -47,13 +47,25 @@ class BaseBehaviorDecorator {
     }
 
     /**
-     * Get the blackboard for an entity (shared state between all nodes)
+     * Get shared data for an entity (shared state between all behavior nodes)
+     * Uses aiState.shared at runtime, falls back to blackboard for editor simulation
      * @param {string} entityId - Entity ID
      * @param {object} game - Game instance
-     * @returns {BehaviorTreeBlackboard} Blackboard instance
+     * @returns {Object} Shared data object
      */
-    getBlackboard(entityId, game) {
-        return game.gameManager.call('getBlackboard', entityId);
+    getShared(entityId, game) {
+        // Try to use aiState.shared (ECS component approach)
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (aiState) {
+            if (!aiState.shared) {
+                aiState.shared = {};
+            }
+            return aiState.shared;
+        }
+
+        // Fallback to blackboard (for editor simulation without real entities)
+        const blackboard = game.gameManager.call('getBlackboard', entityId);
+        return blackboard ? blackboard.variables : {};
     }
 
     /**
