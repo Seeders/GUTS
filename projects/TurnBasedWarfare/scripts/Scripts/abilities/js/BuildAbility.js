@@ -29,9 +29,6 @@ class BuildAbility extends GUTS.BaseAbility {
             renderComponent.spawnType = 'underConstruction';
         }
 
-        // Remove health component while under construction
-        this.game.removeComponent(buildingEntityId, "health");
-
         // Set up building placement state
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = true;
