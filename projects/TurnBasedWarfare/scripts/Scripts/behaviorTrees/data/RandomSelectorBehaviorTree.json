@@ -1,0 +1,11 @@
+{
+  "title": "Random Selector Behavior Tree",
+  "description": "Selects children in random order instead of priority. Use 'sticky' parameter to prefer last successful child.",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/RandomSelectorBehaviorTree.js",
+  "fileName": "RandomSelectorBehaviorTree",
+  "behaviorActions": [],
+  "parameters": {
+    "sticky": false,
+    "seed": null
+  }
+}
