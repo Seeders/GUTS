@@ -1033,6 +1033,9 @@ class BehaviorTreeEditor {
     runSimulation() {
         if (!this.mockGame || !this.mockGame.processor) return;
 
+        // Increment debug tick
+        this.mockGame.processor.debugTick();
+
         // Evaluate behavior tree only for the main entity (first entity)
         const results = [];
         const entityIds = Array.from(this.mockGame.entities.keys());
@@ -1044,10 +1047,16 @@ class BehaviorTreeEditor {
                 this.objectData,
                 mainEntityId
             );
+
+            // Get debug trace for this entity
+            const debugger_ = this.mockGame.processor.getDebugger();
+            const trace = debugger_?.getLastTrace(mainEntityId);
+
             results.push({
                 entityId: mainEntityId,
                 entityLabel: this.mockGame.getEntityLabel(mainEntityId),
-                result
+                result,
+                trace
             });
         }
 
@@ -1078,7 +1087,7 @@ class BehaviorTreeEditor {
             this.highlightActiveNode(highlightedResult);
         }
 
-        results.forEach(({ entityId, entityLabel, result }) => {
+        results.forEach(({ entityId, entityLabel, result, trace }) => {
             const entityCard = document.createElement('div');
             entityCard.style.marginBottom = '12px';
             entityCard.style.padding = '8px';
@@ -1108,22 +1117,171 @@ class BehaviorTreeEditor {
 
             if (result && result.action) {
                 resultContent.innerHTML = `
-                    <div style="color: #22c55e;"><strong>✓ Action Selected</strong></div>
+                    <div style="color: #22c55e;"><strong>\u2713 Action Selected</strong></div>
                     <div style="margin-top: 4px;"><strong>Action:</strong> ${result.action}</div>
+                    ${result.status ? `<div><strong>Status:</strong> ${result.status}</div>` : ''}
                     ${result.target ? `<div><strong>Target:</strong> ${JSON.stringify(result.target)}</div>` : ''}
                     ${result.priority !== undefined ? `<div><strong>Priority:</strong> ${result.priority}</div>` : ''}
                     ${result.data ? `<div><strong>Data:</strong> ${JSON.stringify(result.data)}</div>` : ''}
                 `;
             } else {
-                resultContent.innerHTML = `<div style="color: #888;">✗ No action (all conditions failed)</div>`;
+                resultContent.innerHTML = `<div style="color: #888;">\u2717 No action (all conditions failed)</div>`;
             }
 
             entityCard.appendChild(resultContent);
+
+            // Add debug trace section if available
+            if (trace) {
+                const traceSection = this.createTraceDisplay(trace);
+                entityCard.appendChild(traceSection);
+            }
+
             resultDiv.appendChild(entityCard);
         });
     }
 
+    /**
+     * Create a visual display of the debug trace
+     * @param {Object} trace - Debug trace from BehaviorTreeDebugger
+     * @returns {HTMLElement} trace display element
+     */
+    createTraceDisplay(trace) {
+        const traceDiv = document.createElement('details');
+        traceDiv.style.marginTop = '10px';
+        traceDiv.style.borderTop = '1px solid #333';
+        traceDiv.style.paddingTop = '8px';
+
+        const summary = document.createElement('summary');
+        summary.style.cursor = 'pointer';
+        summary.style.fontSize = '11px';
+        summary.style.fontWeight = '600';
+        summary.style.color = '#6366f1';
+        summary.innerHTML = `Execution Trace <span style="color: #666; font-weight: normal;">(${trace.duration?.toFixed(2) || '?'}ms)</span>`;
+        traceDiv.appendChild(summary);
+
+        const traceContent = document.createElement('div');
+        traceContent.style.marginTop = '8px';
+        traceContent.style.fontSize = '10px';
+        traceContent.style.fontFamily = 'monospace';
+        traceContent.style.backgroundColor = '#0a0a0a';
+        traceContent.style.padding = '8px';
+        traceContent.style.borderRadius = '4px';
+        traceContent.style.maxHeight = '200px';
+        traceContent.style.overflow = 'auto';
+
+        // Header info
+        const headerDiv = document.createElement('div');
+        headerDiv.style.color = '#888';
+        headerDiv.style.marginBottom = '8px';
+        headerDiv.innerHTML = `Tick: ${trace.tick} | Tree: ${trace.treeId}`;
+        traceContent.appendChild(headerDiv);
+
+        // Node evaluations
+        if (trace.nodes && trace.nodes.length > 0) {
+            const nodesDiv = document.createElement('div');
+            nodesDiv.innerHTML = '<div style="color: #aaa; margin-bottom: 4px;">Evaluation Path:</div>';
+
+            trace.nodes.forEach((node, index) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.style.marginLeft = '8px';
+                nodeDiv.style.marginBottom = '2px';
+
+                const statusIcon = this.getStatusIcon(node.status);
+                const statusColor = this.getStatusColor(node.status);
+
+                let nodeHtml = `<span style="color: #666;">#${node.index + 1}</span> `;
+                nodeHtml += `<span style="color: ${statusColor};">${statusIcon}</span> `;
+                nodeHtml += `<span style="color: #fff;">${node.name}</span> `;
+                nodeHtml += `<span style="color: ${statusColor};">[${node.status}]</span>`;
+
+                if (node.type && node.type !== 'action') {
+                    nodeHtml += ` <span style="color: #666;">(${node.type})</span>`;
+                }
+
+                if (node.duration !== null && node.duration !== undefined) {
+                    nodeHtml += ` <span style="color: #666;">${node.duration.toFixed(2)}ms</span>`;
+                }
+
+                if (node.reason) {
+                    nodeHtml += ` <span style="color: #888;">- ${node.reason}</span>`;
+                }
+
+                nodeDiv.innerHTML = nodeHtml;
+                nodesDiv.appendChild(nodeDiv);
+
+                // Show memory if present
+                if (node.memory && Object.keys(node.memory).length > 0) {
+                    const memoryDiv = document.createElement('div');
+                    memoryDiv.style.marginLeft = '24px';
+                    memoryDiv.style.color = '#666';
+                    memoryDiv.innerHTML = `Memory: ${JSON.stringify(node.memory)}`;
+                    nodesDiv.appendChild(memoryDiv);
+                }
+
+                // Show meta if present
+                if (node.meta && Object.keys(node.meta).length > 0) {
+                    const metaDiv = document.createElement('div');
+                    metaDiv.style.marginLeft = '24px';
+                    metaDiv.style.color = '#666';
+                    metaDiv.innerHTML = `Meta: ${JSON.stringify(node.meta)}`;
+                    nodesDiv.appendChild(metaDiv);
+                }
+            });
+
+            traceContent.appendChild(nodesDiv);
+        }
+
+        // State snapshot
+        if (trace.stateSnapshot) {
+            const stateDiv = document.createElement('div');
+            stateDiv.style.marginTop = '8px';
+            stateDiv.style.borderTop = '1px solid #333';
+            stateDiv.style.paddingTop = '8px';
+            stateDiv.innerHTML = `<div style="color: #aaa; margin-bottom: 4px;">State Snapshot:</div>`;
+            stateDiv.innerHTML += `<div style="margin-left: 8px; color: #888;">${JSON.stringify(trace.stateSnapshot, null, 2)}</div>`;
+            traceContent.appendChild(stateDiv);
+        }
+
+        traceDiv.appendChild(traceContent);
+        return traceDiv;
+    }
+
+    /**
+     * Get status icon for display
+     * @param {string} status
+     * @returns {string} icon character
+     */
+    getStatusIcon(status) {
+        switch (status) {
+            case 'success': return '\u2713';
+            case 'failure': return '\u2717';
+            case 'running': return '\u27F3';
+            case 'skipped': return '\u2192';
+            default: return '\u25CB';
+        }
+    }
+
+    /**
+     * Get status color for display
+     * @param {string} status
+     * @returns {string} CSS color
+     */
+    getStatusColor(status) {
+        switch (status) {
+            case 'success': return '#22c55e';
+            case 'failure': return '#ef4444';
+            case 'running': return '#f59e0b';
+            case 'skipped': return '#6b7280';
+            default: return '#888';
+        }
+    }
+
     resetSimulation() {
+        // Clear debug data before resetting
+        if (this.mockGame?.processor) {
+            this.mockGame.processor.clearAllDebugData();
+        }
+
         // Reset mock game context to original state
         if (GUTS && GUTS.MockGameContext) {
             this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);

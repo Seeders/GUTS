@@ -15,13 +15,15 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getBehaviorTreeByType', this.processor.getBehaviorTreeByType.bind(this.processor));
         this.game.gameManager.register('getDecoratorByType', this.processor.getDecoratorByType.bind(this.processor));
         this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
+        this.game.gameManager.register('getDebugger', this.processor.getDebugger.bind(this.processor));
     }
 
     /**
-     * Called when battle ends - clear all blackboards
+     * Called when battle ends - clear all blackboards and debug data
      */
     onBattleEnd() {
         this.processor.clearAllBlackboards();
+        this.processor.clearAllDebugData();
 
         // Also notify trees
         const entities = this.getBehaviorEntities();
@@ -34,16 +36,20 @@ class BehaviorSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when an entity is removed - clear its blackboard
+     * Called when an entity is removed - clear its blackboard and debug data
      */
     onEntityRemoved(entityId) {
         this.processor.clearBlackboard(entityId);
+        this.processor.clearDebugData(entityId);
     }
 
     /**
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
+        // Increment debugger tick for this evaluation cycle
+        this.processor.debugTick();
+
         const entities = this.getBehaviorEntities();
 
         for (const entityId of entities) {

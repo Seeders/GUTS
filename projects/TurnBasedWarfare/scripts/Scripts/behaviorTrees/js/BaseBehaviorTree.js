@@ -56,6 +56,11 @@ class BaseBehaviorTree {
             return null;
         }
 
+        // Get debugger if available
+        const debugger_ = game.gameManager.call('getDebugger');
+        const treeId = this.config.id || this.constructor.name;
+        const trace = debugger_?.beginEvaluation(entityId, treeId);
+
         // Check if we have a running action for this entity
         const runningInfo = this.runningState.get(entityId);
 
@@ -64,25 +69,64 @@ class BaseBehaviorTree {
             name: behaviorAction,
             index: index,
             evaluate: () => {
+                const nodeStartTime = performance.now();
+
                 // First try as an action
                 const actionInstance = game.gameManager.call('getActionByType', behaviorAction);
                 if (actionInstance) {
-                    return this.processAction(entityId, game, behaviorAction, actionInstance);
+                    const result = this.processAction(entityId, game, behaviorAction, actionInstance);
+                    this.recordNodeToTrace(trace, debugger_, {
+                        name: behaviorAction,
+                        type: 'action',
+                        index: index,
+                        status: result?.status || (result ? 'success' : 'failure'),
+                        duration: performance.now() - nodeStartTime,
+                        meta: result?.meta,
+                        memory: actionInstance.getMemory?.(entityId)
+                    });
+                    return result;
                 }
 
                 // Then try as a subtree
                 const subtree = game.gameManager.call('getBehaviorTreeByType', behaviorAction);
                 if (subtree) {
-                    return subtree.evaluate(entityId, game);
+                    const result = subtree.evaluate(entityId, game);
+                    this.recordNodeToTrace(trace, debugger_, {
+                        name: behaviorAction,
+                        type: 'tree',
+                        index: index,
+                        status: result?.status || (result ? 'success' : 'failure'),
+                        duration: performance.now() - nodeStartTime,
+                        meta: result?.meta
+                    });
+                    return result;
                 }
 
                 // Finally try as a decorator
                 const decorator = game.gameManager.call('getDecoratorByType', behaviorAction);
                 if (decorator) {
-                    return decorator.execute(entityId, game);
+                    const result = decorator.execute(entityId, game);
+                    this.recordNodeToTrace(trace, debugger_, {
+                        name: behaviorAction,
+                        type: 'decorator',
+                        index: index,
+                        status: result?.status || (result ? 'success' : 'failure'),
+                        duration: performance.now() - nodeStartTime,
+                        meta: result?.meta,
+                        memory: decorator.getMemory?.(entityId)
+                    });
+                    return result;
                 }
 
                 console.warn(`Behavior node not found (action/tree/decorator): ${behaviorAction}`);
+                this.recordNodeToTrace(trace, debugger_, {
+                    name: behaviorAction,
+                    type: 'unknown',
+                    index: index,
+                    status: 'failure',
+                    reason: 'node not found',
+                    duration: performance.now() - nodeStartTime
+                });
                 return null;
             }
         }));
@@ -103,7 +147,24 @@ class BaseBehaviorTree {
         // Evaluate using selector pattern, starting from startIndex
         const result = this.selectWithIndex(actionEvaluators, startIndex, entityId);
 
+        // End debug trace
+        if (debugger_ && trace) {
+            const aiState = game.getComponent?.(entityId, 'aiState');
+            const stateSnapshot = aiState?.shared ? { shared: { ...aiState.shared } } : null;
+            debugger_.endEvaluation(trace, result, stateSnapshot);
+        }
+
         return result;
+    }
+
+    /**
+     * Record a node evaluation to the debug trace
+     * @private
+     */
+    recordNodeToTrace(trace, debugger_, nodeInfo) {
+        if (debugger_ && trace) {
+            debugger_.recordNode(trace, nodeInfo);
+        }
     }
 
     /**
