@@ -4,7 +4,7 @@
  * Used by both BehaviorSystem (runtime) and BehaviorTreeEditor (simulation)
  */
 class BehaviorTreeProcessor {
-    constructor(game) {
+    constructor(game, options = {}) {
         this.game = game;
         this.actions = new Map();
         this.behaviorTrees = new Map();
@@ -13,6 +13,20 @@ class BehaviorTreeProcessor {
         // Per-entity blackboards for shared state between nodes
         // Key: entityId, Value: BehaviorTreeBlackboard instance
         this.blackboards = new Map();
+
+        // Debugger for execution tracing
+        const DebuggerClass = GUTS?.BehaviorTreeDebugger ||
+            (typeof BehaviorTreeDebugger !== 'undefined' ? BehaviorTreeDebugger : null);
+
+        if (DebuggerClass) {
+            this.debugger = new DebuggerClass({
+                enabled: options.debugEnabled !== false,
+                verboseLogging: options.verboseLogging || false,
+                maxTracesPerEntity: options.maxTracesPerEntity || 100
+            });
+        } else {
+            this.debugger = null;
+        }
     }
 
     /**
@@ -48,6 +62,62 @@ class BehaviorTreeProcessor {
             blackboard.clear();
         }
         this.blackboards.clear();
+    }
+
+    /**
+     * Get the debugger instance
+     * @returns {BehaviorTreeDebugger|null}
+     */
+    getDebugger() {
+        return this.debugger;
+    }
+
+    /**
+     * Enable or disable debugging
+     * @param {boolean} enabled
+     */
+    setDebugEnabled(enabled) {
+        if (this.debugger) {
+            this.debugger.setEnabled(enabled);
+        }
+    }
+
+    /**
+     * Enable or disable verbose console logging
+     * @param {boolean} verbose
+     */
+    setVerboseLogging(verbose) {
+        if (this.debugger) {
+            this.debugger.setVerboseLogging(verbose);
+        }
+    }
+
+    /**
+     * Increment the debugger tick counter (call once per evaluation cycle)
+     */
+    debugTick() {
+        if (this.debugger) {
+            this.debugger.tick();
+        }
+    }
+
+    /**
+     * Clear debug data for an entity
+     * @param {string} entityId
+     */
+    clearDebugData(entityId) {
+        if (this.debugger) {
+            this.debugger.clearEntity(entityId);
+        }
+    }
+
+    /**
+     * Clear all debug data
+     */
+    clearAllDebugData() {
+        if (this.debugger) {
+            this.debugger.clear();
+        }
     }
 
     /**
