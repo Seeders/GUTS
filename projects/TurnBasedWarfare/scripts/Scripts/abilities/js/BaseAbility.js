@@ -189,7 +189,7 @@ class BaseAbility {
     }
 
     canExecute(casterEntity) { return true; }
-    execute(casterEntity, targetData = null) { console.log(`${this.name} executed by entity ${casterEntity}`); }
+    execute(casterEntity, targetData = null) {  }
 
     // Behavior contribution for UniversalBehaviorTree
     // Abilities can override this to provide behaviors that the unit's behavior tree will execute
