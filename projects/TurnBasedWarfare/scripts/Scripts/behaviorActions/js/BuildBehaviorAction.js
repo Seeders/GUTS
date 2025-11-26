@@ -153,13 +153,14 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             game.gameManager.call('removeInstance', buildingId);
         }
 
-        // 2. Restore health component (was removed during construction start)
+        // 2. Restore health to full (health component is kept during construction)
         const maxHP = actualBuildingType.hp || 100;
-        console.log(`[BuildBehaviorAction] Adding health component with ${maxHP} HP`);
-        game.addComponent(buildingId, 'health', {
-            max: maxHP,
-            current: maxHP
-        });
+        const health = game.getComponent(buildingId, 'health');
+        if (health) {
+            console.log(`[BuildBehaviorAction] Restoring health to ${maxHP} HP`);
+            health.max = maxHP;
+            health.current = maxHP;
+        }
 
         // 3. Update unitType component to ensure it has all the actual building's data
         const unitTypeComponent = game.getComponent(buildingId, 'unitType');
