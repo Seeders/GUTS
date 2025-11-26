@@ -15,20 +15,16 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return null;
         }
 
-        // Initialize aiState.meta with building info from playerOrder if needed
+        // Get current state from aiState.meta (like MineGoldBehaviorAction)
         const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState.meta.buildingId) {
-            aiState.meta.buildingId = buildingId;
-            aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
-        }
-
         const state = aiState.meta.buildState || 'traveling_to_building';
 
+        // State machine - return state objects, don't modify aiState.meta
         switch (state) {
             case 'traveling_to_building':
-                return this.travelToBuilding(entityId, game);
+                return this.travelToBuilding(entityId, aiState, game);
             case 'building':
-                return this.doBuilding(entityId, game);
+                return this.doBuilding(entityId, aiState, game);
         }
 
         return null;
@@ -56,23 +52,19 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             buildingPlacement.isUnderConstruction = true;
             buildingPlacement.assignedBuilder = entityId;
         }
-
-        // Initialize aiState.meta with building info from playerOrder
-        const aiState = game.getComponent(entityId, 'aiState');
-        aiState.meta.buildingId = buildingId;
-        aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
-        aiState.meta.buildState = 'traveling_to_building';
     }
 
-    travelToBuilding(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        const pos = game.getComponent(entityId, 'position');
-        const buildingPos = game.getComponent(aiState.meta.buildingId, 'position');
+    travelToBuilding(entityId, aiState, game) {
+        // Get building info from playerOrder or aiState.meta
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        const buildingId = playerOrder.meta.buildingId || aiState.meta.buildingId;
+        const buildingPos = game.getComponent(buildingId, 'position');
 
         if (!buildingPos) {
-            return { complete: true, failed: true };
+            return null;
         }
 
+        const pos = game.getComponent(entityId, 'position');
         const distance = this.distance(pos, buildingPos);
 
         if (distance < this.parameters.buildRange) {
@@ -89,26 +81,30 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             pos.x = buildingPos.x + this.parameters.buildRange;
             pos.z = buildingPos.z;
 
-            // Clear movement target
-            aiState.actionData.targetPosition = null;
-
-            aiState.meta.buildState = 'building';
-            aiState.meta.constructionStartTime = game.state.now;
-            return { complete: false };
+            // Return state object - transition to building state
+            return {
+                buildingId: buildingId,
+                buildingPosition: buildingPos,
+                buildState: 'building',
+                constructionStartTime: game.state.now
+            };
         }
 
-        // Set target for MovementSystem to handle
-        aiState.actionData.targetPosition = { x: buildingPos.x, z: buildingPos.z };
-        return { complete: false };
+        // Still traveling - return state with target position
+        return {
+            buildingId: buildingId,
+            buildingPosition: buildingPos,
+            buildState: 'traveling_to_building',
+            targetPosition: { x: buildingPos.x, z: buildingPos.z }
+        };
     }
 
-    doBuilding(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
+    doBuilding(entityId, aiState, game) {
         const buildingId = aiState.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         if (!buildingPlacement) {
-            return { complete: true, failed: true };
+            return null;
         }
 
         // Play building animation
@@ -126,11 +122,20 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
         if (elapsed >= buildTime) {
+            // Complete construction
             this.completeConstruction(entityId, buildingId, buildingPlacement, game);
-            return { complete: true };
+
+            // Return null to end this action (building is complete)
+            return null;
         }
 
-        return { complete: false };
+        // Still building - return state to continue
+        return {
+            buildingId: buildingId,
+            buildingPosition: aiState.meta.buildingPosition,
+            buildState: 'building',
+            constructionStartTime: aiState.meta.constructionStartTime
+        };
     }
 
     completeConstruction(entityId, buildingId, buildingPlacement, game) {
@@ -173,20 +178,18 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!aiState || !aiState.meta) return;
 
         const buildingId = aiState.meta.buildingId;
-        if (!buildingId) return;
+        if (buildingId) {
+            const buildingPlacement = game.getComponent(buildingId, 'placement');
 
-        const buildingPlacement = game.getComponent(buildingId, 'placement');
-
-        // Clean up if action was interrupted
-        if (buildingPlacement && buildingPlacement.assignedBuilder === entityId) {
-            buildingPlacement.assignedBuilder = null;
+            // Clean up if action was interrupted
+            if (buildingPlacement && buildingPlacement.assignedBuilder === entityId) {
+                buildingPlacement.assignedBuilder = null;
+            }
         }
 
-        // Clear building meta data
-        delete aiState.meta.buildingId;
-        delete aiState.meta.buildingPosition;
-        delete aiState.meta.buildState;
-        delete aiState.meta.constructionStartTime;
+        // Clear all meta data (like MineGoldBehaviorAction)
+        aiState.meta = {};
+        aiState.currentAction = null;
     }
 
     distance(pos, target) {
