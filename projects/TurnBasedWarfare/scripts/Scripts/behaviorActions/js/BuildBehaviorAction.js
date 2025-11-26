@@ -83,9 +83,19 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     doBuilding(entityId, aiState, game) {
         const buildingId = aiState.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
+        const unitType = game.getComponent(buildingId, 'unitType');
 
         if (!buildingPlacement) {
             return null;
+        }
+
+        // Add health component during construction (like main branch)
+        // This allows the building to have a health bar while being built
+        if (unitType) {
+            game.addComponent(buildingId, 'health', {
+                max: unitType.hp,
+                current: unitType.hp
+            });
         }
 
         // Play building animation
@@ -121,34 +131,28 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
     completeConstruction(entityId, buildingId, buildingPlacement, game) {
         const renderComponent = game.getComponent(buildingId, 'renderable');
-        const unitType = game.getComponent(buildingId, 'unitType');
 
-        // Restore building appearance
+        // Restore building appearance - change from underConstruction to actual building
         if (renderComponent && buildingPlacement) {
             renderComponent.spawnType = buildingPlacement.unitType.id;
             game.gameManager.call('removeInstance', buildingId);
         }
 
-        // Add health component to completed building
-        if (unitType) {
-            game.addComponent(buildingId, 'health', {
-                max: unitType.hp,
-                current: unitType.hp
-            });
+        if (!buildingPlacement) {
+            return;
         }
 
-        // Register building with shop system
-        if (game.shopSystem && buildingPlacement) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
+        // Register building with shop system using new entity ID
+        // After removeInstance, the new building entity is in squadUnits[0]
+        if (game.shopSystem) {
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingPlacement.squadUnits[0]);
         }
 
         // Update placement component - building is now complete
-        if (buildingPlacement) {
-            buildingPlacement.isUnderConstruction = false;
-            buildingPlacement.assignedBuilder = null;
-        }
+        buildingPlacement.isUnderConstruction = false;
+        buildingPlacement.assignedBuilder = null;
 
-        // Change to idle animation
+        // Change to idle animation (on old buildingId like main branch)
         if (game.animationSystem) {
             game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }
