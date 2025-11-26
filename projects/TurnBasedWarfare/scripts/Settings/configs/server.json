@@ -23,7 +23,8 @@
     "TerrainDataManager",
     "EnvironmentObjectSpawner",
     "CoordinateTranslator",
-    "ComponentGenerator"
+    "ComponentGenerator",
+    "BehaviorTreeProcessor"
   ],
   "managers": [
     "GameManager",

@@ -48,7 +48,8 @@
     "WorldRenderer",
     "EntityRenderer",
     "RaycastHelper",
-    "ComponentGenerator"
+    "ComponentGenerator",
+    "BehaviorTreeProcessor"
   ],
   "managers": [
     "GameManager",
