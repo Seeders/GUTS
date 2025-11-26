@@ -76,7 +76,7 @@ class BehaviorTreeEditor {
         // Load available actions from collection
         this.loadAvailableActions();
 
-        // Setup simulation (script-based uses mock entities, legacy uses blackboard)
+        // Setup simulation with mock entities
         this.setupSimulationVars();
 
         // Render the tree
@@ -154,23 +154,7 @@ class BehaviorTreeEditor {
         if (!canvas) return;
 
         canvas.innerHTML = '';
-
-        // For script-based trees, show the script source
-        if (this.isScriptBased || (this.objectData && this.objectData.isBehaviorTree)) {
-            this.renderScriptBasedTree(canvas);
-            return;
-        }
-
-        // Legacy data-driven tree visualization
-        if (!this.currentData || !this.currentData.root) {
-            canvas.innerHTML = '<div style=\"padding: 20px; text-align: center; color: #888;\">No behavior tree defined</div>';
-            return;
-        }
-
-        // Create simple text representation for now
-        // TODO: Implement visual node graph
-        const treeHTML = this.createTreeHTML(this.currentData);
-        canvas.innerHTML = `<div class=\"bt-tree-text\" style=\"padding: 20px; color: #fff; font-family: monospace;\">${treeHTML}</div>`;
+        this.renderScriptBasedTree(canvas);
     }
 
     async renderScriptBasedTree(canvas) {
@@ -179,89 +163,14 @@ class BehaviorTreeEditor {
             return;
         }
 
-        // Check if this tree uses behaviorActions array (new style)
+        // Render behaviorActions array
         if (this.objectData.behaviorActions && Array.isArray(this.objectData.behaviorActions)) {
             this.renderBehaviorActionsTree(canvas);
             return;
         }
 
-        // Legacy: Get the script class name from the key
-        const scriptName = this.controller.getSelectedObject();
-
-        // Try multiple ways to find the class
-        let TreeClass = null;
-
-        // Try direct window access with exact class name
-        if (window[scriptName]) {
-            TreeClass = window[scriptName];
-            console.log('Found class via window[' + scriptName + ']');
-        }
-        // Try GUTS.behaviorTrees
-        else if (GUTS && GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
-            TreeClass = GUTS.behaviorTrees[scriptName];
-            console.log('Found class via GUTS.behaviorTrees[' + scriptName + ']');
-        }
-        // Try with BehaviorTree suffix removed if present
-        else {
-            const baseName = scriptName.replace('BehaviorTree', '');
-            const withSuffix = baseName + 'BehaviorTree';
-            if (window[withSuffix]) {
-                TreeClass = window[withSuffix];
-                console.log('Found class via window[' + withSuffix + ']');
-            }
-        }
-
-        // Extract method names from the class to visualize
-        let methods = [];
-
-        // Method 1: Try to extract from class instance
-        if (TreeClass) {
-            try {
-                const instance = new TreeClass();
-                const proto = Object.getPrototypeOf(instance);
-                methods = Object.getOwnPropertyNames(proto)
-                    .filter(name => name.startsWith('check') || name === 'evaluate');
-
-                console.log('Behavior tree class:', scriptName);
-                console.log('Extracted methods via class:', methods);
-            } catch (e) {
-                console.warn('Error instantiating behavior tree:', e);
-            }
-        }
-
-        // Method 2: If class not found or methods empty, parse from script source
-        if (methods.length === 0 && this.objectData.script) {
-            const scriptSource = this.objectData.script;
-            // Match method definitions like "checkPlayerOrder(", "checkMining(", etc.
-            const methodRegex = /\s+(check\w+)\s*\(/g;
-            let match;
-            const foundMethods = new Set();
-            while ((match = methodRegex.exec(scriptSource)) !== null) {
-                foundMethods.add(match[1]);
-            }
-            methods = Array.from(foundMethods);
-            methods.unshift('evaluate'); // Add evaluate at the beginning
-            console.log('Extracted methods via script parsing:', methods);
-        }
-
-        if (methods.length === 0) {
-            console.warn('Could not find behavior tree class:', scriptName);
-            console.warn('Available on window:', Object.keys(window).filter(k => k.includes('Behavior')));
-        }
-
-        // Create visual tree representation
-        canvas.innerHTML = `
-            <div id="bt-graph-container" style="padding: 20px; overflow: auto;">
-                <svg id="bt-graph-svg" width="100%" height="500" style="background: #0a0a0a; border-radius: 4px;">
-                    <!-- Tree will be rendered here -->
-                </svg>
-                <div style="margin-top: 15px; color: #888; font-size: 12px;">
-                    💡 Use the simulation panel to test the behavior tree. Active paths will be highlighted in green.
-                </div>
-            </div>
-        `;
-
-        this.renderTreeGraph(methods);
+        // No behaviorActions array found
+        canvas.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No behaviorActions array defined in this tree</div>';
     }
 
     renderBehaviorActionsTree(canvas) {
@@ -426,75 +335,6 @@ class BehaviorTreeEditor {
             .trim();
     }
 
-    renderTreeGraph(methods) {
-        const svg = document.getElementById('bt-graph-svg');
-        if (!svg) return;
-
-        // Clear existing content
-        svg.innerHTML = '';
-
-        const nodeWidth = 160;
-        const nodeHeight = 50;
-        const verticalSpacing = 80;
-        const horizontalSpacing = 20;
-
-        // Root node (Selector)
-        const rootY = 40;
-        const rootX = svg.clientWidth / 2 - nodeWidth / 2;
-
-        this.createNode(svg, rootX, rootY, nodeWidth, nodeHeight, 'ROOT SELECTOR', 'selector', 'root');
-
-        // Child nodes (check methods)
-        const childMethods = methods.filter(m => m.startsWith('check'));
-        const totalWidth = (nodeWidth + horizontalSpacing) * childMethods.length - horizontalSpacing;
-        const startX = (svg.clientWidth - totalWidth) / 2;
-
-        childMethods.forEach((method, index) => {
-            const x = startX + index * (nodeWidth + horizontalSpacing);
-            const y = rootY + verticalSpacing;
-
-            // Draw connecting line
-            this.createLine(
-                svg,
-                rootX + nodeWidth / 2,
-                rootY + nodeHeight,
-                x + nodeWidth / 2,
-                y
-            );
-
-            // Create node
-            const label = this.formatMethodName(method);
-            this.createNode(svg, x, y, nodeWidth, nodeHeight, label, 'condition', method);
-
-            // Add potential action below each condition
-            const actionY = y + verticalSpacing;
-            this.createLine(
-                svg,
-                x + nodeWidth / 2,
-                y + nodeHeight,
-                x + nodeWidth / 2,
-                actionY
-            );
-
-            const actionLabel = method;
-            this.createNode(svg, x, actionY, nodeWidth, nodeHeight, actionLabel, 'action', `${method}-action`);
-        });
-
-        // Add IDLE fallback
-        const idleX = startX + childMethods.length * (nodeWidth + horizontalSpacing);
-        const idleY = rootY + verticalSpacing;
-
-        this.createLine(
-            svg,
-            rootX + nodeWidth / 2,
-            rootY + nodeHeight,
-            idleX + nodeWidth / 2,
-            idleY
-        );
-
-        this.createNode(svg, idleX, idleY, nodeWidth, nodeHeight, 'IdleBehaviorAction', 'action', 'IdleBehaviorAction');
-    }
-
     createNode(svg, x, y, width, height, label, type, id) {
         const colors = {
             'selector': { fill: '#1e3a2f', stroke: '#10b981', text: '#10b981' },
@@ -546,11 +386,6 @@ class BehaviorTreeEditor {
         svg.appendChild(line);
     }
 
-    formatMethodName(method) {
-        // Convert checkPlayerOrder -> Player Order
-        return method.replace('check', '').replace(/([A-Z])/g, ' $1').trim().toUpperCase();
-    }
-
     highlightActiveNode(result) {
         // Remove previous highlights
         const nodes = document.querySelectorAll('.bt-graph-node');
@@ -576,14 +411,8 @@ class BehaviorTreeEditor {
         // Highlight root
         this.highlightNode('root');
 
-        // For behavior actions style, highlight the action directly
+        // Highlight the action directly
         this.highlightNode(result.action);
-
-        // Legacy: If this is a player-ordered action, highlight the player order method
-        if (result.data && result.data.playerOrdered) {
-            this.highlightNode('checkPlayerOrder');
-            this.highlightNode('checkPlayerOrder-action');
-        }
     }
 
     highlightNode(nodeId) {
@@ -597,43 +426,6 @@ class BehaviorTreeEditor {
         }
     }
 
-    createTreeHTML(nodes, nodeName = 'root', depth = 0) {
-        if (!nodes[nodeName]) return '';
-
-        const node = nodes[nodeName];
-        const indent = '&nbsp;&nbsp;'.repeat(depth);
-        const typeColors = {
-            'selector': '#10b981',
-            'sequence': '#f59e0b',
-            'condition': '#3b82f6',
-            'action': '#ef4444'
-        };
-        const color = typeColors[node.type] || '#888';
-
-        let html = `${indent}<span style=\"color: ${color}; font-weight: bold;\">[${node.type.toUpperCase()}]</span> ${nodeName}`;
-
-        if (node.action) {
-            html += ` <span style=\"color: #888;\">(action: ${node.action})</span>`;
-        }
-        if (node.condition) {
-            html += ` <span style=\"color: #888;\">(${node.condition})</span>`;
-        }
-
-        html += '<br/>';
-
-        if (node.children && Array.isArray(node.children)) {
-            node.children.forEach(childName => {
-                html += this.createTreeHTML(nodes, childName, depth + 1);
-            });
-        }
-
-        if (node.onSuccess) {
-            html += this.createTreeHTML(nodes, node.onSuccess, depth + 1);
-        }
-
-        return html;
-    }
-
     validateTree() {
         const output = document.getElementById('bt-validation-output');
         if (!output) return;
@@ -643,21 +435,27 @@ class BehaviorTreeEditor {
 
         const errors = [];
 
-        // For script-based trees, validate differently
-        if (this.isScriptBased || (this.objectData && this.objectData.isBehaviorTree)) {
-            this.validateScriptBasedTree(errors);
+        if (!this.objectData) {
+            errors.push('No behavior tree data loaded');
         } else {
-            // Legacy data-driven validation
-            if (!this.currentData) {
-                errors.push('No tree data loaded');
+            // Check for required properties
+            if (!this.objectData.title) {
+                errors.push('Missing title property');
+            }
+
+            // Check behaviorActions array
+            if (!this.objectData.behaviorActions || !Array.isArray(this.objectData.behaviorActions)) {
+                errors.push('Missing or invalid behaviorActions array');
+            } else if (this.objectData.behaviorActions.length === 0) {
+                errors.push('behaviorActions array is empty');
             } else {
-                // Check for root node
-                if (!this.currentData.root) {
-                    errors.push('Missing root node');
-                } else {
-                    // Validate tree structure
-                    this.validateNode(this.currentData, 'root', errors);
-                }
+                // Validate each action exists in collections
+                const availableActions = this.controller.getCollections().behaviorActions || {};
+                this.objectData.behaviorActions.forEach(actionName => {
+                    if (!availableActions[actionName]) {
+                        errors.push(`Unknown behavior action: ${actionName}`);
+                    }
+                });
             }
         }
 
@@ -667,91 +465,6 @@ class BehaviorTreeEditor {
             errors.forEach(error => {
                 output.innerHTML += `<div class=\"bt-validation-error\">✗ ${error}</div>`;
             });
-        }
-    }
-
-    validateScriptBasedTree(errors) {
-        if (!this.objectData) {
-            errors.push('No behavior tree data loaded');
-            return;
-        }
-
-        // Check for required properties
-        if (!this.objectData.title) {
-            errors.push('Missing title property');
-        }
-
-        if (!this.objectData.unitType) {
-            errors.push('Missing unitType property');
-        }
-
-        // Check if script class exists
-        const scriptName = this.objectData.script || this.controller.getCurrentObjectKey();
-        if (scriptName) {
-            const className = scriptName.charAt(0).toUpperCase() + scriptName.slice(1) + 'BehaviorTree';
-            if (typeof window[className] === 'undefined' &&
-                (!this.GUTS.behaviorTrees || !this.GUTS.behaviorTrees[scriptName])) {
-                errors.push(`Script class ${className} not found. Make sure the script is loaded.`);
-            }
-        } else {
-            errors.push('Missing script reference');
-        }
-
-        // Check mockEntities structure
-        if (!this.currentData) {
-            errors.push('Missing mockEntities property for simulation');
-        } else {
-            // Validate that mockEntities has at least some component data
-            if (Object.keys(this.currentData).length === 0) {
-                errors.push('mockEntities has no component data');
-            }
-        }
-    }
-
-    validateNode(nodes, nodeName, errors, visited = new Set()) {
-        if (visited.has(nodeName)) {
-            errors.push(`Circular reference detected: ${nodeName}`);
-            return;
-        }
-
-        visited.add(nodeName);
-
-        const node = nodes[nodeName];
-        if (!node) {
-            errors.push(`Node not found: ${nodeName}`);
-            return;
-        }
-
-        // Validate node type
-        const validTypes = ['selector', 'sequence', 'condition', 'action'];
-        if (!validTypes.includes(node.type)) {
-            errors.push(`Invalid node type "${node.type}" for node: ${nodeName}`);
-        }
-
-        // Validate children
-        if (node.children) {
-            if (!Array.isArray(node.children)) {
-                errors.push(`Children must be an array for node: ${nodeName}`);
-            } else {
-                node.children.forEach(childName => {
-                    this.validateNode(nodes, childName, errors, new Set(visited));
-                });
-            }
-        }
-
-        // Validate onSuccess
-        if (node.onSuccess) {
-            this.validateNode(nodes, node.onSuccess, errors, new Set(visited));
-        }
-
-        // Validate action nodes have action specified
-        if (node.type === 'action' && !node.action) {
-            errors.push(`Action node missing action property: ${nodeName}`);
-        }
-
-        // Validate condition nodes have condition specified
-        if (node.type === 'condition' && !node.condition) {
-            errors.push(`Condition node missing condition property: ${nodeName}`);
         }
     }
 
@@ -1137,46 +850,6 @@ class BehaviorTreeEditor {
         });
     }
 
-    setupDataDrivenSimulation(varsContainer) {
-        // Legacy blackboard-based simulation
-        if (!this.currentData) return;
-
-        // Initialize blackboard if not exists
-        if (!this.blackboard && typeof GUTS !== 'undefined' && GUTS.BehaviorTreeBlackboard) {
-            this.blackboard = new GUTS.BehaviorTreeBlackboard();
-        }
-
-        if (!this.blackboard) {
-            console.warn('BehaviorTreeBlackboard not available');
-            return;
-        }
-
-        console.log(this.currentData, "Current Data");
-
-        // Extract all variables from the tree
-        const variables = GUTS.BehaviorTreeBlackboard.extractVariables(this.currentData);
-
-        varsContainer.innerHTML = '';
-
-        // Create preset variable configurations for common patterns
-        this.createCommonVariablePresets(variables);
-
-        // Create UI controls for each variable
-        const sortedVars = Array.from(variables.entries()).sort((a, b) => {
-            // Sort: objects first, then primitives
-            if (a[1] === 'object' && b[1] !== 'object') return -1;
-            if (a[1] !== 'object' && b[1] === 'object') return 1;
-            return a[0].localeCompare(b[0]);
-        });
-
-        sortedVars.forEach(([varName, varType]) => {
-            // Skip nested paths for objects (we'll edit them as objects)
-            if (varName.includes('.')) return;
-
-            this.createVariableInput(varsContainer, varName, varType);
-        });
-    }
-
     createComponentEditor(container, entityId, componentType, componentData) {
         const detailsEl = document.createElement('details');
         detailsEl.open = true;
@@ -1357,243 +1030,30 @@ class BehaviorTreeEditor {
         container.appendChild(propDiv);
     }
 
-    createCommonVariablePresets(variables) {
-        // Set up common default values for known patterns
-        const defaults = {
-            'hasPlayerOrder': { type: 'boolean', value: false },
-            'hasEnemiesInRange': { type: 'boolean', value: false },
-            'hasAssignedBuilding': { type: 'boolean', value: false },
-            'hasNearbyMine': { type: 'boolean', value: false },
-            'playerOrder': {
-                type: 'object',
-                value: {
-                    action: 'MOVE_TO',
-                    target: { x: 100, z: 100 }
-                }
-            },
-            'nearestEnemy': {
-                type: 'object',
-                value: { x: 200, z: 200 }
-            }
-        };
-
-        for (const [varName, config] of Object.entries(defaults)) {
-            if (variables.has(varName) && !this.blackboard.has(varName)) {
-                this.blackboard.set(varName, config.value, config.type);
-
-                // For objects, also set nested properties
-                if (config.type === 'object') {
-                    for (const [key, value] of Object.entries(config.value)) {
-                        const nestedPath = `${varName}.${key}`;
-                        const nestedType = typeof value === 'object' ? 'object' : typeof value;
-                        this.blackboard.set(nestedPath, value, nestedType);
-                    }
-                }
-            }
-        }
-    }
-
-    createVariableInput(container, varName, varType) {
-        const varDiv = document.createElement('div');
-        varDiv.className = 'bt-sim-var';
-
-        const label = document.createElement('label');
-        label.className = 'bt-sim-var__label';
-        label.textContent = varName;
-
-        varDiv.appendChild(label);
-
-        // Get current value or create default
-        let currentValue = this.blackboard.get(varName);
-        if (currentValue === undefined) {
-            currentValue = GUTS.BehaviorTreeBlackboard.getDefaultValue(varType);
-            this.blackboard.set(varName, currentValue, varType);
-        }
-
-        // Create appropriate input based on type
-        if (varType === 'boolean') {
-            this.createBooleanInput(varDiv, varName, currentValue);
-        } else if (varType === 'object') {
-            this.createObjectInput(varDiv, varName, currentValue);
-        } else if (varType === 'string') {
-            this.createStringInput(varDiv, varName, currentValue);
-        } else if (varType === 'number') {
-            this.createNumberInput(varDiv, varName, currentValue);
-        } else {
-            this.createTextInput(varDiv, varName, currentValue);
-        }
-
-        container.appendChild(varDiv);
-    }
-
-    createBooleanInput(container, varName, currentValue) {
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = currentValue || false;
-        checkbox.addEventListener('change', (e) => {
-            this.blackboard.set(varName, e.target.checked, 'boolean');
-            this.runSimulation();
-        });
-        container.appendChild(checkbox);
-    }
-
-    createStringInput(container, varName, currentValue) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = currentValue || '';
-        input.addEventListener('change', (e) => {
-            this.blackboard.set(varName, e.target.value, 'string');
-            this.runSimulation();
-        });
-        container.appendChild(input);
-    }
-
-    createNumberInput(container, varName, currentValue) {
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.value = currentValue || 0;
-        input.addEventListener('change', (e) => {
-            this.blackboard.set(varName, parseFloat(e.target.value), 'number');
-            this.runSimulation();
-        });
-        container.appendChild(input);
-    }
-
-    createTextInput(container, varName, currentValue) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = typeof currentValue === 'object' ? JSON.stringify(currentValue) : (currentValue || '');
-        input.addEventListener('change', (e) => {
-            try {
-                const value = JSON.parse(e.target.value);
-                this.blackboard.set(varName, value);
-            } catch (err) {
-                this.blackboard.set(varName, e.target.value);
-            }
-            this.runSimulation();
-        });
-        container.appendChild(input);
-    }
-
-    createObjectInput(container, varName, currentValue) {
-        const detailsEl = document.createElement('details');
-        detailsEl.style.marginTop = '4px';
-
-        const summary = document.createElement('summary');
-        summary.textContent = 'Edit properties';
-        summary.style.cursor = 'pointer';
-        summary.style.fontSize = '11px';
-        summary.style.color = '#6366f1';
-        detailsEl.appendChild(summary);
-
-        const objContainer = document.createElement('div');
-        objContainer.style.marginLeft = '8px';
-        objContainer.style.marginTop = '4px';
-
-        // Create inputs for object properties
-        const value = currentValue || {};
-        for (const [key, val] of Object.entries(value)) {
-            const propDiv = document.createElement('div');
-            propDiv.style.marginBottom = '4px';
-
-            const propLabel = document.createElement('label');
-            propLabel.className = 'bt-sim-var__label';
-            propLabel.textContent = key;
-            propLabel.style.fontSize = '10px';
-            propDiv.appendChild(propLabel);
-
-            const propInput = document.createElement('input');
-            propInput.type = typeof val === 'number' ? 'number' : 'text';
-            propInput.value = typeof val === 'object' ? JSON.stringify(val) : val;
-            propInput.style.width = '100%';
-            propInput.addEventListener('change', (e) => {
-                const newValue = { ...this.blackboard.get(varName) };
-                try {
-                    newValue[key] = propInput.type === 'number' ? parseFloat(e.target.value) :
-                                    (e.target.value.startsWith('{') ? JSON.parse(e.target.value) : e.target.value);
-                } catch (err) {
-                    newValue[key] = e.target.value;
-                }
-                this.blackboard.set(varName, newValue, 'object');
-
-                // Also update nested path
-                const nestedPath = `${varName}.${key}`;
-                this.blackboard.set(nestedPath, newValue[key]);
-
-                this.runSimulation();
-            });
-            propDiv.appendChild(propInput);
-            objContainer.appendChild(propDiv);
-        }
-
-        detailsEl.appendChild(objContainer);
-        container.appendChild(detailsEl);
-    }
-
-    extractConditions(nodes) {
-        const conditions = new Set();
-
-        const traverse = (nodeName) => {
-            const node = nodes[nodeName];
-            if (!node) return;
-
-            if (node.type === 'condition' && node.condition) {
-                // Extract simple condition names
-                const cond = node.condition.replace(/[^\w]/g, '');
-                conditions.add(node.condition);
-            }
-
-            if (node.children && Array.isArray(node.children)) {
-                node.children.forEach(child => traverse(child));
-            }
-            if (node.onSuccess) {
-                traverse(node.onSuccess);
-            }
-        };
-
-        if (nodes.root) {
-            traverse('root');
-        }
-
-        return Array.from(conditions);
-    }
-
     runSimulation() {
         if (!GUTS || !GUTS.BehaviorTreeProcessor) return;
+        if (!this.mockGame) return;
 
-        if (this.isScriptBased) {
-            // Use mock game context with actual script class
-            if (!this.mockGame) return;
+        // Evaluate behavior tree only for the main entity (first entity)
+        const results = [];
+        const entityIds = Array.from(this.mockGame.entities.keys());
 
-            // Evaluate behavior tree only for the main entity (first entity)
-            // Other entities in mockEntities are just part of the environment
-            const results = [];
-            const entityIds = Array.from(this.mockGame.entities.keys());
-
-            // Only run for the first entity (the main entity)
-            if (entityIds.length > 0) {
-                const mainEntityId = entityIds[0];
-                const result = GUTS.BehaviorTreeProcessor.evaluate(
-                    this.objectData,
-                    this.mockGame,
-                    'root',
-                    mainEntityId
-                );
-                results.push({
-                    entityId: mainEntityId,
-                    entityLabel: this.mockGame.getEntityLabel(mainEntityId),
-                    result
-                });
-            }
-
-            this.displaySimResult(results);
-        } else {
-            // Use blackboard with data-driven evaluation (single result)
-            if (!this.currentData || !this.currentData.root || !this.blackboard) return;
-            const result = GUTS.BehaviorTreeProcessor.evaluate(this.currentData, this.blackboard);
-            this.displaySimResult([{ result }]);
-            this.highlightActivePath(result.activePath);
+        if (entityIds.length > 0) {
+            const mainEntityId = entityIds[0];
+            const result = GUTS.BehaviorTreeProcessor.evaluate(
+                this.objectData,
+                this.mockGame,
+                'root',
+                mainEntityId
+            );
+            results.push({
+                entityId: mainEntityId,
+                entityLabel: this.mockGame.getEntityLabel(mainEntityId),
+                result
+            });
         }
+
+        this.displaySimResult(results);
     }
 
     displaySimResult(results) {
@@ -1665,41 +1125,10 @@ class BehaviorTreeEditor {
         });
     }
 
-    highlightActivePath(activePath = []) {
-        // Clear previous highlights
-        this.renderTree();
-
-        if (!activePath || activePath.length === 0) return;
-
-        // In the text visualization, we'll wrap active nodes with highlighting
-        const canvas = document.getElementById('bt-tree-canvas');
-        if (!canvas) return;
-
-        let html = canvas.innerHTML;
-
-        // Highlight each node in the active path
-        activePath.forEach(nodeName => {
-            // Find and highlight the node name in the HTML
-            const regex = new RegExp(`(<span[^>]*>\\[[^\\]]+\\]</span>\\s+)(${nodeName})(\\s|<)`, 'g');
-            html = html.replace(regex, (match, prefix, name, suffix) => {
-                return `${prefix}<span class="bt-node-active">${name}</span>${suffix}`;
-            });
-        });
-
-        canvas.innerHTML = html;
-    }
-
     resetSimulation() {
-        if (this.isScriptBased) {
-            // Reset mock game context to original state
-            if (GUTS && GUTS.MockGameContext) {
-                this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
-            }
-        } else {
-            // Clear the blackboard
-            if (this.blackboard) {
-                this.blackboard.clear();
-            }
+        // Reset mock game context to original state
+        if (GUTS && GUTS.MockGameContext) {
+            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
         }
 
         // Reset UI
