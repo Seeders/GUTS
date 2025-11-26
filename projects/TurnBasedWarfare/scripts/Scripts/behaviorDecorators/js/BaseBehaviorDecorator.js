@@ -47,6 +47,16 @@ class BaseBehaviorDecorator {
     }
 
     /**
+     * Get the blackboard for an entity (shared state between all nodes)
+     * @param {string} entityId - Entity ID
+     * @param {object} game - Game instance
+     * @returns {BehaviorTreeBlackboard} Blackboard instance
+     */
+    getBlackboard(entityId, game) {
+        return game.gameManager.call('getBlackboard', entityId);
+    }
+
+    /**
      * Get the child action instance
      * @param {object} game - Game instance
      * @returns {Object|null} Child action instance

@@ -9,6 +9,45 @@ class BehaviorTreeProcessor {
         this.actions = new Map();
         this.behaviorTrees = new Map();
         this.decorators = new Map();
+
+        // Per-entity blackboards for shared state between nodes
+        // Key: entityId, Value: BehaviorTreeBlackboard instance
+        this.blackboards = new Map();
+    }
+
+    /**
+     * Get or create a blackboard for an entity
+     * @param {string} entityId - Entity ID
+     * @returns {BehaviorTreeBlackboard} Blackboard instance
+     */
+    getBlackboard(entityId) {
+        if (!this.blackboards.has(entityId)) {
+            const BlackboardClass = GUTS.BehaviorTreeBlackboard || BehaviorTreeBlackboard;
+            this.blackboards.set(entityId, new BlackboardClass());
+        }
+        return this.blackboards.get(entityId);
+    }
+
+    /**
+     * Clear blackboard for an entity
+     * @param {string} entityId - Entity ID
+     */
+    clearBlackboard(entityId) {
+        const blackboard = this.blackboards.get(entityId);
+        if (blackboard) {
+            blackboard.clear();
+        }
+        this.blackboards.delete(entityId);
+    }
+
+    /**
+     * Clear all blackboards
+     */
+    clearAllBlackboards() {
+        for (const blackboard of this.blackboards.values()) {
+            blackboard.clear();
+        }
+        this.blackboards.clear();
     }
 
     /**

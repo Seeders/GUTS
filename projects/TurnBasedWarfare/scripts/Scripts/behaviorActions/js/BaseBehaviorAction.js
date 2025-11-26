@@ -45,6 +45,16 @@ class BaseBehaviorAction {
     }
 
     /**
+     * Get the blackboard for an entity (shared state between all nodes)
+     * @param {string} entityId - Entity ID
+     * @param {object} game - Game instance
+     * @returns {BehaviorTreeBlackboard} Blackboard instance
+     */
+    getBlackboard(entityId, game) {
+        return game.gameManager.call('getBlackboard', entityId);
+    }
+
+    /**
      * Create a success response
      * @param {Object} meta - Additional data to pass with the action
      * @returns {Object} Success response

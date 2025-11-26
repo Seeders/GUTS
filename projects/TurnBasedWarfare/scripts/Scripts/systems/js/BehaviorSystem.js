@@ -14,6 +14,30 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getActionByType', this.processor.getActionByType.bind(this.processor));
         this.game.gameManager.register('getBehaviorTreeByType', this.processor.getBehaviorTreeByType.bind(this.processor));
         this.game.gameManager.register('getDecoratorByType', this.processor.getDecoratorByType.bind(this.processor));
+        this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
+    }
+
+    /**
+     * Called when battle ends - clear all blackboards
+     */
+    onBattleEnd() {
+        this.processor.clearAllBlackboards();
+
+        // Also notify trees
+        const entities = this.getBehaviorEntities();
+        for (const entityId of entities) {
+            this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
+            if (this.rootTree) {
+                this.rootTree.onBattleEnd(entityId, this.game);
+            }
+        }
+    }
+
+    /**
+     * Called when an entity is removed - clear its blackboard
+     */
+    onEntityRemoved(entityId) {
+        this.processor.clearBlackboard(entityId);
     }
 
     /**
