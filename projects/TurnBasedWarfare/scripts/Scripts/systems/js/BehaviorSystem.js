@@ -50,13 +50,11 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Register an action executor from collection data
      */
     registerActionFromData(behaviorActionId, actionData) {
-        // The action class should be compiled and available via game context or global scope
-        // behaviorActionId is the collection key (e.g., "MoveBehaviorAction")
-        const ActionClass = GUTS[behaviorActionId];
+        // Use shared class lookup from BehaviorTreeProcessor
+        const ActionClass = GUTS.BehaviorTreeProcessor.findClass(behaviorActionId);
 
         if (ActionClass) {
             const actionInstance = new ActionClass(this.game, actionData);
-            // Use the collection key (behaviorActionId) for registration
             this.actions.set(behaviorActionId, actionInstance);
             console.log(`Registered behavior action: ${behaviorActionId}`);
         } else {
@@ -68,13 +66,12 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Register a behavior tree from collection data
      */
     registerBehaviorTreeFromData(treeId, treeData) {
-        // The tree class should be compiled and available via game context or global scope
-        // treeId is typically already the class name (e.g., "FootmanBehaviorTree")
-        const TreeClass = GUTS[treeId];
+        // Use shared class lookup from BehaviorTreeProcessor
+        const TreeClass = GUTS.BehaviorTreeProcessor.findClass(treeId);
 
         if (TreeClass) {
-            const treeInstance = new TreeClass(this.game, treeData);   
-            this.behaviorTrees.set(treeId, treeInstance);    
+            const treeInstance = new TreeClass(this.game, treeData);
+            this.behaviorTrees.set(treeId, treeInstance);
         } else {
             console.warn(`Behavior tree class not found for: ${treeId}`);
         }
