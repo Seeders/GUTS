@@ -3,10 +3,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     execute(entityId, game) {
         // Skip if MoveBehaviorAction is already handling this order
         const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState && aiState.meta && aiState.meta.handledByMove) {
-            return null;
-        }
-
+   
         // Read from playerOrder component (like MoveBehaviorAction)
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
@@ -21,18 +18,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return null;
         }
 
-        // Get current state from aiState.meta (like MineGoldBehaviorAction)
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState) return null;
-
-        // Initialize meta if it doesn't exist
-        if (!aiState.meta) {
-            aiState.meta = {};
-        }
-
         const state = aiState.meta.buildState || 'traveling_to_building';
-
-        console.log(`[BuildBehaviorAction] Entity ${entityId} state: ${state}, round: ${game.state.round}`);
 
         // State machine - return state objects, don't modify aiState.meta
         switch (state) {
@@ -45,11 +31,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         return null;
     }
 
-    onStart(entityId, game) {
-        // Building state is already initialized by assignToBuild or assignBuilderToConstruction
-        // No additional setup needed - action state is managed via returned state objects
-    }
-
     travelToBuilding(entityId, aiState, game) {
         // Get building info from playerOrder or aiState.meta
         const playerOrder = game.getComponent(entityId, 'playerOrder');
@@ -59,6 +40,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!buildingPos) {
             return null;
         }
+        
 
         const pos = game.getComponent(entityId, 'position');
         const distance = this.distance(pos, buildingPos);

@@ -184,8 +184,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
-            buildTime: building.buildTime,
-            isPlayerOrder: true  // Mark as player order so it's tracked correctly
+            buildTime: building.buildTime
         };
 
         this.stopTargeting();
@@ -245,8 +244,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 if (playerOrder) {
                     playerOrder.targetPosition = position;
                     playerOrder.meta = {
-                        allowMovement: false,
-                        isPlayerOrder: true
+                        allowMovement: false
                     };
                     playerOrder.issuedTime = this.game.state.now;
                 }
@@ -449,8 +447,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                         if (playerOrder) {
                             playerOrder.meta = {
                                 buildingId: buildingEntityId,
-                                buildingPosition: buildingPos,
-                                isPlayerOrder: true
+                                buildingPosition: buildingPos
                             };
                             playerOrder.targetPosition = buildingPos;
                             playerOrder.issuedTime = this.game.state.now;
@@ -475,7 +472,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         if(this.game.state.phase != "placement") {
             return;
         };
-        const meta = { ...this.orderMeta, isPlayerOrder: true };
+        const meta = { ...this.orderMeta, isMoveOrder: true };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Capture client time for deterministic command creation

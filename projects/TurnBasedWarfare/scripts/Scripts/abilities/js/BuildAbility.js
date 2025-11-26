@@ -44,8 +44,7 @@ class BuildAbility extends GUTS.BaseAbility {
         if (playerOrder) {
             playerOrder.meta = {
                 buildingId: buildingEntityId,
-                buildingPosition: buildingPos,
-                isPlayerOrder: true
+                buildingPosition: buildingPos
             };
             playerOrder.targetPosition = buildingPos;
             playerOrder.issuedTime = this.game.state.now;

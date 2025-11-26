@@ -2,7 +2,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder) {
+        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.isMoveOrder) {
             return null;
         }
 
