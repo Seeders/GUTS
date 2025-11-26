@@ -1,6 +1,11 @@
 class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        // Only run combat during battle phase
+        if (game.state.phase !== 'battle') {
+            return null;
+        }
+
         const aiState = game.getComponent(entityId, 'aiState');
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');
