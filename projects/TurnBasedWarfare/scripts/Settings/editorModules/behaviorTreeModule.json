@@ -20,6 +20,10 @@
     {
       "collection": "behaviorTrees",
       "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
     }
   ]
 }
