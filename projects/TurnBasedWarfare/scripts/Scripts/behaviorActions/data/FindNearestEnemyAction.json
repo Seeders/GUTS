@@ -1,0 +1,10 @@
+{
+  "title": "Find Nearest Enemy",
+  "description": "Finds nearest enemy and stores in shared state",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/FindNearestEnemyAction.js",
+  "fileName": "FindNearestEnemyAction",
+  "parameters": {
+    "range": 300,
+    "targetKey": "target"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Follow",
+  "description": "Follows another entity, maintaining distance",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/FollowAction.js",
+  "fileName": "FollowAction",
+  "parameters": {
+    "targetKey": "followTarget",
+    "followDistance": 50,
+    "maxDistance": 200,
+    "stopDistance": 30
+  }
+}
