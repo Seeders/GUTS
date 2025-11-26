@@ -1,6 +1,6 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    execute(entityId, controller, game, dt) {
+    execute(entityId, game) {
         // Read from playerOrder component (like MoveBehaviorAction)
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
@@ -30,7 +30,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         return null;
     }
 
-    onStart(entityId, controller, game) {
+    onStart(entityId, game) {
         // Building state is already initialized by assignToBuild or assignBuilderToConstruction
         // No additional setup needed - action state is managed via returned state objects
     }
@@ -157,7 +157,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
-    onEnd(entityId, controller, game) {
+    onEnd(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
         if (!aiState || !aiState.meta) return;
 
