@@ -6,9 +6,9 @@
 class BehaviorTreeProcessor {
     constructor(game, options = {}) {
         this.game = game;
-        this.actions = new Map();
-        this.behaviorTrees = new Map();
-        this.decorators = new Map();
+
+        // Unified node storage (new approach)
+        this.nodes = new Map();
 
         // Per-entity blackboards for shared state between nodes
         // Key: entityId, Value: BehaviorTreeBlackboard instance
@@ -122,142 +122,128 @@ class BehaviorTreeProcessor {
 
     /**
      * Initialize from collections (call after construction)
-     * @param {Object} collections - Game collections with behaviorActions, behaviorTrees, and behaviorDecorators
+     * @param {Object} collections - Game collections with behaviorNodes (unified) or legacy collections
      */
     initializeFromCollections(collections) {
-        // Register behavior actions
+        // New unified collection
+        if (collections.behaviorNodes) {
+            Object.entries(collections.behaviorNodes).forEach(([nodeId, nodeData]) => {
+                this.registerNode(nodeId, nodeData);
+            });
+        }
+
+        // Legacy: Register behavior actions
         if (collections.behaviorActions) {
             Object.entries(collections.behaviorActions).forEach(([actionId, actionData]) => {
-                this.registerAction(actionId, actionData);
+                this.registerNode(actionId, actionData);
             });
         }
 
-        // Register behavior decorators
+        // Legacy: Register behavior decorators
         if (collections.behaviorDecorators) {
             Object.entries(collections.behaviorDecorators).forEach(([decoratorId, decoratorData]) => {
-                this.registerDecorator(decoratorId, decoratorData);
+                this.registerNode(decoratorId, decoratorData);
             });
         }
 
-        // Register behavior trees
+        // Legacy: Register behavior trees
         if (collections.behaviorTrees) {
             Object.entries(collections.behaviorTrees).forEach(([treeId, treeData]) => {
-                this.registerBehaviorTree(treeId, treeData);
+                this.registerNode(treeId, treeData);
             });
         }
     }
 
     /**
-     * Register an action executor
-     * @param {string} actionId - Action class name (e.g., "CombatBehaviorAction")
-     * @param {Object} actionData - Action configuration data
+     * Register a behavior node (unified)
+     * @param {string} nodeId - Node class name
+     * @param {Object} nodeData - Node configuration data
      */
-    registerAction(actionId, actionData) {
-        const ActionClass = GUTS[actionId];
+    registerNode(nodeId, nodeData) {
+        const NodeClass = GUTS[nodeId];
 
-        if (ActionClass) {
-            const actionInstance = new ActionClass(this.game, actionData);
-            this.actions.set(actionId, actionInstance);
-            console.log(`Registered behavior action: ${actionId}`);
+        if (NodeClass) {
+            const nodeInstance = new NodeClass(this.game, nodeData);
+            this.nodes.set(nodeId, nodeInstance);
+            console.log(`Registered behavior node: ${nodeId}`);
         } else {
-            console.warn(`Action class not found for: ${actionId}`);
+            console.warn(`Behavior node class not found for: ${nodeId}`);
         }
     }
 
     /**
-     * Register a decorator
-     * @param {string} decoratorId - Decorator class name (e.g., "CooldownDecorator")
-     * @param {Object} decoratorData - Decorator configuration data
+     * Get a registered node by type (unified lookup)
+     * @param {string} type - Node type name
+     * @returns {Object} Node instance
      */
-    registerDecorator(decoratorId, decoratorData) {
-        const DecoratorClass = GUTS[decoratorId];
-
-        if (DecoratorClass) {
-            const decoratorInstance = new DecoratorClass(this.game, decoratorData);
-            this.decorators.set(decoratorId, decoratorInstance);
-            console.log(`Registered behavior decorator: ${decoratorId}`);
-        } else {
-            console.warn(`Decorator class not found for: ${decoratorId}`);
-        }
+    getNodeByType(type) {
+        return this.nodes.get(type);
     }
 
-    /**
-     * Register a behavior tree
-     * @param {string} treeId - Tree class name (e.g., "UniversalBehaviorTree")
-     * @param {Object} treeData - Tree configuration data
-     */
-    registerBehaviorTree(treeId, treeData) {
-        const TreeClass = GUTS[treeId];
-
-        if (TreeClass) {
-            const treeInstance = new TreeClass(this.game, treeData);
-            this.behaviorTrees.set(treeId, treeInstance);
-        } else {
-            console.warn(`Behavior tree class not found for: ${treeId}`);
-        }
-    }
+    // Legacy compatibility methods (redirect to unified storage)
 
     /**
-     * Get a registered action by type
-     * @param {string} type - Action type name
-     * @returns {Object} Action instance
+     * @deprecated Use getNodeByType instead
      */
     getActionByType(type) {
-        return this.actions.get(type);
+        return this.nodes.get(type);
     }
 
     /**
-     * Get a registered behavior tree by type
-     * @param {string} type - Tree type name
-     * @returns {Object} Tree instance
+     * @deprecated Use getNodeByType instead
      */
     getBehaviorTreeByType(type) {
-        return this.behaviorTrees.get(type);
+        return this.nodes.get(type);
     }
 
     /**
-     * Get a registered decorator by type
-     * @param {string} type - Decorator type name
-     * @returns {Object} Decorator instance
+     * @deprecated Use getNodeByType instead
      */
     getDecoratorByType(type) {
-        return this.decorators.get(type);
+        return this.nodes.get(type);
     }
 
     /**
-     * Evaluate a registered behavior tree for an entity
-     * @param {string} treeId - The behavior tree ID to evaluate
+     * Evaluate a registered behavior node for an entity
+     * @param {string} nodeId - The behavior node ID to evaluate
      * @param {string} entityId - Entity to evaluate for
-     * @returns {Object|null} Action result from tree evaluation
+     * @returns {Object|null} Action result from evaluation
      */
-    evaluate(treeId, entityId) {
-        const tree = this.behaviorTrees.get(treeId);
-        if (!tree) {
-            console.warn(`Behavior tree not found: ${treeId}`);
+    evaluate(nodeId, entityId) {
+        const node = this.nodes.get(nodeId);
+        if (!node) {
+            console.warn(`Behavior node not found: ${nodeId}`);
             return null;
         }
 
-        return tree.evaluate(entityId, this.game);
+        return node.evaluate(entityId, this.game);
     }
 
     /**
-     * Evaluate a behavior tree from data (for editor simulation)
-     * @param {Object} treeData - Tree configuration with fileName and behaviorActions
+     * Evaluate a behavior node from data (for editor simulation)
+     * @param {Object} nodeData - Node configuration with fileName and children
      * @param {string} entityId - Entity to evaluate for
-     * @returns {Object|null} Action result from tree evaluation
+     * @returns {Object|null} Action result from evaluation
+     */
+    evaluateNodeData(nodeData, entityId) {
+        const nodeId = nodeData.fileName;
+        const NodeClass = GUTS[nodeId];
+
+        if (!NodeClass) {
+            console.warn(`Behavior node class not found: ${nodeId}`);
+            return null;
+        }
+
+        // Create node instance with current data (may differ from collections)
+        const node = new NodeClass(this.game, nodeData);
+        return node.evaluate(entityId, this.game);
+    }
+
+    /**
+     * @deprecated Use evaluateNodeData instead
      */
     evaluateTreeData(treeData, entityId) {
-        const treeId = treeData.fileName;
-        const TreeClass = GUTS[treeId];
-
-        if (!TreeClass) {
-            console.warn(`Behavior tree class not found: ${treeId}`);
-            return null;
-        }
-
-        // Create tree instance with current data (may differ from collections)
-        const tree = new TreeClass(this.game, treeData);
-        return tree.evaluate(entityId, this.game);
+        return this.evaluateNodeData(treeData, entityId);
     }
 }
 
