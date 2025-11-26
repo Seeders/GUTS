@@ -71,6 +71,20 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             pos.x = buildingPos.x + this.parameters.buildRange;
             pos.z = buildingPos.z;
 
+            // Clear playerOrder.targetPosition to stop movement
+            const playerOrder = game.getComponent(entityId, 'playerOrder');
+            if (playerOrder) {
+                playerOrder.targetPosition = null;
+            }
+
+            // Anchor the unit so it doesn't move while building
+            const vel = game.getComponent(entityId, 'velocity');
+            if (vel) {
+                vel.anchored = true;
+                vel.vx = 0;
+                vel.vz = 0;
+            }
+
             // Return state object - transition to building state
             return {
                 buildingId: buildingId,
@@ -80,7 +94,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             };
         }
 
-        // Still traveling - return state with target position
+        // Still traveling - return targetPosition so MovementSystem moves unit to building
         return {
             buildingId: buildingId,
             buildingPosition: buildingPos,
@@ -197,6 +211,12 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             if (buildingPlacement && buildingPlacement.assignedBuilder === entityId) {
                 buildingPlacement.assignedBuilder = null;
             }
+        }
+
+        // Unanchor the unit
+        const vel = game.getComponent(entityId, 'velocity');
+        if (vel) {
+            vel.anchored = false;
         }
 
         // Clear all meta data (like MineGoldBehaviorAction)

@@ -2,9 +2,15 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder) {            
+        if (!playerOrder) {
             return null;
         }
+
+        // Skip if this is a building order - let BuildBehaviorAction handle it
+        if (playerOrder.meta && playerOrder.meta.buildingId) {
+            return null;
+        }
+
         const targetPosition = playerOrder.targetPosition;
 
         if(targetPosition) {
