@@ -102,18 +102,25 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         let targetMine = aiState.meta.targetMine;
 
         if (elapsed >= this.parameters.miningDuration) {
-            return { 
+            // Mining complete - clear the mine's current miner and process next in queue
+            const goldMine = game.getComponent(targetMine, 'goldMine');
+            if (goldMine) {
+                goldMine.currentMiner = null;
+                game.goldMineSystem.processNextInQueue(targetMine);
+            }
+
+            return {
                 hasGold: true,
                 goldAmt: this.parameters.goldPerTrip,
                 mineState: 'traveling_to_depot'
             };
         }
 
-        return { 
+        return {
             hasGold: elapsed > 0,
             goldAmt: this.parameters.goldPerTrip * elapsed / this.parameters.miningDuration,
             mineState: 'mining',
-            miningStartTime: aiState.meta.miningStartTime,            
+            miningStartTime: aiState.meta.miningStartTime,
             targetMine: aiState.meta.targetMine
         };
     }

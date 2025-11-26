@@ -278,12 +278,12 @@ class GoldMineSystem extends GUTS.BaseSystem {
          if (goldMine.minerQueue.length === 0) {
             goldMine.currentMiner = null;
             return;
-        }  
+        }
 
-        let nextMiner = goldMine.minerQueue.pop(); 
+        let nextMiner = goldMine.minerQueue.shift();
         goldMine.currentMiner = nextMiner;
-        
-               
+
+
     }
 
     replaceVeinWithMine(vein) {
