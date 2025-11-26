@@ -1,6 +1,6 @@
 {
-  "title": "Universal Behavior Tree",
-  "description": "Universal behavior tree used by all units. Dynamically evaluates abilities to determine behaviors.",
+  "title": "Select Behavior Tree",
+  "description": "Select behavior tree used by all units. Dynamically evaluates abilities to determine behaviors.",
   "mockEntities": {
     "entities": [
       {
@@ -38,8 +38,8 @@
       }
     ]
   },
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/UniversalBehaviorTree.js",
-  "fileName": "UniversalBehaviorTree",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/SelectBehaviorTree.js",
+  "fileName": "SelectBehaviorTree",
   "behaviorActions": [
     "CombatBehaviorAction",
     "MoveBehaviorAction",

@@ -28,7 +28,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Also notify trees
         const entities = this.getBehaviorEntities();
         for (const entityId of entities) {
-            this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
+            this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
             if (this.rootTree) {
                 this.rootTree.onBattleEnd(entityId, this.game);
             }
@@ -72,7 +72,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         }
 
         // Evaluate behavior tree to get desired action
-        const desiredAction = this.processor.evaluate('UniversalBehaviorTree', entityId);
+        const desiredAction = this.processor.evaluate('SelectBehaviorTree', entityId);
 
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
@@ -96,7 +96,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
-            this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
+            this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
             if (this.rootTree) {
                 this.rootTree.onPlacementPhaseStart(entityId, this.game);
             }
