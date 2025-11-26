@@ -110,22 +110,23 @@ class ImageManager {
             throw new Error('Invalid prefix or config provided to loadImages');
         }
         if( checkCache ) {
-            const cachedImages = await this.checkCache(prefix);
-            if (cachedImages) {
-                this.images = { ...this.images, ...cachedImages };
-                return;
-            }
+            // const cachedImages = await this.checkCache(prefix);
+            // if (cachedImages) {
+            //     this.images = { ...this.images, ...cachedImages };
+            //     return;
+            // }
         }
         for (const [type, cfg] of Object.entries(config)) {
-            if (cfg.render && cfg.render.animations) {
-                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
-            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {
+            //if (cfg.render && cfg.render.animations) {
+               // this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
+            //} else 
+            if (cfg.tileMap && cfg.tileMap.terrainTypes) {
                 this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);
             }
         }
-        if(cacheResult) {
-            await this.cacheImages(prefix);
-        }
+       // if(cacheResult) {
+         //   await this.cacheImages(prefix);
+       // }
     }
     
     async checkCache(prefix) {
