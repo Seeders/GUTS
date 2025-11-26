@@ -78,6 +78,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
     shouldSwitchAction(aiState, desiredAction) {
         if (!desiredAction || !desiredAction.action || !desiredAction.meta) return false;
         if (!aiState.currentAction) return true;
+
+        // If the desired action is running, always continue with it
+        if (desiredAction.status === 'running') {
+            // Only switch if it's a different action
+            return aiState.currentAction !== desiredAction.action;
+        }
+
+        // For success status, allow switching to new action
         return true;
     }
 
@@ -85,25 +93,31 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Switch from current action to a new action
      */
     switchAction(entityId, aiState, desiredAction) {
-        // End current action
-        if (aiState.currentAction) {
+        const isNewAction = aiState.currentAction !== desiredAction.action;
+
+        // End current action if switching to a different one
+        if (isNewAction && aiState.currentAction) {
             const currentExecutor = this.processor.getActionByType(aiState.currentAction);
             if (currentExecutor) {
                 currentExecutor.onEnd(entityId, this.game);
             }
         }
 
-        // Start new action
+        // Update action state
         aiState.currentAction = desiredAction.action;
+        aiState.status = desiredAction.status || 'success';
         aiState.meta = desiredAction.meta;
         while (aiState.meta.meta && aiState.meta.action) {
             aiState.currentAction = desiredAction.meta.action;
             aiState.meta = desiredAction.meta.meta;
         }
 
-        const newExecutor = this.processor.getActionByType(aiState.currentAction);
-        if (newExecutor && newExecutor.onStart) {
-            newExecutor.onStart(entityId, this.game);
+        // Only call onStart for new actions
+        if (isNewAction) {
+            const newExecutor = this.processor.getActionByType(aiState.currentAction);
+            if (newExecutor && newExecutor.onStart) {
+                newExecutor.onStart(entityId, this.game);
+            }
         }
     }
 }

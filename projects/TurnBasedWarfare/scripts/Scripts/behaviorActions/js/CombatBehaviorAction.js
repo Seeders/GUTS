@@ -4,7 +4,7 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         // Check if player order prevents combat (build orders, force move)
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (playerOrder?.meta?.preventCombat) {
-            return null;
+            return this.failure();
         }
 
         const aiState = game.getComponent(entityId, 'aiState');
@@ -13,24 +13,25 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Skip if unit can't fight (no combat component or dead)
         if (!combat || !health || health.current <= 0) {
-            return null;
+            return this.failure();
         }
 
         // Skip units with 0 damage and no abilities (non-combat units like peasants mining)
         const unitType = game.getComponent(entityId, 'unitType');
         if (combat.damage === 0 && (!unitType.abilities || unitType.abilities.length === 0)) {
-            return null;
+            return this.failure();
         }
 
-        const state = aiState.meta.combatState || 'seeking_target';
+        const memory = this.getMemory(entityId);
+        const state = memory.combatState || 'seeking_target';
 
         switch (state) {
             case 'seeking_target':
-                return this.seekTarget(entityId, aiState, game);
+                return this.seekTarget(entityId, memory, game);
             case 'moving_to_target':
-                return this.moveToTarget(entityId, aiState, game);
+                return this.moveToTarget(entityId, memory, game);
             case 'attacking':
-                return this.doAttacking(entityId, aiState, game);
+                return this.doAttacking(entityId, memory, game);
         }
     }
 
@@ -39,21 +40,16 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const vel = game.getComponent(entityId, 'velocity');
         if (vel) vel.anchored = false;
 
-        const aiState = game.getComponent(entityId, 'aiState');
-        // Clear combat-specific meta but preserve other state
-        if (aiState && aiState.meta) {
-            delete aiState.meta.combatState;
-            delete aiState.meta.target;
-            delete aiState.meta.targetPosition;
-        }
+        // Clear per-entity memory (handled by base class)
+        this.clearMemory(entityId);
     }
 
-    seekTarget(entityId, aiState, game) {
+    seekTarget(entityId, memory, game) {
         const target = this.findNearestEnemy(entityId, game);
 
         if (!target) {
             // No enemies in range - don't take over behavior
-            return null;
+            return this.failure();
         }
 
         const pos = game.getComponent(entityId, 'position');
@@ -65,28 +61,27 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (distance <= attackRange) {
             // Already in range, start attacking
-            return {
-                combatState: 'attacking',
-                target: target,
-                targetPosition: { x: targetPos.x, z: targetPos.z }
-            };
+            memory.combatState = 'attacking';
+            memory.target = target;
+            memory.targetPosition = { x: targetPos.x, z: targetPos.z };
+            return this.running(memory);
         }
 
         // Need to move to target
-        return {
-            combatState: 'moving_to_target',
-            target: target,
-            targetPosition: { x: targetPos.x, z: targetPos.z }
-        };
+        memory.combatState = 'moving_to_target';
+        memory.target = target;
+        memory.targetPosition = { x: targetPos.x, z: targetPos.z };
+        return this.running(memory);
     }
 
-    moveToTarget(entityId, aiState, game) {
-        const target = aiState.meta.target;
+    moveToTarget(entityId, memory, game) {
+        const target = memory.target;
 
         // Check if target is still valid
         if (!target || !this.isValidTarget(target, game)) {
             // Target lost, seek new target
-            return this.seekTarget(entityId, aiState, game);
+            memory.combatState = 'seeking_target';
+            return this.seekTarget(entityId, memory, game);
         }
 
         const pos = game.getComponent(entityId, 'position');
@@ -98,30 +93,29 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (distance <= attackRange) {
             // In range, start attacking
-            return {
-                combatState: 'attacking',
-                target: target,
-                targetPosition: { x: targetPos.x, z: targetPos.z }
-            };
+            memory.combatState = 'attacking';
+            memory.target = target;
+            memory.targetPosition = { x: targetPos.x, z: targetPos.z };
+            return this.running(memory);
         }
 
         // Keep moving toward target (MovementSystem reads targetPosition)
-        return {
-            combatState: 'moving_to_target',
-            target: target,
-            targetPosition: { x: targetPos.x, z: targetPos.z }
-        };
+        memory.combatState = 'moving_to_target';
+        memory.target = target;
+        memory.targetPosition = { x: targetPos.x, z: targetPos.z };
+        return this.running(memory);
     }
 
-    doAttacking(entityId, aiState, game) {
-        const target = aiState.meta.target;
+    doAttacking(entityId, memory, game) {
+        const target = memory.target;
 
         // Check if target is still valid
         if (!target || !this.isValidTarget(target, game)) {
             // Target dead or lost, unanchor and seek new target
             const vel = game.getComponent(entityId, 'velocity');
             if (vel) vel.anchored = false;
-            return this.seekTarget(entityId, aiState, game);
+            memory.combatState = 'seeking_target';
+            return this.seekTarget(entityId, memory, game);
         }
 
         const pos = game.getComponent(entityId, 'position');
@@ -135,11 +129,10 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
             // Target moved out of range, unanchor and chase
             const vel = game.getComponent(entityId, 'velocity');
             if (vel) vel.anchored = false;
-            return {
-                combatState: 'moving_to_target',
-                target: target,
-                targetPosition: { x: targetPos.x, z: targetPos.z }
-            };
+            memory.combatState = 'moving_to_target';
+            memory.target = target;
+            memory.targetPosition = { x: targetPos.x, z: targetPos.z };
+            return this.running(memory);
         }
 
         // Anchor unit while attacking - stand still
@@ -153,11 +146,11 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         // Perform attack
         this.performAttack(entityId, target, game);
 
-        // Return state with no targetPosition so MovementSystem doesn't move us
-        return {
-            combatState: 'attacking',
-            target: target
-        };
+        // Return running state with no targetPosition so MovementSystem doesn't move us
+        memory.combatState = 'attacking';
+        memory.target = target;
+        delete memory.targetPosition;
+        return this.running(memory);
     }
 
     performAttack(attackerId, targetId, game) {

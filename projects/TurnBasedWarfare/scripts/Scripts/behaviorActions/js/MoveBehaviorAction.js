@@ -3,31 +3,38 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
     execute(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.meta || !playerOrder.meta.isMoveOrder) {
-            return null;
+            return this.failure();
         }
 
         const targetPosition = playerOrder.targetPosition;
 
-        if(targetPosition) {
+        if (targetPosition) {
             const pos = game.getComponent(entityId, 'position');
-
             const distanceToTarget = this.distance(pos, targetPosition);
-            let reachedTarget = false;
+
+            // Check if we've reached the target
             if (distanceToTarget <= this.parameters.arrivalThreshold) {
-                reachedTarget = true;
+                // Movement complete
+                return this.success({
+                    targetPosition: targetPosition,
+                    reachedTarget: true,
+                    distanceToTarget,
+                    preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false,
+                    handledByMove: true
+                });
             }
 
+            // Still moving toward target
             // MovementSystem will handle movement to target
-            // Set flag so other actions know we're handling this order
-            return {
+            return this.running({
                 targetPosition: targetPosition,
-                reachedTarget,
+                reachedTarget: false,
                 distanceToTarget,
                 preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false,
                 handledByMove: true
-            };
+            });
         }
-        return null;
+        return this.failure();
     }
 
     distance(pos, target) {
