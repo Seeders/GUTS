@@ -31,27 +31,8 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onStart(entityId, controller, game) {
-        // Read from playerOrder component
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
-            return;
-        }
-
-        const buildingId = playerOrder.meta.buildingId;
-        const buildingPlacement = game.getComponent(buildingId, 'placement');
-        const renderComponent = game.getComponent(buildingId, 'renderable');
-
-        if (renderComponent) {
-            renderComponent.spawnType = 'underConstruction';
-        }
-
-        // Remove health component while under construction
-        game.removeComponent(buildingId, 'health');
-
-        if (buildingPlacement) {
-            buildingPlacement.isUnderConstruction = true;
-            buildingPlacement.assignedBuilder = entityId;
-        }
+        // Building state is already initialized by assignToBuild or assignBuilderToConstruction
+        // No additional setup needed - action state is managed via returned state objects
     }
 
     travelToBuilding(entityId, aiState, game) {
@@ -148,28 +129,31 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             game.gameManager.call('removeInstance', buildingId);
         }
 
-        // Add health component
+        // After removeInstance, the new building entity ID is in squadUnits[0]
+        const newBuildingId = buildingPlacement.squadUnits[0];
+
+        // Add health component to the new building entity
         if (unitType) {
-            game.addComponent(buildingId, 'health', {
+            game.addComponent(newBuildingId, 'health', {
                 max: unitType.hp,
                 current: unitType.hp
             });
         }
 
-        // Register building with shop system
+        // Register building with shop system using new entity ID
         if (game.shopSystem && buildingPlacement) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, newBuildingId);
         }
 
-        // Update placement component
+        // Update placement component - building is now complete
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = false;
             buildingPlacement.assignedBuilder = null;
         }
 
-        // Change to idle animation
+        // Change to idle animation on the new building entity
         if (game.animationSystem) {
-            game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
+            game.animationSystem.changeAnimation(newBuildingId, 'idle', 1.0, 0);
         }
     }
 

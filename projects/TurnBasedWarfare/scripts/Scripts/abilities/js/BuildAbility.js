@@ -22,10 +22,20 @@ class BuildAbility extends GUTS.BaseAbility {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) return null;
 
+        // Check if building is still under construction
+        const buildingId = playerOrder.meta.buildingId;
+        const buildingPlacement = game.getComponent(buildingId, 'placement');
+        if (!buildingPlacement || !buildingPlacement.isUnderConstruction) {
+            // Building is complete or doesn't exist - clear playerOrder and return null
+            playerOrder.meta = {};
+            playerOrder.targetPosition = null;
+            return null;
+        }
+
         // Building behavior
         return {
             action: "BuildBehaviorAction",
-            target: playerOrder.meta.buildingId,
+            target: buildingId,
             priority: 15,
             data: {}
         };
@@ -68,6 +78,15 @@ class BuildAbility extends GUTS.BaseAbility {
 
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
         const buildTime = peasantInfo.buildTime;
+
+        // Set up building visual state - show as under construction immediately
+        const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
+        if (renderComponent) {
+            renderComponent.spawnType = 'underConstruction';
+        }
+
+        // Remove health component while under construction
+        this.game.removeComponent(buildingEntityId, "health");
 
         // Set up building placement state
         if (buildingPlacement) {
