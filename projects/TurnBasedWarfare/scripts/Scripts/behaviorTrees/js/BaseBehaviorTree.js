@@ -59,17 +59,31 @@ class BaseBehaviorTree {
         // Check if we have a running action for this entity
         const runningInfo = this.runningState.get(entityId);
 
-        // Build action evaluators
+        // Build action evaluators (supports both actions and subtrees)
         const actionEvaluators = behaviorActions.map((behaviorAction, index) => ({
             name: behaviorAction,
             index: index,
             evaluate: () => {
+                // First try as an action
                 const actionInstance = game.gameManager.call('getActionByType', behaviorAction);
-                if (!actionInstance) {
-                    console.warn(`Action not found: ${behaviorAction}`);
-                    return null;
+                if (actionInstance) {
+                    return this.processAction(entityId, game, behaviorAction, actionInstance);
                 }
-                return this.processAction(entityId, game, behaviorAction, actionInstance);
+
+                // Then try as a subtree
+                const subtree = game.gameManager.call('getBehaviorTreeByType', behaviorAction);
+                if (subtree) {
+                    return subtree.evaluate(entityId, game);
+                }
+
+                // Finally try as a decorator
+                const decorator = game.gameManager.call('getDecoratorByType', behaviorAction);
+                if (decorator) {
+                    return decorator.execute(entityId, game);
+                }
+
+                console.warn(`Behavior node not found (action/tree/decorator): ${behaviorAction}`);
+                return null;
             }
         }));
 
