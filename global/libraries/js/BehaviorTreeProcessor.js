@@ -17,7 +17,7 @@ class BehaviorTreeProcessor {
      */
     static evaluate(treeData, gameContext, rootNode = 'root', entityId = null) {
         // Find and instantiate the behavior tree class
-        const TreeClass = this.findClass(treeData.fileName);
+        const TreeClass = this.findTreeClass(treeData);
 
         if (!TreeClass) {
             console.warn(`Behavior tree script not found: ${treeData.fileName}`);
@@ -49,22 +49,32 @@ class BehaviorTreeProcessor {
     }
 
     /**
-     * Find a class by name (behavior tree, action, etc.)
-     * Used by both BehaviorSystem (runtime) and editor (simulation)
-     * @param {string} className - The class name to find
-     * @returns {Function|null} - The class constructor or null
+     * Find the behavior tree class by name
+     * @param {Object} treeData - Tree data with fileName property
+     * @returns {Function|null} - The tree class constructor or null
      */
-    static findClass(className) {
-        if (!className) return null;
+    static findTreeClass(treeData) {
+        const scriptName = treeData.fileName;
 
-        // Try GUTS global first (e.g., GUTS.UniversalBehaviorTree, GUTS.CombatBehaviorAction)
-        if (typeof GUTS !== 'undefined' && GUTS[className]) {
-            return GUTS[className];
+        // Try GUTS.behaviorTrees collection first
+        if (typeof GUTS !== 'undefined' && GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
+            return GUTS.behaviorTrees[scriptName];
         }
 
-        // Try window global
+        // Try GUTS global (e.g., GUTS.UniversalBehaviorTree)
+        if (typeof GUTS !== 'undefined' && GUTS[scriptName]) {
+            return GUTS[scriptName];
+        }
+
+        // Try window global with BehaviorTree suffix (e.g., PeasantBehaviorTree)
+        const className = this.capitalize(scriptName) + 'BehaviorTree';
         if (typeof window !== 'undefined' && window[className]) {
             return window[className];
+        }
+
+        // Try window global with exact name
+        if (typeof window !== 'undefined' && window[scriptName]) {
+            return window[scriptName];
         }
 
         return null;
