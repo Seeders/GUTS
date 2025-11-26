@@ -1,11 +1,6 @@
 class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
-        // Only run combat during battle phase
-        if (game.state.phase !== 'battle') {
-            return null;
-        }
-
         const aiState = game.getComponent(entityId, 'aiState');
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');
@@ -194,7 +189,7 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Handle projectile or melee damage
         if (combat.projectile) {
-            this.scheduleProjectileLaunch(attackerId, targetId, game, combat);
+            this.fireProjectile(attackerId, targetId, game, combat);
         } else if (combat.damage > 0) {
             // Melee attack - schedule damage
             const damageDelay = (1 / combat.attackSpeed) * 0.5;
@@ -232,22 +227,17 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
-    scheduleProjectileLaunch(attackerId, targetId, game, combat) {
-        if (!game.schedulingSystem) return;
+    fireProjectile(attackerId, targetId, game, combat) {
+        const targetHealth = game.getComponent(targetId, 'health');
+        if (!targetHealth || targetHealth.current <= 0) return;
 
-        const launchDelay = (1 / combat.attackSpeed) * 0.5;
-        game.schedulingSystem.scheduleAction(() => {
-            const targetHealth = game.getComponent(targetId, 'health');
-            if (targetHealth && targetHealth.current > 0) {
-                const projectileData = game.getCollections().projectiles[combat.projectile];
-                if (projectileData) {
-                    game.gameManager.call('fireProjectile', attackerId, targetId, {
-                        id: combat.projectile,
-                        ...projectileData
-                    });
-                }
-            }
-        }, launchDelay, attackerId);
+        const projectileData = game.getCollections().projectiles[combat.projectile];
+        if (projectileData) {
+            game.gameManager.call('fireProjectile', attackerId, targetId, {
+                id: combat.projectile,
+                ...projectileData
+            });
+        }
     }
 
     findNearestEnemy(entityId, game) {
