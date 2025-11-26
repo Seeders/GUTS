@@ -18,13 +18,14 @@ class BuildAbility extends GUTS.BaseAbility {
     getBehavior(entityId, game) {
         if (!this.enabled) return null;
 
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState || !aiState.meta || !aiState.meta.buildingId) return null;
+        // Read from playerOrder component (like move orders)
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) return null;
 
         // Building behavior
         return {
             action: "BuildBehaviorAction",
-            target: aiState.meta.buildingId,
+            target: playerOrder.meta.buildingId,
             priority: 15,
             data: {}
         };
@@ -34,10 +35,10 @@ class BuildAbility extends GUTS.BaseAbility {
         if(!this.enabled){
             return false;
         }
-        const aiState = this.game.getComponent(entityId, "aiState");
 
-        // With behavior tree system, just check if aiState.meta.buildingId exists
-        return aiState && aiState.meta && aiState.meta.buildingId !== undefined;
+        // With behavior tree system, check if playerOrder has buildingId
+        const playerOrder = this.game.getComponent(entityId, "playerOrder");
+        return playerOrder && playerOrder.meta && playerOrder.meta.buildingId !== undefined;
     }
 
     execute(entityId, targetData) {
@@ -68,15 +69,6 @@ class BuildAbility extends GUTS.BaseAbility {
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
         const buildTime = peasantInfo.buildTime;
 
-        // Set up building visual state - show as under construction
-        const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
-        if (renderComponent) {
-            renderComponent.spawnType = 'underConstruction';
-        }
-
-        // Remove health component while under construction
-        this.game.removeComponent(buildingEntityId, "health");
-
         // Set up building placement state
         if (buildingPlacement) {
             buildingPlacement.isUnderConstruction = true;
@@ -84,13 +76,16 @@ class BuildAbility extends GUTS.BaseAbility {
             buildingPlacement.assignedBuilder = peasantEntityId;
         }
 
-        // Set up aiState.meta for building - behavior tree will handle the rest
-        this.peasantId = peasantEntityId;
-        const aiState = this.game.getComponent(peasantEntityId, "aiState");
-        if (aiState) {
-            aiState.meta = aiState.meta || {};
-            aiState.meta.buildingId = buildingEntityId;
-            aiState.meta.buildingPosition = buildingPos;
+        // Set playerOrder for building - behavior tree will handle the rest via BuildBehaviorAction
+        const playerOrder = this.game.getComponent(peasantEntityId, "playerOrder");
+        if (playerOrder) {
+            playerOrder.meta = {
+                buildingId: buildingEntityId,
+                buildingPosition: buildingPos,
+                isPlayerOrder: true
+            };
+            playerOrder.targetPosition = buildingPos;
+            playerOrder.issuedTime = this.game.state.now;
         }
     }
 

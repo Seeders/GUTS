@@ -1,18 +1,27 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    canExecute(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState || !aiState.meta || !aiState.meta.buildingId) return false;
+    execute(entityId, controller, game, dt) {
+        // Read from playerOrder component (like MoveBehaviorAction)
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
+            return null;
+        }
 
-        const buildingId = aiState.meta.buildingId;
+        const buildingId = playerOrder.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         // Check if building exists and is under construction
-        return buildingPlacement && buildingPlacement.isUnderConstruction;
-    }
+        if (!buildingPlacement || !buildingPlacement.isUnderConstruction) {
+            return null;
+        }
 
-    execute(entityId, controller, game, dt) {
+        // Initialize aiState.meta with building info from playerOrder if needed
         const aiState = game.getComponent(entityId, 'aiState');
+        if (!aiState.meta.buildingId) {
+            aiState.meta.buildingId = buildingId;
+            aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
+        }
+
         const state = aiState.meta.buildState || 'traveling_to_building';
 
         switch (state) {
@@ -21,11 +30,18 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             case 'building':
                 return this.doBuilding(entityId, game);
         }
+
+        return null;
     }
 
     onStart(entityId, controller, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        const buildingId = aiState.meta.buildingId;
+        // Read from playerOrder component
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
+            return;
+        }
+
+        const buildingId = playerOrder.meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
         const renderComponent = game.getComponent(buildingId, 'renderable');
 
@@ -41,7 +57,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             buildingPlacement.assignedBuilder = entityId;
         }
 
-        // Initialize build state in meta
+        // Initialize aiState.meta with building info from playerOrder
+        const aiState = game.getComponent(entityId, 'aiState');
+        aiState.meta.buildingId = buildingId;
+        aiState.meta.buildingPosition = playerOrder.meta.buildingPosition;
         aiState.meta.buildState = 'traveling_to_building';
     }
 
