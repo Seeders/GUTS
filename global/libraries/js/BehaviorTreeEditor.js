@@ -100,17 +100,53 @@ class BehaviorTreeEditor {
             actionEl.draggable = true;
             actionEl.dataset.behaviorActionId = behaviorActionId;
 
+            const title = actionData.title || this.formatActionName(behaviorActionId);
+            const description = actionData.description || '';
+
             actionEl.innerHTML = `
-                <div class="bt-action-item__title">${actionData.title}</div>
-                <div class="bt-action-item__priority">Priority: ${actionData.priority}</div>
+                <div class="bt-action-item__title">${title}</div>
+                <div class="bt-action-item__id" style="font-size: 10px; color: #666;">${behaviorActionId}</div>
+                ${description ? `<div class="bt-action-item__desc" style="font-size: 10px; color: #888; margin-top: 4px;">${description}</div>` : ''}
             `;
 
             actionEl.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('behaviorActionId', behaviorActionId);
             });
 
+            // Double-click to add to current tree
+            actionEl.addEventListener('dblclick', () => {
+                this.addActionToTree(behaviorActionId);
+            });
+
             actionsList.appendChild(actionEl);
         });
+    }
+
+    addActionToTree(behaviorActionId) {
+        if (!this.objectData || !this.objectData.behaviorActions) {
+            alert('Cannot add actions to this tree type');
+            return;
+        }
+
+        if (this.objectData.behaviorActions.includes(behaviorActionId)) {
+            alert('Action already in tree');
+            return;
+        }
+
+        this.objectData.behaviorActions.push(behaviorActionId);
+        this.renderTree();
+        this.updateJSONView();
+    }
+
+    removeActionFromTree(behaviorActionId) {
+        if (!this.objectData || !this.objectData.behaviorActions) return;
+
+        const index = this.objectData.behaviorActions.indexOf(behaviorActionId);
+        if (index > -1) {
+            this.objectData.behaviorActions.splice(index, 1);
+            this.renderTree();
+            this.updateJSONView();
+        }
     }
 
     renderTree() {
@@ -143,7 +179,13 @@ class BehaviorTreeEditor {
             return;
         }
 
-        // Get the script class name from the key
+        // Check if this tree uses behaviorActions array (new style)
+        if (this.objectData.behaviorActions && Array.isArray(this.objectData.behaviorActions)) {
+            this.renderBehaviorActionsTree(canvas);
+            return;
+        }
+
+        // Legacy: Get the script class name from the key
         const scriptName = this.controller.getSelectedObject();
 
         // Try multiple ways to find the class
@@ -220,6 +262,168 @@ class BehaviorTreeEditor {
         `;
 
         this.renderTreeGraph(methods);
+    }
+
+    renderBehaviorActionsTree(canvas) {
+        const behaviorActions = this.objectData.behaviorActions;
+
+        // Create visual tree representation
+        canvas.innerHTML = `
+            <div id="bt-graph-container" style="padding: 20px; overflow: auto;">
+                <svg id="bt-graph-svg" width="100%" height="400" style="background: #0a0a0a; border-radius: 4px;">
+                    <!-- Tree will be rendered here -->
+                </svg>
+                <div id="bt-action-controls" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Action controls will be added here -->
+                </div>
+                <div style="margin-top: 10px; color: #888; font-size: 12px;">
+                    💡 Behavior actions are evaluated in order (selector pattern). First action to return non-null wins.<br/>
+                    Use arrows to reorder, × to remove. Double-click actions in sidebar to add.
+                </div>
+            </div>
+        `;
+
+        const svg = document.getElementById('bt-graph-svg');
+        if (!svg) return;
+
+        svg.innerHTML = '';
+
+        const nodeWidth = 180;
+        const nodeHeight = 50;
+        const verticalSpacing = 80;
+        const horizontalSpacing = 30;
+
+        // Root node (Selector)
+        const rootY = 30;
+        const totalWidth = (nodeWidth + horizontalSpacing) * behaviorActions.length - horizontalSpacing;
+        const svgWidth = Math.max(totalWidth + 100, svg.clientWidth);
+        svg.setAttribute('width', svgWidth);
+
+        const rootX = svgWidth / 2 - nodeWidth / 2;
+
+        this.createNode(svg, rootX, rootY, nodeWidth, nodeHeight, 'SELECTOR (Priority)', 'selector', 'root');
+
+        // Child nodes (behavior actions)
+        const startX = (svgWidth - totalWidth) / 2;
+
+        behaviorActions.forEach((actionName, index) => {
+            const x = startX + index * (nodeWidth + horizontalSpacing);
+            const y = rootY + verticalSpacing;
+
+            // Draw connecting line
+            this.createLine(
+                svg,
+                rootX + nodeWidth / 2,
+                rootY + nodeHeight,
+                x + nodeWidth / 2,
+                y
+            );
+
+            // Get action info from collections
+            const actionData = this.controller.getCollections().behaviorActions?.[actionName];
+            const label = actionData?.title || this.formatActionName(actionName);
+
+            // Determine node type based on action name
+            let nodeType = 'action';
+            if (actionName.includes('Root') || actionName.includes('Tree')) {
+                nodeType = 'selector'; // Sub-trees
+            }
+
+            this.createNode(svg, x, y, nodeWidth, nodeHeight, label, nodeType, actionName);
+
+            // Add priority number
+            const priorityText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            priorityText.setAttribute('x', x + nodeWidth / 2);
+            priorityText.setAttribute('y', y - 8);
+            priorityText.setAttribute('text-anchor', 'middle');
+            priorityText.setAttribute('fill', '#666');
+            priorityText.setAttribute('font-size', '10');
+            priorityText.textContent = `#${index + 1}`;
+            svg.appendChild(priorityText);
+        });
+
+        // Adjust SVG height
+        svg.setAttribute('height', rootY + verticalSpacing + nodeHeight + 50);
+
+        // Add action controls
+        this.renderActionControls(behaviorActions);
+    }
+
+    renderActionControls(behaviorActions) {
+        const controlsContainer = document.getElementById('bt-action-controls');
+        if (!controlsContainer) return;
+
+        controlsContainer.innerHTML = '';
+
+        behaviorActions.forEach((actionName, index) => {
+            const actionData = this.controller.getCollections().behaviorActions?.[actionName];
+            const label = actionData?.title || this.formatActionName(actionName);
+
+            const controlDiv = document.createElement('div');
+            controlDiv.style.cssText = 'display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 4px; font-size: 11px;';
+
+            // Priority number
+            const prioritySpan = document.createElement('span');
+            prioritySpan.style.cssText = 'color: #666; font-weight: bold; min-width: 20px;';
+            prioritySpan.textContent = `#${index + 1}`;
+            controlDiv.appendChild(prioritySpan);
+
+            // Action name
+            const nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'color: #fff; flex: 1;';
+            nameSpan.textContent = label;
+            controlDiv.appendChild(nameSpan);
+
+            // Move up button
+            if (index > 0) {
+                const upBtn = document.createElement('button');
+                upBtn.textContent = '↑';
+                upBtn.title = 'Move up (higher priority)';
+                upBtn.style.cssText = 'padding: 2px 6px; font-size: 10px; background: #333; border: none; color: #fff; border-radius: 2px; cursor: pointer;';
+                upBtn.addEventListener('click', () => this.moveAction(index, index - 1));
+                controlDiv.appendChild(upBtn);
+            }
+
+            // Move down button
+            if (index < behaviorActions.length - 1) {
+                const downBtn = document.createElement('button');
+                downBtn.textContent = '↓';
+                downBtn.title = 'Move down (lower priority)';
+                downBtn.style.cssText = 'padding: 2px 6px; font-size: 10px; background: #333; border: none; color: #fff; border-radius: 2px; cursor: pointer;';
+                downBtn.addEventListener('click', () => this.moveAction(index, index + 1));
+                controlDiv.appendChild(downBtn);
+            }
+
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '×';
+            removeBtn.title = 'Remove action';
+            removeBtn.style.cssText = 'padding: 2px 6px; font-size: 12px; background: #ef4444; border: none; color: #fff; border-radius: 2px; cursor: pointer; margin-left: 4px;';
+            removeBtn.addEventListener('click', () => this.removeActionFromTree(actionName));
+            controlDiv.appendChild(removeBtn);
+
+            controlsContainer.appendChild(controlDiv);
+        });
+    }
+
+    moveAction(fromIndex, toIndex) {
+        if (!this.objectData || !this.objectData.behaviorActions) return;
+
+        const actions = this.objectData.behaviorActions;
+        const [moved] = actions.splice(fromIndex, 1);
+        actions.splice(toIndex, 0, moved);
+
+        this.renderTree();
+        this.updateJSONView();
+    }
+
+    formatActionName(actionName) {
+        // Convert CombatBehaviorAction -> Combat
+        return actionName
+            .replace('BehaviorAction', '')
+            .replace('Action', '')
+            .replace(/([A-Z])/g, ' $1')
+            .trim();
     }
 
     renderTreeGraph(methods) {
@@ -354,6 +558,15 @@ class BehaviorTreeEditor {
             const rect = node.querySelector('rect');
             if (rect) {
                 rect.setAttribute('stroke-width', '2');
+                // Reset to original color
+                const nodeId = node.getAttribute('data-node-id');
+                if (nodeId === 'root') {
+                    rect.setAttribute('stroke', '#10b981');
+                } else if (nodeId && (nodeId.includes('Root') || nodeId.includes('Tree'))) {
+                    rect.setAttribute('stroke', '#10b981');
+                } else {
+                    rect.setAttribute('stroke', '#ef4444');
+                }
             }
         });
 
@@ -363,17 +576,14 @@ class BehaviorTreeEditor {
         // Highlight root
         this.highlightNode('root');
 
-        // If this is a player-ordered action, highlight the player order method
-        if (result.data.playerOrdered) {
+        // For behavior actions style, highlight the action directly
+        this.highlightNode(result.action);
+
+        // Legacy: If this is a player-ordered action, highlight the player order method
+        if (result.data && result.data.playerOrdered) {
             this.highlightNode('checkPlayerOrder');
             this.highlightNode('checkPlayerOrder-action');
-            return;
         }
-
-
-        this.highlightNode(result.action);
-        this.highlightNode(`${result.action}-action`);
-    
     }
 
     highlightNode(nodeId) {
