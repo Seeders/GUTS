@@ -1,0 +1,8 @@
+{
+  "title": "Base Behavior Decorator",
+  "description": "Base class for behavior tree decorators",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorDecorators/js/BaseBehaviorDecorator.js",
+  "fileName": "BaseBehaviorDecorator",
+  "parameters": {},
+  "memory": {}
+}

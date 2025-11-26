@@ -13,6 +13,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
     init() {
         this.game.gameManager.register('getActionByType', this.processor.getActionByType.bind(this.processor));
         this.game.gameManager.register('getBehaviorTreeByType', this.processor.getBehaviorTreeByType.bind(this.processor));
+        this.game.gameManager.register('getDecoratorByType', this.processor.getDecoratorByType.bind(this.processor));
     }
 
     /**

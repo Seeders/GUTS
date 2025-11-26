@@ -115,6 +115,10 @@
     {
       "collection": "behaviorActions",
       "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
     }
   ],
   "fileName": "game",

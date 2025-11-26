@@ -1,0 +1,8 @@
+{
+  "title": "Force Failure",
+  "description": "Always returns failure regardless of child result",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorDecorators/js/ForceFailureDecorator.js",
+  "fileName": "ForceFailureDecorator",
+  "childAction": null,
+  "parameters": {}
+}

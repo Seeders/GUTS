@@ -1,0 +1,8 @@
+{
+  "title": "Inverter",
+  "description": "Flips success to failure and failure to success",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorDecorators/js/InverterDecorator.js",
+  "fileName": "InverterDecorator",
+  "childAction": null,
+  "parameters": {}
+}

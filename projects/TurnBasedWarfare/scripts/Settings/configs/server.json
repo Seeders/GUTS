@@ -56,6 +56,7 @@
   "classes": [
     { "collection": "abilities", "baseClass": "BaseAbility" },
     { "collection": "behaviorTrees", "baseClass": "BaseBehaviorTree" },
-    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" }
+    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" },
+    { "collection": "behaviorDecorators", "baseClass": "BaseBehaviorDecorator" }
   ]
 }
