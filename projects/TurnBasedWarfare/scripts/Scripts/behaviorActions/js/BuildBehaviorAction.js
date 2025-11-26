@@ -123,18 +123,16 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const renderComponent = game.getComponent(buildingId, 'renderable');
         const unitType = game.getComponent(buildingId, 'unitType');
 
+            console.log('completed', buildingPlacement);
         // Restore building appearance
         if (renderComponent && buildingPlacement) {
             renderComponent.spawnType = buildingPlacement.unitType.id;
             game.gameManager.call('removeInstance', buildingId);
         }
 
-        // After removeInstance, the new building entity ID is in squadUnits[0]
-        const newBuildingId = buildingPlacement.squadUnits[0];
-
         // Add health component to the new building entity
         if (unitType) {
-            game.addComponent(newBuildingId, 'health', {
+            game.addComponent(buildingId, 'health', {
                 max: unitType.hp,
                 current: unitType.hp
             });
@@ -142,7 +140,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Register building with shop system using new entity ID
         if (game.shopSystem && buildingPlacement) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, newBuildingId);
+            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
         }
 
         // Update placement component - building is now complete
@@ -153,7 +151,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Change to idle animation on the new building entity
         if (game.animationSystem) {
-            game.animationSystem.changeAnimation(newBuildingId, 'idle', 1.0, 0);
+            game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }
     }
 
