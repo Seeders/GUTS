@@ -98,15 +98,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return null;
         }
 
-        // Add health component during construction (like main branch)
-        // This allows the building to have a health bar while being built
-        if (unitType) {
-            game.addComponent(buildingId, 'health', {
-                max: unitType.hp,
-                current: unitType.hp
-            });
-        }
-
         // Play building animation
         if (game.animationSystem) {
             const animState = game.animationSystem.entityAnimationStates.get(entityId);
@@ -142,39 +133,56 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     completeConstruction(entityId, buildingId, buildingPlacement, game) {
-        const renderComponent = game.getComponent(buildingId, 'renderable');
-
-        // Restore building appearance - change from underConstruction to actual building
-        if (renderComponent && buildingPlacement) {
-            renderComponent.spawnType = buildingPlacement.unitType.id;
-            game.gameManager.call('removeInstance', buildingId);
-        }
-
-        if (!buildingPlacement) {
+        if (!buildingPlacement || !buildingPlacement.unitType) {
+            console.error('[BuildBehaviorAction] Cannot complete construction - missing placement or unitType');
             return;
         }
 
-        // Ensure unitType component points to the actual building type (not underConstruction)
-        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
-        if (unitTypeComponent && buildingPlacement.unitType) {
-            // Update the unitType component with the actual building's unit type data
-            // This ensures selection and action panels work correctly
-            Object.assign(unitTypeComponent, buildingPlacement.unitType);
+        console.log(`[BuildBehaviorAction] Completing construction for building ${buildingId}, type: ${buildingPlacement.unitType.id}`);
+
+        // Get the actual building unit type from placement
+        const actualBuildingType = buildingPlacement.unitType;
+
+        // 1. Restore renderable component - change from underConstruction to actual building
+        const renderComponent = game.getComponent(buildingId, 'renderable');
+        if (renderComponent) {
+            console.log(`[BuildBehaviorAction] Changing spawnType from "${renderComponent.spawnType}" to "${actualBuildingType.id}"`);
+            renderComponent.spawnType = actualBuildingType.id;
+            // Remove instance to trigger re-spawn with correct model
+            game.gameManager.call('removeInstance', buildingId);
         }
 
-        // Update placement component - building is now complete
+        // 2. Restore health component (was removed during construction start)
+        const maxHP = actualBuildingType.hp || 100;
+        console.log(`[BuildBehaviorAction] Adding health component with ${maxHP} HP`);
+        game.addComponent(buildingId, 'health', {
+            max: maxHP,
+            current: maxHP
+        });
+
+        // 3. Update unitType component to ensure it has all the actual building's data
+        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
+        if (unitTypeComponent) {
+            console.log('[BuildBehaviorAction] Updating unitType component with actual building data');
+            Object.assign(unitTypeComponent, actualBuildingType);
+        }
+
+        // 4. Update placement component - building is now complete
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
 
-        // Register building with shop system (same buildingId - no new entity created)
+        // 5. Register building with shop system
         if (game.shopSystem) {
-            game.shopSystem.addBuilding(buildingPlacement.unitType.id, buildingId);
+            console.log(`[BuildBehaviorAction] Registering building with shop system`);
+            game.shopSystem.addBuilding(actualBuildingType.id, buildingId);
         }
 
-        // Change to idle animation
+        // 6. Change to idle animation
         if (game.animationSystem) {
             game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }
+
+        console.log(`[BuildBehaviorAction] Construction complete for building ${buildingId}`);
     }
 
     onEnd(entityId, game) {
