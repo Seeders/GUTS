@@ -43,7 +43,7 @@
   "behaviorActions": [
     "CombatBehaviorAction",
     "MoveBehaviorAction",
-    "AbilitiesTreeRootAction",
+    "AbilitiesBehaviorTree",
     "IdleBehaviorAction"
   ]
 }
