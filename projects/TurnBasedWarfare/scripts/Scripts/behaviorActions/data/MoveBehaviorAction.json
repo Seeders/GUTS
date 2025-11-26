@@ -1,9 +1,0 @@
-{
-  "title": "Move To Position",
-  "type": "MoveBehaviorAction",
-  "priority": 10,
-  "description": "Move unit to a target position",
-  "parameters": "{\"arrivalThreshold\":28}",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorActions/js/MoveBehaviorAction.js",
-  "fileName": "MoveBehaviorAction"
-}

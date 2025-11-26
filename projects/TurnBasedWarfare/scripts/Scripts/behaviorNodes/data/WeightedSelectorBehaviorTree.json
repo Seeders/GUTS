@@ -1,0 +1,12 @@
+{
+  "title": "Weighted Selector Behavior Tree",
+  "description": "Selects children based on weighted probabilities. Higher weight = higher selection chance.",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/WeightedSelectorBehaviorTree.js",
+  "fileName": "WeightedSelectorBehaviorTree",
+  "behaviorNodes": [],
+  "parameters": {
+    "weights": {},
+    "fallbackOnFail": true,
+    "normalizeWeights": true
+  }
+}

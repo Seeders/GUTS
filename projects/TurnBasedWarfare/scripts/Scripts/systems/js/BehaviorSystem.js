@@ -11,9 +11,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('getActionByType', this.processor.getActionByType.bind(this.processor));
-        this.game.gameManager.register('getBehaviorTreeByType', this.processor.getBehaviorTreeByType.bind(this.processor));
-        this.game.gameManager.register('getDecoratorByType', this.processor.getDecoratorByType.bind(this.processor));
+        // Unified node lookup
+        this.game.gameManager.register('getNodeByType', this.processor.getNodeByType.bind(this.processor));
+
+        // Legacy compatibility (all redirect to unified storage)
+        this.game.gameManager.register('getActionByType', this.processor.getNodeByType.bind(this.processor));
+        this.game.gameManager.register('getBehaviorTreeByType', this.processor.getNodeByType.bind(this.processor));
+        this.game.gameManager.register('getDecoratorByType', this.processor.getNodeByType.bind(this.processor));
+
         this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
         this.game.gameManager.register('getDebugger', this.processor.getDebugger.bind(this.processor));
     }
@@ -28,7 +33,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Also notify trees
         const entities = this.getBehaviorEntities();
         for (const entityId of entities) {
-            this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
+            this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
             if (this.rootTree) {
                 this.rootTree.onBattleEnd(entityId, this.game);
             }
@@ -66,7 +71,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
+        this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
         if (!this.rootTree) {
             return;
         }
@@ -92,11 +97,11 @@ class BehaviorSystem extends GUTS.BaseSystem {
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
             if (aiState.currentAction) {
-                const executor = this.processor.getActionByType(aiState.currentAction);
+                const executor = this.processor.getNodeByType(aiState.currentAction);
                 console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
-            this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
+            this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
             if (this.rootTree) {
                 this.rootTree.onPlacementPhaseStart(entityId, this.game);
             }
@@ -128,7 +133,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         // End current action if switching to a different one
         if (isNewAction && aiState.currentAction) {
-            const currentExecutor = this.processor.getActionByType(aiState.currentAction);
+            const currentExecutor = this.processor.getNodeByType(aiState.currentAction);
             if (currentExecutor) {
                 currentExecutor.onEnd(entityId, this.game);
             }
@@ -145,7 +150,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         // Only call onStart for new actions
         if (isNewAction) {
-            const newExecutor = this.processor.getActionByType(aiState.currentAction);
+            const newExecutor = this.processor.getNodeByType(aiState.currentAction);
             if (newExecutor && newExecutor.onStart) {
                 newExecutor.onStart(entityId, this.game);
             }

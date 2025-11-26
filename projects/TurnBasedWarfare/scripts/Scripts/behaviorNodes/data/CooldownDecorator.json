@@ -1,0 +1,14 @@
+{
+  "title": "Cooldown",
+  "description": "Prevents child action from running more frequently than specified",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/CooldownDecorator.js",
+  "fileName": "CooldownDecorator",
+  "childAction": null,
+  "parameters": {
+    "cooldownTime": 1,
+    "failOnCooldown": true
+  },
+  "memory": {
+    "lastExecution": 0
+  }
+}

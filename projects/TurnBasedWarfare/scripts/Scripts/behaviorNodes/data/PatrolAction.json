@@ -1,0 +1,13 @@
+{
+  "title": "Patrol",
+  "description": "Moves between waypoints in a patrol pattern",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/PatrolAction.js",
+  "fileName": "PatrolAction",
+  "parameters": {
+    "waypoints": [],
+    "waypointsKey": null,
+    "waitTime": 1000,
+    "loop": true,
+    "arrivalDistance": 20
+  }
+}

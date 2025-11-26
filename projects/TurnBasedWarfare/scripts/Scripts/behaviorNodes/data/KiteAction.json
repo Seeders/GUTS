@@ -1,0 +1,12 @@
+{
+  "title": "Kite",
+  "description": "Attack-and-retreat pattern for ranged units",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/KiteAction.js",
+  "fileName": "KiteAction",
+  "parameters": {
+    "targetKey": "target",
+    "optimalRange": null,
+    "minRange": 60,
+    "backoffDistance": 80
+  }
+}
