@@ -1,6 +1,12 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        // Skip if MoveBehaviorAction is already handling this order
+        const aiState = game.getComponent(entityId, 'aiState');
+        if (aiState && aiState.meta && aiState.meta.handledByMove) {
+            return null;
+        }
+
         // Read from playerOrder component (like MoveBehaviorAction)
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {

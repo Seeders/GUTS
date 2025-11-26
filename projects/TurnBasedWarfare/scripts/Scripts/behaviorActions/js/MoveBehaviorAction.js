@@ -6,11 +6,6 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
             return null;
         }
 
-        // Skip if this is a building order - let BuildBehaviorAction handle it
-        if (playerOrder.meta && playerOrder.meta.buildingId) {
-            return null;
-        }
-
         const targetPosition = playerOrder.targetPosition;
 
         if(targetPosition) {
@@ -21,13 +16,15 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
             if (distanceToTarget <= this.parameters.arrivalThreshold) {
                 reachedTarget = true;
             }
-            
+
             // MovementSystem will handle movement to target
+            // Set flag so other actions know we're handling this order
             return {
-                targetPosition: targetPosition, 
+                targetPosition: targetPosition,
                 reachedTarget,
                 distanceToTarget,
-                preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false
+                preventEnemiesInRangeCheck: playerOrder.meta.preventEnemiesInRangeCheck || false,
+                handledByMove: true
             };
         }
         return null;
