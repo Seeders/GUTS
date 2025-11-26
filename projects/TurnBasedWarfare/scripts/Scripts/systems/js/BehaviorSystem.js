@@ -2,93 +2,24 @@ class BehaviorSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.behaviorSystem = this;
-        // Register action executors
-        this.actions = new Map();
 
-        // Register behavior trees by unit type
-        this.behaviorTrees = new Map();
+        // Use shared BehaviorTreeProcessor for all behavior tree logic
+        this.processor = new GUTS.BehaviorTreeProcessor(game);
+        this.processor.initializeFromCollections(game.collections);
 
         this.rootTree = null;
-        // Initialize from collections
-        this.initializeFromCollections();
     }
 
     init() {
-        this.game.gameManager.register('getActionByType', this.getActionByType.bind(this));
-        this.game.gameManager.register('getBehaviorTreeByType', this.getBehaviorTreeByType.bind(this));
-    }
-
-    getActionByType(type) {
-        return this.actions.get(type);
-    }
-    getBehaviorTreeByType(type) {
-        return this.behaviorTrees.get(type);
-    }
-
-    /**
-     * Load actions and behavior trees from game collections
-     */
-    initializeFromCollections() {
-        const collections = this.game.collections;
-
-        // Register behavior actions (not UI actions)
-        if (collections.behaviorActions) {
-            Object.entries(collections.behaviorActions).forEach(([behaviorActionId, actionData]) => {
-                this.registerActionFromData(behaviorActionId, actionData);
-            });
-        }
-
-        // Register behavior trees
-        if (collections.behaviorTrees) {
-            Object.entries(collections.behaviorTrees).forEach(([treeId, treeData]) => {
-                this.registerBehaviorTreeFromData(treeId, treeData);
-            });
-        }
-    }
-
-    /**
-     * Register an action executor from collection data
-     */
-    registerActionFromData(behaviorActionId, actionData) {
-        // The action class should be compiled and available via game context or global scope
-        // behaviorActionId is the collection key (e.g., "MoveBehaviorAction")
-        const ActionClass = GUTS[behaviorActionId];
-
-        if (ActionClass) {
-            const actionInstance = new ActionClass(this.game, actionData);
-            // Use the collection key (behaviorActionId) for registration
-            this.actions.set(behaviorActionId, actionInstance);
-            console.log(`Registered behavior action: ${behaviorActionId}`);
-        } else {
-            console.warn(`Action class not found for: ${behaviorActionId}`);
-        }
-    }
-
-    /**
-     * Register a behavior tree from collection data
-     */
-    registerBehaviorTreeFromData(treeId, treeData) {
-        // The tree class should be compiled and available via game context or global scope
-        // treeId is typically already the class name (e.g., "FootmanBehaviorTree")
-        const TreeClass = GUTS[treeId];
-
-        if (TreeClass) {
-            const treeInstance = new TreeClass(this.game, treeData);   
-            this.behaviorTrees.set(treeId, treeInstance);    
-        } else {
-            console.warn(`Behavior tree class not found for: ${treeId}`);
-        }
+        this.game.gameManager.register('getActionByType', this.processor.getActionByType.bind(this.processor));
+        this.game.gameManager.register('getBehaviorTreeByType', this.processor.getBehaviorTreeByType.bind(this.processor));
     }
 
     /**
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
-        // Get all entities with aiState (AI-controlled units)
         const entities = this.getBehaviorEntities();
-
-        // Sort for determinism
-        entities.sort((a, b) => String(a).localeCompare(String(b)));
 
         for (const entityId of entities) {
             this.updateUnit(entityId, dt);
@@ -104,58 +35,49 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        this.rootTree = this.behaviorTrees.get('UniversalBehaviorTree');
+        this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
         if (!this.rootTree) {
-            // No behavior tree for this unit type, skip
             return;
         }
 
         // Evaluate behavior tree to get desired action
-        const desiredAction = this.rootTree.evaluate(entityId, this.game);
-  
+        const desiredAction = this.processor.evaluate('UniversalBehaviorTree', entityId);
+
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
             this.switchAction(entityId, aiState, desiredAction);
         }
-
-       
     }
 
     getBehaviorEntities() {
         const entities = this.game.getEntitiesWith("aiState", "unitType");
-
-        // Sort for determinism
         entities.sort((a, b) => String(a).localeCompare(String(b)));
-
         return entities;
     }
 
     onPlacementPhaseStart() {
         const entities = this.getBehaviorEntities();
 
-        // Sort for determinism
-        entities.sort((a, b) => String(a).localeCompare(String(b)));
-
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
-            if(aiState.currentAction){
-                const executor = this.actions.get(aiState.currentAction);
+            if (aiState.currentAction) {
+                const executor = this.processor.getActionByType(aiState.currentAction);
                 console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
-            this.rootTree.onPlacementPhaseStart(entityId, this.game);
+            this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
+            if (this.rootTree) {
+                this.rootTree.onPlacementPhaseStart(entityId, this.game);
+            }
         }
     }
+
     /**
      * Determine if we should switch from current action to desired action
      */
     shouldSwitchAction(aiState, desiredAction) {
-        // No desired action, don't switch
         if (!desiredAction || !desiredAction.action || !desiredAction.meta) return false;
-
-        // No current action, start new one
         if (!aiState.currentAction) return true;
-
         return true;
     }
 
@@ -165,24 +87,23 @@ class BehaviorSystem extends GUTS.BaseSystem {
     switchAction(entityId, aiState, desiredAction) {
         // End current action
         if (aiState.currentAction) {
-            const currentExecutor = this.actions.get(aiState.currentAction);
+            const currentExecutor = this.processor.getActionByType(aiState.currentAction);
             if (currentExecutor) {
                 currentExecutor.onEnd(entityId, this.game);
             }
         }
 
-        // Start new action - store as object with type property
+        // Start new action
         aiState.currentAction = desiredAction.action;
         aiState.meta = desiredAction.meta;
-        while(aiState.meta.meta && aiState.meta.action){        
+        while (aiState.meta.meta && aiState.meta.action) {
             aiState.currentAction = desiredAction.meta.action;
             aiState.meta = desiredAction.meta.meta;
         }
 
-        const newExecutor = this.actions.get(aiState.currentAction);
+        const newExecutor = this.processor.getActionByType(aiState.currentAction);
         if (newExecutor && newExecutor.onStart) {
             newExecutor.onStart(entityId, this.game);
         }
     }
-
 }

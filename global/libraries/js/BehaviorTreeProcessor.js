@@ -1,91 +1,120 @@
 /**
- * Shared Behavior Tree Processor
- * Used by both the game (BehaviorSystem) and editor (simulation)
- *
- * This is a thin wrapper that finds and instantiates behavior tree classes,
- * then delegates to BaseBehaviorTree.evaluate() for actual evaluation.
- * The same BaseBehaviorTree class is used in both runtime and editor.
+ * Behavior Tree Processor
+ * Single source of truth for behavior tree evaluation
+ * Used by both BehaviorSystem (runtime) and BehaviorTreeEditor (simulation)
  */
 class BehaviorTreeProcessor {
+    constructor(game) {
+        this.game = game;
+        this.actions = new Map();
+        this.behaviorTrees = new Map();
+    }
+
     /**
-     * Evaluate a behavior tree and return the selected action
-     * @param {Object} treeData - The full behavior tree data (including behaviorActions array)
-     * @param {Object|MockGameContext} gameContext - Game context with ECS methods and gameManager
-     * @param {string} rootNode - Unused (kept for backward compatibility)
-     * @param {string} entityId - Entity ID to evaluate for
-     * @returns {Object} - { success: boolean, action: string, target: any, priority: number, activePath: string[] }
+     * Initialize from collections (call after construction)
+     * @param {Object} collections - Game collections with behaviorActions and behaviorTrees
      */
-    static evaluate(treeData, gameContext, rootNode = 'root', entityId = null) {
-        // Find and instantiate the behavior tree class
-        const TreeClass = this.findTreeClass(treeData);
+    initializeFromCollections(collections) {
+        // Register behavior actions
+        if (collections.behaviorActions) {
+            Object.entries(collections.behaviorActions).forEach(([actionId, actionData]) => {
+                this.registerAction(actionId, actionData);
+            });
+        }
+
+        // Register behavior trees
+        if (collections.behaviorTrees) {
+            Object.entries(collections.behaviorTrees).forEach(([treeId, treeData]) => {
+                this.registerBehaviorTree(treeId, treeData);
+            });
+        }
+    }
+
+    /**
+     * Register an action executor
+     * @param {string} actionId - Action class name (e.g., "CombatBehaviorAction")
+     * @param {Object} actionData - Action configuration data
+     */
+    registerAction(actionId, actionData) {
+        const ActionClass = GUTS[actionId];
+
+        if (ActionClass) {
+            const actionInstance = new ActionClass(this.game, actionData);
+            this.actions.set(actionId, actionInstance);
+            console.log(`Registered behavior action: ${actionId}`);
+        } else {
+            console.warn(`Action class not found for: ${actionId}`);
+        }
+    }
+
+    /**
+     * Register a behavior tree
+     * @param {string} treeId - Tree class name (e.g., "UniversalBehaviorTree")
+     * @param {Object} treeData - Tree configuration data
+     */
+    registerBehaviorTree(treeId, treeData) {
+        const TreeClass = GUTS[treeId];
+
+        if (TreeClass) {
+            const treeInstance = new TreeClass(this.game, treeData);
+            this.behaviorTrees.set(treeId, treeInstance);
+        } else {
+            console.warn(`Behavior tree class not found for: ${treeId}`);
+        }
+    }
+
+    /**
+     * Get a registered action by type
+     * @param {string} type - Action type name
+     * @returns {Object} Action instance
+     */
+    getActionByType(type) {
+        return this.actions.get(type);
+    }
+
+    /**
+     * Get a registered behavior tree by type
+     * @param {string} type - Tree type name
+     * @returns {Object} Tree instance
+     */
+    getBehaviorTreeByType(type) {
+        return this.behaviorTrees.get(type);
+    }
+
+    /**
+     * Evaluate a registered behavior tree for an entity
+     * @param {string} treeId - The behavior tree ID to evaluate
+     * @param {string} entityId - Entity to evaluate for
+     * @returns {Object|null} Action result from tree evaluation
+     */
+    evaluate(treeId, entityId) {
+        const tree = this.behaviorTrees.get(treeId);
+        if (!tree) {
+            console.warn(`Behavior tree not found: ${treeId}`);
+            return null;
+        }
+
+        return tree.evaluate(entityId, this.game);
+    }
+
+    /**
+     * Evaluate a behavior tree from data (for editor simulation)
+     * @param {Object} treeData - Tree configuration with fileName and behaviorActions
+     * @param {string} entityId - Entity to evaluate for
+     * @returns {Object|null} Action result from tree evaluation
+     */
+    evaluateTreeData(treeData, entityId) {
+        const treeId = treeData.fileName;
+        const TreeClass = GUTS[treeId];
 
         if (!TreeClass) {
-            console.warn(`Behavior tree script not found: ${treeData.fileName}`);
-            return { success: false, action: null, activePath: [] };
+            console.warn(`Behavior tree class not found: ${treeId}`);
+            return null;
         }
 
-        // Instantiate the tree with game context and config (same as BehaviorSystem does)
-        // treeData contains behaviorActions array which BaseBehaviorTree.evaluate() uses
-        const tree = new TreeClass(gameContext, treeData);
-
-        // Use mock entity ID if not provided
-        if (!entityId) {
-            entityId = gameContext.currentEntityId || Array.from(gameContext.entities?.keys() || [])[0] || 'mock-entity-1';
-        }
-
-        // Evaluate the tree using BaseBehaviorTree.evaluate()
-        // This iterates through config.behaviorActions - same code path as runtime
-        const result = tree.evaluate(entityId, gameContext);
-
-        // Convert the result to our standard format
-        return {
-            success: result !== null && result.action !== null,
-            action: result ? result.action : null,
-            target: result ? result.target : null,
-            priority: result ? result.priority : 0,
-            data: result ? result.data : null,
-            activePath: result ? result.activePath : []
-        };
-    }
-
-    /**
-     * Find the behavior tree class by name
-     * @param {Object} treeData - Tree data with fileName property
-     * @returns {Function|null} - The tree class constructor or null
-     */
-    static findTreeClass(treeData) {
-        const scriptName = treeData.fileName;
-
-        // Try GUTS.behaviorTrees collection first
-        if (typeof GUTS !== 'undefined' && GUTS.behaviorTrees && GUTS.behaviorTrees[scriptName]) {
-            return GUTS.behaviorTrees[scriptName];
-        }
-
-        // Try GUTS global (e.g., GUTS.UniversalBehaviorTree)
-        if (typeof GUTS !== 'undefined' && GUTS[scriptName]) {
-            return GUTS[scriptName];
-        }
-
-        // Try window global with BehaviorTree suffix (e.g., PeasantBehaviorTree)
-        const className = this.capitalize(scriptName) + 'BehaviorTree';
-        if (typeof window !== 'undefined' && window[className]) {
-            return window[className];
-        }
-
-        // Try window global with exact name
-        if (typeof window !== 'undefined' && window[scriptName]) {
-            return window[scriptName];
-        }
-
-        return null;
-    }
-
-    /**
-     * Capitalize first letter
-     * @private
-     */
-    static capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
+        // Create tree instance with current data (may differ from collections)
+        const tree = new TreeClass(this.game, treeData);
+        return tree.evaluate(entityId, this.game);
     }
 }
 
@@ -94,7 +123,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = BehaviorTreeProcessor;
 }
 
-// Also make available on GUTS global if it exists
+// Make available on GUTS global
 if (typeof GUTS !== 'undefined') {
     GUTS.BehaviorTreeProcessor = BehaviorTreeProcessor;
 }

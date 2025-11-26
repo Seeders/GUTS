@@ -15,16 +15,14 @@ class MockGameContext extends GUTS.BaseECSGame {
         this.componentGenerator = new GUTS.ComponentGenerator(app.getCollections().components);
         this.collections = app.getCollections();
 
+        // Use shared BehaviorTreeProcessor (same as BehaviorSystem)
+        this.processor = new GUTS.BehaviorTreeProcessor(this);
+        this.processor.initializeFromCollections(this.collections);
+
         // Initialize gameManager with GameServices
         this.gameManager = new GUTS.GameServices();
         this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
-
-        // Register getActionByType - needed by BaseBehaviorTree.evaluate()
-        this.gameManager.register("getActionByType", (actionName) => {
-            return this.getActionByType(actionName);
-        });
-
-        // Register getPlacementGridSize - needed by BaseBehaviorTree.evaluate()
+        this.gameManager.register("getActionByType", this.processor.getActionByType.bind(this.processor));
         this.gameManager.register("getPlacementGridSize", () => {
             return { width: 100, height: 100 }; // Mock grid size
         });
@@ -104,44 +102,9 @@ class MockGameContext extends GUTS.BaseECSGame {
      * @returns {MockGameContext} - Mock game context instance
      */
     static fromBehaviorTreeData(behaviorTreeData, app = null) {
-        // Support both new mockEntities (array) and legacy mockEntity (object)
         const mockData = behaviorTreeData.mockEntities.entities;
         console.log('reset with', behaviorTreeData.mockEntities, mockData);
         return new MockGameContext(mockData, app);
-    }
-
-    /**
-     * Get a behavior action instance by type name
-     * Mirrors what BehaviorSystem does at runtime
-     * @param {string} actionName - Name of the action (e.g., "CombatBehaviorAction")
-     * @returns {Object} - Action instance with execute() method
-     */
-    getActionByType(actionName) {
-        // Try to find the action class
-        let ActionClass = null;
-
-        // Check GUTS.behaviorActions
-        if (typeof GUTS !== 'undefined' && GUTS.behaviorActions && GUTS.behaviorActions[actionName]) {
-            ActionClass = GUTS.behaviorActions[actionName];
-        }
-        // Check window global
-        else if (typeof window !== 'undefined' && window[actionName]) {
-            ActionClass = window[actionName];
-        }
-
-        if (!ActionClass) {
-            console.warn(`Action class not found: ${actionName}`);
-            // Return a mock action that returns null
-            return {
-                execute: () => null
-            };
-        }
-
-        // Get action config from collections if available
-        const actionConfig = this.collections?.behaviorActions?.[actionName] || {};
-
-        // Instantiate the action with config (like BehaviorSystem does)
-        return new ActionClass(actionConfig);
     }
 
     /**

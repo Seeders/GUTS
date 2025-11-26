@@ -1031,8 +1031,7 @@ class BehaviorTreeEditor {
     }
 
     runSimulation() {
-        if (!GUTS || !GUTS.BehaviorTreeProcessor) return;
-        if (!this.mockGame) return;
+        if (!this.mockGame || !this.mockGame.processor) return;
 
         // Evaluate behavior tree only for the main entity (first entity)
         const results = [];
@@ -1040,10 +1039,9 @@ class BehaviorTreeEditor {
 
         if (entityIds.length > 0) {
             const mainEntityId = entityIds[0];
-            const result = GUTS.BehaviorTreeProcessor.evaluate(
+            // Use processor's evaluateTreeData with current editor data
+            const result = this.mockGame.processor.evaluateTreeData(
                 this.objectData,
-                this.mockGame,
-                'root',
                 mainEntityId
             );
             results.push({
