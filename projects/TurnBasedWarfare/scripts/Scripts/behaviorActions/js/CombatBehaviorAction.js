@@ -1,6 +1,12 @@
 class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        // Check if player order prevents combat (build orders, force move)
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (playerOrder?.meta?.preventCombat) {
+            return null;
+        }
+
         const aiState = game.getComponent(entityId, 'aiState');
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');

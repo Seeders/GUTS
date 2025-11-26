@@ -41,7 +41,8 @@ class BuildAbility extends GUTS.BaseAbility {
         if (playerOrder) {
             playerOrder.meta = {
                 buildingId: buildingEntityId,
-                buildingPosition: buildingPos
+                buildingPosition: buildingPos,
+                preventCombat: true  // Builder should not be interrupted by combat
             };
             playerOrder.targetPosition = buildingPos;
             playerOrder.issuedTime = this.game.state.now;

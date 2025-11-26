@@ -192,7 +192,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
     }
     moveOrderAction() {
-        this.startTargeting({preventEnemiesInRangeCheck: true});
+        this.startTargeting({preventEnemiesInRangeCheck: true, preventCombat: true});
     }
 
     startTargeting(meta = {}) {
