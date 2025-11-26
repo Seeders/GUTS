@@ -46,13 +46,12 @@ class BaseBehaviorAction {
 
     /**
      * Get shared data for an entity (shared state between all behavior nodes)
-     * Uses aiState.shared at runtime, falls back to blackboard for editor simulation
+     * Uses aiState.shared component for ECS-friendly shared state
      * @param {string} entityId - Entity ID
      * @param {object} game - Game instance
      * @returns {Object} Shared data object
      */
     getShared(entityId, game) {
-        // Try to use aiState.shared (ECS component approach)
         const aiState = game.getComponent(entityId, 'aiState');
         if (aiState) {
             if (!aiState.shared) {
@@ -60,10 +59,7 @@ class BaseBehaviorAction {
             }
             return aiState.shared;
         }
-
-        // Fallback to blackboard (for editor simulation without real entities)
-        const blackboard = game.gameManager.call('getBlackboard', entityId);
-        return blackboard ? blackboard.variables : {};
+        return {};
     }
 
     /**
