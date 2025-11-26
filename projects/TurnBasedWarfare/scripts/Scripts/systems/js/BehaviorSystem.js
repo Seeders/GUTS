@@ -66,7 +66,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        this.rootTree = this.processor.getBehaviorTreeByType('UniversalBehaviorTree');
+        this.rootTree = this.processor.getBehaviorTreeByType('SelectBehaviorTree');
         if (!this.rootTree) {
             return;
         }
