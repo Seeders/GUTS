@@ -1021,26 +1021,6 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
                 const health = this.game.getComponent(entityId, "health");
                 const deathState = this.game.getComponent(entityId, "deathState");
                 const buildingState = this.game.getComponent(entityId, "buildingState");
-                const placementComponent = this.game.getComponent(entityId, "placement");
-
-                // Keep buildings that are under construction (they have no health during construction)
-                if (placementComponent && placementComponent.isUnderConstruction) {
-                    // Sync the flag to the placement array object for consistency
-                    placement.isUnderConstruction = true;
-                    return true;
-                }
-
-                // Keep completed buildings (they're in the buildings collection)
-                // Buildings are considered alive if they exist as entities
-                if (placement.collection === 'buildings') {
-                    // Clear the under construction flag if building is complete
-                    if (placementComponent && !placementComponent.isUnderConstruction) {
-                        placement.isUnderConstruction = false;
-                    }
-                    // Building is alive if it has health > 0, OR if it's still being constructed
-                    return (health && health.current > 0) || (placementComponent && placementComponent.isUnderConstruction);
-                }
-
                 if(buildingState) return true;
                 return health && health.current > 0 && (!deathState || !deathState.isDying);
             });
