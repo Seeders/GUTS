@@ -8,17 +8,25 @@ class BehaviorTreeProcessor {
         this.game = game;
         this.actions = new Map();
         this.behaviorTrees = new Map();
+        this.decorators = new Map();
     }
 
     /**
      * Initialize from collections (call after construction)
-     * @param {Object} collections - Game collections with behaviorActions and behaviorTrees
+     * @param {Object} collections - Game collections with behaviorActions, behaviorTrees, and behaviorDecorators
      */
     initializeFromCollections(collections) {
         // Register behavior actions
         if (collections.behaviorActions) {
             Object.entries(collections.behaviorActions).forEach(([actionId, actionData]) => {
                 this.registerAction(actionId, actionData);
+            });
+        }
+
+        // Register behavior decorators
+        if (collections.behaviorDecorators) {
+            Object.entries(collections.behaviorDecorators).forEach(([decoratorId, decoratorData]) => {
+                this.registerDecorator(decoratorId, decoratorData);
             });
         }
 
@@ -44,6 +52,23 @@ class BehaviorTreeProcessor {
             console.log(`Registered behavior action: ${actionId}`);
         } else {
             console.warn(`Action class not found for: ${actionId}`);
+        }
+    }
+
+    /**
+     * Register a decorator
+     * @param {string} decoratorId - Decorator class name (e.g., "CooldownDecorator")
+     * @param {Object} decoratorData - Decorator configuration data
+     */
+    registerDecorator(decoratorId, decoratorData) {
+        const DecoratorClass = GUTS[decoratorId];
+
+        if (DecoratorClass) {
+            const decoratorInstance = new DecoratorClass(this.game, decoratorData);
+            this.decorators.set(decoratorId, decoratorInstance);
+            console.log(`Registered behavior decorator: ${decoratorId}`);
+        } else {
+            console.warn(`Decorator class not found for: ${decoratorId}`);
         }
     }
 
@@ -79,6 +104,15 @@ class BehaviorTreeProcessor {
      */
     getBehaviorTreeByType(type) {
         return this.behaviorTrees.get(type);
+    }
+
+    /**
+     * Get a registered decorator by type
+     * @param {string} type - Decorator type name
+     * @returns {Object} Decorator instance
+     */
+    getDecoratorByType(type) {
+        return this.decorators.get(type);
     }
 
     /**
