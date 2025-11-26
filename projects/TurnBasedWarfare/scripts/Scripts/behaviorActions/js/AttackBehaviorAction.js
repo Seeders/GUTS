@@ -125,22 +125,19 @@ class AttackBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!game.schedulingSystem) return;
 
         const launchDelay = (1 / combat.attackSpeed) * 0.5;
-        game.schedulingSystem.scheduleEvent({
-            time: game.state.now + launchDelay,
-            callback: () => {
-                const targetHealth = game.getComponent(targetId, 'health');
-                if (targetHealth && targetHealth.current > 0) {
-                    // Get projectile data from collections
-                    const projectileData = game.getCollections().projectiles[combat.projectile];
-                    if (projectileData) {
-                        game.gameManager.call('fireProjectile', attackerId, targetId, {
-                            id: combat.projectile,
-                            ...projectileData
-                        });
-                    }
+        game.schedulingSystem.scheduleAction(() => {
+            const targetHealth = game.getComponent(targetId, 'health');
+            if (targetHealth && targetHealth.current > 0) {
+                // Get projectile data from collections
+                const projectileData = game.getCollections().projectiles[combat.projectile];
+                if (projectileData) {
+                    game.gameManager.call('fireProjectile', attackerId, targetId, {
+                        id: combat.projectile,
+                        ...projectileData
+                    });
                 }
             }
-        });
+        }, launchDelay, attackerId);
     }
 
     calculateAnimationSpeed(attackerId, game, baseAttackSpeed) {
