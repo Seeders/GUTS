@@ -39,7 +39,15 @@ class ShopSystem extends GUTS.BaseSystem {
     onUnitSelected(entityId){
         const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "buildings") {
-            const placement = this.game.getComponent(entityId, "placement");        
+            const placement = this.game.getComponent(entityId, "placement");
+
+            // Ensure completed buildings are registered with ShopSystem
+            // This handles cases where construction completed but addBuilding wasn't called
+            // (e.g., client syncing state from server where ShopSystem doesn't exist)
+            if (placement && !placement.isUnderConstruction && !this.buildingProductionProgress.has(entityId)) {
+                this.addBuilding(unitType.id, entityId);
+            }
+
             this.renderBuildingActions(placement);
         }
     }

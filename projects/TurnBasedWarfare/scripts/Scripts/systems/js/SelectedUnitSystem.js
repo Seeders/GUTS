@@ -355,35 +355,53 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     getPlacementAtWorldPosition(worldPos) {
-        const clickRadius = 30;
+        const clickRadius = 50; // Increased for better building selection
         let closestPlacementId = null;
+        let closestEntityId = null;
         let closestDistance = clickRadius;
-        
+
         const entities = this.game.getEntitiesWith(
             "position",
             "placement"
         );
-        
+
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, "position");
             const placement = this.game.getComponent(entityId, "placement");
             const unitType = this.game.getComponent(entityId, "unitType");
-            
+
+            if (!pos || !placement) return;
+
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;
             let distance = Math.sqrt(dx * dx + dz * dz);
-            
-            if(unitType.size) {
+
+            // Adjust distance based on unit/building size
+            if(unitType && unitType.size) {
                 distance -= unitType.size;
             }
-                
 
             if (distance < closestDistance) {
                 closestDistance = distance;
+                closestEntityId = entityId;
+                // Use placementId if available, otherwise construct from entity's placement
                 closestPlacementId = placement.placementId;
             }
         });
-        
+
+        // If we found an entity but no placementId, try to find it from playerPlacements
+        if (closestEntityId && !closestPlacementId) {
+            const placements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide);
+            if (placements) {
+                for (const placement of placements) {
+                    if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {
+                        closestPlacementId = placement.placementId;
+                        break;
+                    }
+                }
+            }
+        }
+
         return closestPlacementId;
     }
 
