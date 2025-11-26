@@ -41,9 +41,9 @@
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/UniversalBehaviorTree.js",
   "fileName": "UniversalBehaviorTree",
   "behaviorActions": [
-    "MoveBehaviorAction",
     "AbilitiesTreeRootAction",
     "CombatBehaviorAction",
+    "MoveBehaviorAction",
     "IdleBehaviorAction"
   ]
 }
