@@ -275,8 +275,8 @@ class GoldMineSystem extends GUTS.BaseSystem {
     // Process next miner in queue when mine becomes available
     processNextInQueue(mineEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-         if (goldMine.minerQueue.length === 0) {
-            goldMine.currentMiner = null;
+        goldMine.currentMiner = null;
+        if (goldMine.minerQueue.length === 0) {
             return;
         }
 
