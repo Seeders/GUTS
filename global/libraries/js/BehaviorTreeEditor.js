@@ -123,27 +123,40 @@ class BehaviorTreeEditor {
     }
 
     addActionToTree(behaviorActionId) {
-        if (!this.objectData || !this.objectData.behaviorActions) {
-            alert('Cannot add actions to this tree type');
+        if (!this.objectData) {
+            alert('Cannot add actions - no tree data loaded');
             return;
         }
 
-        if (this.objectData.behaviorActions.includes(behaviorActionId)) {
+        // Get the child nodes array (either behaviorActions or behaviorNodes)
+        const childNodes = this.getChildNodes(this.objectData);
+        const arrayKey = this.getChildNodesKey(this.objectData);
+
+        // If no array exists, create one
+        if (!this.objectData[arrayKey]) {
+            this.objectData[arrayKey] = [];
+        }
+
+        if (this.objectData[arrayKey].includes(behaviorActionId)) {
             alert('Action already in tree');
             return;
         }
 
-        this.objectData.behaviorActions.push(behaviorActionId);
+        this.objectData[arrayKey].push(behaviorActionId);
         this.renderTree();
         this.updateJSONView();
     }
 
     removeActionFromTree(behaviorActionId) {
-        if (!this.objectData || !this.objectData.behaviorActions) return;
+        if (!this.objectData) return;
 
-        const index = this.objectData.behaviorActions.indexOf(behaviorActionId);
+        const arrayKey = this.getChildNodesKey(this.objectData);
+        const childNodes = this.objectData[arrayKey];
+        if (!childNodes) return;
+
+        const index = childNodes.indexOf(behaviorActionId);
         if (index > -1) {
-            this.objectData.behaviorActions.splice(index, 1);
+            childNodes.splice(index, 1);
             this.renderTree();
             this.updateJSONView();
         }
@@ -163,18 +176,131 @@ class BehaviorTreeEditor {
             return;
         }
 
-        // Render behaviorActions array
-        if (this.objectData.behaviorActions && Array.isArray(this.objectData.behaviorActions)) {
-            this.renderBehaviorActionsTree(canvas);
+        // Get child nodes - support both behaviorActions and behaviorNodes array names
+        const childNodes = this.getChildNodes(this.objectData);
+
+        // Render behaviorActions/behaviorNodes array
+        if (childNodes && Array.isArray(childNodes) && childNodes.length > 0) {
+            this.renderBehaviorActionsTree(canvas, childNodes);
             return;
         }
 
-        // No behaviorActions array found
-        canvas.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No behaviorActions array defined in this tree</div>';
+        // Check for decorator with single child
+        if (this.objectData.childAction !== undefined) {
+            this.renderDecoratorTree(canvas);
+            return;
+        }
+
+        // No child nodes found
+        canvas.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No behaviorActions/behaviorNodes array or childAction defined in this node</div>';
     }
 
-    renderBehaviorActionsTree(canvas) {
-        const behaviorActions = this.objectData.behaviorActions;
+    /**
+     * Get child nodes from object data - supports both behaviorActions and behaviorNodes
+     */
+    getChildNodes(data) {
+        return data.behaviorActions || data.behaviorNodes || [];
+    }
+
+    /**
+     * Get the child nodes array key name used by this object
+     */
+    getChildNodesKey(data) {
+        if (data.behaviorActions) return 'behaviorActions';
+        if (data.behaviorNodes) return 'behaviorNodes';
+        return 'behaviorActions'; // default
+    }
+
+    /**
+     * Determine node type from node data
+     */
+    getNodeType(nodeData) {
+        if (!nodeData) return 'action';
+
+        // Has childAction = decorator
+        if (nodeData.childAction !== undefined) {
+            return 'decorator';
+        }
+
+        // Has child nodes array = composite
+        const childNodes = this.getChildNodes(nodeData);
+        if (childNodes && Array.isArray(childNodes) && childNodes.length > 0) {
+            // Check if it's a sequence based on class name or fileName
+            const fileName = nodeData.fileName || '';
+            if (fileName.toLowerCase().includes('sequence')) {
+                return 'sequence';
+            }
+            if (fileName.toLowerCase().includes('parallel')) {
+                return 'parallel';
+            }
+            return 'selector';
+        }
+
+        // Check fileName for hints even without children
+        const fileName = nodeData.fileName || '';
+        if (fileName.includes('Sequence')) return 'sequence';
+        if (fileName.includes('Decorator')) return 'decorator';
+        if (fileName.includes('Parallel')) return 'parallel';
+        if (fileName.includes('Selector') || fileName.includes('Tree')) return 'selector';
+
+        // Default to action (leaf node)
+        return 'action';
+    }
+
+    /**
+     * Render a decorator with its single child
+     */
+    renderDecoratorTree(canvas) {
+        const childAction = this.objectData.childAction;
+
+        canvas.innerHTML = `
+            <div id="bt-graph-container" style="padding: 20px; overflow: auto;">
+                <svg id="bt-graph-svg" width="100%" height="250" style="background: #0a0a0a; border-radius: 4px;"></svg>
+                <div id="bt-action-controls" style="margin-top: 15px;">
+                    <div style="color: #888; font-size: 12px;">
+                        💡 This decorator wraps a single child action. Set the childAction property in JSON to change.
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const svg = document.getElementById('bt-graph-svg');
+        if (!svg) return;
+
+        const nodeWidth = 180;
+        const nodeHeight = 50;
+        const verticalSpacing = 80;
+        const svgWidth = Math.max(400, svg.clientWidth);
+        svg.setAttribute('width', svgWidth);
+
+        const centerX = svgWidth / 2 - nodeWidth / 2;
+        const rootY = 30;
+
+        // Root node (Decorator)
+        const rootLabel = this.objectData.title || this.formatActionName(this.objectData.fileName || 'Decorator');
+        this.createNode(svg, centerX, rootY, nodeWidth, nodeHeight, rootLabel, 'decorator', 'root');
+
+        // Child node
+        if (childAction) {
+            const childY = rootY + verticalSpacing;
+            const actionData = this.controller.getCollections().behaviorNodes?.[childAction];
+            const childLabel = actionData?.title || this.formatActionName(childAction);
+            const childType = this.getNodeType(actionData);
+
+            this.createLine(svg, centerX + nodeWidth / 2, rootY + nodeHeight, centerX + nodeWidth / 2, childY);
+            this.createNode(svg, centerX, childY, nodeWidth, nodeHeight, childLabel, childType, childAction);
+        } else {
+            // No child set
+            const childY = rootY + verticalSpacing;
+            this.createLine(svg, centerX + nodeWidth / 2, rootY + nodeHeight, centerX + nodeWidth / 2, childY);
+            this.createNode(svg, centerX, childY, nodeWidth, nodeHeight, '(no child set)', 'empty', 'empty');
+        }
+
+        svg.setAttribute('height', rootY + verticalSpacing + nodeHeight + 50);
+    }
+
+    renderBehaviorActionsTree(canvas, childNodes) {
+        const behaviorActions = childNodes || this.getChildNodes(this.objectData);
 
         // Create visual tree representation
         canvas.innerHTML = `
@@ -186,8 +312,14 @@ class BehaviorTreeEditor {
                     <!-- Action controls will be added here -->
                 </div>
                 <div style="margin-top: 10px; color: #888; font-size: 12px;">
-                    💡 Behavior actions are evaluated in order (selector pattern). First action to return non-null wins.<br/>
-                    Use arrows to reorder, × to remove. Double-click actions in sidebar to add.
+                    💡 Use arrows to reorder, × to remove. Double-click actions in sidebar to add.
+                </div>
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px;">
+                    <span style="color: #10b981;">■ Selector</span>
+                    <span style="color: #3b82f6;">■ Sequence</span>
+                    <span style="color: #f59e0b;">■ Parallel</span>
+                    <span style="color: #8b5cf6;">■ Decorator</span>
+                    <span style="color: #ef4444;">■ Action</span>
                 </div>
             </div>
         `;
@@ -202,7 +334,7 @@ class BehaviorTreeEditor {
         const verticalSpacing = 80;
         const horizontalSpacing = 30;
 
-        // Root node (Selector)
+        // Root node - determine type from objectData
         const rootY = 30;
         const totalWidth = (nodeWidth + horizontalSpacing) * behaviorActions.length - horizontalSpacing;
         const svgWidth = Math.max(totalWidth + 100, svg.clientWidth);
@@ -210,7 +342,17 @@ class BehaviorTreeEditor {
 
         const rootX = svgWidth / 2 - nodeWidth / 2;
 
-        this.createNode(svg, rootX, rootY, nodeWidth, nodeHeight, 'SELECTOR (Priority)', 'selector', 'root');
+        // Determine root node type and label
+        const rootType = this.getNodeType(this.objectData);
+        let rootLabel = 'SELECTOR (Priority)';
+        if (rootType === 'sequence') {
+            rootLabel = 'SEQUENCE (All must succeed)';
+        } else if (rootType === 'parallel') {
+            rootLabel = 'PARALLEL (Run all)';
+        } else if (this.objectData.title) {
+            rootLabel = this.objectData.title;
+        }
+        this.createNode(svg, rootX, rootY, nodeWidth, nodeHeight, rootLabel, rootType, 'root');
 
         // Child nodes (behavior actions)
         const startX = (svgWidth - totalWidth) / 2;
@@ -232,11 +374,8 @@ class BehaviorTreeEditor {
             const actionData = this.controller.getCollections().behaviorNodes?.[actionName];
             const label = actionData?.title || this.formatActionName(actionName);
 
-            // Determine node type based on action name
-            let nodeType = 'action';
-            if (actionName.includes('Root') || actionName.includes('Tree')) {
-                nodeType = 'selector'; // Sub-trees
-            }
+            // Determine node type from action data structure
+            const nodeType = this.getNodeType(actionData);
 
             this.createNode(svg, x, y, nodeWidth, nodeHeight, label, nodeType, actionName);
 
@@ -316,9 +455,12 @@ class BehaviorTreeEditor {
     }
 
     moveAction(fromIndex, toIndex) {
-        if (!this.objectData || !this.objectData.behaviorActions) return;
+        if (!this.objectData) return;
 
-        const actions = this.objectData.behaviorActions;
+        const arrayKey = this.getChildNodesKey(this.objectData);
+        const actions = this.objectData[arrayKey];
+        if (!actions) return;
+
         const [moved] = actions.splice(fromIndex, 1);
         actions.splice(toIndex, 0, moved);
 
@@ -337,9 +479,13 @@ class BehaviorTreeEditor {
 
     createNode(svg, x, y, width, height, label, type, id) {
         const colors = {
-            'selector': { fill: '#1e3a2f', stroke: '#10b981', text: '#10b981' },
-            'condition': { fill: '#1e2a3a', stroke: '#3b82f6', text: '#3b82f6' },
-            'action': { fill: '#3a1e1e', stroke: '#ef4444', text: '#ef4444' }
+            'selector': { fill: '#1e3a2f', stroke: '#10b981', text: '#10b981' },      // Green
+            'sequence': { fill: '#1e2a3a', stroke: '#3b82f6', text: '#3b82f6' },      // Blue
+            'parallel': { fill: '#3a2a1e', stroke: '#f59e0b', text: '#f59e0b' },      // Orange
+            'decorator': { fill: '#2a1e3a', stroke: '#8b5cf6', text: '#8b5cf6' },     // Purple
+            'condition': { fill: '#1e2a3a', stroke: '#3b82f6', text: '#3b82f6' },     // Blue (same as sequence)
+            'action': { fill: '#3a1e1e', stroke: '#ef4444', text: '#ef4444' },        // Red
+            'empty': { fill: '#2a2a2a', stroke: '#666', text: '#666' }                // Gray
         };
         const color = colors[type] || colors.action;
 
@@ -389,19 +535,38 @@ class BehaviorTreeEditor {
     highlightActiveNode(result) {
         // Remove previous highlights
         const nodes = document.querySelectorAll('.bt-graph-node');
+        const availableActions = this.controller.getCollections().behaviorNodes || {};
+
         nodes.forEach(node => {
             const rect = node.querySelector('rect');
             if (rect) {
                 rect.setAttribute('stroke-width', '2');
-                // Reset to original color
+                // Reset to original color based on node type
                 const nodeId = node.getAttribute('data-node-id');
+                let strokeColor = '#ef4444'; // Default action color
+
                 if (nodeId === 'root') {
-                    rect.setAttribute('stroke', '#10b981');
-                } else if (nodeId && (nodeId.includes('Root') || nodeId.includes('Tree'))) {
-                    rect.setAttribute('stroke', '#10b981');
-                } else {
-                    rect.setAttribute('stroke', '#ef4444');
+                    const rootType = this.getNodeType(this.objectData);
+                    const colors = {
+                        'selector': '#10b981',
+                        'sequence': '#3b82f6',
+                        'parallel': '#f59e0b',
+                        'decorator': '#8b5cf6'
+                    };
+                    strokeColor = colors[rootType] || '#10b981';
+                } else if (nodeId) {
+                    const actionData = availableActions[nodeId];
+                    const nodeType = this.getNodeType(actionData);
+                    const colors = {
+                        'selector': '#10b981',
+                        'sequence': '#3b82f6',
+                        'parallel': '#f59e0b',
+                        'decorator': '#8b5cf6',
+                        'action': '#ef4444'
+                    };
+                    strokeColor = colors[nodeType] || '#ef4444';
                 }
+                rect.setAttribute('stroke', strokeColor);
             }
         });
 
@@ -434,36 +599,55 @@ class BehaviorTreeEditor {
         output.innerHTML = '';
 
         const errors = [];
+        const warnings = [];
 
         if (!this.objectData) {
             errors.push('No behavior tree data loaded');
         } else {
             // Check for required properties
             if (!this.objectData.title) {
-                errors.push('Missing title property');
+                warnings.push('Missing title property');
             }
 
-            // Check behaviorActions array
-            if (!this.objectData.behaviorActions || !Array.isArray(this.objectData.behaviorActions)) {
-                errors.push('Missing or invalid behaviorActions array');
-            } else if (this.objectData.behaviorActions.length === 0) {
-                errors.push('behaviorActions array is empty');
+            const availableActions = this.controller.getCollections().behaviorNodes || {};
+            const nodeType = this.getNodeType(this.objectData);
+
+            // Check based on node type
+            if (nodeType === 'decorator') {
+                // Decorator should have childAction
+                if (this.objectData.childAction === undefined) {
+                    warnings.push('Decorator has no childAction defined');
+                } else if (this.objectData.childAction && !availableActions[this.objectData.childAction]) {
+                    errors.push(`Unknown child action: ${this.objectData.childAction}`);
+                }
             } else {
-                // Validate each action exists in collections
-                const availableActions = this.controller.getCollections().behaviorNodes || {};
-                this.objectData.behaviorActions.forEach(actionName => {
-                    if (!availableActions[actionName]) {
-                        errors.push(`Unknown behavior action: ${actionName}`);
-                    }
-                });
+                // Composite node - check behaviorActions/behaviorNodes array
+                const childNodes = this.getChildNodes(this.objectData);
+                const arrayKey = this.getChildNodesKey(this.objectData);
+
+                if (!childNodes || !Array.isArray(childNodes)) {
+                    errors.push(`Missing or invalid ${arrayKey} array`);
+                } else if (childNodes.length === 0) {
+                    warnings.push(`${arrayKey} array is empty`);
+                } else {
+                    // Validate each action exists in collections
+                    childNodes.forEach(actionName => {
+                        if (!availableActions[actionName]) {
+                            errors.push(`Unknown behavior node: ${actionName}`);
+                        }
+                    });
+                }
             }
         }
 
-        if (errors.length === 0) {
-            output.innerHTML = '<div class=\"bt-validation-success\">✓ Tree structure is valid</div>';
+        if (errors.length === 0 && warnings.length === 0) {
+            output.innerHTML = '<div class="bt-validation-success">✓ Tree structure is valid</div>';
         } else {
             errors.forEach(error => {
-                output.innerHTML += `<div class=\"bt-validation-error\">✗ ${error}</div>`;
+                output.innerHTML += `<div class="bt-validation-error">✗ ${error}</div>`;
+            });
+            warnings.forEach(warning => {
+                output.innerHTML += `<div class="bt-validation-warning" style="color: #f59e0b;">⚠ ${warning}</div>`;
             });
         }
     }
