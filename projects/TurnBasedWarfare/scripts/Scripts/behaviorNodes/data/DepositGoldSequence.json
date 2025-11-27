@@ -1,0 +1,13 @@
+{
+  "title": "Deposit Gold Sequence",
+  "description": "Sequence for depositing gold: check has gold -> find depot -> move -> deposit",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/DepositGoldSequence.js",
+  "fileName": "DepositGoldSequence",
+  "behaviorActions": [
+    "HasGoldAction",
+    "FindNearestDepotAction",
+    "MoveToSharedTargetAction",
+    "DepositGoldAction"
+  ],
+  "parameters": {}
+}
