@@ -12,6 +12,7 @@ SelectBehaviorTree (Root)
 │   └── Evaluates all passive abilities from unit
 │
 ├── PlayerOrderBehaviorTree (Priority 2: Player commands)
+│   ├── [Check: IsEnemyNearbyAction for normal moves]
 │   ├── BuildSequence (Build orders from peasants)
 │   ├── HoldPositionAction (Hold position command)
 │   └── MoveBehaviorAction (Move to target position)
@@ -76,16 +77,16 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 #### Move Order Types
 
 **Normal Move** (preventEnemiesInRangeCheck: false or omitted):
-- Unit moves toward target position
-- If enemies enter vision range, move is interrupted
-- Combat takes over and unit engages the enemy
+- PlayerOrderBehaviorTree uses IsEnemyNearbyAction to check for enemies
+- If enemies in vision range → tree fails → CombatBehaviorAction takes over
+- If no enemies → MoveBehaviorAction executes the move
 - After combat, unit remains at combat location (doesn't resume move)
 
 **Force Move** (preventEnemiesInRangeCheck: true):
-- Unit moves toward target position
-- Ignores all enemies along the way
+- PlayerOrderBehaviorTree skips enemy check
+- MoveBehaviorAction executes regardless of enemies
 - Does not engage in combat
-- Continues to destination regardless of threats
+- Continues to destination
 
 ### AI State Component
 ```json
@@ -107,8 +108,10 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 
 ### MoveBehaviorAction
 - **Success**: Reached target position
-- **Running**: Moving toward target (no enemies nearby OR force move)
-- **Failure**: No valid move order OR (enemies nearby AND normal move)
+- **Running**: Moving toward target
+- **Failure**: No valid move order
+
+Note: Enemy checking is handled by PlayerOrderBehaviorTree, not this action.
 
 ### HoldPositionAction
 - **Success**: Holding position (anchored)
