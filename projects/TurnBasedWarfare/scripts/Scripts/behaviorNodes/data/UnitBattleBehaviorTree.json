@@ -1,0 +1,31 @@
+{
+  "title": "Unit Battle Behavior Tree",
+  "description": "Main behavior tree for units during battle phase. Integrates player orders, autobattle combat, and passive abilities in priority order.",
+  "behaviorNodeType": "selector",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/UnitBattleBehaviorTree.js",
+  "fileName": "UnitBattleBehaviorTree",
+  "behaviorActions": [
+    "AbilitiesBehaviorTree",
+    "PlayerOrderBehaviorTree",
+    "CombatBehaviorAction",
+    "IdleBehaviorAction"
+  ],
+  "parameters": {},
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "unit-1",
+        "label": "Test Unit",
+        "components": {
+          "position": { "x": 100, "z": 100 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "team": { "team": 1 },
+          "health": { "current": 100, "max": 100 },
+          "combat": { "damage": 10, "attackSpeed": 1, "range": 50 },
+          "aiState": { "shared": {} },
+          "playerOrder": { "targetPosition": null, "meta": {}, "issuedTime": 0 }
+        }
+      }
+    ]
+  }
+}

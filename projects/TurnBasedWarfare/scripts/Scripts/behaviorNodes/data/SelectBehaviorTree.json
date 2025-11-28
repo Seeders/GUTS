@@ -1,6 +1,6 @@
 {
   "title": "Select Behavior Tree",
-  "description": "Select behavior tree used by all units. Dynamically evaluates abilities to determine behaviors.",
+  "description": "Main behavior tree used by all units. Integrates player orders, autobattle combat, and passive abilities in priority order.",
   "behaviorNodeType": "selector",
   "mockEntities": {
     "entities": [
@@ -41,10 +41,10 @@
   },
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SelectBehaviorTree.js",
   "fileName": "SelectBehaviorTree",
-  "behaviorNodes": [
-    "CombatBehaviorAction",
-    "MoveBehaviorAction",
+  "behaviorActions": [
     "AbilitiesBehaviorTree",
+    "PlayerOrderBehaviorTree",
+    "CombatBehaviorAction",
     "IdleBehaviorAction"
   ]
 }
