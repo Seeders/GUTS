@@ -17,10 +17,15 @@ SelectBehaviorTree (Root)
 │   ├── HoldPositionAction (Hold position command)
 │   └── MoveBehaviorAction (Move to target position)
 │
-├── CombatBehaviorAction (Priority 3: Autobattle AI)
-│   ├── seeking_target (Find nearest enemy)
-│   ├── moving_to_target (Chase enemy)
-│   └── attacking (Attack enemy in range)
+├── NewCombatBehaviorTree (Priority 3: Autobattle AI)
+│   ├── AttackSequence (if target exists and in range)
+│   │   ├── HasTargetAction
+│   │   ├── IsInAttackRangeAction
+│   │   └── AttackEnemyAction
+│   ├── ChaseSequence (if target exists but out of range)
+│   │   ├── HasTargetAction
+│   │   └── MoveToEnemyAction
+│   └── FindNearestEnemyAction (find new target)
 │
 └── IdleBehaviorAction (Priority 4: Default fallback)
     └── Stand idle
@@ -118,14 +123,19 @@ Note: Enemy checking is handled by PlayerOrderBehaviorTree, not this action.
 - **Success**: Holding position (anchored)
 - **Failure**: No hold order present
 
-### CombatBehaviorAction
-States managed internally:
-- `seeking_target`: Looking for enemies
-- `moving_to_target`: Chasing enemy
-- `attacking`: In range, attacking
+### NewCombatBehaviorTree
+Modular combat tree using composition of focused actions:
 
-- **Running**: Combat in progress (any state)
-- **Failure**: No valid targets
+**Sequences:**
+- **AttackSequence**: Returns running while attacking target in range
+- **ChaseSequence**: Returns running while moving toward target
+
+**Actions:**
+- **FindNearestEnemyAction**: Finds nearest enemy in vision range, stores in `aiState.shared.target`
+- **HasTargetAction**: Checks if `shared.target` exists and is alive
+- **IsInAttackRangeAction**: Checks if target is within `combat.range`
+- **MoveToEnemyAction**: Moves toward `shared.target`, succeeds when in range
+- **AttackEnemyAction**: Attacks `shared.target`, anchors unit, continuous (returns running)
 
 ### AbilitiesBehaviorTree
 - Evaluates each ability's `behaviorAction`

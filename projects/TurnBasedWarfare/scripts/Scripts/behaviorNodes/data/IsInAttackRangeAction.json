@@ -1,0 +1,10 @@
+{
+  "title": "Is In Attack Range",
+  "description": "Checks if target is within combat attack range",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/IsInAttackRangeAction.js",
+  "fileName": "IsInAttackRangeAction",
+  "parameters": {
+    "targetKey": "target"
+  }
+}

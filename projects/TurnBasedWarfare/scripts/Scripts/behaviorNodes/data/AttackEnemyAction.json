@@ -1,0 +1,10 @@
+{
+  "title": "Attack Enemy",
+  "description": "Attacks target enemy stored in shared state. Anchors unit and performs continuous attacks.",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/AttackEnemyAction.js",
+  "fileName": "AttackEnemyAction",
+  "parameters": {
+    "targetKey": "target"
+  }
+}

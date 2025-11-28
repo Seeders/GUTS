@@ -1,0 +1,12 @@
+{
+  "title": "Attack Sequence",
+  "description": "Sequence: check target valid -> check in range -> attack",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/AttackSequence.js",
+  "fileName": "AttackSequence",
+  "behaviorActions": [
+    "HasTargetAction",
+    "IsInAttackRangeAction",
+    "AttackEnemyAction"
+  ]
+}

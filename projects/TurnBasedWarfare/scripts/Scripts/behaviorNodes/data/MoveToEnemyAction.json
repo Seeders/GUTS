@@ -1,0 +1,10 @@
+{
+  "title": "Move To Enemy",
+  "description": "Moves toward enemy stored in shared state, succeeds when in attack range",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/MoveToEnemyAction.js",
+  "fileName": "MoveToEnemyAction",
+  "parameters": {
+    "targetKey": "target"
+  }
+}
