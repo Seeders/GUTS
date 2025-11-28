@@ -34,10 +34,12 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
    - Can run in parallel with other behaviors
    - Defined in unit's `abilities` array
 
-2. **Player Orders** (Manual commands override AI)
+2. **Player Orders** (Manual commands can override AI)
    - Build commands (peasant construction)
    - Hold position (prevent movement)
    - Move orders (relocate unit)
+     - **Normal moves**: Interrupted by combat when enemies are nearby
+     - **Force moves**: Ignore enemies and go to destination regardless
    - Stored in `playerOrder` component
 
 3. **Autobattle Combat** (AI decision making)
@@ -58,7 +60,7 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
   "targetPosition": { "x": 100, "z": 200 },
   "meta": {
     "isMoveOrder": true,
-    "preventCombat": false,
+    "preventEnemiesInRangeCheck": false,
     "allowMovement": true
   },
   "issuedTime": 1234567890
@@ -67,9 +69,23 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 
 - `targetPosition`: World coordinates to move to
 - `meta.isMoveOrder`: Flag for move commands
-- `meta.preventCombat`: If true, unit ignores enemies
+- `meta.preventEnemiesInRangeCheck`: If true, this is a **force move** - unit ignores enemies and goes to destination. If false/omitted, this is a **normal move** - unit will engage enemies if they come into vision range.
 - `meta.allowMovement`: If false, unit holds position
 - `issuedTime`: Timestamp when order was issued
+
+#### Move Order Types
+
+**Normal Move** (preventEnemiesInRangeCheck: false or omitted):
+- Unit moves toward target position
+- If enemies enter vision range, move is interrupted
+- Combat takes over and unit engages the enemy
+- After combat, unit remains at combat location (doesn't resume move)
+
+**Force Move** (preventEnemiesInRangeCheck: true):
+- Unit moves toward target position
+- Ignores all enemies along the way
+- Does not engage in combat
+- Continues to destination regardless of threats
 
 ### AI State Component
 ```json
@@ -91,8 +107,8 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 
 ### MoveBehaviorAction
 - **Success**: Reached target position
-- **Running**: Moving toward target
-- **Failure**: No valid move order
+- **Running**: Moving toward target (no enemies nearby OR force move)
+- **Failure**: No valid move order OR (enemies nearby AND normal move)
 
 ### HoldPositionAction
 - **Success**: Holding position (anchored)
