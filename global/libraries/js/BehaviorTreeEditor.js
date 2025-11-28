@@ -216,39 +216,7 @@ class BehaviorTreeEditor {
      */
     getNodeType(nodeData) {
         if (!nodeData) return 'action';
-
-        // Use explicit behaviorNodeType if defined
-        if (nodeData.behaviorNodeType) {
-            return nodeData.behaviorNodeType;
-        }
-
-        // Fallback: Has childAction = decorator
-        if (nodeData.childAction !== undefined) {
-            return 'decorator';
-        }
-
-        // Fallback: Has child nodes array = composite
-        const childNodes = this.getChildNodes(nodeData);
-        if (childNodes && Array.isArray(childNodes) && childNodes.length > 0) {
-            const fileName = nodeData.fileName || '';
-            if (fileName.toLowerCase().includes('sequence')) {
-                return 'sequence';
-            }
-            if (fileName.toLowerCase().includes('parallel')) {
-                return 'parallel';
-            }
-            return 'selector';
-        }
-
-        // Fallback: Check fileName for hints
-        const fileName = nodeData.fileName || '';
-        if (fileName.includes('Sequence')) return 'sequence';
-        if (fileName.includes('Decorator')) return 'decorator';
-        if (fileName.includes('Parallel')) return 'parallel';
-        if (fileName.includes('Selector') || fileName.includes('Tree')) return 'selector';
-
-        // Default to action (leaf node)
-        return 'action';
+        return nodeData.behaviorNodeType || 'action';
     }
 
     /**
