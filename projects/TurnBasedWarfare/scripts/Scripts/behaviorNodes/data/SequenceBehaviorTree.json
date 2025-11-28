@@ -1,6 +1,7 @@
 {
   "title": "Sequence Behavior Tree",
   "description": "Evaluates children in order until one fails. All must succeed for sequence to succeed.",
+  "behaviorNodeType": "sequence",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SequenceBehaviorTree.js",
   "fileName": "SequenceBehaviorTree",
   "behaviorNodes": [],

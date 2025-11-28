@@ -1,6 +1,7 @@
 {
   "title": "Timeout",
   "description": "Fails if child action takes longer than specified time",
+  "behaviorNodeType": "decorator",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/TimeoutDecorator.js",
   "fileName": "TimeoutDecorator",
   "childAction": null,

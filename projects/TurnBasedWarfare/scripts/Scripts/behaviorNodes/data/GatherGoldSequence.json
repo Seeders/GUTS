@@ -1,6 +1,7 @@
 {
   "title": "Gather Gold Sequence",
   "description": "Sequence for mining gold: find mine -> move -> queue -> wait -> extract",
+  "behaviorNodeType": "sequence",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/GatherGoldSequence.js",
   "fileName": "GatherGoldSequence",
   "behaviorActions": [

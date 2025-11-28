@@ -1,6 +1,7 @@
 {
   "title": "Retreat",
   "description": "Falls back when health is low, with optional counter-attacks",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/RetreatAction.js",
   "fileName": "RetreatAction",
   "parameters": {

@@ -1,6 +1,7 @@
 {
   "title": "Is In Range Check",
   "description": "Checks if entity is within range of target",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/IsInRangeAction.js",
   "fileName": "IsInRangeAction",
   "parameters": {

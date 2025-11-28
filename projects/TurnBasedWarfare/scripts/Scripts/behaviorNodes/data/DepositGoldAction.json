@@ -1,6 +1,7 @@
 {
   "title": "Deposit Gold",
   "description": "Deposits carried gold at depot, awarding it to the team. Returns RUNNING while depositing, SUCCESS when complete.",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/DepositGoldAction.js",
   "fileName": "DepositGoldAction",
   "parameters": {

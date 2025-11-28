@@ -1,6 +1,7 @@
 {
   "title": "Find Ally Needing Help",
   "description": "Finds allied unit that needs help (low health or in combat)",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FindAllyNeedingHelpAction.js",
   "fileName": "FindAllyNeedingHelpAction",
   "parameters": {

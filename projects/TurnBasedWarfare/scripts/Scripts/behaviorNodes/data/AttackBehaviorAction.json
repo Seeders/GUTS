@@ -1,5 +1,6 @@
 {
   "title": "Attack Enemy",
+  "behaviorNodeType": "action",
   "type": "AttackBehaviorAction",
   "priority": 30,
   "description": "Attack an enemy unit",

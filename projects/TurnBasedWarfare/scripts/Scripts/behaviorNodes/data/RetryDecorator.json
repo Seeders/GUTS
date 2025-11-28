@@ -1,6 +1,7 @@
 {
   "title": "Retry",
   "description": "Retries the child action on failure up to maximum attempts",
+  "behaviorNodeType": "decorator",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/RetryDecorator.js",
   "fileName": "RetryDecorator",
   "childAction": null,

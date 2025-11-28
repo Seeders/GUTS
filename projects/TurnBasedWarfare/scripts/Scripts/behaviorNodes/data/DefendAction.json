@@ -1,6 +1,7 @@
 {
   "title": "Defend",
   "description": "Holds position and attacks enemies in range",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/DefendAction.js",
   "fileName": "DefendAction",
   "parameters": {

@@ -1,6 +1,7 @@
 {
   "title": "Select Behavior Tree",
   "description": "Select behavior tree used by all units. Dynamically evaluates abilities to determine behaviors.",
+  "behaviorNodeType": "selector",
   "mockEntities": {
     "entities": [
       {

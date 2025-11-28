@@ -1,6 +1,7 @@
 {
   "title": "Extract Gold",
   "description": "Performs mining over a duration, extracting gold from the mine. Returns RUNNING while mining, SUCCESS when complete.",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/ExtractGoldAction.js",
   "fileName": "ExtractGoldAction",
   "parameters": {

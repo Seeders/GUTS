@@ -1,6 +1,7 @@
 {
   "title": "Find Weakest Enemy",
   "description": "Finds enemy with lowest health and stores in shared state",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FindWeakestEnemyAction.js",
   "fileName": "FindWeakestEnemyAction",
   "parameters": {

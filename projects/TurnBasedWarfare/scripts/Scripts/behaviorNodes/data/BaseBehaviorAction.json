@@ -1,5 +1,6 @@
 {
   "title": "Base Action",
+  "behaviorNodeType": "action",
   "type": "BaseBehaviorAction",
   "priority": 0,
   "description": "n/a",

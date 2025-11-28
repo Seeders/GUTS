@@ -1,6 +1,7 @@
 {
   "title": "Has Target Check",
   "description": "Checks if entity has a valid target stored in shared state",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/HasTargetAction.js",
   "fileName": "HasTargetAction",
   "parameters": {

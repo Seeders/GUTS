@@ -1,6 +1,7 @@
 {
   "title": "Find Nearest Depot",
   "description": "Finds the nearest depot (town hall) belonging to entity's team and stores it in shared state (targetDepot, targetDepotPosition)",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FindNearestDepotAction.js",
   "fileName": "FindNearestDepotAction",
   "parameters": {

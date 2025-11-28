@@ -1,6 +1,7 @@
 {
   "title": "Parallel Behavior Tree",
   "description": "Evaluates all children simultaneously. Configure successPolicy (all/any) and failurePolicy (all/any).",
+  "behaviorNodeType": "parallel",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/ParallelBehaviorTree.js",
   "fileName": "ParallelBehaviorTree",
   "behaviorNodes": [],

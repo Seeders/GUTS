@@ -1,5 +1,6 @@
 {
   "title": "Build",
+  "behaviorNodeType": "action",
   "type": "BuildBehaviorAction",
   "priority": 5,
   "description": "Construct buildings",

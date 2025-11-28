@@ -1,6 +1,7 @@
 {
   "title": "Wait",
   "description": "Waits for a specified duration",
+  "behaviorNodeType": "action",
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/WaitAction.js",
   "fileName": "WaitAction",
   "parameters": {

@@ -1,5 +1,6 @@
 {
   "title": "Idle",
+  "behaviorNodeType": "action",
   "type": "IdleBehaviorAction",
   "priority": 0,
   "description": "Do nothing",

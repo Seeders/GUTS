@@ -1,5 +1,6 @@
 {
   "title": "Move To Position",
+  "behaviorNodeType": "action",
   "type": "MoveBehaviorAction",
   "priority": 10,
   "description": "Move unit to a target position",

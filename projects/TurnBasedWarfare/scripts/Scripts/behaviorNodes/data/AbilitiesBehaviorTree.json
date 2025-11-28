@@ -1,6 +1,7 @@
 {
   "title": "Abilities Behavior Tree",
   "description": "Dynamically selects abilities to use, no behaviorNodes configuration required.",
+  "behaviorNodeType": "selector",
   "mockEntities": {
     "entities": [
       {
