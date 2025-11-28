@@ -217,15 +217,19 @@ class BehaviorTreeEditor {
     getNodeType(nodeData) {
         if (!nodeData) return 'action';
 
-        // Has childAction = decorator
+        // Use explicit behaviorNodeType if defined
+        if (nodeData.behaviorNodeType) {
+            return nodeData.behaviorNodeType;
+        }
+
+        // Fallback: Has childAction = decorator
         if (nodeData.childAction !== undefined) {
             return 'decorator';
         }
 
-        // Has child nodes array = composite
+        // Fallback: Has child nodes array = composite
         const childNodes = this.getChildNodes(nodeData);
         if (childNodes && Array.isArray(childNodes) && childNodes.length > 0) {
-            // Check if it's a sequence based on class name or fileName
             const fileName = nodeData.fileName || '';
             if (fileName.toLowerCase().includes('sequence')) {
                 return 'sequence';
@@ -236,7 +240,7 @@ class BehaviorTreeEditor {
             return 'selector';
         }
 
-        // Check fileName for hints even without children
+        // Fallback: Check fileName for hints
         const fileName = nodeData.fileName || '';
         if (fileName.includes('Sequence')) return 'sequence';
         if (fileName.includes('Decorator')) return 'decorator';
