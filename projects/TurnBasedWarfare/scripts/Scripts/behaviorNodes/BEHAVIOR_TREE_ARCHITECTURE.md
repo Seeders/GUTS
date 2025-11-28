@@ -83,6 +83,7 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 - After combat, unit remains at combat location (doesn't resume move)
 
 **Force Move** (preventEnemiesInRangeCheck: true):
+- Set by existing force move action in unit action panel
 - PlayerOrderBehaviorTree skips enemy check
 - MoveBehaviorAction executes regardless of enemies
 - Does not engage in combat
