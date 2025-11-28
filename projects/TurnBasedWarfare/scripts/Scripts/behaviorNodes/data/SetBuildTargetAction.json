@@ -1,0 +1,10 @@
+{
+  "title": "Set Build Target",
+  "description": "Gets building info from playerOrder and stores in shared state (targetBuilding, targetPosition, buildTime)",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SetBuildTargetAction.js",
+  "fileName": "SetBuildTargetAction",
+  "parameters": {
+    "defaultBuildTime": 5
+  }
+}

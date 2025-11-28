@@ -1,0 +1,14 @@
+{
+  "title": "Build Sequence",
+  "description": "Sequence for building: check order -> set target -> move -> construct",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/BuildSequence.js",
+  "fileName": "BuildSequence",
+  "behaviorActions": [
+    "HasBuildOrderAction",
+    "SetBuildTargetAction",
+    "MoveToSharedTargetAction",
+    "ConstructBuildingAction"
+  ],
+  "parameters": {}
+}
