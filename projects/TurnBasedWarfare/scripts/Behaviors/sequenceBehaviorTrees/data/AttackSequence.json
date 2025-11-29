@@ -2,8 +2,6 @@
   "title": "Attack Sequence",
   "description": "Sequence: check target valid -> check in range -> attack",
   "behaviorNodeType": "sequence",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/SequenceBehaviorTree.js",
-  "fileName": "SequenceBehaviorTree",
   "behaviorActions": [
     "HasTargetBehaviorAction",
     "IsInAttackRangeBehaviorAction",

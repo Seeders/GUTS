@@ -14,15 +14,24 @@
     "MockGameContext",
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
-    "BaseBehaviorNode",
-    "BaseBehaviorTree",
-    "BaseBehaviorAction",
     "BehaviorTreeEditor"
   ],
   "classes": [
     {
-      "collection": "behaviorNodes",
-      "baseClass": "BaseBehaviorNode"
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
     }
   ]
 }
