@@ -50,7 +50,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.processor.debugTick();
 
         const entities = this.getBehaviorEntities();
-
+        console.log('updating behavior system');
         for (const entityId of entities) {
             this.updateUnit(entityId, dt);
         }
