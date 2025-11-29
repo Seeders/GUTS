@@ -23,6 +23,8 @@ class MockGameContext extends GUTS.BaseECSGame {
         this.gameManager = new GUTS.GameServices();
         this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
         this.gameManager.register("getNodeByType", this.processor.getNodeByType.bind(this.processor));
+        this.gameManager.register("getBlackboard", this.processor.getBlackboard.bind(this.processor));
+        this.gameManager.register("getDebugger", this.processor.getDebugger.bind(this.processor));
         this.gameManager.register("getPlacementGridSize", () => {
             return { width: 100, height: 100 }; // Mock grid size
         });
