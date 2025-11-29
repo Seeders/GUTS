@@ -13,12 +13,6 @@ class BehaviorSystem extends GUTS.BaseSystem {
     init() {
         // Unified node lookup
         this.game.gameManager.register('getNodeByType', this.processor.getNodeByType.bind(this.processor));
-
-        // Legacy compatibility (all redirect to unified storage)
-        this.game.gameManager.register('getActionByType', this.processor.getNodeByType.bind(this.processor));
-        this.game.gameManager.register('getBehaviorTreeByType', this.processor.getNodeByType.bind(this.processor));
-        this.game.gameManager.register('getDecoratorByType', this.processor.getNodeByType.bind(this.processor));
-
         this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
         this.game.gameManager.register('getDebugger', this.processor.getDebugger.bind(this.processor));
     }
