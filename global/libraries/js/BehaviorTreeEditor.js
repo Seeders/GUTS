@@ -12,6 +12,7 @@ class BehaviorTreeEditor {
         this.isPlaying = false;
         this.playInterval = null;
 
+        this.tickRate = 1/20;
         this.setupEventListeners();
     }
 
@@ -509,7 +510,7 @@ class BehaviorTreeEditor {
         svg.appendChild(line);
     }
 
-    highlightActiveNode(result) {
+    highlightActiveNode(currentAction) {
         // Remove previous highlights
         const nodes = document.querySelectorAll('.bt-graph-node');
         const availableActions = this.controller.getCollections().behaviorNodes || {};
@@ -548,13 +549,13 @@ class BehaviorTreeEditor {
         });
 
         // Highlight active nodes based on result
-        if (!result || !result.action) return;
+        if (!currentAction) return;
 
         // Highlight root
         this.highlightNode('root');
 
         // Highlight the action directly
-        this.highlightNode(result.action);
+        this.highlightNode(currentAction);
     }
 
     highlightNode(nodeId) {
@@ -1196,10 +1197,10 @@ class BehaviorTreeEditor {
      * Run one tree evaluation step
      */
     stepSimulation() {
-        if (!this.mockGame || !this.mockGame.processor) return;
+        if (!this.mockGame) return;
 
         // Increment debug tick for this evaluation
-        this.mockGame.processor.debugTick();
+        this.mockGame.update(this.tickRate);
 
         // Evaluate the tree once - this will show all node evaluations in the trace
         this.displaySimulationResults();
@@ -1230,12 +1231,11 @@ class BehaviorTreeEditor {
         }
 
         // Evaluate tree repeatedly - adjust interval for desired speed
-        const evaluationInterval = 500; // milliseconds between evaluations (2 per second)
-
+    
         this.playInterval = setInterval(() => {
-            this.mockGame.processor.debugTick();
+            this.mockGame.update(evaluationInterval);
             this.displaySimulationResults();
-        }, evaluationInterval);
+        }, this.tickRate);
     }
 
     /**
@@ -1259,7 +1259,7 @@ class BehaviorTreeEditor {
      * Display simulation results after a tick
      */
     displaySimulationResults() {
-        if (!this.mockGame || !this.mockGame.processor) return;
+        if (!this.mockGame) return;
 
         // Evaluate behavior tree only for the main entity (first entity)
         const results = [];
@@ -1267,12 +1267,6 @@ class BehaviorTreeEditor {
 
         if (entityIds.length > 0) {
             const mainEntityId = entityIds[0];
-            // Use processor's evaluateTreeData with current editor data
-            const result = this.mockGame.processor.evaluateTreeData(
-                this.objectData,
-                mainEntityId
-            );
-
             // Get debug trace for this entity
             const debugger_ = this.mockGame.processor.getDebugger();
             const trace = debugger_?.getLastTrace(mainEntityId);
@@ -1280,7 +1274,7 @@ class BehaviorTreeEditor {
             results.push({
                 entityId: mainEntityId,
                 entityLabel: this.mockGame.getEntityLabel(mainEntityId),
-                result,
+                aiState: this.mockGame.getComponent(mainEntityId, 'aiState'),
                 trace
             });
         }
@@ -1308,15 +1302,15 @@ class BehaviorTreeEditor {
         }
 
         // Highlight active node in graph based on first result with action
-        let highlightedResult = null;
-        for (const { result } of results) {
-            if (result && result.action) {
-                highlightedResult = result;
+        let highlightedAction = null;
+        for (const { aiState } of results) {
+            if (aiState && aiState.currentAction) {
+                highlightedAction = aiState.currentAction;
                 break;
             }
         }
-        if (this.isScriptBased && highlightedResult) {
-            this.highlightActiveNode(highlightedResult);
+        if (this.isScriptBased && highlightedAction) {
+            this.highlightActiveNode(highlightedAction);
         }
 
         results.forEach(({ entityId, entityLabel, result, trace }) => {

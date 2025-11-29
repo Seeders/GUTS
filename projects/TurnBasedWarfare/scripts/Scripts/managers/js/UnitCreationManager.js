@@ -373,6 +373,7 @@ class UnitCreationManager {
         // Managed by BehaviorTree/Actions (state, meta)
         this.game.addComponent(entity, "aiState", {
             currentAction: null,
+            rootBehaviorTree: "UnitBattleBehaviorTree",
             meta: {}
         });
 

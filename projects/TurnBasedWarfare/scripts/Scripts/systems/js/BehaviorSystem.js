@@ -27,9 +27,10 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Also notify trees
         const entities = this.getBehaviorEntities();
         for (const entityId of entities) {
-            this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
-            if (this.rootTree) {
-                this.rootTree.onBattleEnd(entityId, this.game);
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
+            if (rootTree) {
+                rootTree.onBattleEnd(entityId, this.game);
             }
         }
     }
@@ -52,6 +53,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         const entities = this.getBehaviorEntities();
         console.log('updating behavior system');
         for (const entityId of entities) {
+            console.log('updating', entityId);
             this.updateUnit(entityId, dt);
         }
     }
@@ -65,13 +67,13 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         if (!aiState || !unitType) return;
 
-        this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
-        if (!this.rootTree) {
+        const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
+        if (!rootTree) {
             return;
         }
 
         // Evaluate behavior tree to get desired action
-        const desiredAction = this.processor.evaluate('SelectBehaviorTree', entityId);
+        const desiredAction = this.processor.evaluate(aiState.rootBehaviorTree, entityId);
 
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
@@ -95,9 +97,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
-            this.rootTree = this.processor.getNodeByType('SelectBehaviorTree');
-            if (this.rootTree) {
-                this.rootTree.onPlacementPhaseStart(entityId, this.game);
+            const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
+            if (rootTree) {
+                rootTree.onPlacementPhaseStart(entityId, this.game);
             }
         }
     }

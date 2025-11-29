@@ -2,6 +2,7 @@
   "title": "aiState",
   "schema": {
     "currentAction": null,
+    "rootBehaviorTree": null,
     "meta": {}
   }
 }
