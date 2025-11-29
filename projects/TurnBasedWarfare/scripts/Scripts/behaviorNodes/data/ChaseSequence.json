@@ -2,8 +2,8 @@
   "title": "Chase Sequence",
   "description": "Sequence: check target valid -> move toward enemy",
   "behaviorNodeType": "sequence",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/ChaseSequence.js",
-  "fileName": "ChaseSequence",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/SequenceBehaviorTree.js",
+  "fileName": "SequenceBehaviorTree",
   "behaviorActions": [
     "HasTargetAction",
     "MoveToEnemyAction"
