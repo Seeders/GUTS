@@ -643,6 +643,24 @@ class EntryGenerator {
             sections.push('');
         }
 
+        // Import systems from editor modules
+        if (editor.systems && editor.systems.length > 0) {
+            sections.push('// ========== SYSTEMS (from editor modules) ==========');
+            const { imports, exports } = this.generateImports(editor.systems, 'sys');
+            sections.push(...imports);
+            sections.push('');
+            sections.push('const Systems = {');
+            sections.push(exports.join(',\n'));
+            sections.push('};');
+            sections.push('');
+
+            // Make systems available in window.GUTS
+            sections.push('// Make systems available in window.GUTS');
+            sections.push('window.GUTS.systems = Systems;');
+            sections.push('Object.assign(window.GUTS, Systems);');
+            sections.push('');
+        }
+
         // Import class collections from editor modules
         const classCollectionObjects = {};
         if (editor.classCollections && Object.keys(editor.classCollections).length > 0) {

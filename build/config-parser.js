@@ -305,6 +305,7 @@ class ConfigParser {
         const projectModulesPath = path.join(this.projectRoot, 'scripts', 'Settings', 'editorModules');
 
         const allLibraries = [];
+        const allSystems = [];
         const classCollections = {};
         const classMetadata = [];
         const moduleConfigs = {};
@@ -342,6 +343,13 @@ class ConfigParser {
                 console.log(`    ↳ Added ${libraryPaths.length} libraries`);
             }
 
+            // Add systems from this module (in order)
+            if (moduleConfig.systems && Array.isArray(moduleConfig.systems)) {
+                const systemPaths = this.getScriptPaths('systems', moduleConfig.systems);
+                allSystems.push(...systemPaths);
+                console.log(`    ↳ Added ${systemPaths.length} systems`);
+            }
+
             // Process classes if present
             if (moduleConfig.classes && Array.isArray(moduleConfig.classes)) {
                 for (const classRef of moduleConfig.classes) {
@@ -375,10 +383,11 @@ class ConfigParser {
             }
         }
 
-        console.log(`✓ Editor entry complete: ${allLibraries.length} libraries, ${Object.keys(classCollections).length} class collections`);
+        console.log(`✓ Editor entry complete: ${allLibraries.length} libraries, ${allSystems.length} systems, ${Object.keys(classCollections).length} class collections`);
 
         return {
             libraries: allLibraries,
+            systems: allSystems,
             config: editorConfig,
             modules: editorModules,
             moduleConfigs: moduleConfigs,
