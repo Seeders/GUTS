@@ -1193,16 +1193,15 @@ class BehaviorTreeEditor {
     }
 
     /**
-     * Run one simulation tick
+     * Run one tree evaluation step
      */
     stepSimulation() {
-        if (!this.mockGame) return;
+        if (!this.mockGame || !this.mockGame.processor) return;
 
-        // Run one game update tick at game speed (1/20 second = 0.05)
-        const dt = 1 / 20;
-        this.mockGame.update(dt);
+        // Increment debug tick for this evaluation
+        this.mockGame.processor.debugTick();
 
-        // Display results after the tick
+        // Evaluate the tree once - this will show all node evaluations in the trace
         this.displaySimulationResults();
     }
 
@@ -1218,10 +1217,10 @@ class BehaviorTreeEditor {
     }
 
     /**
-     * Start continuous simulation at game speed
+     * Start continuous tree evaluation
      */
     playSimulation() {
-        if (!this.mockGame) return;
+        if (!this.mockGame || !this.mockGame.processor) return;
 
         this.isPlaying = true;
         const playBtn = document.getElementById('bt-play-btn');
@@ -1230,14 +1229,13 @@ class BehaviorTreeEditor {
             playBtn.classList.add('editor-module__btn--warning');
         }
 
-        // Run at game speed: 20 ticks per second = 50ms per tick
-        const tickRate = 50; // milliseconds
-        const dt = 1 / 20;  // delta time for each tick
+        // Evaluate tree repeatedly - adjust interval for desired speed
+        const evaluationInterval = 500; // milliseconds between evaluations (2 per second)
 
         this.playInterval = setInterval(() => {
-            this.mockGame.update(dt);
+            this.mockGame.processor.debugTick();
             this.displaySimulationResults();
-        }, tickRate);
+        }, evaluationInterval);
     }
 
     /**
