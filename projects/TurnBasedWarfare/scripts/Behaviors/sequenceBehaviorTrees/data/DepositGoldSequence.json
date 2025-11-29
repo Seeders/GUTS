@@ -10,5 +10,36 @@
     "MoveToSharedTargetBehaviorAction",
     "DepositGoldBehaviorAction"
   ],
-  "parameters": {}
+  "parameters": {},
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "peasant-1",
+        "label": "Peasant With Gold",
+        "components": {
+          "position": { "x": 300, "z": 300 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "team": { "team": 1 },
+          "aiState": {
+            "shared": {
+              "hasGold": true,
+              "goldAmount": 10
+            }
+          }
+        }
+      },
+      {
+        "id": "townhall-1",
+        "label": "Town Hall (Depot)",
+        "components": {
+          "position": { "x": 100, "z": 100 },
+          "team": { "team": 1 },
+          "unitType": {
+            "id": "townHall",
+            "name": "Town Hall"
+          }
+        }
+      }
+    ]
+  }
 }
