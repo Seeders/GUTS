@@ -15,10 +15,6 @@ class MockGameContext extends GUTS.BaseECSGame {
         this.componentGenerator = new GUTS.ComponentGenerator(app.getCollections().components);
         this.collections = app.getCollections();
 
-        // Use shared BehaviorTreeProcessor (same as BehaviorSystem)
-        this.processor = new GUTS.BehaviorTreeProcessor(this);
-        this.processor.initializeFromCollections(this.collections);
-
         // Initialize gameManager with GameServices
         this.gameManager = new GUTS.GameServices();
         this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));

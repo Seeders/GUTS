@@ -1510,9 +1510,12 @@ class BehaviorTreeEditor {
         // Stop any running simulation
         this.pauseSimulation();
 
-        // Clear debug data before resetting
-        if (this.mockGame?.processor) {
-            this.mockGame.processor.clearAllDebugData();
+        // Clear debug data from BehaviorSystem's processor before resetting
+        if (this.mockGame?.gameManager) {
+            const processor = this.mockGame.behaviorSystem?.processor;
+            if (processor) {
+                processor.clearAllDebugData();
+            }
         }
 
         // Reset mock game context to original state
