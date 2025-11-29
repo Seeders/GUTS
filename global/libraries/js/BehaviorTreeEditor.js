@@ -1379,6 +1379,7 @@ class BehaviorTreeEditor {
      */
     createTraceDisplay(trace) {
         const traceDiv = document.createElement('details');
+        traceDiv.open = true; // Open by default so trace is visible
         traceDiv.style.marginTop = '10px';
         traceDiv.style.borderTop = '1px solid #333';
         traceDiv.style.paddingTop = '8px';
