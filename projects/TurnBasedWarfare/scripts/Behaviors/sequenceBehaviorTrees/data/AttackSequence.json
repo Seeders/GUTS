@@ -6,5 +6,41 @@
     "HasTargetBehaviorAction",
     "IsInAttackRangeBehaviorAction",
     "AttackEnemyBehaviorAction"
-  ]
+  ],
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "attacker-1",
+        "label": "Attacking Unit",
+        "components": {
+          "position": { "x": 100, "z": 100 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "team": { "team": 1 },
+          "combat": {
+            "damage": 10,
+            "attackSpeed": 1.0,
+            "range": 50
+          },
+          "aiState": {
+            "shared": {
+              "target": "enemy-1"
+            }
+          }
+        }
+      },
+      {
+        "id": "enemy-1",
+        "label": "Enemy In Range",
+        "components": {
+          "position": { "x": 130, "z": 100 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "team": { "team": 2 },
+          "health": {
+            "current": 100,
+            "max": 100
+          }
+        }
+      }
+    ]
+  }
 }

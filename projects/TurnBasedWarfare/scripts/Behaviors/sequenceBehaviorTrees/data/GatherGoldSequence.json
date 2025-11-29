@@ -11,5 +11,32 @@
     "WaitForMineBehaviorAction",
     "ExtractGoldBehaviorAction"
   ],
-  "parameters": {}
+  "parameters": {},
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "peasant-1",
+        "label": "Gold Miner Peasant",
+        "components": {
+          "position": { "x": 100, "z": 100 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "team": { "team": 1 },
+          "aiState": { "shared": {} }
+        }
+      },
+      {
+        "id": "goldmine-1",
+        "label": "Gold Mine",
+        "components": {
+          "position": { "x": 250, "z": 250 },
+          "team": { "team": 1 },
+          "goldMine": {
+            "goldRemaining": 5000,
+            "maxGold": 5000,
+            "miningQueue": []
+          }
+        }
+      }
+    ]
+  }
 }
