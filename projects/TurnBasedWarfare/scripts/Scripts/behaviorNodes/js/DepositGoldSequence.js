@@ -14,10 +14,10 @@ class DepositGoldSequence extends GUTS.SequenceBehaviorTree {
     constructor(game, config = {}) {
         // Set behaviorActions before calling super
         config.behaviorActions = [
-            'HasGoldAction',
-            'FindNearestDepotAction',
-            'MoveToSharedTargetAction',
-            'DepositGoldAction'
+            'HasGoldBehaviorAction',
+            'FindNearestDepotBehaviorAction',
+            'MoveToSharedTargetBehaviorAction',
+            'DepositGoldBehaviorAction'
         ];
         super(game, config);
     }

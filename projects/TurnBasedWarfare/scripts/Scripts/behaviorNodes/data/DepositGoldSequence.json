@@ -5,10 +5,10 @@
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/DepositGoldSequence.js",
   "fileName": "DepositGoldSequence",
   "behaviorActions": [
-    "HasGoldAction",
-    "FindNearestDepotAction",
-    "MoveToSharedTargetAction",
-    "DepositGoldAction"
+    "HasGoldBehaviorAction",
+    "FindNearestDepotBehaviorAction",
+    "MoveToSharedTargetBehaviorAction",
+    "DepositGoldBehaviorAction"
   ],
   "parameters": {}
 }

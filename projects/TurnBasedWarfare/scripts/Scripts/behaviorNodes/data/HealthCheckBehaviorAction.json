@@ -1,0 +1,12 @@
+{
+  "title": "Health Check",
+  "description": "Checks if entity health is above or below a threshold",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/HealthCheckBehaviorAction.js",
+  "fileName": "HealthCheckBehaviorAction",
+  "parameters": {
+    "threshold": 0.5,
+    "comparison": "below",
+    "usePercentage": true
+  }
+}

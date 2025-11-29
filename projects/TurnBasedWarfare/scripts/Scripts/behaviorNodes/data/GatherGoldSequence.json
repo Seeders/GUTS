@@ -5,11 +5,11 @@
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/GatherGoldSequence.js",
   "fileName": "GatherGoldSequence",
   "behaviorActions": [
-    "FindNearestGoldMineAction",
-    "MoveToSharedTargetAction",
-    "JoinMineQueueAction",
-    "WaitForMineAction",
-    "ExtractGoldAction"
+    "FindNearestGoldMineBehaviorAction",
+    "MoveToSharedTargetBehaviorAction",
+    "JoinMineQueueBehaviorAction",
+    "WaitForMineBehaviorAction",
+    "ExtractGoldBehaviorAction"
   ],
   "parameters": {}
 }

@@ -20,7 +20,7 @@
  * The parallel tree config:
  *   {
  *     "fileName": "CombatParallelTree",
- *     "behaviorActions": ["AttackAction", "DefendAction"],
+ *     "behaviorActions": ["AttackAction", "DefendBehaviorAction"],
  *     "parameters": {
  *       "successPolicy": "any",
  *       "failurePolicy": "any"

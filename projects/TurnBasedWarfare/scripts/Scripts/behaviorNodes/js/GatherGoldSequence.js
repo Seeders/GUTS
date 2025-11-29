@@ -15,11 +15,11 @@ class GatherGoldSequence extends GUTS.SequenceBehaviorTree {
     constructor(game, config = {}) {
         // Set behaviorActions before calling super
         config.behaviorActions = [
-            'FindNearestGoldMineAction',
-            'MoveToSharedTargetAction',
-            'JoinMineQueueAction',
-            'WaitForMineAction',
-            'ExtractGoldAction'
+            'FindNearestGoldMineBehaviorAction',
+            'MoveToSharedTargetBehaviorAction',
+            'JoinMineQueueBehaviorAction',
+            'WaitForMineBehaviorAction',
+            'ExtractGoldBehaviorAction'
         ];
         super(game, config);
     }

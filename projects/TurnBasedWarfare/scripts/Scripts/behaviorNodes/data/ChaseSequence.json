@@ -5,7 +5,7 @@
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/SequenceBehaviorTree.js",
   "fileName": "SequenceBehaviorTree",
   "behaviorActions": [
-    "HasTargetAction",
-    "MoveToEnemyAction"
+    "HasTargetBehaviorAction",
+    "MoveToEnemyBehaviorAction"
   ]
 }

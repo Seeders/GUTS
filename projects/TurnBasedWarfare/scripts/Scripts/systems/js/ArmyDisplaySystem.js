@@ -119,7 +119,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
 
             if (aiState?.currentAction) {
                 const actionType = aiState.currentAction;
-                if (actionType === 'AttackEnemyAction' || actionType === 'CombatBehaviorAction') return 'attacking';
+                if (actionType === 'AttackEnemyBehaviorAction' || actionType === 'CombatBehaviorAction') return 'attacking';
                 if (actionType === 'MoveBehaviorAction') return 'moving';
                 if (actionType === 'IdleBehaviorAction') return 'idle';
             }

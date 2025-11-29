@@ -14,10 +14,10 @@ class BuildSequence extends GUTS.SequenceBehaviorTree {
     constructor(game, config = {}) {
         // Set behaviorActions before calling super
         config.behaviorActions = [
-            'HasBuildOrderAction',
-            'SetBuildTargetAction',
-            'MoveToSharedTargetAction',
-            'ConstructBuildingAction'
+            'HasBuildOrderBehaviorAction',
+            'SetBuildTargetBehaviorAction',
+            'MoveToSharedTargetBehaviorAction',
+            'ConstructBuildingBehaviorAction'
         ];
         super(game, config);
     }

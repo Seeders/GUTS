@@ -7,7 +7,7 @@
   "behaviorActions": [
     "AttackSequence",
     "ChaseSequence",
-    "FindNearestEnemyAction"
+    "FindNearestEnemyBehaviorAction"
   ],
   "parameters": {}
 }

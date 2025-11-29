@@ -10,17 +10,17 @@
  * Tree structure:
  * Selector
  * ├── DepositGoldSequence (succeeds if has gold and can deposit)
- * │   ├── HasGoldAction
- * │   ├── FindNearestDepotAction
- * │   ├── MoveToSharedTargetAction
- * │   └── DepositGoldAction
+ * │   ├── HasGoldBehaviorAction
+ * │   ├── FindNearestDepotBehaviorAction
+ * │   ├── MoveToSharedTargetBehaviorAction
+ * │   └── DepositGoldBehaviorAction
  * │
  * └── GatherGoldSequence (fallback - mine more gold)
- *     ├── FindNearestGoldMineAction
- *     ├── MoveToSharedTargetAction
- *     ├── JoinMineQueueAction
- *     ├── WaitForMineAction
- *     └── ExtractGoldAction
+ *     ├── FindNearestGoldMineBehaviorAction
+ *     ├── MoveToSharedTargetBehaviorAction
+ *     ├── JoinMineQueueBehaviorAction
+ *     ├── WaitForMineBehaviorAction
+ *     └── ExtractGoldBehaviorAction
  */
 class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
 

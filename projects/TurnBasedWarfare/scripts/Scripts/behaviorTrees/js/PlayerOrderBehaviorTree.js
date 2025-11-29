@@ -23,7 +23,7 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
 
         // For normal move orders (not force moves), check for nearby enemies first
         if (playerOrder.meta?.isMoveOrder && !playerOrder.meta?.preventEnemiesInRangeCheck) {
-            const isEnemyNearby = game.gameManager.call('getNodeByType', 'IsEnemyNearbyAction');
+            const isEnemyNearby = game.gameManager.call('getNodeByType', 'IsEnemyNearbyBehaviorAction');
             if (isEnemyNearby) {
                 const enemyCheckResult = isEnemyNearby.execute(entityId, game);
                 if (enemyCheckResult) {
@@ -34,7 +34,7 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
         }
 
         // Use base class evaluate which handles the selector pattern
-        // This evaluates: BuildSequence -> HoldPositionAction -> MoveBehaviorAction
+        // This evaluates: BuildSequence -> HoldPositionBehaviorAction -> MoveBehaviorAction
         return super.evaluate(entityId, game);
     }
 }

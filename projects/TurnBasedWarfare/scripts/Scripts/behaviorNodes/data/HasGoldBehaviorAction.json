@@ -1,0 +1,10 @@
+{
+  "title": "Has Gold",
+  "description": "Condition check - succeeds if entity is carrying gold",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/HasGoldBehaviorAction.js",
+  "fileName": "HasGoldBehaviorAction",
+  "parameters": {
+    "minAmount": 0
+  }
+}

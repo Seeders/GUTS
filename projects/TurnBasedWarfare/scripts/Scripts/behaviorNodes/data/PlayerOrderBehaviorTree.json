@@ -6,7 +6,7 @@
   "fileName": "PlayerOrderBehaviorTree",
   "behaviorActions": [
     "BuildSequence",
-    "HoldPositionAction",
+    "HoldPositionBehaviorAction",
     "MoveBehaviorAction"
   ],
   "parameters": {},

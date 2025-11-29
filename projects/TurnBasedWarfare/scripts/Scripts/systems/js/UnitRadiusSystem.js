@@ -69,7 +69,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
 
         // Show/hide attack circle based on entity action
         const aiState = this.game.getComponent(entityId, "aiState");
-        const isAttacking = aiState && aiState.currentAction && (aiState.currentAction === 'AttackEnemyAction' || aiState.currentAction === 'CombatBehaviorAction');
+        const isAttacking = aiState && aiState.currentAction && (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction');
         const isChasing = aiState && aiState.currentAction && (aiState.actionTarget || (aiState.actionData && aiState.actionData.targetPos));
 
         if (isAttacking) {

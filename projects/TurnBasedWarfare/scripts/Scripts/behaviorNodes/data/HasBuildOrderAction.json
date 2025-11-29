@@ -1,8 +1,0 @@
-{
-  "title": "Has Build Order",
-  "description": "Condition check - succeeds if entity has a valid build order with building under construction",
-  "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/HasBuildOrderAction.js",
-  "fileName": "HasBuildOrderAction",
-  "parameters": {}
-}

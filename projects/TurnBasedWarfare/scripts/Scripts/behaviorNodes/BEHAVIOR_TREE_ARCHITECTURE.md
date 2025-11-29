@@ -12,20 +12,20 @@ SelectBehaviorTree (Root)
 │   └── Evaluates all passive abilities from unit
 │
 ├── PlayerOrderBehaviorTree (Priority 2: Player commands)
-│   ├── [Check: IsEnemyNearbyAction for normal moves]
+│   ├── [Check: IsEnemyNearbyBehaviorAction for normal moves]
 │   ├── BuildSequence (Build orders from peasants)
-│   ├── HoldPositionAction (Hold position command)
+│   ├── HoldPositionBehaviorAction (Hold position command)
 │   └── MoveBehaviorAction (Move to target position)
 │
 ├── NewCombatBehaviorTree (Priority 3: Autobattle AI)
 │   ├── AttackSequence (if target exists and in range)
-│   │   ├── HasTargetAction
-│   │   ├── IsInAttackRangeAction
-│   │   └── AttackEnemyAction
+│   │   ├── HasTargetBehaviorAction
+│   │   ├── IsInAttackRangeBehaviorAction
+│   │   └── AttackEnemyBehaviorAction
 │   ├── ChaseSequence (if target exists but out of range)
-│   │   ├── HasTargetAction
-│   │   └── MoveToEnemyAction
-│   └── FindNearestEnemyAction (find new target)
+│   │   ├── HasTargetBehaviorAction
+│   │   └── MoveToEnemyBehaviorAction
+│   └── FindNearestEnemyBehaviorAction (find new target)
 │
 └── IdleBehaviorAction (Priority 4: Default fallback)
     └── Stand idle
@@ -82,7 +82,7 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 #### Move Order Types
 
 **Normal Move** (preventEnemiesInRangeCheck: false or omitted):
-- PlayerOrderBehaviorTree uses IsEnemyNearbyAction to check for enemies
+- PlayerOrderBehaviorTree uses IsEnemyNearbyBehaviorAction to check for enemies
 - If enemies in vision range → tree fails → CombatBehaviorAction takes over
 - If no enemies → MoveBehaviorAction executes the move
 - After combat, unit remains at combat location (doesn't resume move)
@@ -119,7 +119,7 @@ The behavior tree uses a **selector pattern** that evaluates children in order a
 
 Note: Enemy checking is handled by PlayerOrderBehaviorTree, not this action.
 
-### HoldPositionAction
+### HoldPositionBehaviorAction
 - **Success**: Holding position (anchored)
 - **Failure**: No hold order present
 
@@ -131,11 +131,11 @@ Modular combat tree using composition of focused actions:
 - **ChaseSequence**: Returns running while moving toward target
 
 **Actions:**
-- **FindNearestEnemyAction**: Finds nearest enemy in vision range, stores in `aiState.shared.target`
-- **HasTargetAction**: Checks if `shared.target` exists and is alive
-- **IsInAttackRangeAction**: Checks if target is within `combat.range`
-- **MoveToEnemyAction**: Moves toward `shared.target`, succeeds when in range
-- **AttackEnemyAction**: Attacks `shared.target`, anchors unit, continuous (returns running)
+- **FindNearestEnemyBehaviorAction**: Finds nearest enemy in vision range, stores in `aiState.shared.target`
+- **HasTargetBehaviorAction**: Checks if `shared.target` exists and is alive
+- **IsInAttackRangeBehaviorAction**: Checks if target is within `combat.range`
+- **MoveToEnemyBehaviorAction**: Moves toward `shared.target`, succeeds when in range
+- **AttackEnemyBehaviorAction**: Attacks `shared.target`, anchors unit, continuous (returns running)
 
 ### AbilitiesBehaviorTree
 - Evaluates each ability's `behaviorAction`
@@ -287,7 +287,7 @@ The behavior tree system includes debugging support:
 
 ### Actions
 - `MoveBehaviorAction.js` - Move to target position
-- `HoldPositionAction.js` - Stay in place
+- `HoldPositionBehaviorAction.js` - Stay in place
 - `CombatBehaviorAction.js` - Autobattle combat
 - `IdleBehaviorAction.js` - Default idle state
 - `BuildSequence.js` - Building construction
