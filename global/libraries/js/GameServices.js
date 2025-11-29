@@ -18,6 +18,7 @@ class GameServices {
     call(key, ...args) {
         const method = this.services.get(key);
         if (!method) {
+            console.warn('[GameServices] missing method', key);
             return undefined;
         }
         return method(...args);

@@ -71,10 +71,9 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const isMineOccupied = this.game.goldMineSystem.isMineOccupied(targetMine);
 
         // Start mining if we're the current miner OR if we're next and mine is free
-        if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
-            // Only call processNextInQueue if we're not already the current miner
+        if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {            
             if (!isCurrentMiner) {
-                this.game.goldMineSystem.processNextInQueue(targetMine);
+                game.gameManager.call('processNextMinerInQueue', targetMine);
             }
             const pos = game.getComponent(entityId, 'position');
             const vel = game.getComponent(entityId, 'velocity');
@@ -105,7 +104,7 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (elapsed >= this.parameters.miningDuration) {
             // Mining complete - process next miner in queue
-            game.goldMineSystem.processNextInQueue(targetMine);
+            game.gameManager.call('processNextMinerInQueue', targetMine);
 
             return {
                 hasGold: true,

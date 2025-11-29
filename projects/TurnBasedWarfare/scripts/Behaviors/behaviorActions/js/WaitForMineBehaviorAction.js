@@ -23,11 +23,6 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        if (!game.goldMineSystem) {
-            console.warn('WaitForMineBehaviorAction: goldMineSystem not available');
-            return this.failure();
-        }
-
         const goldMine = game.getComponent(targetMine, 'goldMine');
         if (!goldMine) {
             return this.failure();
@@ -37,14 +32,14 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const isCurrentMiner = goldMine.currentMiner === entityId;
 
         // Check if we're next in queue and mine is free
-        const isNextInQueue = game.goldMineSystem.isNextInQueue(targetMine, entityId);
-        const isMineOccupied = game.goldMineSystem.isMineOccupied(targetMine);
+        const isNextInQueue = game.gameManager.call('isNextInQueue', targetMine, entityId);
+        const isMineOccupied = game.gameManager.call('isMineOccupied', targetMine);
 
         if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
             // It's our turn!
             if (!isCurrentMiner) {
                 // Process queue to become current miner
-                game.goldMineSystem.processNextInQueue(targetMine);
+                game.gameManager.call('processNextMinerInQueue', targetMine);
             }
 
             shared.canMine = true;

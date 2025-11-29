@@ -10,7 +10,7 @@
  *
  * Returns:
  *   - SUCCESS if successfully joined queue (or already in queue)
- *   - FAILURE if no targetMine in shared state or goldMineSystem unavailable
+ *   - FAILURE if no targetMine in shared state
  */
 class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
 
@@ -22,11 +22,6 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Check if goldMineSystem is available
-        if (!game.goldMineSystem) {
-            console.warn('JoinMineQueueBehaviorAction: goldMineSystem not available');
-            return this.failure();
-        }
 
         // Check if already in queue
         if (shared.inMineQueue) {
@@ -34,7 +29,7 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Add to queue
-        game.goldMineSystem.addMinerToQueue(targetMine, entityId);
+        game.gameManager.call('addMinerToQueue', targetMine, entityId);
         shared.inMineQueue = true;
 
         return this.success({

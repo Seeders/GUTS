@@ -54,7 +54,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
             // Process next miner in queue
             if (game.goldMineSystem) {
-                game.goldMineSystem.processNextInQueue(targetMine);
+                game.goldMineSystem.processNextMinerInQueue(targetMine);
             }
 
             // Clear mine-related shared state

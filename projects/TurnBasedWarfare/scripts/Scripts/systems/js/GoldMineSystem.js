@@ -13,6 +13,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
         this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
+        this.game.gameManager.register('processNextMinerInQueue', () => this.processNextMinerInQueue.bind(this));
 
         this.findGoldVeinLocations();
         console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
@@ -274,7 +275,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     // Process next miner in queue when mine becomes available
-    processNextInQueue(mineEntityId) {
+    processNextMinerInQueue(mineEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
         goldMine.currentMiner = null;
         if (goldMine.minerQueue.length === 0) {
