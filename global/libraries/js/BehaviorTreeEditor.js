@@ -1199,6 +1199,18 @@ class BehaviorTreeEditor {
     stepSimulation() {
         if (!this.mockGame) return;
 
+        // Debug: Check processor and debugger
+        console.log('MockGame processor:', this.mockGame.processor);
+        console.log('BehaviorSystem exists:', !!this.mockGame.behaviorSystem);
+        if (this.mockGame.behaviorSystem) {
+            console.log('BehaviorSystem processor:', this.mockGame.behaviorSystem.processor);
+            console.log('Are they the same?', this.mockGame.processor === this.mockGame.behaviorSystem.processor);
+        }
+
+        const debugger_ = this.mockGame.gameManager?.call('getDebugger');
+        console.log('Debugger from gameManager:', debugger_);
+        console.log('Debugger enabled:', debugger_?.enabled);
+
         // Run one game update tick - this will call BehaviorSystem.update()
         // BehaviorSystem reads aiState.rootBehaviorTree and evaluates that tree
         this.mockGame.update(this.tickRate);
