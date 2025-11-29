@@ -14,7 +14,10 @@
 
         <div class="editor-module__section">
             <h3 class="editor-module__section-title">Simulation</h3>
-            <button id="bt-simulate-btn" class="editor-module__btn editor-module__btn--primary" style="margin-top: 8px; width: 100%;">Run Simulation</button>
+            <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Run one tick">Step</button>
+                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Run at game speed">▶ Play</button>
+            </div>
             <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
             <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
             <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>

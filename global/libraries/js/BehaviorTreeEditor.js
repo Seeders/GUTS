@@ -8,6 +8,10 @@ class BehaviorTreeEditor {
         this.selectedNode = null;
         this.zoom = 1;
 
+        // Simulation state
+        this.isPlaying = false;
+        this.playInterval = null;
+
         this.setupEventListeners();
     }
 
@@ -39,7 +43,8 @@ class BehaviorTreeEditor {
         document.getElementById('bt-import-json-btn')?.addEventListener('click', () => this.importJSONFile());
 
         // Simulation controls
-        document.getElementById('bt-simulate-btn')?.addEventListener('click', () => this.runSimulation());
+        document.getElementById('bt-step-btn')?.addEventListener('click', () => this.stepSimulation());
+        document.getElementById('bt-play-btn')?.addEventListener('click', () => this.togglePlaySimulation());
         document.getElementById('bt-reset-sim-btn')?.addEventListener('click', () => this.resetSimulation());
     }
 
@@ -1080,8 +1085,8 @@ class BehaviorTreeEditor {
             this.renderAllEntities(entitiesContainer);
         }
 
-        // Re-run simulation to update results
-        this.runSimulation();
+        // Re-evaluate to update results
+        this.displaySimulationResults();
     }
 
     createComponentPropertyInput(container, entityId, componentType, propertyName, value) {
@@ -1115,7 +1120,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = newValue;
                 }
-                this.runSimulation();
+                this.displaySimulationResults();
             });
             propDiv.appendChild(input);
         } else if (typeof value === 'boolean') {
@@ -1127,7 +1132,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = e.target.checked;
                 }
-                this.runSimulation();
+                this.displaySimulationResults();
             });
             propDiv.appendChild(checkbox);
         } else if (typeof value === 'number') {
@@ -1176,7 +1181,7 @@ class BehaviorTreeEditor {
                     if (component) {
                         component[propertyName] = newValue;
                     }
-                    this.runSimulation();
+                    this.displaySimulationResults();
                 } catch (err) {
                     alert('Invalid JSON: ' + err.message);
                 }
@@ -1187,11 +1192,76 @@ class BehaviorTreeEditor {
         container.appendChild(propDiv);
     }
 
-    runSimulation() {
-        if (!this.mockGame || !this.mockGame.processor) return;
+    /**
+     * Run one simulation tick
+     */
+    stepSimulation() {
+        if (!this.mockGame) return;
 
-        // Increment debug tick
-        this.mockGame.processor.debugTick();
+        // Run one game update tick at game speed (1/20 second = 0.05)
+        const dt = 1 / 20;
+        this.mockGame.update(dt);
+
+        // Display results after the tick
+        this.displaySimulationResults();
+    }
+
+    /**
+     * Toggle play/pause for continuous simulation
+     */
+    togglePlaySimulation() {
+        if (this.isPlaying) {
+            this.pauseSimulation();
+        } else {
+            this.playSimulation();
+        }
+    }
+
+    /**
+     * Start continuous simulation at game speed
+     */
+    playSimulation() {
+        if (!this.mockGame) return;
+
+        this.isPlaying = true;
+        const playBtn = document.getElementById('bt-play-btn');
+        if (playBtn) {
+            playBtn.textContent = '⏸ Pause';
+            playBtn.classList.add('editor-module__btn--warning');
+        }
+
+        // Run at game speed: 20 ticks per second = 50ms per tick
+        const tickRate = 50; // milliseconds
+        const dt = 1 / 20;  // delta time for each tick
+
+        this.playInterval = setInterval(() => {
+            this.mockGame.update(dt);
+            this.displaySimulationResults();
+        }, tickRate);
+    }
+
+    /**
+     * Stop continuous simulation
+     */
+    pauseSimulation() {
+        this.isPlaying = false;
+        const playBtn = document.getElementById('bt-play-btn');
+        if (playBtn) {
+            playBtn.textContent = '▶ Play';
+            playBtn.classList.remove('editor-module__btn--warning');
+        }
+
+        if (this.playInterval) {
+            clearInterval(this.playInterval);
+            this.playInterval = null;
+        }
+    }
+
+    /**
+     * Display simulation results after a tick
+     */
+    displaySimulationResults() {
+        if (!this.mockGame || !this.mockGame.processor) return;
 
         // Evaluate behavior tree only for the main entity (first entity)
         const results = [];
@@ -1218,6 +1288,13 @@ class BehaviorTreeEditor {
         }
 
         this.displaySimResult(results);
+    }
+
+    /**
+     * @deprecated Use stepSimulation() instead
+     */
+    runSimulation() {
+        this.stepSimulation();
     }
 
     displaySimResult(results) {
@@ -1434,6 +1511,9 @@ class BehaviorTreeEditor {
     }
 
     resetSimulation() {
+        // Stop any running simulation
+        this.pauseSimulation();
+
         // Clear debug data before resetting
         if (this.mockGame?.processor) {
             this.mockGame.processor.clearAllDebugData();
@@ -1441,7 +1521,7 @@ class BehaviorTreeEditor {
 
         // Reset mock game context to original state
         if (GUTS && GUTS.MockGameContext) {
-            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);            
+            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
             this.mockGame.init(true, this.controller.getCollections().editorModules.behaviorTreeModule);
         }
 
