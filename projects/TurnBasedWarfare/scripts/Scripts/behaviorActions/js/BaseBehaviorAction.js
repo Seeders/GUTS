@@ -1,5 +1,4 @@
 class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
-    // Status constants for behavior tree evaluation
     static STATUS = {
         SUCCESS: 'success',
         FAILURE: 'failure',
@@ -8,20 +7,6 @@ class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
 
     constructor(game, config) {
         super(game, config);
-
-        // BaseBehaviorNode already handles memory, parameters, etc.
-        // No additional initialization needed
-    }
-
-    // Note: getMemory, getShared, success, running, failure
-    // are now inherited from BaseBehaviorNode
-
-    /**
-     * Legacy helper - creates success response
-     * @deprecated Use success() instead
-     */
-    actionResponse(meta) {
-        return this.success(meta);
     }
 
     /**
@@ -37,7 +22,7 @@ class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
 
     /**
      * Override evaluateLeaf - called by BaseBehaviorNode for leaf nodes
-     * Delegates to execute() for backwards compatibility
+     * Delegates to execute() which subclasses override
      */
     evaluateLeaf(entityId, game) {
         return this.execute(entityId, game);
@@ -53,7 +38,4 @@ class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
     execute(entityId, game) {
         return this.failure();
     }
-
-    // Note: onStart, onEnd, onBattleStart, onBattleEnd, onPlacementPhaseStart
-    // are now inherited from BaseBehaviorNode
 }
