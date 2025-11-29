@@ -68,7 +68,7 @@ class LoopDecorator extends GUTS.BaseBehaviorDecorator {
             }
 
             // Execute child
-            result = this.executeChild(entityId, game);
+            result = this.evaluateChild(entityId, game, this.child);
             memory.lastResult = result;
             memory.currentIteration++;
             iterations++;

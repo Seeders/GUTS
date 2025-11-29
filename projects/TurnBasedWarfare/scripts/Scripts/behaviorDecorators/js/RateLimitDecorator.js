@@ -59,7 +59,7 @@ class RateLimitDecorator extends GUTS.BaseBehaviorDecorator {
         }
 
         // Execute the child
-        const childResult = this.executeChild(entityId, game);
+        const childResult = this.evaluateChild(entityId, game, this.child);
 
         // Track execution
         memory.executionsInWindow++;

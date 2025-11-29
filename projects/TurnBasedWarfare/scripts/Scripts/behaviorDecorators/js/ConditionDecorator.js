@@ -51,7 +51,7 @@ class ConditionDecorator extends GUTS.BaseBehaviorDecorator {
 
         if (finalResult) {
             // Condition passed - execute child
-            const childResult = this.executeChild(entityId, game);
+            const childResult = this.evaluateChild(entityId, game, this.child);
             if (childResult) {
                 return {
                     ...childResult,

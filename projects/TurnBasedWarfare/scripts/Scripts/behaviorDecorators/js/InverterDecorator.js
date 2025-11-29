@@ -6,7 +6,7 @@
 class InverterDecorator extends GUTS.BaseBehaviorDecorator {
 
     execute(entityId, game) {
-        const result = this.executeChild(entityId, game);
+        const result = this.evaluateChild(entityId, game, this.child);
 
         if (result === null) {
             // Child failed, return success

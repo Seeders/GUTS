@@ -6,7 +6,7 @@
 class ForceFailureDecorator extends GUTS.BaseBehaviorDecorator {
 
     execute(entityId, game) {
-        const result = this.executeChild(entityId, game);
+        const result = this.evaluateChild(entityId, game, this.child);
 
         if (result && result.status === 'running') {
             // Pass through running status

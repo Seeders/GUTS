@@ -27,7 +27,7 @@ class TimeoutDecorator extends GUTS.BaseBehaviorDecorator {
         }
 
         // Execute child
-        const result = this.executeChild(entityId, game);
+        const result = this.evaluateChild(entityId, game, this.child);
 
         if (result === null) {
             // Child failed

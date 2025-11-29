@@ -19,7 +19,7 @@ class RepeaterDecorator extends GUTS.BaseBehaviorDecorator {
             memory.count = 0;
         }
 
-        const result = this.executeChild(entityId, game);
+        const result = this.evaluateChild(entityId, game, this.child);
 
         // Handle running status
         if (result && result.status === 'running') {

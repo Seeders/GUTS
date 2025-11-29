@@ -34,7 +34,7 @@ class CooldownDecorator extends GUTS.BaseBehaviorDecorator {
         }
 
         // Execute child
-        const result = this.executeChild(entityId, game);
+        const result = this.evaluateChild(entityId, game, this.child);
 
         // If child succeeded or is running, update last execution time
         if (result !== null) {
