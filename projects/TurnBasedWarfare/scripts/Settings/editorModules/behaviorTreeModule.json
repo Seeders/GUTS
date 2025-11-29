@@ -9,6 +9,7 @@
   "saveHook": "saveBehaviorTree",
   "libraries": [
     "BaseECSGame",
+    "BaseSystem",
     "ComponentGenerator",
     "GameServices",
     "MockGameContext",
