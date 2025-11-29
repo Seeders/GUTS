@@ -122,34 +122,32 @@ class BehaviorTreeProcessor {
 
     /**
      * Initialize from collections (call after construction)
-     * @param {Object} collections - Game collections with behaviorNodes (unified) or legacy collections
+     * @param {Object} collections - Game collections with behaviorNodes 
      */
     initializeFromCollections(collections) {
-        // New unified collection
-        if (collections.behaviorNodes) {
-            Object.entries(collections.behaviorNodes).forEach(([nodeId, nodeData]) => {
-                this.registerNode(nodeId, nodeData);
-            });
-        }
+   
 
-        // Legacy: Register behavior actions
         if (collections.behaviorActions) {
             Object.entries(collections.behaviorActions).forEach(([actionId, actionData]) => {
                 this.registerNode(actionId, actionData);
             });
         }
 
-        // Legacy: Register behavior decorators
         if (collections.behaviorDecorators) {
             Object.entries(collections.behaviorDecorators).forEach(([decoratorId, decoratorData]) => {
                 this.registerNode(decoratorId, decoratorData);
             });
         }
 
-        // Legacy: Register behavior trees
         if (collections.behaviorTrees) {
             Object.entries(collections.behaviorTrees).forEach(([treeId, treeData]) => {
                 this.registerNode(treeId, treeData);
+            });
+        }
+
+        if (collections.sequenceBehaviorTrees) {
+            Object.entries(collections.sequenceBehaviorTrees).forEach(([sequenceId, sequenceData]) => {
+                this.registerNode(sequenceId, sequenceData);
             });
         }
     }
@@ -180,28 +178,6 @@ class BehaviorTreeProcessor {
         return this.nodes.get(type);
     }
 
-    // Legacy compatibility methods (redirect to unified storage)
-
-    /**
-     * @deprecated Use getNodeByType instead
-     */
-    getActionByType(type) {
-        return this.nodes.get(type);
-    }
-
-    /**
-     * @deprecated Use getNodeByType instead
-     */
-    getBehaviorTreeByType(type) {
-        return this.nodes.get(type);
-    }
-
-    /**
-     * @deprecated Use getNodeByType instead
-     */
-    getDecoratorByType(type) {
-        return this.nodes.get(type);
-    }
 
     /**
      * Evaluate a registered behavior node for an entity
