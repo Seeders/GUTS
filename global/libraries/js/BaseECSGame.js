@@ -26,68 +26,47 @@ class BaseECSGame {
             this.performanceMonitor = new GUTS.PerformanceMonitor();
         }
     }
-    init(isServer = false) {
+    init(isServer = false, config) {
         this.isServer = isServer;
         if(!this.isServer){
             document.addEventListener('keydown', (e) => {                
                 this.triggerEvent('onKeyDown', e.key);
             });
         }
-        this.loadGameScripts();
+        this.loadGameScripts(config);
     }
     
-    loadGameScripts() {
+    loadGameScripts(config) {
         this.collections = this.getCollections();
-        this.gameConfig = this.isServer ? this.collections.configs.server : this.collections.configs.game;
-        this.gameConfig.classes.forEach((sceneClassDef) => {
-            const collectionName = sceneClassDef.collection;
-            const baseClassId = sceneClassDef.baseClass;
-            const classCollection = this.getCollections()[collectionName];
-            
-            if(baseClassId){
-                const collectionClassDef = classCollection[baseClassId];
-                let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.canvas };
-                const BaseClassDef = GUTS[baseClassId];
-                this.addClass(baseClassId, BaseClassDef, params);
-                
-            }
-            for(const collectionClassId in classCollection) {
-                if(baseClassId && collectionClassId == baseClassId) continue;
-                const collectionClassDef = classCollection[collectionClassId];
-                let params = { ...collectionClassDef.parameters, ...sceneClassDef.parameters, canvas: this.canvas };
-                const ClassDef = GUTS[collectionClassId];
-                this.addClass(collectionClassId, ClassDef, params);
-                
-            }
-        });         
+        this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);      
         
-        this.gameConfig.managers.forEach((managerType) => {
-            let params = { canvas: this.canvas };
-            let ManagerClass = null;
-            ManagerClass = GUTS[managerType];              
-            const managerInst = new ManagerClass(this);
+        let managers = [];
+        this.gameConfig.managers?.forEach((managerType) => {
+            let params = { canvas: this.canvas };           
+            const managerInst = new GUTS[managerType](this);
             if(managerInst.init){
                 managerInst.init(params);
             }  
+            managers.push(managerInst);
         });   
-
-        this.gameConfig.systems.forEach((systemType) => {
-            let params = {canvas: this.canvas };
-
-            let SystemClass = null;
-            // Check if using webpack bundle or if GUTS classes are available
-            if(typeof GUTS !== 'undefined' && (GUTS[systemType] || window.COMPILED_GAME)){
-                SystemClass = GUTS[systemType];
-            } else {
-                SystemClass = this.moduleManager.getCompiledScript(systemType, 'systems');
-            }    
-            const systemInst = new SystemClass(this);
-
-            this.addSystem(systemInst, params);
-            
+        let systems = [];
+        this.gameConfig.systems?.forEach((systemType) => {
+            let params = {canvas: this.canvas };  
+            const systemInst = new GUTS[systemType](this);
+            if(systemInst.init){
+                systemInst.init(params);
+            }  
+            systems.push(systemInst);
         });   
-        this.systems.forEach((system) => {
-            system.postAllInit();                
+        managers.forEach((manager) => {
+            if(manager.postAllInit){
+                manager.postAllInit();  
+            }              
+        });      
+        systems.forEach((system) => {
+            if(system.postAllInit){
+                system.postAllInit();  
+            }              
         });      
 
     }
@@ -252,20 +231,6 @@ class BaseECSGame {
         return result.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
-    addSystem(system, params) {
-        system.game = this;
-        this.systems.push(system);
-        if (system.init) {
-            system.init(params);
-        }
-    }
-
-    addClass(classId, classRef, params) {
-        this.classes[classId] = { classRef: classRef, defaultParams: params };
-        // Classes are now available directly at GUTS[classId]
-    }
-
-
     triggerEvent(eventName, data) {
         this.systems.forEach(system => {
             if (system[eventName]) {

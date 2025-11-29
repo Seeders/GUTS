@@ -103,7 +103,6 @@ class MockGameContext extends GUTS.BaseECSGame {
      */
     static fromBehaviorTreeData(behaviorTreeData, app = null) {
         const mockData = behaviorTreeData.mockEntities.entities;
-        console.log('reset with', behaviorTreeData.mockEntities, mockData);
         return new MockGameContext(mockData, app);
     }
 

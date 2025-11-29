@@ -17,6 +17,9 @@
     "BaseBehaviorNode",
     "BehaviorTreeEditor"
   ],
+  "systems": [
+    "BehaviorSystem"
+  ],
   "classes": [
     {
       "collection": "behaviorActions",

@@ -724,7 +724,8 @@ class BehaviorTreeEditor {
 
     setupScriptBasedSimulation(varsContainer) {
         // Initialize mock game context with editor controller for getCollections()
-        this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
+        this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);          
+        this.mockGame.init(true, this.controller.getCollections().editorModules.behaviorTreeModule);
 
 
         if (!this.mockGame) {
@@ -1440,7 +1441,8 @@ class BehaviorTreeEditor {
 
         // Reset mock game context to original state
         if (GUTS && GUTS.MockGameContext) {
-            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);
+            this.mockGame = GUTS.MockGameContext.fromBehaviorTreeData(this.objectData, this.controller);            
+            this.mockGame.init(true, this.controller.getCollections().editorModules.behaviorTreeModule);
         }
 
         // Reset UI
