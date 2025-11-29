@@ -1269,7 +1269,11 @@ class BehaviorTreeEditor {
             const mainEntityId = entityIds[0];
             // Get debug trace for this entity
             const debugger_ = this.mockGame.processor.getDebugger();
+            console.log('Debugger:', debugger_);
+            console.log('Debugger enabled:', debugger_?.enabled);
             const trace = debugger_?.getLastTrace(mainEntityId);
+            console.log('Trace for', mainEntityId, ':', trace);
+            console.log('All traces:', debugger_?.traces);
 
             results.push({
                 entityId: mainEntityId,
