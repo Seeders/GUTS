@@ -155,7 +155,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                 const actionType = aiState.currentAction;
 
                 switch (actionType) {
-                    case 'AttackBehaviorAction':
+                    case 'AttackEnemyAction':
                     case 'CombatBehaviorAction':
                         // During combat, prefer walking if moving, otherwise idle
                         if (!isMoving) {
