@@ -1197,12 +1197,20 @@ class BehaviorTreeEditor {
      * Run one tree evaluation step
      */
     stepSimulation() {
-        if (!this.mockGame) return;
+        if (!this.mockGame || !this.mockGame.processor) return;
 
         // Increment debug tick for this evaluation
-        this.mockGame.update(this.tickRate);
+        this.mockGame.processor.debugTick();
 
-        // Evaluate the tree once - this will show all node evaluations in the trace
+        // Evaluate the specific tree being edited (not SelectBehaviorTree)
+        const entityIds = Array.from(this.mockGame.entities.keys());
+        if (entityIds.length > 0) {
+            const mainEntityId = entityIds[0];
+            // Directly evaluate the tree data from the editor
+            this.mockGame.processor.evaluateTreeData(this.objectData, mainEntityId);
+        }
+
+        // Display results after evaluation
         this.displaySimulationResults();
     }
 
@@ -1230,12 +1238,20 @@ class BehaviorTreeEditor {
             playBtn.classList.add('editor-module__btn--warning');
         }
 
-        // Evaluate tree repeatedly - adjust interval for desired speed
-    
+        // Evaluate tree repeatedly - 500ms interval (2 evaluations per second)
+        const evaluationInterval = 500;
+
         this.playInterval = setInterval(() => {
-            this.mockGame.update(evaluationInterval);
+            this.mockGame.processor.debugTick();
+
+            const entityIds = Array.from(this.mockGame.entities.keys());
+            if (entityIds.length > 0) {
+                const mainEntityId = entityIds[0];
+                this.mockGame.processor.evaluateTreeData(this.objectData, mainEntityId);
+            }
+
             this.displaySimulationResults();
-        }, this.tickRate);
+        }, evaluationInterval);
     }
 
     /**
@@ -1269,11 +1285,7 @@ class BehaviorTreeEditor {
             const mainEntityId = entityIds[0];
             // Get debug trace for this entity
             const debugger_ = this.mockGame.processor.getDebugger();
-            console.log('Debugger:', debugger_);
-            console.log('Debugger enabled:', debugger_?.enabled);
             const trace = debugger_?.getLastTrace(mainEntityId);
-            console.log('Trace for', mainEntityId, ':', trace);
-            console.log('All traces:', debugger_?.traces);
 
             results.push({
                 entityId: mainEntityId,
