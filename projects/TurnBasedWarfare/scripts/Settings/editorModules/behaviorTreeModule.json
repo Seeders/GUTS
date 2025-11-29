@@ -14,8 +14,10 @@
     "MockGameContext",
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
-    "BehaviorTreeEditor",
-    "BaseBehaviorNode"
+    "BaseBehaviorNode",
+    "BaseBehaviorTree",
+    "BaseBehaviorAction",
+    "BehaviorTreeEditor"
   ],
   "classes": [
     {
