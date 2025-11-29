@@ -1197,18 +1197,11 @@ class BehaviorTreeEditor {
      * Run one tree evaluation step
      */
     stepSimulation() {
-        if (!this.mockGame || !this.mockGame.processor) return;
+        if (!this.mockGame) return;
 
-        // Increment debug tick for this evaluation
-        this.mockGame.processor.debugTick();
-
-        // Evaluate the specific tree being edited (not SelectBehaviorTree)
-        const entityIds = Array.from(this.mockGame.entities.keys());
-        if (entityIds.length > 0) {
-            const mainEntityId = entityIds[0];
-            // Directly evaluate the tree data from the editor
-            this.mockGame.processor.evaluateTreeData(this.objectData, mainEntityId);
-        }
+        // Run one game update tick - this will call BehaviorSystem.update()
+        // BehaviorSystem reads aiState.rootBehaviorTree and evaluates that tree
+        this.mockGame.update(this.tickRate);
 
         // Display results after evaluation
         this.displaySimulationResults();
@@ -1229,7 +1222,7 @@ class BehaviorTreeEditor {
      * Start continuous tree evaluation
      */
     playSimulation() {
-        if (!this.mockGame || !this.mockGame.processor) return;
+        if (!this.mockGame) return;
 
         this.isPlaying = true;
         const playBtn = document.getElementById('bt-play-btn');
@@ -1238,18 +1231,12 @@ class BehaviorTreeEditor {
             playBtn.classList.add('editor-module__btn--warning');
         }
 
-        // Evaluate tree repeatedly - 500ms interval (2 evaluations per second)
+        // Run game updates repeatedly - 500ms interval (2 evaluations per second)
         const evaluationInterval = 500;
 
         this.playInterval = setInterval(() => {
-            this.mockGame.processor.debugTick();
-
-            const entityIds = Array.from(this.mockGame.entities.keys());
-            if (entityIds.length > 0) {
-                const mainEntityId = entityIds[0];
-                this.mockGame.processor.evaluateTreeData(this.objectData, mainEntityId);
-            }
-
+            // Run one game update tick - this will call BehaviorSystem.update()
+            this.mockGame.update(this.tickRate);
             this.displaySimulationResults();
         }, evaluationInterval);
     }
