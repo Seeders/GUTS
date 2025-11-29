@@ -1,4 +1,9 @@
 class AttackSequence extends GUTS.BaseBehaviorTree {
-    // Simple sequence: uses base class which evaluates children in order
-    // Fails if any child fails, returns first running/success
+    /**
+     * Sequence: runs children in order, fails if any child fails
+     * Override evaluateComposite to use sequence pattern instead of selector
+     */
+    evaluateComposite(entityId, game) {
+        return this.evaluateSequence(entityId, game);
+    }
 }

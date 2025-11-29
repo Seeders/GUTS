@@ -1,4 +1,4 @@
-class BaseBehaviorAction {
+class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
     // Status constants for behavior tree evaluation
     static STATUS = {
         SUCCESS: 'success',
@@ -7,94 +7,14 @@ class BaseBehaviorAction {
     };
 
     constructor(game, config) {
-        this.game = game;
-        this.config = config;
-        this.parameters = config.parameters;
-        if (typeof this.parameters == 'string') {
-            this.parameters = JSON.parse(this.parameters);
-        }
+        super(game, config);
 
-        // Per-entity memory storage
-        // Key: entityId, Value: memory object initialized from config.memory
-        this.entityMemory = new Map();
-
-        // Default memory schema from config (can be overridden in JSON)
-        this.memoryDefaults = config.memory || {};
+        // BaseBehaviorNode already handles memory, parameters, etc.
+        // No additional initialization needed
     }
 
-    /**
-     * Get or create memory for an entity
-     * Memory is initialized from config.memory defaults
-     * @param {string} entityId - Entity ID
-     * @returns {Object} Memory object for this entity
-     */
-    getMemory(entityId) {
-        if (!this.entityMemory.has(entityId)) {
-            // Deep clone the defaults so each entity has its own copy
-            this.entityMemory.set(entityId, JSON.parse(JSON.stringify(this.memoryDefaults)));
-        }
-        return this.entityMemory.get(entityId);
-    }
-
-    /**
-     * Clear memory for an entity (call on action end or entity death)
-     * @param {string} entityId - Entity ID
-     */
-    clearMemory(entityId) {
-        this.entityMemory.delete(entityId);
-    }
-
-    /**
-     * Get shared data for an entity (shared state between all behavior nodes)
-     * Uses aiState.shared component for ECS-friendly shared state
-     * @param {string} entityId - Entity ID
-     * @param {object} game - Game instance
-     * @returns {Object} Shared data object
-     */
-    getShared(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState) {
-            if (!aiState.shared) {
-                aiState.shared = {};
-            }
-            return aiState.shared;
-        }
-        return {};
-    }
-
-    /**
-     * Create a success response
-     * @param {Object} meta - Additional data to pass with the action
-     * @returns {Object} Success response
-     */
-    success(meta = {}) {
-        return {
-            action: this.constructor.name,
-            status: BaseBehaviorAction.STATUS.SUCCESS,
-            meta: meta
-        };
-    }
-
-    /**
-     * Create a running response (action in progress)
-     * @param {Object} meta - Additional data to pass with the action
-     * @returns {Object} Running response
-     */
-    running(meta = {}) {
-        return {
-            action: this.constructor.name,
-            status: BaseBehaviorAction.STATUS.RUNNING,
-            meta: meta
-        };
-    }
-
-    /**
-     * Create a failure response (return null for selector to try next)
-     * @returns {null}
-     */
-    failure() {
-        return null;
-    }
+    // Note: getMemory, getShared, success, running, failure
+    // are now inherited from BaseBehaviorNode
 
     /**
      * Legacy helper - creates success response
@@ -116,7 +36,16 @@ class BaseBehaviorAction {
     }
 
     /**
+     * Override evaluateLeaf - called by BaseBehaviorNode for leaf nodes
+     * Delegates to execute() for backwards compatibility
+     */
+    evaluateLeaf(entityId, game) {
+        return this.execute(entityId, game);
+    }
+
+    /**
      * Execute one tick of the action
+     * Override this in subclasses
      * @param {string} entityId - Entity ID
      * @param {object} game - Game instance
      * @returns {Object|null} Response with status (success/running) or null for failure
@@ -125,31 +54,6 @@ class BaseBehaviorAction {
         return this.failure();
     }
 
-    /**
-     * Called when action starts (optional)
-     * @param {string} entityId - Entity ID
-     * @param {object} game - Game instance
-     */
-    onStart(entityId, game) {
-        // Override in subclass if needed
-    }
-
-    /**
-     * Clean up when action ends
-     * @param {string} entityId - Entity ID
-     * @param {object} game - Game instance
-     */
-    onEnd(entityId, game) {
-        // Clear entity memory by default
-        this.clearMemory(entityId);
-    }
-
-    onBattleStart(entityId, game) {
-    }
-
-    onBattleEnd(entityId, game) {
-    }
-
-    onPlacementPhaseStart(entityId, game) {
-    }
+    // Note: onStart, onEnd, onBattleStart, onBattleEnd, onPlacementPhaseStart
+    // are now inherited from BaseBehaviorNode
 }
