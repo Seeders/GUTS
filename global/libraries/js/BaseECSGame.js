@@ -10,6 +10,7 @@ class BaseECSGame {
         this.components = new Map();
         this.classes = [];
         this.systems = [];
+        this.managers = [];
 
         this.nextEntityId = 1;
         this.lastTime = 0;
@@ -40,30 +41,28 @@ class BaseECSGame {
         this.collections = this.getCollections();
         this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);      
         
-        let managers = [];
         this.gameConfig.managers?.forEach((managerType) => {
             let params = { canvas: this.canvas };           
             const managerInst = new GUTS[managerType](this);
             if(managerInst.init){
                 managerInst.init(params);
             }  
-            managers.push(managerInst);
+            this.managers.push(managerInst);
         });   
-        let systems = [];
         this.gameConfig.systems?.forEach((systemType) => {
             let params = {canvas: this.canvas };  
             const systemInst = new GUTS[systemType](this);
             if(systemInst.init){
                 systemInst.init(params);
             }  
-            systems.push(systemInst);
+            this.systems.push(systemInst);
         });   
-        managers.forEach((manager) => {
+        this.managers.forEach((manager) => {
             if(manager.postAllInit){
                 manager.postAllInit();  
             }              
         });      
-        systems.forEach((system) => {
+        this.systems.forEach((system) => {
             if(system.postAllInit){
                 system.postAllInit();  
             }              
