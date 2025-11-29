@@ -15,9 +15,6 @@
     "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
     "BaseBehaviorNode",
-    "BaseBehaviorTree",
-    "BaseBehaviorAction",
-    "BaseBehaviorDecorator",
     "BehaviorTreeEditor"
   ],
   "classes": [
