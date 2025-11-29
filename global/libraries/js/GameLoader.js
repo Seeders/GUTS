@@ -23,7 +23,7 @@ class GameLoader {
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
         this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
-        this.game.init();
+        this.game.init(false);
     }
 
     setupCanvas(canvasWidth, canvasHeight) {

@@ -8,7 +8,7 @@ class ServerGameLoader {
         console.log('Server game loader initialized');
         
         // Initialize any server-specific systems
-        this.game.init();
+        this.game.init(true);
         // No canvas or image loading needed on server
         // Just load the scene
         
