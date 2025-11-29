@@ -1278,6 +1278,7 @@ class BehaviorTreeEditor {
                 entityId: mainEntityId,
                 entityLabel: this.mockGame.getEntityLabel(mainEntityId),
                 aiState: this.mockGame.getComponent(mainEntityId, 'aiState'),
+                result: trace?.result,
                 trace
             });
         }
@@ -1316,7 +1317,7 @@ class BehaviorTreeEditor {
             this.highlightActiveNode(highlightedAction);
         }
 
-        results.forEach(({ entityId, entityLabel, result, trace }) => {
+        results.forEach(({ entityId, entityLabel, aiState, result, trace }) => {
             const entityCard = document.createElement('div');
             entityCard.style.marginBottom = '12px';
             entityCard.style.padding = '8px';
@@ -1344,17 +1345,39 @@ class BehaviorTreeEditor {
             const resultContent = document.createElement('div');
             resultContent.style.fontSize = '11px';
 
-            if (result && result.action) {
-                resultContent.innerHTML = `
-                    <div style="color: #22c55e;"><strong>\u2713 Action Selected</strong></div>
-                    <div style="margin-top: 4px;"><strong>Action:</strong> ${result.action}</div>
-                    ${result.status ? `<div><strong>Status:</strong> ${result.status}</div>` : ''}
-                    ${result.target ? `<div><strong>Target:</strong> ${JSON.stringify(result.target)}</div>` : ''}
-                    ${result.priority !== undefined ? `<div><strong>Priority:</strong> ${result.priority}</div>` : ''}
-                    ${result.data ? `<div><strong>Data:</strong> ${JSON.stringify(result.data)}</div>` : ''}
-                `;
+            // Display tree evaluation result
+            if (result) {
+                const resultType = typeof result;
+                if (resultType === 'string') {
+                    // Result is an action name
+                    resultContent.innerHTML = `
+                        <div style="color: #22c55e;"><strong>\u2713 Action Selected</strong></div>
+                        <div style="margin-top: 4px;"><strong>Action:</strong> ${result}</div>
+                    `;
+                } else if (resultType === 'object' && result !== null) {
+                    // Result is an object - display its properties
+                    resultContent.innerHTML = `
+                        <div style="color: #22c55e;"><strong>\u2713 Evaluation Result</strong></div>
+                        <div style="margin-top: 4px;"><pre style="margin: 0; font-size: 10px;">${JSON.stringify(result, null, 2)}</pre></div>
+                    `;
+                } else {
+                    // Other result types
+                    resultContent.innerHTML = `
+                        <div style="color: #22c55e;"><strong>\u2713 Result:</strong> ${result}</div>
+                    `;
+                }
             } else {
-                resultContent.innerHTML = `<div style="color: #888;">\u2717 No action (all conditions failed)</div>`;
+                resultContent.innerHTML = `<div style="color: #888;">\u2717 No result</div>`;
+            }
+
+            // Also show current action from aiState if available
+            if (aiState && aiState.currentAction) {
+                const actionDiv = document.createElement('div');
+                actionDiv.style.marginTop = '8px';
+                actionDiv.style.paddingTop = '8px';
+                actionDiv.style.borderTop = '1px solid #333';
+                actionDiv.innerHTML = `<div style="color: #aaa;"><strong>Current Action:</strong> ${aiState.currentAction}</div>`;
+                resultContent.appendChild(actionDiv);
             }
 
             entityCard.appendChild(resultContent);
