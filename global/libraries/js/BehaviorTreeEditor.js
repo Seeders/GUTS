@@ -1015,7 +1015,7 @@ class BehaviorTreeEditor {
 
     createComponentEditor(container, entityId, componentType, componentData) {
         const detailsEl = document.createElement('details');
-        detailsEl.open = true;
+        detailsEl.open = false;
         detailsEl.style.marginBottom = '12px';
         detailsEl.style.border = '1px solid #333';
         detailsEl.style.borderRadius = '4px';
