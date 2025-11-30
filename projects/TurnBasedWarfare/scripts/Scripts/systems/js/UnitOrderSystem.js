@@ -496,11 +496,19 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                             if(targetPosition){
                                 // Set player order - behavior tree will handle execution
                                 const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                                const aiState = this.game.getComponent(unitId, "aiState");
                                 if (playerOrder) {
                                     playerOrder.targetPosition = targetPosition;
                                     playerOrder.meta = meta;
                                     playerOrder.issuedTime = createdTime;
+                                    console.log('issueMoveOrders', unitId, targetPosition);
                                 }
+                                if(aiState){
+                                    aiState.currentAction = "";
+                                    aiState.meta = {};
+                                    aiState.shared = {};
+                                }
+                                    console.log('cleared aiState', aiState);
                             }
                         });
 

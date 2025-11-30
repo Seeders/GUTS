@@ -343,13 +343,13 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                             playerOrder.targetPosition = targetPosition;
                             playerOrder.meta = meta;
                             playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
+                
+                console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
                         }
                     });
                 }
                         
 
-                
-                console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
             }
 
                         // Send success response to requesting player

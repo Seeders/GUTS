@@ -5,8 +5,8 @@
   "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/UnitBattleBehaviorTree.js",
   "fileName": "UnitBattleBehaviorTree",
   "behaviorActions": [
-    "AbilitiesBehaviorTree",
     "PlayerOrderBehaviorTree",
+    "AbilitiesBehaviorTree",
     "CombatBehaviorAction",
     "IdleBehaviorAction"
   ],

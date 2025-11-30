@@ -368,9 +368,6 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
-        // AI state for behavior control
-        // Managed by BehaviorSystem (currentAction, actionTarget, actionData, actionPriority, actionStartTime)
-        // Managed by BehaviorTree/Actions (state, meta)
         this.game.addComponent(entity, "aiState", {
             currentAction: null,
             rootBehaviorTree: "UnitBattleBehaviorTree",

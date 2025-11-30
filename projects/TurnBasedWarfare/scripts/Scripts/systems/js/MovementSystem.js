@@ -199,7 +199,7 @@ class MovementSystem extends GUTS.BaseSystem {
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet
                 const isChasing = data.aiState &&
                     data.aiState.currentAction &&
-                    (data.aiState.actionTarget || (data.aiState.actionData && data.aiState.actionData.targetPos)) &&
+                    (data.aiState.shared || (data.aiState.shared && data.aiState.shared.targetPosition)) &&
                     !data.isAnchored;
 
                 if (isChasing) {
@@ -336,7 +336,7 @@ class MovementSystem extends GUTS.BaseSystem {
         // Only apply avoidance if chasing (has target but not anchored)
         const isChasing = aiState &&
             aiState.currentAction &&
-            (aiState.actionTarget || (aiState.actionData && aiState.actionData.targetPos)) &&
+            (aiState.shared || (aiState.shared && aiState.shared.targetPosition)) &&
             !isAnchored;
 
         if (!isChasing) {
@@ -351,8 +351,8 @@ class MovementSystem extends GUTS.BaseSystem {
 
         if(targetEntityId){
             targetPos = this.game.getComponent(targetEntityId, "position");
-        } else if (aiState.actionData?.targetPos) {
-            targetPos = aiState.actionData.targetPos;
+        } else if (aiState.shared?.targetPosition) {
+            targetPos = aiState.shared.targetPosition;
         }
 
         if (!targetPos) {
@@ -529,7 +529,6 @@ class MovementSystem extends GUTS.BaseSystem {
         // Get movement target from aiState
         let targetPos = null;
 
-        // Then check for position target in actionData
         if (!targetPos && aiState && aiState.meta?.targetPosition) {
             targetPos = aiState.meta.targetPosition;
         }
@@ -589,8 +588,8 @@ class MovementSystem extends GUTS.BaseSystem {
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
-        } else if (aiState.actionData?.targetPos) {
-            targetPos = aiState.actionData.targetPos;
+        } else if (aiState.shared?.targetPosition) {
+            targetPos = aiState.shared.targetPosition;
         }
 
         if (!targetPos) {

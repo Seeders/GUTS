@@ -3,6 +3,7 @@
   "schema": {
     "currentAction": null,
     "rootBehaviorTree": null,
-    "meta": {}
+    "meta": {},
+    "shared": {}
   }
 }
