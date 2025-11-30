@@ -121,9 +121,7 @@ class GridSystem extends GUTS.BaseSystem {
             }
         });
 
-        console.log("dimensions", this.dimensions);
-        console.log("[GridSystem] Initialized CoordinateTranslator with gridSize:", terrainGridSize, "tileMapSize:", tileMapSize);
-        
+  
         this.gridVisualization = null;
 
         // Compute half-splits once
@@ -388,7 +386,6 @@ class GridSystem extends GUTS.BaseSystem {
     }
 
     clear() {
-        console.log('grid system cleared');
         this.state.clear();
     }
     

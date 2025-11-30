@@ -196,7 +196,6 @@ class ModelManager {
 
     // Add method for static meshes without skeletons:
     _buildStaticVATBundle(key, masterModel, mesh) {
-            console.log('build static', key);
         const clips = [{ name: 'idle', startRow: 0, frames: 1 }];
         const clipIndexByName = { 'idle': 0 };
         
@@ -732,8 +731,7 @@ class ModelManager {
         texture.wrapS = THREE.ClampToEdgeWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
 
-        console.log(`[ModelManager] Baked attachment texture: ${cols}x${rows} for ${validBones.length} bones`);
-
+      
         return {
             texture,
             bones: attachmentBones,

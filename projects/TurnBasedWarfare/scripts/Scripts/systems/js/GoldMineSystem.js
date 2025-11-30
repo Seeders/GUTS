@@ -4,7 +4,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.goldMineSystem = this;
         this.goldVeinLocations = [];
 
-        console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
     }
 
     init(params) {
@@ -19,7 +18,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('addMinerToQueue', this.addMinerToQueue.bind(this));
 
         this.findGoldVeinLocations();
-        console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
     }
 
     findGoldVeinLocations() {
@@ -66,7 +64,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
                 };
             });
 
-        console.log('[GoldMineSystem] Found gold veins:', this.goldVeinLocations);
 
         if (!this.game.isServer) {
             this.mapGoldVeinInstances();
@@ -92,42 +89,30 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
         const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
-        console.log('[GOLD MINE SYSTEM] isValidGoldPlacement', gridPos, buildingGridWidth, buildingGridHeight);
-        console.log('[GOLD MINE SYSTEM] Building cells:', buildingCells);
-        console.log('[GOLD MINE SYSTEM] Total veins:', this.goldVeinLocations.length);
+
         for (const vein of this.goldVeinLocations) {
-            console.log('[GOLD MINE SYSTEM] Checking vein at gridPos:', vein.gridPos, 'cells:', vein.cells);
             if (vein.claimed) {
-                console.log('[GOLD MINE SYSTEM] Vein already claimed, skipping');
                 continue;
             }
 
             if (this.cellsMatch(buildingCells, vein.cells)) {
-                console.log('[GOLD MINE SYSTEM] Match found!');
                 return { valid: true, vein: vein };
             }
         }
 
-        console.log('[GOLD MINE SYSTEM] No matching vein found');
         return { valid: false };
     }
 
     cellsMatch(cells1, cells2) {
-        console.log('[GOLD MINE SYSTEM] cellsMatch');
-        console.log('[GOLD MINE SYSTEM] Building cells (cells1):', cells1);
-        console.log('[GOLD MINE SYSTEM] Vein cells (cells2):', cells2);
         if (cells1.length !== cells2.length) {
-            console.log('[GOLD MINE SYSTEM] Length mismatch:', cells1.length, 'vs', cells2.length);
             return false;
         }
 
         const cellSet = new Set(cells2.map(c => `${c.x},${c.z}`));
-        console.log('[GOLD MINE SYSTEM] Vein cell keys:', Array.from(cellSet));
 
         for (const cell of cells1) {
             const key = `${cell.x},${cell.z}`;
             const hasCell = cellSet.has(key);
-            console.log('[GOLD MINE SYSTEM]', cell, 'key:', key, 'found:', hasCell);
             if (!hasCell) {
                 return false;
             }
@@ -211,10 +196,8 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
         if (vein) {
             if (!this.game.isServer) {
-                console.log('[GoldMineSystem] CLIENT: Restoring vein');
                 this.restoreVein(vein);
             } else {
-                console.log('[GoldMineSystem] SERVER: Releasing mine claim');
                 vein.claimed = false;
                 vein.claimedBy = null;
             }
@@ -224,7 +207,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.removeComponent(entityId, "goldMine");
 
         const remainingMines = this.game.getEntitiesWith("goldMine").length;
-        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', remainingMines);
         return { success: true };
     }
 
@@ -266,7 +248,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     addMinerToQueue(mineEntityId, minerEntityId){
-        console.log('addMinerToQueue', mineEntityId, minerEntityId);
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
         goldMine.minerQueue.push(minerEntityId);
     }

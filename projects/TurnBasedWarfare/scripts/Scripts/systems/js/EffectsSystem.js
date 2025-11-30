@@ -47,7 +47,6 @@ class EffectsSystem extends GUTS.BaseSystem {
 
     initialize() {
         this.addEffectsCSS();
-        console.log('EffectsSystem initialized');
     }
     
     // Batch process all effects using game time
@@ -1023,7 +1022,6 @@ class EffectsSystem extends GUTS.BaseSystem {
             styleElement.remove();
         }
         
-        console.log('EffectsSystem destroyed');
     }
     
     entityDestroyed(entityId) {

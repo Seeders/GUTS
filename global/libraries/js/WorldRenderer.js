@@ -578,11 +578,9 @@ class WorldRenderer {
 
         // If no tiles of this type, skip mesh generation
         if (usedPositions.size === 0) {
-            console.log(`WorldRenderer: No tiles found for terrain type ${terrainType}, skipping mesh generation`);
             return;
         }
 
-        console.log(`WorldRenderer: Found ${usedPositions.size} vertex positions for terrain type ${terrainType}`);
 
         // Step 2: Create vertices for all used positions and store their original positions
         const positionToVertexIndex = new Map();
@@ -737,7 +735,6 @@ class WorldRenderer {
         this.scene.add(liquidMesh);
         this.liquidMeshes.push(liquidMesh);
 
-        console.log(`WorldRenderer: Added liquid mesh for terrain type ${terrainType}, vertices: ${vertices.length / 3}, triangles: ${indices.length / 3}`);
     }
 
     /**
@@ -745,7 +742,6 @@ class WorldRenderer {
      */
     generateAllLiquidSurfaces() {
         if (!this.config.enableLiquidSurfaces) {
-            console.log('WorldRenderer: Liquid surfaces disabled in config');
             return;
         }
 
@@ -754,9 +750,6 @@ class WorldRenderer {
             console.warn('WorldRenderer: No tileMap or terrainTypes available for liquid generation');
             return;
         }
-
-        console.log('WorldRenderer: Generating liquid surfaces...');
-        console.log('WorldRenderer: Available terrain types:', tileMap.terrainTypes);
 
         // Clear existing liquid meshes
         this.clearLiquidSurfaces();
@@ -774,16 +767,12 @@ class WorldRenderer {
                 terrainTypeName.toLowerCase().includes('liquid')
             );
 
-            console.log(`WorldRenderer: Terrain type ${terrainTypeId} (${terrainTypeName}): isLiquid=${isLiquid}`);
-
             if (isLiquid) {
                 liquidTypesFound++;
-                console.log(`WorldRenderer: Generating liquid mesh for terrain type ${terrainTypeId}`);
                 this.generateLiquidSurfaceMesh(parseInt(terrainTypeId));
             }
         });
 
-        console.log(`WorldRenderer: Generated liquid surfaces for ${liquidTypesFound} terrain types, total meshes: ${this.liquidMeshes.length}`);
     }
 
     /**
@@ -1084,8 +1073,6 @@ class WorldRenderer {
 
         const height = heightLevel * heightStep;
 
-        // Debug: log grid size
-        console.log(`[WorldRenderer] setHeightAtGridPosition: gridX=${gridX}, gridZ=${gridZ}, gridSize=${gridSize}, heightLevel=${heightLevel}`);
 
         // Update the height map data
         // Update the entire tile (gridSize x gridSize pixels)
@@ -1184,11 +1171,9 @@ class WorldRenderer {
         const cliffData = this.terrainDataManager.analyzeCliffs();
 
         if (cliffData.length === 0) {
-            console.log('[WorldRenderer] No cliffs to spawn (no height differences)');
             return;
         }
 
-        console.log(`[WorldRenderer] Spawning ${cliffData.length} cliffs...`);
 
         const heightStep = this.terrainDataManager.heightStep;
 
@@ -1263,7 +1248,6 @@ class WorldRenderer {
             if (spawned) spawnedCount++;
         }
 
-        console.log(`[WorldRenderer] Spawned ${spawnedCount}/${cliffData.length} cliffs`);
     }
 
     /**

@@ -55,7 +55,6 @@ class RenderSystem extends GUTS.BaseSystem {
         // Register method to update capacities after terrain loads
         this.game.gameManager.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
 
-        console.log('[RenderSystem] Initialized with EntityRenderer');
     }
 
     /**
@@ -68,7 +67,6 @@ class RenderSystem extends GUTS.BaseSystem {
         // Get tile map from TerrainSystem via gameManager
         const tileMap = this.game.gameManager.call('getTileMap');
         if (!tileMap?.worldObjects) {
-            console.log('[RenderSystem] No world objects in level, using default capacities');
             return capacities;
         }
 
@@ -82,7 +80,6 @@ class RenderSystem extends GUTS.BaseSystem {
         // Set capacity with some buffer (20% extra for dynamic spawning)
         for (const [key, count] of Object.entries(counts)) {
             capacities[key] = Math.ceil(count * 1.2);
-            console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
         }
 
         // Also count cliffs if present
@@ -95,7 +92,6 @@ class RenderSystem extends GUTS.BaseSystem {
 
             for (const [key, count] of Object.entries(cliffCounts)) {
                 capacities[key] = Math.ceil(count * 1.2);
-                console.log(`[RenderSystem] Calculated capacity for ${key}: ${capacities[key]} (${count} in level)`);
             }
         }
 
@@ -107,7 +103,6 @@ class RenderSystem extends GUTS.BaseSystem {
      * Called by WorldSystem when terrain data is available
      */
     updateInstanceCapacities() {
-        console.log('[RenderSystem] updateInstanceCapacities() called');
 
         if (!this.entityRenderer) {
             console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
@@ -116,12 +111,10 @@ class RenderSystem extends GUTS.BaseSystem {
 
         const capacities = this.calculateInstanceCapacities();
 
-        console.log('[RenderSystem] Calculated capacities:', capacities);
 
         // Update EntityRenderer's capacity map
         this.entityRenderer.capacitiesByType = capacities;
 
-        console.log('[RenderSystem] Updated EntityRenderer.capacitiesByType:', this.entityRenderer.capacitiesByType);
     }
 
     /**
@@ -135,7 +128,6 @@ class RenderSystem extends GUTS.BaseSystem {
         // Mark as not spawned so it will be re-spawned with new model on next update
         this.spawnedEntities.delete(entityId);
 
-        console.log(`[RenderSystem] Removed instance ${entityId} for re-spawn`);
     }
     /**
      * Get batch information for animation system
@@ -349,48 +341,4 @@ class RenderSystem extends GUTS.BaseSystem {
         }
     }
 
-    hideEntityInstance(entityId) {
-        // For now, we just don't update hidden entities
-        // Could implement visibility toggle in EntityRenderer if needed
-        console.warn('[RenderSystem] hideEntityInstance not fully implemented');
-    }
-
-    showEntityInstance(entityId) {
-        // For now, entities are always visible when spawned
-        console.warn('[RenderSystem] showEntityInstance not fully implemented');
-    }
-
-    // ============ DEBUG HELPERS ============
-
-    dumpBatches() {
-        if (!this.entityRenderer) return;
-
-        console.log('[RenderSystem] VAT Batches:');
-        for (const [batchKey, batch] of this.entityRenderer.vatBatches) {
-            console.log(`  ${batchKey}:`, {
-                capacity: batch.capacity,
-                count: batch.count,
-                entities: batch.entityMap.size,
-                meta: batch.meta ? {
-                    clips: batch.meta.clips?.map(c => c.name),
-                    baseScale: batch.meta.baseScale
-                } : 'none'
-            });
-        }
-    }
-
-    dumpInstances() {
-        if (!this.entityRenderer) return;
-
-        console.log('[RenderSystem] Spawned Entities:');
-        for (const [entityId, entity] of this.entityRenderer.entities) {
-            console.log(`  ${entityId}:`, {
-                type: entity.type,
-                collection: entity.collection,
-                entityType: entity.entityType,
-                batchKey: entity.batchKey,
-                instanceIndex: entity.instanceIndex
-            });
-        }
-    }
 }

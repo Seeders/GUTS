@@ -2,6 +2,7 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
 
     execute(entityId, game) {
+        console.log(entityId, 'mining gold');
         const aiState = game.getComponent(entityId, 'aiState');
         const state = aiState.meta.mineState || 'traveling_to_mine';
         switch (state) {

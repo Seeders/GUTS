@@ -57,6 +57,7 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Store in shared state
+        console.log('storing targetMine for', entityId );
         const shared = this.getShared(entityId, game);
         shared.targetMine = closestMine;
         shared.targetMinePosition = closestPosition;

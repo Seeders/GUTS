@@ -113,10 +113,8 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const elapsed = game.state.round - aiState.meta.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
-        console.log(`[BuildBehaviorAction] Building progress: ${elapsed}/${buildTime} rounds`);
 
         if (elapsed >= buildTime) {
-            console.log(`[BuildBehaviorAction] Construction complete! Transforming building ${buildingId}`);
             // Complete construction
             this.completeConstruction(entityId, buildingId, buildingPlacement, game);
 
@@ -139,7 +137,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return;
         }
 
-        console.log(`[BuildBehaviorAction] Completing construction for building ${buildingId}, type: ${buildingPlacement.unitType.id}`);
 
         // Get the actual building unit type from placement
         const actualBuildingType = buildingPlacement.unitType;
@@ -147,7 +144,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         // 1. Restore renderable component - change from underConstruction to actual building
         const renderComponent = game.getComponent(buildingId, 'renderable');
         if (renderComponent) {
-            console.log(`[BuildBehaviorAction] Changing spawnType from "${renderComponent.spawnType}" to "${actualBuildingType.id}"`);
             renderComponent.spawnType = actualBuildingType.id;
             // Remove instance to trigger re-spawn with correct model
             game.gameManager.call('removeInstance', buildingId);
@@ -157,7 +153,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const maxHP = actualBuildingType.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
-            console.log(`[BuildBehaviorAction] Restoring health to ${maxHP} HP`);
             health.max = maxHP;
             health.current = maxHP;
         }
@@ -165,7 +160,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         // 3. Update unitType component to ensure it has all the actual building's data
         const unitTypeComponent = game.getComponent(buildingId, 'unitType');
         if (unitTypeComponent) {
-            console.log('[BuildBehaviorAction] Updating unitType component with actual building data');
             Object.assign(unitTypeComponent, actualBuildingType);
         }
 
@@ -175,7 +169,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // 5. Register building with shop system
         if (game.shopSystem) {
-            console.log(`[BuildBehaviorAction] Registering building with shop system`);
             game.shopSystem.addBuilding(actualBuildingType.id, buildingId);
         }
 
@@ -184,7 +177,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }
 
-        console.log(`[BuildBehaviorAction] Construction complete for building ${buildingId}`);
     }
 
     onEnd(entityId, game) {

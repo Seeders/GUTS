@@ -116,21 +116,6 @@ class ShapeFactory {
                         child.geometry.deleteAttribute('color');
                     }
 
-                    // Check for and remove any AO map that could be darkening the texture
-                    // AO maps often darken meshes significantly
-                    const hasAOMap = originalMaterial.aoMap;
-                    if (hasAOMap) {
-                        console.log('Removing AO map from GLTF material');
-                    }
-
-                    // Log original material color to debug 50% darkness issue
-                    if (originalMaterial.color) {
-                        const origColor = originalMaterial.color.getHex();
-                        if (origColor !== 0xffffff) {
-                            console.log(`GLTF material had non-white color: #${origColor.toString(16).padStart(6, '0')}`);
-                        }
-                    }
-
                     // Use white color instead of preserving original to prevent darkening
                     // Original GLTF materials might have gray colors that darken textures
                     child.material = new THREE.MeshStandardMaterial({

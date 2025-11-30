@@ -54,8 +54,7 @@ class MockGameContext extends GUTS.BaseECSGame {
      * @param {string} label - Human-readable label
      */
     initializeEntity(entityId, componentsData = {}, label = null) {
-        console.log('added entity', entityId);
-
+     
         // Create entity using BaseECSGame's method
         this.createEntity(entityId);
 

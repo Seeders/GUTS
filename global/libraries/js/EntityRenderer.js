@@ -44,7 +44,6 @@ class EntityRenderer {
             batches: 0
         };
 
-        console.log('[EntityRenderer] Initialized');
     }
 
     /**
@@ -231,18 +230,7 @@ class EntityRenderer {
         batch.instancedMesh.instanceMatrix.needsUpdate = true;
         batch.instancedMesh.count = batch.count;
 
-        // Debug first few instances
-        if (batch.count <= 3) {
-            console.log(`[EntityRenderer] Spawned instance ${instanceIndex} for ${batchKey}:`, {
-                entityId,
-                position: data.position,
-                rotation: data.rotation,
-                baseScale,
-                scaleMultiplier,
-                finalScale,
-                totalCount: batch.count
-            });
-        }
+
 
         this.stats.entitiesRendered++;
         this.stats.staticEntities++;
@@ -271,11 +259,8 @@ class EntityRenderer {
         let geometry = null;
         let material = null;
 
-        console.log(`[EntityRenderer] Creating batch for ${batchKey}, modelGroup:`, modelGroup);
-
         modelGroup.traverse((child) => {
             if (child.isMesh && !geometry) {
-                console.log(`[EntityRenderer] Found mesh in ${batchKey}:`, child);
                 geometry = child.geometry;
                 material = child.material.clone();
 
@@ -294,27 +279,16 @@ class EntityRenderer {
             return null;
         }
 
-        console.log(`[EntityRenderer] Geometry vertices:`, geometry.attributes.position?.count);
-        console.log(`[EntityRenderer] Material:`, material.type);
-
-        // Create instanced mesh - use per-type capacity if available, otherwise default
-        console.log(`[EntityRenderer] Looking up capacity for batchKey: ${batchKey}`);
-        console.log(`[EntityRenderer] capacitiesByType:`, this.capacitiesByType);
-        console.log(`[EntityRenderer] capacitiesByType[${batchKey}]:`, this.capacitiesByType[batchKey]);
         const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
-        console.log(`[EntityRenderer] Created InstancedMesh for ${batchKey}, capacity: ${capacity}` +
-            (this.capacitiesByType[batchKey] ? ' (calculated from level)' : ' (default)'));
 
         // Note: scale is applied per-instance in the matrix, not on the InstancedMesh itself
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
         instancedMesh.count = 0; // Start with 0 visible instances
 
-        console.log(`[EntityRenderer] Adding InstancedMesh to scene`);
         this.scene.add(instancedMesh);
-        console.log(`[EntityRenderer] InstancedMesh added, scene children count:`, this.scene.children.length);
 
         const batch = {
             instancedMesh,
@@ -326,7 +300,6 @@ class EntityRenderer {
         this.staticBatches.set(batchKey, batch);
         this.stats.batches++;
 
-        console.log(`[EntityRenderer] Created static batch: ${batchKey} (capacity: ${capacity})`);
         return batch;
     }
 
@@ -828,8 +801,6 @@ class EntityRenderer {
         this.vatBatches.set(batchKey, batch);
         this.stats.batches++;
 
-        console.log(`[EntityRenderer] Created VAT batch: ${batchKey} (capacity: ${capacity}` +
-            (this.capacitiesByType[batchKey] ? ', calculated from level)' : ', default)'));
         return batch;
     }
 
@@ -919,8 +890,7 @@ class EntityRenderer {
         const loader = new THREE.GLTFLoader();
         const typesToLoad = entityTypes || Object.keys(collection);
 
-        console.log(`[EntityRenderer] Loading ${typesToLoad.length} models from '${collectionType}':`, typesToLoad);
-
+       
         for (const entityType of typesToLoad) {
             const entityDef = collection[entityType];
             if (!entityDef) {
@@ -941,8 +911,7 @@ class EntityRenderer {
 
             try {
                 const url = `/projects/${this.projectName}/resources/${shape.url}`;
-                console.log(`[EntityRenderer] Loading GLTF: ${url}`);
-
+             
                 const gltf = await new Promise((resolve, reject) => {
                     loader.load(url, resolve, undefined, reject);
                 });
@@ -957,13 +926,12 @@ class EntityRenderer {
                     roughness: shape.roughness !== undefined ? shape.roughness : 1
                 };
 
-                console.log(`[EntityRenderer] ✓ Loaded ${collectionType}.${entityType}`);
+             
             } catch (error) {
                 console.error(`[EntityRenderer] ✗ Failed to load ${collectionType}.${entityType}:`, error.message, error);
             }
         }
 
-        console.log(`[EntityRenderer] Loaded ${Object.keys(models).length}/${typesToLoad.length} models from '${collectionType}'`);
         return models;
     }
 

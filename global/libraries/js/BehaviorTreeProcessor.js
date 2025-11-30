@@ -163,7 +163,6 @@ class BehaviorTreeProcessor {
         if (NodeClass) {
             const nodeInstance = new NodeClass(this.game, nodeData);
             this.nodes.set(nodeId, nodeInstance);
-            console.log(`Registered behavior node: ${nodeId}`);
         } else {
             console.warn(`Behavior node class not found for: ${nodeId}`);
         }

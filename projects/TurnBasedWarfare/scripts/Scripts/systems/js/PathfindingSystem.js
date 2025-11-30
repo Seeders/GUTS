@@ -75,7 +75,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
         this.navGridSize = this.game.gameManager.call('getPlacementGridSize');
-        console.log('PathfindingSystem: Using nav grid size', this.navGridSize);
 
         // Load ramps data
         this.loadRamps(level.tileMap);
@@ -88,7 +87,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         this.initialized = true;
-        console.log('PathfindingSystem: Initialized');
     }
 
     onPlacementPhaseStart() {
@@ -108,7 +106,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
             this.ramps.add(key);
         }
 
-        console.log(`PathfindingSystem: Loaded ${ramps.length} ramps`);
     }
 
     canWalkBetweenTerrains(fromTerrainIndex, toTerrainIndex) {
@@ -266,10 +263,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     }
                 }
             }
-            console.log(`[PathfindingSystem] Marked ${markedCells} nav cells as impassable for ${tileMap.worldObjects.length} worldObjects`);
         }
 
-        console.log(`PathfindingSystem: Baked nav mesh ${this.navGridWidth}x${this.navGridHeight}`);
     }
     
     isTerrainWalkable(terrainTypeIndex) {
@@ -448,7 +443,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 this.addToCache(cacheKey, path);
             }
             
-            console.log(`PathfindingSystem: No path to destination, returning path to closest point (distance: ${closestDistance.toFixed(1)})`);
             return path;
         }
         
@@ -759,7 +753,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         // Check bounds
         if (grid.x < 0 || grid.x >= this.navGridWidth || 
             grid.z < 0 || grid.z >= this.navGridHeight) {
-                console.log('FALSE: out of bounds');
             return false;
         }
         
@@ -771,11 +764,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * Initialize debug visualization using instanced rendering for performance
      */
     initDebugVisualization() {
-        console.log('PathfindingSystem: initDebugVisualization called');
-        console.log('  - uiScene exists:', !!this.game.uiScene);
-        console.log('  - navMesh exists:', !!this.navMesh);
-        console.log('  - navGridWidth:', this.navGridWidth);
-        console.log('  - navGridHeight:', this.navGridHeight);
+
 
         if (!this.game.uiScene) {
             console.warn('PathfindingSystem: No uiScene available for debug visualization');
@@ -793,7 +782,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.debugVisualization.visible = false;
         this.game.uiScene.add(this.debugVisualization);
 
-        console.log('PathfindingSystem: Created debug group, added to uiScene');
 
         // Create materials for different cell types
         const cellSize = this.navGridSize * 0.8; // Slightly smaller than grid cell

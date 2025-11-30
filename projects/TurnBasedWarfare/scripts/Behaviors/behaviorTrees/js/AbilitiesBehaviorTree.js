@@ -4,8 +4,7 @@ class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
 
         const unitType = game.getComponent(entityId, 'unitType');
         const abilities = unitType?.abilities;
-        if (!abilities || abilities.length === 0) return null;
-
+        if (!abilities || abilities.length === 0) return null;        
         // Evaluate abilities using selector pattern (first success wins)
         for (const abilityType of abilities) {
             const ability = game.getCollections().abilities[abilityType];

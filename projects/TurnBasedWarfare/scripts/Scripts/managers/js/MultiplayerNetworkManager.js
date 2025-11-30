@@ -179,10 +179,8 @@ class MultiplayerNetworkManager {
             'GOT_STARTING_STATE',
             (data, error) => {           
                 if (data.error) {
-                    console.log('getStartingState error:', data.error);
                     callback(false, error);
                 } else {
-                    console.log('getStartingState response:', data);
                     callback(true, data);
                 }
             }
@@ -199,10 +197,8 @@ class MultiplayerNetworkManager {
             'SUBMITTED_PLACEMENT',
             (data, error) => {           
                 if (data.error) {
-                    console.log('Placement error:', data.error);
                     callback(false, error);
                 } else {
-                    console.log('Placement response:', data);
                     callback(true, data);
                 }
             }

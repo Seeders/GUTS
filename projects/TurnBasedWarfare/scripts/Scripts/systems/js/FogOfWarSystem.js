@@ -145,7 +145,6 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.accumulationScene.add(this.accumulationQuad);
         this.accumulationCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         
-        console.log('[FogOfWarSystem] Optimized GPU fog with LOS initialized');
     }
 
     postAllInit() {

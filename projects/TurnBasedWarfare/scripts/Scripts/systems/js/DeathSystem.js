@@ -4,6 +4,10 @@ class DeathSystem extends GUTS.BaseSystem {
         this.game.deathSystem = this;
     }
 
+    init() {
+        this.game.gameManager.register("startDeathProcess", this.startDeathProcess.bind(this));
+    }
+
     update() {
         // Get all entities with death state
         const dyingEntities = this.game.getEntitiesWith("deathState");
@@ -16,20 +20,9 @@ class DeathSystem extends GUTS.BaseSystem {
             if (deathState.isDying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
 
-                // Remove health (corpses can't be damaged)
-                if (this.game.hasComponent(entityId, "health")) {
-                    this.game.removeComponent(entityId, "health");
-                }
-
-                // Remove velocity (corpses don't move)
-                if (this.game.hasComponent(entityId, "velocity")) {
-                    this.game.removeComponent(entityId, "velocity");
-                }
-                
                 const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration * 0.975;
                 
                 if (timerExpired) {
-                    console.log(entityId, "DIED");
                     if(unitType && unitType.collection == "buildings"){
                         this.destroyBuilding(entityId);
                     } else {
@@ -40,7 +33,24 @@ class DeathSystem extends GUTS.BaseSystem {
         });
     }
 
+    startDeathProcess(entityId){
+        console.log(entityId, "DIED");
+        this.game.addComponent(entityId, 'deathState', {
+            isDying: true,
+            deathStartTime: this.game.state.now
+        });
+        
+        // Remove health (corpses can't be damaged)
+        if (this.game.hasComponent(entityId, "health")) {
+            this.game.removeComponent(entityId, "health");
+        }
 
+        // Remove velocity (corpses don't move)
+        if (this.game.hasComponent(entityId, "velocity")) {
+            this.game.removeComponent(entityId, "velocity");
+        }
+        
+    }
 
     destroyBuilding(entityId) {
         this.game.triggerEvent('onDestroyBuilding', entityId);
@@ -49,13 +59,11 @@ class DeathSystem extends GUTS.BaseSystem {
     }
     
     convertToCorpse(entityId) {
-        const Components = this.game.gameManager.call('getComponents');
 
         // Get current components before conversion
         const position = this.game.getComponent(entityId, "position");
         const unitType = this.game.getComponent(entityId, "unitType");
         const team = this.game.getComponent(entityId, "team");
-        const renderable = this.game.getComponent(entityId, "renderable");
 
         if (!position || !unitType || !team) return;
 
