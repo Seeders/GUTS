@@ -23,9 +23,14 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
 
-        // Check if already in queue
+        // Check if already in queue - verify against actual queue
         if (shared.inMineQueue) {
-            return this.success({ alreadyInQueue: true });
+            const goldMine = game.getComponent(targetMine, 'goldMine');
+            if (goldMine && (goldMine.minerQueue.includes(entityId) || goldMine.currentMiner === entityId)) {
+                return this.success({ alreadyInQueue: true });
+            }
+            // Flag says we're in queue but we're not - reset flag and re-add
+            shared.inMineQueue = false;
         }
 
         // Add to queue
