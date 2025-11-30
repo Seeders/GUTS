@@ -5,7 +5,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         
         this.composer = null;
         this.passes = new Map();
-        this.passOrder = ['render', 'pixel', 'fog', 'output'];
+        this.passOrder = ['render', 'pixel', 'fog', 'palette', 'output'];
     }
 
     init(params = {}) {

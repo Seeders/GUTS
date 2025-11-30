@@ -27,6 +27,7 @@
         { "type": "TerrainSystem" },
         { "type": "WorldSystem" },
         { "type": "PostProcessingSystem" },
+        { "type": "PixelPaletteSystem" },
         { "type": "RenderSystem" },
         { "type": "AISystem" },
         { "type": "CommandQueueSystem" },
