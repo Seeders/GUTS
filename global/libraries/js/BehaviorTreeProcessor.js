@@ -10,10 +10,6 @@ class BehaviorTreeProcessor {
         // Unified node storage (new approach)
         this.nodes = new Map();
 
-        // Per-entity blackboards for shared state between nodes
-        // Key: entityId, Value: BehaviorTreeBlackboard instance
-        this.blackboards = new Map();
-
         // Debugger for execution tracing
         const DebuggerClass = GUTS?.BehaviorTreeDebugger ||
             (typeof BehaviorTreeDebugger !== 'undefined' ? BehaviorTreeDebugger : null);
@@ -28,42 +24,6 @@ class BehaviorTreeProcessor {
             this.debugger = null;
         }
     }
-
-    /**
-     * Get or create a blackboard for an entity
-     * @param {string} entityId - Entity ID
-     * @returns {BehaviorTreeBlackboard} Blackboard instance
-     */
-    getBlackboard(entityId) {
-        if (!this.blackboards.has(entityId)) {
-            const BlackboardClass = GUTS.BehaviorTreeBlackboard || BehaviorTreeBlackboard;
-            this.blackboards.set(entityId, new BlackboardClass());
-        }
-        return this.blackboards.get(entityId);
-    }
-
-    /**
-     * Clear blackboard for an entity
-     * @param {string} entityId - Entity ID
-     */
-    clearBlackboard(entityId) {
-        const blackboard = this.blackboards.get(entityId);
-        if (blackboard) {
-            blackboard.clear();
-        }
-        this.blackboards.delete(entityId);
-    }
-
-    /**
-     * Clear all blackboards
-     */
-    clearAllBlackboards() {
-        for (const blackboard of this.blackboards.values()) {
-            blackboard.clear();
-        }
-        this.blackboards.clear();
-    }
-
     /**
      * Get the debugger instance
      * @returns {BehaviorTreeDebugger|null}
