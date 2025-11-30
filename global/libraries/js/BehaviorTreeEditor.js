@@ -31,12 +31,7 @@ class BehaviorTreeEditor {
         document.getElementById('bt-zoom-out')?.addEventListener('click', () => this.zoom -= 0.1);
         document.getElementById('bt-fit')?.addEventListener('click', () => this.fitToView());
 
-        // Validation
-        document.getElementById('bt-validate-btn')?.addEventListener('click', () => this.validateTree());
-
-        // Export
-        document.getElementById('bt-export-btn')?.addEventListener('click', () => this.exportJSON());
-
+     
         // Save JSON changes
         document.getElementById('bt-save-json-btn')?.addEventListener('click', () => this.saveJSONChanges());
 
@@ -98,7 +93,7 @@ class BehaviorTreeEditor {
 
         actionsList.innerHTML = '';
 
-        const behaviorActions = this.controller.getCollections().behaviorNodes || {};
+        const behaviorActions = this.controller.getCollections().behaviorActions || {};
 
         Object.entries(behaviorActions).forEach(([behaviorActionId, actionData]) => {
             const actionEl = document.createElement('div');
@@ -566,67 +561,6 @@ class BehaviorTreeEditor {
                 rect.setAttribute('stroke', '#22c55e');
                 rect.setAttribute('stroke-width', '4');
             }
-        }
-    }
-
-    validateTree() {
-        const output = document.getElementById('bt-validation-output');
-        if (!output) return;
-
-        output.classList.add('bt-validation-output--visible');
-        output.innerHTML = '';
-
-        const errors = [];
-        const warnings = [];
-
-        if (!this.objectData) {
-            errors.push('No behavior tree data loaded');
-        } else {
-            // Check for required properties
-            if (!this.objectData.title) {
-                warnings.push('Missing title property');
-            }
-
-            const availableActions = this.controller.getCollections().behaviorNodes || {};
-            const nodeType = this.getNodeType(this.objectData);
-
-            // Check based on node type
-            if (nodeType === 'decorator') {
-                // Decorator should have childAction
-                if (this.objectData.childAction === undefined) {
-                    warnings.push('Decorator has no childAction defined');
-                } else if (this.objectData.childAction && !availableActions[this.objectData.childAction]) {
-                    errors.push(`Unknown child action: ${this.objectData.childAction}`);
-                }
-            } else {
-                // Composite node - check behaviorActions/behaviorNodes array
-                const childNodes = this.getChildNodes(this.objectData);
-                const arrayKey = this.getChildNodesKey(this.objectData);
-
-                if (!childNodes || !Array.isArray(childNodes)) {
-                    errors.push(`Missing or invalid ${arrayKey} array`);
-                } else if (childNodes.length === 0) {
-                    warnings.push(`${arrayKey} array is empty`);
-                } else {
-                    // Validate each action exists in collections
-                    childNodes.forEach(actionName => {
-                        if (!availableActions[actionName]) {
-                            errors.push(`Unknown behavior node: ${actionName}`);
-                        }
-                    });
-                }
-            }
-        }
-
-        if (errors.length === 0 && warnings.length === 0) {
-            output.innerHTML = '<div class="bt-validation-success">✓ Tree structure is valid</div>';
-        } else {
-            errors.forEach(error => {
-                output.innerHTML += `<div class="bt-validation-error">✗ ${error}</div>`;
-            });
-            warnings.forEach(warning => {
-                output.innerHTML += `<div class="bt-validation-warning" style="color: #f59e0b;">⚠ ${warning}</div>`;
-            });
         }
     }
 
