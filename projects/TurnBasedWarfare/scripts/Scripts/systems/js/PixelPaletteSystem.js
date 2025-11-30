@@ -138,74 +138,9 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
                 void main() {
                     vec4 texColor = texture2D(tDiffuse, vUv);
-                    vec3 inputColor = texColor.rgb;
 
-                    // DEBUG: Show the palette texture as a strip at the top of the screen
-                    if (vUv.y > 0.95) {
-                        float paletteIdx = vUv.x * 18.0;
-                        float u = (floor(paletteIdx) + 0.5) / 64.0;
-                        vec3 paletteColor = texture2D(paletteTexture, vec2(u, 0.5)).rgb;
-                        gl_FragColor = vec4(paletteColor, 1.0);
-                        return;
-                    }
-
-                    // DEBUG: Show input on left strip
-                    if (vUv.x < 0.05) {
-                        gl_FragColor = vec4(inputColor, 1.0);
-                        return;
-                    }
-
-                    // Sample all 18 palette colors directly (unrolled for WebGL compatibility)
-                    vec3 c0 = texture2D(paletteTexture, vec2(0.5/64.0, 0.5)).rgb;
-                    vec3 c1 = texture2D(paletteTexture, vec2(1.5/64.0, 0.5)).rgb;
-                    vec3 c2 = texture2D(paletteTexture, vec2(2.5/64.0, 0.5)).rgb;
-                    vec3 c3 = texture2D(paletteTexture, vec2(3.5/64.0, 0.5)).rgb;
-                    vec3 c4 = texture2D(paletteTexture, vec2(4.5/64.0, 0.5)).rgb;
-                    vec3 c5 = texture2D(paletteTexture, vec2(5.5/64.0, 0.5)).rgb;
-                    vec3 c6 = texture2D(paletteTexture, vec2(6.5/64.0, 0.5)).rgb;
-                    vec3 c7 = texture2D(paletteTexture, vec2(7.5/64.0, 0.5)).rgb;
-                    vec3 c8 = texture2D(paletteTexture, vec2(8.5/64.0, 0.5)).rgb;
-                    vec3 c9 = texture2D(paletteTexture, vec2(9.5/64.0, 0.5)).rgb;
-                    vec3 c10 = texture2D(paletteTexture, vec2(10.5/64.0, 0.5)).rgb;
-                    vec3 c11 = texture2D(paletteTexture, vec2(11.5/64.0, 0.5)).rgb;
-                    vec3 c12 = texture2D(paletteTexture, vec2(12.5/64.0, 0.5)).rgb;
-                    vec3 c13 = texture2D(paletteTexture, vec2(13.5/64.0, 0.5)).rgb;
-                    vec3 c14 = texture2D(paletteTexture, vec2(14.5/64.0, 0.5)).rgb;
-                    vec3 c15 = texture2D(paletteTexture, vec2(15.5/64.0, 0.5)).rgb;
-                    vec3 c16 = texture2D(paletteTexture, vec2(16.5/64.0, 0.5)).rgb;
-                    vec3 c17 = texture2D(paletteTexture, vec2(17.5/64.0, 0.5)).rgb;
-
-                    // Find closest color with index tracking
-                    vec3 closest = c0;
-                    float minDist = colorDistanceSq(inputColor, c0);
-                    float idx = 0.0;
-                    float d;
-
-                    d = colorDistanceSq(inputColor, c1); if (d < minDist) { minDist = d; closest = c1; idx = 1.0; }
-                    d = colorDistanceSq(inputColor, c2); if (d < minDist) { minDist = d; closest = c2; idx = 2.0; }
-                    d = colorDistanceSq(inputColor, c3); if (d < minDist) { minDist = d; closest = c3; idx = 3.0; }
-                    d = colorDistanceSq(inputColor, c4); if (d < minDist) { minDist = d; closest = c4; idx = 4.0; }
-                    d = colorDistanceSq(inputColor, c5); if (d < minDist) { minDist = d; closest = c5; idx = 5.0; }
-                    d = colorDistanceSq(inputColor, c6); if (d < minDist) { minDist = d; closest = c6; idx = 6.0; }
-                    d = colorDistanceSq(inputColor, c7); if (d < minDist) { minDist = d; closest = c7; idx = 7.0; }
-                    d = colorDistanceSq(inputColor, c8); if (d < minDist) { minDist = d; closest = c8; idx = 8.0; }
-                    d = colorDistanceSq(inputColor, c9); if (d < minDist) { minDist = d; closest = c9; idx = 9.0; }
-                    d = colorDistanceSq(inputColor, c10); if (d < minDist) { minDist = d; closest = c10; idx = 10.0; }
-                    d = colorDistanceSq(inputColor, c11); if (d < minDist) { minDist = d; closest = c11; idx = 11.0; }
-                    d = colorDistanceSq(inputColor, c12); if (d < minDist) { minDist = d; closest = c12; idx = 12.0; }
-                    d = colorDistanceSq(inputColor, c13); if (d < minDist) { minDist = d; closest = c13; idx = 13.0; }
-                    d = colorDistanceSq(inputColor, c14); if (d < minDist) { minDist = d; closest = c14; idx = 14.0; }
-                    d = colorDistanceSq(inputColor, c15); if (d < minDist) { minDist = d; closest = c15; idx = 15.0; }
-                    d = colorDistanceSq(inputColor, c16); if (d < minDist) { minDist = d; closest = c16; idx = 16.0; }
-                    d = colorDistanceSq(inputColor, c17); if (d < minDist) { minDist = d; closest = c17; idx = 17.0; }
-
-                    // DEBUG: Show which index was selected on right strip (different colors = different indices)
-                    if (vUv.x > 0.95) {
-                        gl_FragColor = vec4(idx / 17.0, mod(idx, 6.0) / 5.0, mod(idx, 3.0) / 2.0, 1.0);
-                        return;
-                    }
-
-                    gl_FragColor = vec4(closest, texColor.a);
+                    // DEBUG: Just pass through the input to verify what we're receiving
+                    gl_FragColor = texColor;
                 }
             `
         });
