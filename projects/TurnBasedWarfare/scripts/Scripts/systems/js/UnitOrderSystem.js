@@ -451,6 +451,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                             };
                             playerOrder.targetPosition = buildingPos;
                             playerOrder.issuedTime = this.game.state.now;
+                            this.game.triggerEvent('onIssuedPlayerOrders', builderEntityId);
                         }
 
                         // Store peasantId in ability for completion tracking
@@ -501,14 +502,13 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                     playerOrder.targetPosition = targetPosition;
                                     playerOrder.meta = meta;
                                     playerOrder.issuedTime = createdTime;
-                                    console.log('issueMoveOrders', unitId, targetPosition);
+                                    this.game.triggerEvent('onIssuedPlayerOrders', unitId);
                                 }
                                 if(aiState){
                                     aiState.currentAction = "";
                                     aiState.meta = {};
                                     aiState.shared = {};
                                 }
-                                    console.log('cleared aiState', aiState);
                             }
                         });
 

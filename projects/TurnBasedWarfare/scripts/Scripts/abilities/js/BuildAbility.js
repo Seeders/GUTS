@@ -46,6 +46,7 @@ class BuildAbility extends GUTS.BaseAbility {
             };
             playerOrder.targetPosition = buildingPos;
             playerOrder.issuedTime = this.game.state.now;
+            this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
         }
 
         const aiState = this.game.getComponent(peasantEntityId, "aiState");

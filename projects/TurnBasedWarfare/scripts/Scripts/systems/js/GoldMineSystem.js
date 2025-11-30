@@ -247,6 +247,17 @@ class GoldMineSystem extends GUTS.BaseSystem {
         return queue.indexOf(minerEntityId);
     }
 
+    onIssuedPlayerOrders(entityId){
+        const goldMines = this.game.getEntitiesWith('goldMine');
+        goldMines.forEach((mineId) => {
+            const goldMine = this.game.getComponent(mineId, 'goldMine');
+            const index = goldMine.minerQueue.indexOf(entityId);
+            if(index != -1) {
+                goldMine.minerQueue.splice(index, 1);
+            }
+        });
+    }
+
     addMinerToQueue(mineEntityId, minerEntityId){
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
         goldMine.minerQueue.push(minerEntityId);
