@@ -343,6 +343,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                             playerOrder.targetPosition = targetPosition;
                             playerOrder.meta = meta;
                             playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
+                            this.game.triggerEvent('onIssuedPlayerOrders', unitId);
                 
                 console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
                         }
@@ -408,6 +409,7 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             this.game.desyncDebugger.enabled = true;
             this.game.desyncDebugger.displaySync(true);
             this.resetAI();
+            this.game.triggerEvent("onBattleStart");
 
             // Serialize all entities for client sync (similar to battle end)
             const entitySync = this.game.serverBattlePhaseSystem.serializeAllEntities();
@@ -432,12 +434,10 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
     
     resetAI() {
-        const AIEntities = this.game.getEntitiesWith("aiState", "combat");
-        AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, "aiState");
+        const combatEntities = this.game.getEntitiesWith("combat");
+        combatEntities.forEach((entityId) => {
             const combat = this.game.getComponent(entityId, "combat");
             combat.lastAttack = 0;
-            aiState.aiBehavior = {};
         });
     }
 

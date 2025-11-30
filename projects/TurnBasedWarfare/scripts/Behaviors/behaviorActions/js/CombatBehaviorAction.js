@@ -181,7 +181,7 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Trigger attack animation
         if (game.gameManager && game.gameManager.has('triggerSinglePlayAnimation')) {
-            const animationSpeed = this.calculateAnimationSpeed(attackerId, game, combat.attackSpeed);
+            const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
             game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
         }
@@ -304,17 +304,6 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
         return baseAttackSpeed;
-    }
-
-    calculateAnimationSpeed(attackerId, game, baseAttackSpeed) {
-        let animSpeed = baseAttackSpeed;
-        if (game.equipmentSystem) {
-            const equipment = game.getComponent(attackerId, 'equipment');
-            if (equipment && equipment.attackSpeed) {
-                animSpeed *= equipment.attackSpeed;
-            }
-        }
-        return animSpeed;
     }
 
     getDamageElement(entityId, game, combat) {

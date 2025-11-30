@@ -287,10 +287,10 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
             this.battleStartTime = 0; // Will be set after resetCurrentTime
             this.isBattlePaused = false;
 
-            this.game.triggerEvent("onBattleStart");
             this.game.resetCurrentTime();
             this.battleStartTime = this.game.state.now || 0;
             this.resetAI();
+            this.game.triggerEvent("onBattleStart");
 
             // Resync entities with server state to ensure both clients are in sync
             if (data.entitySync) {
@@ -312,12 +312,10 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     resetAI() {
-        const AIEntities = this.game.getEntitiesWith("aiState", "combat");
-        AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, "aiState");
+        const combatEntities = this.game.getEntitiesWith("combat");
+        combatEntities.forEach((entityId) => {
             const combat = this.game.getComponent(entityId, "combat");
             combat.lastAttack = 0;
-            aiState.aiBehavior = {};
         });
     }
 

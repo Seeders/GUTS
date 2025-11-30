@@ -26,7 +26,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('startCelebration', this.startCelebration.bind(this));
         this.game.gameManager.register('stopCelebration', this.stopCelebration.bind(this));
         this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
+        this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
         this.game.gameManager.register('getEntityAnimations', () => this.entityAnimationStates);
+    }
+
+    calculateAnimationSpeed(attackerId, baseAttackSpeed) {
+        let animSpeed = baseAttackSpeed;
+        return animSpeed;
     }
 
     update() {

@@ -424,6 +424,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         return null;
     }
 
+    //this is desynced.
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
         const Components = this.game.gameManager.call('getComponents');
 

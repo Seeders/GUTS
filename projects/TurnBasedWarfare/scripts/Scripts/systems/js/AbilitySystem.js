@@ -157,7 +157,7 @@ class AbilitySystem extends GUTS.BaseSystem {
             let minAnimationTime = 1.5;
 
             if (ability && ability.castTime > 0) {
-                // Convert cast time to rate (casts per second) for calculateAnimationSpeed
+                // Convert cast time to rate (casts per second)
                 const castRate = 1 / ability.castTime;
                 animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, castRate);
                 minAnimationTime = ability.castTime;

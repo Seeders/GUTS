@@ -14,7 +14,6 @@
     "ComponentGenerator",
     "GameServices",
     "MockGameContext",
-    "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
     "BaseBehaviorNode",
     "BehaviorTreeEditor"

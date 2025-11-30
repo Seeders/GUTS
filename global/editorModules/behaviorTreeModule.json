@@ -8,7 +8,6 @@
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [
-    "BehaviorTreeBlackboard",
     "BehaviorTreeProcessor",
     "MockGameContext",
     "BehaviorTreeEditor"

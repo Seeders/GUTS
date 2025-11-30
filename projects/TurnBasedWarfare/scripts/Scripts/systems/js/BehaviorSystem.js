@@ -12,16 +12,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
     init() {
         // Unified node lookup
         this.game.gameManager.register('getNodeByType', this.processor.getNodeByType.bind(this.processor));
-        this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
         this.game.gameManager.register('getDebugger', this.processor.getDebugger.bind(this.processor));
         this.processor.initializeFromCollections(this.game.getCollections());
     }
 
     /**
-     * Called when battle ends - clear all blackboards and debug data
+     * Called when battle ends - clear all  and debug data
      */
     onBattleEnd() {
-        this.processor.clearAllBlackboards();
         this.processor.clearAllDebugData();
 
         // Also notify trees
@@ -53,10 +51,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when an entity is removed - clear its blackboard and debug data
+     * Called when an entity is removed - clear its  and debug data
      */
     onEntityRemoved(entityId) {
-        this.processor.clearBlackboard(entityId);
         this.processor.clearDebugData(entityId);
     }
 
@@ -110,7 +107,6 @@ class BehaviorSystem extends GUTS.BaseSystem {
             const aiState = this.game.getComponent(entityId, "aiState");
             if (aiState.currentAction) {
                 const executor = this.processor.getNodeByType(aiState.currentAction);
-                console.log('executing', entityId, this.game.getComponent);
                 executor.onPlacementPhaseStart(entityId, this.game);
             }
             const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
