@@ -140,6 +140,15 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
                     vec4 texColor = texture2D(tDiffuse, vUv);
                     vec3 inputColor = texColor.rgb;
 
+                    // DEBUG: Show the palette texture as a strip at the top of the screen
+                    if (vUv.y > 0.95) {
+                        float paletteIdx = vUv.x * 18.0;
+                        float u = (floor(paletteIdx) + 0.5) / 64.0;
+                        vec3 paletteColor = texture2D(paletteTexture, vec2(u, 0.5)).rgb;
+                        gl_FragColor = vec4(paletteColor, 1.0);
+                        return;
+                    }
+
                     // Sample all 18 palette colors directly (unrolled for WebGL compatibility)
                     vec3 c0 = texture2D(paletteTexture, vec2(0.5/64.0, 0.5)).rgb;
                     vec3 c1 = texture2D(paletteTexture, vec2(1.5/64.0, 0.5)).rgb;
