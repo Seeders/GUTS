@@ -5,14 +5,12 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
         this.palettePass = null;
         this.paletteColors = [];
+        this.paletteTexture = null;
         this.enabled = true;
     }
 
     init(params = {}) {
         this.params = params;
-
-        // Extract palette colors from game.palette
-        this.extractPaletteColors();
 
         // Register methods for runtime control
         this.game.gameManager.register('setPalettePassEnabled', this.setEnabled.bind(this));
@@ -38,7 +36,8 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
             }
         }
 
-        console.log(`[PixelPaletteSystem] Extracted ${this.paletteColors.length} colors from palette`);
+        console.log(`[PixelPaletteSystem] Extracted ${this.paletteColors.length} colors from palette:`,
+            this.paletteColors.map(c => `rgb(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)})`));
     }
 
     hexToRgb(hex) {
@@ -52,30 +51,52 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
         };
     }
 
+    createPaletteTexture() {
+        // Create a 1D texture (Nx1) to store palette colors
+        // Using RGBA format for compatibility
+        const numColors = this.paletteColors.length;
+        const data = new Uint8Array(numColors * 4);
+
+        for (let i = 0; i < numColors; i++) {
+            const c = this.paletteColors[i];
+            data[i * 4 + 0] = Math.round(c.r * 255);
+            data[i * 4 + 1] = Math.round(c.g * 255);
+            data[i * 4 + 2] = Math.round(c.b * 255);
+            data[i * 4 + 3] = 255;
+        }
+
+        this.paletteTexture = new THREE.DataTexture(
+            data,
+            numColors,
+            1,
+            THREE.RGBAFormat,
+            THREE.UnsignedByteType
+        );
+        this.paletteTexture.needsUpdate = true;
+        this.paletteTexture.minFilter = THREE.NearestFilter;
+        this.paletteTexture.magFilter = THREE.NearestFilter;
+
+        console.log(`[PixelPaletteSystem] Created palette texture with ${numColors} colors`);
+    }
+
     postAllInit() {
+        // Extract palette colors here to ensure game.palette is loaded
+        this.extractPaletteColors();
+
         if (this.game.postProcessingSystem && this.paletteColors.length > 0) {
+            this.createPaletteTexture();
             this.createPalettePass();
             this.game.gameManager.call('registerPostProcessingPass', 'palette', {
                 enabled: this.enabled,
                 pass: this.palettePass
             });
+        } else {
+            console.warn('[PixelPaletteSystem] Cannot create pass - no colors or no post-processing system');
         }
     }
 
     createPalettePass() {
-        // Build palette color array for shader (max 64 colors should be plenty)
-        const maxColors = Math.min(this.paletteColors.length, 64);
-        const paletteArray = [];
-
-        for (let i = 0; i < maxColors; i++) {
-            const c = this.paletteColors[i];
-            paletteArray.push(new THREE.Vector3(c.r, c.g, c.b));
-        }
-
-        // Pad remaining slots with black if needed
-        while (paletteArray.length < 64) {
-            paletteArray.push(new THREE.Vector3(0, 0, 0));
-        }
+        const numColors = this.paletteColors.length;
 
         this.palettePass = {
             enabled: this.enabled,
@@ -84,8 +105,8 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
             uniforms: {
                 tDiffuse: { value: null },
-                paletteColors: { value: paletteArray },
-                paletteSize: { value: maxColors }
+                paletteTexture: { value: this.paletteTexture },
+                paletteSize: { value: numColors }
             },
 
             material: null,
@@ -104,37 +125,39 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
             `,
             fragmentShader: `
                 uniform sampler2D tDiffuse;
-                uniform vec3 paletteColors[64];
-                uniform int paletteSize;
+                uniform sampler2D paletteTexture;
+                uniform float paletteSize;
 
                 varying vec2 vUv;
 
-                float colorDistance(vec3 c1, vec3 c2) {
+                float colorDistanceSq(vec3 c1, vec3 c2) {
                     vec3 diff = c1 - c2;
                     return dot(diff, diff);
                 }
 
-                vec3 findClosestPaletteColor(vec3 color) {
-                    vec3 closest = paletteColors[0];
-                    float minDist = colorDistance(color, closest);
+                void main() {
+                    vec4 texColor = texture2D(tDiffuse, vUv);
+                    vec3 inputColor = texColor.rgb;
 
-                    for (int i = 1; i < 64; i++) {
+                    // Start with first palette color
+                    vec3 closest = texture2D(paletteTexture, vec2(0.5 / paletteSize, 0.5)).rgb;
+                    float minDist = colorDistanceSq(inputColor, closest);
+
+                    // Compare against all palette colors
+                    for (float i = 1.0; i < 64.0; i += 1.0) {
                         if (i >= paletteSize) break;
 
-                        float dist = colorDistance(color, paletteColors[i]);
+                        float u = (i + 0.5) / paletteSize;
+                        vec3 paletteColor = texture2D(paletteTexture, vec2(u, 0.5)).rgb;
+                        float dist = colorDistanceSq(inputColor, paletteColor);
+
                         if (dist < minDist) {
                             minDist = dist;
-                            closest = paletteColors[i];
+                            closest = paletteColor;
                         }
                     }
 
-                    return closest;
-                }
-
-                void main() {
-                    vec4 texColor = texture2D(tDiffuse, vUv);
-                    vec3 closestColor = findClosestPaletteColor(texColor.rgb);
-                    gl_FragColor = vec4(closestColor, texColor.a);
+                    gl_FragColor = vec4(closest, texColor.a);
                 }
             `
         });
@@ -166,6 +189,8 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
         this.palettePass.setSize = function(width, height) {
             // No-op - no size-dependent resources
         };
+
+        console.log('[PixelPaletteSystem] Created palette post-processing pass');
     }
 
     setEnabled(enabled) {
@@ -181,6 +206,10 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
     }
 
     dispose() {
+        if (this.paletteTexture) {
+            this.paletteTexture.dispose();
+        }
+
         if (this.palettePass) {
             if (this.palettePass.material) {
                 this.palettePass.material.dispose();
