@@ -663,7 +663,7 @@ class BehaviorTreeEditor {
     }
 
     /**
-     * Sync mock game entities back to objectData so main editor save works
+     * Sync mock game entities back to objectData and trigger save
      */
     syncMockEntitiesToObjectData() {
         if (!this.mockGame || !this.objectData) return;
@@ -676,6 +676,18 @@ class BehaviorTreeEditor {
             this.objectData.mockEntities = {};
         }
         this.objectData.mockEntities.entities = exportedEntities;
+
+        // Update currentData (what gets saved)
+        if (!this.currentData) {
+            this.currentData = {};
+        }
+        if (!this.currentData.entities) {
+            this.currentData.entities = {};
+        }
+        this.currentData.entities = exportedEntities;
+
+        // Trigger save hook to notify editor
+        this.save();
     }
 
     setupScriptBasedSimulation(varsContainer) {
