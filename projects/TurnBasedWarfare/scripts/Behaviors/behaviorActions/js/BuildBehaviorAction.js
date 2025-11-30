@@ -36,6 +36,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         const buildingId = playerOrder.meta.buildingId || aiState.meta.buildingId;
         const buildingPos = game.getComponent(buildingId, 'position');
+        const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         if (!buildingPos) {
             return null;
@@ -70,6 +71,11 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
                 vel.anchored = true;
                 vel.vx = 0;
                 vel.vz = 0;
+            }
+
+            // Store constructionStartTime on the building for phase transition checks
+            if (buildingPlacement && !buildingPlacement.constructionStartTime) {
+                buildingPlacement.constructionStartTime = game.state.round;
             }
 
             // Return state object - transition to building state
@@ -166,6 +172,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         // 4. Update placement component - building is now complete
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
+        buildingPlacement.constructionStartTime = null;
 
         // 5. Register building with shop system
         if (game.shopSystem) {

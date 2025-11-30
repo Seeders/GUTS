@@ -568,13 +568,122 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
 
 
-    onBattleEnd() {        
+    onBattleEnd() {
         this.removeDeadSquadsAfterRound();
-       
+
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
     }
-    
+
+    onPlacementPhaseStart() {
+        // Complete any buildings that finished construction during the battle
+        this.completePendingBuildings();
+    }
+
+    completePendingBuildings() {
+        if (!this.game.componentManager) return;
+
+        // Find all entities with placement component that are under construction
+        const placementEntities = this.game.getEntitiesWith('placement');
+
+        for (const buildingId of placementEntities) {
+            const buildingPlacement = this.game.getComponent(buildingId, 'placement');
+
+            if (!buildingPlacement || !buildingPlacement.isUnderConstruction) {
+                continue;
+            }
+
+            // Check if construction should be complete
+            const constructionStartTime = buildingPlacement.constructionStartTime;
+            const buildTime = buildingPlacement.buildTime || 1;
+
+            // Skip if construction hasn't started yet (peasant hasn't reached building)
+            if (constructionStartTime === undefined || constructionStartTime === null) {
+                continue;
+            }
+
+            const elapsed = this.game.state.round - constructionStartTime;
+
+            if (elapsed >= buildTime) {
+                this.completeBuildingConstruction(buildingId, buildingPlacement);
+            }
+        }
+    }
+
+    completeBuildingConstruction(buildingId, buildingPlacement) {
+        if (!buildingPlacement || !buildingPlacement.unitType) {
+            console.error('[ServerPlacementSystem] Cannot complete construction - missing placement or unitType');
+            return;
+        }
+
+        const actualBuildingType = buildingPlacement.unitType;
+
+        // 1. Update renderable component - change from underConstruction to actual building
+        const renderComponent = this.game.getComponent(buildingId, 'renderable');
+        if (renderComponent) {
+            renderComponent.spawnType = actualBuildingType.id;
+            // Remove instance to trigger re-spawn with correct model
+            if (this.game.gameManager.has('removeInstance')) {
+                this.game.gameManager.call('removeInstance', buildingId);
+            }
+        }
+
+        // 2. Restore health to full
+        const maxHP = actualBuildingType.hp || 100;
+        const health = this.game.getComponent(buildingId, 'health');
+        if (health) {
+            health.max = maxHP;
+            health.current = maxHP;
+        }
+
+        // 3. Update unitType component
+        const unitTypeComponent = this.game.getComponent(buildingId, 'unitType');
+        if (unitTypeComponent) {
+            Object.assign(unitTypeComponent, actualBuildingType);
+        }
+
+        // 4. Update placement component - building is now complete
+        buildingPlacement.isUnderConstruction = false;
+
+        // 5. Clean up assigned builder if still assigned
+        const assignedBuilder = buildingPlacement.assignedBuilder;
+        if (assignedBuilder) {
+            // Clear the peasant's build state
+            const aiState = this.game.getComponent(assignedBuilder, 'aiState');
+            if (aiState && aiState.meta && aiState.meta.buildingId === buildingId) {
+                aiState.meta = {};
+                aiState.currentAction = null;
+            }
+
+            // Unanchor the peasant
+            const vel = this.game.getComponent(assignedBuilder, 'velocity');
+            if (vel) {
+                vel.anchored = false;
+            }
+
+            // Clear playerOrder
+            const playerOrder = this.game.getComponent(assignedBuilder, 'playerOrder');
+            if (playerOrder && playerOrder.meta && playerOrder.meta.buildingId === buildingId) {
+                playerOrder.meta = {};
+                playerOrder.targetPosition = null;
+            }
+        }
+        buildingPlacement.assignedBuilder = null;
+        buildingPlacement.constructionStartTime = null;
+
+        // 6. Register building with shop system
+        if (this.game.shopSystem) {
+            this.game.shopSystem.addBuilding(actualBuildingType.id, buildingId);
+        }
+
+        // 7. Change to idle animation
+        if (this.game.animationSystem) {
+            this.game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
+        }
+
+        console.log(`[ServerPlacementSystem] Building ${buildingId} (${actualBuildingType.id}) construction complete`);
+    }
+
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
