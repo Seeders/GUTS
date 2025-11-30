@@ -13,6 +13,16 @@
         </div>
 
         <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Simulation</h3>
+            <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
+                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
+            </div>
+            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
+            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
+        </div>
+
+        <div class="editor-module__section">
             <h3 class="editor-module__section-title">Available Actions</h3>
             <div id="available-actions" class="bt-action-list" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
@@ -44,14 +54,8 @@
 
     <div class="editor-module__sidebar editor-module__sidebar--right">
         <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Simulation</h3>
-            <div style="display: flex; gap: 4px; margin-top: 8px;">
-                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
-                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
-            </div>
-            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
+            <h3 class="editor-module__section-title">Mock Entities</h3>
             <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
-            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
         </div>
     </div>
 </div>
