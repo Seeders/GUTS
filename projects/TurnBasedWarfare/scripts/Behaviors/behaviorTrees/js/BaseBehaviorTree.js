@@ -21,11 +21,4 @@ class BaseBehaviorTree extends GUTS.BaseBehaviorNode {
         return super.evaluateSelector(entityId, game);
     }
 
-    /**
-     * Override evaluate to set pathSize before delegation
-     */
-    evaluate(entityId, game) {
-        this.pathSize = game.gameManager?.call('getPlacementGridSize');
-        return super.evaluate(entityId, game);
-    }
 }
