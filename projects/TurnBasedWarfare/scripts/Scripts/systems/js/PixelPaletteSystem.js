@@ -101,8 +101,6 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
     }
 
     createPalettePass() {
-        const numColors = this.paletteColors.length;
-
         this.palettePass = {
             enabled: this.enabled,
             needsSwap: true,
@@ -110,8 +108,7 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
             uniforms: {
                 tDiffuse: { value: null },
-                paletteTexture: { value: this.paletteTexture },
-                paletteSize: { value: numColors }
+                paletteTexture: { value: this.paletteTexture }
             },
 
             material: null,
@@ -131,12 +128,8 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
             fragmentShader: `
                 uniform sampler2D tDiffuse;
                 uniform sampler2D paletteTexture;
-                uniform float paletteSize;
 
                 varying vec2 vUv;
-
-                // Texture is always 64 pixels wide
-                const float TEXTURE_SIZE = 64.0;
 
                 float colorDistanceSq(vec3 c1, vec3 c2) {
                     vec3 diff = c1 - c2;
@@ -147,25 +140,48 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
                     vec4 texColor = texture2D(tDiffuse, vUv);
                     vec3 inputColor = texColor.rgb;
 
-                    // Start with first palette color
-                    vec3 closest = texture2D(paletteTexture, vec2(0.5 / TEXTURE_SIZE, 0.5)).rgb;
-                    float minDist = colorDistanceSq(inputColor, closest);
+                    // Sample all 18 palette colors directly (unrolled for WebGL compatibility)
+                    vec3 c0 = texture2D(paletteTexture, vec2(0.5/64.0, 0.5)).rgb;
+                    vec3 c1 = texture2D(paletteTexture, vec2(1.5/64.0, 0.5)).rgb;
+                    vec3 c2 = texture2D(paletteTexture, vec2(2.5/64.0, 0.5)).rgb;
+                    vec3 c3 = texture2D(paletteTexture, vec2(3.5/64.0, 0.5)).rgb;
+                    vec3 c4 = texture2D(paletteTexture, vec2(4.5/64.0, 0.5)).rgb;
+                    vec3 c5 = texture2D(paletteTexture, vec2(5.5/64.0, 0.5)).rgb;
+                    vec3 c6 = texture2D(paletteTexture, vec2(6.5/64.0, 0.5)).rgb;
+                    vec3 c7 = texture2D(paletteTexture, vec2(7.5/64.0, 0.5)).rgb;
+                    vec3 c8 = texture2D(paletteTexture, vec2(8.5/64.0, 0.5)).rgb;
+                    vec3 c9 = texture2D(paletteTexture, vec2(9.5/64.0, 0.5)).rgb;
+                    vec3 c10 = texture2D(paletteTexture, vec2(10.5/64.0, 0.5)).rgb;
+                    vec3 c11 = texture2D(paletteTexture, vec2(11.5/64.0, 0.5)).rgb;
+                    vec3 c12 = texture2D(paletteTexture, vec2(12.5/64.0, 0.5)).rgb;
+                    vec3 c13 = texture2D(paletteTexture, vec2(13.5/64.0, 0.5)).rgb;
+                    vec3 c14 = texture2D(paletteTexture, vec2(14.5/64.0, 0.5)).rgb;
+                    vec3 c15 = texture2D(paletteTexture, vec2(15.5/64.0, 0.5)).rgb;
+                    vec3 c16 = texture2D(paletteTexture, vec2(16.5/64.0, 0.5)).rgb;
+                    vec3 c17 = texture2D(paletteTexture, vec2(17.5/64.0, 0.5)).rgb;
 
-                    // Compare against all palette colors (only up to paletteSize are unique)
-                    // Using fixed iteration count - no dynamic break needed
-                    for (int i = 1; i < 64; i++) {
-                        // Only check unique colors (rest are duplicates)
-                        if (float(i) >= paletteSize) continue;
+                    // Find closest color
+                    vec3 closest = c0;
+                    float minDist = colorDistanceSq(inputColor, c0);
+                    float d;
 
-                        float u = (float(i) + 0.5) / TEXTURE_SIZE;
-                        vec3 paletteColor = texture2D(paletteTexture, vec2(u, 0.5)).rgb;
-                        float dist = colorDistanceSq(inputColor, paletteColor);
-
-                        if (dist < minDist) {
-                            minDist = dist;
-                            closest = paletteColor;
-                        }
-                    }
+                    d = colorDistanceSq(inputColor, c1); if (d < minDist) { minDist = d; closest = c1; }
+                    d = colorDistanceSq(inputColor, c2); if (d < minDist) { minDist = d; closest = c2; }
+                    d = colorDistanceSq(inputColor, c3); if (d < minDist) { minDist = d; closest = c3; }
+                    d = colorDistanceSq(inputColor, c4); if (d < minDist) { minDist = d; closest = c4; }
+                    d = colorDistanceSq(inputColor, c5); if (d < minDist) { minDist = d; closest = c5; }
+                    d = colorDistanceSq(inputColor, c6); if (d < minDist) { minDist = d; closest = c6; }
+                    d = colorDistanceSq(inputColor, c7); if (d < minDist) { minDist = d; closest = c7; }
+                    d = colorDistanceSq(inputColor, c8); if (d < minDist) { minDist = d; closest = c8; }
+                    d = colorDistanceSq(inputColor, c9); if (d < minDist) { minDist = d; closest = c9; }
+                    d = colorDistanceSq(inputColor, c10); if (d < minDist) { minDist = d; closest = c10; }
+                    d = colorDistanceSq(inputColor, c11); if (d < minDist) { minDist = d; closest = c11; }
+                    d = colorDistanceSq(inputColor, c12); if (d < minDist) { minDist = d; closest = c12; }
+                    d = colorDistanceSq(inputColor, c13); if (d < minDist) { minDist = d; closest = c13; }
+                    d = colorDistanceSq(inputColor, c14); if (d < minDist) { minDist = d; closest = c14; }
+                    d = colorDistanceSq(inputColor, c15); if (d < minDist) { minDist = d; closest = c15; }
+                    d = colorDistanceSq(inputColor, c16); if (d < minDist) { minDist = d; closest = c16; }
+                    d = colorDistanceSq(inputColor, c17); if (d < minDist) { minDist = d; closest = c17; }
 
                     gl_FragColor = vec4(closest, texColor.a);
                 }
