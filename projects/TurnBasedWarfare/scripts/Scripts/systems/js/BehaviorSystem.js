@@ -5,7 +5,6 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         // Use shared BehaviorTreeProcessor for all behavior tree logic
         this.processor = new GUTS.BehaviorTreeProcessor(game);
-        this.processor.initializeFromCollections(game.collections);
 
         this.rootTree = null;
     }
@@ -15,6 +14,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getNodeByType', this.processor.getNodeByType.bind(this.processor));
         this.game.gameManager.register('getBlackboard', this.processor.getBlackboard.bind(this.processor));
         this.game.gameManager.register('getDebugger', this.processor.getDebugger.bind(this.processor));
+        this.processor.initializeFromCollections(this.game.getCollections());
     }
 
     /**
@@ -51,9 +51,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.processor.debugTick();
 
         const entities = this.getBehaviorEntities();
-        console.log('updating behavior system');
         for (const entityId of entities) {
-            console.log('updating', entityId);
             this.updateUnit(entityId, dt);
         }
     }
