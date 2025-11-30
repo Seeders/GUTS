@@ -657,9 +657,25 @@ class BehaviorTreeEditor {
         if (!varsContainer) return;
 
         // Use different approaches for script-based vs data-driven trees
-     
+
         this.setupScriptBasedSimulation(varsContainer);
 
+    }
+
+    /**
+     * Sync mock game entities back to objectData so main editor save works
+     */
+    syncMockEntitiesToObjectData() {
+        if (!this.mockGame || !this.objectData) return;
+
+        // Export current mock entities state
+        const exportedEntities = this.mockGame.export();
+
+        // Update objectData.mockEntities.entities
+        if (!this.objectData.mockEntities) {
+            this.objectData.mockEntities = {};
+        }
+        this.objectData.mockEntities.entities = exportedEntities;
     }
 
     setupScriptBasedSimulation(varsContainer) {
@@ -698,9 +714,10 @@ class BehaviorTreeEditor {
             addBtn.addEventListener('click', () => {
                 const newId = `entity-${Date.now()}`;
                 this.mockGame.initializeEntity(newId, {
-                    position: { x: 0, y: 0, z: 0 },                    
+                    position: { x: 0, y: 0, z: 0 },
                 }, `Entity ${this.mockGame.entities.size}`);
                 this.renderAllEntities(entitiesContainer);
+                this.syncMockEntitiesToObjectData();
             });
         }
     }
@@ -742,6 +759,7 @@ class BehaviorTreeEditor {
         labelInput.style.borderRadius = '3px';
         labelInput.addEventListener('change', () => {
             this.mockGame.setEntityLabel(entityId, labelInput.value);
+            this.syncMockEntitiesToObjectData();
         });
 
         const removeBtn = document.createElement('button');
@@ -765,6 +783,7 @@ class BehaviorTreeEditor {
             if (entitiesContainer) {
                 this.renderAllEntities(entitiesContainer);
             }
+            this.syncMockEntitiesToObjectData();
         });
 
         headerDiv.appendChild(labelInput);
@@ -930,6 +949,7 @@ class BehaviorTreeEditor {
                 if (entitiesContainer) {
                     this.renderAllEntities(entitiesContainer);
                 }
+                this.syncMockEntitiesToObjectData();
                 document.body.removeChild(overlay);
             }
         });
@@ -1016,6 +1036,9 @@ class BehaviorTreeEditor {
             this.renderAllEntities(entitiesContainer);
         }
 
+        // Sync changes to objectData
+        this.syncMockEntitiesToObjectData();
+
         // Re-evaluate to update results
         this.displaySimulationResults();
     }
@@ -1051,6 +1074,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = newValue;
                 }
+                this.syncMockEntitiesToObjectData();
                 this.displaySimulationResults();
             });
             propDiv.appendChild(input);
@@ -1063,6 +1087,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = e.target.checked;
                 }
+                this.syncMockEntitiesToObjectData();
                 this.displaySimulationResults();
             });
             propDiv.appendChild(checkbox);
@@ -1076,7 +1101,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = parseFloat(e.target.value);
                 }
-                this.runSimulation();
+                this.syncMockEntitiesToObjectData();
             });
             propDiv.appendChild(input);
         } else if (typeof value === 'string') {
@@ -1089,7 +1114,7 @@ class BehaviorTreeEditor {
                 if (component) {
                     component[propertyName] = e.target.value;
                 }
-                this.runSimulation();
+                this.syncMockEntitiesToObjectData();
             });
             propDiv.appendChild(input);
         } else if (typeof value === 'object') {
@@ -1112,6 +1137,7 @@ class BehaviorTreeEditor {
                     if (component) {
                         component[propertyName] = newValue;
                     }
+                    this.syncMockEntitiesToObjectData();
                     this.displaySimulationResults();
                 } catch (err) {
                     alert('Invalid JSON: ' + err.message);
