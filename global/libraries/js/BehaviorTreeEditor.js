@@ -1021,23 +1021,19 @@ class BehaviorTreeEditor {
         detailsEl.style.borderRadius = '4px';
         detailsEl.style.padding = '8px';
 
-        // Header container with component name and remove button
-        const headerDiv = document.createElement('div');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.justifyContent = 'space-between';
-        headerDiv.style.marginBottom = '8px';
-
+        // Summary with component name and remove button
         const summary = document.createElement('summary');
-        summary.textContent = componentType;
         summary.style.cursor = 'pointer';
         summary.style.fontWeight = '600';
         summary.style.fontSize = '11px';
         summary.style.color = '#6366f1';
-        summary.style.flex = '1';
-        headerDiv.appendChild(summary);
+        summary.style.display = 'flex';
+        summary.style.alignItems = 'center';
+        summary.style.justifyContent = 'space-between';
+        summary.style.marginBottom = '8px';
+        summary.innerHTML = `<span>${componentType}</span>`;
 
-        // Remove button
+        // Remove button inside summary
         const removeBtn = document.createElement('button');
         removeBtn.textContent = '×';
         removeBtn.style.padding = '0 6px';
@@ -1053,9 +1049,9 @@ class BehaviorTreeEditor {
             e.stopPropagation();
             this.removeComponent(entityId, componentType);
         });
-        headerDiv.appendChild(removeBtn);
+        summary.appendChild(removeBtn);
 
-        detailsEl.appendChild(headerDiv);
+        detailsEl.appendChild(summary);
 
         const propsContainer = document.createElement('div');
         propsContainer.style.marginLeft = '8px';
