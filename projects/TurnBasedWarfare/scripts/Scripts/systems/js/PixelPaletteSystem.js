@@ -101,23 +101,12 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
     }
 
     createPalettePass() {
-        this.palettePass = {
-            enabled: this.enabled,
-            needsSwap: true,
-            clear: false,
-
+        // Use Three.js ShaderPass for proper buffer handling
+        const paletteShader = {
             uniforms: {
                 tDiffuse: { value: null },
                 paletteTexture: { value: this.paletteTexture }
             },
-
-            material: null,
-            fsQuadScene: null,
-            fsQuadCamera: null
-        };
-
-        this.palettePass.material = new THREE.ShaderMaterial({
-            uniforms: this.palettePass.uniforms,
             vertexShader: `
                 varying vec2 vUv;
                 void main() {
@@ -138,42 +127,60 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
                 void main() {
                     vec4 texColor = texture2D(tDiffuse, vUv);
+                    vec3 inputColor = texColor.rgb;
 
-                    // DEBUG: Just pass through the input to verify what we're receiving
-                    gl_FragColor = texColor;
+                    // Sample all 18 palette colors
+                    vec3 c0 = texture2D(paletteTexture, vec2(0.5/64.0, 0.5)).rgb;
+                    vec3 c1 = texture2D(paletteTexture, vec2(1.5/64.0, 0.5)).rgb;
+                    vec3 c2 = texture2D(paletteTexture, vec2(2.5/64.0, 0.5)).rgb;
+                    vec3 c3 = texture2D(paletteTexture, vec2(3.5/64.0, 0.5)).rgb;
+                    vec3 c4 = texture2D(paletteTexture, vec2(4.5/64.0, 0.5)).rgb;
+                    vec3 c5 = texture2D(paletteTexture, vec2(5.5/64.0, 0.5)).rgb;
+                    vec3 c6 = texture2D(paletteTexture, vec2(6.5/64.0, 0.5)).rgb;
+                    vec3 c7 = texture2D(paletteTexture, vec2(7.5/64.0, 0.5)).rgb;
+                    vec3 c8 = texture2D(paletteTexture, vec2(8.5/64.0, 0.5)).rgb;
+                    vec3 c9 = texture2D(paletteTexture, vec2(9.5/64.0, 0.5)).rgb;
+                    vec3 c10 = texture2D(paletteTexture, vec2(10.5/64.0, 0.5)).rgb;
+                    vec3 c11 = texture2D(paletteTexture, vec2(11.5/64.0, 0.5)).rgb;
+                    vec3 c12 = texture2D(paletteTexture, vec2(12.5/64.0, 0.5)).rgb;
+                    vec3 c13 = texture2D(paletteTexture, vec2(13.5/64.0, 0.5)).rgb;
+                    vec3 c14 = texture2D(paletteTexture, vec2(14.5/64.0, 0.5)).rgb;
+                    vec3 c15 = texture2D(paletteTexture, vec2(15.5/64.0, 0.5)).rgb;
+                    vec3 c16 = texture2D(paletteTexture, vec2(16.5/64.0, 0.5)).rgb;
+                    vec3 c17 = texture2D(paletteTexture, vec2(17.5/64.0, 0.5)).rgb;
+
+                    // Find closest color
+                    vec3 closest = c0;
+                    float minDist = colorDistanceSq(inputColor, c0);
+                    float d;
+
+                    d = colorDistanceSq(inputColor, c1); if (d < minDist) { minDist = d; closest = c1; }
+                    d = colorDistanceSq(inputColor, c2); if (d < minDist) { minDist = d; closest = c2; }
+                    d = colorDistanceSq(inputColor, c3); if (d < minDist) { minDist = d; closest = c3; }
+                    d = colorDistanceSq(inputColor, c4); if (d < minDist) { minDist = d; closest = c4; }
+                    d = colorDistanceSq(inputColor, c5); if (d < minDist) { minDist = d; closest = c5; }
+                    d = colorDistanceSq(inputColor, c6); if (d < minDist) { minDist = d; closest = c6; }
+                    d = colorDistanceSq(inputColor, c7); if (d < minDist) { minDist = d; closest = c7; }
+                    d = colorDistanceSq(inputColor, c8); if (d < minDist) { minDist = d; closest = c8; }
+                    d = colorDistanceSq(inputColor, c9); if (d < minDist) { minDist = d; closest = c9; }
+                    d = colorDistanceSq(inputColor, c10); if (d < minDist) { minDist = d; closest = c10; }
+                    d = colorDistanceSq(inputColor, c11); if (d < minDist) { minDist = d; closest = c11; }
+                    d = colorDistanceSq(inputColor, c12); if (d < minDist) { minDist = d; closest = c12; }
+                    d = colorDistanceSq(inputColor, c13); if (d < minDist) { minDist = d; closest = c13; }
+                    d = colorDistanceSq(inputColor, c14); if (d < minDist) { minDist = d; closest = c14; }
+                    d = colorDistanceSq(inputColor, c15); if (d < minDist) { minDist = d; closest = c15; }
+                    d = colorDistanceSq(inputColor, c16); if (d < minDist) { minDist = d; closest = c16; }
+                    d = colorDistanceSq(inputColor, c17); if (d < minDist) { minDist = d; closest = c17; }
+
+                    gl_FragColor = vec4(closest, texColor.a);
                 }
             `
-        });
-
-        // Create fullscreen quad for rendering
-        const geometry = new THREE.PlaneGeometry(2, 2);
-        const mesh = new THREE.Mesh(geometry, this.palettePass.material);
-        const scene = new THREE.Scene();
-        scene.add(mesh);
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-        this.palettePass.fsQuadScene = scene;
-        this.palettePass.fsQuadCamera = camera;
-
-        const passRef = this.palettePass;
-
-        this.palettePass.render = function(renderer, writeBuffer, readBuffer) {
-            passRef.uniforms.tDiffuse.value = readBuffer.texture;
-
-            if (passRef.needsSwap) {
-                renderer.setRenderTarget(writeBuffer);
-            } else {
-                renderer.setRenderTarget(null);
-            }
-
-            renderer.render(passRef.fsQuadScene, passRef.fsQuadCamera);
         };
 
-        this.palettePass.setSize = function(width, height) {
-            // No-op - no size-dependent resources
-        };
+        this.palettePass = new THREE.ShaderPass(paletteShader);
+        this.palettePass.uniforms.paletteTexture.value = this.paletteTexture;
 
-        console.log('[PixelPaletteSystem] Created palette post-processing pass');
+        console.log('[PixelPaletteSystem] Created palette post-processing pass using ShaderPass');
     }
 
     setEnabled(enabled) {
