@@ -190,20 +190,29 @@ class EntryGenerator {
                 let otherFiles = classFiles;
 
                 if (metadata && metadata.baseClass) {
-                    // Separate base class from other files
-                    baseClassFile = classFiles.find(f =>
-                        f.name === metadata.baseClass || f.fileName === metadata.baseClass
-                    );
-                    otherFiles = classFiles.filter(f =>
-                        f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                    // Check if base class is already in libraries (if so, we don't need to import it again)
+                    const baseClassInLibraries = client.libraries.some(lib =>
+                        lib.name === metadata.baseClass || lib.fileName === metadata.baseClass || lib.requireName === metadata.baseClass
                     );
 
-                    // Import base class first
-                    if (baseClassFile) {
-                        sections.push(`// Import ${metadata.baseClass} first so other ${collectionName} can extend from it`);
-                        const { imports: baseImports, exports: baseExports } = this.generateImports([baseClassFile], collectionName.toLowerCase());
-                        sections.push(...baseImports);
-                        sections.push('');
+                    if (!baseClassInLibraries) {
+                        // Separate base class from other files
+                        baseClassFile = classFiles.find(f =>
+                            f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                        );
+                        otherFiles = classFiles.filter(f =>
+                            f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                        );
+
+                        // Import base class first
+                        if (baseClassFile) {
+                            sections.push(`// Import ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                            const { imports: baseImports, exports: baseExports } = this.generateImports([baseClassFile], collectionName.toLowerCase());
+                            sections.push(...baseImports);
+                            sections.push('');
+                        }
+                    } else {
+                        sections.push(`// ${metadata.baseClass} is already loaded from libraries`);
                     }
                 }
 
@@ -217,6 +226,9 @@ class EntryGenerator {
                     const baseVarName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
                     // Apply fallback expression to base class too
                     sections.push(`  ${metadata.baseClass}: (${baseVarName}.${metadata.baseClass} || ${baseVarName}.default || ${baseVarName}),`);
+                } else if (metadata && metadata.baseClass) {
+                    // Base class is from libraries, reference it from Libraries
+                    sections.push(`  ${metadata.baseClass}: Libraries.${metadata.baseClass},`);
                 }
                 sections.push(exports.join(',\n'));
                 sections.push('};');
@@ -469,22 +481,32 @@ class EntryGenerator {
                 let otherFiles = classFiles;
 
                 if (metadata && metadata.baseClass) {
-                    // Separate base class from other files
-                    baseClassFile = classFiles.find(f =>
-                        f.name === metadata.baseClass || f.fileName === metadata.baseClass
-                    );
-                    otherFiles = classFiles.filter(f =>
-                        f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                    // Check if base class is already in libraries (if so, we don't need to import it again)
+                    const baseClassInLibraries = server.libraries.some(lib =>
+                        lib.name === metadata.baseClass || lib.fileName === metadata.baseClass || lib.requireName === metadata.baseClass
                     );
 
-                    // Require base class first and register it immediately
-                    if (baseClassFile) {
-                        const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
-                        const requirePath = baseClassFile.path.replace(/\\/g, '/');
-                        sections.push(`// Require ${metadata.baseClass} first so other ${collectionName} can extend from it`);
-                        sections.push(`const ${varName}_module = require('${requirePath}');`);
-                        sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${metadata.baseClass} || ${varName}_module;`);
-                        sections.push(`global.GUTS.${metadata.baseClass} = ${varName};`);
+                    if (!baseClassInLibraries) {
+                        // Separate base class from other files
+                        baseClassFile = classFiles.find(f =>
+                            f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                        );
+                        otherFiles = classFiles.filter(f =>
+                            f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                        );
+
+                        // Require base class first and register it immediately
+                        if (baseClassFile) {
+                            const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                            const requirePath = baseClassFile.path.replace(/\\/g, '/');
+                            sections.push(`// Require ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                            sections.push(`const ${varName}_module = require('${requirePath}');`);
+                            sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${metadata.baseClass} || ${varName}_module;`);
+                            sections.push(`global.GUTS.${metadata.baseClass} = ${varName};`);
+                            sections.push('');
+                        }
+                    } else {
+                        sections.push(`// ${metadata.baseClass} is already loaded from libraries`);
                         sections.push('');
                     }
                 }
@@ -499,6 +521,9 @@ class EntryGenerator {
                 if (baseClassFile && metadata) {
                     const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
                     sections.push(`  ${metadata.baseClass}: ${varName},`);
+                } else if (metadata && metadata.baseClass) {
+                    // Base class is from libraries, reference it from global.GUTS (already loaded)
+                    sections.push(`  ${metadata.baseClass}: global.GUTS.${metadata.baseClass},`);
                 }
                 sections.push(exports.join(',\n'));
                 sections.push('};');
@@ -674,19 +699,29 @@ class EntryGenerator {
                 let otherFiles = classFiles;
 
                 if (metadata && metadata.baseClass) {
-                    // Separate base class from other files
-                    baseClassFile = classFiles.find(f =>
-                        f.name === metadata.baseClass || f.fileName === metadata.baseClass
-                    );
-                    otherFiles = classFiles.filter(f =>
-                        f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                    // Check if base class is already in libraries (if so, we don't need to import it again)
+                    const baseClassInLibraries = editor.libraries.some(lib =>
+                        lib.name === metadata.baseClass || lib.fileName === metadata.baseClass || lib.requireName === metadata.baseClass
                     );
 
-                    // Import base class first
-                    if (baseClassFile) {
-                        sections.push(`// Import ${metadata.baseClass} first so other ${collectionName} can extend from it`);
-                        const { imports: baseImports, exports: baseExports } = this.generateImports([baseClassFile], collectionName.toLowerCase());
-                        sections.push(...baseImports);
+                    if (!baseClassInLibraries) {
+                        // Separate base class from other files
+                        baseClassFile = classFiles.find(f =>
+                            f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                        );
+                        otherFiles = classFiles.filter(f =>
+                            f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                        );
+
+                        // Import base class first
+                        if (baseClassFile) {
+                            sections.push(`// Import ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                            const { imports: baseImports, exports: baseExports } = this.generateImports([baseClassFile], collectionName.toLowerCase());
+                            sections.push(...baseImports);
+                            sections.push('');
+                        }
+                    } else {
+                        sections.push(`// ${metadata.baseClass} is already loaded from libraries`);
                         sections.push('');
                     }
                 }
@@ -701,6 +736,9 @@ class EntryGenerator {
                     const baseVarName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
                     // Apply fallback expression to base class too
                     sections.push(`  ${metadata.baseClass}: (${baseVarName}.${metadata.baseClass} || ${baseVarName}.default || ${baseVarName}),`);
+                } else if (metadata && metadata.baseClass) {
+                    // Base class is from libraries, reference it from Libraries
+                    sections.push(`  ${metadata.baseClass}: Libraries.${metadata.baseClass},`);
                 }
                 sections.push(exports.join(',\n'));
                 sections.push('};');
