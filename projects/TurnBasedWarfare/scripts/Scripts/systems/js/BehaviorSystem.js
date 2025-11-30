@@ -32,6 +32,23 @@ class BehaviorSystem extends GUTS.BaseSystem {
             if (rootTree) {
                 rootTree.onBattleEnd(entityId, this.game);
             }
+            aiState.meta = {};
+            aiState.shared = {};
+            aiState.currentAction = "IdleBehaviorAction";
+        }
+    }
+
+    onBattleStart() {
+        const entities = this.getBehaviorEntities();
+        for (const entityId of entities) {
+            const aiState = this.game.getComponent(entityId, "aiState");
+            aiState.meta = {};
+            aiState.shared = {};
+            aiState.currentAction = "IdleBehaviorAction";
+            const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
+            if (rootTree && rootTree.onBattleStart) {
+                rootTree.onBattleStart(entityId, this.game);
+            }
         }
     }
 
@@ -47,6 +64,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
+        if (this.game.state.phase !== 'battle') return;
         // Increment debugger tick for this evaluation cycle
         this.processor.debugTick();
 
