@@ -13,19 +13,8 @@
         </div>
 
         <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Simulation</h3>
-            <div style="display: flex; gap: 4px; margin-top: 8px;">
-                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
-                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
-            </div>
-            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
-            <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
-            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
-        </div>
-
-        <div class="editor-module__section">
             <h3 class="editor-module__section-title">Available Actions</h3>
-            <div id="available-actions" class="bt-action-list" style="max-height: 150px; overflow-y: auto;"></div>
+            <div id="available-actions" class="bt-action-list" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
 
         <div class="editor-module__section">
@@ -54,14 +43,15 @@
     </div>
 
     <div class="editor-module__sidebar editor-module__sidebar--right">
-        <div class="editor-module__section" style="flex: 1; display: flex; flex-direction: column;">
-            <h3 class="editor-module__section-title">JSON Editor</h3>
-            <p style="font-size: 12px; color: #888; margin-bottom: 8px;">Edit the behavior tree structure directly in JSON format. Click "Save Changes" to apply your edits.</p>
-            <textarea id="bt-json-view" class="editor-module__textarea bt-json-textarea" style="flex: 1;"></textarea>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <button id="bt-save-json-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;">Save Changes</button>
-                <button id="bt-import-json-btn" class="editor-module__btn">Import File</button>
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Simulation</h3>
+            <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
+                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
             </div>
+            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
+            <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
+            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
         </div>
     </div>
 </div>
