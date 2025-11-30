@@ -13,7 +13,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
         this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
-        this.game.gameManager.register('processNextMinerInQueue', () => this.processNextMinerInQueue.bind(this));
+        this.game.gameManager.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
+        this.game.gameManager.register('isMineOccupied', this.isMineOccupied.bind(this));
+        this.game.gameManager.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
+        this.game.gameManager.register('addMinerToQueue', this.addMinerToQueue.bind(this));
 
         this.findGoldVeinLocations();
         console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');

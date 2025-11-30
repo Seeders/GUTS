@@ -31,7 +31,7 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const duration = (this.parameters.duration || 1) * 1000; // Convert to ms
+        const duration = (this.parameters.duration || 1); // Convert to ms
         const goldAmount = shared.goldAmount;
 
         // Initialize deposit start time
@@ -65,7 +65,7 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         return this.running({
             progress: progress,
             goldAmount: goldAmount,
-            timeRemaining: (duration - elapsed) / 1000
+            timeRemaining: (duration - elapsed)
         });
     }
 

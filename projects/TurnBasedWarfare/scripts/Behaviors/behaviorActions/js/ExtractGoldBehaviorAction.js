@@ -30,7 +30,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const duration = (this.parameters.duration || 2) * 1000; // Convert to ms
+        const duration = (this.parameters.duration || 2); 
         const goldPerTrip = this.parameters.goldPerTrip || 10;
 
         // Initialize mining start time
@@ -76,7 +76,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         return this.running({
             progress: progress,
             goldAmount: shared.goldAmount,
-            timeRemaining: (duration - elapsed) / 1000
+            timeRemaining: (duration - elapsed)
         });
     }
 
