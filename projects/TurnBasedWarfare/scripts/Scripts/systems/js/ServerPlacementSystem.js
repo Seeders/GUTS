@@ -247,13 +247,11 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                    if (aiState) {
-                        aiState.playerOrder = {
-                            targetPosition: targetPosition,
-                            meta: meta,
-                            issuedTime: commandCreatedTime || this.game.state.now
-                        };
+                    const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                    if (playerOrder) {
+                        playerOrder.targetPosition = targetPosition;
+                        playerOrder.meta = meta;
+                        playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
                     }
                 });
             }
@@ -339,30 +337,19 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 } else {
                     // Fallback if UnitOrderSystem not available
                     placement.targetPosition = targetPosition;
-                    placement.commandCreatedTime = commandCreatedTime || this.game.state.now;
-                    placement.meta = meta || {};
                     placement.squadUnits.forEach((unitId) => {
-                        const aiState = this.game.getComponent(unitId, this.game.componentTypes.AI_STATE);
-                        const p = this.game.getComponent(unitId, this.game.componentTypes.PLACEMENT);
-                        if(p){
-                            p.commandCreatedTime = placement.commandCreatedTime;
-                            p.targetPosition = placement.targetPosition;
-                            p.meta = placement.meta;
-                        }
-                        if (aiState) {
-                            aiState.playerOrder = {
-                                targetPosition: targetPosition,
-                                meta: meta,
-                                issuedTime: commandCreatedTime || this.game.state.now
-                            };
-                            aiState.targetPosition = targetPosition;
+                        const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                        if (playerOrder) {
+                            playerOrder.targetPosition = targetPosition;
+                            playerOrder.meta = meta;
+                            playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
+                
+                console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
                         }
                     });
                 }
                         
 
-                
-                console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
             }
 
                         // Send success response to requesting player
@@ -445,54 +432,47 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
     
     resetAI() {
-        const componentTypes = this.game.componentManager.getComponentTypes();            
-        const AIEntities = this.game.getEntitiesWith(componentTypes.AI_STATE, componentTypes.COMBAT);      
+        const AIEntities = this.game.getEntitiesWith("aiState", "combat");
         AIEntities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, componentTypes.AI_STATE);
-            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const combat = this.game.getComponent(entityId, "combat");
             combat.lastAttack = 0;
             aiState.aiBehavior = {};
         });
     }
 
     applyTargetPositions() {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
         for (const [playerId, placements] of this.playerPlacements) {
             placements.forEach((placement) => {
                 const targetPosition = placement.targetPosition;
                 placement.squadUnits.forEach(entityId => {
-                    const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-                    const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
+                    const aiState = this.game.getComponent(entityId, "aiState");
+                    const position = this.game.getComponent(entityId, "position");
                     if (aiState && position) {
 
                         if(targetPosition){
-                            const currentAIController = this.game.gameManager.call('getCurrentAIControllerId', entityId);
+                            // With behavior tree system, check distance and update aiState
+                            const dx = position.x - targetPosition.x;
+                            const dz = position.z - targetPosition.z;
+                            const distSq = dx * dx + dz * dz;
+                            const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+                            const threshold = placementGridSize * 0.5;
 
-                            if(!currentAIController || currentAIController == "UnitOrderSystem"){
-                                const dx = position.x - targetPosition.x;
-                                const dz = position.z - targetPosition.z;
-                                const distSq = dx * dx + dz * dz;
-                                const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
-                                const threshold = placementGridSize * 0.5;
-
-                                if (distSq <= threshold * threshold) {
-                                    this.game.gameManager.call('removeCurrentAIController', entityId);
-                                    placement.targetPosition = null;
-                                } else {
-                                    // Queue command at battle start for determinism        
-                                    
-                                    this.game.gameManager.call('clearCommands', entityId);        
-                                    this.game.gameManager.call('queueCommand', entityId, {
-                                        type: 'move',
-                                        controllerId: "UnitOrderSystem",
-                                        targetPosition: targetPosition,
-                                        target: null,
-                                        meta: placement.meta || {},
-                                        priority: 10, // PRIORITY.MOVE
-                                        interruptible: true,
-                                        createdTime: placement.commandCreatedTime || this.game.state.now
-                                    }, true);
+                            if (distSq <= threshold * threshold) {
+                                // Reached target - stop movement
+                                const vel = this.game.getComponent(entityId, "velocity");
+                                if (vel) {
+                                    vel.vx = 0;
+                                    vel.vz = 0;
                                 }
+                                const aiState = this.game.getComponent(entityId, "aiState");
+                                if (aiState) {
+                                    aiState.meta = {};
+                                }
+                                placement.targetPosition = null;
+                            } else {
+                                // Movement is handled by behavior actions now
+                                // Behavior tree reads from playerOrder component
                             }
                         }
                     }
@@ -598,8 +578,6 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-
         this.playerPlacements.forEach((placements, playerId) => {
             const survivingPlacements = placements.filter(placement => {
                 if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) {
@@ -608,9 +586,9 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 }
 
                 const aliveUnits = placement.experience.unitIds.filter(entityId => {
-                    const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                    const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-                    const buildingState = this.game.getComponent(entityId, ComponentTypes.BUILDING_STATE);
+                    const health = this.game.getComponent(entityId, "health");
+                    const deathState = this.game.getComponent(entityId, "deathState");
+                    const buildingState = this.game.getComponent(entityId, "buildingState");
                     if(buildingState) return true;
                     return health && health.current > 0 && (!deathState || !deathState.isDying);
                 });
@@ -753,27 +731,19 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             // Clean up the builder if assigned
             const assignedBuilder = placement.assignedBuilder;
             if (assignedBuilder) {
-                const CT = this.game.componentManager.getComponentTypes();
-                
-                // Complete/clear the build command
-                if (this.game.commandQueueSystem) {
-                    const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
-                    if (currentCommand && currentCommand.type === 'build') {
-                        this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
-                    }
-                }
+                // With behavior tree system, just clear the building state
+                // The behavior tree will naturally switch to other behaviors
 
                 // Remove the builder's BUILDING_STATE component
-                if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
-                    this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+                if (this.game.hasComponent(assignedBuilder, "buildingState")) {
+                    this.game.removeComponent(assignedBuilder, "buildingState");
                 }
 
-                // Reset builder's AI state
-                const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
-                if (aiState) {
-                    aiState.state = 'idle';
-                    aiState.targetPosition = null;
-                    aiState.target = null;
+                // Stop movement
+                const builderVel = this.game.getComponent(assignedBuilder, "velocity");
+                if (builderVel) {
+                    builderVel.vx = 0;
+                    builderVel.vz = 0;
                 }
             }
 

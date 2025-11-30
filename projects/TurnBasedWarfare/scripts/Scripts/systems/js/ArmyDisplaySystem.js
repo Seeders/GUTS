@@ -47,22 +47,21 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
     
     getArmyData() {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
             const allUnits = this.game.getEntitiesWith(
-                ComponentTypes.TEAM, 
-                ComponentTypes.UNIT_TYPE, 
-                ComponentTypes.HEALTH
+                "team",
+                "unitType",
+                "health"
             ) || [];
-            
+
             const playerUnits = [];
             const enemyUnits = [];
-            
+
             allUnits.forEach(entityId => {
-                const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-                const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
-                const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-                const combat = this.game.getComponent(entityId, ComponentTypes.COMBAT);
+                const team = this.game.getComponent(entityId, "team");
+                const unitType = this.game.getComponent(entityId, "unitType");
+                const health = this.game.getComponent(entityId, "health");
+                const position = this.game.getComponent(entityId, "position");
+                const combat = this.game.getComponent(entityId, "combat");
                 
                 const unitInfo = {
                     id: entityId,
@@ -113,16 +112,19 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
     
     getUnitStatus(entityId) {
         try {
-            const ComponentTypes = this.game.componentManager.getComponentTypes();
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
-            const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-            
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const health = this.game.getComponent(entityId, "health");
+
             if (health?.current <= 0) return 'dead';
-            if (aiState?.state === 'attacking') return 'attacking';
-            if (aiState?.state === 'moving') return 'moving';
-            if (aiState?.state === 'idle') return 'idle';
-            
-            return 'unknown';
+
+            if (aiState?.currentAction) {
+                const actionType = aiState.currentAction;
+                if (actionType === 'AttackEnemyBehaviorAction' || actionType === 'CombatBehaviorAction') return 'attacking';
+                if (actionType === 'MoveBehaviorAction') return 'moving';
+                if (actionType === 'IdleBehaviorAction') return 'idle';
+            }
+
+            return 'idle';
         } catch (error) {
             return 'unknown';
         }
@@ -287,8 +289,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         if (this.game.effectsSystem) {
             // Get unit position and show highlight effect
             try {
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
-                const position = this.game.getComponent(unitId, ComponentTypes.POSITION);
+                const position = this.game.getComponent(unitId, "position");
                 if (position) {
                     // Convert world position to screen position and show highlight
                     // This is a placeholder - actual implementation would depend on rendering system

@@ -3,8 +3,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         super(game);
         this.game.goldMineSystem = this;
         this.goldVeinLocations = [];
-        this.claimedGoldMines = new Map();
-        
+
         console.log('[GoldMineSystem] Initialized', this.game.isServer ? '(SERVER)' : '(CLIENT)');
     }
 
@@ -14,6 +13,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
         this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
+        this.game.gameManager.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
+        this.game.gameManager.register('isMineOccupied', this.isMineOccupied.bind(this));
+        this.game.gameManager.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
+        this.game.gameManager.register('addMinerToQueue', this.addMinerToQueue.bind(this));
 
         this.findGoldVeinLocations();
         console.log('[GoldMineSystem] Init complete. Found', this.goldVeinLocations.length, 'gold veins');
@@ -166,38 +169,38 @@ class GoldMineSystem extends GUTS.BaseSystem {
         vein.claimed = true;
         vein.claimedBy = team;
 
-        let mineModel = null;
         if (!this.game.isServer) {
-            mineModel = this.replaceVeinWithMine(vein);
+            this.replaceVeinWithMine(vein);
         }
 
-        this.claimedGoldMines.set(entityId, {
-            entityId: entityId,
-            position: { x: vein.x, z: vein.y },
-            worldPosition: { x: vein.worldX, z: vein.worldZ },
-            gridPos: vein.gridPos,
-            cells: vein.cells,
+        // Add goldMine component to the entity
+        this.game.addComponent(entityId, "goldMine", {
             veinIndex: vein.originalIndex,
-            veinData: vein,
-            team: team,
-            model: mineModel
+            currentMiner: null,
+            minerQueue: [],
+            cells: vein.cells
         });
 
         return { success: true };
     }
 
     destroyGoldMine(entityId) {
-        const goldMine = this.claimedGoldMines.get(entityId);
+        const goldMine = this.game.getComponent(entityId, "goldMine");
         if (!goldMine) {
-            return { success: false, error: 'No gold mine to destroy' };
+            return { success: false, error: 'No gold mine component found' };
+        }
+
+        // Get the vein data
+        const vein = this.goldVeinLocations[goldMine.veinIndex];
+        if (!vein) {
+            console.warn('[GoldMineSystem] Could not find vein data for veinIndex:', goldMine.veinIndex);
         }
 
         // Clear any miners targeting this mine
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const miners = this.game.getEntitiesWith("miningState");
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && miningState.targetMineEntityId === entityId) {
                 miningState.targetMineEntityId = null;
                 miningState.targetMinePosition = null;
@@ -206,45 +209,40 @@ class GoldMineSystem extends GUTS.BaseSystem {
             }
         }
 
-        if (!this.game.isServer) {
-            console.log('[GoldMineSystem] CLIENT: Restoring vein');
-            this.restoreVein(goldMine.veinData);
-        } else {
-            console.log('[GoldMineSystem] SERVER: Releasing mine claim');
-            goldMine.veinData.claimed = false;
-            goldMine.veinData.claimedBy = null;
+        if (vein) {
+            if (!this.game.isServer) {
+                console.log('[GoldMineSystem] CLIENT: Restoring vein');
+                this.restoreVein(vein);
+            } else {
+                console.log('[GoldMineSystem] SERVER: Releasing mine claim');
+                vein.claimed = false;
+                vein.claimedBy = null;
+            }
         }
-        
-        this.claimedGoldMines.delete(entityId);
 
-        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', this.claimedGoldMines.size);
+        // Remove the goldMine component from the entity
+        this.game.removeComponent(entityId, "goldMine");
+
+        const remainingMines = this.game.getEntitiesWith("goldMine").length;
+        console.log('[GoldMineSystem] Gold mine destroyed. Remaining mines:', remainingMines);
         return { success: true };
     }
 
     // Check if a mine is currently occupied by looking at component states
     isMineOccupied(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'mining') {
-                return true;
-            }
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");                    
+        if (goldMine && goldMine.currentMiner) {
+            return true;
         }
-        
         return false;
     }
 
     // Get the current miner at a mine by checking component states
     getCurrentMiner(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        
+        const miners = this.game.getEntitiesWith("miningState");
+
         for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(minerEntityId, "miningState");
             if (miningState && 
                 miningState.targetMineEntityId === mineEntityId && 
                 miningState.state === 'mining') {
@@ -257,26 +255,20 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Get all miners in queue (waiting_at_mine state) for a specific mine
     getMinersInQueue(mineEntityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miners = this.game.getEntitiesWith(ComponentTypes.MINING_STATE);
-        const queuedMiners = [];
-        
-        for (const minerEntityId of miners) {
-            const miningState = this.game.getComponent(minerEntityId, ComponentTypes.MINING_STATE);
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'waiting_at_mine') {
-                queuedMiners.push(minerEntityId);
-            }
-        }
-        
-        return queuedMiners;
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");              
+        return goldMine.minerQueue;
     }
 
     // Get queue position for a specific miner
     getQueuePosition(mineEntityId, minerEntityId) {
         const queue = this.getMinersInQueue(mineEntityId);
         return queue.indexOf(minerEntityId);
+    }
+
+    addMinerToQueue(mineEntityId, minerEntityId){
+        console.log('addMinerToQueue', mineEntityId, minerEntityId);
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        goldMine.minerQueue.push(minerEntityId);
     }
 
     // Check if a miner is next in queue
@@ -286,39 +278,17 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     // Process next miner in queue when mine becomes available
-    processNextInQueue(mineEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        
-        if (queue.length === 0) {
+    processNextMinerInQueue(mineEntityId) {
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        goldMine.currentMiner = null;
+        if (goldMine.minerQueue.length === 0) {
             return;
         }
-        
-        const nextMinerId = queue[0];
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const miningState = this.game.getComponent(nextMinerId, ComponentTypes.MINING_STATE);
-        
-        if (miningState && miningState.state === 'waiting_at_mine') {
-            const aiState = this.game.getComponent(nextMinerId, ComponentTypes.AI_STATE);
-            const pos = this.game.getComponent(nextMinerId, ComponentTypes.POSITION);
-            const vel = this.game.getComponent(nextMinerId, ComponentTypes.VELOCITY);
-            
-            if (pos && vel && miningState.targetMinePosition) {
-                miningState.waitingPosition = null;
-                
-                pos.x = miningState.targetMinePosition.x;
-                pos.z = miningState.targetMinePosition.z;
-                vel.vx = 0;
-                vel.vz = 0;
-                
-                miningState.state = 'mining';
-                miningState.miningStartTime = this.game.state.now;
-                
-                if (aiState) {
-                    aiState.state = 'idle';
-                    aiState.targetPosition = null;
-                }
-            }
-        }
+
+        let nextMiner = goldMine.minerQueue.shift();
+        goldMine.currentMiner = nextMiner;
+
+
     }
 
     replaceVeinWithMine(vein) {
@@ -370,11 +340,11 @@ class GoldMineSystem extends GUTS.BaseSystem {
         vein.claimedBy = null;
     }
 
-    
+
     onBattleEnd() {
-        const entities = this.game.getEntitiesWith(this.game.componentTypes.MINING_STATE);        
+        const entities = this.game.getEntitiesWith("miningState");
         entities.forEach(entityId => {
-            const miningState = this.game.getComponent(entityId, this.game.componentTypes.MINING_STATE);
+            const miningState = this.game.getComponent(entityId, "miningState");
             if (miningState) {
                 miningState.miningStartTime = 0;
                 miningState.depositStartTime = 0;
@@ -383,26 +353,28 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     onDestroyBuilding(entityId){
-        const unitType = this.game.getComponent(entityId, this.game.componentTypes.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if (unitType.id === 'goldMine') {
             this.game.goldMineSystem.destroyGoldMine(entityId);
         } 
     }
 
     reset() {
-        
-        if (!this.game.isServer) {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                this.restoreVein(goldMine.veinData, goldMine.model);
-            }
-        } else {
-            for (const [entityId, goldMine] of this.claimedGoldMines) {
-                goldMine.veinData.claimed = false;
-                goldMine.veinData.claimedBy = null;
+        const goldMines = this.game.getEntitiesWith("goldMine");
+
+        for (const entityId of goldMines) {
+            const goldMine = this.game.getComponent(entityId, "goldMine");
+            if (!goldMine) continue;
+
+            const vein = this.goldVeinLocations[goldMine.veinIndex];
+            if (vein) {
+                if (!this.game.isServer) {
+                    this.restoreVein(vein);
+                } else {
+                    vein.claimed = false;
+                    vein.claimedBy = null;
+                }
             }
         }
-        
-        this.claimedGoldMines.clear();
-        
     }
 }

@@ -159,8 +159,8 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "MineGoldAbility",
-    "BuildAbility"
+    "BuildAbility",
+    "MineGoldAbility"
   ],
   "icon": "unit_peasant",
   "actionSet": "peasant_actions",

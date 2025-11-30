@@ -51,7 +51,7 @@ class WindShieldAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // Immediate cast effect
@@ -69,28 +69,34 @@ class WindShieldAbility extends GUTS.BaseAbility {
         const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         sortedAllies.forEach(allyId => {
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            const allyPos = this.game.getComponent(allyId, "position");
             if (!allyPos) return;
             // Shield effect
             this.createVisualEffect(allyPos, 'shield');            
             
             // DESYNC SAFE: Add shield component using scheduling system for duration
-            const Components = this.game.componentManager.getComponents();
-            this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                Components.Buff('wind_shield', { 
+            this.game.addComponent(allyId, "buff", {
+                buffType: 'wind_shield',
+                modifiers: {
                     deflectionChance: this.deflectionChance,
                     projectileReflection: true
-                }, this.game.state.now + this.shieldDuration, false, 1, this.game.state.now));
+                },
+                endTime: this.game.state.now + this.shieldDuration,
+                stackable: false,
+                stacks: 1,
+                appliedTime: this.game.state.now,
+                isActive: true
+            });
             
             // DESYNC SAFE: Schedule shield removal
             this.game.schedulingSystem.scheduleAction(() => {
-                if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
-                    const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                if (this.game.hasComponent(allyId, "buff")) {
+                    const buff = this.game.getComponent(allyId, "buff");
                     if (buff && buff.buffType === 'wind_shield') {
-                        this.game.removeComponent(allyId, this.componentTypes.BUFF);
+                        this.game.removeComponent(allyId, "buff");
                         
                         // Visual effect when shield expires
-                        const currentPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+                        const currentPos = this.game.getComponent(allyId, "position");
                         if (currentPos) {
                             this.createVisualEffect(currentPos, 'shield', { 
                                 count: 3, 

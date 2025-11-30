@@ -2,7 +2,6 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.fogOfWarSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
@@ -452,11 +451,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         if (!myTeam) return;
 
         const myUnits = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.HEALTH
+            "position",
+            "team",
+            "health"
         ).filter(id => {
-            const team = this.game.getComponent(id, this.componentTypes.TEAM);
+            const team = this.game.getComponent(id, "team");
             return team?.team === myTeam;
         });
 
@@ -466,8 +465,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         let meshIndex = 0;
 
         myUnits.forEach((entityId) => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const unitType = this.game.getComponent(entityId, "unitType");
             if (!pos) return;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;

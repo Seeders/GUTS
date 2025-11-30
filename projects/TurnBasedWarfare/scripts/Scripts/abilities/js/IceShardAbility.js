@@ -72,7 +72,7 @@ class IceShardAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -114,8 +114,8 @@ class IceShardAbility extends GUTS.BaseAbility {
     }
     
     fireIceShard(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
 
         if (!casterPos || !targetPos) return;
 
@@ -181,7 +181,7 @@ class IceShardAbility extends GUTS.BaseAbility {
 
         // Impact effect at target
         this.game.schedulingSystem.scheduleAction(() => {
-            const currentTargetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            const currentTargetPos = this.game.getComponent(targetId, "position");
             if (currentTargetPos) {
                 this.createVisualEffect(currentTargetPos, 'impact');
                 this.createVisualEffect(currentTargetPos, 'frost');

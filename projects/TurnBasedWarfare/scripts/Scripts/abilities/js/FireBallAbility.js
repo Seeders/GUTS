@@ -117,7 +117,7 @@ class FireBallAbility extends GUTS.BaseAbility {
     execute(casterEntity, targetData = null) {
         if (!this.game.projectileSystem) return;
 
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
        
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
@@ -127,7 +127,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         if (!closestEnemy) return;
 
         // IMPORTANT: Capture target position at cast time for ballistic trajectory
-        const targetPos = this.game.getComponent(closestEnemy, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(closestEnemy, "position");
         if (!targetPos) return;
 
         this.targetPosition = {
@@ -194,7 +194,7 @@ class FireBallAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Deterministic closest enemy finding
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
 
         // Sort enemies deterministically first
@@ -204,7 +204,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
 
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, "position");
             if (!enemyPos) return;
 
             const distance = Math.sqrt(
@@ -225,7 +225,7 @@ class FireBallAbility extends GUTS.BaseAbility {
     fireProjectile(casterEntity, targetId) {
         if (!this.game.projectileSystem) return;
 
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos || !this.targetPosition) return;
 
         // Create fireball projectile with enhanced effects
@@ -412,20 +412,20 @@ class FireBallAbility extends GUTS.BaseAbility {
     handleSplashDamage(casterEntity, impactPos) {
         // Get all entities in splash radius
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
 
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const casterTeam = this.game.getComponent(casterEntity, "team");
         if (!casterTeam) return;
 
         const splashTargets = [];
 
         // Find all valid targets in splash radius
         allEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTeam = this.game.getComponent(entityId, "team");
 
             if (!entityPos || !entityTeam || entityTeam.team === casterTeam.team) return;
 

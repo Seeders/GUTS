@@ -49,7 +49,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // Immediate cast effect
@@ -67,8 +67,8 @@ class BattleCryAbility extends GUTS.BaseAbility {
     
     performBattleCry(casterEntity) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
         
@@ -79,14 +79,14 @@ class BattleCryAbility extends GUTS.BaseAbility {
         let ralliedCount = 0;
         
         sortedAllies.forEach(allyId => {
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
-            const allyHealth = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            
+            const allyPos = this.game.getComponent(allyId, "position");
+            const allyHealth = this.game.getComponent(allyId, "health");
+
             // Only rally living allies
             if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
-            
+
             // DESYNC SAFE: Check if already rallied - don't stack multiple battle cries
-            const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+            const existingBuff = this.game.getComponent(allyId, "buff");
             
             if (existingBuff && existingBuff.buffType === 'rallied') {
                 // DESYNC SAFE: Refresh duration instead of stacking
@@ -94,13 +94,19 @@ class BattleCryAbility extends GUTS.BaseAbility {
                 existingBuff.appliedTime = this.game.state.now; // Update applied time
             } else {
                 // Apply new rally buff
-                const Components = this.game.componentManager.getComponents();
-                this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                    Components.Buff('rallied', { 
-                        damageMultiplier: this.damageMultiplier, 
-                        moralBoost: true, 
-                        fearImmunity: true 
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
+                this.game.addComponent(allyId, "buff", {
+                    buffType: 'rallied',
+                    modifiers: {
+                        damageMultiplier: this.damageMultiplier,
+                        moralBoost: true,
+                        fearImmunity: true
+                    },
+                    endTime: this.game.state.now + this.duration,
+                    stackable: false,
+                    stacks: 1,
+                    appliedTime: this.game.state.now,
+                    isActive: true
+                });
             }
             
             // Visual rally effect on each ally
@@ -215,13 +221,13 @@ class BattleCryAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove rally buff
     removeRallyBuff(allyId) {
         // Check if ally still exists and has the rally buff
-        if (this.game.hasComponent(allyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+        if (this.game.hasComponent(allyId, "buff")) {
+            const buff = this.game.getComponent(allyId, "buff");
             if (buff && buff.buffType === 'rallied') {
-                this.game.removeComponent(allyId, this.componentTypes.BUFF);
-                
+                this.game.removeComponent(allyId, "buff");
+
                 // Visual effect when rally expires
-                const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+                const allyPos = this.game.getComponent(allyId, "position");
                 if (allyPos) {
                     this.createVisualEffect(allyPos, 'rally', { 
                         count: 2, 

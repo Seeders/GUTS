@@ -2,7 +2,6 @@ class BaseECSGame {
     constructor(app) {
         this.app = app;
         this.state = null; // Will be set by subclasses
-        this.sceneManager = null; // Will be set by subclasses
         this.moduleManager = app.moduleManager;
 
         this.entityId = 0;
@@ -11,6 +10,7 @@ class BaseECSGame {
         this.components = new Map();
         this.classes = [];
         this.systems = [];
+        this.managers = [];
 
         this.nextEntityId = 1;
         this.lastTime = 0;
@@ -22,21 +22,54 @@ class BaseECSGame {
         this.FIXED_DELTA_TIME = 1/20;
 
         this.isServer = false;
-
-        this.componentTypes = null;
-
         // Performance monitoring
-        if (typeof PerformanceMonitor !== 'undefined') {
-            this.performanceMonitor = new PerformanceMonitor();
+        if (typeof GUTS.PerformanceMonitor !== 'undefined') {
+            this.performanceMonitor = new GUTS.PerformanceMonitor();
         }
     }
-    init() {
-        if(document){
+    init(isServer = false, config) {
+        this.isServer = isServer;
+        if(!this.isServer){
             document.addEventListener('keydown', (e) => {                
                 this.triggerEvent('onKeyDown', e.key);
             });
         }
+        this.loadGameScripts(config);
     }
+    
+    loadGameScripts(config) {
+        this.collections = this.getCollections();
+        this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);      
+        
+        this.gameConfig.managers?.forEach((managerType) => {
+            let params = { canvas: this.canvas };           
+            const managerInst = new GUTS[managerType](this);
+            if(managerInst.init){
+                managerInst.init(params);
+            }  
+            this.managers.push(managerInst);
+        });   
+        this.gameConfig.systems?.forEach((systemType) => {
+            let params = {canvas: this.canvas };  
+            const systemInst = new GUTS[systemType](this);
+            if(systemInst.init){
+                systemInst.init(params);
+            }  
+            this.systems.push(systemInst);
+        });   
+        this.managers.forEach((manager) => {
+            if(manager.postAllInit){
+                manager.postAllInit();  
+            }              
+        });      
+        this.systems.forEach((system) => {
+            if(system.postAllInit){
+                system.postAllInit();  
+            }              
+        });      
+
+    }
+
     getEntityId() {
         return this.nextEntityId++;
     }
@@ -150,11 +183,12 @@ class BaseECSGame {
         }
     }
     
-    addComponent(entityId, componentId, componentData) {
+    addComponent(entityId, componentId, data) {
         if (!this.entities.has(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
-        }
-        
+        }  
+        const componentMethods = this.gameManager.call('getComponents');
+        const componentData = componentMethods[componentId](data);
         if (!this.components.has(componentId)) {
             this.components.set(componentId, new Map());
         }
@@ -196,20 +230,6 @@ class BaseECSGame {
         return result.sort((a, b) => String(a).localeCompare(String(b)));
     }
     
-    addSystem(system, params) {
-        system.game = this;
-        this.systems.push(system);
-        if (system.init) {
-            system.init(params);
-        }
-    }
-
-    addClass(classId, classRef, params) {
-        this.classes[classId] = { classRef: classRef, defaultParams: params };
-        // Classes are now available directly at GUTS[classId]
-    }
-
-
     triggerEvent(eventName, data) {
         this.systems.forEach(system => {
             if (system[eventName]) {

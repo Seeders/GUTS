@@ -2,7 +2,6 @@ class MovementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.movementSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
         
         this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
@@ -57,28 +56,29 @@ class MovementSystem extends GUTS.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
         
         this.frameCounter++;
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION, this.componentTypes.VELOCITY);
+        const entities = this.game.getEntitiesWith("position", "velocity");
         // Sort for deterministic processing order (prevents desync)
         entities.sort((a, b) => String(a).localeCompare(String(b)));
 
         const unitData = new Map();
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-            const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
+            const pos = this.game.getComponent(entityId, "position");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const unitType = this.game.getComponent(entityId, "unitType");
+            const collision = this.game.getComponent(entityId, "collision");
+            const aiState = this.game.getComponent(entityId, "aiState");
+            const projectile = this.game.getComponent(entityId, "projectile");
             
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
+                // Unit is anchored if explicitly set, or if attacking and in range of target
                 const isAnchored = vel.anchored ||
                     (!!aiState &&
-                    (aiState.state === 'attacking' || aiState.state === 'waiting') &&
-                    aiState.aiBehavior &&
-                    !!aiState.target);
+                    (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction') &&
+                    !!aiState.meta.target &&
+                    this.isInAttackRange(pos, aiState.meta.target, entityId));
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
@@ -88,7 +88,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     separationForce: { x: 0, y: 0, z: 0 },
                     avoidanceForce: { x: 0, y: 0, z: 0 }
                 });
-                
+
                 this.updateUnitState(entityId, pos, vel);
                 this.updateMovementHistory(entityId, vel);
             }
@@ -107,11 +107,11 @@ class MovementSystem extends GUTS.BaseSystem {
         this.updatePathfindingStaggered(unitData);
         
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const vel = this.game.getComponent(entityId, "velocity");
+            const collision = this.game.getComponent(entityId, "collision");
+            const projectile = this.game.getComponent(entityId, "projectile");
+            const unitType = this.game.getComponent(entityId, "unitType");
             
             const isAffectedByGravity = vel.affectedByGravity;
             
@@ -196,14 +196,20 @@ class MovementSystem extends GUTS.BaseSystem {
             const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
             sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
-                if (data.aiState?.state === 'chasing') {
+                // Chasing means: has a target or targetPosition they're moving toward but not in range yet
+                const isChasing = data.aiState &&
+                    data.aiState.currentAction &&
+                    (data.aiState.shared || (data.aiState.shared && data.aiState.shared.targetPosition)) &&
+                    !data.isAnchored;
+
+                if (isChasing) {
                     this.pathfindingQueue.push(entityId);
                 }
             });
         }
-        
+
         const unitsPerFrame = Math.max(1, Math.ceil(this.pathfindingQueue.length / this.PATHFINDING_UPDATE_INTERVAL));
-        
+
         for (let i = 0; i < unitsPerFrame && this.pathfindingQueueIndex < this.pathfindingQueue.length; i++) {
             const entityId = this.pathfindingQueue[this.pathfindingQueueIndex];
             if (unitData.has(entityId)) {
@@ -211,7 +217,7 @@ class MovementSystem extends GUTS.BaseSystem {
             }
             this.pathfindingQueueIndex++;
         }
-        
+
         if (this.pathfindingQueueIndex >= this.pathfindingQueue.length) {
             this.pathfindingQueueIndex = 0;
             this.pathfindingQueue = [];
@@ -276,8 +282,8 @@ class MovementSystem extends GUTS.BaseSystem {
             
             checksPerformed++;
             
-            const otherPos = this.game.getComponent(otherEntityId, this.componentTypes.POSITION);
-            const otherCollision = this.game.getComponent(otherEntityId, this.componentTypes.COLLISION);
+            const otherPos = this.game.getComponent(otherEntityId, "position");
+            const otherCollision = this.game.getComponent(otherEntityId, "collision");
             
             if (!otherPos) continue;
             
@@ -327,19 +333,28 @@ class MovementSystem extends GUTS.BaseSystem {
     calculatePathfindingAvoidanceOptimized(entityId, data, allUnitData) {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
 
-        if (isAnchored || !aiState || aiState.state !== 'chasing') {
+        // Only apply avoidance if chasing (has target but not anchored)
+        const isChasing = aiState &&
+            aiState.currentAction &&
+            (aiState.shared || (aiState.shared && aiState.shared.targetPosition)) &&
+            !isAnchored;
+
+        if (!isChasing) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
             return;
         }
-        
-        let targetPos = aiState.targetPosition;
-        const targetEntityId = aiState.target;
+
+        // Get target from aiState
+        let targetPos = null;
+        const targetEntityId = aiState.actionTarget;
 
         if(targetEntityId){
-            targetPos = this.game.getComponent(targetEntityId, this.componentTypes.POSITION);
+            targetPos = this.game.getComponent(targetEntityId, "position");
+        } else if (aiState.shared?.targetPosition) {
+            targetPos = aiState.shared.targetPosition;
         }
-        
+
         if (!targetPos) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
@@ -417,8 +432,8 @@ class MovementSystem extends GUTS.BaseSystem {
                 
                 checksPerformed++;
                 
-                const otherPos = this.game.getComponent(otherEntityId, this.componentTypes.POSITION);
-                const otherCollision = this.game.getComponent(otherEntityId, this.componentTypes.COLLISION);
+                const otherPos = this.game.getComponent(otherEntityId, "position");
+                const otherCollision = this.game.getComponent(otherEntityId, "collision");
                 
                 if (!otherPos) continue;
                 
@@ -503,57 +518,78 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored || !aiState) {
+        if (isAnchored || aiState.meta.reachedTarget) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
             return;
         }
-        
-        if (aiState.state === 'waiting' || aiState.state === 'idle') {
-            data.desiredVelocity.vx = 0;
-            data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
-            return;
+
+
+        // Get movement target from aiState
+        let targetPos = null;
+
+        if (!targetPos && aiState && aiState.meta?.targetPosition) {
+            targetPos = aiState.meta.targetPosition;
         }
-        
-        if (aiState.state === 'chasing' && aiState.aiBehavior && (aiState.targetPosition || aiState.target)) {
-            // Check if we should use direct movement (line of sight to target)
-            if (aiState.useDirectMovement) {
-                // Move directly toward target using steering behaviors
-                this.moveDirectlyToTarget(entityId, data);
-            } else {
-                // Use pathfinding for navigation
+
+        if (targetPos) {
+            // Get pathfinding component
+            const pathfinding = this.game.getComponent(entityId, "pathfinding");
+
+            // Use pathfinding if available and useDirectMovement not set
+            if (pathfinding && !pathfinding.useDirectMovement) {
+                // Check if we have a path to follow
+                if (pathfinding.path && pathfinding.path.length > 0) {
+                    this.followPath(entityId, data);
+                    return;
+                }
+
+                // No path yet, request one
                 this.requestPathIfNeeded(entityId, data);
 
-                if (aiState.path && aiState.path.length > 0) {
-                    this.followPath(entityId, data);
-                } else {
-                    data.desiredVelocity.vx = 0;
-                    data.desiredVelocity.vy = 0;
-                    data.desiredVelocity.vz = 0;
-                }
+                // While waiting for path, move directly
+                this.moveDirectlyToTarget(entityId, data);
+                return;
             }
-        } else if (aiState.state === 'attacking') {
-            data.desiredVelocity.vx = 0;
+
+            // Direct movement (for units with useDirectMovement flag or no pathfinding)
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
+            const distToTarget = Math.sqrt(dx * dx + dz * dz);
+
+            if (distToTarget < 0.1) {
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vz = 0;
+                data.desiredVelocity.vy = 0;
+                return;
+            }
+
+            const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+            data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
+            data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
             data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
-        } else {
-            data.desiredVelocity.vx = 0;
-            data.desiredVelocity.vy = 0;
-            data.desiredVelocity.vz = 0;
+            return;
         }
+
+        // No velocity target, don't move
+        data.desiredVelocity.vx = 0;
+        data.desiredVelocity.vy = 0;
+        data.desiredVelocity.vz = 0;
     }
     
     moveDirectlyToTarget(entityId, data) {
         const { pos, vel, aiState } = data;
 
-        let targetPos = aiState.targetPosition;
-        if (aiState.target) {
-            const currentTargetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+        // Get target from aiState
+        let targetPos = null;
+        if (aiState.actionTarget) {
+            const currentTargetPos = this.game.getComponent(aiState.actionTarget, "position");
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
+        } else if (aiState.shared?.targetPosition) {
+            targetPos = aiState.shared.targetPosition;
         }
 
         if (!targetPos) {
@@ -581,61 +617,78 @@ class MovementSystem extends GUTS.BaseSystem {
     }
 
     requestPathIfNeeded(entityId, data) {
-        const { pos, aiState } = data;
+        const { pos, vel, aiState } = data;
         const now = this.game.state.now;
-        if(!aiState.aiBehavior){
-            aiState.aiBehavior = {};
-        }
-        if (!aiState.aiBehavior.lastPathRequest || (now - aiState.aiBehavior.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
-            aiState.aiBehavior.lastPathRequest = now;
 
-            let targetPos = aiState.targetPosition;
-            if (aiState.target) {
-                targetPos = this.game.getComponent(aiState.target, this.componentTypes.POSITION);
+        const pathfinding = this.game.getComponent(entityId, "pathfinding");
+        if (!pathfinding) return;
+
+        if (!pathfinding.lastPathRequest || (now - pathfinding.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
+            pathfinding.lastPathRequest = now;
+
+            // Get target from aiState
+            let targetX = null;
+            let targetZ = null;
+
+            // If targeting an entity, use its current position
+            if (aiState && aiState.meta.target) {
+                const targetPos = this.game.getComponent(aiState.meta.target, "position");
+                if (targetPos) {
+                    targetX = targetPos.x;
+                    targetZ = targetPos.z;
+                }
+            } else if (aiState && aiState.meta?.targetPosition) {
+                targetX = aiState.meta.targetPosition.x;
+                targetZ = aiState.meta.targetPosition.z;
             }
 
-            if ((!aiState.path || aiState.path.length == 0) && targetPos) {
-                aiState.path = this.game.gameManager.call('requestPath',
+            if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {
+                pathfinding.path = this.game.gameManager.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
-                    targetPos.x,
-                    targetPos.z,
+                    targetX,
+                    targetZ,
                     1
                 );
             }
+        } else {
+            console.log('pathfinding too often');
         }
     }
     
     followPath(entityId, data) {
-        const { pos, vel, aiState } = data;
-        
-        if (aiState.pathIndex === undefined) {
-            aiState.pathIndex = 0;
+        const { pos, vel } = data;
+
+        const pathfinding = this.game.getComponent(entityId, "pathfinding");
+        if (!pathfinding || !pathfinding.path) return;
+
+        if (pathfinding.pathIndex === undefined) {
+            pathfinding.pathIndex = 0;
         }
-        
-        if (aiState.pathIndex >= aiState.path.length) {
-            aiState.path = null;
-            aiState.pathIndex = 0;
+
+        if (pathfinding.pathIndex >= pathfinding.path.length) {
+            pathfinding.path = null;
+            pathfinding.pathIndex = 0;
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vz = 0;
             data.desiredVelocity.vy = 0;
             return;
         }
-        const waypoint = aiState.path[aiState.pathIndex];
+        const waypoint = pathfinding.path[pathfinding.pathIndex];
         const dx = waypoint.x - pos.x;
         const dz = waypoint.z - pos.z;
         const distToWaypoint = Math.sqrt(dx * dx + dz * dz);
-        
+
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
-            aiState.pathIndex++;
-            if (aiState.pathIndex >= aiState.path.length) {
-                aiState.path = null;
-                aiState.pathIndex = 0;
+            pathfinding.pathIndex++;
+            if (pathfinding.pathIndex >= pathfinding.path.length) {
+                pathfinding.path = null;
+                pathfinding.pathIndex = 0;
             }
             return;
         }
-        
+
         const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
         data.desiredVelocity.vx = (dx / distToWaypoint) * moveSpeed;
         data.desiredVelocity.vz = (dz / distToWaypoint) * moveSpeed;
@@ -681,7 +734,7 @@ class MovementSystem extends GUTS.BaseSystem {
             const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
 
             if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
-                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                const facing = this.game.getComponent(entityId, "facing");
                 currentDirection = facing ? facing.angle : 0;
             } else {
                 currentDirection = Math.atan2(vel.vz, vel.vx);
@@ -699,7 +752,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
 
-                    const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                    const facing = this.game.getComponent(entityId, "facing");
                     if (facing) {
                         facing.angle = smoothedDirection;
                     }
@@ -722,7 +775,7 @@ class MovementSystem extends GUTS.BaseSystem {
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
             // Preserve facing direction before zeroing velocity
             if (speedSqrd > 0.001) {
-                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                const facing = this.game.getComponent(entityId, "facing");
                 if (facing) {
                     facing.angle = Math.atan2(vel.vz, vel.vx);
                 }
@@ -804,18 +857,34 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     entityDestroyed(entityId) {
-        
+
         if (this.unitStates) {
             this.unitStates.delete(entityId);
         }
-        
+
         if (this.movementTracking) {
             this.movementTracking.delete(entityId);
         }
-        
+
         if (this.movementHistory) {
             this.movementHistory.delete(entityId);
         }
+    }
+
+    isInAttackRange(pos, targetEntityId, entityId) {
+        if (!targetEntityId) return false;
+
+        const targetPos = this.game.getComponent(targetEntityId, 'position');
+        if (!targetPos) return false;
+
+        const combat = this.game.getComponent(entityId, 'combat');
+        if (!combat) return false;
+
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+
+        return distance <= (combat.range || combat.attackRange || 50);
     }
 
     ping() {

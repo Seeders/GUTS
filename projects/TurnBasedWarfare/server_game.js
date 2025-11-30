@@ -10,14 +10,7 @@ import vm from 'vm';
 // Import server-specific classes (these are not in compiled game.js)
 import ServerEngine from '../../engine/ServerEngine.js';
 import ServerModuleManager from '../../engine/ServerModuleManager.js';
-import BaseECSGame from '../../global/libraries/js/BaseECSGame.js';
-import ServerSceneManager from '../../global/libraries/js/ServerSceneManager.js';
-import GameState from '../../global/libraries/js/GameState.js';
-import GameRoom from '../../global/libraries/js/GameRoom.js';
-import ServerNetworkManager from '../../global/libraries/js/ServerNetworkManager.js';
-import DesyncDebugger from './scripts/Scripts/libraries/js/DesyncDebugger.js';
 import ServerMatchmakingService from '../../global/libraries/js/ServerMatchmakingService.js';
-import MinHeap from './scripts/Scripts/libraries/js/MinHeap.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

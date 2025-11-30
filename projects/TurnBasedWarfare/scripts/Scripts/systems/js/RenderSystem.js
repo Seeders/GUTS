@@ -2,7 +2,6 @@ class RenderSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.renderSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
 
         // EntityRenderer handles ALL rendering
         this.entityRenderer = null;
@@ -185,16 +184,15 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     async updateEntities() {
-        const CT = this.componentTypes;
-        const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
+        const entities = this.game.getEntitiesWith("position", "renderable");
         this._stats.entitiesProcessed = entities.length;
 
         for (const entityId of entities) {
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
-            const velocity = this.game.getComponent(entityId, CT.VELOCITY);
-            const facing = this.game.getComponent(entityId, CT.FACING);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const renderable = this.game.getComponent(entityId, "renderable");
+            const velocity = this.game.getComponent(entityId, "velocity");
+            const facing = this.game.getComponent(entityId, "facing");
+            const unitType = this.game.getComponent(entityId, "unitType");
 
             if (!unitType) continue;
 

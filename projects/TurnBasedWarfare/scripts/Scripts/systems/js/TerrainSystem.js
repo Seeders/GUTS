@@ -35,12 +35,12 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
         this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
         this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
+        this.game.gameManager.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
         this.game.gameManager.register('getTileMap', () => this.terrainDataManager.tileMap);
         this.game.gameManager.register('getTerrainSize', () => this.terrainDataManager.terrainSize);
         this.game.gameManager.register('getTerrainExtensionSize', () => this.terrainDataManager.extensionSize);
         this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager.extendedSize);
 
-        // Spawn world objects (trees, rocks, etc.) - runs on both client and server
         this.spawnWorldObjects();
 
         this.initialized = true;

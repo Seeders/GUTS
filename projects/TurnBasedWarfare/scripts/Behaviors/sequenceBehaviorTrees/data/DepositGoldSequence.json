@@ -1,0 +1,62 @@
+{
+  "title": "Deposit Gold Sequence",
+  "description": "Sequence for depositing gold: check has gold -> find depot -> move -> deposit",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Behaviors/sequenceBehaviorTrees/js/DepositGoldSequence.js",
+  "fileName": "DepositGoldSequence",
+  "behaviorActions": [
+    "HasGoldBehaviorAction",
+    "FindNearestDepotBehaviorAction",
+    "MoveToSharedTargetBehaviorAction",
+    "DepositGoldBehaviorAction"
+  ],
+  "parameters": "{}",
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "peasant-1",
+        "label": "Peasant With Gold",
+        "components": {
+          "position": {
+            "x": 300,
+            "z": 300
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 1
+          },
+          "aiState": {
+            "rootBehaviorTree": "DepositGoldSequence",
+            "shared": {
+              "hasGold": true,
+              "goldAmount": 10
+            }
+          },
+          "unitType": {
+            "id": "peasant"
+          }
+        }
+      },
+      {
+        "id": "townhall-1",
+        "label": "Town Hall (Depot)",
+        "components": {
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "team": {
+            "team": 1
+          },
+          "unitType": {
+            "id": "townHall",
+            "name": "Town Hall"
+          }
+        }
+      }
+    ]
+  }
+}

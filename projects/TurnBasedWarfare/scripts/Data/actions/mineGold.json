@@ -1,5 +1,6 @@
 {
   "title": "Peasant Mine Gold",
   "icon": "building_goldMine",
-  "ability": "MineGoldAbility"
+  "ability": "MineGoldAbility",
+  "behaviorAction": "MineGoldAction"
 }

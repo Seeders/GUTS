@@ -1,0 +1,13 @@
+{
+  "title": "Is Enemy Nearby Check",
+  "description": "Checks if enemies are within detection range",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/IsEnemyNearbyBehaviorAction.js",
+  "fileName": "IsEnemyNearbyBehaviorAction",
+  "parameters": {
+    "range": 300,
+    "minCount": 1,
+    "storeNearest": false,
+    "targetKey": "target"
+  }
+}

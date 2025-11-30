@@ -1,0 +1,50 @@
+{
+  "title": "Select Behavior Tree",
+  "description": "Main behavior tree used by all units. Integrates player orders, autobattle combat, and passive abilities in priority order.",
+  "behaviorNodeType": "selector",
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "unit-1",
+        "label": "Unit (Idle)",
+        "components": {
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "aiState": {},
+          "playerOrder": {
+            "targetPosition": {
+              "x": 12,
+              "z": 15
+            }
+          }
+        }
+      },
+      {
+        "id": "goldmine-1",
+        "label": "Gold Mine",
+        "components": {
+          "position": {
+            "x": 150,
+            "z": 120
+          },
+          "team": {
+            "team": 1
+          },
+          "building": {
+            "type": "goldMine"
+          }
+        }
+      }
+    ]
+  },
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SelectBehaviorTree.js",
+  "fileName": "SelectBehaviorTree",
+  "behaviorActions": [
+    "AbilitiesBehaviorTree",
+    "PlayerOrderBehaviorTree",
+    "NewCombatBehaviorTree",
+    "IdleBehaviorAction"
+  ]
+}

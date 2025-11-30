@@ -61,7 +61,7 @@ class InfernoAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -223,7 +223,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         
         // Check each enemy position as potential cluster center
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            const centerPos = this.game.getComponent(potentialCenter, "position");
             if (!centerPos) return;
             
             let targetsInRange = 0;
@@ -231,7 +231,7 @@ class InfernoAbility extends GUTS.BaseAbility {
             
             // Count enemies within inferno radius of this position
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const enemyPos = this.game.getComponent(enemyId, "position");
                 if (!enemyPos) return;
                 
                 const distance = Math.sqrt(
@@ -271,7 +271,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         const firstEnemy = sortedEnemies[0];
         
-        const enemyPos = this.game.getComponent(firstEnemy, this.componentTypes.POSITION);
+        const enemyPos = this.game.getComponent(firstEnemy, "position");
         return enemyPos ? { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z } : casterPos;
     }
 }

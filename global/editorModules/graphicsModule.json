@@ -4,9 +4,9 @@
   "libraries": [
     "threejs",
     "three_OrbitControls",
-    "three_SkeletonUtils",
     "GLTFLoader",
     "ShapeFactory",
+    "ModelManager",
     "GE_AnimationManager",
     "GE_EventManager",
     "GE_GizmoManager",
@@ -15,6 +15,7 @@
     "GE_RotationUtils",
     "GE_SceneRenderer",
     "GE_UIManager",
+    "GE_EquipmentManager",
     "GraphicsEditor"
   ],
   "propertyName": "render",

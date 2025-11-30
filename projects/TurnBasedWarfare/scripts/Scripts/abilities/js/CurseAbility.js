@@ -51,7 +51,7 @@ class CurseAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, position);
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -68,7 +68,7 @@ class CurseAbility extends GUTS.BaseAbility {
     }
     
     applyCurses(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, position);
         if (!casterPos) return;
         
         // DESYNC SAFE: Sort enemies for consistent processing order
@@ -77,9 +77,9 @@ class CurseAbility extends GUTS.BaseAbility {
         const cursedEnemies = [];
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
-            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const enemyPos = this.game.getComponent(enemyId, position);
+            const enemyCombat = this.game.getComponent(enemyId, combat);
+            const enemyHealth = this.game.getComponent(enemyId, health);
             
             if (!enemyPos || !enemyCombat || !enemyHealth || enemyHealth.current <= 0) return;
             
@@ -92,15 +92,21 @@ class CurseAbility extends GUTS.BaseAbility {
             if (distance <= this.curseRadius) {
                 // Apply curse effect visually
                 this.createVisualEffect(enemyPos, 'curse');
-                
+
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
-                const Components = this.game.componentManager.getComponents();
-                this.game.addComponent(enemyId, this.componentTypes.BUFF, 
-                    Components.Buff('curse', { 
+                this.game.addComponent(enemyId, "buff", {
+                    buffType: 'curse',
+                    modifiers: {
                         damageMultiplier: this.damageReduction,
                         damageTakenMultiplier: this.vulnerabilityIncrease,
                         isCursed: true
-                    }, this.game.state.now + this.duration, false, 1, this.game.state.now));
+                    },
+                    endTime: this.game.state.now + this.duration,
+                    stackable: false,
+                    stacks: 1,
+                    appliedTime: this.game.state.now,
+                    isActive: true
+                });
                 
                 // Create dark aura effect (client only)
                 if (!this.game.isServer && this.game.effectsSystem) {
@@ -130,13 +136,13 @@ class CurseAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove curse effect
     removeCurse(enemyId) {
         // Check if enemy still exists and has the curse buff
-        if (this.game.hasComponent(enemyId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+        if (this.game.hasComponent(enemyId, "buff")) {
+            const buff = this.game.getComponent(enemyId, "buff");
             if (buff && buff.buffType === 'curse') {
-                this.game.removeComponent(enemyId, this.componentTypes.BUFF);
+                this.game.removeComponent(enemyId, "buff");
                 
                 // Visual effect when curse expires
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const enemyPos = this.game.getComponent(enemyId, "position");
                 if (enemyPos) {
                     this.createVisualEffect(enemyPos, 'curse', { 
                         count: 1, 

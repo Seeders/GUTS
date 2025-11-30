@@ -122,7 +122,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
 
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -411,20 +411,20 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
     handleSplashDamage(casterEntity, impactPos) {
         // Get all entities in splash radius
         const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
+            "position",
+            "health",
+            "team"
         );
 
-        const casterTeam = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const casterTeam = this.game.getComponent(casterEntity, "team");
         if (!casterTeam) return;
 
         const splashTargets = [];
 
         // Find all valid targets in splash radius
         allEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTeam = this.game.getComponent(entityId, "team");
 
             if (!entityPos || !entityTeam || entityTeam.team === casterTeam.team) return;
 
@@ -481,7 +481,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         // Check each enemy position as potential impact center
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, this.componentTypes.POSITION);
+            const centerPos = this.game.getComponent(potentialCenter, "position");
             if (!centerPos) return;
 
             let targetsInRange = 0;
@@ -489,7 +489,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
             // Count enemies within splash radius of this position
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                const enemyPos = this.game.getComponent(enemyId, "position");
                 if (!enemyPos) return;
 
                 const distance = Math.sqrt(
@@ -517,7 +517,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         // If no good cluster found but we have enemies, target the first enemy deterministically
         if (!bestPosition && sortedEnemies.length > 0) {
-            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], this.componentTypes.POSITION);
+            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], "position");
             if (firstEnemyPos) {
                 bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
             }

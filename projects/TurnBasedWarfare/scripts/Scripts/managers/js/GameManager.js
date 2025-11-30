@@ -1,8 +1,8 @@
-class GameManager {
+class GameManager extends GUTS.GameServices {
     constructor(game) {
+        super(game);
         this.game = game;
         this.game.gameManager = this;
-        this.services = new Map();
     }
 
     initializeGame(){
@@ -76,37 +76,4 @@ class GameManager {
         this.game.screenManager.stats.round++;
         this.initializeGame();
     }
-
-    // Systems call this in constructor or init()
-    register(key, method) {
-        if (this.services.has(key)) {
-            debugger;
-            console.warn(`Service ${key} already registered! Overwriting.`);
-        }
-        this.services.set(key, method);
-    }
-
-    has(key){
-        return this.services.has(key);
-    }
-
-    // Public API
-    call(key, ...args) {
-        const method = this.services.get(key);
-        if (!method) {
-            return undefined;
-        }
-        return method(...args);
-    }
-
-    // Optional: async version
-    async callAsync(key, ...args) {
-        return this.call(key, ...args);
-    }
-
-    // Debug
-    listServices() {
-        return Array.from(this.services.keys());
-    }
-
 }

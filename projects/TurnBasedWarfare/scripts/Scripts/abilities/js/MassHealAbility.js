@@ -60,7 +60,7 @@ class MassHealAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
@@ -79,7 +79,7 @@ class MassHealAbility extends GUTS.BaseAbility {
     }
     
     performMassHeal(casterEntity, targetAllies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         let healedCount = 0;
         let totalHealing = 0;
 
@@ -137,8 +137,8 @@ class MassHealAbility extends GUTS.BaseAbility {
 
         // Process each ally deterministically
         sortedAllies.forEach((allyId, index) => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            const health = this.game.getComponent(allyId, "health");
+            const allyPos = this.game.getComponent(allyId, "position");
 
             if (!health || !allyPos) return;
 
@@ -247,7 +247,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(allyId, "health");
             // Check if ally is injured (below 80% health threshold)
             return health && health.current < health.max * 0.8;
         });
@@ -259,7 +259,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         return sortedAllies.filter(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(allyId, "health");
             // Any ally that isn't at full health
             return health && health.current < health.max;
         });

@@ -45,8 +45,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         // Check if this Beast Master already has a summoned wolf that's still alive
         if (this.summonedWolfId) {
-            const wolfHealth = this.game.getComponent(this.summonedWolfId, this.componentTypes.HEALTH);
-            const wolfDeathState = this.game.getComponent(this.summonedWolfId, this.componentTypes.DEATH_STATE);
+            const wolfHealth = this.game.getComponent(this.summonedWolfId, "health");
+            const wolfDeathState = this.game.getComponent(this.summonedWolfId, "deathState");
             
             // If wolf is dead or dying, reset our tracking
             if (!wolfHealth || wolfHealth.current <= 0 || (wolfDeathState && wolfDeathState.isDying)) {
@@ -59,8 +59,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        const pos = this.game.getComponent(casterEntity, "position");
+        const team = this.game.getComponent(casterEntity, "team");
         if (!pos || !team) return;
         
         // Immediate cast effect
@@ -75,7 +75,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     
     performSummon(casterEntity, summonPos, team) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
         
         // DESYNC SAFE: Find deterministic summon position
@@ -143,9 +143,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     createSummonedCreature(pos, unitDefId, team, summoner) {
         try {
             const creatureId = this.game.createEntity();
-            const components = this.game.componentManager.getComponents();
-            const componentTypes = this.game.componentManager.getComponentTypes();
-            
+
             // Get unit definition for stats (with fallbacks)
             const collections = this.game.getCollections();
             const unitDef = collections?.units?.[unitDefId] || {
@@ -156,45 +154,91 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 speed: 40,
                 size: 20
             };
-            
+
             // Add all standard unit components
-            this.game.addComponent(creatureId, componentTypes.POSITION, 
-                components.Position(pos.x, pos.y, pos.z));
-            
-            this.game.addComponent(creatureId, componentTypes.VELOCITY, 
-                components.Velocity(0, 0, 0, (unitDef.speed) * 20));
-            
-            this.game.addComponent(creatureId, componentTypes.RENDERABLE, 
-                components.Renderable("units", unitDefId));
-            
-            this.game.addComponent(creatureId, componentTypes.HEALTH, 
-                components.Health(unitDef.hp));
-            
-            this.game.addComponent(creatureId, componentTypes.COMBAT, 
-                components.Combat(unitDef.damage, unitDef.range, unitDef.attackSpeed));
-            
-            this.game.addComponent(creatureId, componentTypes.COLLISION, 
-                components.Collision(unitDef.size, unitDef.height));
-            
-            this.game.addComponent(creatureId, componentTypes.TEAM, 
-                components.Team(team));
-            
-            this.game.addComponent(creatureId, componentTypes.UNIT_TYPE, 
-                components.UnitType(unitDefId, 'Summoned Wolf', 0));
-            
-            this.game.addComponent(creatureId, componentTypes.AI_STATE, 
-                components.AIState('idle'));
-            
-            this.game.addComponent(creatureId, componentTypes.ANIMATION, 
-                components.Animation());
-            
-            this.game.addComponent(creatureId, componentTypes.FACING, 
-                components.Facing(0));
-            
+            this.game.addComponent(creatureId, "position", {
+                x: pos.x,
+                y: pos.y,
+                z: pos.z
+            });
+
+            this.game.addComponent(creatureId, "velocity", {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: (unitDef.speed) * 20,
+                affectedByGravity: true,
+                anchored: false
+            });
+
+            this.game.addComponent(creatureId, "renderable", {
+                objectType: "units",
+                spawnType: unitDefId,
+                capacity: 128
+            });
+
+            this.game.addComponent(creatureId, "health", {
+                max: unitDef.hp,
+                current: unitDef.hp
+            });
+
+            this.game.addComponent(creatureId, "combat", {
+                damage: unitDef.damage,
+                range: unitDef.range,
+                attackSpeed: unitDef.attackSpeed,
+                projectile: null,
+                lastAttack: 0,
+                element: 'physical',
+                armor: 0,
+                fireResistance: 0,
+                coldResistance: 0,
+                lightningResistance: 0,
+                poisonResistance: 0,
+                visionRange: 300
+            });
+
+            this.game.addComponent(creatureId, "collision", {
+                radius: unitDef.size,
+                height: unitDef.height || 50
+            });
+
+            this.game.addComponent(creatureId, "team", {
+                team: team
+            });
+
+            this.game.addComponent(creatureId, "unitType", {
+                id: unitDefId,
+                title: 'Summoned Wolf',
+                value: 0
+            });
+
+            this.game.addComponent(creatureId, "aiState", {
+                state: 'idle',
+                targetPosition: null,
+                target: null,
+                aiControllerId: null,
+                meta: {}
+            });
+
+            this.game.addComponent(creatureId, "animation", {
+                scale: 1,
+                rotation: 0,
+                flash: 0
+            });
+
+            this.game.addComponent(creatureId, "facing", {
+                angle: 0
+            });
+
             // DESYNC SAFE: Use game time for summoned component
-            this.game.addComponent(creatureId, componentTypes.SUMMONED, 
-                components.Summoned(summoner, unitDefId, null, this.game.state.now || 0));
-            
+            this.game.addComponent(creatureId, "summoned", {
+                summoner: summoner,
+                summonType: unitDefId,
+                originalStats: null,
+                createdTime: this.game.state.now || 0,
+                isSummoned: true
+            });
+
             return creatureId;
         } catch (error) {
             console.error('Failed to create summoned creature:', error);
@@ -204,9 +248,9 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     
     // Helper method to clean up when the summoner dies
     onSummonerDeath(summonerId) {
-        if (this.summonedWolfId && this.game.hasComponent(this.summonedWolfId, this.componentTypes.HEALTH)) {
+        if (this.summonedWolfId && this.game.hasComponent(this.summonedWolfId, "health")) {
             // Kill the summoned wolf when summoner dies
-            const wolfHealth = this.game.getComponent(this.summonedWolfId, this.componentTypes.HEALTH);
+            const wolfHealth = this.game.getComponent(this.summonedWolfId, "health");
             if (wolfHealth && wolfHealth.current > 0) {
                 wolfHealth.current = 0;
                 

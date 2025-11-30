@@ -2,12 +2,14 @@
 node_modules/
 cache/
 
+projects/**/config/*
 */**/dist/client/game.js
 */**/dist/client/engine.js
 */**/dist/client/resources/**/*
 */**/dist/client/modules/**/*
 */**/dist/client/cache/**/*
 */**/dist/server/game.js
+*/**/dist/server/vendors-node_modules_socket_io_wrapper_mjs.js
 
 build/.temp/**/*
 editor/

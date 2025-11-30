@@ -1,0 +1,11 @@
+{
+  "title": "Build",
+  "behaviorNodeType": "action",
+  "type": "BuildBehaviorAction",
+  "priority": 5,
+  "description": "Construct buildings",
+  "parameters": {
+    "buildRange": 50,
+    "defaultBuildTime": 5
+  }
+}

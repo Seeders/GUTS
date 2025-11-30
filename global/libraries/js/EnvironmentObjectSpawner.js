@@ -129,40 +129,33 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
 
         // Create entity with unique ID
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
 
         // Add Position component
-        this.game.addComponent(entityId, ComponentTypes.POSITION,
-            Components.Position(worldX, height, worldZ));
+        this.game.addComponent(entityId, "position", { x: worldX, y: height, z: worldZ });
 
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
-        this.game.addComponent(entityId, ComponentTypes.UNIT_TYPE,
-            Components.UnitType(unitTypeData));
+        this.game.addComponent(entityId, "unitType", unitTypeData);
 
         // Add Team component (neutral for world objects)
-        this.game.addComponent(entityId, ComponentTypes.TEAM,
-            Components.Team('neutral'));
+        this.game.addComponent(entityId, "team", { team: 'neutral' });
 
         // Add Collision component if the object should block movement
         // Check for impassable property (true means it blocks movement)
         if (unitType.impassable === true && unitType.size) {
-            this.game.addComponent(entityId, ComponentTypes.COLLISION,
-                Components.Collision(unitType.size, unitType.height || 100));
+            this.game.addComponent(entityId, "collision", { radius: unitType.size, height: unitType.height || 100 });
         }
 
         // Add Facing component for rotation
-        this.game.addComponent(entityId, ComponentTypes.FACING,
-            Components.Facing(rotation));
+        this.game.addComponent(entityId, "facing", { angle: rotation });
 
         // Store scale in Animation component
-        if (!this.game.hasComponent(entityId, ComponentTypes.ANIMATION)) {
-            this.game.addComponent(entityId, ComponentTypes.ANIMATION,
-                Components.Animation(scale, rotation, 0));
+        if (!this.game.hasComponent(entityId, "animation")) {
+            this.game.addComponent(entityId, "animation", { scale, rotation, flash: 0 });
         }
 
         this.spawnedEntities.add(entityId);

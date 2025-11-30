@@ -1,0 +1,8 @@
+{
+  "title": "Wait For Mine",
+  "description": "Waits until it's the entity's turn to mine. Returns SUCCESS when ready, RUNNING while waiting.",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/WaitForMineBehaviorAction.js",
+  "fileName": "WaitForMineBehaviorAction",
+  "parameters": {}
+}

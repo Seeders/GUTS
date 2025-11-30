@@ -2,7 +2,6 @@ class AbilitySystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
         this.abilityActionCounter = 0;
         this.entityAbilities = new Map();
         this.abilityCooldowns = new Map();
@@ -104,18 +103,8 @@ class AbilitySystem extends GUTS.BaseSystem {
             .filter(ability => ability.canExecute(entityId))
             .sort((a, b) => b.priority - a.priority);
         
-        // Check if unit is waiting and now has abilities available
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-        if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
-            // Transition back to attacking state since we have abilities ready
-            if (this.game.combatAISystems) {
-                this.game.combatAISystems.changeAIState(aiState, 'attacking');
-                
-                // Re-enable movement decisions by resetting decision time
-                aiState.aiBehavior.lastDecisionTime = 0;
-                
-            }
-        }
+        // With behavior tree system, AI state transitions are handled automatically
+        // through priority evaluation - no need to manually change state
         
         if (availableAbilities.length > 0) {
             this.useAbility(entityId, availableAbilities[0].id);
@@ -186,9 +175,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         const targetId = ability.getTargetForFacing(entityId);
         if (!targetId || targetId === entityId) return;
 
-        const casterPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+        const casterPos = this.game.getComponent(entityId, "position");
+        const targetPos = this.game.getComponent(targetId, "position");
+        const facing = this.game.getComponent(entityId, "facing");
 
         if (!casterPos || !targetPos || !facing) return;
 

@@ -7,6 +7,7 @@
   "appLibrary": "ServerECSGame",
   "initialScene": "server",
   "libraries": [
+    "GameServices",
     "BaseSystem",
     "GameRoom",
     "ServerGameRoom",
@@ -16,12 +17,48 @@
     "ServerECSGame",
     "ServerEventManager",
     "ServerNetworkManager",
-    "ServerSceneManager",
     "SeededRandom",
     "MinHeap",
     "DesyncDebugger",
     "TerrainDataManager",
     "EnvironmentObjectSpawner",
-    "CoordinateTranslator"
+    "CoordinateTranslator",
+    "ComponentGenerator",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode"
+  ],
+  "managers": [
+    "GameManager",
+    "ComponentManager",
+    "UnitCreationManager",
+    "SquadManager" 
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "ServerBattlePhaseSystem",
+    "ServerPlacementSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "PathfindingSystem",
+    "GoldMineSystem",
+    "VisionSystem",
+    "SupplySystem" 
+  ],
+  "classes": [
+    { "collection": "abilities", "baseClass": "BaseAbility" },
+    { "collection": "behaviorActions", "baseClass": "BaseBehaviorAction" },
+    { "collection": "behaviorDecorators", "baseClass": "BaseBehaviorDecorator" },
+    { "collection": "behaviorTrees", "baseClass": "BaseBehaviorTree" },
+    { "collection": "sequenceBehaviorTrees", "baseClass": "SequenceBehaviorTree" }
   ]
 }

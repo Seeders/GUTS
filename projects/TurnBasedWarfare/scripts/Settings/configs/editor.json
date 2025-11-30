@@ -10,7 +10,8 @@
     "aiPromptModule",
     "audioModule",
     "exportScriptModule",
-    "textureEditor"
+    "textureEditor",
+    "behaviorTreeModule"
   ],
   "path": "/",
   "fileName": "editor"

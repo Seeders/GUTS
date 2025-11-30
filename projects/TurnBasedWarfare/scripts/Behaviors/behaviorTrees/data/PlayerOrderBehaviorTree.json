@@ -1,0 +1,30 @@
+{
+  "title": "Player Order Behavior Tree",
+  "description": "Selector tree for handling player orders. Checks for different types of player commands and executes them.",
+  "behaviorNodeType": "selector",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/PlayerOrderBehaviorTree.js",
+  "fileName": "PlayerOrderBehaviorTree",
+  "behaviorActions": [
+    "BuildSequence",
+    "HoldPositionBehaviorAction",
+    "MoveBehaviorAction"
+  ],
+  "parameters": {},
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "unit-1",
+        "label": "Test Unit",
+        "components": {
+          "position": { "x": 100, "z": 100 },
+          "velocity": { "vx": 0, "vz": 0 },
+          "playerOrder": {
+            "targetPosition": { "x": 200, "z": 200 },
+            "meta": { "isMoveOrder": true },
+            "issuedTime": 0
+          }
+        }
+      }
+    ]
+  }
+}

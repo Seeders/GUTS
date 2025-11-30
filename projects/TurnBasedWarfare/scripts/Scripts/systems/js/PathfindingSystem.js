@@ -91,6 +91,14 @@ class PathfindingSystem extends GUTS.BaseSystem {
         console.log('PathfindingSystem: Initialized');
     }
 
+    onPlacementPhaseStart() {
+        const entities = this.game.getEntitiesWith('pathfinding');
+        entities.forEach((entityId) => {
+            const pathfinding = this.game.getComponent(entityId, 'pathfinding');
+            pathfinding.lastPathRequest = 0;
+        });
+    }
+
     loadRamps(tileMap) {
         this.ramps.clear();
 
@@ -730,12 +738,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
             );
             
             if (path && this.game.componentManager) {
-                const componentTypes = this.game.componentManager.getComponentTypes();
-                const aiState = this.game.getComponent(request.entityId, componentTypes.AI_STATE);
-                
-                if (aiState) {
-                    aiState.path = path;
-                    aiState.pathIndex = 0;
+                // Store path in pathfinding component (not aiState)
+                const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
+                if (pathfindingComp) {
+                    pathfindingComp.path = path;
+                    pathfindingComp.pathIndex = 0;
                 }
             }
         }

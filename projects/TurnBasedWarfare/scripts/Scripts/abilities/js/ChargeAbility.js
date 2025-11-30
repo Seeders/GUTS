@@ -57,14 +57,14 @@ class ChargeAbility extends GUTS.BaseAbility {
         const enemies = this.getEnemiesInRange(casterEntity);
         
         // Don't charge if already charging
-        const charging = this.game.getComponent(casterEntity, this.componentTypes.CHARGING);
+        const charging = this.game.getComponent(casterEntity, "charging");
         if (charging && charging.isCharging) return false;
         
         return enemies.length > 0;
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(casterEntity, position);
         if (!pos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -87,7 +87,7 @@ class ChargeAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, position);
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
@@ -97,7 +97,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            const enemyPos = this.game.getComponent(enemyId, position);
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -115,9 +115,9 @@ class ChargeAbility extends GUTS.BaseAbility {
     }
     
     initiateCharge(casterEntity, targetId) {
-        const pos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const velocity = this.game.getComponent(casterEntity, this.componentTypes.VELOCITY);
+        const pos = this.game.getComponent(casterEntity, position);
+        const targetPos = this.game.getComponent(targetId, position);
+        const velocity = this.game.getComponent(casterEntity, velocity);
         
         if (!pos || !targetPos || !velocity) return;
         
@@ -129,10 +129,15 @@ class ChargeAbility extends GUTS.BaseAbility {
         if (distance === 0) return; // Avoid division by zero
         
         // DESYNC SAFE: Add charging component for state tracking
-        const Components = this.game.componentManager.getComponents();
-        this.game.addComponent(casterEntity, this.componentTypes.CHARGING, 
-            Components.Charging(targetId, this.chargeSpeed, this.chargeDamage, 
-                this.game.state.now, 0, distance));
+        this.game.addComponent(casterEntity, "charging", {
+            target: targetId,
+            chargeSpeed: this.chargeSpeed,
+            chargeDamage: this.chargeDamage,
+            chargeStartTime: this.game.state.now,
+            chargeDistance: 0,
+            maxChargeDistance: distance,
+            isCharging: true
+        });
         
         // Set velocity for charge
         velocity.vx = (dx / distance) * this.chargeSpeed;
@@ -217,21 +222,21 @@ class ChargeAbility extends GUTS.BaseAbility {
     
     completeCharge(casterEntity, targetId) {
         // Stop the charge by removing charging component and resetting velocity
-        if (this.game.hasComponent(casterEntity, this.componentTypes.CHARGING)) {
-            this.game.removeComponent(casterEntity, this.componentTypes.CHARGING);
+        if (this.game.hasComponent(casterEntity, charging)) {
+            this.game.removeComponent(casterEntity, charging);
         }
         
         // Stop movement
-        const velocity = this.game.getComponent(casterEntity, this.componentTypes.VELOCITY);
+        const velocity = this.game.getComponent(casterEntity, velocity);
         if (velocity) {
             velocity.vx = 0;
             velocity.vz = 0;
         }
         
         // Check if target still exists and is in range for impact
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
-        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const casterPos = this.game.getComponent(casterEntity, position);
+        const targetPos = this.game.getComponent(targetId, position);
+        const targetHealth = this.game.getComponent(targetId, health);
         
         if (!casterPos || !targetPos || !targetHealth || targetHealth.current <= 0) return;
         
@@ -333,12 +338,18 @@ class ChargeAbility extends GUTS.BaseAbility {
             });
 
             // DESYNC SAFE: Apply stun using buff system
-            const Components = this.game.componentManager.getComponents();
-            this.game.addComponent(targetId, this.componentTypes.BUFF,
-                Components.Buff('stunned', {
+            this.game.addComponent(targetId, "buff", {
+                buffType: 'stunned',
+                modifiers: {
                     movementDisabled: true,
                     attackDisabled: true
-                }, this.game.state.now + this.stunDuration, false, 1, this.game.state.now));
+                },
+                endTime: this.game.state.now + this.stunDuration,
+                stackable: false,
+                stacks: 1,
+                appliedTime: this.game.state.now,
+                isActive: true
+            });
 
             // DESYNC SAFE: Schedule stun removal
             this.game.schedulingSystem.scheduleAction(() => {
@@ -355,13 +366,13 @@ class ChargeAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove stun effect
     removeStun(targetId) {
         // Check if target still exists and has the stun buff
-        if (this.game.hasComponent(targetId, this.componentTypes.BUFF)) {
-            const buff = this.game.getComponent(targetId, this.componentTypes.BUFF);
+        if (this.game.hasComponent(targetId, buff)) {
+            const buff = this.game.getComponent(targetId, buff);
             if (buff && buff.buffType === 'stunned') {
-                this.game.removeComponent(targetId, this.componentTypes.BUFF);
+                this.game.removeComponent(targetId, buff);
                 
                 // Visual effect when stun expires
-                const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+                const targetPos = this.game.getComponent(targetId, position);
                 if (targetPos) {
                     this.createVisualEffect(targetPos, 'cast', { 
                         count: 3, 
@@ -376,11 +387,11 @@ class ChargeAbility extends GUTS.BaseAbility {
     
     // Helper method to handle charge interruption (e.g., if caster dies mid-charge)
     cancelCharge(casterEntity) {
-        if (this.game.hasComponent(casterEntity, this.componentTypes.CHARGING)) {
-            this.game.removeComponent(casterEntity, this.componentTypes.CHARGING);
+        if (this.game.hasComponent(casterEntity, charging)) {
+            this.game.removeComponent(casterEntity, charging);
             
             // Stop movement
-            const velocity = this.game.getComponent(casterEntity, this.componentTypes.VELOCITY);
+            const velocity = this.game.getComponent(casterEntity, velocity);
             if (velocity) {
                 velocity.vx = 0;
                 velocity.vz = 0;

@@ -1,0 +1,29 @@
+{
+  "title": "Abilities Behavior Tree",
+  "description": "Dynamically selects abilities to use, no behaviorNodes configuration required.",
+  "behaviorNodeType": "selector",
+  "mockEntities": {
+    "entities": [
+      {
+        "id": "unit-1",
+        "label": "Unit (Idle)",
+        "components": {
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "aiState": {},
+          "playerOrder": {
+            "targetPosition": {
+              "x": 12,
+              "z": 15
+            }
+          }
+        }
+      }
+    ]
+  },
+  "behaviorNodes": [],
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/AbilitiesBehaviorTree.js",
+  "fileName": "AbilitiesBehaviorTree"
+}

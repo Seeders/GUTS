@@ -186,9 +186,11 @@ class EditorController {
                         }
                     }
                 });
+                    console.log('modules complete');
 
                 // Also load interfaces from individual libraries
                 Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
+                    console.log(moduleId);
                     if (module.interface) {
                         let ui = project.objectTypes.interfaces[module.interface];
                         if (ui) {

@@ -37,10 +37,17 @@ class ShopSystem extends GUTS.BaseSystem {
         this.game.state.selectedEntity.collection = null;
     }
     onUnitSelected(entityId){
-        const CT = this.game.componentManager.getComponentTypes();
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "buildings") {
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);        
+            const placement = this.game.getComponent(entityId, "placement");
+
+            // Ensure completed buildings are registered with ShopSystem
+            // This handles cases where construction completed but addBuilding wasn't called
+            // (e.g., client syncing state from server where ShopSystem doesn't exist)
+            if (placement && !placement.isUnderConstruction && !this.buildingProductionProgress.has(entityId)) {
+                this.addBuilding(unitType.id, entityId);
+            }
+
             this.renderBuildingActions(placement);
         }
     }
@@ -76,7 +83,6 @@ class ShopSystem extends GUTS.BaseSystem {
             }
         } else {
             // Building is under construction - show cancel button
-            const CT = this.game.componentManager.getComponentTypes();
             const buildingEntityId = this.game.state.selectedEntity.entityId;
 
             if (placement.isUnderConstruction) {
@@ -617,8 +623,6 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     cancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.componentManager.getComponentTypes();
-
         if (!placement || !placement.isUnderConstruction) {
             this.game.uiSystem?.showNotification('Building is not under construction', 'warning', 1000);
             return;
@@ -646,8 +650,6 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     performLocalCancelConstruction(buildingEntityId, placement) {
-        const CT = this.game.componentManager.getComponentTypes();
-
         // Refund the gold
         const refundAmount = placement.unitType.value || 0;
         if (refundAmount > 0) {
@@ -658,25 +660,19 @@ class ShopSystem extends GUTS.BaseSystem {
         // Clear the assigned builder's command if there is one
         const assignedBuilder = placement.assignedBuilder;
         if (assignedBuilder) {
-            // Complete/clear the build command
-            if (this.game.commandQueueSystem) {
-                const currentCommand = this.game.gameManager.call('getCurrentCommand', assignedBuilder);
-                if (currentCommand && currentCommand.type === 'build') {
-                    this.game.gameManager.call('completeCurrentCommand', assignedBuilder);
-                }
-            }
+            // With behavior tree system, just clear the building state
+            // The behavior tree will naturally switch to other behaviors
 
             // Remove the builder's BUILDING_STATE component
-            if (this.game.hasComponent(assignedBuilder, CT.BUILDING_STATE)) {
-                this.game.removeComponent(assignedBuilder, CT.BUILDING_STATE);
+            if (this.game.hasComponent(assignedBuilder, "buildingState")) {
+                this.game.removeComponent(assignedBuilder, "buildingState");
             }
 
-            // Reset builder's AI state
-            const aiState = this.game.getComponent(assignedBuilder, CT.AI_STATE);
-            if (aiState) {
-                aiState.state = 'idle';
-                aiState.targetPosition = null;
-                aiState.target = null;
+            // Stop movement
+            const builderVel = this.game.getComponent(assignedBuilder, "velocity");
+            if (builderVel) {
+                builderVel.vx = 0;
+                builderVel.vz = 0;
             }
         }
 

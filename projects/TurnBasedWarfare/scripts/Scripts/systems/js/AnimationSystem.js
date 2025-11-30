@@ -2,7 +2,6 @@ class AnimationSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.animationSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
 
         // Animation state tracking (VAT-only, no mixers)
         this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. }
@@ -36,23 +35,22 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     updateEntityAnimations() {
-        const CT = this.componentTypes;
-        const entities = this.game.getEntitiesWith(CT.POSITION, CT.RENDERABLE);
+        const entities = this.game.getEntitiesWith("position", "renderable");
 
         entities.forEach(entityId => {
             // Only process instanced entities
             if (!this.game.renderSystem?.isInstanced(entityId)) return;
 
             // Skip static entities (worldObjects, cliffs) that don't have animations
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const unitType = this.game.getComponent(entityId, "unitType");
             if (unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs')) {
                 return;
             }
 
-            const velocity = this.game.getComponent(entityId, CT.VELOCITY);
-            const health = this.game.getComponent(entityId, CT.HEALTH);
-            const combat = this.game.getComponent(entityId, CT.COMBAT);
-            const aiState = this.game.getComponent(entityId, CT.AI_STATE);
+            const velocity = this.game.getComponent(entityId, "velocity");
+            const health = this.game.getComponent(entityId, "health");
+            const combat = this.game.getComponent(entityId, "combat");
+            const aiState = this.game.getComponent(entityId, "aiState");
 
             // Ensure entity has animation state
             if (!this.entityAnimationStates.has(entityId)) {
@@ -146,33 +144,29 @@ class AnimationSystem extends GUTS.BaseSystem {
         if(this.game.state.phase == 'battle'){
             // Check movement first
             const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
-            
+
             if (isMoving) {
                 clip = 'walk';
                 speed = this.calculateWalkSpeed(velocity);
             }
 
-            // AI state overrides
-            if (aiState) {
-                switch (aiState.state) {
-                    case 'attacking':
-                    case 'combat':
+            // AI action overrides based on currentAction
+            if (aiState && aiState.currentAction) {
+                const actionType = aiState.currentAction;
+
+                switch (actionType) {
+                    case 'AttackEnemyBehaviorAction':
+                    case 'CombatBehaviorAction':
                         // During combat, prefer walking if moving, otherwise idle
                         if (!isMoving) {
                             clip = 'idle';
                             speed = 1.0;
                         }
                         break;
-                        
-                    case 'chasing':
-                    case 'moving':
+
+                    case 'MoveBehaviorAction':
                         clip = 'walk';
                         speed = this.calculateWalkSpeed(velocity);
-                        break;
-                        
-                    case 'waiting':
-                        clip = isMoving ? 'walk' : 'idle';
-                        if (isMoving) speed = this.calculateWalkSpeed(velocity);
                         break;
                 }
             }
@@ -416,8 +410,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     hasClip(entityId, clipName) {
-        const CT = this.componentTypes;
-        const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
+        const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return false;
 
         const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);
@@ -425,8 +418,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     resolveClipName(entityId, desiredClip) {
-        const CT = this.componentTypes;
-        const renderable = this.game.getComponent(entityId, CT.RENDERABLE);
+        const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return 'idle';
 
         const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);

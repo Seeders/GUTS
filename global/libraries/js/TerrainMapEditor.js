@@ -34,14 +34,7 @@ class TerrainMapEditor {
         this.tileMap = {
             size: 16,
             terrainBGColor: "#7aad7b",
-            terrainTypes: [
-                { type: "start", color: "#ffff00", image: [] },
-                { type: "end", color: "#ff0000", image: [] },
-                { type: "path", color: "#eeae9e", image: [] },
-                { type: "grass", color: "#7aad7b", image: [] },
-                { type: "water", color: "#64b5f6", image: [] },
-                { type: "rock", color: "#9e9e9e", image: [] }
-            ],
+            terrainTypes: [],
             terrainMap: [],
             heightMap: [],  // Height levels independent of terrain types
             extensionHeight: 0  // Height for extension area

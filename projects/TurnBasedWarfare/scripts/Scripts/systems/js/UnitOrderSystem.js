@@ -4,8 +4,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.game = game;
         this.game.unitOrderSystem = this;
 
-        this.CT = this.game.componentManager.getComponentTypes();
-
         this.isTargeting = false;
         this.isForceMove = false;
         this.pendingCallbacks = 0;
@@ -26,6 +24,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         // No longer needed - entity sync at battle start handles opponent orders
     }
 
+
     showSquadActionPanel(placementId) {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;
@@ -35,9 +34,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         
         actionPanel.innerHTML = "";
           
-        
+
+
         const firstUnit = placement.squadUnits[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, this.CT.UNIT_TYPE) : null;
+        const unitType = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
         
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -184,8 +184,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
-            buildTime: building.buildTime,
-            isPlayerOrder: true  // Mark as player order so it's tracked correctly
+            buildTime: building.buildTime
         };
 
         this.stopTargeting();
@@ -193,7 +192,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.game.triggerEvent('onActivateBuildingPlacement', this.game.state.selectedUnitType);
     }
     moveOrderAction() {
-        this.startTargeting({preventEnemiesInRangeCheck: true});
+        this.startTargeting({preventEnemiesInRangeCheck: true, preventCombat: true});
     }
 
     startTargeting(meta = {}) {
@@ -228,7 +227,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.stopTargeting();
 
         let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
-        
+
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
@@ -236,21 +235,28 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placementIds.forEach((placementId) => {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             placement.squadUnits.forEach((unitId) => {
-                const position = this.game.getComponent(unitId, this.CT.POSITION);
-                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
+                const position = this.game.getComponent(unitId, "position");
                 if (this.game.effectsSystem && position) {
                     this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
-                let currentOrderAI = this.game.gameManager.call('getAIControllerData', unitId, "UnitOrderSystem");
-                currentOrderAI.targetPosition = position;
-                currentOrderAI.path = [];
-                currentOrderAI.meta = {
-                    allowMovement: false
-                };
-                this.game.gameManager.call('setCurrentAIController', unitId, "UnitOrderSystem", currentOrderAI);   
+                // Set player order - behavior tree will read this and handle it
+                const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                if (playerOrder) {
+                    playerOrder.targetPosition = position;
+                    playerOrder.meta = {
+                        allowMovement: false
+                    };
+                    playerOrder.issuedTime = this.game.state.now;
+                }
+
+                // Clear path in pathfinding component
+                const pathfinding = this.game.getComponent(unitId, "pathfinding");
+                if (pathfinding) {
+                    pathfinding.path = [];
+                }
             });
         });
-        
+
     }
 
     onKeyDown(key) {
@@ -260,9 +266,9 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         }
     }
     onUnitSelected(entityId){
-        const unitType = this.game.getComponent(entityId, this.CT.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "units") {
-            const placement = this.game.getComponent(entityId, this.CT.PLACEMENT);        
+            const placement = this.game.getComponent(entityId, "placement");        
             const placementId = placement.placementId;
             this.showSquadActionPanel(placementId);   
             this.startTargeting();     
@@ -277,12 +283,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPositions = [];
         placementIds.forEach((placementId) => {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
-            placement.squadUnits.forEach((entityId) => {                
-                const aiState = this.game.getComponent(entityId, this.CT.AI_STATE);   
-                if(aiState.targetPosition && aiState.aiControllerId == "UnitOrderSystem"){
-                    targetPositions.push(aiState.targetPosition);
+            placement.squadUnits.forEach((entityId) => {
+                const playerOrder = this.game.getComponent(entityId, "playerOrder");
+                if(playerOrder && playerOrder.targetPosition) {
+                    targetPositions.push(playerOrder.targetPosition);
                 }
-            });            
+            });
         });
 
         this.targetingPreview.showAtWorldPositions(targetPositions, true);
@@ -370,13 +376,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     getBuildingUnderConstructionAtPosition(worldPos) {
-        const CT = this.CT;
-        const buildings = this.game.getEntitiesWith(CT.PLACEMENT, CT.POSITION, CT.UNIT_TYPE);
+        const buildings = this.game.getEntitiesWith("placement", "position", "unitType");
 
         for (const entityId of buildings) {
-            const placement = this.game.getComponent(entityId, CT.PLACEMENT);
-            const pos = this.game.getComponent(entityId, CT.POSITION);
-            const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);
+            const placement = this.game.getComponent(entityId, "placement");
+            const pos = this.game.getComponent(entityId, "position");
+            const unitType = this.game.getComponent(entityId, "unitType");
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -397,8 +402,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     getBuilderUnitFromSelection(placementIds) {
-        const CT = this.CT;
-
         for (const placementId of placementIds) {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             if (!placement) continue;
@@ -422,11 +425,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
-        const CT = this.CT;
-        const Components = this.game.componentManager.getComponents();
+        const Components = this.game.gameManager.call('getComponents');
 
-        const buildingPos = this.game.getComponent(buildingEntityId, CT.POSITION);
-        const buildingPlacement = this.game.getComponent(buildingEntityId, CT.PLACEMENT);
+        const buildingPos = this.game.getComponent(buildingEntityId, "position");
+        const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
 
         if (!buildingPos || !buildingPlacement) return;
 
@@ -436,24 +438,19 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             if (abilities) {
                 for (const ability of abilities) {
                     if (ability.id === 'build') {
-     
-                        this.game.addComponent(builderEntityId, CT.BUILDING_STATE,
-                            Components.BuildingState('walking_to_construction', buildingEntityId, buildingPos, this.game.state.round));
 
                         // Update building's assigned builder
                         buildingPlacement.assignedBuilder = builderEntityId;
 
-                        // Queue build command
-                        if (this.game.commandQueueSystem) {
-                            this.game.gameManager.call('queueCommand', builderEntityId, {
-                                type: 'build',
-                                controllerId: CT.BUILDING_STATE,
-                                targetPosition: buildingPos,
-                                target: buildingEntityId,
-                                meta: { preventEnemiesInRangeCheck: true },
-                                priority: this.game.commandQueueSystem.PRIORITY.BUILD,
-                                interruptible: true
-                            }, true);
+                        // Set player order for building - behavior tree will handle execution
+                        const playerOrder = this.game.getComponent(builderEntityId, "playerOrder");
+                        if (playerOrder) {
+                            playerOrder.meta = {
+                                buildingId: buildingEntityId,
+                                buildingPosition: buildingPos
+                            };
+                            playerOrder.targetPosition = buildingPos;
+                            playerOrder.issuedTime = this.game.state.now;
                         }
 
                         // Store peasantId in ability for completion tracking
@@ -475,7 +472,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         if(this.game.state.phase != "placement") {
             return;
         };
-        const meta = { ...this.orderMeta, isPlayerOrder: true };
+        const meta = { ...this.orderMeta, isMoveOrder: true };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Capture client time for deterministic command creation
@@ -497,30 +494,21 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
-                                this.game.gameManager.call('clearCommands', unitId);
-
-                                // Store player order for persistence through combat
-                                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
-                                if (aiState) {
-                                    aiState.playerOrder = {
-                                        targetPosition: targetPosition,
-                                        meta: meta,
-                                        issuedTime: createdTime
-                                    };      
-                                    aiState.meta = meta;                              
+                                // Set player order - behavior tree will handle execution
+                                const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                                const aiState = this.game.getComponent(unitId, "aiState");
+                                if (playerOrder) {
+                                    playerOrder.targetPosition = targetPosition;
+                                    playerOrder.meta = meta;
+                                    playerOrder.issuedTime = createdTime;
+                                    console.log('issueMoveOrders', unitId, targetPosition);
                                 }
-
-                                this.game.gameManager.call('queueCommand', unitId, {
-                                    type: 'move',
-                                    controllerId: "UnitOrderSystem",
-                                    targetPosition: targetPosition,
-                                    target: null,
-                                    meta: meta,
-                                    priority: this.game.commandQueueSystem.PRIORITY.MOVE,
-                                    interruptible: true,
-                                    createdTime: createdTime
-                                }, true); // true = interrupt current command
-
+                                if(aiState){
+                                    aiState.currentAction = "";
+                                    aiState.meta = {};
+                                    aiState.shared = {};
+                                }
+                                    console.log('cleared aiState', aiState);
                             }
                         });
 
@@ -560,31 +548,13 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
-                // Clear any existing commands (including mining/building)
-                this.game.gameManager.call('clearCommands', unitId);
-
-                // Store player order for persistence through combat
-                const aiState = this.game.getComponent(unitId, this.CT.AI_STATE);
-                if (aiState) {
-                    aiState.playerOrder = {
-                        targetPosition: targetPosition,
-                        meta: meta,
-                        issuedTime: createdTime
-                    };
-                    aiState.meta = meta;
+                // Set player order - behavior tree will handle execution and interruption
+                const playerOrder = this.game.getComponent(unitId, "playerOrder");
+                if (playerOrder) {
+                    playerOrder.targetPosition = targetPosition;
+                    playerOrder.meta = meta;
+                    playerOrder.issuedTime = createdTime;
                 }
-
-                // Queue MOVE command through command queue system
-                // This properly interrupts abilities like mining
-                this.game.gameManager.call('queueCommand', unitId, {
-                    type: 'move',
-                    controllerId: "UnitOrderSystem",
-                    targetPosition: targetPosition,
-                    meta: meta,
-                    priority: this.game.commandQueueSystem?.PRIORITY.MOVE || 10,
-                    interruptible: true,
-                    createdTime: createdTime
-                }, true); // true = interrupt current command
             }
         });
     }

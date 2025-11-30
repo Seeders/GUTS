@@ -57,13 +57,13 @@ class HealAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         const allies = this.getAlliesInRange(casterEntity);
         return allies.some(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(allyId, "health");
             return health && health.current < health.max; // Ally needs healing
         });
     }
         
     execute(casterEntity, targetData = null) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
@@ -77,7 +77,7 @@ class HealAbility extends GUTS.BaseAbility {
         
     
         this.game.schedulingSystem.scheduleAction(() => {
-            const targetPos = this.game.getComponent(target, this.componentTypes.POSITION);
+            const targetPos = this.game.getComponent(target, "position");
             if (targetPos) {
                 this.performHeal(casterEntity, target, targetPos);
             }
@@ -85,7 +85,7 @@ class HealAbility extends GUTS.BaseAbility {
     }
     
     performHeal(casterEntity, targetId, targetPos) {
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetHealth = this.game.getComponent(targetId, "health");
         if (!targetHealth) return;
 
         // Heal effect
@@ -165,7 +165,7 @@ class HealAbility extends GUTS.BaseAbility {
         let lowestHealthRatio = 1.0;
         
         sortedAllies.forEach(allyId => {
-            const health = this.game.getComponent(allyId, this.componentTypes.HEALTH);
+            const health = this.game.getComponent(allyId, "health");
             if (health && health.max > 0) {
                 const healthRatio = health.current / health.max;
                 // Use <= for consistent tie-breaking (first in sorted order wins)

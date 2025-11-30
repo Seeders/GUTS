@@ -84,19 +84,35 @@ class ConfigParser {
             }
 
             if (lib.filePath) {
-                // Convert absolute path to relative from project root
-                const absolutePath = path.join(__dirname, '..', lib.filePath);
-                if (fs.existsSync(absolutePath)) {
-                    paths.push({
-                        name: libName,
-                        path: absolutePath,
-                        isModule: lib.isModule || false,
-                        requireName: lib.requireName || lib.fileName || libName,
-                        windowContext: lib.windowContext
-                    });
+                // Extract just the filename from the configured path
+                const fileName = path.basename(lib.filePath);
+
+                // Try project folder first, then fall back to configured (global) path
+                const projectLibPath = path.join(this.projectRoot, 'scripts', 'Scripts', 'libraries', 'js', fileName);
+                const globalLibPath = path.join(__dirname, '..', lib.filePath);
+
+                let finalPath;
+                let source;
+
+                if (fs.existsSync(projectLibPath)) {
+                    finalPath = projectLibPath;
+                    source = 'project';
+                } else if (fs.existsSync(globalLibPath)) {
+                    finalPath = globalLibPath;
+                    source = 'global';
                 } else {
-                    console.warn(`⚠️ Library file not found: ${absolutePath}`);
+                    console.warn(`⚠️ Library file not found in project or global: ${libName}`);
+                    continue;
                 }
+
+                console.log(`  ✓ Library ${libName}: ${fileName} (from ${source})`);
+                paths.push({
+                    name: libName,
+                    path: finalPath,
+                    isModule: lib.isModule || false,
+                    requireName: lib.requireName || lib.fileName || libName,
+                    windowContext: lib.windowContext
+                });
             }
         }
 
@@ -137,19 +153,11 @@ class ConfigParser {
     /**
      * Get all scripts for a scene based on its managers and systems
      */
-    getSceneScripts(sceneName) {
-        const scenes = this.config.objectTypes.scenes || {};
-        const scene = scenes[sceneName];
-
-        if (!scene || !scene.sceneData || !scene.sceneData[0]) {
-            console.warn(`⚠️ Scene not found or empty: ${sceneName}`);
-            return { managers: [], systems: [], classes: [] };
-        }
-
-        const sceneData = scene.sceneData[0];
-        const managerNames = (sceneData.managers || []).map(m => m.type);
-        const systemNames = (sceneData.systems || []).map(s => s.type);
-        const classCollections = sceneData.classes || [];
+    getScripts(config) {
+        console.log("getScripts", config.managers, config.systems);
+        const managerNames = config.managers;
+        const systemNames = config.systems;
+        const classCollections = config.classes || [];
 
         return {
             managers: this.getScriptPaths('managers', managerNames),
@@ -176,14 +184,8 @@ class ConfigParser {
             throw new Error('Game config not found');
         }
 
-        // Get the initial scene from game config (don't hardcode "client")
-        const initialScene = gameConfig.initialScene;
-        if (!initialScene) {
-            throw new Error('Game config missing initialScene');
-        }
-
         const clientLibraries = this.getLibraryPaths(gameConfig.libraries || []);
-        const clientScripts = this.getSceneScripts(initialScene);
+        const clientScripts = this.getScripts(gameConfig);
 
         // Get all classes from each collection, track base classes
         const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
@@ -244,7 +246,7 @@ class ConfigParser {
         }
 
         const serverLibraries = this.getLibraryPaths(serverConfig.libraries || []);
-        const serverScripts = this.getSceneScripts(initialScene);
+        const serverScripts = this.getScripts(serverConfig);
 
         // Get all classes from each collection, track base classes
         const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
@@ -289,7 +291,7 @@ class ConfigParser {
 
     /**
      * Generate editor entry point data
-     * Includes ALL global libraries by default, except server-only libraries
+     * Loads libraries and classes from editor modules specified in editor config
      */
     getEditorEntry() {
         const editorConfig = this.config.objectTypes.configs?.editor;
@@ -298,32 +300,99 @@ class ConfigParser {
             return null;
         }
 
-        const libraryMap = this.config.objectTypes.libraries || {};
+        const editorModules = editorConfig.editorModules || [];
+        const globalModulesPath = path.join(__dirname, '..', 'global', 'editorModules');
+        const projectModulesPath = path.join(this.projectRoot, 'scripts', 'Settings', 'editorModules');
 
-        // Filter out server-only libraries and libraries that require Node.js modules
-        const skipLibraries = [
-            'io', // socket.io requires Node.js modules
-            'Compiler', // requires fs
-            'ServerNetworkManager',
-            'ServerEngine',
-            'ServerModuleManager',
-            'ServerECSGame',
-            'ServerGameRoom',
-            'ServerSceneManager',
-            'GameRoom',
-            'MatchmakingService'
-        ];
+        const allLibraries = [];
+        const allSystems = [];
+        const classCollections = {};
+        const classMetadata = [];
+        const moduleConfigs = {};
 
-        // Include ALL libraries except those in skipLibraries
-        const allLibraryNames = Object.keys(libraryMap).filter(name => !skipLibraries.includes(name));
-        console.log(`✓ Including ${allLibraryNames.length} global libraries in editor bundle (skipped ${Object.keys(libraryMap).length - allLibraryNames.length} server-only libraries)`);
+        console.log(`✓ Processing ${editorModules.length} editor modules`);
 
-        const libraries = this.getLibraryPaths(allLibraryNames);
+        // Process each editor module in order
+        for (const moduleName of editorModules) {
+            // Try project folder first, then fall back to global folder
+            const projectConfigPath = path.join(projectModulesPath, `${moduleName}.json`);
+            const globalConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
+
+            let moduleConfigPath;
+            let configSource;
+
+            if (fs.existsSync(projectConfigPath)) {
+                moduleConfigPath = projectConfigPath;
+                configSource = 'project';
+            } else if (fs.existsSync(globalConfigPath)) {
+                moduleConfigPath = globalConfigPath;
+                configSource = 'global';
+            } else {
+                console.warn(`⚠️ Editor module config not found: ${moduleName}`);
+                continue;
+            }
+
+            const moduleConfig = JSON.parse(fs.readFileSync(moduleConfigPath, 'utf8'));
+            moduleConfigs[moduleName] = moduleConfig;
+            console.log(`  ✓ Loaded module: ${moduleName} (from ${configSource})`);
+
+            // Add libraries from this module (in order)
+            if (moduleConfig.libraries && Array.isArray(moduleConfig.libraries)) {
+                const libraryPaths = this.getLibraryPaths(moduleConfig.libraries);
+                allLibraries.push(...libraryPaths);
+                console.log(`    ↳ Added ${libraryPaths.length} libraries`);
+            }
+
+            // Add systems from this module (in order)
+            if (moduleConfig.systems && Array.isArray(moduleConfig.systems)) {
+                const systemPaths = this.getScriptPaths('systems', moduleConfig.systems);
+                allSystems.push(...systemPaths);
+                console.log(`    ↳ Added ${systemPaths.length} systems`);
+            }
+
+            // Process classes if present
+            if (moduleConfig.classes && Array.isArray(moduleConfig.classes)) {
+                for (const classRef of moduleConfig.classes) {
+                    const collectionName = classRef.collection;
+                    if (!collectionName) {
+                        console.warn('⚠️ Class reference missing collection name');
+                        continue;
+                    }
+
+                    // Get all classes from this collection
+                    const allClasses = this.getAllClassesFromCollection(collectionName);
+
+                    // Store in dynamic collection
+                    if (!classCollections[collectionName]) {
+                        classCollections[collectionName] = [];
+                    }
+                    classCollections[collectionName].push(...allClasses);
+
+                    // Track base class if specified
+                    if (classRef.baseClass) {
+                        classMetadata.push({
+                            collection: collectionName,
+                            baseClass: classRef.baseClass,
+                            files: allClasses
+                        });
+                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName} (base: ${classRef.baseClass})`);
+                    } else {
+                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName}`);
+                    }
+                }
+            }
+        }
+
+        console.log(`✓ Editor entry complete: ${allLibraries.length} libraries, ${allSystems.length} systems, ${Object.keys(classCollections).length} class collections`);
 
         return {
-            libraries,
+            libraries: allLibraries,
+            systems: allSystems,
             config: editorConfig,
-            modules: editorConfig.editorModules || []
+            modules: editorModules,
+            moduleConfigs: moduleConfigs,
+            classCollections: classCollections,
+            classMetadata: classMetadata
         };
     }
 

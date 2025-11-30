@@ -2,7 +2,6 @@ class MiniMapSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.miniMapSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
         
         this.MINIMAP_SIZE = 200;
         this.MINIMAP_PADDING = 10;
@@ -337,11 +336,11 @@ class MiniMapSystem extends GUTS.BaseSystem {
         if (!myTeam) return;
         
         const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION,
-            this.componentTypes.TEAM,
-            this.componentTypes.UNIT_TYPE
+            "position",
+            "team",
+            "unitType"
         ).filter(id => {
-            const unitType = this.game.getComponent(id, this.componentTypes.UNIT_TYPE);
+            const unitType = this.game.getComponent(id, "unitType");
             return unitType.collection == "units" || unitType.collection == "buildings"
         });
         
@@ -351,10 +350,10 @@ class MiniMapSystem extends GUTS.BaseSystem {
         let enemyBuildingIndex = 0;
         
         for (const entityId of entities) {
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const team = this.game.getComponent(entityId, "team");
+            const projectile = this.game.getComponent(entityId, "projectile");
+            const unitType = this.game.getComponent(entityId, "unitType");
             
             if (!pos || !team || projectile) continue;
             

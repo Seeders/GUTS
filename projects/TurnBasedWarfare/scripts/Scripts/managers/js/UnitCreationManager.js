@@ -95,8 +95,7 @@ class UnitCreationManager {
 
             // Set playerId on team component if provided
             if (playerId) {
-                const ComponentTypes = this.game.componentManager.getComponentTypes();
-                const teamComponent = this.game.getComponent(entity, ComponentTypes.TEAM);
+                const teamComponent = this.game.getComponent(entity, "team");
                 if (teamComponent) {
                     teamComponent.playerId = playerId;
                 }
@@ -158,8 +157,7 @@ class UnitCreationManager {
 
                 // Add playerId to the team component if provided
                 if (playerId && this.game.componentManager) {
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();
-                    const teamComponent = this.game.getComponent(entityId, ComponentTypes.TEAM);
+                    const teamComponent = this.game.getComponent(entityId, "team");
                     if (teamComponent) {
                         teamComponent.playerId = playerId;
                     }
@@ -292,34 +290,41 @@ class UnitCreationManager {
      */
     addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
         const unitType = placement.unitType;
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-        
+
         // Position component
-        this.game.addComponent(entity, ComponentTypes.POSITION, 
-            Components.Position(worldX, worldY, worldZ));
-        
+        this.game.addComponent(entity, "position", {
+            x: worldX,
+            y: worldY,
+            z: worldZ
+        });
+
         // Velocity component with movement capabilities
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
-        this.game.addComponent(entity, ComponentTypes.VELOCITY, 
-            Components.Velocity(0, 0, 0, maxSpeed, true, unitType.collection == 'buildings' ? true : false));
-        
+        this.game.addComponent(entity, "velocity", {
+            vx: 0,
+            vy: 0,
+            vz: 0,
+            maxSpeed: maxSpeed,
+            affectedByGravity: true,
+            anchored: unitType.collection == 'buildings' ? true : false
+        });
+
         // Team identification
-        this.game.addComponent(entity, ComponentTypes.TEAM, 
-            Components.Team(team));
-        
-        this.game.addComponent(entity, ComponentTypes.PLACEMENT, 
-            Components.Placement(placement));
-        
+        this.game.addComponent(entity, "team", {
+            team: team
+        });
+
+        this.game.addComponent(entity, "placement",
+            placement);
+
         // Unit type information
-        this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, 
-            Components.UnitType(
-                unitType
-            ));
-        
+        this.game.addComponent(entity, "unitType",
+            unitType);
+
         // Facing direction
-        this.game.addComponent(entity, ComponentTypes.FACING, 
-            Components.Facing(teamConfig.initialFacing));
+        this.game.addComponent(entity, "facing", {
+            angle: teamConfig.initialFacing
+        });
     }
     
     /**
@@ -328,33 +333,34 @@ class UnitCreationManager {
      * @param {Object} unitType - Unit type definition
      */
     addCombatComponents(entity, unitType) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
         // Health component
         const maxHP = unitType.hp || this.defaults.hp;
-        this.game.addComponent(entity, ComponentTypes.HEALTH, 
-            Components.Health(maxHP));
-        
+        this.game.addComponent(entity, "health", {
+            max: maxHP,
+            current: maxHP
+        });
+
         // Combat component with all combat stats
-        this.game.addComponent(entity, ComponentTypes.COMBAT, 
-            Components.Combat(
-                unitType.damage,
-                unitType.range,
-                unitType.attackSpeed,
-                unitType.projectile,
-                0, // Initial attack cooldown
-                unitType.element,
-                unitType.armor,
-                unitType.fireResistance,
-                unitType.coldResistance,
-                unitType.lightningResistance, 
-                0,
-                unitType.visionRange
-            ));
-        
+        this.game.addComponent(entity, "combat", {
+            damage: unitType.damage,
+            range: unitType.range,
+            attackSpeed: unitType.attackSpeed,
+            projectile: unitType.projectile,
+            lastAttack: 0,
+            element: unitType.element,
+            armor: unitType.armor,
+            fireResistance: unitType.fireResistance,
+            coldResistance: unitType.coldResistance,
+            lightningResistance: unitType.lightningResistance,
+            poisonResistance: 0,
+            visionRange: unitType.visionRange
+        });
+
         // Collision component for physical interactions
-        this.game.addComponent(entity, ComponentTypes.COLLISION, 
-            Components.Collision(unitType.size || this.defaults.size, unitType.height));
+        this.game.addComponent(entity, "collision", {
+            radius: unitType.size || this.defaults.size,
+            height: unitType.height
+        });
     }
     
     /**
@@ -362,19 +368,52 @@ class UnitCreationManager {
      * @param {number} entity - Entity ID
      */
     addBehaviorComponents(entity, targetPosition, unitType) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-        // AI state for behavior control
-        this.game.addComponent(entity, ComponentTypes.AI_STATE, 
-            Components.AIState('idle', targetPosition));
-        
+        this.game.addComponent(entity, "aiState", {
+            currentAction: null,
+            rootBehaviorTree: "UnitBattleBehaviorTree",
+            meta: {}
+        });
+
+        // Player order component (for player commands)
+        this.game.addComponent(entity, "playerOrder", {
+            targetPosition: null,
+            meta: {},
+            issuedTime: 0
+        });
+
+        // Pathfinding component (for movement paths)
+        this.game.addComponent(entity, "pathfinding", {
+            path: null,
+            pathIndex: 0,
+            lastPathRequest: 0,
+            useDirectMovement: false
+        });
+
+        // Combat state component (for combat tracking)
+        this.game.addComponent(entity, "combatState", {
+            lastAttacker: null,
+            lastAttackTime: 0
+        });
+
         // Animation state
-        this.game.addComponent(entity, ComponentTypes.ANIMATION, 
-            Components.Animation());
-        
+        this.game.addComponent(entity, "animation", {
+            scale: 1,
+            rotation: 0,
+            flash: 0
+        });
+
         // Equipment container
-        this.game.addComponent(entity, ComponentTypes.EQUIPMENT, 
-            Components.Equipment());
+        this.game.addComponent(entity, "equipment", {
+            slots: {
+                mainHand: null,
+                offHand: null,
+                helmet: null,
+                chest: null,
+                legs: null,
+                feet: null,
+                back: null
+            }
+        });
     }
     
     /**
@@ -384,25 +423,12 @@ class UnitCreationManager {
      * @param {Object} teamConfig - Team configuration
      */
     addVisualComponents(entity, unitType, teamConfig) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const Components = this.game.componentManager.getComponents();
-        
         // Renderable component for visual representation
-        this.game.addComponent(entity, ComponentTypes.RENDERABLE, 
-            Components.Renderable(unitType.collection, unitType.id || 'default'));
-        
-        // Add team-specific visual modifications
-        if (teamConfig.colorTint && this.game.addComponent) {
-            // Optional: Add color tint component if available
-            try {
-                if (ComponentTypes.COLOR_TINT) {
-                    this.game.addComponent(entity, ComponentTypes.COLOR_TINT,
-                        Components.ColorTint(teamConfig.colorTint));
-                }
-            } catch (error) {
-                // Color tint not available, continue without it
-            }
-        }
+        this.game.addComponent(entity, "renderable", {
+            objectType: unitType.collection,
+            spawnType: unitType.id || 'default',
+            capacity: 128
+        });
     }
     
     /**

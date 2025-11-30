@@ -4,7 +4,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.game.selectedUnitSystem = this;
         this.canvas = this.game.canvas;
         
-        this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Selection circle configuration
         this.CIRCLE_RADIUS = 25;
@@ -52,7 +51,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         unitPortrait.addEventListener('click', () => {
             if(this.game.cameraControlSystem) {
                 if(this.game.state.selectedEntity.entityId){
-                    const pos = this.game.getComponent(this.game.state.selectedEntity.entityId, this.game.componentManager.getComponentTypes().POSITION);
+                    const pos = this.game.getComponent(this.game.state.selectedEntity.entityId, "position");
                     if(pos){
                         this.game.gameManager.call('cameraLookAt', pos.x, pos.z);
                     }
@@ -207,11 +206,11 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const rect = this.canvas.getBoundingClientRect();
         
         // Get all entities with position component
-        const entities = this.game.getEntitiesWith(this.componentTypes.POSITION);
+        const entities = this.game.getEntitiesWith("position");
         
         entities.forEach(entityId => {
             // Only select units on player's team
-            const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const team = this.game.getComponent(entityId, "team");
             if (!team) return;
             
             // Try multiple ways to check team
@@ -223,8 +222,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
             
             // Get position component
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const pos = this.game.getComponent(entityId, "position");
+            const unitType = this.game.getComponent(entityId, "unitType");
             if (!pos || !unitType) return;
             
             // Convert world position to screen position
@@ -273,7 +272,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         }
     }
     findSquadForUnit(entityId) {           
-        const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+        const team = this.game.getComponent(entityId, "team");
         return team?.placementId || null;
     }
     updateMultipleSquadSelection() {        
@@ -356,35 +355,53 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     getPlacementAtWorldPosition(worldPos) {
-        const clickRadius = 30;
+        const clickRadius = 50; // Increased for better building selection
         let closestPlacementId = null;
+        let closestEntityId = null;
         let closestDistance = clickRadius;
-        
+
         const entities = this.game.getEntitiesWith(
-            this.game.componentManager.getComponentTypes().POSITION,
-            this.game.componentManager.getComponentTypes().PLACEMENT
+            "position",
+            "placement"
         );
-        
+
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
-            const placement = this.game.getComponent(entityId, this.componentTypes.PLACEMENT);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-            
+            const pos = this.game.getComponent(entityId, "position");
+            const placement = this.game.getComponent(entityId, "placement");
+            const unitType = this.game.getComponent(entityId, "unitType");
+
+            if (!pos || !placement) return;
+
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;
             let distance = Math.sqrt(dx * dx + dz * dz);
-            
-            if(unitType.size) {
+
+            // Adjust distance based on unit/building size
+            if(unitType && unitType.size) {
                 distance -= unitType.size;
             }
-                
 
             if (distance < closestDistance) {
                 closestDistance = distance;
+                closestEntityId = entityId;
+                // Use placementId if available, otherwise construct from entity's placement
                 closestPlacementId = placement.placementId;
             }
         });
-        
+
+        // If we found an entity but no placementId, try to find it from playerPlacements
+        if (closestEntityId && !closestPlacementId) {
+            const placements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide);
+            if (placements) {
+                for (const placement of placements) {
+                    if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {
+                        closestPlacementId = placement.placementId;
+                        break;
+                    }
+                }
+            }
+        }
+
         return closestPlacementId;
     }
 
@@ -403,8 +420,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     setSelectedEntity(entityId){         
-        const CT = this.game.componentManager.getComponentTypes();
-        const unitType = this.game.getComponent(entityId, CT.UNIT_TYPE);     
+        const unitType = this.game.getComponent(entityId, "unitType");     
         this.game.state.selectedEntity.entityId = entityId;
         this.game.state.selectedEntity.collection = unitType.collection;      
     }
@@ -473,7 +489,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                     selectedUnitIconContainer.addEventListener('click', () => {
                         this.deselectAll();
                         this.selectedUnitIds.add(unitId);
-                        const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
+                        const placement = this.game.getComponent(unitId, "placement");
                         this.selectUnit(unitId, placement.placementId);
                     });
                 }            
@@ -486,7 +502,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     createPortrait(entityId){
         if(document) {
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const unitType = this.game.getComponent(entityId, "unitType");
             const icon = this.game.getCollections().icons[unitType.icon];
 
             if(icon){
@@ -513,7 +529,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         if (this.selectionCircles.has(entityId)) return;
         
         // Get entity position to determine size
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(entityId, "position");
         if (!pos) return;
         
         // Determine radius based on unit type
@@ -563,7 +579,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     updateSelectionCircles() {
         for (const [entityId, circleData] of this.selectionCircles) {
             // Check if entity still exists
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (!pos) {
                 this.removeSelectionCircle(entityId);
                 continue;
@@ -576,7 +592,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     
     getUnitRadius(entityId) {
         // Try to get unit type to determine appropriate radius
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const unitType = this.game.getComponent(entityId, "unitType");
         
         if (unitType) {
             const collections = this.game.getCollections?.();
@@ -596,7 +612,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     cleanupRemovedCircles() {
         for (const [entityId] of this.selectionCircles) {
             // Check if entity still exists
-            const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (!pos) {
                 this.removeSelectionCircle(entityId);
             }
@@ -669,9 +685,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     // Get all currently selected squad IDs
     getSelectedSquads() {
         let placementIds = new Set();
-        const CT = this.game.componentManager.getComponentTypes();
         Array.from(this.selectedUnitIds).forEach((unitId) => {
-            const placement = this.game.getComponent(unitId, this.componentTypes.PLACEMENT);
+            const placement = this.game.getComponent(unitId, "placement");
             placementIds.add(placement.placementId);
         });
         return [...placementIds];

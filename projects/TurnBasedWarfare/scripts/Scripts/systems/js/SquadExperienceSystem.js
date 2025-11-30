@@ -248,7 +248,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
         squadData.unitIds.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (pos) {
                 const effectType = specializationId ? 'magic' : 'heal';
                 this.game.gameManager.call('createParticleEffect',
@@ -292,7 +292,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         placement.unitType = { id: specializationId, ...specializationUnitType };
         
         // Recreate all units in the squad with the new unit type
-        const componentTypes = this.game.componentManager.getComponentTypes();
         const newUnitIds = [];
         
         console.log('applying specialization to ', squadData, squadData.unitIds);
@@ -300,7 +299,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         // Store positions of old units
         const positions = [];
         squadData.unitIds.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, componentTypes.POSITION);
+            const pos = this.game.getComponent(entityId, "position");
             if (pos) {
                 positions.push({ x: pos.x, y: pos.y, z: pos.z });
             }
@@ -461,14 +460,13 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             return;
         }
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
         squadData.unitIds.forEach(entityId => {
-            const unitType = this.game.getComponent(entityId, componentTypes.UNIT_TYPE);
+            const unitType = this.game.getComponent(entityId, "unitType");
             if (unitType) {
                 const baseUnitData = this.game.getCollections().units[unitType.id];
             
                 // Apply health bonus
-                const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+                const health = this.game.getComponent(entityId, "health");
                 if (health && bonuses.hp > 1) {
                     const newMaxHealth = Math.floor(baseUnitData.hp * bonuses.hp);
                     const healthIncrease = newMaxHealth - health.max;
@@ -477,13 +475,13 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                 }
                 
                 // Apply damage bonus
-                const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+                const combat = this.game.getComponent(entityId, "combat");
                 if (combat && bonuses.damage > 1) {
                     combat.damage = Math.floor(baseUnitData.damage * bonuses.damage);
                 }
                 
                 // Visual indicator (flash effect)
-                const animation = this.game.getComponent(entityId, componentTypes.ANIMATION);
+                const animation = this.game.getComponent(entityId, "animation");
                 if (animation) {
                     animation.flash = 0.8;
                 }
@@ -500,11 +498,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const squadData = this.squadExperience.get(placementId);
         if (!squadData) return 100; // Default fallback
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
         let totalHealth = 0;
         
         squadData.unitIds.forEach(entityId => {
-            const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+            const health = this.game.getComponent(entityId, "health");
             if (health) {
                 totalHealth += health.max;
             }
@@ -673,10 +670,9 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     }
     unitsAliveInSquad(squadData) {
         if (!squadData || !squadData.unitIds?.length) return 0;
-        const componentTypes = this.game.componentManager.getComponentTypes();
         let count = 0;
         for (const id of squadData.unitIds) {
-            const h = this.game.getComponent(id, componentTypes.HEALTH);
+            const h = this.game.getComponent(id, "health");
             if (h && h.current > 0) count++;
         }
         return count;
@@ -689,11 +685,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         
         this.saveSquadExperience();
         
-        const componentTypes = this.game.componentManager.getComponentTypes();
         
         for (const [placementId, squadData] of this.squadExperience.entries()) {
             const validUnits = squadData.unitIds.filter(entityId => {
-                const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+                const health = this.game.getComponent(entityId, "health");
                 return health && health.current > 0;
             });
             

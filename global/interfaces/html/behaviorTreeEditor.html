@@ -1,0 +1,50 @@
+<div id="behavior-tree-editor-container" class="editor-module">
+    <div class="editor-module__sidebar editor-module__sidebar--left">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Tree Info</h3>
+            <div class="editor-module__form-row">
+                <label class="editor-module__label">Unit Type:</label>
+                <span id="bt-unit-type" class="editor-module__text"></span>
+            </div>
+            <div class="editor-module__form-row">
+                <label class="editor-module__label">Description:</label>
+                <span id="bt-description" class="editor-module__text"></span>
+            </div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Simulation</h3>
+            <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
+                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
+            </div>
+            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
+            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
+        </div>
+
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Node Types Reference</h3>
+            <div style="font-size: 12px; color: #888; line-height: 1.6;">
+                <div><strong style="color: #10b981;">selector:</strong> Try children until one succeeds</div>
+                <div><strong style="color: #f59e0b;">sequence:</strong> Execute children in order</div>
+                <div><strong style="color: #3b82f6;">condition:</strong> Check a condition</div>
+                <div><strong style="color: #ef4444;">action:</strong> Execute an action</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="editor-module__canvas-area">
+        <div class="bt-canvas-header">
+            <h2 id="bt-tree-title">Behavior Tree Visualization</h2>
+        </div>
+        <div id="bt-tree-canvas" class="bt-tree-canvas"></div>
+        <div id="bt-validation-output" class="bt-validation-output"></div>
+    </div>
+
+    <div class="editor-module__sidebar editor-module__sidebar--right">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Mock Entities</h3>
+            <div id="bt-simulation-vars" class="bt-simulation-vars"></div>
+        </div>
+    </div>
+</div>

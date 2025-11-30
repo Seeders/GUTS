@@ -1,0 +1,7 @@
+{
+  "title": "health",
+  "schema": {
+    "max": 100,
+    "current": 100
+  }
+}

@@ -2,7 +2,6 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.unitRadiusSystem = this;        
-        this.componentTypes = this.game.componentManager.getComponentTypes();
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
         this.enabled = false; // Toggle this to show/hide circles
         
@@ -21,8 +20,8 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         }
         
         const entities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.UNIT_TYPE
+            "position", 
+            "unitType"
         );
         
         entities.forEach(entityId => {
@@ -34,9 +33,9 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     }
     
     updateEntityCircles(entityId) {
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
-        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
+        const pos = this.game.getComponent(entityId, "position");
+        const collision = this.game.getComponent(entityId, "collision");
+        const combat = this.game.getComponent(entityId, "combat");
         
         if (!pos || !collision) return;
         
@@ -67,16 +66,18 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         
         // Always show size circle
         circles.sizeCircle.visible = true;
-        
-        // Show/hide attack circle based on entity state
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-        if (aiState && (aiState.state === 'attacking' || aiState.state === 'chasing')) {
+
+        // Show/hide attack circle based on entity action
+        const aiState = this.game.getComponent(entityId, "aiState");
+        const isAttacking = aiState && aiState.currentAction && (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction');
+        const isChasing = aiState && aiState.currentAction && (aiState.shared || (aiState.shared && aiState.shared.targetPosition));
+
+        if (isAttacking) {
             circles.attackCircle.visible = true;
-            if (aiState.state === 'attacking') {
-                circles.attackCircle.material.color.setHex(0xff0000); // Bright red when attacking
-            } else {
-                circles.attackCircle.material.color.setHex(0xffaa00); // Orange when chasing
-            }
+            circles.attackCircle.material.color.setHex(0xff0000); // Bright red when attacking
+        } else if (isChasing) {
+            circles.attackCircle.visible = true;
+            circles.attackCircle.material.color.setHex(0xffaa00); // Orange when chasing
         } else {
             circles.attackCircle.visible = true; // Show it anyway for debugging
             circles.attackCircle.material.color.setHex(0x0000ff); // Blue when idle

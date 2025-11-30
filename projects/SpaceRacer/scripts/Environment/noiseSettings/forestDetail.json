@@ -1,8 +1,0 @@
-{
-  "title": "Forest Detail",
-  "scale": 0.001,
-  "octaves": 3,
-  "persistence": 0.7,
-  "lacunarity": 1.8,
-  "heightScale": 3
-}

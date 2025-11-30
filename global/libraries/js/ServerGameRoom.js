@@ -230,13 +230,12 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         
         // Clear any entities owned by this player
         if (room.game && room.game.componentManager) {
-            const ComponentTypes = room.game.componentManager.getComponentTypes();
-            const playerEntities = room.game.getEntitiesWith(ComponentTypes.PLAYER_OWNED)
+            const playerEntities = room.game.getEntitiesWith("playerOwned")
                 .filter(entityId => {
-                    const ownerComp = room.game.getComponent(entityId, ComponentTypes.PLAYER_OWNED);
+                    const ownerComp = room.game.getComponent(entityId, "playerOwned");
                     return ownerComp && ownerComp.playerId === playerId;
                 });
-            
+
             playerEntities.forEach(entityId => {
                 try {
                     room.game.destroyEntity(entityId);

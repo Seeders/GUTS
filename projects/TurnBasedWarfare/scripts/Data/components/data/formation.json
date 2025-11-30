@@ -1,0 +1,12 @@
+{
+  "title": "formation",
+  "schema": {
+    "formationType": "none",
+    "formationSize": 1,
+    "formationLeader": null,
+    "formationMembers": [],
+    "formationBonuses": {},
+    "isActive": false,
+    "createdTime": 0
+  }
+}

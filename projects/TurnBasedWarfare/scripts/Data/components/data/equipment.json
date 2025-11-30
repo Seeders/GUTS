@@ -1,0 +1,14 @@
+{
+  "title": "equipment",
+  "schema": {
+    "slots": {
+      "mainHand": null,
+      "offHand": null,
+      "helmet": null,
+      "chest": null,
+      "legs": null,
+      "feet": null,
+      "back": null
+    }
+  }
+}

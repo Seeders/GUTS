@@ -1,9 +1,0 @@
-{
-  "title": "Graphics Editor",
-  "modals": [
-    "rotateShapes",
-    "moveAllShapes",
-    "generateIsometric"
-  ],
-  "fileName": "graphicsEditor"
-}

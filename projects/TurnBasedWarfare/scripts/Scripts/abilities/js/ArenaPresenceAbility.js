@@ -70,7 +70,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -87,7 +87,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     }
     
     unleashArenaPresence(casterEntity, targetEnemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         // Create intimidation aura effect
@@ -115,7 +115,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
                 
                 // Schedule staggered fear effects for visual appeal
                 this.game.schedulingSystem.scheduleAction(() => {
-                    const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                    const enemyPos = this.game.getComponent(enemyId, "position");
                     if (enemyPos) {
                         this.createVisualEffect(enemyPos, 'fear_effect');
                     }
@@ -134,15 +134,15 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     
     applyIntimidation(casterEntity, enemyId) {
         // Validate enemy still exists and is alive
-        const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
-        const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+        const enemyHealth = this.game.getComponent(enemyId, "health");
+        const enemyPos = this.game.getComponent(enemyId, "position");
         
         if (!enemyHealth || enemyHealth.current <= 0 || !enemyPos) {
             return { success: false, reason: 'target_invalid' };
         }
         
         // Check if already intimidated - don't stack multiple intimidations
-        const existingBuff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+        const existingBuff = this.game.getComponent(enemyId, "buff");
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.intimidationDuration;
         
@@ -156,9 +156,9 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
             return { success: true, wasRefreshed: true };
         } else {
             // Apply new intimidation buff
-            const Components = this.game.componentManager.getComponents();
-            
-            this.game.addComponent(enemyId, this.componentTypes.BUFF, 
+            const Components = this.game.gameManager.call('getComponents');
+
+            this.game.addComponent(enemyId, "buff", 
                 Components.Buff(
                     'intimidated', 
                     { 
@@ -182,10 +182,10 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     
     // Helper method to check intimidation effectiveness
     getIntimidationEffectiveness(casterEntity, enemyId) {
-        const casterCombat = this.game.getComponent(casterEntity, this.componentTypes.COMBAT);
-        const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+        const casterCombat = this.game.getComponent(casterEntity, "combat");
+        const enemyCombat = this.game.getComponent(enemyId, "combat");
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const enemyHealth = this.game.getComponent(enemyId, "health");
         
         if (!casterCombat || !enemyCombat || !casterHealth || !enemyHealth) {
             return 1.0; // Default effectiveness
@@ -203,7 +203,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     
     // Helper method to get current intimidation status
     getIntimidationStatus(enemyId) {
-        const buff = this.game.getComponent(enemyId, this.componentTypes.BUFF);
+        const buff = this.game.getComponent(enemyId, "buff");
         
         if (!buff || buff.buffType !== 'intimidated') {
             return { isIntimidated: false };

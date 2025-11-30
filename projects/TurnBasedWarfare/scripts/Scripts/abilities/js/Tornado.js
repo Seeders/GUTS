@@ -51,7 +51,7 @@ class Tornado extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -66,12 +66,12 @@ class Tornado extends GUTS.BaseAbility {
     }
     
     applyCurses(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterPos = this.game.getComponent(casterEntity, "position");
         if (!casterPos) return;
         
         enemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            const enemyCombat = this.game.getComponent(enemyId, this.componentTypes.COMBAT);
+            const enemyPos = this.game.getComponent(enemyId, "position");
+            const enemyCombat = this.game.getComponent(enemyId, "combat");
             
             if (!enemyPos || !enemyCombat) return;
             
@@ -168,7 +168,7 @@ class Tornado extends GUTS.BaseAbility {
                 }
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    if (this.game.getComponent(enemyId, this.componentTypes.COMBAT)) {
+                    if (this.game.getComponent(enemyId, "combat")) {
                         enemyCombat.damage = originalDamage;
                     }
                 }, this.duration, enemyId);

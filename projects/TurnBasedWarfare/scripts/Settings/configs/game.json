@@ -4,12 +4,12 @@
   "title": "Turn Based Warfare",
   "isIsometric": false,
   "libraries": [
+    "GameServices",
     "threejs",
     "BaseECSGame",
     "Rapier",
     "three_MeshBVH",
     "three_SkeletonUtils",
-    "SceneManager",
     "ShapeFactory",
     "EnvironmentObjectSpawner",
     "ImageManager",
@@ -18,8 +18,7 @@
     "CanvasUtility",
     "TerrainImageProcessor",
     "TileMap",
-    "Entity",
-    "Component",
+    "GameServices",
     "GameState",
     "ModelManager",
     "three_OrbitControls",
@@ -48,7 +47,84 @@
     "TerrainDataManager",
     "WorldRenderer",
     "EntityRenderer",
-    "RaycastHelper"
+    "RaycastHelper",
+    "ComponentGenerator",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode"
+  ],
+  "managers": [
+    "GameManager",
+    "ComponentManager",
+    "GameModeManager",
+    "KeyboardManager",
+    "LoadingManager",
+    "ResultsManager",
+    "SaveManager",
+    "ScreenManager",
+    "UnitCreationManager",
+    "SquadManager",
+    "MultiplayerNetworkManager",
+    "InputManager"
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "PostProcessingSystem",
+    "RenderSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "MultiplayerPlacementSystem",
+    "MultiplayerUISystem",
+    "ShopSystem",
+    "TeamHealthSystem",
+    "HealthBarSystem",
+    "UnitRadiusSystem",
+    "EquipmentSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "ParticleSystem",
+    "SquadExperienceSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem",
+    "FogOfWarSystem",
+    "SelectedUnitSystem",
+    "UnitOrderSystem",
+    "MiniMapSystem",
+    "CameraControlSystem",
+    "DamageNumberSystem",
+    "VisionSystem",
+    "SupplySystem"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
   ],
   "fileName": "game",
   "interface": "main",

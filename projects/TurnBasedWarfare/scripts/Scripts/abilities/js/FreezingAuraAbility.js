@@ -31,7 +31,7 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
     startAuraCycle(casterEntity) {
         if (this.hasActiveAura) return;
 
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
         if (!casterHealth || casterHealth.current <= 0) return;
 
         this.hasActiveAura = true;
@@ -100,8 +100,8 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Execute a single aura tick deterministically
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, this.componentTypes.HEALTH);
-        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const casterPos = this.game.getComponent(casterEntity, "position");
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
@@ -118,8 +118,8 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
         
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, this.componentTypes.UNIT_TYPE);
-            const allyPos = this.game.getComponent(allyId, this.componentTypes.POSITION);
+            const unitType = this.game.getComponent(allyId, "unitType");
+            const allyPos = this.game.getComponent(allyId, "position");
             
             if (!unitType || !allyPos) return;
             
@@ -131,15 +131,21 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
             
             if (distance <= this.range) {
                 // Check if already has empowerment buff
-                const existingBuff = this.game.getComponent(allyId, this.componentTypes.BUFF);
+                const existingBuff = this.game.getComponent(allyId, "buff");
                 
                 if (!existingBuff || existingBuff.buffType !== 'ice_armor') {
-                    const Components = this.game.componentManager.getComponents();
-                    this.game.addComponent(allyId, this.componentTypes.BUFF, 
-                        Components.Buff('ice_armor', { 
+                    this.game.addComponent(allyId, "buff", {
+                        buffType: 'ice_armor',
+                        modifiers: {
                             armorMultiplier: 1.5
-                        }, this.game.state.now + 3.0, false, 1, this.game.state.now));
-                    
+                        },
+                        endTime: this.game.state.now + 3.0,
+                        stackable: false,
+                        stacks: 1,
+                        appliedTime: this.game.state.now,
+                        isActive: true
+                    });
+
                     // Visual empowerment effect
                     this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
                 }

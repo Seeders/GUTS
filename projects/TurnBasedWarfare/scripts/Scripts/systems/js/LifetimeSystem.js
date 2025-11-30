@@ -2,8 +2,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.lifetimeSystem = this;
-        this.componentTypes = this.game.componentManager.getComponentTypes();
-        
+
         // Configuration
         this.CHECK_INTERVAL = 0.1; // Check lifetimes every 100ms for performance
         this.lastCheck = 0;
@@ -29,16 +28,16 @@ class LifetimeSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
     }
 
-    update() {        
+    update() {
         // Only check periodically for performance
         if (this.game.state.now - this.lastCheck < this.CHECK_INTERVAL) return;
         this.lastCheck = this.game.state.now;
-        
+
         // Get all entities with lifetime components
-        const lifetimeEntities = this.game.getEntitiesWith(this.componentTypes.LIFETIME);
-        
+        const lifetimeEntities = this.game.getEntitiesWith("lifetime");
+
         lifetimeEntities.forEach(entityId => {
-            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+            const lifetime = this.game.getComponent(entityId, "lifetime");
             if (!lifetime) return;
             
             const age = (this.game.state.now - lifetime.startTime);
@@ -88,34 +87,34 @@ class LifetimeSystem extends GUTS.BaseSystem {
     
     handleSpecialEntityTypes(entityId, lifetime) {
         // Handle projectiles
-        if (this.game.hasComponent(entityId, this.componentTypes.PROJECTILE)) {
-            // Clean up projectile-specific data 
+        if (this.game.hasComponent(entityId, "projectile")) {
+            // Clean up projectile-specific data
             this.game.gameManager.call('deleteProjectileTrail', entityId);
-            
+
         }
-        
+
         // Handle summons
-        if (this.game.hasComponent(entityId, this.componentTypes.SUMMONED)) {
+        if (this.game.hasComponent(entityId, "summoned")) {
             this.handleSummonExpiration(entityId);
         }
-        
+
         // Handle mirror images
-        if (this.game.hasComponent(entityId, this.componentTypes.MIRROR_IMAGE)) {
+        if (this.game.hasComponent(entityId, "mirrorImage")) {
             this.handleMirrorImageExpiration(entityId);
         }
-        
+
         // Handle traps
-        if (this.game.hasComponent(entityId, this.componentTypes.TRAP)) {
+        if (this.game.hasComponent(entityId, "trap")) {
             this.handleTrapExpiration(entityId);
         }
-        
+
         // Handle temporary effects
-        if (this.game.hasComponent(entityId, this.componentTypes.TEMPORARY_EFFECT)) {
+        if (this.game.hasComponent(entityId, "temporaryEffect")) {
             this.handleTemporaryEffectExpiration(entityId);
         }
-        
+
         // Handle mind controlled entities
-        if (this.game.hasComponent(entityId, this.componentTypes.MIND_CONTROLLED)) {
+        if (this.game.hasComponent(entityId, "mindControlled")) {
             this.handleMindControlExpiration(entityId);
         }
         
@@ -126,7 +125,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
     
     handleSummonExpiration(entityId) {
-        const summonPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const summonPos = this.game.getComponent(entityId, "position");
         if (summonPos) {
             // Create disappearing effect
             this.game.gameManager.call('createParticleEffect',
@@ -139,7 +138,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
     
     handleMirrorImageExpiration(entityId) {
-        const imagePos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const imagePos = this.game.getComponent(entityId, "position");
         if (imagePos) {
             // Create shimmering dissolution effect
             this.game.gameManager.call('createParticleEffect',
@@ -151,7 +150,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
     
     handleTrapExpiration(entityId) {
-        const trapPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const trapPos = this.game.getComponent(entityId, "position");
         if (trapPos) {
             // Create fizzling effect for expired trap
             this.game.gameManager.call('createParticleEffect',
@@ -166,7 +165,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     
     handleTemporaryEffectExpiration(entityId) {
         // For visual effect entities, just let them fade naturally
-        const effectPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const effectPos = this.game.getComponent(entityId, "position");
         if (effectPos) {
             this.game.gameManager.call('createParticleEffect',
                 effectPos.x, effectPos.y, effectPos.z,
@@ -177,16 +176,16 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
     
     handleMindControlExpiration(entityId) {
-        const mindControl = this.game.getComponent(entityId, this.componentTypes.MIND_CONTROLLED);
-        const targetTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-        const targetPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        
+        const mindControl = this.game.getComponent(entityId, "mindControlled");
+        const targetTeam = this.game.getComponent(entityId, "team");
+        const targetPos = this.game.getComponent(entityId, "position");
+
         if (mindControl && targetTeam) {
             // Restore original team
             targetTeam.team = mindControl.originalTeam;
-            
+
             // Clear AI target
-            const targetAI = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+            const targetAI = this.game.getComponent(entityId, "aiState");
             if (targetAI && targetAI.aiBehavior) {
                 targetAI.target = null;
                 targetAI.targetPosition = null;
@@ -204,9 +203,9 @@ class LifetimeSystem extends GUTS.BaseSystem {
             }
             
             // Remove mind control component
-            this.game.removeComponent(entityId, this.componentTypes.MIND_CONTROLLED);
-            
-          
+            this.game.removeComponent(entityId, "mindControlled");
+
+
         }
     }
 
@@ -218,7 +217,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
     createDestructionEffects(entityId, lifetime) {
         if (!lifetime.destructionEffect) return;
 
-        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const pos = this.game.getComponent(entityId, "position");
         if (!pos) return;
 
         const effectConfig = lifetime.destructionEffect;
@@ -270,8 +269,9 @@ class LifetimeSystem extends GUTS.BaseSystem {
             destructionEffect: options.destructionEffect || null,
             onDestroy: options.onDestroy || null
         };
-        
-        this.game.addComponent(entityId, this.componentTypes.LIFETIME, lifetimeData);
+
+
+        this.game.addComponent(entityId, "lifetime", lifetimeData);
         
         // Register destruction callback if provided
         if (options.onDestroy && typeof options.onDestroy === 'function') {
@@ -287,7 +287,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @param {number} additionalDuration - Additional time in seconds
      */
     extendLifetime(entityId, additionalDuration) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        const lifetime = this.game.getComponent(entityId, "lifetime");
         if (lifetime) {
             lifetime.duration += additionalDuration;
             return true;
@@ -301,7 +301,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @param {number} reductionAmount - Time to reduce in seconds
      */
     reduceLifetime(entityId, reductionAmount) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        const lifetime = this.game.getComponent(entityId, "lifetime");
         if (lifetime) {
             lifetime.duration = Math.max(0, lifetime.duration - reductionAmount);
             return true;
@@ -315,7 +315,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @returns {number} Remaining time in seconds, or -1 if no lifetime component
      */
     getRemainingLifetime(entityId) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        const lifetime = this.game.getComponent(entityId, "lifetime");
         if (lifetime) {
             const age = (this.game.state.now - lifetime.startTime);
             return Math.max(0, (lifetime.duration) - age);
@@ -339,8 +339,8 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @param {number} entityId - Entity to make permanent
      */
     makeEntityPermanent(entityId) {
-        if (this.game.hasComponent(entityId, this.componentTypes.LIFETIME)) {
-            this.game.removeComponent(entityId, this.componentTypes.LIFETIME);
+        if (this.game.hasComponent(entityId, "lifetime")) {
+            this.game.removeComponent(entityId, "lifetime");
             this.destructionCallbacks.delete(entityId);
             this.fadeOutEntities.delete(entityId);
             return true;
@@ -354,7 +354,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @param {boolean} triggerEffects - Whether to trigger destruction effects
      */
     destroyEntityImmediately(entityId, triggerEffects = true) {
-        const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+        const lifetime = this.game.getComponent(entityId, "lifetime");
         if (lifetime) {
             if (triggerEffects) {
                 this.handleExpiredEntity(entityId, lifetime);
@@ -385,7 +385,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
      * @returns {Array} Array of entity IDs
      */
     getAllLifetimeEntities() {
-        return this.game.getEntitiesWith(this.componentTypes.LIFETIME);
+        return this.game.getEntitiesWith("lifetime");
     }
     
     /**
@@ -399,7 +399,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const lifetimeEntities = this.getAllLifetimeEntities();
         
         lifetimeEntities.forEach(entityId => {
-            const lifetime = this.game.getComponent(entityId, this.componentTypes.LIFETIME);
+            const lifetime = this.game.getComponent(entityId, "lifetime");
             if (lifetime) {
                 const age = (this.game.state.now - lifetime.startTime);
                 const remaining = lifetime.duration - age;

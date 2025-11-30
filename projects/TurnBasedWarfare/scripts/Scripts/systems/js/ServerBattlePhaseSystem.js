@@ -6,9 +6,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         
         // Battle configuration
-        this.maxBattleDuration = 30; // 90 seconds max
-        this.minBattleDuration = 29;
-        this.currentBattleTime = 0;
+        this.battleDuration = 30; // 30 seconds max
+        this.battleStartTime = 0;
         // Battle state tracking
         this.battleResults = new Map();
         this.createdSquads = new Map();
@@ -29,6 +28,12 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             this.game.state.isPaused = false;
             // Change room phase
             this.game.state.phase = 'battle';
+
+            // Reset game time to sync with client (client also calls resetCurrentTime)
+            this.game.resetCurrentTime();
+
+            // Record battle start time (use global game time like client does)
+            this.battleStartTime = this.game.state.now || 0;
 
             // Initialize deterministic RNG for this battle
             // Seed based on room ID and round number for reproducibility
@@ -91,75 +96,25 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         if (this.game.state?.phase !== 'battle') {
             return;
         }
-        this.currentBattleTime += this.game.state.deltaTime;
         // Check for battle end conditions
         this.checkForBattleEnd();
     }
 
     checkForBattleEnd() {
         if (!this.game.componentManager) return;
-        
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        const allBattleEntities = this.game.getEntitiesWith(
-            ComponentTypes.TEAM,
-            ComponentTypes.HEALTH,
-            ComponentTypes.UNIT_TYPE
-        );
 
-        const aliveEntities = allBattleEntities.filter(entityId => {
-            const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-            const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
-            return health && health.current > 0 && (!deathState || !deathState.isDying);
-        });
+        // Calculate battle duration same way as client
+        const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
-        const teams = new Map();
-        for (const entityId of aliveEntities) {
-            const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-            if (team) {
-                if (!teams.has(team.team)) {
-                    teams.set(team.team, []);
-                }
-                teams.get(team.team).push(entityId);
-            }
-        }
-        const aliveTeams = Array.from(teams.keys());
-           
-        const noCombatActive = this.checkNoCombatActive(aliveEntities);
-        const allUnitsAtTarget = this.checkAllUnitsAtTargetPosition(aliveEntities);
-        
-        if( this.currentBattleTime < this.minBattleDuration){
-            return;
-        }
-        if( this.currentBattleTime > this.maxBattleDuration){
-            this.endBattle(this.game.room, null);
-            return;
-        }
-
-        if (aliveEntities.length === 0) {
-            console.log('no alive entities');
-            this.endBattle(this.game.room, null);
-            return;
-        }
-        
-        if (aliveTeams.length === 1 && allUnitsAtTarget) {
-            console.log('aliveTeams length is 1', aliveTeams, aliveEntities);
-            console.log('all entities', allBattleEntities);
-            console.log('aliveEntities', aliveEntities);
-            this.endBattle(this.game.room, aliveTeams[0]);
-            return;
-        }
-     
-        if (noCombatActive && allUnitsAtTarget) {
-            console.log('no combat active and all units at target');
+        // Battle always lasts exactly battleDuration seconds
+        if( battleDuration >= this.battleDuration){
             this.endBattle(this.game.room, null);
         }
     }
 
     checkNoCombatActive(aliveEntities) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
-        
         for (const entityId of aliveEntities) {
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const aiState = this.game.getComponent(entityId, "aiState");
          //   console.log(entityId, 'currentTarget', aiState.target);
             if (aiState && aiState.target) {
                 return false;
@@ -170,12 +125,11 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkAllUnitsAtTargetPosition(aliveEntities) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
         const TARGET_POSITION_THRESHOLD = 20;
-        
+
         for (const entityId of aliveEntities) {
-            const pos = this.game.getComponent(entityId, ComponentTypes.POSITION);
-            const aiState = this.game.getComponent(entityId, ComponentTypes.AI_STATE);
+            const pos = this.game.getComponent(entityId, "position");
+            const aiState = this.game.getComponent(entityId, "aiState");
             const targetPos = aiState?.targetPosition;
 
             if (!pos || !targetPos) {
@@ -213,7 +167,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             result: battleResult,
             gameState: room.getGameState(), // This will also have updated player health
             entitySync: entitySync,
-            serverTime: this.game.state.now // Server's simulation time when battle ended
+            serverTime: this.game.state.now // Server's global game time when battle ended
         });
         // Check for game end or continue to next round
         if (this.shouldEndGame(room)) {
@@ -259,11 +213,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let sideSurvivors = [];
             for (const squad of squads) {
                 if (squad.squadUnits && this.game.componentManager) {
-                    const ComponentTypes = this.game.componentManager.getComponentTypes();
-                    
                     for (const entityId of squad.squadUnits) {
-                        const health = this.game.getComponent(entityId, ComponentTypes.HEALTH);
-                        const deathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+                        const health = this.game.getComponent(entityId, "health");
+                        const deathState = this.game.getComponent(entityId, "deathState");
                   
                         if (health && health.current > 0 && (!deathState || !deathState.isDying)) {
                             sideSurvivors.push(entityId);
@@ -340,15 +292,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     onBattleEnd() {
 
         if (!this.game.componentManager) return;
-        
-        this.currentBattleTime = 0;
-        
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
+
+        this.battleStartTime = 0;
+
         const entitiesToDestroy = new Set();
-        
+
         // Collect battle entities (but not players)
         [
-            ComponentTypes.CORPSE
+            "corpse"
         ].forEach(componentType => {
             const entities = this.game.getEntitiesWith(componentType);
             entities.forEach(id => {
