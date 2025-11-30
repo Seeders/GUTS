@@ -22,7 +22,6 @@ class EnvironmentObjectSpawner {
         // Track spawned entities for cleanup
         this.spawnedEntities = new Set();
 
-        console.log(`[EnvironmentObjectSpawner] Initialized in ${this.mode} mode`);
     }
 
     /**
@@ -66,14 +65,10 @@ class EnvironmentObjectSpawner {
      */
     async spawnWorldObjects(tileMap, terrainDataManager) {
         if (!tileMap?.worldObjects || tileMap.worldObjects.length === 0) {
-            console.log('[EnvironmentObjectSpawner] No world objects to spawn');
             return;
         }
 
-        // Debug: log first world object to see format
-        if (tileMap.worldObjects.length > 0) {
-            console.log('[EnvironmentObjectSpawner] First world object format:', tileMap.worldObjects[0]);
-        }
+        
 
         // Clear existing spawned objects
         this.clearWorldObjects();
@@ -87,7 +82,6 @@ class EnvironmentObjectSpawner {
 
         await Promise.all(spawnPromises);
 
-        console.log(`[EnvironmentObjectSpawner] Spawned ${tileMap.worldObjects.length} world objects in ${this.mode} mode`);
     }
 
     /**
@@ -207,7 +201,6 @@ class EnvironmentObjectSpawner {
         }
 
         this.spawnedEntities.clear();
-        console.log('[EnvironmentObjectSpawner] Cleared all world objects');
     }
 
     /**

@@ -22,9 +22,6 @@ class Engine extends BaseEngine {
 
         let projectConfig = this.collections.configs.game;
 
-        if (window.COMPILED_GAME) {         
-            console.log('✅ Using webpack-bundled libraries');
-        } 
 
         let ui = this.collections.interfaces[projectConfig.interface];
         if (ui) {
