@@ -74,9 +74,7 @@ class BehaviorTreeEditor {
             titleEl.textContent = (this.objectData && this.objectData.title) || 'Behavior Tree';
         }
 
-        // Load available actions from collection
-        this.loadAvailableActions();
-
+     
         // Setup simulation with mock entities
         this.setupSimulationVars();
 
@@ -85,82 +83,6 @@ class BehaviorTreeEditor {
 
         // Update JSON view
         this.updateJSONView();
-    }
-
-    loadAvailableActions() {
-        const actionsList = document.getElementById('available-actions');
-        if (!actionsList) return;
-
-        actionsList.innerHTML = '';
-
-        const behaviorActions = this.controller.getCollections().behaviorActions || {};
-
-        Object.entries(behaviorActions).forEach(([behaviorActionId, actionData]) => {
-            const actionEl = document.createElement('div');
-            actionEl.className = 'bt-action-item';
-            actionEl.draggable = true;
-            actionEl.dataset.behaviorActionId = behaviorActionId;
-
-            const title = actionData.title || this.formatActionName(behaviorActionId);
-            const description = actionData.description || '';
-
-            actionEl.innerHTML = `
-                <div class="bt-action-item__title">${title}</div>
-                <div class="bt-action-item__id" style="font-size: 10px; color: #666;">${behaviorActionId}</div>
-                ${description ? `<div class="bt-action-item__desc" style="font-size: 10px; color: #888; margin-top: 4px;">${description}</div>` : ''}
-            `;
-
-            actionEl.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('behaviorActionId', behaviorActionId);
-            });
-
-            // Double-click to add to current tree
-            actionEl.addEventListener('dblclick', () => {
-                this.addActionToTree(behaviorActionId);
-            });
-
-            actionsList.appendChild(actionEl);
-        });
-    }
-
-    addActionToTree(behaviorActionId) {
-        if (!this.objectData) {
-            alert('Cannot add actions - no tree data loaded');
-            return;
-        }
-
-        // Get the child nodes array (either behaviorActions or behaviorNodes)
-        const childNodes = this.getChildNodes(this.objectData);
-        const arrayKey = this.getChildNodesKey(this.objectData);
-
-        // If no array exists, create one
-        if (!this.objectData[arrayKey]) {
-            this.objectData[arrayKey] = [];
-        }
-
-        if (this.objectData[arrayKey].includes(behaviorActionId)) {
-            alert('Action already in tree');
-            return;
-        }
-
-        this.objectData[arrayKey].push(behaviorActionId);
-        this.renderTree();
-        this.updateJSONView();
-    }
-
-    removeActionFromTree(behaviorActionId) {
-        if (!this.objectData) return;
-
-        const arrayKey = this.getChildNodesKey(this.objectData);
-        const childNodes = this.objectData[arrayKey];
-        if (!childNodes) return;
-
-        const index = childNodes.indexOf(behaviorActionId);
-        if (index > -1) {
-            childNodes.splice(index, 1);
-            this.renderTree();
-            this.updateJSONView();
-        }
     }
 
     renderTree() {
@@ -643,7 +565,7 @@ class BehaviorTreeEditor {
         const saveEvent = new CustomEvent(this.moduleConfig.saveHook, {
             detail: {
                 propertyName: this.propertyName,
-                data: { "entities": this.currentData }
+                data: this.currentData
             },
             bubbles: true,
             cancelable: true
