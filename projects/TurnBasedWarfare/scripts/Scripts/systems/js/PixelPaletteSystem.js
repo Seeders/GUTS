@@ -52,13 +52,16 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
     }
 
     createPaletteTexture() {
-        // Create a 1D texture (Nx1) to store palette colors
-        // Using RGBA format for compatibility
+        // Create a fixed-size 1D texture (64x1) to store palette colors
+        // This avoids GLSL issues with dynamic loop bounds
+        const TEXTURE_SIZE = 64;
         const numColors = this.paletteColors.length;
-        const data = new Uint8Array(numColors * 4);
+        const data = new Uint8Array(TEXTURE_SIZE * 4);
 
-        for (let i = 0; i < numColors; i++) {
-            const c = this.paletteColors[i];
+        for (let i = 0; i < TEXTURE_SIZE; i++) {
+            // Use actual color if available, otherwise repeat last color
+            const colorIndex = Math.min(i, numColors - 1);
+            const c = this.paletteColors[colorIndex];
             data[i * 4 + 0] = Math.round(c.r * 255);
             data[i * 4 + 1] = Math.round(c.g * 255);
             data[i * 4 + 2] = Math.round(c.b * 255);
@@ -67,7 +70,7 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
         this.paletteTexture = new THREE.DataTexture(
             data,
-            numColors,
+            TEXTURE_SIZE,
             1,
             THREE.RGBAFormat,
             THREE.UnsignedByteType
@@ -75,8 +78,10 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
         this.paletteTexture.needsUpdate = true;
         this.paletteTexture.minFilter = THREE.NearestFilter;
         this.paletteTexture.magFilter = THREE.NearestFilter;
+        this.paletteTexture.wrapS = THREE.ClampToEdgeWrapping;
+        this.paletteTexture.wrapT = THREE.ClampToEdgeWrapping;
 
-        console.log(`[PixelPaletteSystem] Created palette texture with ${numColors} colors`);
+        console.log(`[PixelPaletteSystem] Created palette texture with ${numColors} colors (texture size: ${TEXTURE_SIZE})`);
     }
 
     postAllInit() {
@@ -130,6 +135,9 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
 
                 varying vec2 vUv;
 
+                // Texture is always 64 pixels wide
+                const float TEXTURE_SIZE = 64.0;
+
                 float colorDistanceSq(vec3 c1, vec3 c2) {
                     vec3 diff = c1 - c2;
                     return dot(diff, diff);
@@ -140,14 +148,16 @@ class PixelPaletteSystem extends GUTS.BaseSystem {
                     vec3 inputColor = texColor.rgb;
 
                     // Start with first palette color
-                    vec3 closest = texture2D(paletteTexture, vec2(0.5 / paletteSize, 0.5)).rgb;
+                    vec3 closest = texture2D(paletteTexture, vec2(0.5 / TEXTURE_SIZE, 0.5)).rgb;
                     float minDist = colorDistanceSq(inputColor, closest);
 
-                    // Compare against all palette colors
-                    for (float i = 1.0; i < 64.0; i += 1.0) {
-                        if (i >= paletteSize) break;
+                    // Compare against all palette colors (only up to paletteSize are unique)
+                    // Using fixed iteration count - no dynamic break needed
+                    for (int i = 1; i < 64; i++) {
+                        // Only check unique colors (rest are duplicates)
+                        if (float(i) >= paletteSize) continue;
 
-                        float u = (i + 0.5) / paletteSize;
+                        float u = (float(i) + 0.5) / TEXTURE_SIZE;
                         vec3 paletteColor = texture2D(paletteTexture, vec2(u, 0.5)).rgb;
                         float dist = colorDistanceSq(inputColor, paletteColor);
 
