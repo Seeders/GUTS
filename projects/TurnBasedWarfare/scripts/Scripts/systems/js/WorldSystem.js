@@ -107,7 +107,7 @@ class WorldSystem extends GUTS.BaseSystem {
     createWorldRenderer(options = {}) {
         // Clean up existing renderer
         if (this.worldRenderer) {
-            this.worldRenderer.destroy();
+            this.worldRenderer.dispose();
         }
 
         this.worldRenderer = new GUTS.WorldRenderer({
@@ -125,7 +125,7 @@ class WorldSystem extends GUTS.BaseSystem {
      */
     cleanupWorld() {
         if (this.worldRenderer) {
-            this.worldRenderer.destroy();
+            this.worldRenderer.dispose();
             this.worldRenderer = null;
         }
 
@@ -326,7 +326,7 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.gameManager.call('registerPostProcessingPass', 'output', {
             enabled: true,
             create: () => {
-                return new THREE.OutputPass();
+                return new GUTS.OutputPass();
             }
         });
 
