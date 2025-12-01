@@ -62,23 +62,26 @@ class ScriptEditor {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
 
-            // Initialize CodeMirror on first use (container is now visible)
-            this.initCodeMirror();
+            // Use requestAnimationFrame to ensure container is rendered
+            requestAnimationFrame(() => {
+                // Initialize CodeMirror on first use (container is now visible)
+                this.initCodeMirror();
 
-            if (!this.scriptEditor) {
-                console.error("CodeMirror not initialized");
-                return;
-            }
+                if (!this.scriptEditor) {
+                    console.error("CodeMirror not initialized");
+                    return;
+                }
 
-            this.scriptEditor.setValue(this.scriptValue);
-            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
-            this.scriptEditor.scrollTo(0, 0);
-            this.scriptEditor.refresh();
-
-            // Additional refresh after a short delay
-            setTimeout(() => {
+                this.scriptEditor.setValue(this.scriptValue);
+                this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+                this.scriptEditor.scrollTo(0, 0);
                 this.scriptEditor.refresh();
-            }, 50);
+
+                // Additional refresh after layout settles
+                setTimeout(() => {
+                    this.scriptEditor.refresh();
+                }, 100);
+            });
         });
 
         const saveBtn = this.container.querySelector('#save-script-btn');
