@@ -11,6 +11,9 @@ class BaseECSGame {
         this.systems = [];
         this.managers = [];
 
+        // Scene management
+        this.sceneManager = null;
+
         // Query cache for getEntitiesWith - invalidated on entity/component changes
         this._queryCache = new Map();  // queryKey -> { result: [], version: number }
         this._queryCacheVersion = 0;   // Incremented when entities/components change
@@ -26,51 +29,84 @@ class BaseECSGame {
 
         this.isServer = false;
         // Performance monitoring
-        if (typeof GUTS.PerformanceMonitor !== 'undefined') {
+        if (typeof GUTS !== 'undefined' && typeof GUTS.PerformanceMonitor !== 'undefined') {
             this.performanceMonitor = new GUTS.PerformanceMonitor();
         }
     }
+
     init(isServer = false, config) {
         this.isServer = isServer;
         if(!this.isServer){
-            document.addEventListener('keydown', (e) => {                
+            document.addEventListener('keydown', (e) => {
                 this.triggerEvent('onKeyDown', e.key);
             });
         }
         this.loadGameScripts(config);
     }
-    
+
     loadGameScripts(config) {
         this.collections = this.getCollections();
-        this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);      
-        
+        this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
+
+        // Initialize managers
         this.gameConfig.managers?.forEach((managerType) => {
-            let params = { canvas: this.canvas };           
+            let params = { canvas: this.canvas };
             const managerInst = new GUTS[managerType](this);
             if(managerInst.init){
                 managerInst.init(params);
-            }  
+            }
             this.managers.push(managerInst);
-        });   
+        });
+
+        // Initialize SceneManager
+        this.sceneManager = new GUTS.SceneManager(this);
+
+        // Initialize all systems (they start disabled until scene loads)
         this.gameConfig.systems?.forEach((systemType) => {
-            let params = {canvas: this.canvas };  
+            let params = { canvas: this.canvas };
             const systemInst = new GUTS[systemType](this);
+            systemInst.enabled = false; // Systems disabled until scene loads
             if(systemInst.init){
                 systemInst.init(params);
-            }  
+            }
             this.systems.push(systemInst);
-        });   
+        });
+
+        // Call postAllInit on managers and systems
         this.managers.forEach((manager) => {
             if(manager.postAllInit){
-                manager.postAllInit();  
-            }              
-        });      
+                manager.postAllInit();
+            }
+        });
         this.systems.forEach((system) => {
             if(system.postAllInit){
-                system.postAllInit();  
-            }              
-        });      
+                system.postAllInit();
+            }
+        });
+    }
 
+    /**
+     * Load the initial scene from game config
+     * @returns {Promise<void>}
+     */
+    async loadInitialScene() {
+        const initialScene = this.gameConfig.initialScene;
+        if (initialScene && this.sceneManager) {
+            await this.sceneManager.loadScene(initialScene);
+        } else {
+            console.warn('[BaseECSGame] No initialScene configured in game config');
+        }
+    }
+
+    /**
+     * Switch to a different scene
+     * @param {string} sceneName - Name of the scene to load
+     * @returns {Promise<void>}
+     */
+    async switchScene(sceneName) {
+        if (this.sceneManager) {
+            await this.sceneManager.switchScene(sceneName);
+        }
     }
 
     getEntityId() {
@@ -109,6 +145,9 @@ class BaseECSGame {
             this.deltaTime = this.FIXED_DELTA_TIME;
 
             for (const system of this.systems) {
+                // Skip disabled systems
+                if (!system.enabled) continue;
+
                 const systemName = system.constructor.name;
 
                 // Start tracking this system
