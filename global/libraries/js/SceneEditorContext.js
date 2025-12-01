@@ -187,6 +187,14 @@ class SceneEditorContext {
             }
         }
 
+        // Post-scene-load phase - for operations that need all systems initialized
+        // (e.g., WorldSystem spawning cliffs needs RenderSystem's EntityRenderer)
+        for (const system of this.systems) {
+            if (system.enabled && system.postSceneLoad) {
+                await system.postSceneLoad(sceneData);
+            }
+        }
+
         console.log('[SceneEditorContext] Scene loaded with', this.entities.size, 'entities');
     }
 

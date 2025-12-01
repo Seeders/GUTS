@@ -250,6 +250,18 @@ class WorldSystem extends GUTS.BaseSystem {
             });
         }
 
+        // Note: Cliff spawning moved to postSceneLoad to ensure EntityRenderer is available
+
+        this.initialized = true;
+    }
+
+    /**
+     * Called after all systems have processed onSceneLoad
+     * Used for operations that need other systems to be fully initialized
+     */
+    async postSceneLoad(sceneData) {
+        if (!this.worldRenderer) return;
+
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.game.gameManager.call('getEntityRenderer');
@@ -258,8 +270,6 @@ class WorldSystem extends GUTS.BaseSystem {
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
-
-        this.initialized = true;
     }
 
     postAllInit() {

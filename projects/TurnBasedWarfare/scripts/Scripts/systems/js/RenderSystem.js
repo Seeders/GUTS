@@ -37,7 +37,24 @@ class RenderSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getBatchInfo', this.getBatchInfo.bind(this));
         this.game.gameManager.register('removeInstance', this.removeInstance.bind(this));
 
-        // Initialize EntityRenderer with game context
+        // EntityRenderer will be created in onSceneLoad when scene is available
+        // Register getter that returns current entityRenderer (may be null initially)
+        this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
+
+        // Register method to update capacities after terrain loads
+        this.game.gameManager.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
+    }
+
+    /**
+     * Called when scene is loaded - initialize EntityRenderer with scene
+     */
+    onSceneLoad(sceneData) {
+        // Wait for scene to be available from WorldSystem
+        if (!this.game.scene) {
+            console.warn('[RenderSystem] Scene not available yet in onSceneLoad');
+            return;
+        }
+
         const collections = this.game.getCollections?.();
         const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
 
@@ -56,12 +73,7 @@ class RenderSystem extends GUTS.BaseSystem {
             minMovementThreshold: 0.1
         });
 
-        // Register EntityRenderer for other systems to use (e.g., WorldSystem for cliff spawning)
-        this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
-
-        // Register method to update capacities after terrain loads
-        this.game.gameManager.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
-
+        console.log('[RenderSystem] EntityRenderer initialized with scene');
     }
 
     /**
