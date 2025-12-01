@@ -34,3 +34,15 @@
     height: auto !important;
     font-size: 14px;
 }
+
+/* Fix gutter width calculation issues when fonts load asynchronously */
+#script-editor-container .CodeMirror-gutters {
+    min-width: 40px;
+    max-width: 80px;
+}
+
+#script-editor-container .CodeMirror-linenumber {
+    min-width: 30px;
+    max-width: 70px;
+    padding: 0 8px !important;
+}

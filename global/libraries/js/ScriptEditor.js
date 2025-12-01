@@ -69,14 +69,37 @@ class ScriptEditor {
     }
 
     waitForVisibleAndRefresh() {
+        const doRefresh = () => {
+            // Clear any existing inline width styles on gutters that CodeMirror miscalculated
+            const gutters = this.container.querySelector('.CodeMirror-gutters');
+            const sizer = this.container.querySelector('.CodeMirror-sizer');
+            if (gutters) {
+                gutters.style.width = '';
+            }
+            if (sizer) {
+                sizer.style.marginLeft = '';
+            }
+
+            this.scriptEditor.refresh();
+
+            // Double-refresh after a short delay to ensure CodeMirror recalculates properly
+            setTimeout(() => {
+                this.scriptEditor.refresh();
+            }, 50);
+        };
+
         const checkAndRefresh = () => {
             // Check if container has actual dimensions (meaning it's rendered)
             if (this.container.offsetWidth > 0 && this.container.offsetHeight > 0) {
-                this.scriptEditor.refresh();
-                // Double-refresh after a frame to ensure CodeMirror updates completely
-                requestAnimationFrame(() => {
-                    this.scriptEditor.refresh();
-                });
+                // Wait for fonts to load before refreshing
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => {
+                        doRefresh();
+                    });
+                } else {
+                    // Fallback for browsers without font loading API
+                    setTimeout(doRefresh, 100);
+                }
             } else {
                 // Container not visible yet, try again next frame
                 requestAnimationFrame(checkAndRefresh);
