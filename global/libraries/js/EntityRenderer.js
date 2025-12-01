@@ -114,13 +114,12 @@ class EntityRenderer {
             }
         }
 
-        // Find free instance slot
+        // Get free instance slot from free list (O(1) instead of O(capacity))
         let instanceIndex = -1;
-        for (let i = 0; i < batch.capacity; i++) {
-            if (!batch.entityMap.has(i)) {
-                instanceIndex = i;
-                break;
-            }
+        if (batch.freeList.length > 0) {
+            instanceIndex = batch.freeList.pop();
+        } else if (batch.nextFreeIndex < batch.capacity) {
+            instanceIndex = batch.nextFreeIndex++;
         }
 
         if (instanceIndex === -1) {
@@ -130,7 +129,11 @@ class EntityRenderer {
 
         // Assign instance
         batch.entityMap.set(instanceIndex, entityId);
-        batch.count = Math.max(batch.count, instanceIndex + 1);
+        // Track max index for efficient count management
+        if (instanceIndex >= batch.maxUsedIndex) {
+            batch.maxUsedIndex = instanceIndex;
+        }
+        batch.count = batch.maxUsedIndex + 1;
         batch.mesh.count = batch.count;
 
         // Initialize animation attributes
@@ -179,13 +182,12 @@ class EntityRenderer {
             }
         }
 
-        // Find free instance slot
+        // Get free instance slot from free list (O(1) instead of O(capacity))
         let instanceIndex = -1;
-        for (let i = 0; i < batch.capacity; i++) {
-            if (!batch.entityMap.has(i)) {
-                instanceIndex = i;
-                break;
-            }
+        if (batch.freeList.length > 0) {
+            instanceIndex = batch.freeList.pop();
+        } else if (batch.nextFreeIndex < batch.capacity) {
+            instanceIndex = batch.nextFreeIndex++;
         }
 
         if (instanceIndex === -1) {
@@ -195,7 +197,11 @@ class EntityRenderer {
 
         // Map entity to instance
         batch.entityMap.set(instanceIndex, entityId);
-        batch.count = Math.max(batch.count, instanceIndex + 1);
+        // Track max index for efficient count management
+        if (instanceIndex >= batch.maxUsedIndex) {
+            batch.maxUsedIndex = instanceIndex;
+        }
+        batch.count = batch.maxUsedIndex + 1;
 
         // Store entity data
         this.entities.set(entityId, {
@@ -294,7 +300,10 @@ class EntityRenderer {
             instancedMesh,
             entityMap: new Map(), // instanceIndex -> entityId
             count: 0,
-            capacity
+            capacity,
+            freeList: [],        // Stack of freed indices for O(1) reuse
+            nextFreeIndex: 0,    // Next never-used index
+            maxUsedIndex: -1     // Highest currently-used index for efficient count
         };
 
         this.staticBatches.set(batchKey, batch);
@@ -601,28 +610,43 @@ class EntityRenderer {
         if (entity.type === 'vat') {
             // Free VAT instance slot
             const batch = entity.batch;
-            batch.entityMap.delete(entity.instanceIndex);
+            const removedIndex = entity.instanceIndex;
+            batch.entityMap.delete(removedIndex);
 
-            // Recalculate count
-            let maxIndex = -1;
-            for (const index of batch.entityMap.keys()) {
-                if (index > maxIndex) maxIndex = index;
+            // Add to free list for O(1) reuse
+            batch.freeList.push(removedIndex);
+
+            // Only recalculate maxUsedIndex if we removed the max (otherwise it stays the same)
+            if (removedIndex === batch.maxUsedIndex) {
+                // Find new max - only needed when removing the highest index
+                let newMax = -1;
+                for (const index of batch.entityMap.keys()) {
+                    if (index > newMax) newMax = index;
+                }
+                batch.maxUsedIndex = newMax;
             }
-            batch.count = maxIndex + 1;
+            batch.count = batch.maxUsedIndex + 1;
             batch.mesh.count = batch.count;
 
             this.stats.vatEntities--;
         } else if (entity.type === 'instanced') {
             // Free instanced slot
             const batch = entity.batch;
-            batch.entityMap.delete(entity.instanceIndex);
+            const removedIndex = entity.instanceIndex;
+            batch.entityMap.delete(removedIndex);
 
-            // Recalculate count
-            let maxIndex = -1;
-            for (const index of batch.entityMap.keys()) {
-                if (index > maxIndex) maxIndex = index;
+            // Add to free list for O(1) reuse
+            batch.freeList.push(removedIndex);
+
+            // Only recalculate maxUsedIndex if we removed the max
+            if (removedIndex === batch.maxUsedIndex) {
+                let newMax = -1;
+                for (const index of batch.entityMap.keys()) {
+                    if (index > newMax) newMax = index;
+                }
+                batch.maxUsedIndex = newMax;
             }
-            batch.count = maxIndex + 1;
+            batch.count = batch.maxUsedIndex + 1;
             batch.instancedMesh.count = batch.count;
 
             this.stats.staticEntities--;
@@ -778,6 +802,9 @@ class EntityRenderer {
             capacity: capacity,
             count: 0,
             entityMap: new Map(),
+            freeList: [],        // Stack of freed indices for O(1) reuse
+            nextFreeIndex: 0,    // Next never-used index
+            maxUsedIndex: -1,    // Highest currently-used index for efficient count
             attributes: {
                 clipIndex: geometry.getAttribute('aClipIndex'),
                 animTime: geometry.getAttribute('aAnimTime'),
