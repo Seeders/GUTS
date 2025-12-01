@@ -280,6 +280,11 @@ class WorldSystem extends GUTS.BaseSystem {
         const gameConfig = this.game.getCollections()?.configs?.game;
         if (!gameConfig) return;
 
+        // Check if PostProcessingSystem is available
+        if (!this.game.gameManager.has('registerPostProcessingPass')) {
+            return; // PostProcessingSystem not loaded (e.g., in editor)
+        }
+
         const pixelSize = gameConfig.pixelSize || 1;
         this.game.gameManager.call('registerPostProcessingPass', 'render', {
             enabled: true,
@@ -359,10 +364,12 @@ class WorldSystem extends GUTS.BaseSystem {
 
         this.worldRenderer.onWindowResize();
 
-        // Update composer if exists
-        const composer = this.game.gameManager.call('getPostProcessingComposer');
-        if (composer) {
-            composer.setSize(window.innerWidth, window.innerHeight);
+        // Update composer if exists (PostProcessingSystem may not be loaded)
+        if (this.game.gameManager.has('getPostProcessingComposer')) {
+            const composer = this.game.gameManager.call('getPostProcessingComposer');
+            if (composer) {
+                composer.setSize(window.innerWidth, window.innerHeight);
+            }
         }
     }
 
@@ -381,12 +388,15 @@ class WorldSystem extends GUTS.BaseSystem {
     render() {
         if (!this.worldRenderer) return;
 
-        const composer = this.game.gameManager.call('getPostProcessingComposer');
-        if (composer) {
-            this.game.gameManager.call('renderPostProcessing');
-        } else {
-            this.worldRenderer.render();
+        // Use post-processing if available, otherwise direct render
+        if (this.game.gameManager.has('getPostProcessingComposer')) {
+            const composer = this.game.gameManager.call('getPostProcessingComposer');
+            if (composer) {
+                this.game.gameManager.call('renderPostProcessing');
+                return;
+            }
         }
+        this.worldRenderer.render();
     }
 
     // Utility methods for external systems
