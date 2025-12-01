@@ -4,7 +4,7 @@
   "components": {
     "terrain": {
       "level": "level1",
-      "world": "grassland",
+      "world": "shire",
       "enableCliffs": true,
       "enableLiquids": true,
       "enableGrass": false,

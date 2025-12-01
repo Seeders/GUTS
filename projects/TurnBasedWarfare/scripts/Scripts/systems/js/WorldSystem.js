@@ -157,9 +157,10 @@ class WorldSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const gameCanvas = document.getElementById('gameCanvas');
+        // Use canvas from game context (for editor) or default to gameCanvas
+        const gameCanvas = this.game.canvas || document.getElementById('gameCanvas');
         if (!gameCanvas) {
-            console.error('WorldSystem: gameCanvas not found!');
+            console.error('WorldSystem: No canvas found!');
             return;
         }
 

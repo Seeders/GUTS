@@ -45,7 +45,7 @@
       "components": {
         "terrain": {
           "level": "level1",
-          "world": "grassland"
+          "world": "shire"
         }
       }
     }
