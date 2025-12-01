@@ -3,11 +3,10 @@ class ScriptEditor {
         this.gameEditor = gameEditor;
         this.config = config;
         this.container = document.getElementById('script-editor-container');
-        this.MIN_HEIGHT = 200;
+        this.MIN_HEIGHT = 400;
         this.isDragging = false;
         this.start_y = 0;
         this.start_h = 0;
-        this.DEFAULT_HEIGHT = () => document.body.clientHeight - 200;
         this.savePropertyName = "script";
 
         if (!this.container) {
@@ -15,21 +14,24 @@ class ScriptEditor {
             return;
         }
 
-        const editorContainer = this.container.querySelector('#script-editor');
-        if (!editorContainer) {
+        this.editorContainer = this.container.querySelector('#script-editor');
+        if (!this.editorContainer) {
             console.error("Editor container #script-editor not found");
             return;
         }
 
+        // Set initial container size before creating editor
+        this.setContainerSize();
+
         // Create Monaco Editor instance
-        this.scriptEditor = monaco.editor.create(editorContainer, {
+        this.scriptEditor = monaco.editor.create(this.editorContainer, {
             value: '',
             language: 'javascript',
             theme: 'vs-dark',
             lineNumbers: 'on',
             tabSize: 2,
             insertSpaces: true,
-            automaticLayout: false,
+            automaticLayout: true,
             minimap: { enabled: true },
             scrollBeyondLastLine: false,
             wordWrap: 'on',
@@ -39,23 +41,30 @@ class ScriptEditor {
             parameterHints: { enabled: true }
         });
 
-        // Set initial size
-        this.updateEditorSize();
-
         // Handle window resize
-        window.addEventListener('resize', () => this.updateEditorSize());
+        window.addEventListener('resize', () => this.handleResize());
 
         this.setupEventListeners();
     }
 
-    updateEditorSize() {
+    getDesiredHeight() {
+        // Calculate available height based on viewport
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const containerRect = this.container.getBoundingClientRect();
+        const availableHeight = viewportHeight - containerRect.top - 50;
+        return Math.max(this.MIN_HEIGHT, availableHeight);
+    }
+
+    setContainerSize() {
+        const height = this.getDesiredHeight();
+        this.editorContainer.style.height = `${height}px`;
+        this.editorContainer.style.width = '100%';
+    }
+
+    handleResize() {
+        this.setContainerSize();
         if (this.scriptEditor) {
-            const editorContainer = this.container.querySelector('#script-editor');
-            if (editorContainer) {
-                const height = this.DEFAULT_HEIGHT();
-                editorContainer.style.height = `${height}px`;
-                this.scriptEditor.layout();
-            }
+            this.scriptEditor.layout();
         }
     }
 
@@ -64,11 +73,11 @@ class ScriptEditor {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue || '');
-            this.updateEditorSize();
-            // Monaco doesn't need refresh like CodeMirror, but layout() handles it
+
+            // Ensure proper sizing after content load
             setTimeout(() => {
-                this.scriptEditor.layout();
-            }, 100);
+                this.handleResize();
+            }, 50);
         });
 
         const saveBtn = this.container.querySelector('#save-script-btn');
