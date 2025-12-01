@@ -441,12 +441,79 @@ class GridSystem extends GUTS.BaseSystem {
         return false;
     }
 
-    onDestroyBuilding(entityId){ 
+    onDestroyBuilding(entityId){
         this.freeCells(entityId);
     }
 
-    onUnitKilled(entityId){  
+    onUnitKilled(entityId){
         this.freeCells(entityId);
+    }
+
+    /**
+     * Called when a scene is loaded - updates CoordinateTranslator if terrain level differs
+     */
+    onSceneLoad(sceneData) {
+        // Look for terrain entity to get the actual level
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (terrainEntities.length === 0) return;
+
+        const terrainComponent = this.game.getComponent(terrainEntities[0], 'terrain');
+        if (!terrainComponent?.level) return;
+
+        const collections = this.game.getCollections();
+        const level = collections.levels?.[terrainComponent.level];
+        if (!level?.tileMap?.size) return;
+
+        const newTileMapSize = level.tileMap.size;
+        const terrainGridSize = collections.configs.game.gridSize;
+        const placementGridSize = terrainGridSize / 2;
+        const terrainSize = newTileMapSize * terrainGridSize;
+
+        // Update dimensions
+        this.dimensions = {
+            width: Math.floor(terrainSize / placementGridSize),
+            height: Math.floor(terrainSize / placementGridSize),
+            cellSize: placementGridSize,
+            startX: -terrainSize / 2,
+            startZ: -terrainSize / 2
+        };
+
+        // Update CoordinateTranslator with correct level dimensions
+        this.coordinateTranslator.updateConfig({
+            tileMapSize: newTileMapSize,
+            placementGridDimensions: {
+                startX: this.dimensions.startX,
+                startZ: this.dimensions.startZ
+            }
+        });
+
+        // Recompute half-splits
+        const half = Math.floor(this.dimensions.width / 2);
+        this.leftBounds = {
+            minX: 0,
+            maxX: half - 1,
+            minZ: 0,
+            maxZ: this.dimensions.height - 1
+        };
+        this.rightBounds = {
+            minX: half,
+            maxX: this.dimensions.width - 1,
+            minZ: 0,
+            maxZ: this.dimensions.height - 1
+        };
+
+        this.playerBounds = this.leftBounds;
+        this.enemyBounds = this.rightBounds;
+
+        // Update world bounds
+        this.worldBounds = {
+            minX: this.dimensions.startX,
+            maxX: this.dimensions.startX + (this.dimensions.width * placementGridSize),
+            minZ: this.dimensions.startZ,
+            maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
+        };
+
+        console.log(`[GridSystem] Updated for level: ${terrainComponent.level} (tileMapSize: ${newTileMapSize})`);
     }
 
     
