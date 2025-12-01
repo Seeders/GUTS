@@ -1,0 +1,7 @@
+{
+  "id": "renderers",
+  "name": "Renderers",
+  "singular": "Renderer",
+  "category": "Scripts",
+  "isCore": true
+}

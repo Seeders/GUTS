@@ -373,6 +373,14 @@ class EntryGenerator {
     }
 
     /**
+     * Sanitize a name to be a valid JavaScript identifier
+     */
+    sanitizeVarName(name) {
+        // Replace hyphens, dots, and other special characters with underscores
+        return name.replace(/[^a-zA-Z0-9_$]/g, '_');
+    }
+
+    /**
      * Generate imports using CommonJS require (for server, to avoid hoisting issues)
      */
     generateCommonJSImports(modules, varPrefix = 'module') {
@@ -389,15 +397,16 @@ class EntryGenerator {
             }
             seen.add(moduleName);
 
-            const varName = `${varPrefix}_${mod.fileName || mod.name}`;
+            const varName = `${varPrefix}_${this.sanitizeVarName(mod.fileName || mod.name)}`;
+            const sanitizedModuleName = this.sanitizeVarName(moduleName);
             const requirePath = mod.path.replace(/\\/g, '/');
 
             // Require the module and extract the actual class from exports
             requires.push(`const ${varName}_module = require('${requirePath}');`);
             requires.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${moduleName} || ${varName}_module;`);
             // Immediately assign to global.GUTS so it's available for inheritance
-            requires.push(`global.GUTS.${moduleName} = ${varName};`);
-            exports.push(`  ${moduleName}: ${varName}`);
+            requires.push(`global.GUTS.${sanitizedModuleName} = ${varName};`);
+            exports.push(`  ${sanitizedModuleName}: ${varName}`);
         });
 
         return { requires, exports };
