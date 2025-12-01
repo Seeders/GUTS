@@ -19,11 +19,23 @@
     line-height: 1.5;
 }
 
-/* Override global scrollbar suppression for CodeMirror */
-#script-editor-container .CodeMirror {
-    overflow-y: auto !important;
+/* Override global scrollbar suppression for CodeMirror and ALL its children */
+#script-editor-container .CodeMirror,
+#script-editor-container .CodeMirror *,
+#script-editor-container .CodeMirror-scroll,
+#script-editor-container .CodeMirror-sizer,
+#script-editor-container .CodeMirror-lines,
+#script-editor-container .CodeMirror-code,
+#script-editor-container .CodeMirror-gutters {
     -ms-overflow-style: auto !important;
     scrollbar-width: auto !important;
+}
+
+#script-editor-container .CodeMirror {
     height: 100%;
     font-size: 14px;
+}
+
+#script-editor-container .CodeMirror-scroll {
+    overflow: scroll !important;
 }
