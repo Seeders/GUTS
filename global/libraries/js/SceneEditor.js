@@ -521,21 +521,21 @@ class SceneEditor {
     }
 
     /**
-     * Save scene data
+     * Save scene data (whole scene object)
      */
     handleSave(fireSave = false) {
         if (fireSave) {
             const saveEvent = new CustomEvent('saveSceneObject', {
                 detail: {
-                    data: this.state.sceneData,
-                    propertyName: 'sceneData'
+                    data: this.state.sceneData
                 },
                 bubbles: true,
                 cancelable: true
             });
             document.body.dispatchEvent(saveEvent);
         } else {
-            const valueElement = this.gameEditor.elements?.editor?.querySelector('#sceneData-value');
+            // Update the textarea if visible
+            const valueElement = this.gameEditor.elements?.editor?.querySelector('textarea');
             if (valueElement) {
                 valueElement.value = JSON.stringify(this.state.sceneData, null, 2);
             }
