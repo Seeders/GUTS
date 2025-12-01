@@ -27,12 +27,23 @@
 
 /* Fix gutter width calculation issues when fonts load asynchronously */
 #script-editor-container .CodeMirror-gutters {
-    min-width: 40px;
-    max-width: 80px;
+    width: auto !important;
+    min-width: 40px !important;
+    max-width: 80px !important;
 }
 
 #script-editor-container .CodeMirror-linenumber {
-    min-width: 30px;
-    max-width: 70px;
+    width: auto !important;
+    min-width: 20px !important;
+    max-width: 50px !important;
     padding: 0 8px !important;
+}
+
+/* Fix the sizer margin that gets miscalculated with the gutter */
+#script-editor-container .CodeMirror-sizer {
+    margin-left: 50px !important;
+}
+
+#script-editor-container .CodeMirror-gutter-wrapper {
+    left: -50px !important;
 }
