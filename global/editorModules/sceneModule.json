@@ -27,9 +27,10 @@
     "SceneEditorContext",
     "SceneEditor"
   ],
+  "propertyName": "entities",
   "interface": "sceneEditor",
   "inputElement": "textarea",
-  "inputDataType": "object",
+  "inputDataType": "array",
   "loadHook": "renderSceneObject",
   "saveHook": "saveSceneObject"
 }

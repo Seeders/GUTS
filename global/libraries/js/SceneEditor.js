@@ -14,7 +14,8 @@ class SceneEditor {
 
         // State
         this.state = {
-            sceneData: null,
+            entities: [],         // Entities array (what gets saved)
+            sceneData: null,      // Full scene object with title, systems, etc.
             selectedEntityId: null,
             isDirty: false,
             initialized: false
@@ -139,16 +140,23 @@ class SceneEditor {
 
     /**
      * Handle scene data load event
+     * event.detail.data = entities array (from propertyName)
+     * event.detail.objectData = full scene object (title, systems, entities)
      */
     async handleRenderSceneObject(event) {
-        const sceneData = event.detail.data;
-        this.state.sceneData = sceneData;
+        // Get entities array and full scene object
+        const entities = event.detail.data || [];
+        const fullSceneData = event.detail.objectData || { entities };
+
+        // Store both - entities for editing, full scene for context
+        this.state.entities = entities;
+        this.state.sceneData = fullSceneData;
 
         // Initialize context if needed
         await this.initializeContext();
 
-        // Load scene into context - systems will detect entities and render
-        await this.editorContext.loadScene(sceneData);
+        // Load full scene into context - systems will detect entities and render
+        await this.editorContext.loadScene(fullSceneData);
 
         // Render UI
         this.renderHierarchy();
@@ -176,20 +184,24 @@ class SceneEditor {
             name: prefab.title || prefabName
         });
 
-        // Update scene data
-        if (!this.state.sceneData) {
-            this.state.sceneData = { entities: [] };
-        }
-        if (!this.state.sceneData.entities) {
-            this.state.sceneData.entities = [];
+        // Update entities array
+        if (!this.state.entities) {
+            this.state.entities = [];
         }
 
-        this.state.sceneData.entities.push({
+        const newEntity = {
             id: entityId,
             prefab: prefabName,
             name: prefab.title || prefabName,
             components: {}
-        });
+        };
+
+        this.state.entities.push(newEntity);
+
+        // Keep sceneData.entities in sync
+        if (this.state.sceneData) {
+            this.state.sceneData.entities = this.state.entities;
+        }
 
         // Update UI
         this.renderHierarchy();
@@ -209,12 +221,17 @@ class SceneEditor {
         // Remove from context - systems will update
         this.editorContext.removeEntity(this.state.selectedEntityId);
 
-        // Remove from scene data
-        if (this.state.sceneData?.entities) {
-            const index = this.state.sceneData.entities.findIndex(e => e.id === this.state.selectedEntityId);
+        // Remove from entities array
+        if (this.state.entities) {
+            const index = this.state.entities.findIndex(e => e.id === this.state.selectedEntityId);
             if (index !== -1) {
-                this.state.sceneData.entities.splice(index, 1);
+                this.state.entities.splice(index, 1);
             }
+        }
+
+        // Keep sceneData.entities in sync
+        if (this.state.sceneData) {
+            this.state.sceneData.entities = this.state.entities;
         }
 
         // Clear selection
@@ -235,7 +252,7 @@ class SceneEditor {
 
         this.elements.hierarchy.innerHTML = '';
 
-        const entities = this.state.sceneData?.entities || [];
+        const entities = this.state.entities || [];
 
         for (const entity of entities) {
             const itemEl = document.createElement('div');
@@ -299,8 +316,8 @@ class SceneEditor {
         if (this.elements.noSelection) this.elements.noSelection.style.display = 'none';
         if (this.elements.entityInspector) this.elements.entityInspector.style.display = 'block';
 
-        // Find entity in scene data
-        const entity = this.state.sceneData?.entities?.find(e => e.id === this.state.selectedEntityId);
+        // Find entity in entities array
+        const entity = this.state.entities?.find(e => e.id === this.state.selectedEntityId);
         if (!entity) return;
 
         // Get components from context (merged prefab + overrides)
@@ -521,13 +538,18 @@ class SceneEditor {
     }
 
     /**
-     * Save scene data (whole scene object)
+     * Save scene data
+     * Saves entities array with propertyName: "entities" as expected by editor framework
      */
     handleSave(fireSave = false) {
+        // Get the entities array to save
+        const entitiesToSave = this.state.entities || [];
+
         if (fireSave) {
             const saveEvent = new CustomEvent('saveSceneObject', {
                 detail: {
-                    data: this.state.sceneData
+                    data: entitiesToSave,
+                    propertyName: 'entities'
                 },
                 bubbles: true,
                 cancelable: true
@@ -537,7 +559,7 @@ class SceneEditor {
             // Update the textarea if visible
             const valueElement = this.gameEditor.elements?.editor?.querySelector('textarea');
             if (valueElement) {
-                valueElement.value = JSON.stringify(this.state.sceneData, null, 2);
+                valueElement.value = JSON.stringify(entitiesToSave, null, 2);
             }
         }
     }
