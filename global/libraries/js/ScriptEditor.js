@@ -40,7 +40,6 @@ class ScriptEditor {
             hintOptions: { completeSingle: false }
         });
 
-        // Set initial size - will be updated when content is loaded
         this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
 
         this.setupEventListeners();
@@ -49,15 +48,16 @@ class ScriptEditor {
     }
    
     setupEventListeners() {
-
+     
         document.body.addEventListener('editScript', (event) => {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue);
-
-            // Wait for container to be fully visible before refreshing
-            // CodeMirror needs proper dimensions to render correctly
-            this.waitForVisibleAndRefresh();
+            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+            this.scriptEditor.refresh();
+            setTimeout(() => {
+                this.scriptEditor.refresh();
+            }, 100);
         });
         
         const saveBtn = this.container.querySelector('#save-script-btn');
@@ -66,49 +66,6 @@ class ScriptEditor {
         } else {
             console.warn("Save button not found");
         }
-    }
-
-    waitForVisibleAndRefresh() {
-        const doRefresh = () => {
-            // Set explicit size and refresh
-            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
-            this.scriptEditor.refresh();
-
-            // Force text visibility via inline styles
-            const wrapper = this.scriptEditor.getWrapperElement();
-            const codeLines = wrapper.querySelectorAll('.CodeMirror-line');
-            codeLines.forEach(line => {
-                line.style.setProperty('color', '#00ff00', 'important');
-                line.style.setProperty('visibility', 'visible', 'important');
-                line.style.setProperty('opacity', '1', 'important');
-            });
-
-            // Double-refresh after a short delay to ensure CodeMirror recalculates properly
-            setTimeout(() => {
-                this.scriptEditor.refresh();
-            }, 50);
-        };
-
-        const checkAndRefresh = () => {
-            // Check if container has actual dimensions (meaning it's rendered)
-            if (this.container.offsetWidth > 0 && this.container.offsetHeight > 0) {
-                // Wait for fonts to load before refreshing
-                if (document.fonts && document.fonts.ready) {
-                    document.fonts.ready.then(() => {
-                        doRefresh();
-                    });
-                } else {
-                    // Fallback for browsers without font loading API
-                    setTimeout(doRefresh, 100);
-                }
-            } else {
-                // Container not visible yet, try again next frame
-                requestAnimationFrame(checkAndRefresh);
-            }
-        };
-
-        // Start checking on next frame
-        requestAnimationFrame(checkAndRefresh);
     }
 
     saveScript() {
