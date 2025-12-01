@@ -236,7 +236,10 @@ class BaseECSGame {
             throw new Error(`Entity ${entityId} does not exist`);
         }
         const componentMethods = this.gameManager.call('getComponents');
-        const componentData = componentMethods[componentId](data);
+        // Use factory function if available, otherwise use data directly
+        const componentData = componentMethods[componentId]
+            ? componentMethods[componentId](data)
+            : { ...data };
         if (!this.components.has(componentId)) {
             this.components.set(componentId, new Map());
         }
