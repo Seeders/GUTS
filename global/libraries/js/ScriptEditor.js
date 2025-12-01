@@ -5,15 +5,38 @@ class ScriptEditor {
         this.config = config;
         this.scriptEditor = null; // Lazy initialize
 
-        // Apply theme CSS if configured
-        if( this.gameEditor.getCollections().configs.codeMirror ) {
-            const theme = this.gameEditor.getCollections().themes[this.gameEditor.getCollections().configs.codeMirror.theme]?.css;
-            if( theme ) {
-              let styleTag = document.createElement('style');
-              styleTag.innerHTML = theme;
-              styleTag.setAttribute('id', 'codeMirrorTheme');
-              document.head.append(styleTag);
-            }
+        // Skip loading theme CSS - it causes layout issues with async fonts
+        // Apply a simple dark theme via inline styles instead
+        if (!document.getElementById('codeMirrorThemeOverride')) {
+            const styleTag = document.createElement('style');
+            styleTag.id = 'codeMirrorThemeOverride';
+            styleTag.textContent = `
+                .CodeMirror {
+                    background: #1e1e1e !important;
+                    color: #d4d4d4 !important;
+                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                    font-size: 14px !important;
+                    height: 100% !important;
+                }
+                .CodeMirror-gutters {
+                    background: #252525 !important;
+                    border-right: 1px solid #444 !important;
+                }
+                .CodeMirror-cursor {
+                    border-left: 1px solid #fff !important;
+                }
+                .CodeMirror-selected {
+                    background: #264f78 !important;
+                }
+                .cm-keyword { color: #569cd6 !important; }
+                .cm-string { color: #ce9178 !important; }
+                .cm-number { color: #b5cea8 !important; }
+                .cm-comment { color: #6a9955 !important; }
+                .cm-def { color: #dcdcaa !important; }
+                .cm-variable { color: #9cdcfe !important; }
+                .cm-property { color: #9cdcfe !important; }
+            `;
+            document.head.appendChild(styleTag);
         }
 
         this.container = document.getElementById('script-editor-container');
