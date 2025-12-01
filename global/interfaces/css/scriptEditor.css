@@ -27,16 +27,16 @@
 
 /* Override global scrollbar suppression for CodeMirror */
 #script-editor-container .CodeMirror {
-    overflow: visible !important;
+    overflow: hidden !important;
     -ms-overflow-style: auto !important;
     scrollbar-width: auto !important;
     height: 100%;
     font-size: 14px;
 }
 
-/* Force the scroll container to show content */
+/* Let CodeMirror handle its own scrolling */
 #script-editor-container .CodeMirror-scroll {
-    overflow: visible !important;
+    overflow: scroll !important;
     margin-right: 0 !important;
     padding-right: 0 !important;
 }
