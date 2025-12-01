@@ -3,10 +3,6 @@ class ScriptEditor {
         this.gameEditor = gameEditor;
         this.config = config;
         this.container = document.getElementById('script-editor-container');
-        this.MIN_HEIGHT = 400;
-        this.isDragging = false;
-        this.start_y = 0;
-        this.start_h = 0;
         this.savePropertyName = "script";
 
         if (!this.container) {
@@ -19,9 +15,6 @@ class ScriptEditor {
             console.error("Editor container #script-editor not found");
             return;
         }
-
-        // Set initial container size before creating editor
-        this.setContainerSize();
 
         // Create Monaco Editor instance
         this.scriptEditor = monaco.editor.create(this.editorContainer, {
@@ -44,25 +37,13 @@ class ScriptEditor {
         // Handle window resize
         window.addEventListener('resize', () => this.handleResize());
 
+        // Initial layout after a short delay to ensure DOM is ready
+        setTimeout(() => this.handleResize(), 100);
+
         this.setupEventListeners();
     }
 
-    getDesiredHeight() {
-        // Calculate available height based on viewport
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-        const containerRect = this.container.getBoundingClientRect();
-        const availableHeight = viewportHeight - containerRect.top - 50;
-        return Math.max(this.MIN_HEIGHT, availableHeight);
-    }
-
-    setContainerSize() {
-        const height = this.getDesiredHeight();
-        this.editorContainer.style.height = `${height}px`;
-        this.editorContainer.style.width = '100%';
-    }
-
     handleResize() {
-        this.setContainerSize();
         if (this.scriptEditor) {
             this.scriptEditor.layout();
         }
@@ -74,10 +55,8 @@ class ScriptEditor {
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue || '');
 
-            // Ensure proper sizing after content load
-            setTimeout(() => {
-                this.handleResize();
-            }, 50);
+            // Ensure proper layout after content load
+            setTimeout(() => this.handleResize(), 50);
         });
 
         const saveBtn = this.container.querySelector('#save-script-btn');
