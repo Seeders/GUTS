@@ -250,6 +250,24 @@ app.post('/save-file', async (req, res) => {
     }
 });
 
+app.post('/delete-file', async (req, res) => {
+    let { path: filePath } = req.body;
+    filePath = path.join(PROJS_DIR, filePath);
+    console.log('Deleting file:', filePath);
+    try {
+        if (!fsSync.existsSync(filePath)) {
+            return res.status(404).send({ success: false, error: 'File not found' });
+        }
+        await fs.unlink(filePath);
+        fileTimestamps.delete(filePath);
+        console.log('File successfully deleted:', filePath);
+        res.send({ success: true, message: 'File deleted' });
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        res.status(500).send({ success: false, error: error.message });
+    }
+});
+
 app.post('/read-file', async (req, res) => {
     let { path: filePath, isModule: isModule } = req.body;
     if(!isModule){
