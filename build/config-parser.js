@@ -211,17 +211,20 @@ class ConfigParser {
 
             for (const subfolder of subfolders) {
                 const collectionId = subfolder;
+                const folderPath = path.join(parentPath, subfolder);
 
                 // Determine paths for JS, data, HTML, and CSS files
                 let jsPath, dataPath, htmlPath, cssPath;
                 if (mapping.hasJsSubfolder) {
-                    jsPath = path.join(parentPath, subfolder, 'js');
-                    dataPath = path.join(parentPath, subfolder, 'data');
-                    htmlPath = path.join(parentPath, subfolder, 'html');
-                    cssPath = path.join(parentPath, subfolder, 'css');
+                    jsPath = path.join(folderPath, 'js');
+                    dataPath = path.join(folderPath, 'data');
+                    htmlPath = path.join(folderPath, 'html');
+                    cssPath = path.join(folderPath, 'css');
                 } else {
-                    jsPath = path.join(parentPath, subfolder);
-                    dataPath = path.join(parentPath, subfolder); // JSON files directly in folder
+                    jsPath = folderPath;
+                    // Check if folder has a 'data' subfolder, otherwise use folder directly
+                    const nestedDataPath = path.join(folderPath, 'data');
+                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : folderPath;
                     htmlPath = null;
                     cssPath = null;
                 }
