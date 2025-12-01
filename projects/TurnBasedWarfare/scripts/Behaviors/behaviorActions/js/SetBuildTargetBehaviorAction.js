@@ -18,7 +18,8 @@ class SetBuildTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         const buildingId = playerOrder.meta.buildingId;
-        const buildingPos = game.getComponent(buildingId, 'position');
+        const buildingTransform = game.getComponent(buildingId, 'transform');
+        const buildingPos = buildingTransform?.position;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         if (!buildingPos || !buildingPlacement) {

@@ -235,7 +235,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placementIds.forEach((placementId) => {
             const placement = this.game.gameManager.call('getPlacementById', placementId);
             placement.squadUnits.forEach((unitId) => {
-                const position = this.game.getComponent(unitId, "position");
+                const transform = this.game.getComponent(unitId, "transform");
+                const position = transform?.position;
                 if (this.game.effectsSystem && position) {
                     this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
@@ -376,11 +377,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     getBuildingUnderConstructionAtPosition(worldPos) {
-        const buildings = this.game.getEntitiesWith("placement", "position", "unitType");
+        const buildings = this.game.getEntitiesWith("placement", "transform", "unitType");
 
         for (const entityId of buildings) {
             const placement = this.game.getComponent(entityId, "placement");
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const unitType = this.game.getComponent(entityId, "unitType");
 
             if (!placement || !pos || !unitType) continue;
@@ -428,7 +430,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
         const Components = this.game.gameManager.call('getComponents');
 
-        const buildingPos = this.game.getComponent(buildingEntityId, "position");
+        const buildingTransform = this.game.getComponent(buildingEntityId, "transform");
+        const buildingPos = buildingTransform?.position;
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
 
         if (!buildingPos || !buildingPlacement) return;

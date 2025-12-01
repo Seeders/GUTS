@@ -35,28 +35,32 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get building info from playerOrder or aiState.meta
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         const buildingId = playerOrder.meta.buildingId || aiState.meta.buildingId;
-        const buildingPos = game.getComponent(buildingId, 'position');
+        const buildingTransform = game.getComponent(buildingId, 'transform');
+        const buildingPos = buildingTransform?.position;
 
         if (!buildingPos) {
             return null;
-        }        
+        }
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const distance = this.distance(pos, buildingPos);
 
         if (distance < this.parameters.buildRange) {
             // Reached building
-            const facing = game.getComponent(entityId, 'facing');
-            if (facing) {
+            if (transform) {
                 const dx = buildingPos.x - pos.x;
                 const dz = buildingPos.z - pos.z;
                 const angleToBuilding = Math.atan2(dz, dx);
-                facing.angle = angleToBuilding;
+                if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
+                transform.rotation.y = angleToBuilding;
             }
 
             // Position at build range from building
-            pos.x = buildingPos.x + this.parameters.buildRange;
-            pos.z = buildingPos.z;
+            if (pos) {
+                pos.x = buildingPos.x + this.parameters.buildRange;
+                pos.z = buildingPos.z;
+            }
 
             // Clear playerOrder.targetPosition to stop movement
             const playerOrder = game.getComponent(entityId, 'playerOrder');

@@ -51,7 +51,8 @@ class CurseAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, position);
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -68,7 +69,8 @@ class CurseAbility extends GUTS.BaseAbility {
     }
     
     applyCurses(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, position);
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // DESYNC SAFE: Sort enemies for consistent processing order
@@ -77,10 +79,11 @@ class CurseAbility extends GUTS.BaseAbility {
         const cursedEnemies = [];
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, position);
-            const enemyCombat = this.game.getComponent(enemyId, combat);
-            const enemyHealth = this.game.getComponent(enemyId, health);
-            
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
+            const enemyCombat = this.game.getComponent(enemyId, "combat");
+            const enemyHealth = this.game.getComponent(enemyId, "health");
+
             if (!enemyPos || !enemyCombat || !enemyHealth || enemyHealth.current <= 0) return;
             
             // Check if enemy is in curse radius
@@ -140,9 +143,10 @@ class CurseAbility extends GUTS.BaseAbility {
             const buff = this.game.getComponent(enemyId, "buff");
             if (buff && buff.buffType === 'curse') {
                 this.game.removeComponent(enemyId, "buff");
-                
+
                 // Visual effect when curse expires
-                const enemyPos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const enemyPos = transform?.position;
                 if (enemyPos) {
                     this.createVisualEffect(enemyPos, 'curse', { 
                         count: 1, 

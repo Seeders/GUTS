@@ -17,7 +17,8 @@ class BuildAbility extends GUTS.BaseAbility {
     // Setup method called by placement systems to assign a builder to a building
     // This just sets up playerOrder - actual building logic is in BuildBehaviorAction
     assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
-        const buildingPos = this.game.getComponent(buildingEntityId, "position");
+        const transform = this.game.getComponent(buildingEntityId, "transform");
+        const buildingPos = transform?.position;
         if (!buildingPos) return;
 
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");

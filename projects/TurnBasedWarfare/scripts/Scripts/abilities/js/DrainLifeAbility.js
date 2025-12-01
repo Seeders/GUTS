@@ -75,7 +75,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -85,8 +86,9 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Target selection
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
-        
-        const targetPos = this.game.getComponent(target, "position");
+
+        const transform2 = this.game.getComponent(target, "transform");
+        const targetPos = transform2?.position;
         if (!targetPos) return;
         
         // Immediate effects (visual, audio, logging)
@@ -108,7 +110,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         
         // DESYNC SAFE: Use scheduling system for delayed effect
         this.game.schedulingSystem.scheduleAction(() => {
-            const currentTargetPos = this.game.getComponent(target, "position");
+            const transform = this.game.getComponent(target, "transform");
+            const currentTargetPos = transform?.position;
             if (currentTargetPos) {
                 this.performDrain(casterEntity, target, currentTargetPos);
             }
@@ -117,7 +120,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     
     performDrain(casterEntity, targetId, targetPos) {
         const casterHealth = this.game.getComponent(casterEntity, "health");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
 
         if (!casterHealth || !casterPos || !targetPos) return;
 

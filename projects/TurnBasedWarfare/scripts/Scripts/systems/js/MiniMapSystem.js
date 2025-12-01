@@ -334,27 +334,28 @@ class MiniMapSystem extends GUTS.BaseSystem {
     updateUnitIcons() {
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
-        
+
         const entities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "team",
             "unitType"
         ).filter(id => {
             const unitType = this.game.getComponent(id, "unitType");
             return unitType.collection == "units" || unitType.collection == "buildings"
         });
-        
+
         let friendlyUnitIndex = 0;
         let enemyUnitIndex = 0;
         let friendlyBuildingIndex = 0;
         let enemyBuildingIndex = 0;
-        
+
         for (const entityId of entities) {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const team = this.game.getComponent(entityId, "team");
             const projectile = this.game.getComponent(entityId, "projectile");
             const unitType = this.game.getComponent(entityId, "unitType");
-            
+
             if (!pos || !team || projectile) continue;
             
             const isMyUnit = team.team === myTeam;

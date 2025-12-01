@@ -58,7 +58,8 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, position);
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const pos = transform?.position;
         if (!pos) return;
         
         this.createVisualEffect(pos, 'cast');
@@ -87,9 +88,10 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Execute a single aura tick deterministically
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, health);
-        const casterPos = this.game.getComponent(casterEntity, position);
-        
+        const casterHealth = this.game.getComponent(casterEntity, "health");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
             this.hasActiveAura = false;
@@ -106,9 +108,10 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         
         // Process enemies - drain their health
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, position);
-            const enemyHealth = this.game.getComponent(enemyId, health);
-            
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
+            const enemyHealth = this.game.getComponent(enemyId, "health");
+
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
             
             const distance = Math.sqrt(
@@ -130,9 +133,10 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, unitType);
-            const allyPos = this.game.getComponent(allyId, position);
-            
+            const unitType = this.game.getComponent(allyId, "unitType");
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
+
             if (!unitType || !allyPos) return;
             
             // Check if this is an undead unit

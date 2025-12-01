@@ -17,7 +17,8 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
         const threatRange = params.threatRange || 150;
         const targetKey = params.targetKey || 'threat';
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const vel = game.getComponent(entityId, 'velocity');
 
@@ -33,7 +34,8 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
         let threatPos = null;
 
         if (threatId) {
-            threatPos = game.getComponent(threatId, 'position');
+            const threatTransform = game.getComponent(threatId, 'transform');
+            threatPos = threatTransform?.position;
             const threatHealth = game.getComponent(threatId, 'health');
             if (!threatPos || !threatHealth || threatHealth.current <= 0) {
                 threatId = null;
@@ -45,7 +47,8 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
             const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, threatRange);
             if (nearestEnemy) {
                 threatId = nearestEnemy.id;
-                threatPos = game.getComponent(threatId, 'position');
+                const nearestTransform = game.getComponent(threatId, 'transform');
+                threatPos = nearestTransform?.position;
             }
         }
 
@@ -85,7 +88,7 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemy(entityId, game, pos, team, range) {
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -98,7 +101,8 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(pos, targetPos);
 
             if (distance <= range && distance < nearestDistance) {

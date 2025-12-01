@@ -70,7 +70,8 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -87,7 +88,8 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     }
     
     unleashArenaPresence(casterEntity, targetEnemies) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // Create intimidation aura effect
@@ -115,7 +117,8 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
                 
                 // Schedule staggered fear effects for visual appeal
                 this.game.schedulingSystem.scheduleAction(() => {
-                    const enemyPos = this.game.getComponent(enemyId, "position");
+                    const transform = this.game.getComponent(enemyId, "transform");
+                    const enemyPos = transform?.position;
                     if (enemyPos) {
                         this.createVisualEffect(enemyPos, 'fear_effect');
                     }
@@ -135,8 +138,9 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     applyIntimidation(casterEntity, enemyId) {
         // Validate enemy still exists and is alive
         const enemyHealth = this.game.getComponent(enemyId, "health");
-        const enemyPos = this.game.getComponent(enemyId, "position");
-        
+        const transform = this.game.getComponent(enemyId, "transform");
+        const enemyPos = transform?.position;
+
         if (!enemyHealth || enemyHealth.current <= 0 || !enemyPos) {
             return { success: false, reason: 'target_invalid' };
         }

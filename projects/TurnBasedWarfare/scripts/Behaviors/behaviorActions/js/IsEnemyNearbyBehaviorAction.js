@@ -18,7 +18,8 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
         const storeNearest = params.storeNearest || false;
         const targetKey = params.targetKey || 'target';
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
 
@@ -51,7 +52,7 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findEnemiesInRange(entityId, game, pos, team, range) {
         const enemies = [];
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
 
         for (const targetId of potentialTargets) {
             if (targetId === entityId) continue;
@@ -65,7 +66,8 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetDeathState = game.getComponent(targetId, 'deathState');
             if (targetDeathState && targetDeathState.isDying) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(pos, targetPos);
 
             if (distance <= range) {

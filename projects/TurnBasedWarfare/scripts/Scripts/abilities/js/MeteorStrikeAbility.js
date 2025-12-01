@@ -122,7 +122,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
 
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -423,7 +424,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         // Find all valid targets in splash radius
         allEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const entityPos = transform?.position;
             const entityTeam = this.game.getComponent(entityId, "team");
 
             if (!entityPos || !entityTeam || entityTeam.team === casterTeam.team) return;
@@ -481,7 +483,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         // Check each enemy position as potential impact center
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, "position");
+            const transform = this.game.getComponent(potentialCenter, "transform");
+            const centerPos = transform?.position;
             if (!centerPos) return;
 
             let targetsInRange = 0;
@@ -489,7 +492,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
             // Count enemies within splash radius of this position
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const enemyPos = transform?.position;
                 if (!enemyPos) return;
 
                 const distance = Math.sqrt(
@@ -517,7 +521,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         // If no good cluster found but we have enemies, target the first enemy deterministically
         if (!bestPosition && sortedEnemies.length > 0) {
-            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], "position");
+            const transform = this.game.getComponent(sortedEnemies[0], "transform");
+            const firstEnemyPos = transform?.position;
             if (firstEnemyPos) {
                 bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
             }

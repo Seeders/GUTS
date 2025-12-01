@@ -53,7 +53,8 @@ class FireStormAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -104,7 +105,8 @@ class FireStormAbility extends GUTS.BaseAbility {
         
         // Check each enemy position as potential cluster center
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, "position");
+            const transform = this.game.getComponent(potentialCenter, "transform");
+            const centerPos = transform?.position;
             if (!centerPos) return;
             
             let targetsInRange = 0;
@@ -112,7 +114,8 @@ class FireStormAbility extends GUTS.BaseAbility {
             
             // Count enemies within storm radius of this position
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const enemyPos = transform?.position;
                 if (!enemyPos) return;
                 
                 const distance = Math.sqrt(

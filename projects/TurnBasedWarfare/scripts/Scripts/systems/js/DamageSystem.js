@@ -64,7 +64,8 @@ class DamageSystem extends GUTS.BaseSystem {
         const targetHealth = this.game.getComponent(targetId, "health");
         const targetDeathState = this.game.getComponent(targetId, "deathState");
         const targetUnitType = this.game.getComponent(targetId, "unitType");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
 
         if (!targetHealth || (targetDeathState && targetDeathState.isDying)) {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
@@ -179,7 +180,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // Find all entities within splash radius
         const allEntities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health",
             "team"
         );
@@ -187,8 +188,9 @@ class DamageSystem extends GUTS.BaseSystem {
         allEntities.sort((a, b) => String(a).localeCompare(String(b)));
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
-            
-            const entityPos = this.game.getComponent(entityId, "position");
+
+            const entityTransform = this.game.getComponent(entityId, "transform");
+            const entityPos = entityTransform?.position;
             const entityTeam = this.game.getComponent(entityId, "team");
             
             if (!entityPos || !entityTeam) return;

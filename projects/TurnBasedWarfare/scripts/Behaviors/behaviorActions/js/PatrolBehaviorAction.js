@@ -20,7 +20,8 @@ class PatrolBehaviorAction extends GUTS.BaseBehaviorAction {
         const loop = params.loop !== false;
         const arrivalDistance = params.arrivalDistance || 20;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         if (!pos) {
             return this.failure();
         }

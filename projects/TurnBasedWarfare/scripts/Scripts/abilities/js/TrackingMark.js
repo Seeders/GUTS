@@ -69,7 +69,8 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -90,8 +91,10 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     applyTrackingMark(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform1 = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform1?.position;
+        const transform2 = this.game.getComponent(targetId, "transform");
+        const targetPos = transform2?.position;
 
         // Validate target still exists
         const targetHealth = this.game.getComponent(targetId, "health");
@@ -249,14 +252,16 @@ class TrackingMark extends GUTS.BaseAbility {
     }
     
     selectClosestEnemy(enemies, casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos || enemies.length === 0) return null;
         
         let closest = null;
         let closestDistance = Infinity;
         
         enemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             if (!enemyPos) return;
             
             const distance = Math.sqrt(

@@ -54,16 +54,18 @@ class MovementSystem extends GUTS.BaseSystem {
     
     update() {
         if (this.game.state.phase !== 'battle') return;
-        
+
         this.frameCounter++;
-        const entities = this.game.getEntitiesWith("position", "velocity");
+        const entities = this.game.getEntitiesWith("transform", "velocity");
         // Sort for deterministic processing order (prevents desync)
         entities.sort((a, b) => String(a).localeCompare(String(b)));
 
         const unitData = new Map();
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
+            if (!pos) return;
             const vel = this.game.getComponent(entityId, "velocity");
             const unitType = this.game.getComponent(entityId, "unitType");
             const collision = this.game.getComponent(entityId, "collision");
@@ -107,12 +109,14 @@ class MovementSystem extends GUTS.BaseSystem {
         this.updatePathfindingStaggered(unitData);
         
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
+            if (!pos) return;
             const vel = this.game.getComponent(entityId, "velocity");
             const collision = this.game.getComponent(entityId, "collision");
             const projectile = this.game.getComponent(entityId, "projectile");
             const unitType = this.game.getComponent(entityId, "unitType");
-            
+
             const isAffectedByGravity = vel.affectedByGravity;
             
             if (!projectile && unitData.has(entityId)) {
@@ -279,12 +283,13 @@ class MovementSystem extends GUTS.BaseSystem {
         
         for (const otherEntityId of nearbyUnits) {
             if (checksPerformed >= this.MAX_SEPARATION_CHECKS) break;
-            
+
             checksPerformed++;
-            
-            const otherPos = this.game.getComponent(otherEntityId, "position");
+
+            const otherTransform = this.game.getComponent(otherEntityId, "transform");
+            const otherPos = otherTransform?.position;
             const otherCollision = this.game.getComponent(otherEntityId, "collision");
-            
+
             if (!otherPos) continue;
             
             const otherRadius = this.getUnitRadius(otherCollision);
@@ -350,7 +355,8 @@ class MovementSystem extends GUTS.BaseSystem {
         const targetEntityId = aiState.actionTarget;
 
         if(targetEntityId){
-            targetPos = this.game.getComponent(targetEntityId, "position");
+            const targetTransform = this.game.getComponent(targetEntityId, "transform");
+            targetPos = targetTransform?.position;
         } else if (aiState.shared?.targetPosition) {
             targetPos = aiState.shared.targetPosition;
         }
@@ -429,12 +435,13 @@ class MovementSystem extends GUTS.BaseSystem {
             for (const otherEntityId of nearbyUnits) {
                 if (targetEntityId && otherEntityId === targetEntityId) continue;
                 if (checksPerformed >= this.MAX_PATHFINDING_CHECKS) break;
-                
+
                 checksPerformed++;
-                
-                const otherPos = this.game.getComponent(otherEntityId, "position");
+
+                const otherTransform = this.game.getComponent(otherEntityId, "transform");
+                const otherPos = otherTransform?.position;
                 const otherCollision = this.game.getComponent(otherEntityId, "collision");
-                
+
                 if (!otherPos) continue;
                 
                 const otherRadius = this.getUnitRadius(otherCollision);
@@ -584,7 +591,8 @@ class MovementSystem extends GUTS.BaseSystem {
         // Get target from aiState
         let targetPos = null;
         if (aiState.actionTarget) {
-            const currentTargetPos = this.game.getComponent(aiState.actionTarget, "position");
+            const targetTransform = this.game.getComponent(aiState.actionTarget, "transform");
+            const currentTargetPos = targetTransform?.position;
             if (currentTargetPos) {
                 targetPos = currentTargetPos;
             }
@@ -632,7 +640,8 @@ class MovementSystem extends GUTS.BaseSystem {
 
             // If targeting an entity, use its current position
             if (aiState && aiState.meta.target) {
-                const targetPos = this.game.getComponent(aiState.meta.target, "position");
+                const targetTransform = this.game.getComponent(aiState.meta.target, "transform");
+                const targetPos = targetTransform?.position;
                 if (targetPos) {
                     targetX = targetPos.x;
                     targetZ = targetPos.z;
@@ -734,8 +743,8 @@ class MovementSystem extends GUTS.BaseSystem {
             const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
 
             if (currentSpeed < this.MIN_MOVEMENT_THRESHOLD) {
-                const facing = this.game.getComponent(entityId, "facing");
-                currentDirection = facing ? facing.angle : 0;
+                const transform = this.game.getComponent(entityId, "transform");
+                currentDirection = transform?.rotation?.y || 0;
             } else {
                 currentDirection = Math.atan2(vel.vz, vel.vx);
             }
@@ -752,9 +761,9 @@ class MovementSystem extends GUTS.BaseSystem {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
 
-                    const facing = this.game.getComponent(entityId, "facing");
-                    if (facing) {
-                        facing.angle = smoothedDirection;
+                    const transform = this.game.getComponent(entityId, "transform");
+                    if (transform && transform.rotation) {
+                        transform.rotation.y = smoothedDirection;
                     }
                 } else {
                     vel.vx = newVx;
@@ -775,9 +784,9 @@ class MovementSystem extends GUTS.BaseSystem {
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
             // Preserve facing direction before zeroing velocity
             if (speedSqrd > 0.001) {
-                const facing = this.game.getComponent(entityId, "facing");
-                if (facing) {
-                    facing.angle = Math.atan2(vel.vz, vel.vx);
+                const transform = this.game.getComponent(entityId, "transform");
+                if (transform && transform.rotation) {
+                    transform.rotation.y = Math.atan2(vel.vz, vel.vx);
                 }
             }
             vel.vx = 0;
@@ -874,7 +883,8 @@ class MovementSystem extends GUTS.BaseSystem {
     isInAttackRange(pos, targetEntityId, entityId) {
         if (!targetEntityId) return false;
 
-        const targetPos = this.game.getComponent(targetEntityId, 'position');
+        const targetTransform = this.game.getComponent(targetEntityId, 'transform');
+        const targetPos = targetTransform?.position;
         if (!targetPos) return false;
 
         const combat = this.game.getComponent(entityId, 'combat');

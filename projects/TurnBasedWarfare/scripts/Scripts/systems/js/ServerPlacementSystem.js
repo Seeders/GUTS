@@ -447,7 +447,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 const targetPosition = placement.targetPosition;
                 placement.squadUnits.forEach(entityId => {
                     const aiState = this.game.getComponent(entityId, "aiState");
-                    const position = this.game.getComponent(entityId, "position");
+                    const transform = this.game.getComponent(entityId, "transform");
+                    const position = transform?.position;
                     if (aiState && position) {
 
                         if(targetPosition){

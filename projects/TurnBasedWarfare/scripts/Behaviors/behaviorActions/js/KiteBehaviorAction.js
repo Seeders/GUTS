@@ -17,7 +17,8 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');
@@ -53,7 +54,8 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const targetPos = game.getComponent(targetId, 'position');
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
         if (!targetPos) {
             return this.failure();
         }
@@ -62,11 +64,11 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         memory.kiteState = memory.kiteState || 'attacking';
 
         // Face the target
-        const facing = game.getComponent(entityId, 'facing');
-        if (facing) {
+        if (transform) {
             const dx = targetPos.x - pos.x;
             const dz = targetPos.z - pos.z;
-            facing.angle = Math.atan2(dz, dx);
+            if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
+            transform.rotation.y = Math.atan2(dz, dx);
         }
 
         // Too close - back off
@@ -181,7 +183,7 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemy(entityId, game, pos, team, range) {
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -193,7 +195,8 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
 
             if (!this.isValidTarget(targetId, game)) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(pos, targetPos);
 
             if (distance <= range && distance < nearestDistance) {

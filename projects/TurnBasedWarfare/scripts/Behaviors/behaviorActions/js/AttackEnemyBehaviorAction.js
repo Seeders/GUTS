@@ -65,14 +65,16 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         // Face the target
-        const attackerPos = game.getComponent(attackerId, 'position');
-        const targetPos = game.getComponent(targetId, 'position');
-        const facing = game.getComponent(attackerId, 'facing');
+        const attackerTransform = game.getComponent(attackerId, 'transform');
+        const attackerPos = attackerTransform?.position;
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
 
-        if (attackerPos && targetPos && facing) {
+        if (attackerPos && targetPos && attackerTransform) {
             const dx = targetPos.x - attackerPos.x;
             const dz = targetPos.z - attackerPos.z;
-            facing.angle = Math.atan2(dz, dx);
+            if (!attackerTransform.rotation) attackerTransform.rotation = { x: 0, y: 0, z: 0 };
+            attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
         // Trigger attack animation

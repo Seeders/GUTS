@@ -20,8 +20,10 @@ class IsInAttackRangeBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const pos = game.getComponent(entityId, 'position');
-        const targetPos = game.getComponent(targetId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
 
         if (!pos || !targetPos || !combat) {

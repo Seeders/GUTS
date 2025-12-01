@@ -17,7 +17,8 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         const anchorPosition = params.anchorPosition !== false;
         const positionKey = params.positionKey;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');
@@ -60,7 +61,8 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Check if we're in attack range
         const attackRange = combat.range || 50;
-        const distanceToEnemy = this.distance(pos, game.getComponent(enemy.id, 'position'));
+        const enemyTransform = game.getComponent(enemy.id, 'transform');
+        const distanceToEnemy = this.distance(pos, enemyTransform?.position);
 
         if (distanceToEnemy <= attackRange) {
             // Attack the enemy
@@ -84,7 +86,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemyInRadius(entityId, game, centerPos, team, radius) {
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -100,7 +102,8 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetDeathState = game.getComponent(targetId, 'deathState');
             if (targetDeathState && targetDeathState.isDying) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(centerPos, targetPos);
 
             if (distance <= radius && distance < nearestDistance) {
@@ -123,14 +126,16 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         // Face the target
-        const attackerPos = game.getComponent(attackerId, 'position');
-        const targetPos = game.getComponent(targetId, 'position');
-        const facing = game.getComponent(attackerId, 'facing');
+        const attackerTransform = game.getComponent(attackerId, 'transform');
+        const attackerPos = attackerTransform?.position;
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
 
-        if (attackerPos && targetPos && facing) {
+        if (attackerPos && targetPos && attackerTransform) {
             const dx = targetPos.x - attackerPos.x;
             const dz = targetPos.z - attackerPos.z;
-            facing.angle = Math.atan2(dz, dx);
+            if (!attackerTransform.rotation) attackerTransform.rotation = { x: 0, y: 0, z: 0 };
+            attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
         // Trigger attack

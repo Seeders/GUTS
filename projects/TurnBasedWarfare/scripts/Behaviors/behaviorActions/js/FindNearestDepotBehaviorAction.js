@@ -17,7 +17,8 @@
 class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
 
         if (!pos || !team) {
@@ -27,7 +28,7 @@ class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
         const depotType = this.parameters.depotType || 'townHall';
 
         // Get all entities that could be depots
-        const depotEntities = game.getEntitiesWith('position', 'team', 'unitType');
+        const depotEntities = game.getEntitiesWith('transform', 'team', 'unitType');
 
         if (!depotEntities || depotEntities.size === 0) {
             return this.failure();
@@ -41,7 +42,8 @@ class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const depotId of depotEntities) {
             const depotTeam = game.getComponent(depotId, 'team');
             const depotUnitType = game.getComponent(depotId, 'unitType');
-            const depotPos = game.getComponent(depotId, 'position');
+            const depotTransform = game.getComponent(depotId, 'transform');
+            const depotPos = depotTransform?.position;
 
             if (depotTeam &&
                 depotTeam.team === team.team &&

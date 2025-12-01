@@ -57,7 +57,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this.game.deathSystem) return false;
         
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return false;
         
         const validCorpses = this.getValidCorpsesInRange(casterPos);
@@ -65,7 +66,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
         
         if (!this.game.deathSystem || !casterPos || !casterTeam) return null;

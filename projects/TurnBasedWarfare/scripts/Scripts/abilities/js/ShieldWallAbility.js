@@ -74,7 +74,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -88,7 +89,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     }
     
     formShieldWall(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterCombat = this.game.getComponent(casterEntity, "combat");
         
         if (!casterPos) return;
@@ -113,7 +115,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         
         // Schedule defensive stance visual effect
         this.game.schedulingSystem.scheduleAction(() => {
-            const pos = this.game.getComponent(casterEntity, "position");
+            const transform = this.game.getComponent(casterEntity, "transform");
+            const pos = transform?.position;
             if (pos) {
                 this.createVisualEffect(pos, 'defensive_stance');
             }
@@ -151,7 +154,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         let tauntedCount = 0;
         
         sortedEnemies.forEach((enemyId, index) => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             const enemyAI = this.game.getComponent(enemyId, "aiState");
             
             if (!enemyPos || !enemyAI) return;
@@ -168,15 +172,17 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             });
             
             // Force AI to target the shield wall user
-  
+
             enemyAI.target = casterEntity;
-            enemyAI.targetPosition = this.game.getComponent(casterEntity, "position");
+            const transform = this.game.getComponent(casterEntity, "transform");
+            enemyAI.targetPosition = transform?.position;
             enemyAI.path = [];
             enemyAI.meta = {};
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const pos = transform?.position;
                 if (pos) {
                     this.createVisualEffect(pos, 'taunt_aura');
                 }
@@ -194,7 +200,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     // FIXED: Shield wall ending warning
     warnShieldWallEnding(casterEntity) {
         const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         
         // Check if shield wall still exists and is active
         if (!shieldWall || !shieldWall.isActive || !casterPos) return;
@@ -211,7 +218,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
     // FIXED: Proper shield wall removal
     removeShieldWall(casterEntity) {
         const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         
         if (!shieldWall) return;
         

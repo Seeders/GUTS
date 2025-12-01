@@ -66,7 +66,8 @@ class RageAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -80,7 +81,8 @@ class RageAbility extends GUTS.BaseAbility {
     }
     
     activateRage(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
 
         // Create dramatic rage effects
@@ -157,7 +159,8 @@ class RageAbility extends GUTS.BaseAbility {
         // Schedule a secondary fury effect for visual impact
         this.game.schedulingSystem.scheduleAction(() => {
             if (this.game.hasComponent && this.game.hasComponent(casterEntity, "position")) {
-                const pos = this.game.getComponent(casterEntity, "position");
+                const transform = this.game.getComponent(casterEntity, "transform");
+                const pos = transform?.position;
                 if (pos) {
                     this.createVisualEffect(pos, 'fury');
                 }
@@ -197,7 +200,8 @@ class RageAbility extends GUTS.BaseAbility {
     
     // FIXED: Add rage ending warning for better gameplay feedback
     warnRageEnding(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         
         // Check if entity still exists and has the buff
         const buff = this.game.getComponent(casterEntity, "buff");

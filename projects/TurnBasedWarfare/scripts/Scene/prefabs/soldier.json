@@ -2,10 +2,10 @@
   "title": "Soldier",
   "description": "A basic soldier unit",
   "components": {
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
     },
     "renderable": {
       "objectType": "units",
@@ -21,9 +21,6 @@
     },
     "team": {
       "id": 1
-    },
-    "facing": {
-      "angle": 0
     }
   }
 }

@@ -128,7 +128,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         const TARGET_POSITION_THRESHOLD = 20;
 
         for (const entityId of aliveEntities) {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const aiState = this.game.getComponent(entityId, "aiState");
             const targetPos = aiState?.targetPosition;
 
@@ -136,15 +137,15 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
                 continue;
             }
             const distance = Math.sqrt(
-                Math.pow(targetPos.x - pos.x, 2) + 
+                Math.pow(targetPos.x - pos.x, 2) +
                 Math.pow(targetPos.z - pos.z, 2)
             );
-  
+
             if (distance > TARGET_POSITION_THRESHOLD) {
                 return false;
             }
         }
-        
+
         return true;
     }
 

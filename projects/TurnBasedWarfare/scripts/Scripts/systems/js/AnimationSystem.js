@@ -46,7 +46,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     updateEntityAnimations() {
-        const entities = this.game.getEntitiesWith("position", "renderable");
+        const entities = this.game.getEntitiesWith("transform", "renderable");
 
         entities.forEach(entityId => {
             // Only process instanced entities

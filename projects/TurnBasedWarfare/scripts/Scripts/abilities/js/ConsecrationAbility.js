@@ -73,7 +73,8 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const pos = transform?.position;
         if (!pos) return;
         
         // Immediate cast effect
@@ -249,7 +250,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
 
         // DESYNC SAFE: Get all units in area deterministically
         const allUnits = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health",
             "team"
         );
@@ -261,7 +262,8 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         let livingHealed = 0;
         
         sortedUnits.forEach(unitId => {
-            const unitPos = this.game.getComponent(unitId, "position");
+            const transform = this.game.getComponent(unitId, "transform");
+            const unitPos = transform?.position;
             const health = this.game.getComponent(unitId, "health");
             const team = this.game.getComponent(unitId, "team");
             const unitType = this.game.getComponent(unitId, "unitType");
@@ -334,16 +336,18 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Get all units in range
     getUnitsInRange(casterEntity, radius) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return [];
 
         const allUnits = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health"
         );
 
         return allUnits.filter(unitId => {
-            const unitPos = this.game.getComponent(unitId, "position");
+            const transform = this.game.getComponent(unitId, "transform");
+            const unitPos = transform?.position;
             const health = this.game.getComponent(unitId, "health");
             
             if (!unitPos || !health || health.current <= 0) return false;
@@ -361,7 +365,8 @@ class ConsecrationAbility extends GUTS.BaseAbility {
     cleanupConsecration(consecrationId) {
         if (this.game.hasComponent(consecrationId, "temporaryEffect")) {
             // Visual effect for consecration ending
-            const consecrationPos = this.game.getComponent(consecrationId, "position");
+            const transform = this.game.getComponent(consecrationId, "transform");
+            const consecrationPos = transform?.position;
             if (consecrationPos) {
                 this.createVisualEffect(consecrationPos, 'consecration', { 
                     count: 12, 

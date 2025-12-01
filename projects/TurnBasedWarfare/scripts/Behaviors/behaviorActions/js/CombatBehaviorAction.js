@@ -52,8 +52,10 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const pos = game.getComponent(entityId, 'position');
-        const targetPos = game.getComponent(target, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const targetTransform = game.getComponent(target, 'transform');
+        const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
@@ -84,8 +86,10 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.seekTarget(entityId, memory, game);
         }
 
-        const pos = game.getComponent(entityId, 'position');
-        const targetPos = game.getComponent(target, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const targetTransform = game.getComponent(target, 'transform');
+        const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
@@ -118,8 +122,10 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.seekTarget(entityId, memory, game);
         }
 
-        const pos = game.getComponent(entityId, 'position');
-        const targetPos = game.getComponent(target, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const targetTransform = game.getComponent(target, 'transform');
+        const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
@@ -169,14 +175,16 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         // Face the target
-        const attackerPos = game.getComponent(attackerId, 'position');
-        const targetPos = game.getComponent(targetId, 'position');
-        const facing = game.getComponent(attackerId, 'facing');
+        const attackerTransform = game.getComponent(attackerId, 'transform');
+        const attackerPos = attackerTransform?.position;
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
 
-        if (attackerPos && targetPos && facing) {
+        if (attackerPos && targetPos && attackerTransform) {
             const dx = targetPos.x - attackerPos.x;
             const dz = targetPos.z - attackerPos.z;
-            facing.angle = Math.atan2(dz, dx);
+            if (!attackerTransform.rotation) attackerTransform.rotation = { x: 0, y: 0, z: 0 };
+            attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
         // Trigger attack animation
@@ -240,7 +248,8 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemy(entityId, game) {
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
 
@@ -249,7 +258,7 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const visionRange = combat.visionRange || 300;
 
         // Get all potential targets
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
 
         // Sort for deterministic iteration
         const sortedTargets = potentialTargets.sort((a, b) => String(a).localeCompare(String(b)));
@@ -262,7 +271,8 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const targetTeam = game.getComponent(targetId, 'team');
             const targetHealth = game.getComponent(targetId, 'health');
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const targetDeathState = game.getComponent(targetId, 'deathState');
 
             // Skip allies

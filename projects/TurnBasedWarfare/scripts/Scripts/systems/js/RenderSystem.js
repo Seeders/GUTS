@@ -195,17 +195,19 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     async updateEntities() {
-        const entities = this.game.getEntitiesWith("position", "renderable");
+        const entities = this.game.getEntitiesWith("transform", "renderable");
         this._stats.entitiesProcessed = entities.length;
 
         for (const entityId of entities) {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
             const renderable = this.game.getComponent(entityId, "renderable");
             const velocity = this.game.getComponent(entityId, "velocity");
-            const facing = this.game.getComponent(entityId, "facing");
             const unitType = this.game.getComponent(entityId, "unitType");
 
-            if (!unitType) continue;
+            if (!unitType || !transform?.position) continue;
+
+            const pos = transform.position;
+            const angle = transform.rotation?.y || 0;
 
             // Check fog of war visibility (cliffs and worldObjects always visible)
             const fow = this.game.fogOfWarSystem;
@@ -230,19 +232,18 @@ class RenderSystem extends GUTS.BaseSystem {
                     collection: renderable.objectType,
                     type: renderable.spawnType,
                     position: { x: pos.x, y: pos.y, z: pos.z },
-                    rotation: facing?.angle,
-                    facing: facing,
+                    rotation: angle,
+                    transform: transform,
                     velocity: velocity
                 });
                 // Cache initial position
                 this._entityPositionCache.set(entityId, {
                     x: pos.x, y: pos.y, z: pos.z,
-                    angle: facing?.angle || 0
+                    angle: angle
                 });
             } else {
                 // Check if position/rotation has actually changed
                 const cached = this._entityPositionCache.get(entityId);
-                const angle = facing?.angle || 0;
 
                 if (cached) {
                     const dx = pos.x - cached.x;
@@ -266,8 +267,8 @@ class RenderSystem extends GUTS.BaseSystem {
                 // Update existing entity
                 this.updateEntity(entityId, {
                     position: { x: pos.x, y: pos.y, z: pos.z },
-                    rotation: facing?.angle,
-                    facing: facing,
+                    rotation: angle,
+                    transform: transform,
                     velocity: velocity
                 });
             }

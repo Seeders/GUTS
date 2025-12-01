@@ -264,7 +264,8 @@ class GridSystem extends GUTS.BaseSystem {
     getUnitCells(entityId) {
 
         const unitType = this.game.getComponent(entityId, "unitType");
-        const pos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
 
         if(!unitType) return null;
         const cells = [];
@@ -319,9 +320,10 @@ class GridSystem extends GUTS.BaseSystem {
                 for (const entityId of cellState.entities) {
                     if (entityId === excludeEntityId || seen.has(entityId)) continue;
 
-                    const entityPos = this.game.getComponent(entityId, "position");
+                    const transform = this.game.getComponent(entityId, "transform");
+                    const entityPos = transform?.position;
                     const unitType = this.game.getComponent(entityId, "unitType");
-                    
+
                     if (!entityPos || !unitType) continue;
 
                     const dx = entityPos.x - pos.x;

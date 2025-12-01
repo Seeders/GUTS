@@ -41,10 +41,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     fireProjectile(sourceId, targetId, projectileData = {}) {
-        const sourcePos = this.game.getComponent(sourceId, "position");
+        const sourceTransform = this.game.getComponent(sourceId, "transform");
+        const sourcePos = sourceTransform?.position;
         const sourceCombat = this.game.getComponent(sourceId, "combat");
-        const targetPos = this.game.getComponent(targetId, "position");
-        
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
+
         if (!sourcePos || !sourceCombat || !targetPos) return null;
         
         // Create projectile entity
@@ -64,8 +66,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const spawnHeight = Math.max(sourcePos.y + 20, 20);
 
         // Add components with full 3D support
-        this.game.addComponent(projectileId, "position",
-            { x: sourcePos.x, y: spawnHeight, z: sourcePos.z });
+        this.game.addComponent(projectileId, "transform",
+            {
+                position: { x: sourcePos.x, y: spawnHeight, z: sourcePos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
+            });
 
         this.game.addComponent(projectileId, "velocity",
             { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic || false, anchored: false });
@@ -299,7 +305,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (this.game.state.phase !== 'battle') return;
 
         const projectiles = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "velocity",
             "projectile"
         );
@@ -307,7 +313,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         projectiles.sort((a, b) => String(a).localeCompare(String(b)));
 
         projectiles.forEach(projectileId => {
-            const pos = this.game.getComponent(projectileId, "position");
+            const transform = this.game.getComponent(projectileId, "transform");
+            const pos = transform?.position;
             const vel = this.game.getComponent(projectileId, "velocity");
             const projectile = this.game.getComponent(projectileId, "projectile");
             const homing = this.game.getComponent(projectileId, "homingTarget");
@@ -344,8 +351,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     updateBallisticHoming(projectileId, pos, vel, projectile, homing) {
         // Get current target position
-        const targetPos = this.game.getComponent(homing.targetId, "position");
-        
+        const targetTransform = this.game.getComponent(homing.targetId, "transform");
+        const targetPos = targetTransform?.position;
+
         if (targetPos) {
             // Update last known position
             homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
@@ -392,8 +400,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     updateHomingProjectile(projectileId, pos, vel, projectile, homing) {
         // Get current target position
-        const targetPos = this.game.getComponent(homing.targetId, "position");
-        
+        const targetTransform = this.game.getComponent(homing.targetId, "transform");
+        const targetPos = targetTransform?.position;
+
         if (targetPos) {
             // Update last known position
             homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
@@ -433,10 +442,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
     checkProjectileCollisions(projectileId, pos, projectile) {
         // Only for NON-ballistic projectiles
         if (projectile.isBallistic) return; // Skip collision check for ballistic
-        
+
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "team",
             "health"
         );
@@ -449,7 +458,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         for (const entityId of allEntities) {
             if (entityId === projectile.source) continue; // Don't hit the source
 
-            const entityPos = this.game.getComponent(entityId, "position");
+            const entityTransform = this.game.getComponent(entityId, "transform");
+            const entityPos = entityTransform?.position;
             const entityTeam = this.game.getComponent(entityId, "team");
             const entityHealth = this.game.getComponent(entityId, "health");
 

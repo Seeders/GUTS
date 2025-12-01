@@ -66,7 +66,8 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         // Show immediate cast effect
@@ -247,7 +248,8 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
     removeMirrorImage(imageId) {
         if (!this.game.hasEntity || !this.game.hasEntity(imageId)) return;
         
-        const imagePos = this.game.getComponent(imageId, "position");
+        const transform = this.game.getComponent(imageId, "transform");
+        const imagePos = transform?.position;
         
         // Create disappearance effect
         if (imagePos) {

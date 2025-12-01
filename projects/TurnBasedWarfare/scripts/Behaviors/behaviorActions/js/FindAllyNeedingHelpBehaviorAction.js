@@ -21,7 +21,8 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
         const excludeSelf = params.excludeSelf !== false;
         const range = params.range !== undefined ? params.range : 500;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
 
         if (!pos || !team) {
@@ -46,7 +47,7 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findAllyNeedingHelp(entityId, game, pos, team, range, healthThreshold, prioritizeLowestHealth, excludeSelf) {
-        const potentialAllies = game.getEntitiesWith('position', 'team', 'health');
+        const potentialAllies = game.getEntitiesWith('transform', 'team', 'health');
         const alliesNeedingHelp = [];
 
         for (const allyId of potentialAllies) {
@@ -61,7 +62,8 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
             const allyDeathState = game.getComponent(allyId, 'deathState');
             if (allyDeathState && allyDeathState.isDying) continue;
 
-            const allyPos = game.getComponent(allyId, 'position');
+            const allyTransform = game.getComponent(allyId, 'transform');
+            const allyPos = allyTransform?.position;
             const distance = this.distance(pos, allyPos);
 
             if (distance > range) continue;

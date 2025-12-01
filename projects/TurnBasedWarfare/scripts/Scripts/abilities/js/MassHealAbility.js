@@ -60,7 +60,8 @@ class MassHealAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
@@ -79,7 +80,8 @@ class MassHealAbility extends GUTS.BaseAbility {
     }
     
     performMassHeal(casterEntity, targetAllies) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         let healedCount = 0;
         let totalHealing = 0;
 
@@ -138,7 +140,8 @@ class MassHealAbility extends GUTS.BaseAbility {
         // Process each ally deterministically
         sortedAllies.forEach((allyId, index) => {
             const health = this.game.getComponent(allyId, "health");
-            const allyPos = this.game.getComponent(allyId, "position");
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
 
             if (!health || !allyPos) return;
 

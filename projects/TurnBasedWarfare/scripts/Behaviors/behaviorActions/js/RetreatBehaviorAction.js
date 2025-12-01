@@ -19,7 +19,8 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
         const counterAttack = params.counterAttack !== false;
         const safeDistance = params.safeDistance || 200;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const health = game.getComponent(entityId, 'health');
         const combat = game.getComponent(entityId, 'combat');
@@ -47,7 +48,8 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.success({ status: 'safe', noThreats: true, healthPercent });
         }
 
-        const threatPos = game.getComponent(threat.id, 'position');
+        const threatTransform = game.getComponent(threat.id, 'transform');
+        const threatPos = threatTransform?.position;
         const distanceToThreat = this.distance(pos, threatPos);
 
         // Already at safe distance
@@ -115,7 +117,7 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemy(entityId, game, pos, team, range) {
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -128,7 +130,8 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(pos, targetPos);
 
             if (distance <= range && distance < nearestDistance) {

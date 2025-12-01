@@ -47,11 +47,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.createBoxSelectionElement();
         this.setupBoxSelectionListeners();
         
-        const unitPortrait = document.getElementById('unitPortrait');   
+        const unitPortrait = document.getElementById('unitPortrait');
         unitPortrait.addEventListener('click', () => {
             if(this.game.cameraControlSystem) {
                 if(this.game.state.selectedEntity.entityId){
-                    const pos = this.game.getComponent(this.game.state.selectedEntity.entityId, "position");
+                    const transform = this.game.getComponent(this.game.state.selectedEntity.entityId, "transform");
+                    const pos = transform?.position;
                     if(pos){
                         this.game.gameManager.call('cameraLookAt', pos.x, pos.z);
                     }
@@ -204,25 +205,26 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const selectedUnits = [];
         const selectedBuildings = [];
         const rect = this.canvas.getBoundingClientRect();
-        
-        // Get all entities with position component
-        const entities = this.game.getEntitiesWith("position");
-        
+
+        // Get all entities with transform component
+        const entities = this.game.getEntitiesWith("transform");
+
         entities.forEach(entityId => {
             // Only select units on player's team
             const team = this.game.getComponent(entityId, "team");
             if (!team) return;
-            
+
             // Try multiple ways to check team
             const unitTeam = team.team || team.side || team.teamId;
             const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
-            
+
             if (unitTeam !== myTeam) {
                 return;
             }
-            
+
             // Get position component
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const unitType = this.game.getComponent(entityId, "unitType");
             if (!pos || !unitType) return;
             
@@ -361,12 +363,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         let closestDistance = clickRadius;
 
         const entities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "placement"
         );
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const placement = this.game.getComponent(entityId, "placement");
             const unitType = this.game.getComponent(entityId, "unitType");
 
@@ -527,9 +530,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     createSelectionCircle(entityId) {
         // Don't create if already exists
         if (this.selectionCircles.has(entityId)) return;
-        
+
         // Get entity position to determine size
-        const pos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
         if (!pos) return;
         
         // Determine radius based on unit type
@@ -579,12 +583,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     updateSelectionCircles() {
         for (const [entityId, circleData] of this.selectionCircles) {
             // Check if entity still exists
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (!pos) {
                 this.removeSelectionCircle(entityId);
                 continue;
             }
-            
+
             // Update position
             circleData.group.position.set(pos.x, pos.y + this.CIRCLE_OFFSET_Y, pos.z);
         }
@@ -612,11 +617,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     cleanupRemovedCircles() {
         for (const [entityId] of this.selectionCircles) {
             // Check if entity still exists
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (!pos) {
                 this.removeSelectionCircle(entityId);
             }
-            
+
             // Check if entity is still highlighted
             if (!this.highlightedUnits.has(entityId)) {
                 this.removeSelectionCircle(entityId);

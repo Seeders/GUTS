@@ -248,7 +248,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
         squadData.unitIds.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (pos) {
                 const effectType = specializationId ? 'magic' : 'heal';
                 this.game.gameManager.call('createParticleEffect',
@@ -299,7 +300,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         // Store positions of old units
         const positions = [];
         squadData.unitIds.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (pos) {
                 positions.push({ x: pos.x, y: pos.y, z: pos.z });
             }

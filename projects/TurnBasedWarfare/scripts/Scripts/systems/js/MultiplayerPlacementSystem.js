@@ -1078,26 +1078,27 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         const clickRadius = 30;
         let closestEntityId = null;
         let closestDistance = clickRadius;
-        
+
         const entities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "team"
         );
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const team = this.game.getComponent(entityId, "team");
-            
+
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
-            
+
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closestEntityId = entityId;
             }
         });
-        
+
         return closestEntityId;
     }
 }

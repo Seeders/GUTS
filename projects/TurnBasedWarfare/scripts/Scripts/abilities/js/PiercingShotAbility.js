@@ -68,10 +68,11 @@ class PiercingShotAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
-        const casterFacing = this.game.getComponent(casterEntity, "facing");
-        
-        if (!casterPos || !casterFacing) return null;
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+        const casterFacing = transform?.rotation?.y || 0;
+
+        if (!casterPos) return null;
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
@@ -223,11 +224,11 @@ class PiercingShotAbility extends GUTS.BaseAbility {
     }
     
     // FIXED: Deterministic line end position calculation
-    calculateLineEndPosition(startPos, facing) {
+    calculateLineEndPosition(startPos, facingAngle) {
         return {
-            x: startPos.x + Math.cos(facing.angle) * this.range,
+            x: startPos.x + Math.cos(facingAngle) * this.range,
             y: startPos.y,
-            z: startPos.z + Math.sin(facing.angle) * this.range
+            z: startPos.z + Math.sin(facingAngle) * this.range
         };
     }
     
@@ -239,7 +240,8 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         const hitEnemies = [];
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             if (!enemyPos) return;
             
             if (this.isInLine(startPos, endPos, enemyPos, this.lineWidth)) {

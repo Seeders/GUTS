@@ -68,7 +68,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // Immediate cast effect
@@ -84,7 +85,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     applyWeaponEnchantments(casterEntity) {
         // Check if caster is still alive
         const casterHealth = this.game.getComponent(casterEntity, "health");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
         
@@ -95,7 +97,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         let enchantedCount = 0;
         
         sortedAllies.forEach((allyId, index) => {
-            const allyPos = this.game.getComponent(allyId, "position");
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
             const allyHealth = this.game.getComponent(allyId, "health");
             
             // Only enchant living allies
@@ -174,7 +177,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
                 this.game.removeComponent(allyId, "buff");
                 
                 // Visual effect when enchantment expires
-                const allyPos = this.game.getComponent(allyId, "position");
+                const transform = this.game.getComponent(allyId, "transform");
+                const allyPos = transform?.position;
                 if (allyPos) {
                     this.createVisualEffect(allyPos, `enchant_${element}`, { 
                         count: 3, 

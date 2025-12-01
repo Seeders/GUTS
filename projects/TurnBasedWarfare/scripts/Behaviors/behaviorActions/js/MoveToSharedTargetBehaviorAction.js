@@ -30,7 +30,8 @@ class MoveToSharedTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         if (!pos) {
             return this.failure();
         }

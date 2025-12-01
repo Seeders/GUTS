@@ -36,8 +36,9 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             targetPosition = nearestMineData.targetPosition;
             targetMinePosition = nearestMineData.targetPosition;
         }
-        const pos = game.getComponent(entityId, 'position');
-        
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+
         const distance = this.distance(pos, targetMinePosition);
         if (distance < this.parameters.miningRange) {
             this.game.goldMineSystem.addMinerToQueue(targetMine, entityId); 
@@ -76,12 +77,17 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!isCurrentMiner) {
                 game.gameManager.call('processNextMinerInQueue', targetMine);
             }
-            const pos = game.getComponent(entityId, 'position');
+            const transform = game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
             const vel = game.getComponent(entityId, 'velocity');
-            pos.x = targetMinePosition.x;
-            pos.z = targetMinePosition.z;
-            vel.vx = 0;
-            vel.vz = 0;
+            if (pos) {
+                pos.x = targetMinePosition.x;
+                pos.z = targetMinePosition.z;
+            }
+            if (vel) {
+                vel.vx = 0;
+                vel.vz = 0;
+            }
             return {
                 targetPosition: targetMinePosition,
                 targetMinePosition: targetMinePosition,
@@ -123,15 +129,17 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         };
     }
 
-    travelToDepot(entityId, aiState, game) {        
-        const pos = game.getComponent(entityId, 'position');
+    travelToDepot(entityId, aiState, game) {
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const depot = this.findNearestDepot(entityId, game);
 
         if (!depot) {
             return null;
         }
 
-        const depotPos = game.getComponent(depot, 'position');
+        const depotTransform = game.getComponent(depot, 'transform');
+        const depotPos = depotTransform?.position;
         const distance = this.distance(pos, depotPos);
 
         if (distance < this.parameters.depositRange) {
@@ -193,10 +201,11 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestDepot(entityId, game) {
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const townHalls = game.getEntitiesWith(
-            'position',
+            'transform',
             'team',
             'unitType'
         );
@@ -207,7 +216,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const thId of townHalls) {
             const thTeam = game.getComponent(thId, 'team');
             const thType = game.getComponent(thId, 'unitType');
-            const thPos = game.getComponent(thId, 'position');
+            const thTransform = game.getComponent(thId, 'transform');
+            const thPos = thTransform?.position;
 
             if (thTeam.team === team.team && thType.id === 'townHall') {
                 const dist = this.distance(pos, thPos);
@@ -225,12 +235,13 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         let closestDistance = Infinity;
         let closestMineEntityId = null;
 
-        const pos = game.getComponent(entityId, "position");
+        const transform = game.getComponent(entityId, "transform");
+        const pos = transform?.position;
 
         if (!pos) return;
 
         // Get all entities with goldMine component
-        const goldMineEntities = game.getEntitiesWith("goldMine", "position", "team");
+        const goldMineEntities = game.getEntitiesWith("goldMine", "transform", "team");
 
         // Sort for deterministic iteration
         const sortedMineIds = goldMineEntities.sort((a, b) =>
@@ -241,7 +252,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const mineEntityId of sortedMineIds) {
             const mineTeam = game.getComponent(mineEntityId, "team");
             const entityTeam = game.getComponent(entityId, "team");
-            const minePos = game.getComponent(mineEntityId, "position");
+            const mineTransform = game.getComponent(mineEntityId, "transform");
+            const minePos = mineTransform?.position;
 
             // Check if this mine belongs to our team
             if (mineTeam && mineTeam.team === entityTeam.team) {
