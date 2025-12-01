@@ -16,6 +16,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             'attack', 'cast', 'death'
         ]);
 
+        // Reusable set for cleanup to avoid per-frame allocation
+        this._currentEntitiesSet = new Set();
+
+        // Cache for availableClips as Sets (batchKey -> Set)
+        this._clipSetCache = new Map();
     }
 
     init() {
@@ -67,8 +72,12 @@ class AnimationSystem extends GUTS.BaseSystem {
             this.updateEntityAnimationLogic(entityId, velocity, health, combat, aiState);
         });
 
-        // Clean up removed entities
-        this.cleanupRemovedEntities(new Set(entities));
+        // Clean up removed entities - reuse set to avoid per-frame allocation
+        this._currentEntitiesSet.clear();
+        for (const entityId of entities) {
+            this._currentEntitiesSet.add(entityId);
+        }
+        this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
     initializeEntityAnimationState(entityId) {
@@ -415,25 +424,44 @@ class AnimationSystem extends GUTS.BaseSystem {
         return isFinished;
     }
 
+    /**
+     * Get or create a cached Set of available clips for faster lookup
+     */
+    _getClipSet(objectType, spawnType) {
+        const batchKey = `${objectType}_${spawnType}`;
+
+        if (this._clipSetCache.has(batchKey)) {
+            return this._clipSetCache.get(batchKey);
+        }
+
+        const batchInfo = this.game.gameManager.call('getBatchInfo', objectType, spawnType);
+        if (!batchInfo?.availableClips) {
+            return null;
+        }
+
+        // Create Set from array for O(1) lookup
+        const clipSet = new Set(batchInfo.availableClips);
+        this._clipSetCache.set(batchKey, clipSet);
+        return clipSet;
+    }
+
     hasClip(entityId, clipName) {
         const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return false;
 
-        const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);
-        return batchInfo?.availableClips?.includes(clipName) || false;
+        const clipSet = this._getClipSet(renderable.objectType, renderable.spawnType);
+        return clipSet?.has(clipName) || false;
     }
 
     resolveClipName(entityId, desiredClip) {
         const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return 'idle';
 
-        const batchInfo = this.game.gameManager.call('getBatchInfo', renderable.objectType, renderable.spawnType);
-        if (!batchInfo) return 'idle';
+        const clipSet = this._getClipSet(renderable.objectType, renderable.spawnType);
+        if (!clipSet) return 'idle';
 
-        const availableClips = batchInfo.availableClips;
-
-        // Return if exact match exists
-        if (availableClips.includes(desiredClip)) {
+        // Return if exact match exists (O(1) Set lookup)
+        if (clipSet.has(desiredClip)) {
             return desiredClip;
         }
 
@@ -451,13 +479,14 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         const fallbackList = fallbacks[desiredClip] || ['idle'];
         for (const fallback of fallbackList) {
-            if (availableClips.includes(fallback)) {
+            if (clipSet.has(fallback)) {
                 return fallback;
             }
         }
 
-        // Final fallback
-        return availableClips[0] || 'idle';
+        // Final fallback - get first clip from the set
+        const firstClip = clipSet.values().next().value;
+        return firstClip || 'idle';
     }
 
     // Cleanup methods

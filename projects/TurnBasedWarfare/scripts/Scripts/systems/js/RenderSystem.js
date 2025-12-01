@@ -9,6 +9,9 @@ class RenderSystem extends GUTS.BaseSystem {
         // Track which entities have been spawned
         this.spawnedEntities = new Set();
 
+        // Reusable set for cleanup to avoid per-frame allocation
+        this._currentEntitiesSet = new Set();
+
         // Debug stats
         this._frame = 0;
         this._stats = {
@@ -226,8 +229,12 @@ class RenderSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Cleanup removed entities
-        this.cleanupRemovedEntities(new Set(entities));
+        // Cleanup removed entities - reuse set to avoid per-frame allocation
+        this._currentEntitiesSet.clear();
+        for (const entityId of entities) {
+            this._currentEntitiesSet.add(entityId);
+        }
+        this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
     async spawnEntity(entityId, data) {

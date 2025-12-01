@@ -36,6 +36,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
+
+        // Frame-based cache invalidation to prevent redundant GPU reads
+        this.lastVisibilityCacheFrame = -1;
+        this.lastExplorationCacheFrame = -1;
+        this.currentFrame = 0;
         
         // Pre-allocate reusable arrays
         this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
@@ -501,14 +506,15 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
         
         this.game.renderer.setRenderTarget(null);
-        
-        this.visibilityCacheValid = false;
-        this.explorationCacheValid = false;
+
+        // Increment frame counter - caches will be updated once per frame on first visibility check
+        this.currentFrame++;
     }
 
     updateVisibilityCache() {
-        if (this.visibilityCacheValid) return;
-        
+        // Only read pixels once per frame using frame counter
+        if (this.lastVisibilityCacheFrame === this.currentFrame) return;
+
         this.game.renderer.readRenderTargetPixels(
             this.fogRenderTarget,
             0, 0,
@@ -516,13 +522,14 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             this.FOG_TEXTURE_SIZE,
             this.cachedVisibilityBuffer
         );
-        
-        this.visibilityCacheValid = true;
+
+        this.lastVisibilityCacheFrame = this.currentFrame;
     }
 
     updateExplorationCache() {
-        if (this.explorationCacheValid) return;
-        
+        // Only read pixels once per frame using frame counter
+        if (this.lastExplorationCacheFrame === this.currentFrame) return;
+
         this.game.renderer.readRenderTargetPixels(
             this.explorationRenderTarget,
             0, 0,
@@ -530,8 +537,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             this.FOG_TEXTURE_SIZE,
             this.cachedExplorationBuffer
         );
-        
-        this.explorationCacheValid = true;
+
+        this.lastExplorationCacheFrame = this.currentFrame;
     }
 
     //only available on CLIENT
