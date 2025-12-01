@@ -187,6 +187,15 @@ class SceneEditorContext {
             }
         }
 
+        // Check if scene has a terrain entity and reinitialize tile mapper if needed
+        const terrainEntities = this.getEntitiesWith('terrain');
+        if (terrainEntities.length > 0) {
+            const terrainComponent = this.getComponent(terrainEntities[0], 'terrain');
+            if (terrainComponent?.level) {
+                await this.reinitTerrainTileMapperForLevel(terrainComponent.level);
+            }
+        }
+
         // Notify systems that scene has loaded - they will detect entities and render
         for (const system of this.systems) {
             if (system.enabled && system.onSceneLoad) {
@@ -210,6 +219,56 @@ class SceneEditorContext {
         }
 
         console.log('[SceneEditorContext] Scene loaded with', this.entities.size, 'entities');
+    }
+
+    /**
+     * Reinitialize terrain tile mapper for a specific level
+     * Called when loading a scene with a different level than initially used
+     */
+    async reinitTerrainTileMapperForLevel(levelName) {
+        const gameConfig = this.collections.configs?.game;
+        if (!gameConfig) return;
+
+        const level = this.collections.levels?.[levelName];
+        if (!level) {
+            console.warn(`[SceneEditorContext] Level '${levelName}' not found for tile mapper`);
+            return;
+        }
+
+        const palette = this.gameEditor.getPalette();
+        const imageManager = new GUTS.ImageManager(
+            this.gameEditor,
+            { imageSize: gameConfig.imageSize, palette },
+            { ShapeFactory: GUTS.ShapeFactory }
+        );
+
+        await imageManager.loadImages("levels", { level }, false, false);
+        const terrainImages = imageManager.getImages("levels", "level");
+
+        // Calculate actual terrain size from level data
+        const terrainCanvasBuffer = document.createElement('canvas');
+        if (level?.tileMap?.terrainMap && level.tileMap.terrainMap.length > 0) {
+            terrainCanvasBuffer.width = gameConfig.gridSize * level.tileMap.terrainMap[0].length;
+            terrainCanvasBuffer.height = gameConfig.gridSize * level.tileMap.terrainMap.length;
+        } else if (level?.tileMap?.size) {
+            const terrainSize = level.tileMap.size * gameConfig.gridSize;
+            terrainCanvasBuffer.width = terrainSize;
+            terrainCanvasBuffer.height = terrainSize;
+        } else {
+            terrainCanvasBuffer.width = 4096;
+            terrainCanvasBuffer.height = 4096;
+        }
+
+        this.terrainTileMapper = new GUTS.TileMap({});
+        this.terrainTileMapper.init(
+            terrainCanvasBuffer,
+            gameConfig.gridSize,
+            terrainImages,
+            gameConfig.isIsometric,
+            { skipCliffTextures: false }
+        );
+
+        console.log(`[SceneEditorContext] Reinitialized tile mapper for level: ${levelName} (${terrainCanvasBuffer.width}x${terrainCanvasBuffer.height})`);
     }
 
     /**
