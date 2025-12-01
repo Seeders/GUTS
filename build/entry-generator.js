@@ -708,14 +708,9 @@ class EntryGenerator {
  */
 `);
 
-        // Import codemirror
-        sections.push('// CodeMirror');
-        sections.push(`import CodeMirror from 'codemirror';`);
-        sections.push(`import 'codemirror/lib/codemirror.css';`);
-        sections.push(`import 'codemirror/addon/hint/show-hint.css';`);
-        sections.push(`import 'codemirror/mode/javascript/javascript.js';`);
-        sections.push(`import 'codemirror/addon/hint/show-hint.js';`);
-        sections.push(`import 'codemirror/addon/hint/javascript-hint.js';`);
+        // Import Monaco Editor
+        sections.push('// Monaco Editor');
+        sections.push(`import * as monaco from 'monaco-editor';`);
         sections.push('');
 
         // Import editor engine files
@@ -836,9 +831,9 @@ class EntryGenerator {
             }
         }
 
-        // Make editor engine classes and CodeMirror available globally
-        sections.push('// Make editor engine classes and CodeMirror available globally');
-        sections.push('window.CodeMirror = CodeMirror;');
+        // Make editor engine classes and Monaco available globally
+        sections.push('// Make editor engine classes and Monaco available globally');
+        sections.push('window.monaco = monaco;');
         sections.push('window.FileSystemSyncService = FileSystemSyncService;');
         sections.push('window.EditorModel = EditorModel;');
         sections.push('window.EditorView = EditorView;');
@@ -875,7 +870,7 @@ class EntryGenerator {
         sections.push('');
 
         // Build dynamic exports
-        const exportsList = ['CodeMirror', 'FileSystemSyncService', 'EditorModel', 'EditorView', 'EditorController'];
+        const exportsList = ['monaco', 'FileSystemSyncService', 'EditorModel', 'EditorView', 'EditorController'];
 
         // Add Libraries to exports if it exists
         if (editor.libraries && editor.libraries.length > 0) {
