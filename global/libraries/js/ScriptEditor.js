@@ -40,12 +40,6 @@ class ScriptEditor {
             hintOptions: { completeSingle: false }
         });
 
-        console.log('CodeMirror initialized:', {
-            editor: this.scriptEditor,
-            wrapperElement: this.scriptEditor.getWrapperElement(),
-            display: this.scriptEditor.display
-        });
-
         // Set initial size - will be updated when content is loaded
         this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
 
@@ -59,20 +53,7 @@ class ScriptEditor {
         document.body.addEventListener('editScript', (event) => {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
-
-            console.log('editScript event received:', {
-                dataLength: this.scriptValue?.length,
-                propertyName: this.savePropertyName,
-                editorExists: !!this.scriptEditor,
-                editorValue: this.scriptEditor?.getValue()?.substring(0, 50)
-            });
-
             this.scriptEditor.setValue(this.scriptValue);
-
-            console.log('After setValue:', {
-                editorValue: this.scriptEditor.getValue()?.substring(0, 50),
-                editorDoc: this.scriptEditor.getDoc()?.getValue()?.substring(0, 50)
-            });
 
             // Wait for container to be fully visible before refreshing
             // CodeMirror needs proper dimensions to render correctly
@@ -89,18 +70,13 @@ class ScriptEditor {
 
     waitForVisibleAndRefresh() {
         const doRefresh = () => {
-            console.log('doRefresh called, current value:', this.scriptEditor.getValue()?.substring(0, 50));
-
             // Set explicit size and refresh
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
             this.scriptEditor.refresh();
 
-            console.log('After refresh, value:', this.scriptEditor.getValue()?.substring(0, 50));
-
             // Double-refresh after a short delay to ensure CodeMirror recalculates properly
             setTimeout(() => {
                 this.scriptEditor.refresh();
-                console.log('After second refresh, value:', this.scriptEditor.getValue()?.substring(0, 50));
             }, 50);
         };
 

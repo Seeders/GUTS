@@ -25,25 +25,26 @@
     font-size: 14px;
 }
 
-/* Fix gutter width calculation issues when fonts load asynchronously */
+/* Fix gutter width - force reasonable width and let CodeMirror handle positioning */
 #script-editor-container .CodeMirror-gutters {
-    width: auto !important;
-    min-width: 40px !important;
-    max-width: 80px !important;
+    width: 60px !important;
+}
+
+#script-editor-container .CodeMirror-gutter.CodeMirror-linenumbers {
+    width: 60px !important;
 }
 
 #script-editor-container .CodeMirror-linenumber {
-    width: auto !important;
-    min-width: 20px !important;
-    max-width: 50px !important;
-    padding: 0 8px !important;
+    width: 52px !important;
+    padding: 0 4px !important;
+    text-align: right;
 }
 
-/* Fix the sizer margin that gets miscalculated with the gutter */
+/* Force sizer to use matching margin */
 #script-editor-container .CodeMirror-sizer {
-    margin-left: 50px !important;
+    margin-left: 60px !important;
 }
 
 #script-editor-container .CodeMirror-gutter-wrapper {
-    left: -50px !important;
+    left: -60px !important;
 }
