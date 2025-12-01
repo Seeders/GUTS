@@ -43,6 +43,70 @@ class FileSystemSyncService {
         document.body.addEventListener('projectLoaded', () => {
             this.checkProjectExistsInFilesystem();
         });
+        document.body.addEventListener('createType', async (event) => {
+            await this.saveObjectTypeDefinition(event.detail);
+        });
+        document.body.addEventListener('deleteType', async (event) => {
+            await this.deleteObjectTypeDefinition(event.detail.typeId);
+        });
+    }
+
+    async saveObjectTypeDefinition(typeDef) {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) {
+            console.log('No project ID available');
+            return;
+        }
+
+        const { typeId, typeName, typeSingular, typeCategory } = typeDef;
+        const data = {
+            id: typeId,
+            name: typeName || typeId.charAt(0).toUpperCase() + typeId.slice(1),
+            singular: typeSingular || typeId.slice(0, -1),
+            category: typeCategory || 'Uncategorized',
+            fileName: typeId
+        };
+
+        const filePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${typeId}.json`;
+        const jsonContent = JSON.stringify(data, null, 2);
+
+        try {
+            const response = await fetch('/save-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath, content: jsonContent })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save objectTypeDefinition: ${response.status}`);
+            }
+            console.log(`Saved objectTypeDefinition: ${filePath}`);
+        } catch (error) {
+            console.error('Error saving objectTypeDefinition:', error);
+        }
+    }
+
+    async deleteObjectTypeDefinition(typeId) {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) return;
+
+        const filePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${typeId}.json`;
+
+        try {
+            const response = await fetch('/delete-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath })
+            });
+
+            if (!response.ok) {
+                console.warn(`Failed to delete objectTypeDefinition file: ${response.status}`);
+            } else {
+                console.log(`Deleted objectTypeDefinition: ${filePath}`);
+            }
+        } catch (error) {
+            console.error('Error deleting objectTypeDefinition:', error);
+        }
     }
 
     checkAndDownloadIfNeeded() {

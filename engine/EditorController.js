@@ -429,11 +429,22 @@ class EditorController {
     }
 
     createType(typeId, typeName, typeSingular, typeCategory) {
-        return this.model.createType(typeId, typeName, typeSingular, typeCategory);
+        const result = this.model.createType(typeId, typeName, typeSingular, typeCategory);
+        if (result.success) {
+            // Dispatch hook so FileSystemSyncService can save the objectTypeDefinition
+            this.dispatchHook('createType', { typeId, typeName, typeSingular, typeCategory });
+        }
+        return result;
     }
 
     removeSelectedType() {
-        return this.model.deleteType(this.getSelectedType());
+        const typeId = this.getSelectedType();
+        const result = this.model.deleteType(typeId);
+        if (result.success) {
+            // Dispatch hook so FileSystemSyncService can delete the objectTypeDefinition file
+            this.dispatchHook('deleteType', { typeId });
+        }
+        return result;
     }
 
     createColorInputGroup(value, attributeName, attributeValue, container, callback){
