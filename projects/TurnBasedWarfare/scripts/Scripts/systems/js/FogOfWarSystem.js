@@ -41,6 +41,15 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.lastVisibilityCacheFrame = -1;
         this.lastExplorationCacheFrame = -1;
         this.currentFrame = 0;
+
+        // Position-based dirty tracking - only recalculate LOS when units move
+        this._unitPositions = new Map();  // entityId -> {x, z}
+        this._fowDirty = true;            // Force initial calculation
+        this._positionThreshold = 5;      // Minimum movement to trigger recalc (in world units)
+
+        // Cached values that don't change per-frame
+        this._cachedGridSize = null;
+        this._cachedTerrainSize = null;
         
         // Pre-allocate reusable arrays
         this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
@@ -450,6 +459,51 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         };
     }
 
+    /**
+     * Check if any unit has moved enough to require FOW recalculation
+     */
+    _checkUnitMovement(myUnits) {
+        let hasMoved = false;
+        const currentPositions = new Map();
+
+        for (const entityId of myUnits) {
+            const pos = this.game.getComponent(entityId, "position");
+            if (!pos) continue;
+
+            currentPositions.set(entityId, { x: pos.x, z: pos.z });
+
+            const lastPos = this._unitPositions.get(entityId);
+            if (!lastPos) {
+                // New unit - needs recalc
+                hasMoved = true;
+            } else {
+                const dx = pos.x - lastPos.x;
+                const dz = pos.z - lastPos.z;
+                const distSq = dx * dx + dz * dz;
+                if (distSq > this._positionThreshold * this._positionThreshold) {
+                    hasMoved = true;
+                }
+            }
+        }
+
+        // Check for removed units
+        if (this._unitPositions.size !== currentPositions.size) {
+            hasMoved = true;
+        }
+
+        // Update stored positions
+        this._unitPositions = currentPositions;
+
+        return hasMoved;
+    }
+
+    /**
+     * Force FOW recalculation (call when worldObjects change, etc.)
+     */
+    invalidateFOW() {
+        this._fowDirty = true;
+    }
+
     renderFogTexture() {
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
@@ -463,15 +517,26 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return team?.team === myTeam;
         });
 
+        // Check if any unit has moved - if not, skip expensive LOS recalculation
+        const needsRecalc = this._fowDirty || this._checkUnitMovement(myUnits);
+
+        if (!needsRecalc) {
+            // Still need to increment frame for visibility cache
+            this.currentFrame++;
+            return;
+        }
+
+        this._fowDirty = false;
+
         // Hide all meshes
         this.losMeshPool.forEach(mesh => mesh.visible = false);
 
         let meshIndex = 0;
 
-        myUnits.forEach((entityId) => {
+        for (const entityId of myUnits) {
             const pos = this.game.getComponent(entityId, "position");
             const unitType = this.game.getComponent(entityId, "unitType");
-            if (!pos) return;
+            if (!pos) continue;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
 
@@ -481,12 +546,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 unitType,
                 entityId
             );
-            
+
             this.updateVisibilityMesh(visiblePoints, meshIndex);
-    
+
             meshIndex++;
-            
-        });
+        }
 
         // Render visibility
         this.game.renderer.setRenderTarget(this.fogRenderTarget);
