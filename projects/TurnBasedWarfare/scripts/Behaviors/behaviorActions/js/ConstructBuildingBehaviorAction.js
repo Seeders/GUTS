@@ -150,6 +150,31 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
+    onBattleEnd(entityId, game){
+        const shared = this.getShared(entityId, game);
+        const memory = this.getMemory(entityId);
+        const buildingId = shared.targetBuilding;
+        if (!buildingId) {
+            return;
+        }
+        const elapsed = game.state.round - memory.constructionStartTime + 1;
+        const buildTime = shared.buildTime || this.parameters.defaultBuildTime;
+
+        if (elapsed >= buildTime) {
+            const buildingPlacement = game.getComponent(buildingId, 'placement');
+            if (!buildingPlacement || !buildingPlacement.isUnderConstruction ||  buildingPlacement.assignedBuilder != entityId) {
+                return;
+            }
+            this.completeConstruction(entityId, buildingId, buildingPlacement, game);
+
+            shared.targetBuilding = null;
+            shared.targetPosition = null;
+            shared.buildTime = null;
+
+            this.unanchorBuilder(entityId, game);
+        }
+
+    }
     onEnd(entityId, game) {
         // Unanchor builder if action is interrupted
         this.unanchorBuilder(entityId, game);

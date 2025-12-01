@@ -302,14 +302,41 @@ class BaseBehaviorNode {
         this.clearMemory(entityId);
     }
 
-    onBattleStart(entityId, game) {}
+    onBattleStart(entityId, game) {        
+        this.children.forEach((childName) => {
+            const node = game.gameManager?.call('getNodeByType', childName);
+            if(!node.onBattleStart){
+                console.warn('missing onBattleStart', childName);
+                return;
+            }
+            node.onBattleStart(entityId, game);
+        });
+    }
 
     onBattleEnd(entityId, game) {
+        this.children.forEach((childName) => {
+            const node = game.gameManager?.call('getNodeByType', childName);
+            if(!node.onBattleEnd){
+                console.warn('missing onBattleEnd', childName);
+                return;                
+            }
+            node.onBattleEnd(entityId, game);
+        });
         this.runningState.delete(entityId);
         this.clearMemory(entityId);
     }
 
-    onPlacementPhaseStart(entityId, game) {}
+    onPlacementPhaseStart(entityId, game) {
+
+        this.children.forEach((childName) => {
+            const node = game.gameManager?.call('getNodeByType', childName);
+            if(!node.onPlacementPhaseStart){
+                console.warn('missing onPlacementPhaseStart', childName);
+                return;                
+            }
+            node.onPlacementPhaseStart(entityId, game);
+        });
+    }
 
     // ==================== Utility Helpers ====================
 

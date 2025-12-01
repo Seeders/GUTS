@@ -44,8 +44,20 @@ class BehaviorSystem extends GUTS.BaseSystem {
             aiState.shared = {};
             aiState.currentAction = "IdleBehaviorAction";
             const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
-            if (rootTree && rootTree.onBattleStart) {
+            if (rootTree) {
                 rootTree.onBattleStart(entityId, this.game);
+            }
+        }
+    }
+
+    onPlacementPhaseStart() {
+        const entities = this.getBehaviorEntities();
+
+        for (const entityId of entities) {
+            const aiState = this.game.getComponent(entityId, "aiState");      
+            const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
+            if (rootTree) {
+                rootTree.onPlacementPhaseStart(entityId, this.game);
             }
         }
     }
@@ -98,22 +110,6 @@ class BehaviorSystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith("aiState", "unitType");
         entities.sort((a, b) => String(a).localeCompare(String(b)));
         return entities;
-    }
-
-    onPlacementPhaseStart() {
-        const entities = this.getBehaviorEntities();
-
-        for (const entityId of entities) {
-            const aiState = this.game.getComponent(entityId, "aiState");
-            if (aiState.currentAction) {
-                const executor = this.processor.getNodeByType(aiState.currentAction);
-                executor.onPlacementPhaseStart(entityId, this.game);
-            }
-            const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);
-            if (rootTree) {
-                rootTree.onPlacementPhaseStart(entityId, this.game);
-            }
-        }
     }
 
     /**

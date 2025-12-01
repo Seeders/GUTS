@@ -5,10 +5,6 @@ class BaseBehaviorAction extends GUTS.BaseBehaviorNode {
         RUNNING: 'running'
     };
 
-    constructor(game, config) {
-        super(game, config);
-    }
-
     /**
      * Check if this action can execute for the given entity
      * @param {string} entityId - Entity ID

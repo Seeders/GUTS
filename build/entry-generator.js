@@ -316,35 +316,6 @@ class EntryGenerator {
         sections.push('};');
         sections.push('');
 
-        // Create class registry (dynamic collections)
-        sections.push('// ========== CLASS REGISTRY ==========');
-        sections.push('const ClassRegistry = {');
-        sections.push('  getManager: (name) => Managers[name],');
-        sections.push('  getSystem: (name) => Systems[name],');
-        sections.push('  getLibrary: (name) => Libraries[name],');
-
-        // Add dynamic getters for each collection
-        Object.entries(classCollectionObjects).forEach(([collectionName, varName]) => {
-            const methodName = `get${varName}`;
-            sections.push(`  ${methodName}: (name) => ${varName}[name],`);
-        });
-
-        sections.push('  getAllManagers: () => Managers,');
-        sections.push('  getAllSystems: () => Systems,');
-        sections.push('  getAllLibraries: () => Libraries,');
-
-        // Add dynamic getAll methods for each collection
-        const getAllEntries = Object.entries(classCollectionObjects);
-        getAllEntries.forEach(([collectionName, varName], index) => {
-            const methodName = `getAll${varName}`;
-            const isLast = index === getAllEntries.length - 1;
-            const comma = isLast ? '' : ',';
-            sections.push(`  ${methodName}: () => ${varName}${comma}`);
-        });
-
-        sections.push('};');
-        sections.push('');
-
         // Setup global namespace
         sections.push('// ========== GLOBAL SETUP ==========');
         sections.push('');
@@ -423,7 +394,6 @@ class EntryGenerator {
             sections.push(`  ${collectionName}: ${varName},`);
         });
 
-        sections.push('  classRegistry: ClassRegistry,');
         sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
         sections.push('    this.initialized = true;');
@@ -669,25 +639,6 @@ class EntryGenerator {
         sections.push('};');
         sections.push('');
 
-        // Create class registry (dynamic collections)
-        sections.push('// ========== CLASS REGISTRY ==========');
-        sections.push('const ClassRegistry = {');
-        sections.push('  getManager: (name) => Managers[name],');
-        sections.push('  getSystem: (name) => Systems[name],');
-        sections.push('  getLibrary: (name) => Libraries[name],');
-
-        // Add dynamic getters for each collection
-        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
-            const methodName = `get${varName}`;
-            sections.push(`  ${methodName}: (name) => ${varName}[name],`);
-        }
-
-        // Remove trailing comma from last entry
-        let lastClassRegLine = sections[sections.length - 1];
-        sections[sections.length - 1] = lastClassRegLine.replace(/,$/, '');
-
-        sections.push('};');
-        sections.push('');
 
         // Setup global namespace (Node.js global)
         sections.push('// ========== GLOBAL SETUP ==========');
@@ -704,7 +655,6 @@ class EntryGenerator {
             sections.push(`  ${collectionName}: ${varName},`);
         }
 
-        sections.push('  classRegistry: ClassRegistry,');
         sections.push('  init: function(gutsEngine) {');
         sections.push('    if (this.initialized) return;');
         sections.push('    this.initialized = true;');
