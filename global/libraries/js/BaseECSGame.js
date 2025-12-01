@@ -83,6 +83,10 @@ class BaseECSGame {
                 system.postAllInit();
             }
         });
+
+        // Load initial scene if configured
+        // This enables systems and triggers onSceneLoad() callbacks
+        this.loadInitialScene();
     }
 
     /**

@@ -23,9 +23,16 @@ class DamageNumberSystem extends GUTS.BaseSystem {
 
     init() {
         this.game.gameManager.register('showDamageNumber', this.showDamageNumber.bind(this));
-        this.initializeDamageNumberSystem();
+        // Scene-dependent initialization deferred to onSceneLoad()
     }
-    
+
+    onSceneLoad(sceneData) {
+        // Initialize the damage number system once scene/Three.js is available
+        if (!this.damageNumberMesh) {
+            this.initializeDamageNumberSystem();
+        }
+    }
+
     initializeDamageNumberSystem() {
         // Create texture atlas with all characters we need
         const canvas = document.createElement('canvas');
