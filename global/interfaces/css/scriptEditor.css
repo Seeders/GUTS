@@ -2,20 +2,12 @@
    SCRIPT EDITOR - MODULE-SPECIFIC STYLES
    ============================================================================= */
 
-/* Ensure canvas area has explicit height for children */
-#script-editor-container .editor-module__canvas-area {
-    position: relative;
-}
-
-/* Code container - use absolute positioning to fill parent */
+/* Code container fills available space */
 .script-editor__code-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 .script-editor__code {
@@ -25,13 +17,11 @@
     line-height: 1.5;
 }
 
-/* Override global scrollbar suppression and theme height for CodeMirror */
+/* Override global scrollbar suppression and fix CodeMirror sizing */
 #script-editor-container .CodeMirror {
     overflow-y: auto !important;
     -ms-overflow-style: auto !important;
     scrollbar-width: auto !important;
-    flex: 1 !important;
-    height: auto !important;
     font-size: 14px;
 }
 

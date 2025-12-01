@@ -40,8 +40,8 @@ class ScriptEditor {
             hintOptions: { completeSingle: false }
         });
 
-        // Let CSS flexbox handle the sizing instead of explicit pixel height
-        this.scriptEditor.setSize('100%', '100%');
+        // Set initial size - will be updated when content is loaded
+        this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
 
         this.setupEventListeners();
         
@@ -80,6 +80,8 @@ class ScriptEditor {
                 sizer.style.marginLeft = '';
             }
 
+            // Set explicit size and refresh
+            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
             this.scriptEditor.refresh();
 
             // Double-refresh after a short delay to ensure CodeMirror recalculates properly
