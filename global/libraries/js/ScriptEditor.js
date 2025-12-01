@@ -1,28 +1,41 @@
 class ScriptEditor {
     constructor(gameEditor, config) {
-      
+
         this.gameEditor = gameEditor;
         this.config = config;
-        let theme = "";
+        this.scriptEditor = null; // Lazy initialize
+
+        // Apply theme CSS if configured
         if( this.gameEditor.getCollections().configs.codeMirror ) {
-            theme = this.gameEditor.getCollections().themes[this.gameEditor.getCollections().configs.codeMirror.theme].css;
-            if( theme ) { 
+            const theme = this.gameEditor.getCollections().themes[this.gameEditor.getCollections().configs.codeMirror.theme]?.css;
+            if( theme ) {
               let styleTag = document.createElement('style');
               styleTag.innerHTML = theme;
               styleTag.setAttribute('id', 'codeMirrorTheme');
               document.head.append(styleTag);
             }
         }
-        this.container = document.getElementById('script-editor-container'); 
+
+        this.container = document.getElementById('script-editor-container');
         this.MIN_HEIGHT = 200;
         this.isDragging = false;
         this.start_y = 0;
         this.start_h = 0;
         this.DEFAULT_HEIGHT = () => document.body.clientHeight - 200;
-				this.savePropertyName = "script";
+        this.savePropertyName = "script";
+
         if (!this.container) {
             console.error("ScriptEditor container not found");
             return;
+        }
+
+        this.setupEventListeners();
+    }
+
+    // Initialize CodeMirror only when container is visible
+    initCodeMirror() {
+        if (this.scriptEditor) {
+            return; // Already initialized
         }
 
         const textArea = this.container.querySelector('#script-editor');
@@ -41,30 +54,33 @@ class ScriptEditor {
         });
 
         this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
-
-        this.setupEventListeners();
-        
-        
     }
-   
+
     setupEventListeners() {
-     
+
         document.body.addEventListener('editScript', (event) => {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
+
+            // Initialize CodeMirror on first use (container is now visible)
+            this.initCodeMirror();
+
+            if (!this.scriptEditor) {
+                console.error("CodeMirror not initialized");
+                return;
+            }
+
             this.scriptEditor.setValue(this.scriptValue);
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
-
-            // Scroll to top and refresh
             this.scriptEditor.scrollTo(0, 0);
             this.scriptEditor.refresh();
 
+            // Additional refresh after a short delay
             setTimeout(() => {
-                this.scriptEditor.scrollTo(0, 0);
                 this.scriptEditor.refresh();
-            }, 100);
+            }, 50);
         });
-        
+
         const saveBtn = this.container.querySelector('#save-script-btn');
         if (saveBtn) {
             saveBtn.addEventListener('click', () => this.saveScript());
@@ -80,14 +96,14 @@ class ScriptEditor {
             return;
         }
         const scriptText = this.scriptEditor.getValue();
-   
+
         const myCustomEvent = new CustomEvent('saveScript', {
-            detail: { data: scriptText, propertyName: this.savePropertyName }, 
-            bubbles: true, 
-            cancelable: true 
+            detail: { data: scriptText, propertyName: this.savePropertyName },
+            bubbles: true,
+            cancelable: true
         });
 
-      
+
         document.body.dispatchEvent(myCustomEvent);
     }
 
