@@ -2,11 +2,11 @@
    SCRIPT EDITOR - MODULE-SPECIFIC STYLES
    ============================================================================= */
 
-/* Main container - ensure it can grow */
+/* Main container - use viewport height */
 #script-editor-container {
     display: flex;
     flex-direction: row;
-    height: 100%;
+    height: calc(100vh - 100px);
     min-height: 400px;
 }
 
@@ -14,7 +14,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 400px;
     height: 100%;
 }
 
@@ -24,16 +23,14 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 400px;
     height: 100%;
     width: 100%;
 }
 
-/* Monaco editor container - needs explicit dimensions */
+/* Monaco editor container */
 #script-editor {
     flex: 1;
     width: 100%;
-    min-height: 400px;
     height: 100%;
     overflow: hidden;
     border: 1px solid #3c3c3c;
