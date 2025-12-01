@@ -5,6 +5,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const ConfigParser = require('./build/config-parser');
 const EntryGenerator = require('./build/entry-generator');
 
@@ -201,14 +202,25 @@ const editorConfig = entries.editor ? {
     },
     module: {
         rules: [
-            ...baseConfig.module.rules,
+            // Include base rules EXCEPT the CSS rule (which uses asset/source)
+            ...baseConfig.module.rules.filter(rule => !rule.test?.toString().includes('css')),
             {
+                // Monaco and editor CSS should be injected into DOM
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader']
+            },
+            {
+                // Monaco editor requires TTF fonts
+                test: /\.ttf$/,
+                type: 'asset/resource'
             }
         ]
     },
     plugins: [
+        new MonacoWebpackPlugin({
+            languages: ['javascript', 'typescript', 'css', 'html', 'json'],
+            features: ['!gotoSymbol']
+        }),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify(mode),
             'process.env.IS_CLIENT': JSON.stringify(false),
