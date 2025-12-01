@@ -442,11 +442,13 @@ class EditorController {
 
     removeSelectedType() {
         const typeId = this.getSelectedType();
+        // Get category before deleting (needed to delete the folder)
+        const category = this.model.getCategoryByType(typeId);
         const result = this.model.deleteType(typeId);
         if (result.success) {
             // Dispatch custom event directly
             const customEvent = new CustomEvent('deleteType', {
-                detail: { typeId }
+                detail: { typeId, category }
             });
             document.body.dispatchEvent(customEvent);
         }
