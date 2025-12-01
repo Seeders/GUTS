@@ -10,7 +10,8 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (targetPosition) {
             const isForceMove = playerOrder.meta.preventEnemiesInRangeCheck || false;
-            const pos = game.getComponent(entityId, 'position');
+            const transform = game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
             const distanceToTarget = this.distance(pos, targetPosition);
 
             // Check if we've reached the target

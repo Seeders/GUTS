@@ -34,16 +34,17 @@ class HealthBarSystem extends GUTS.BaseSystem {
             this.initialize();
         }
         
-        // Get all entities with health and position
+        // Get all entities with health and transform
         const healthEntities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health",
             "unitType"
         );
-        
+
         // Update existing health bars and create new ones
         healthEntities.forEach(entityId => {
-            const pos    = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos    = transform?.position;
             const health = this.game.getComponent(entityId, "health");
             const team   = this.game.getComponent(entityId, "team");
             if (!pos || !health) return;

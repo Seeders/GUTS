@@ -59,7 +59,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const pos = transform?.position;
         const team = this.game.getComponent(casterEntity, "team");
         if (!pos || !team) return;
         

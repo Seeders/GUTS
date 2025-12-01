@@ -171,7 +171,9 @@ class WorldSystem extends GUTS.BaseSystem {
         const cameraSettings = collections.cameras?.[world?.camera];
 
         // Initialize Three.js through WorldRenderer
-        this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, false);
+        // Enable controls in editor context, disable in game (game uses CameraControlSystem)
+        const isEditor = this.game.canvas !== undefined; // Editor sets canvas on game context
+        this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, isEditor);
 
         // Add window resize listener
         window.addEventListener('resize', this.onWindowResizeHandler);
@@ -238,10 +240,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // Create extension planes
         this.worldRenderer.createExtensionPlanes();
 
-        // Update instance capacities now that terrain data is loaded
-        if (this.game.renderSystem) {
-            this.game.renderSystem.updateInstanceCapacities();
-        }
+        // Note: updateInstanceCapacities moved to postSceneLoad (RenderSystem needs to init first)
 
         // Add environment entity visuals
         if (terrainDataManager.tileMap?.worldObjects) {
@@ -261,6 +260,11 @@ class WorldSystem extends GUTS.BaseSystem {
      */
     async postSceneLoad(sceneData) {
         if (!this.worldRenderer) return;
+
+        // Update instance capacities now that RenderSystem has initialized EntityRenderer
+        if (this.game.renderSystem) {
+            this.game.renderSystem.updateInstanceCapacities();
+        }
 
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)

@@ -546,7 +546,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         const currentPositions = new Map();
 
         for (const entityId of myUnits) {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (!pos) continue;
 
             currentPositions.set(entityId, { x: pos.x, z: pos.z });
@@ -615,7 +616,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         if (!myTeam) return;
 
         const myUnits = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "team",
             "health"
         ).filter(id => {
@@ -640,7 +641,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         let meshIndex = 0;
 
         for (const entityId of myUnits) {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const unitType = this.game.getComponent(entityId, "unitType");
             if (!pos) continue;
 

@@ -207,12 +207,13 @@ class RaycastHelper {
         let closestDistance = clickRadius;
 
         const entities = getEntitiesWithComponents(
-            "position",
+            "transform",
             "team"
         );
 
         entities.forEach(entityId => {
-            const pos = getComponent(entityId, "position");
+            const transform = getComponent(entityId, "transform");
+            const pos = transform?.position;
 
             if (!pos) return;
 

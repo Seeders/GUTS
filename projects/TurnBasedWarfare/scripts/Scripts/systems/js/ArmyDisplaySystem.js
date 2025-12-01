@@ -60,9 +60,10 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
                 const team = this.game.getComponent(entityId, "team");
                 const unitType = this.game.getComponent(entityId, "unitType");
                 const health = this.game.getComponent(entityId, "health");
-                const position = this.game.getComponent(entityId, "position");
+                const transform = this.game.getComponent(entityId, "transform");
+                const position = transform?.position;
                 const combat = this.game.getComponent(entityId, "combat");
-                
+
                 const unitInfo = {
                     id: entityId,
                     type: unitType?.type || 'Unknown',
@@ -289,7 +290,8 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         if (this.game.effectsSystem) {
             // Get unit position and show highlight effect
             try {
-                const position = this.game.getComponent(unitId, "position");
+                const transform = this.game.getComponent(unitId, "transform");
+                const position = transform?.position;
                 if (position) {
                     // Convert world position to screen position and show highlight
                     // This is a placeholder - actual implementation would depend on rendering system

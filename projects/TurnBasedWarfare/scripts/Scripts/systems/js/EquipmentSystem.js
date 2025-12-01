@@ -46,23 +46,23 @@ class EquipmentSystem extends GUTS.BaseSystem {
     update() {
         const entities = this.game.getEntitiesWith(
             "equipment",
-            "position"
+            "transform"
         );
-        
+
         entities.forEach(entityId => {
             this.updateEntityEquipment(entityId);
         });
-        
+
         this.cleanupRemovedEntities(entities);
     }
-    
+
     updateEntityEquipment(entityId) {
         const equipmentData = this.equipmentInstances.get(entityId);
         if (!equipmentData) return;
-        
-        const pos = this.game.getComponent(entityId, "position");
-        const facing = this.game.getComponent(entityId, "facing");
-        
+
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
+
         if (!pos) return;
         
         const unitInstance = this.game.renderSystem?.entityToInstance?.get(entityId);
@@ -73,9 +73,9 @@ class EquipmentSystem extends GUTS.BaseSystem {
         
         for (const [slotType, equipInstance] of equipmentData.entries()) {
             this.updateEquipmentTransformWithBone(
-                equipInstance, 
-                pos, 
-                facing, 
+                equipInstance,
+                pos,
+                transform,
                 unitBatch,
                 unitInstance
             );
@@ -110,7 +110,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
         return matrix;
     }
         
-    updateEquipmentTransformWithBone(equipInstance, pos, facing, unitBatch, unitInstance) {
+    updateEquipmentTransformWithBone(equipInstance, pos, transform, unitBatch, unitInstance) {
         const batch = this.equipmentBatches.get(equipInstance.batchKey);
         if (!batch || equipInstance.instanceIndex === null) return;
         
@@ -185,9 +185,9 @@ class EquipmentSystem extends GUTS.BaseSystem {
         
         offsetVec.applyQuaternion(boneRotation);
         bonePos.add(offsetVec);
-        
-        const rotationY = facing ? (-facing.angle + Math.PI / 2) : (Math.PI / 2);
-        const worldRotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
+
+        const rotationY = transform?.rotation?.y || 0;
+        const worldRotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -rotationY + Math.PI / 2);
         
         bonePos.applyQuaternion(worldRotation);
         

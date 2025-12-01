@@ -51,7 +51,8 @@ class BloodlustAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const pos = transform?.position;
         if (!pos) return;
         
         // Immediate cast effect
@@ -67,7 +68,8 @@ class BloodlustAbility extends GUTS.BaseAbility {
     activateBloodlust(casterEntity) {
         // Check if caster is still alive
         const casterHealth = this.game.getComponent(casterEntity, "health");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
 
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) return;
 
@@ -127,7 +129,8 @@ class BloodlustAbility extends GUTS.BaseAbility {
                 this.game.removeComponent(casterEntity, "buff");
 
                 // Visual effect when bloodlust expires
-                const casterPos = this.game.getComponent(casterEntity, "position");
+                const transform = this.game.getComponent(casterEntity, "transform");
+                const casterPos = transform?.position;
                 if (casterPos) {
                     this.createVisualEffect(casterPos, 'bloodlust', { 
                         count: 5, 
@@ -154,7 +157,8 @@ class BloodlustAbility extends GUTS.BaseAbility {
             buff.modifiers.currentStacks = currentStacks + 1;
 
             // Visual effect for gaining a kill stack
-            const killerPos = this.game.getComponent(killerId, "position");
+            const transform = this.game.getComponent(killerId, "transform");
+            const killerPos = transform?.position;
             if (killerPos) {
                 this.createVisualEffect(killerPos, 'bloodlust', { 
                     count: 3, 

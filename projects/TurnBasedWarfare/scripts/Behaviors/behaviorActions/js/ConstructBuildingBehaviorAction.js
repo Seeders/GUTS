@@ -60,8 +60,10 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     anchorBuilder(entityId, buildingId, game) {
-        const pos = game.getComponent(entityId, 'position');
-        const buildingPos = game.getComponent(buildingId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const buildingTransform = game.getComponent(buildingId, 'transform');
+        const buildingPos = buildingTransform?.position;
         const vel = game.getComponent(entityId, 'velocity');
 
         if (vel && !vel.anchored) {
@@ -71,13 +73,11 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Face the building
-        if (pos && buildingPos) {
-            const facing = game.getComponent(entityId, 'facing');
-            if (facing) {
-                const dx = buildingPos.x - pos.x;
-                const dz = buildingPos.z - pos.z;
-                facing.angle = Math.atan2(dz, dx);
-            }
+        if (pos && buildingPos && transform) {
+            const dx = buildingPos.x - pos.x;
+            const dz = buildingPos.z - pos.z;
+            if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
+            transform.rotation.y = Math.atan2(dz, dx);
         }
 
         // Clear movement target

@@ -13,7 +13,8 @@
 class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
 
         if (!pos || !team) {
@@ -21,7 +22,7 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Get all gold mine entities
-        const goldMineEntities = game.getEntitiesWith('goldMine', 'position', 'team');
+        const goldMineEntities = game.getEntitiesWith('goldMine', 'transform', 'team');
 
         if (!goldMineEntities || goldMineEntities.size === 0) {
             return this.failure();
@@ -39,7 +40,8 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         // Find nearest mine belonging to our team
         for (const mineId of sortedMineIds) {
             const mineTeam = game.getComponent(mineId, 'team');
-            const minePos = game.getComponent(mineId, 'position');
+            const mineTransform = game.getComponent(mineId, 'transform');
+            const minePos = mineTransform?.position;
 
             if (mineTeam && mineTeam.team === team.team) {
                 const distance = this.distance(pos, minePos);

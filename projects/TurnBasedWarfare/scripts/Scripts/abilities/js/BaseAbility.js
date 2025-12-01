@@ -54,7 +54,8 @@ class BaseAbility {
         if (this.game.damageSystem) {
             const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
 
-            const targetPos = this.game.getComponent(targetId, "position");
+            const transform = this.game.getComponent(targetId, "transform");
+            const targetPos = transform?.position;
             if (targetPos && this.game.effectsSystem) {
                 // Show impact effect - DamageSystem already handles damage numbers
                 this.createVisualEffect(targetPos, 'impact');
@@ -68,22 +69,24 @@ class BaseAbility {
     // FIXED: Entities already sorted from getEntitiesWith()
     getEnemiesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
 
         if (!casterPos || !casterTeam) return [];
 
-        return this.game.getEntitiesWith("position", "team", "health")
+        return this.game.getEntitiesWith("transform", "team", "health")
             .filter(entityId => {
                 if (entityId === casterEntity) return false;
 
-                const pos = this.game.getComponent(entityId, "position");
+                const transform = this.game.getComponent(entityId, "transform");
+                const pos = transform?.position;
                 const team = this.game.getComponent(entityId, "team");
                 const health = this.game.getComponent(entityId, "health");
-                
+
                 if (!pos || !team || !health || health.current <= 0) return false;
                 if (team.team === casterTeam.team) return false;
-                
+
                 const distance = Math.sqrt(Math.pow(pos.x - casterPos.x, 2) + Math.pow(pos.z - casterPos.z, 2));
                 return distance <= effectiveRange;
             });
@@ -92,20 +95,22 @@ class BaseAbility {
     // FIXED: Entities already sorted from getEntitiesWith()
     getAlliesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
 
         if (!casterPos || !casterTeam) return [];
 
-        return this.game.getEntitiesWith("position", "team", "health")
+        return this.game.getEntitiesWith("transform", "team", "health")
             .filter(entityId => {
-                const pos = this.game.getComponent(entityId, "position");
+                const transform = this.game.getComponent(entityId, "transform");
+                const pos = transform?.position;
                 const team = this.game.getComponent(entityId, "team");
                 const health = this.game.getComponent(entityId, "health");
-                
+
                 if (!pos || !team || !health || health.current <= 0) return false;
                 if (team.team !== casterTeam.team) return false;
-                
+
                 const distance = Math.sqrt(Math.pow(pos.x - casterPos.x, 2) + Math.pow(pos.z - casterPos.z, 2));
                 return distance <= effectiveRange;
             });
@@ -114,31 +119,33 @@ class BaseAbility {
     // FIXED: Entities already sorted, remove redundant sorting
     findBestClusterPosition(entities, minCluster = 2) {
         if (entities.length < minCluster) return null;
-        
+
         let bestPos = null;
         let bestScore = 0;
-        
+
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (!pos) return;
 
             let nearbyCount = 0;
             entities.forEach(otherId => {
                 if (otherId === entityId) return;
-                const otherPos = this.game.getComponent(otherId, "position");
+                const transform = this.game.getComponent(otherId, "transform");
+                const otherPos = transform?.position;
                 if (!otherPos) return;
-                
+
                 const distance = Math.sqrt(Math.pow(pos.x - otherPos.x, 2) + Math.pow(pos.z - otherPos.z, 2));
                 if (distance <= 80) nearbyCount++;
             });
-            
+
             // Use >= for consistent tie-breaking (first in sorted order wins)
             if (nearbyCount >= minCluster - 1 && nearbyCount >= bestScore) {
                 bestScore = nearbyCount;
                 bestPos = { x: pos.x, y: pos.y, z: pos.z };
             }
         });
-        
+
         return bestPos;
     }
     onBattleEnd() {
@@ -149,7 +156,8 @@ class BaseAbility {
         // Self-targeting abilities don't need facing change
         if (this.targetType === 'self') return null;
 
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
 
         let candidates = [];
@@ -171,7 +179,8 @@ class BaseAbility {
         const sortedCandidates = candidates.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
         sortedCandidates.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             if (!pos) return;
 
             const distance = Math.sqrt(

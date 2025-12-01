@@ -101,7 +101,8 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
         const casterHealth = this.game.getComponent(casterEntity, "health");
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
@@ -119,7 +120,8 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
             const unitType = this.game.getComponent(allyId, "unitType");
-            const allyPos = this.game.getComponent(allyId, "position");
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
             
             if (!unitType || !allyPos) return;
             

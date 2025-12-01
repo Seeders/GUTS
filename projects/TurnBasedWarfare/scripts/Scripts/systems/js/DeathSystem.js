@@ -61,11 +61,12 @@ class DeathSystem extends GUTS.BaseSystem {
     convertToCorpse(entityId) {
 
         // Get current components before conversion
-        const position = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
         const unitType = this.game.getComponent(entityId, "unitType");
         const team = this.game.getComponent(entityId, "team");
 
-        if (!position || !unitType || !team) return;
+        if (!pos || !unitType || !team) return;
 
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
         if(this.game.gameManager.has('setCorpseAnimation')){
@@ -95,9 +96,10 @@ class DeathSystem extends GUTS.BaseSystem {
         const nearbyCorpses = [];
 
         corpses.forEach(corpseId => {
-            const corpsePos = this.game.getComponent(corpseId, "position");
+            const transform = this.game.getComponent(corpseId, "transform");
+            const corpsePos = transform?.position;
             const corpse = this.game.getComponent(corpseId, "corpse");
-            
+
             if (!corpsePos || !corpse) return;
             
             // Check team filter if specified

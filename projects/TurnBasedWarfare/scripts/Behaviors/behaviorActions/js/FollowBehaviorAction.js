@@ -19,7 +19,8 @@ class FollowBehaviorAction extends GUTS.BaseBehaviorAction {
         const maxDistance = params.maxDistance || 200;
         const stopDistance = params.stopDistance || 30;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const vel = game.getComponent(entityId, 'velocity');
 
         if (!pos) {
@@ -33,7 +34,8 @@ class FollowBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const targetPos = game.getComponent(targetId, 'position');
+        const targetTransform = game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
         const targetHealth = game.getComponent(targetId, 'health');
 
         // Check if target is valid

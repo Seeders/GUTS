@@ -80,7 +80,8 @@ class MindControlAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
         
         if (!casterPos || !casterTeam) return;
@@ -110,7 +111,8 @@ class MindControlAbility extends GUTS.BaseAbility {
 
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
 
         // Sort enemies deterministically first
@@ -120,7 +122,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
 
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             if (!enemyPos) return;
 
             const distance = Math.sqrt(
@@ -141,7 +144,8 @@ class MindControlAbility extends GUTS.BaseAbility {
     startMindControl(casterId, targetId) {
         const casterTeam = this.game.getComponent(casterId, "team");
         const targetTeam = this.game.getComponent(targetId, "team");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
         
         if (!casterTeam || !targetTeam || !targetPos) return;
 
@@ -186,7 +190,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         if (!controlData) return;
 
         const targetTeam = this.game.getComponent(targetId, "team");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
         
         if (!targetTeam || !targetPos) {
             this.cancelMindControl(targetId);
@@ -196,7 +201,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         // Check if any contributors are still alive and in range
         const validContributors = Array.from(controlData.contributors).filter(casterId => {
             const casterHealth = this.game.getComponent(casterId, "health");
-            const casterPos = this.game.getComponent(casterId, "position");
+            const transform = this.game.getComponent(casterId, "transform");
+            const casterPos = transform?.position;
             
             if (!casterHealth || casterHealth.current <= 0 || !casterPos) return false;
             
@@ -220,7 +226,8 @@ class MindControlAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Apply mind control effect
     applyMindControl(targetId, controlData) {
         const targetTeam = this.game.getComponent(targetId, "team");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
         
         if (!targetTeam || !targetPos) return;
 
@@ -330,7 +337,8 @@ class MindControlAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Expire mind control effect
     expireMindControl(targetId, originalTeam) {
         const targetTeam = this.game.getComponent(targetId, "team");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
         
         if (!targetTeam) return; // Target might be dead
 
@@ -350,8 +358,10 @@ class MindControlAbility extends GUTS.BaseAbility {
         // Only create visual beams on client
         if (this.game.isServer) return;
 
-        const casterPos = this.game.getComponent(casterId, "position");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(casterId, "transform");
+        const casterPos = transform?.position;
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
 
         if (!casterPos || !targetPos || !this.game.effectsSystem) return;
 

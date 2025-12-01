@@ -125,7 +125,8 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
     
     handleSummonExpiration(entityId) {
-        const summonPos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const summonPos = transform?.position;
         if (summonPos) {
             // Create disappearing effect
             this.game.gameManager.call('createParticleEffect',
@@ -136,9 +137,10 @@ class LifetimeSystem extends GUTS.BaseSystem {
         }
 
     }
-    
+
     handleMirrorImageExpiration(entityId) {
-        const imagePos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const imagePos = transform?.position;
         if (imagePos) {
             // Create shimmering dissolution effect
             this.game.gameManager.call('createParticleEffect',
@@ -148,9 +150,10 @@ class LifetimeSystem extends GUTS.BaseSystem {
             );
         }
     }
-    
+
     handleTrapExpiration(entityId) {
-        const trapPos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const trapPos = transform?.position;
         if (trapPos) {
             // Create fizzling effect for expired trap
             this.game.gameManager.call('createParticleEffect',
@@ -162,10 +165,11 @@ class LifetimeSystem extends GUTS.BaseSystem {
 
 
     }
-    
+
     handleTemporaryEffectExpiration(entityId) {
         // For visual effect entities, just let them fade naturally
-        const effectPos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const effectPos = transform?.position;
         if (effectPos) {
             this.game.gameManager.call('createParticleEffect',
                 effectPos.x, effectPos.y, effectPos.z,
@@ -174,11 +178,12 @@ class LifetimeSystem extends GUTS.BaseSystem {
             );
         }
     }
-    
+
     handleMindControlExpiration(entityId) {
         const mindControl = this.game.getComponent(entityId, "mindControlled");
         const targetTeam = this.game.getComponent(entityId, "team");
-        const targetPos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const targetPos = transform?.position;
 
         if (mindControl && targetTeam) {
             // Restore original team
@@ -217,7 +222,8 @@ class LifetimeSystem extends GUTS.BaseSystem {
     createDestructionEffects(entityId, lifetime) {
         if (!lifetime.destructionEffect) return;
 
-        const pos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
         if (!pos) return;
 
         const effectConfig = lifetime.destructionEffect;

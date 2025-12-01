@@ -18,25 +18,26 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
             this.hideAllCircles();
             return;
         }
-        
+
         const entities = this.game.getEntitiesWith(
-            "position", 
+            "transform",
             "unitType"
         );
-        
+
         entities.forEach(entityId => {
             this.updateEntityCircles(entityId);
         });
-        
+
         // Clean up circles for destroyed entities
         this.cleanupDestroyedEntities(entities);
     }
-    
+
     updateEntityCircles(entityId) {
-        const pos = this.game.getComponent(entityId, "position");
+        const transform = this.game.getComponent(entityId, "transform");
+        const pos = transform?.position;
         const collision = this.game.getComponent(entityId, "collision");
         const combat = this.game.getComponent(entityId, "combat");
-        
+
         if (!pos || !collision) return;
         
         // Get or create debug circles for this entity

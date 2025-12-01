@@ -211,7 +211,8 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
                 this.game.removeComponent(enemyId, "buff");
                 
                 // Visual effect when disruption expires
-                const enemyPos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const enemyPos = transform?.position;
                 if (enemyPos) {
                     this.createVisualEffect(enemyPos, 'disruption', { 
                         count: 3, 

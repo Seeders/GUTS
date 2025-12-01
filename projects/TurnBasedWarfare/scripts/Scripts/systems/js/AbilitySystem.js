@@ -175,18 +175,23 @@ class AbilitySystem extends GUTS.BaseSystem {
         const targetId = ability.getTargetForFacing(entityId);
         if (!targetId || targetId === entityId) return;
 
-        const casterPos = this.game.getComponent(entityId, "position");
-        const targetPos = this.game.getComponent(targetId, "position");
-        const facing = this.game.getComponent(entityId, "facing");
+        const casterTransform = this.game.getComponent(entityId, "transform");
+        const targetTransform = this.game.getComponent(targetId, "transform");
 
-        if (!casterPos || !targetPos || !facing) return;
+        if (!casterTransform?.position || !targetTransform?.position) return;
+
+        const casterPos = casterTransform.position;
+        const targetPos = targetTransform.position;
 
         // Calculate angle to face target
         const dx = targetPos.x - casterPos.x;
         const dz = targetPos.z - casterPos.z;
         const angleToTarget = Math.atan2(dz, dx);
 
-        facing.angle = angleToTarget;
+        if (!casterTransform.rotation) {
+            casterTransform.rotation = { x: 0, y: 0, z: 0 };
+        }
+        casterTransform.rotation.y = angleToTarget;
     }
 
     setCooldown(entityId, abilityId, cooldownDuration) {

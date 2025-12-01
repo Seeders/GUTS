@@ -69,7 +69,8 @@ class SmiteAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -79,7 +80,8 @@ class SmiteAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemyDeterministic(enemies);
         if (!target) return null;
         
-        const targetPos = this.game.getComponent(target, "position");
+        const transform = this.game.getComponent(target, "transform");
+        const targetPos = transform?.position;
         if (!targetPos) return null;
         
         // Show immediate cast effect
@@ -94,7 +96,8 @@ class SmiteAbility extends GUTS.BaseAbility {
     
     performDivineSmite(casterEntity, targetId, originalTargetPos) {
         // Get current target position (target may have moved)
-        const currentTargetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(targetId, "transform");
+        const currentTargetPos = transform?.position;
         const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
 
         // Create pillar of light effect

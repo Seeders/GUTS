@@ -51,7 +51,8 @@ class Tornado extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -66,11 +67,13 @@ class Tornado extends GUTS.BaseAbility {
     }
     
     applyCurses(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         enemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             const enemyCombat = this.game.getComponent(enemyId, "combat");
             
             if (!enemyPos || !enemyCombat) return;

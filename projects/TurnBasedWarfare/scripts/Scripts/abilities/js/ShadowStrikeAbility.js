@@ -55,7 +55,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const pos = transform?.position;
         if (!pos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -66,7 +67,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         const target = this.findClosestEnemy(casterEntity, enemies);
         if (!target) return;
         
-        const targetPos = this.game.getComponent(target, "position");
+        const transform = this.game.getComponent(target, "transform");
+        const targetPos = transform?.position;
         if (!targetPos) return;
         
         // Immediate cast effect
@@ -81,7 +83,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Find closest enemy deterministically
     findClosestEnemy(casterEntity, enemies) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
@@ -91,7 +94,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         let closestDistance = Infinity;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -109,8 +113,10 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     }
     
     performShadowStrike(casterEntity, targetId) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
 
         if (!casterPos || !targetPos) return;
 

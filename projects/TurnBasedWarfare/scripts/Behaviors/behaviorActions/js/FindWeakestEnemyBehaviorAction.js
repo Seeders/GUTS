@@ -18,7 +18,8 @@ class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const usePercentage = params.usePercentage !== false;
         const maxHealthPercent = params.maxHealthPercent !== undefined ? params.maxHealthPercent : 1.0;
 
-        const pos = game.getComponent(entityId, 'position');
+        const transform = game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
 
@@ -46,7 +47,7 @@ class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findWeakestEnemy(entityId, game, pos, team, range, usePercentage, maxHealthPercent) {
-        const potentialTargets = game.getEntitiesWith('position', 'team', 'health');
+        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
         const enemies = [];
 
         for (const targetId of potentialTargets) {
@@ -61,7 +62,8 @@ class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetDeathState = game.getComponent(targetId, 'deathState');
             if (targetDeathState && targetDeathState.isDying) continue;
 
-            const targetPos = game.getComponent(targetId, 'position');
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
             const distance = this.distance(pos, targetPos);
 
             if (distance > range) continue;

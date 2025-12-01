@@ -11,7 +11,7 @@ class DesyncDebugger {
     displaySync(detailed) {    
         if(this.enabled){
             const entities = this.game.getEntitiesWith(
-                "position",
+                "transform",
                 "combat"
             );
             // Create deterministic state snapshot
@@ -40,7 +40,8 @@ class DesyncDebugger {
         };
 
         entities.forEach(entityId => {
-            const pos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
             const vel = this.game.getComponent(entityId, "velocity");
             const combat = this.game.getComponent(entityId, "combat");
             const health = this.game.getComponent(entityId, "health");

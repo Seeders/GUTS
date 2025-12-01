@@ -101,8 +101,9 @@ class BurningAuraAbility extends GUTS.BaseAbility {
     executeAuraTick(casterEntity, tickIndex, totalTicks) {
         // Check if caster is still alive
         const casterHealth = this.game.getComponent(casterEntity, "health");
-        const casterPos = this.game.getComponent(casterEntity, "position");
-        
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+
         if (!casterHealth || casterHealth.current <= 0 || !casterPos) {
             // Caster is dead, end the aura early
             this.hasActiveAura = false;
@@ -117,7 +118,8 @@ class BurningAuraAbility extends GUTS.BaseAbility {
         
         // Process enemies - burn their health
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             const enemyHealth = this.game.getComponent(enemyId, "health");
             
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;

@@ -51,7 +51,8 @@ class WindShieldAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // Immediate cast effect
@@ -69,7 +70,8 @@ class WindShieldAbility extends GUTS.BaseAbility {
         const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         sortedAllies.forEach(allyId => {
-            const allyPos = this.game.getComponent(allyId, "position");
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
             if (!allyPos) return;
             // Shield effect
             this.createVisualEffect(allyPos, 'shield');            
@@ -94,9 +96,10 @@ class WindShieldAbility extends GUTS.BaseAbility {
                     const buff = this.game.getComponent(allyId, "buff");
                     if (buff && buff.buffType === 'wind_shield') {
                         this.game.removeComponent(allyId, "buff");
-                        
+
                         // Visual effect when shield expires
-                        const currentPos = this.game.getComponent(allyId, "position");
+                        const transform = this.game.getComponent(allyId, "transform");
+                        const currentPos = transform?.position;
                         if (currentPos) {
                             this.createVisualEffect(currentPos, 'shield', { 
                                 count: 3, 

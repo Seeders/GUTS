@@ -63,7 +63,8 @@ class HealAbility extends GUTS.BaseAbility {
     }
         
     execute(casterEntity, targetData = null) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const allies = this.getAlliesInRange(casterEntity);
@@ -77,7 +78,8 @@ class HealAbility extends GUTS.BaseAbility {
         
     
         this.game.schedulingSystem.scheduleAction(() => {
-            const targetPos = this.game.getComponent(target, "position");
+            const transform = this.game.getComponent(target, "transform");
+            const targetPos = transform?.position;
             if (targetPos) {
                 this.performHeal(casterEntity, target, targetPos);
             }

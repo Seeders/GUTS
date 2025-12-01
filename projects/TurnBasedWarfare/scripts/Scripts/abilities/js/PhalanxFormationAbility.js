@@ -67,7 +67,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         const casterUnitType = this.game.getComponent(casterEntity, "unitType");
         
         if (!casterPos || !casterUnitType) return null;
@@ -87,7 +88,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     }
     
     createPhalanxFormation(casterEntity, nearbyHoplites) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
         
         // Sort hoplites deterministically for consistent processing
@@ -111,7 +113,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         allHoplites.forEach((hopliteId, index) => {
             // Validate hoplite still exists and is a hoplite
             const unitType = this.game.getComponent(hopliteId, "unitType");
-            const position = this.game.getComponent(hopliteId, "position");
+            const transform = this.game.getComponent(hopliteId, "transform");
+            const position = transform?.position;
             
             if (!unitType || !position || unitType.id !== 'hoplite') return;
             
@@ -140,7 +143,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             
             // Schedule a delayed formation link effect for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
-                const pos = this.game.getComponent(hopliteId, "position");
+                const transform = this.game.getComponent(hopliteId, "transform");
+                const pos = transform?.position;
                 if (pos) {
                     this.createVisualEffect(pos, 'formation', { 
                         count: 3, 
@@ -188,7 +192,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         hopliteIds.forEach(hopliteId => {
             // Check if hoplite still exists and has the phalanx buff
             const buff = this.game.getComponent(hopliteId, "buff");
-            const position = this.game.getComponent(hopliteId, "position");
+            const transform = this.game.getComponent(hopliteId, "transform");
+            const position = transform?.position;
             
             if (!buff || buff.buffType !== 'phalanx' || !position) return;
             

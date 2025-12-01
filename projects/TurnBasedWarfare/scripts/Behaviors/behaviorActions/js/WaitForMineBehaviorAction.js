@@ -47,7 +47,8 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
             // Snap to mine position for precise mining
             const minePos = shared.targetMinePosition;
             if (minePos) {
-                const pos = game.getComponent(entityId, 'position');
+                const transform = game.getComponent(entityId, 'transform');
+                const pos = transform?.position;
                 const vel = game.getComponent(entityId, 'velocity');
                 if (pos) {
                     pos.x = minePos.x;

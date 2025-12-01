@@ -83,7 +83,8 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
 
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -351,7 +352,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     applyAreaDamage(casterEntity, centerPos, tickIndex) {
         // Get all enemies in splash radius
         const allEntities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health",
             "team"
         );
@@ -362,7 +363,8 @@ class BlizzardAbility extends GUTS.BaseAbility {
         const targets = [];
 
         allEntities.forEach(entityId => {
-            const entityPos = this.game.getComponent(entityId, "position");
+            const transform = this.game.getComponent(entityId, "transform");
+            const entityPos = transform?.position;
             const entityTeam = this.game.getComponent(entityId, "team");
             const entityHealth = this.game.getComponent(entityId, "health");
 
@@ -476,14 +478,16 @@ class BlizzardAbility extends GUTS.BaseAbility {
         let bestScore = 0;
 
         sortedEnemies.forEach(potentialCenter => {
-            const centerPos = this.game.getComponent(potentialCenter, "position");
+            const transform = this.game.getComponent(potentialCenter, "transform");
+            const centerPos = transform?.position;
             if (!centerPos) return;
 
             let targetsInRange = 0;
             let totalDistance = 0;
 
             sortedEnemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, "position");
+                const transform = this.game.getComponent(enemyId, "transform");
+                const enemyPos = transform?.position;
                 if (!enemyPos) return;
 
                 const distance = Math.sqrt(
@@ -508,7 +512,8 @@ class BlizzardAbility extends GUTS.BaseAbility {
         });
 
         if (!bestPosition && sortedEnemies.length > 0) {
-            const firstEnemyPos = this.game.getComponent(sortedEnemies[0], "position");
+            const transform = this.game.getComponent(sortedEnemies[0], "transform");
+            const firstEnemyPos = transform?.position;
             if (firstEnemyPos) {
                 bestPosition = { x: firstEnemyPos.x, y: firstEnemyPos.y, z: firstEnemyPos.z };
             }

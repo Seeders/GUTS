@@ -60,7 +60,8 @@ class MultiShotAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return null;
         
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -82,7 +83,8 @@ class MultiShotAbility extends GUTS.BaseAbility {
     }
     
     fireMultishotVolley(casterEntity, targets) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
         if (!casterPos) return;
 
         // Create volley effect
@@ -137,8 +139,10 @@ class MultiShotAbility extends GUTS.BaseAbility {
     }
     
     fireSingleArrow(casterEntity, targetId, shotIndex) {
-        const casterPos = this.game.getComponent(casterEntity, "position");
-        const targetPos = this.game.getComponent(targetId, "position");
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+        const transform = this.game.getComponent(targetId, "transform");
+        const targetPos = transform?.position;
         
         // Validate target still exists
         if (!casterPos || !targetPos) return;
@@ -194,7 +198,8 @@ class MultiShotAbility extends GUTS.BaseAbility {
         const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
         
         // Take up to maxTargets, but prioritize by distance for tactical targeting
-        const casterPos = this.game.getComponent(this.getCasterFromContext(), "position");
+        const transform = this.game.getComponent(this.getCasterFromContext(), "transform");
+        const casterPos = transform?.position;
         if (!casterPos) {
             // Fallback: just take first N enemies if no caster position
             return sortedEnemies.slice(0, this.maxTargets);
@@ -202,7 +207,8 @@ class MultiShotAbility extends GUTS.BaseAbility {
         
         // Calculate distances and sort by distance (closest first), then by ID for tie-breaking
         const enemiesWithDistance = sortedEnemies.map(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, "position");
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
             let distance = Infinity;
             
             if (enemyPos) {
