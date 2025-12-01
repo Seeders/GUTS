@@ -431,8 +431,11 @@ class EditorController {
     createType(typeId, typeName, typeSingular, typeCategory) {
         const result = this.model.createType(typeId, typeName, typeSingular, typeCategory);
         if (result.success) {
-            // Dispatch hook so FileSystemSyncService can save the objectTypeDefinition
-            this.dispatchHook('createType', { typeId, typeName, typeSingular, typeCategory });
+            // Dispatch custom event directly (not using dispatchHook) so we control the detail
+            const customEvent = new CustomEvent('createType', {
+                detail: { typeId, typeName, typeSingular, typeCategory }
+            });
+            document.body.dispatchEvent(customEvent);
         }
         return result;
     }
@@ -441,8 +444,11 @@ class EditorController {
         const typeId = this.getSelectedType();
         const result = this.model.deleteType(typeId);
         if (result.success) {
-            // Dispatch hook so FileSystemSyncService can delete the objectTypeDefinition file
-            this.dispatchHook('deleteType', { typeId });
+            // Dispatch custom event directly
+            const customEvent = new CustomEvent('deleteType', {
+                detail: { typeId }
+            });
+            document.body.dispatchEvent(customEvent);
         }
         return result;
     }
