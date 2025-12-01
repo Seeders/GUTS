@@ -54,8 +54,13 @@ class ScriptEditor {
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue);
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+
+            // Scroll to top and refresh
+            this.scriptEditor.scrollTo(0, 0);
             this.scriptEditor.refresh();
+
             setTimeout(() => {
+                this.scriptEditor.scrollTo(0, 0);
                 this.scriptEditor.refresh();
             }, 100);
         });
