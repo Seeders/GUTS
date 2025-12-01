@@ -129,12 +129,10 @@ class EntryGenerator {
 
         // Import engine files
         sections.push('// ========== ENGINE ==========');
-        sections.push(`import ModuleManager from '${engine.moduleManager.replace(/\\/g, '/')}';`);
         sections.push(`import BaseEngine from '${engine.baseEngine.replace(/\\/g, '/')}';`);
         sections.push(`import Engine from '${engine.engine.replace(/\\/g, '/')}';`);
         sections.push('');
 
-        globalExports.ModuleManager = 'ModuleManager';
         globalExports.BaseEngine = 'BaseEngine';
         globalExports.Engine = 'Engine';
 
@@ -969,7 +967,6 @@ class EntryGenerator {
 `);
 
         // Import engine files
-        sections.push(`import ModuleManager from '${engine.moduleManager.replace(/\\/g, '/')}';`);
         sections.push(`import BaseEngine from '${engine.baseEngine.replace(/\\/g, '/')}';`);
         sections.push(`import Engine from '${engine.engine.replace(/\\/g, '/')}';`);
         sections.push('');
@@ -977,9 +974,8 @@ class EntryGenerator {
         // Export
         sections.push('window.Engine = Engine;');
         sections.push('window.BaseEngine = BaseEngine;');
-        sections.push('window.ModuleManager = ModuleManager;');
         sections.push('');
-        sections.push('export { ModuleManager, BaseEngine, Engine };');
+        sections.push('export { BaseEngine, Engine };');
         sections.push('export default Engine;');
 
         const entryPath = path.join(this.tempDir, 'engine-entry.js');
@@ -1007,7 +1003,7 @@ class EntryGenerator {
  */
 `);
 
-        // Import engine entry first (this sets up Engine, BaseEngine, ModuleManager)
+        // Import engine entry first (this sets up Engine, BaseEngine)
         sections.push(`import './engine-entry.js';`);
         sections.push('');
 

@@ -480,49 +480,6 @@ class EditorController {
         const palettes = this.getCollections().palettes;
         return palettes && palettes[paletteName] ? palettes[paletteName] : null;
     }
-
-       /**
-     * Precompiles all component scripts from the components collection
-     * Makes them available for instantiation in the editor
-     */
-    async preCompileComponentScripts() {
-        const collections = this.model.getCollections();
-        if (!collections.components) return;
-
-         // Compile each component
-        for (const componentType in collections.components) {
-            const componentDef = collections.components[componentType];
-            if (componentDef.script) {
-                try {
-                    const ComponentClass = this.moduleManager.compileScript(componentDef.script, componentType);
-                    if (ComponentClass) {
-                        this.componentClasses[componentType] = ComponentClass;
-                    }
-                } catch (error) {
-                    console.error(`Error compiling component script for ${componentType}:`, error);
-                }
-            }
-        }
-
-        // Also compile renderers if they exist
-        if (collections.renderers) {
-            for (const rendererType in collections.renderers) {
-                const rendererDef = collections.renderers[rendererType];
-                if (rendererDef.script) {
-                    try {
-                        const RendererClass = this.moduleManager.compileScript(rendererDef.script, rendererType);
-                        if (RendererClass) {
-                            this.componentClasses[rendererType] = RendererClass;
-                        }
-                    } catch (error) {
-                        console.error(`Error compiling renderer script for ${rendererType}:`, error);
-                    }
-                }
-            }
-        }
-
-        return this.componentClasses;
-    }
     
     /**
      * Gets a compiled component class by type name

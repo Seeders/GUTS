@@ -1,5 +1,4 @@
 import BaseEngine from './BaseEngine.js';
-import ServerModuleManager from './ServerModuleManager.js';
 import ServerNetworkManager from '../global/libraries/js/ServerNetworkManager.js';
 
 export default class ServerEngine extends BaseEngine {
@@ -21,36 +20,13 @@ export default class ServerEngine extends BaseEngine {
             return;
         }
 
-        // Initialize ServerModuleManager (no DOM dependencies)
-       // this.moduleManager = new ServerModuleManager(this, this.collections);
-        
-        let projectConfig = this.collections.configs.server;
-        if (projectConfig.libraries) {
-         //   this.moduleManager.libraryClasses = await this.moduleManager.loadServerModules({ "server": projectConfig });
-       //     global.GUTS = this.moduleManager.libraryClasses;
-        }
-
-      //  this.setupScriptEnvironment();
-      //  this.preCompileScripts();
-        
         // Initialize network manager
         this.serverNetworkManager = new ServerNetworkManager(this);
         await this.serverNetworkManager.init();
         
         this.start();
     }
-    preCompileScripts() {
-        for (let systemType in this.collections.systems) {
-            const systemDef = this.collections.systems[systemType];
-            if (systemDef.script) {
-                this.moduleManager.compileScript(systemDef.script, systemType);
-            }
-        }
-        for (let funcType in this.collections.functions) {
-            const funcDef = this.collections.functions[funcType];
-            this.moduleManager.compileFunction(funcDef.script, funcType);
-        }
-    }
+
     async loadCollections(projectName) {
         // Use webpack-compiled collections from COMPILED_GAME
         if (global.COMPILED_GAME?.collections) {

@@ -19,7 +19,6 @@ class GameLoader {
         await this.loadAssets();  
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
-        // Use ModuleManager's script environment
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
         this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
