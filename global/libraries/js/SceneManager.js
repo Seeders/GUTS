@@ -257,22 +257,7 @@ class SceneManager {
     }
 }
 
-// Export for use in both browser and Node.js environments
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SceneManager;
-}
-
-// Make available on window.GUTS for browser
-if (typeof window !== 'undefined') {
-    if (!window.GUTS) window.GUTS = {};
-    window.GUTS.SceneManager = SceneManager;
-}
-
-// Make available on global.GUTS for Node.js/server
-if (typeof global !== 'undefined' && global.GUTS) {
-    global.GUTS.SceneManager = SceneManager;
-}
-
 // ES6 exports for webpack bundling
+// The class-export-loader will automatically add window.GUTS.SceneManager assignment
 export default SceneManager;
 export { SceneManager };
