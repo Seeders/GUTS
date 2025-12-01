@@ -1,0 +1,15 @@
+{
+  "title": "Terrain",
+  "description": "Adds terrain/world rendering to a scene",
+  "components": {
+    "terrain": {
+      "level": "level1",
+      "world": "grassland",
+      "enableCliffs": true,
+      "enableLiquids": true,
+      "enableGrass": false,
+      "enableFog": true,
+      "enableShadows": true
+    }
+  }
+}

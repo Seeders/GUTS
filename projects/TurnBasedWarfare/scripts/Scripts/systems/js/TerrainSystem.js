@@ -4,6 +4,8 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.game.terrainSystem = this;
 
         this.initialized = false;
+        this.terrainEntityId = null;
+        this.terrainDataManager = null;
 
         // Use global TerrainDataManager for all terrain data operations
         // Environment object spawner for consistent spawning
@@ -13,14 +15,78 @@ class TerrainSystem extends GUTS.BaseSystem {
     init() {
         if (this.initialized) return;
 
-        // Initialize TerrainDataManager with collections and game config
+        // Register terrain query methods with gameManager (even before terrain is loaded)
+        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
+        this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
+        this.game.gameManager.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
+        this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
+        this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
+        this.game.gameManager.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
+        this.game.gameManager.register('getTileMap', () => this.terrainDataManager?.tileMap);
+        this.game.gameManager.register('getTerrainSize', () => this.terrainDataManager?.terrainSize);
+        this.game.gameManager.register('getTerrainExtensionSize', () => this.terrainDataManager?.extensionSize);
+        this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager?.extendedSize);
+        this.game.gameManager.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
+        this.game.gameManager.register('hasTerrain', () => this.terrainDataManager !== null);
+
+        // TerrainSystem waits for scene to load via onSceneLoad()
+        // Terrain entity in scene triggers terrain initialization
+
+        this.initialized = true;
+    }
+
+    /**
+     * Called when a scene is loaded - initializes terrain if the scene has a terrain entity
+     * @param {Object} sceneData - The scene configuration data
+     */
+    onSceneLoad(sceneData) {
+        // Look for a terrain entity in the scene
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+
+        if (terrainEntities.length > 0) {
+            const terrainEntityId = terrainEntities[0];
+            const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
+            this.initTerrainFromComponent(terrainComponent, terrainEntityId);
+        }
+        // If no terrain entity, terrain system won't initialize (no terrain in this scene)
+    }
+
+    /**
+     * Called when a scene is unloaded - cleanup terrain
+     */
+    onSceneUnload() {
+        this.cleanupTerrain();
+    }
+
+    /**
+     * Initialize terrain from a terrain component
+     * @param {Object} terrainComponent - The terrain component data
+     * @param {string} entityId - The entity ID that has the terrain component
+     */
+    initTerrainFromComponent(terrainComponent, entityId) {
+        if (!terrainComponent?.level) {
+            console.warn('[TerrainSystem] Terrain component missing level reference');
+            return;
+        }
+
+        this.terrainEntityId = entityId;
+        this.initTerrainFromLevel(terrainComponent.level, terrainComponent);
+    }
+
+    /**
+     * Initialize terrain from a level reference
+     * @param {string} levelName - The level name to load
+     * @param {Object} terrainConfig - Optional terrain component config for overrides
+     */
+    initTerrainFromLevel(levelName, terrainConfig = {}) {
+        // Clean up existing terrain first
+        this.cleanupTerrain();
+
         const collections = this.game.getCollections();
         const gameConfig = collections.configs.game;
-        const currentLevel = this.game.state?.level || 'level1';
-        console.log(GUTS);
-        this.terrainDataManager = new GUTS.TerrainDataManager();
 
-        this.terrainDataManager.init(collections, gameConfig, currentLevel);
+        this.terrainDataManager = new GUTS.TerrainDataManager();
+        this.terrainDataManager.init(collections, gameConfig, levelName);
 
         // Initialize EnvironmentObjectSpawner in runtime mode
         this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
@@ -29,21 +95,26 @@ class TerrainSystem extends GUTS.BaseSystem {
             collections: collections
         });
 
-        // Register terrain query methods with gameManager
-        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
-        this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
-        this.game.gameManager.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
-        this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
-        this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
-        this.game.gameManager.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
-        this.game.gameManager.register('getTileMap', () => this.terrainDataManager.tileMap);
-        this.game.gameManager.register('getTerrainSize', () => this.terrainDataManager.terrainSize);
-        this.game.gameManager.register('getTerrainExtensionSize', () => this.terrainDataManager.extensionSize);
-        this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager.extendedSize);
-
         this.spawnWorldObjects();
 
-        this.initialized = true;
+        console.log(`[TerrainSystem] Terrain initialized from level: ${levelName}`);
+    }
+
+    /**
+     * Clean up terrain resources
+     */
+    cleanupTerrain() {
+        if (this.environmentObjectSpawner) {
+            this.environmentObjectSpawner.destroy();
+            this.environmentObjectSpawner = null;
+        }
+
+        if (this.terrainDataManager) {
+            this.terrainDataManager.destroy();
+            this.terrainDataManager = null;
+        }
+
+        this.terrainEntityId = null;
     }
 
     /**
@@ -66,6 +137,7 @@ class TerrainSystem extends GUTS.BaseSystem {
 
 
     getTileMapTerrainType(terrainTypeIndex) {
+        if (!this.terrainDataManager) return null;
         return this.terrainDataManager.getTileMapTerrainType(terrainTypeIndex);
     }
 
@@ -73,9 +145,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Get terrain height at world position
      * @param {number} worldX - World X coordinate
      * @param {number} worldZ - World Z coordinate
-     * @returns {number} Terrain height
+     * @returns {number} Terrain height (0 if no terrain)
      */
     getTerrainHeightAtPosition(worldX, worldZ) {
+        if (!this.terrainDataManager) return 0;
         return this.terrainDataManager.getTerrainHeightAtPosition(worldX, worldZ);
     }
 
@@ -83,9 +156,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Get terrain height with bilinear interpolation for smoother transitions
      * @param {number} worldX - World X coordinate
      * @param {number} worldZ - World Z coordinate
-     * @returns {number} Smoothly interpolated terrain height
+     * @returns {number} Smoothly interpolated terrain height (0 if no terrain)
      */
     getTerrainHeightAtPositionSmooth(worldX, worldZ) {
+        if (!this.terrainDataManager) return 0;
         return this.terrainDataManager.getTerrainHeightAtPositionSmooth(worldX, worldZ);
     }
 
@@ -93,13 +167,15 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Get terrain type at world position
      * @param {number} worldX - World X coordinate
      * @param {number} worldZ - World Z coordinate
-     * @returns {number|null} Terrain type index, or null if outside bounds
+     * @returns {number|null} Terrain type index, or null if outside bounds or no terrain
      */
     getTerrainTypeAtPosition(worldX, worldZ) {
+        if (!this.terrainDataManager) return null;
         return this.terrainDataManager.getTerrainTypeAtPosition(worldX, worldZ);
     }
 
     getTerrainTypeAtGridPosition(gridX, gridZ) {
+        if (!this.terrainDataManager) return null;
         return this.terrainDataManager.getTerrainTypeAtGridPosition(gridX, gridZ);
     }
 
@@ -107,9 +183,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Get height level at grid position (not the actual height, but the level index)
      * @param {number} gridX - Grid X coordinate
      * @param {number} gridZ - Grid Z coordinate
-     * @returns {number|null} Height level (0, 1, 2, etc.), or null if outside bounds
+     * @returns {number|null} Height level (0, 1, 2, etc.), or null if outside bounds or no terrain
      */
     getHeightLevelAtGridPosition(gridX, gridZ) {
+        if (!this.terrainDataManager) return null;
         return this.terrainDataManager.getHeightLevelAtGridPosition(gridX, gridZ);
     }
 
@@ -117,9 +194,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Check if a position is within terrain bounds
      * @param {number} worldX - World X coordinate
      * @param {number} worldZ - World Z coordinate
-     * @returns {boolean} True if within terrain bounds
+     * @returns {boolean} True if within terrain bounds, false if no terrain
      */
     isWithinTerrainBounds(worldX, worldZ) {
+        if (!this.terrainDataManager) return false;
         return this.terrainDataManager.isWithinTerrainBounds(worldX, worldZ);
     }
 
@@ -127,9 +205,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Check if a position is within extended terrain bounds (including extension)
      * @param {number} worldX - World X coordinate
      * @param {number} worldZ - World Z coordinate
-     * @returns {boolean} True if within extended terrain bounds
+     * @returns {boolean} True if within extended terrain bounds, false if no terrain
      */
     isWithinExtendedBounds(worldX, worldZ) {
+        if (!this.terrainDataManager) return false;
         return this.terrainDataManager.isWithinExtendedBounds(worldX, worldZ);
     }
 
@@ -155,6 +234,7 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @param {number} unitRadius - Unit radius for boundary checking
      */
     enforceBoundaries(pos, unitRadius = 25) {
+        if (!this.terrainDataManager) return;
         const halfTerrain = this.terrainDataManager.terrainSize / 2;
 
         pos.x = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.x));
@@ -169,6 +249,10 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @returns {Object} Safe position with x, y, z coordinates
      */
     getSafeSpawnPosition(preferredX, preferredZ, unitRadius = 25) {
+        if (!this.terrainDataManager) {
+            return { x: preferredX, y: 0, z: preferredZ };
+        }
+
         const halfTerrain = this.terrainDataManager.terrainSize / 2;
 
         // Clamp to safe bounds
@@ -193,18 +277,7 @@ class TerrainSystem extends GUTS.BaseSystem {
     }
 
     destroy() {
-        // Clean up EnvironmentObjectSpawner
-        if (this.environmentObjectSpawner) {
-            this.environmentObjectSpawner.destroy();
-            this.environmentObjectSpawner = null;
-        }
-
-        // Clean up TerrainDataManager
-        if (this.terrainDataManager) {
-            this.terrainDataManager.destroy();
-            this.terrainDataManager = null;
-        }
-
+        this.cleanupTerrain();
         this.initialized = false;
     }
 }

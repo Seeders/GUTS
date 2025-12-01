@@ -1,11 +1,30 @@
 {
-  "title": "server",
-  "type": "ECS",
-  "sceneData": [
+  "title": "Server Game Scene",
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "EquipmentSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem"
+  ],
+  "entities": [
     {
-      "id": 1,
-      "objectType": "gamePrefabs",
-      "spawnType": "multiplayer"
+      "id": "terrain_main",
+      "prefab": "terrain",
+      "components": {
+        "terrain": {
+          "level": "level1"
+        }
+      }
     }
   ]
 }

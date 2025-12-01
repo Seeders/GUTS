@@ -1,13 +1,53 @@
 {
-  "title": "client",
-  "type": "ECS",
-  "sceneData": [
+  "title": "Client Game Scene",
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "PostProcessingSystem",
+    "RenderSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "MultiplayerPlacementSystem",
+    "MultiplayerUISystem",
+    "ShopSystem",
+    "TeamHealthSystem",
+    "HealthBarSystem",
+    "UnitRadiusSystem",
+    "EquipmentSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "ParticleSystem",
+    "SquadExperienceSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem",
+    "FogOfWarSystem",
+    "SelectedUnitSystem",
+    "UnitOrderSystem",
+    "MiniMapSystem",
+    "CameraControlSystem",
+    "DamageNumberSystem",
+    "VisionSystem",
+    "SupplySystem"
+  ],
+  "entities": [
     {
-      "id": 1,
-      "objectType": "gamePrefabs",
-      "spawnType": "multiplayer",
-      "parent": null,
-      "children": []
+      "id": "terrain_main",
+      "prefab": "terrain",
+      "components": {
+        "terrain": {
+          "level": "level1",
+          "world": "grassland"
+        }
+      }
     }
   ]
 }

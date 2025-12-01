@@ -1,0 +1,34 @@
+{
+  "title": "Barbarian",
+  "description": "A barbarian warrior unit",
+  "components": {
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "renderable": {
+      "objectType": "units",
+      "spawnType": "1_s_barbarian"
+    },
+    "health": {
+      "max": 300,
+      "current": 300
+    },
+    "unitType": {
+      "collection": "units",
+      "type": "1_s_barbarian"
+    },
+    "combat": {
+      "damage": 10,
+      "attackSpeed": 1,
+      "range": 5
+    },
+    "team": {
+      "id": 1
+    },
+    "facing": {
+      "angle": 0
+    }
+  }
+}

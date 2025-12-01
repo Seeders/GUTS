@@ -1,25 +1,25 @@
+/**
+ * SceneEditor - Unity-like scene editor for GUTS
+ * Uses SceneEditorContext for real game system rendering
+ * Supports prefabs, entities with components, and real-time terrain preview
+ */
 class SceneEditor {
-    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager, ModelManager, GameState, ImageManager}) {
+    constructor(gameEditor, config, { ShapeFactory, SE_GizmoManager, ModelManager, GameState, ImageManager }) {
         this.gameEditor = gameEditor;
         this.config = config;
-        this.scene = null;
-        this.camera = null;
-        this.renderer = null;
-        this.controls = null;
         this.collections = this.gameEditor.getCollections();
-        this.clock = new window.THREE.Clock();
-        this.gameEditor.state = new GameState(this.gameEditor.getCollections());  
-        this.canvas = document.getElementById('scene-editor-canvas');
-        this.terrainCanvasBuffer = document.createElement('canvas');
-        let palette = this.gameEditor.getPalette();
-        this.gameEditor.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: GUTS.ShapeFactory});
 
+        // DOM elements
+        this.canvas = document.getElementById('scene-editor-canvas');
+
+        // Initialize state
         this.state = {
-            sceneData: [],
-            selectedEntityIndex: -1,
-            selectedEntity: null,
-            selectedEntityObject: null
+            sceneData: null,
+            selectedEntityId: null,
+            isDirty: false
         };
+
+        // UI Elements
         this.elements = {
             hierarchy: document.getElementById('scene-hierarchy'),
             inspector: document.getElementById('scene-inspector'),
@@ -29,537 +29,540 @@ class SceneEditor {
             addPrefabSelect: document.getElementById('scene-addPrefabSelect'),
             addPrefabBtn: document.getElementById('scene-addPrefabBtn'),
             removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
-        } 
-        this.componentsToUpdate = [];
-        this.gameEditor.palette = this.gameEditor.getPalette();
-        this.shapeFactory = new ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.palette, this.gameEditor.getCollections().textures, null);
-        if(location.hostname.indexOf('github') >= 0) {
-            this.shapeFactory.setURLRoot("/GUTS/");
-        }   
-        this.gameEditor.modelManager = new ModelManager(this.gameEditor, {}, {ShapeFactory, palette: this.gameEditor.palette, textures: this.gameEditor.getCollections().textures});    
-     
-        this.initThreeJS(this.canvas);
+        };
+
+        // Three.js components
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.clock = new THREE.Clock();
+
+        // Editor context (game-like environment for rendering)
+        this.editorContext = null;
+
+        // Rendering components
+        this.worldRenderer = null;
+        this.entityRenderer = null;
+        this.terrainDataManager = null;
+
+        // Gizmo manager for transform manipulation
         this.gizmoManager = new SE_GizmoManager();
+
+        // Root group for editor objects (gizmos, helpers, etc.)
+        this.editorGroup = null;
+
+        // Animation frame ID
+        this.animationFrameId = null;
+
+        // Initialize
+        this.initThreeJS();
         this.gizmoManager.init(this);
         this.initEventListeners();
-        this.animate();
+        this.populatePrefabSelect();
+        this.startRenderLoop();
     }
 
-    initEventListeners() {
-        document.body.addEventListener('renderSceneObject', this.handleRenderSceneObject.bind(this));
-        document.body.addEventListener('resizedEditor', () => { 
-            this.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
-            this.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
-            this.canvas.setAttribute('style','');
-            this.handleResize();  
-            this.refreshScene(false); 
-        });
-        this.elements.addPrefabBtn.addEventListener('click', (e) => {
-            let parts = this.elements.addPrefabSelect.value.split(".");
-            const objType = parts[0];
-            const spawnType = parts[1];
-            const prefabData = this.gameEditor.getCollections()[objType][spawnType];
-            if(prefabData.entity){
-                this.createEntity(prefabData.entity, { "objectType": objType, "spawnType": spawnType, ...prefabData });
-            }
-        });
-        this.elements.removePrefabBtn.addEventListener('click', () => {
-            if (this.state.selectedEntity) {
-                // Remove from Three.js scene
-                const entityObject = this.state.selectedEntityObject || this.findEntityObject(this.state.selectedEntity);
-                if (entityObject) {
-                    this.shapeFactory.disposeObject(entityObject);
-                    this.rootGroup.remove(entityObject);
-                }
-    
-                // Remove from entities array
-                const index = this.state.sceneData.indexOf(this.state.selectedEntity);
-                if (index > -1) {
-                    this.state.sceneData.splice(index, 1);
-                }
-    
-                // Clear selection
-                this.state.selectedEntity = null;
-                this.state.selectedEntityObject = null;
-                this.gizmoManager.detach();
-    
-                // Update UI
-                this.handleSave(false);
-                this.renderHierarchy();
-                this.renderInspector();
-            }
-        });
-        const collectionDefs = this.gameEditor.getCollectionDefs();
-        let prefabTypes = [];
-        for(let collectionDef of collectionDefs) {
-            if(collectionDef.category.toLowerCase() == "prefabs") {
-                prefabTypes.push(collectionDef.id);
-            }
-        }
-        const collections = this.gameEditor.getCollections();
-        for(let prefabTypeName of prefabTypes){
-            let objectTypes = collections[prefabTypeName];
-            for(let spawnTypeName in objectTypes){
-                let spawnData = objectTypes[spawnTypeName];
-                if(spawnData.entity){
-                    let option = document.createElement('option');
-                    option.innerText = spawnData.title;
-                    option.value = `${prefabTypeName}.${spawnTypeName}`;
-                    this.elements.addPrefabSelect.append(option);
-                }
-            }
-        }
-
-        // Add click event listeners
-        document.getElementById('scene-translate-tool').addEventListener('click', () => {
-            this.setGizmoMode('translate');
-            this.updateGizmoToolbarUI('scene-translate-tool');
-        });
-        
-        document.getElementById('scene-rotate-tool').addEventListener('click', () => {
-            this.setGizmoMode('rotate');
-            this.updateGizmoToolbarUI('scene-rotate-tool');
-        });
-        
-        document.getElementById('scene-scale-tool').addEventListener('click', () => {
-            this.setGizmoMode('scale');
-            this.updateGizmoToolbarUI('scene-scale-tool');
-        });
-    }
-
-    initThreeJS(canvas) {
+    /**
+     * Initialize Three.js scene, camera, and renderer
+     */
+    initThreeJS() {
         // Scene setup
-        this.scene = new window.THREE.Scene();
-        this.gameEditor.scene = this.scene;
-        this.rootGroup = new window.THREE.Group(); // Main container for all shapes
-        this.rootGroup.name = "rootGroup";
-        this.scene.add(this.rootGroup);
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x87CEEB);
+
+        // Editor group for helpers and gizmos
+        this.editorGroup = new THREE.Group();
+        this.editorGroup.name = 'editorGroup';
+        this.scene.add(this.editorGroup);
+
         // Camera setup
-        this.camera = new window.THREE.PerspectiveCamera(
-            75, 
-            canvas.clientWidth / canvas.clientHeight, 
-            0.1, 
-            100000
+        this.camera = new THREE.PerspectiveCamera(
+            60,
+            this.canvas.clientWidth / this.canvas.clientHeight,
+            1,
+            50000
         );
-        this.gameEditor.camera = this.camera;
-        this.camera.position.set(100, 100, 100);
+        this.camera.position.set(500, 800, 500);
         this.camera.lookAt(0, 0, 0);
 
         // Renderer setup
-        this.renderer = new window.THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: false, 
-            alpha: true 
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
+            antialias: true,
+            alpha: true
         });
-        this.gameEditor.renderer = this.renderer;
-        this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        // Add helpers
-        const gridHelper = new window.THREE.GridHelper(1000, 100);
-        this.scene.add(gridHelper);
+        // Expose to gameEditor for compatibility
+        this.gameEditor.scene = this.scene;
+        this.gameEditor.camera = this.camera;
+        this.gameEditor.renderer = this.renderer;
 
-        const axesHelper = new window.THREE.AxesHelper(10);
-        this.scene.add(axesHelper);
+        // Add grid helper
+        const gridHelper = new THREE.GridHelper(2000, 40, 0x444444, 0x888888);
+        this.editorGroup.add(gridHelper);
+
+        // Add axes helper
+        const axesHelper = new THREE.AxesHelper(100);
+        this.editorGroup.add(axesHelper);
 
         // Orbit controls
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.25;
+        this.controls.dampingFactor = 0.1;
+        this.controls.maxPolarAngle = Math.PI / 2.1;
 
-        // Resize handling
+        // Basic lighting for editor preview
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(500, 1000, 500);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        this.scene.add(directionalLight);
+    }
+
+    /**
+     * Initialize event listeners
+     */
+    initEventListeners() {
+        // Handle scene data load from editor
+        document.body.addEventListener('renderSceneObject', this.handleRenderSceneObject.bind(this));
+
+        // Handle editor resize
+        document.body.addEventListener('resizedEditor', () => {
+            this.handleResize();
+        });
+
+        // Add prefab button
+        this.elements.addPrefabBtn?.addEventListener('click', () => {
+            this.addPrefabToScene();
+        });
+
+        // Remove entity button
+        this.elements.removePrefabBtn?.addEventListener('click', () => {
+            this.removeSelectedEntity();
+        });
+
+        // Gizmo mode buttons
+        document.getElementById('scene-translate-tool')?.addEventListener('click', () => {
+            this.setGizmoMode('translate');
+            this.updateGizmoToolbarUI('scene-translate-tool');
+        });
+
+        document.getElementById('scene-rotate-tool')?.addEventListener('click', () => {
+            this.setGizmoMode('rotate');
+            this.updateGizmoToolbarUI('scene-rotate-tool');
+        });
+
+        document.getElementById('scene-scale-tool')?.addEventListener('click', () => {
+            this.setGizmoMode('scale');
+            this.updateGizmoToolbarUI('scene-scale-tool');
+        });
+
+        // Window resize
         window.addEventListener('resize', this.handleResize.bind(this));
     }
-    
+
+    /**
+     * Populate the prefab select dropdown with available prefabs
+     */
+    populatePrefabSelect() {
+        if (!this.elements.addPrefabSelect) return;
+
+        this.elements.addPrefabSelect.innerHTML = '';
+
+        const prefabs = this.collections.prefabs || {};
+
+        for (const [prefabName, prefabData] of Object.entries(prefabs)) {
+            const option = document.createElement('option');
+            option.value = prefabName;
+            option.textContent = prefabData.title || prefabName;
+            this.elements.addPrefabSelect.appendChild(option);
+        }
+    }
+
+    /**
+     * Handle scene data load event
+     */
     async handleRenderSceneObject(event) {
-        this.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
-        this.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
-        this.canvas.setAttribute('style','');   
-        await this.loadAssets();    
-        this.clearScene();
-        this.renderSceneData(event.detail.data);
+        const sceneData = event.detail.data;
+        this.state.sceneData = sceneData;
+
+        // Resize canvas
         this.handleResize();
-        this.clock = new window.THREE.Clock();
-        this.clock.start(); 
-        requestAnimationFrame(() => {
-            this.state.selectedEntityIndex = -1;
-        });
-    }
 
-    async loadAssets() {
-        if(!this.gameEditor.modelManager.assetsLoaded){
-            let collections = this.gameEditor.getCollections();
-            for(let objectType in collections) {            
-                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
-            }  
-        } 
-       
-        this.gameEditor.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap; 
-       
-        await this.gameEditor.imageManager.loadImages("levels", { level: this.gameEditor.getCollections().levels["level1"] }, false, false);
-        const terrainImages = this.gameEditor.imageManager.getImages("levels", "level");
-        this.gameEditor.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
-    }
+        // Load models if needed
+        await this.loadAssets();
 
-    animate() {
-        requestAnimationFrame(this.animate.bind(this));
-        this.controls.update();
-        this.componentsToUpdate.forEach((component) => component.update());
-        // Calculate delta once per frame
-        const delta = this.clock ? this.clock.getDelta() : 0;
-        this.gameEditor.deltaTime = delta;
-        // Update all mixers with the same delta
-        this.scene.traverse(object => {
-            if (object.userData.mixer) {
-                object.userData.mixer.update(delta);
-            }
-            if (object.isSkinnedMesh) {
-                object.skeleton.update();
-            }
-        });
-        
-        if (this.gizmoManager && this.gizmoManager.targetObject) {
-            this.gizmoManager.updateGizmoTransform();
-        }
-        this.renderer.render(this.scene, this.camera);
-    }
+        // Clear and render scene
+        await this.renderScene(sceneData);
 
-    handleResize() {
-        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
-    }
-
-    async handleSave(fireSave) {
-     
-        if (fireSave) {
-            const saveEvent = new CustomEvent('saveSceneObject', {
-                detail: { 
-                    data: this.state.sceneData, 
-                    propertyName: 'sceneData' 
-                },
-                bubbles: true,
-                cancelable: true
-            });
-            document.body.dispatchEvent(saveEvent);
-        } else {
-            const valueElement = this.gameEditor.elements.editor
-                .querySelector('#sceneData-value');
-            if (valueElement) {
-                let renderDataCopy = JSON.parse(JSON.stringify(this.state.sceneData));  
-                valueElement.value = JSON.stringify(renderDataCopy, null, 2);
-            }
-        }
-    }
-
-    async renderSceneData(sceneData) {
-        for(let entity of sceneData){
-
-            const prefabData = this.gameEditor.getCollections()[entity.objectType][entity.spawnType];   
-            let componentData = {};
-            entity.components.forEach((c) => {
-                componentData[c.type] = c.parameters;
-            });
-            let params = { "objectType": entity.objectType, "spawnType": entity.spawnType, ...componentData, ...prefabData };             
-            if(params.render && params.render.model){
-                await this.addModelToScene(entity.type, params);                
-            }
-            
-            this.createEntity(entity.type, params);
-        }        
-    }
-
-    async createEntityFromCollections(type, params) {
-        const entity = this.createEntity(type, params);  
-
-        return entity;
-    }
-
-    async addModelToScene(name, params) {     
-        const model = params.render.model;
-        const modelGroup = new window.THREE.Group(); // Main container for all shapes
-        modelGroup.name = name;   
-        for (const groupName in model) {            
-            const mergedGroup = model[groupName];
-            if (mergedGroup) {
-                let groupGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); 
-                groupGroup.name = groupName;
-                modelGroup.add(groupGroup);
-            }
-        }
-        this.rootGroup.add(modelGroup);
-        if(params.transform?.position){
-            modelGroup.position.x = params.transform.position.x;
-            modelGroup.position.y = params.transform.position.y;
-            modelGroup.position.z = params.transform.position.z;
-        }
-        if(params.transform?.scale){
-            modelGroup.scale.x = params.transform.scale.x;
-            modelGroup.scale.y = params.transform.scale.y;
-            modelGroup.scale.z = params.transform.scale.z;
-        }
-        if(params.transform?.rotation){
-            modelGroup.rotation.x = params.transform.rotation.x;
-            modelGroup.rotation.y = params.transform.rotation.y;
-            modelGroup.rotation.z = params.transform.rotation.z;
-        }
-    }
-
-    async clearScene() {
-        this.componentsToUpdate.forEach((component) => component.destroy());
-        this.componentsToUpdate = [];
-        while (this.rootGroup.children.length > 0) {
-            const obj = this.rootGroup.children[0];
-            this.shapeFactory.disposeObject(obj);
-            this.rootGroup.remove(obj);
-        }        
-        this.state.sceneData = []; 
-    }
-
-    createEntity(type, prefabData) {
-        const id = this.game.getEntityId();
-        const entity = {
-            id,
-            type,
-            objectType: prefabData.objectType,
-            spawnType: prefabData.spawnType,
-            parent: null,
-            children: [],
-            components: this.getEntityComponents(type, prefabData)
-        };
-
-
-        this.state.sceneData.push(entity);
-        this.handleSave(false);
+        // Render hierarchy
         this.renderHierarchy();
-        
-        return entity;
     }
 
-    getEntityComponents(type, prefabData){
-        let components = [];
-        // Add transform component by default
-        components.push({
-            type: 'transform',
-            parameters: {
-                position: prefabData.transform && prefabData.transform.position ? prefabData.transform.position : { x: 0, y: 0, z: 0 },
-                rotation: prefabData.transform && prefabData.transform.rotation ? prefabData.transform.rotation : { x: 0, y: 0, z: 0 },
-                scale: prefabData.transform && prefabData.transform.scale ? prefabData.transform.scale : { x: 1, y: 1, z: 1 }
-            }
-        });
-        const entityObjData = this.gameEditor.getCollections().entities[type];
-        const combined = [...entityObjData.renderers, ...entityObjData.components];
-
-        let compsToInit = [];
-         
-        combined.forEach((componentName) => {
-            const componentDataKey = componentName.charAt(0).toLowerCase() + componentName.slice(1, componentName.length);
-            const compInstanceId = prefabData[componentDataKey];
-            if(compInstanceId){
-                let componentDef = this.gameEditor.getCollections().components[componentName];
-                if(!componentDef) {
-                    componentDef = this.gameEditor.getCollections().renderers[componentName];
-                }
-
-                let component = {
-                    type: componentName,
-                    parameters: {}
-                };       
-                let componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t =>                     
-                    componentName.toLowerCase() == t.singular.replace(/ /g,'').toLowerCase() 
-                );
-                if(!componentDataCollectionDef){
-                    componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t =>   
-                        componentName.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase())
-                    );
-                }
-                if(componentDataCollectionDef){
-                    component.parameters = this.gameEditor.getCollections()[componentDataCollectionDef.id][prefabData[componentDataKey]];
-                    delete component.parameters.title;
-                }
-                components.push(component);
-                if(componentDef.updateInEditor){
-             
-
-                    let comp = this.gameEditor.instantiateComponent(componentName);
-                    let params = {...component.parameters, canvas: this.canvas, scene: this.scene, camera: this.camera, renderer: this.renderer, isEditor: true};
-                    compsToInit.push({
-                        component: comp,
-                        params: params
-                    })
-                }
-            }
-        });
-
-        compsToInit.forEach((compObj) => {
-            let comp = compObj.component;
-            let params = compObj.params;
-            comp.init(params)
-            this.componentsToUpdate.push(comp);
-        })
- 
-        return components;
-    }
-
-    addComponent(entity, componentType) {
-        if (!entity) return;
-        
-        // Check if the component already exists
-        const exists = entity.components.some(c => c.type === componentType);
-        if (exists) {
-            console.log(`Entity already has a ${componentType} component`);
-            return;
+    /**
+     * Load required assets (models, textures, etc.)
+     */
+    async loadAssets() {
+        if (!this.gameEditor.modelManager) {
+            const palette = this.gameEditor.getPalette();
+            this.gameEditor.modelManager = new GUTS.ModelManager(
+                this.gameEditor,
+                {},
+                { ShapeFactory: GUTS.ShapeFactory, palette, textures: this.collections.textures }
+            );
         }
-        
-        let component = {
-            type: componentType,
-            parameters: {}
+
+        if (!this.gameEditor.modelManager.assetsLoaded) {
+            for (const objectType in this.collections) {
+                await this.gameEditor.modelManager.loadModels(objectType, this.collections[objectType]);
+            }
+        }
+    }
+
+    /**
+     * Render the scene with terrain and entities
+     */
+    async renderScene(sceneData) {
+        // Clear existing world rendering
+        this.clearWorldRendering();
+
+        if (!sceneData || !sceneData.entities) return;
+
+        // Check for terrain entity
+        const terrainEntity = sceneData.entities.find(e => {
+            const prefab = this.collections.prefabs?.[e.prefab];
+            return prefab?.components?.terrain || e.components?.terrain;
+        });
+
+        if (terrainEntity) {
+            await this.initTerrainRendering(terrainEntity);
+        }
+
+        // Render other entities
+        for (const entityDef of sceneData.entities) {
+            if (entityDef === terrainEntity) continue; // Skip terrain, already rendered
+            await this.renderEntity(entityDef);
+        }
+    }
+
+    /**
+     * Initialize terrain rendering using WorldRenderer
+     */
+    async initTerrainRendering(terrainEntity) {
+        // Get terrain component data
+        const prefab = this.collections.prefabs?.[terrainEntity.prefab];
+        const terrainConfig = {
+            ...(prefab?.components?.terrain || {}),
+            ...(terrainEntity.components?.terrain || {})
         };
-        
-        // Initialize parameters based on component type
-        switch (componentType) {
-            case 'meshRenderer':
-                component.parameters = {
-                    geometry: entity.type || 'cube',
-                    material: 'standard',
-                    color: '#cccccc',
-                    receiveShadow: true,
-                    castShadow: true
-                };
-                break;
-            case 'light':
-                component.parameters = {
-                    type: 'point',
-                    color: '#ffffff',
-                    intensity: 1.0,
-                    castShadow: true
-                };
-                break;
-            case 'collider':
-                component.parameters = {
-                    type: 'box',
-                    isTrigger: false,
-                    size: { x: 1, y: 1, z: 1 }
-                };
-                break;
-            case 'rigidbody':
-                component.parameters = {
-                    mass: 1.0,
-                    drag: 0.1,
-                    useGravity: true,
-                    isKinematic: false
-                };
-                break;
-            case 'audio':
-                component.parameters = {
-                    clip: 'none',
-                    volume: 1.0,
-                    pitch: 1.0,
-                    loop: false,
-                    playOnAwake: false
-                };
-                break;
-            case 'script':
-                component.parameters = {
-                    script: 'NewScript.js',
-                    enabled: true
-                };
-                break;
-        }
-        
-        entity.components.push(component);
-        
-        // Re-render the inspector to show the new component
-        if (this.state.selectedEntity === entity) {
-            this.selectEntity(entity);
-        }
-    }
 
-    removeComponent(entity, componentType) {
-        if (!entity) return;
-        
-        // Don't allow removing transform component
-        if (componentType === 'transform') {
-            console.log("Cannot remove transform component");
+        if (!terrainConfig.level) {
+            console.warn('[SceneEditor] Terrain entity missing level reference');
             return;
         }
-        
-        const index = entity.components.findIndex(c => c.type === componentType);
-        if (index !== -1) {
-            entity.components.splice(index, 1);
-            
-            // Re-render the inspector
-            if (this.state.selectedEntity === entity) {
-                this.selectEntity(entity);
+
+        const gameConfig = this.collections.configs.game;
+
+        // Initialize TerrainDataManager
+        this.terrainDataManager = new GUTS.TerrainDataManager();
+        this.terrainDataManager.init(this.collections, gameConfig, terrainConfig.level);
+
+        // Initialize TileMapper for terrain textures
+        if (!this.gameEditor.terrainTileMapper) {
+            const palette = this.gameEditor.getPalette();
+            const imageManager = new GUTS.ImageManager(
+                this.gameEditor,
+                { imageSize: gameConfig.imageSize, palette },
+                { ShapeFactory: GUTS.ShapeFactory }
+            );
+
+            await imageManager.loadImages("levels", { level: this.collections.levels[terrainConfig.level] }, false, false);
+            const terrainImages = imageManager.getImages("levels", "level");
+
+            const terrainCanvasBuffer = document.createElement('canvas');
+            terrainCanvasBuffer.width = this.terrainDataManager.terrainSize;
+            terrainCanvasBuffer.height = this.terrainDataManager.terrainSize;
+
+            this.gameEditor.terrainTileMapper = new GUTS.TileMap({});
+            this.gameEditor.terrainTileMapper.init(
+                terrainCanvasBuffer,
+                gameConfig.gridSize,
+                terrainImages,
+                gameConfig.isIsometric,
+                { skipCliffTextures: false }
+            );
+        }
+
+        // Initialize WorldRenderer
+        this.worldRenderer = new GUTS.WorldRenderer({
+            enableShadows: terrainConfig.enableShadows !== false,
+            enableFog: false, // Disable fog in editor for visibility
+            enablePostProcessing: false,
+            enableGrass: terrainConfig.enableGrass || false,
+            enableLiquidSurfaces: terrainConfig.enableLiquids !== false,
+            enableCliffs: terrainConfig.enableCliffs !== false
+        });
+
+        // Get world config
+        const level = this.collections.levels?.[terrainConfig.level];
+        const world = this.collections.worlds?.[terrainConfig.world || level?.world];
+
+        // Initialize with editor camera settings
+        const cameraSettings = {
+            position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+            lookAt: { x: 0, y: 0, z: 0 },
+            zoom: 1,
+            near: 1,
+            far: 50000
+        };
+
+        this.worldRenderer.initializeThreeJS(this.canvas, cameraSettings, true);
+
+        // Use the editor's scene and camera
+        this.worldRenderer.scene = this.scene;
+        this.worldRenderer.camera = this.camera;
+        this.worldRenderer.renderer = this.renderer;
+
+        // Set background color
+        if (world?.backgroundColor) {
+            this.scene.background = new THREE.Color(world.backgroundColor);
+        }
+
+        // Setup lighting from world config
+        const lightingSettings = this.collections.lightings?.[world?.lighting];
+        const shadowSettings = this.collections.shadows?.[world?.shadow];
+        this.worldRenderer.setupLighting(lightingSettings, shadowSettings, this.terrainDataManager.extendedSize);
+
+        // Setup ground
+        this.worldRenderer.setupGround(
+            this.terrainDataManager,
+            this.gameEditor.terrainTileMapper,
+            this.terrainDataManager.heightMapSettings
+        );
+
+        // Render terrain
+        this.worldRenderer.renderTerrain();
+
+        // Create extension planes
+        this.worldRenderer.createExtensionPlanes();
+
+        // Initialize EntityRenderer for spawning cliffs and entities
+        this.entityRenderer = new GUTS.EntityRenderer({
+            scene: this.scene,
+            collections: this.collections,
+            projectName: this.gameEditor.getCurrentProject(),
+            modelManager: this.gameEditor.modelManager,
+            getPalette: () => this.gameEditor.getPalette()
+        });
+
+        // Spawn cliffs
+        await this.worldRenderer.spawnCliffs(this.entityRenderer, false);
+
+        console.log('[SceneEditor] Terrain rendering initialized');
+    }
+
+    /**
+     * Render a single entity
+     */
+    async renderEntity(entityDef) {
+        // Get prefab data
+        const prefab = this.collections.prefabs?.[entityDef.prefab];
+        if (!prefab) return;
+
+        // Merge components
+        const components = {
+            ...(prefab.components || {}),
+            ...(entityDef.components || {})
+        };
+
+        // Skip terrain entities (handled separately)
+        if (components.terrain) return;
+
+        // Check for renderable component
+        if (components.renderable && this.entityRenderer) {
+            const transform = components.transform || { position: { x: 0, y: 0, z: 0 } };
+            const renderable = components.renderable;
+
+            // Spawn entity using EntityRenderer
+            await this.entityRenderer.spawnEntity(entityDef.id, {
+                objectType: renderable.objectType,
+                spawnType: renderable.spawnType,
+                position: transform.position,
+                rotation: transform.rotation,
+                scale: transform.scale
+            });
+        }
+    }
+
+    /**
+     * Clear world rendering
+     */
+    clearWorldRendering() {
+        // Dispose WorldRenderer
+        if (this.worldRenderer) {
+            // Remove terrain meshes from scene but keep scene intact
+            if (this.worldRenderer.groundMesh) {
+                this.scene.remove(this.worldRenderer.groundMesh);
             }
+            this.worldRenderer = null;
         }
+
+        // Dispose EntityRenderer
+        if (this.entityRenderer) {
+            this.entityRenderer.dispose();
+            this.entityRenderer = null;
+        }
+
+        this.terrainDataManager = null;
     }
 
+    /**
+     * Add a prefab to the scene
+     */
+    addPrefabToScene() {
+        const prefabName = this.elements.addPrefabSelect?.value;
+        if (!prefabName) return;
+
+        const prefab = this.collections.prefabs?.[prefabName];
+        if (!prefab) return;
+
+        // Generate entity ID
+        const entityId = `entity_${Date.now()}`;
+
+        // Create entity definition
+        const entityDef = {
+            id: entityId,
+            prefab: prefabName,
+            name: prefab.title || prefabName,
+            components: {}
+        };
+
+        // Add default transform if prefab has one
+        if (prefab.components?.transform) {
+            entityDef.components.transform = JSON.parse(JSON.stringify(prefab.components.transform));
+        }
+
+        // Add to scene data
+        if (!this.state.sceneData) {
+            this.state.sceneData = { entities: [] };
+        }
+        if (!this.state.sceneData.entities) {
+            this.state.sceneData.entities = [];
+        }
+
+        this.state.sceneData.entities.push(entityDef);
+
+        // Render the entity
+        this.renderEntity(entityDef);
+
+        // Update hierarchy
+        this.renderHierarchy();
+
+        // Mark as dirty and save
+        this.state.isDirty = true;
+        this.handleSave(false);
+
+        // Select the new entity
+        this.selectEntity(entityId);
+    }
+
+    /**
+     * Remove the selected entity
+     */
+    removeSelectedEntity() {
+        if (!this.state.selectedEntityId || !this.state.sceneData?.entities) return;
+
+        const index = this.state.sceneData.entities.findIndex(e => e.id === this.state.selectedEntityId);
+        if (index === -1) return;
+
+        // Remove from scene data
+        this.state.sceneData.entities.splice(index, 1);
+
+        // Remove from 3D scene
+        if (this.entityRenderer) {
+            this.entityRenderer.removeEntity(this.state.selectedEntityId);
+        }
+
+        // Clear selection
+        this.state.selectedEntityId = null;
+        this.gizmoManager.detach();
+
+        // Update UI
+        this.renderHierarchy();
+        this.renderInspector();
+        this.handleSave(false);
+    }
+
+    /**
+     * Render the entity hierarchy panel
+     */
     renderHierarchy() {
+        if (!this.elements.hierarchy) return;
+
         this.elements.hierarchy.innerHTML = '';
-        
-        // Get top-level entities (those without a parent)
-        const rootEntities = this.state.sceneData.filter(e => e.parent === null);
-        
-        // Render each root entity and its children
-        rootEntities.forEach(entity => {
-            this.renderEntityInHierarchy(entity, this.elements.hierarchy);
-        });
+
+        const entities = this.state.sceneData?.entities || [];
+
+        for (const entity of entities) {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'scene-editor__hierarchy-item';
+            itemEl.dataset.entityId = entity.id;
+
+            if (this.state.selectedEntityId === entity.id) {
+                itemEl.classList.add('selected');
+            }
+
+            // Entity icon based on type
+            const prefab = this.collections.prefabs?.[entity.prefab];
+            let icon = '📦';
+            if (prefab?.components?.terrain) icon = '🏔️';
+            else if (prefab?.components?.camera) icon = '📷';
+            else if (prefab?.components?.renderable) icon = '🎮';
+
+            const nameEl = document.createElement('span');
+            nameEl.textContent = `${icon} ${entity.name || entity.prefab || entity.id}`;
+            itemEl.appendChild(nameEl);
+
+            // Click to select
+            itemEl.addEventListener('click', () => {
+                this.selectEntity(entity.id);
+            });
+
+            this.elements.hierarchy.appendChild(itemEl);
+        }
     }
 
-    renderEntityInHierarchy(entity, parentElement, level = 0) {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'scene-editor__hierarchy-item';
-        itemEl.dataset.entityId = entity.id;
+    /**
+     * Select an entity
+     */
+    selectEntity(entityId) {
+        // Update selection
+        this.state.selectedEntityId = entityId;
 
-        if (this.state.selectedEntity === entity) {
-            itemEl.classList.add('selected');
-        }    
-        // Create entity name
-        const nameEl = document.createElement('span');
-        nameEl.textContent = entity.type;
-        itemEl.appendChild(nameEl);
-        
-        // Add click event
-        itemEl.addEventListener('click', () => {
-            this.selectEntity(entity);
-        });
-        
-        parentElement.appendChild(itemEl);
-        
-        // Find children of this entity
-        const children = this.state.sceneData.filter(e => e.parent === entity);
-        children.forEach(child => {
-            this.renderEntityInHierarchy(child, parentElement, level + 1);
-        });
-    }
+        // Update hierarchy UI
+        const prevSelected = this.elements.hierarchy?.querySelector('.selected');
+        if (prevSelected) prevSelected.classList.remove('selected');
 
-    selectEntity(entity) {
-        // Clear previous selection
-        const prevSelected = document.querySelector('.scene-editor__hierarchy-item.selected');
-        if (prevSelected) {
-            prevSelected.classList.remove('selected');
-        }
-        
-        this.state.selectedEntity = entity;
-        
-        // Update hierarchy selection
-        const entityEl = document.querySelector(`.hierarchy-item[data-entity-id="${entity.id}"]`);
-        if (entityEl) {
-            entityEl.classList.add('selected');
-        }
-        
-        // Show inspector with entity data
+        const entityEl = this.elements.hierarchy?.querySelector(`[data-entity-id="${entityId}"]`);
+        if (entityEl) entityEl.classList.add('selected');
+
+        // Update inspector
         this.renderInspector();
 
-        if (entity) {
-            const entityObject = this.findEntityObject(entity);            
+        // Attach gizmo to entity's 3D object
+        if (this.entityRenderer && entityId) {
+            const entityObject = this.entityRenderer.getEntityObject(entityId);
             if (entityObject) {
-                this.state.selectedEntityObject = entityObject;
                 this.gizmoManager.attach(entityObject);
             } else {
-                this.state.selectedEntityObject = null;
                 this.gizmoManager.detach();
             }
         } else {
@@ -567,213 +570,401 @@ class SceneEditor {
         }
     }
 
+    /**
+     * Render the inspector panel for the selected entity
+     */
     renderInspector() {
-        // Show/hide the appropriate sections
-        if (!this.state.selectedEntity) {
-            this.elements.noSelection.style.display = 'block';
-            this.elements.entityInspector.style.display = 'none';
+        if (!this.state.selectedEntityId) {
+            if (this.elements.noSelection) this.elements.noSelection.style.display = 'block';
+            if (this.elements.entityInspector) this.elements.entityInspector.style.display = 'none';
             return;
         }
-        
-        this.elements.noSelection.style.display = 'none';
-        this.elements.entityInspector.style.display = 'block';
-        
-        // Update transform values
-        const entity = this.state.selectedEntity;
 
+        if (this.elements.noSelection) this.elements.noSelection.style.display = 'none';
+        if (this.elements.entityInspector) this.elements.entityInspector.style.display = 'block';
 
-        if (entity) {
-            // Clear and re-render components
+        const entity = this.state.sceneData?.entities?.find(e => e.id === this.state.selectedEntityId);
+        if (!entity) return;
+
+        // Get merged components (prefab + overrides)
+        const prefab = this.collections.prefabs?.[entity.prefab];
+        const components = {
+            ...(prefab?.components || {}),
+            ...(entity.components || {})
+        };
+
+        // Clear and render components
+        if (this.elements.components) {
             this.elements.components.innerHTML = '';
-            
-            entity.components.forEach(component => {        
-                this.renderComponent(component);
-            });
-            const entityObject = this.findEntityObject(entity);
-            if (entityObject) {
-                // Sync transform values from entity to 3D object
-                const transformComponent = entity.components.find(c => c.type === 'transform');
-                if (transformComponent) {
-                    const position = transformComponent.parameters.position;
-                    const rotation = transformComponent.parameters.rotation;
-                    const scale = transformComponent.parameters.scale;
-                    
-                    entityObject.position.set(position.x, position.y, position.z);
-                    entityObject.rotation.set(rotation.x, rotation.y, rotation.z);
-                    entityObject.scale.set(scale.x, scale.y, scale.z);
-                    
-                    // Update gizmo position
-                    this.gizmoManager.updateGizmoTransform();
-                }
+
+            for (const [componentType, componentData] of Object.entries(components)) {
+                this.renderComponentInspector(componentType, componentData, entity);
             }
         }
     }
 
-    renderComponent(component) {
+    /**
+     * Render a component in the inspector
+     */
+    renderComponentInspector(componentType, componentData, entity) {
         const componentEl = document.createElement('div');
         componentEl.className = 'component-section';
-        
-        // Component header
+
+        // Header
         const headerEl = document.createElement('h3');
-        headerEl.className = 'component-header';        
-        headerEl.textContent = this.formatComponentName(component.type);
-        
-        // Remove component button
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'btn';
-        removeBtn.textContent = 'X';
-        removeBtn.addEventListener('click', () => {
-            this.removeComponent(this.state.selectedEntity, component.type);
-        });
-        headerEl.appendChild(removeBtn);
-        
+        headerEl.className = 'component-header';
+        headerEl.textContent = this.formatName(componentType);
         componentEl.appendChild(headerEl);
-        
-        // Component parameters
-        Object.entries(component.parameters).forEach(([key, value]) => {
-            const propEl = document.createElement('div');
-            propEl.className = 'property';
-            
-            // Property label
-            const labelEl = document.createElement('label');
-            labelEl.textContent = this.formatPropertyName(key);
-            propEl.appendChild(labelEl);
-            
-            // Property input
-            let inputEl;
-            
-            if (typeof value === 'boolean') {
-                // Boolean checkbox
-                inputEl = document.createElement('input');
-                inputEl.type = 'checkbox';
-                inputEl.checked = value;
-                inputEl.dataset.key = key;
-            } else if (typeof value === 'number') {
-                // Number input
-                inputEl = document.createElement('input');
-                inputEl.type = 'number';
-                inputEl.value = value;
-                inputEl.step = key.includes('scale') ? '0.1' : '1';
-                inputEl.dataset.key = key;
-            } else if (typeof value === 'object' && value !== null) {
-                // Vector3 input for position, rotation, scale, etc.
-                inputEl = document.createElement('div');
-                inputEl.className = 'vector3-input';
-                
-                ['x', 'y', 'z'].forEach(axis => {
-                if (axis in value) {
-                    const axisInput = document.createElement('input');
-                    axisInput.type = 'number';
-                    axisInput.value = value[axis];
-                    axisInput.step = '0.1';
-                    axisInput.dataset.axis = axis;
-                    axisInput.dataset.key = key;
-                    inputEl.appendChild(axisInput);
-                }
-                });
-            } else if (key === 'type' && component.type === 'light') {
-                // Select dropdown for light type
-                inputEl = document.createElement('select');
-                ['directional', 'point', 'spot', 'ambient'].forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = this.formatPropertyName(type);
-                    option.selected = value === type;
-                    inputEl.appendChild(option);
-                });
-                inputEl.dataset.key = key;
-            } else if (key === 'color') {
-                // Color input
-                inputEl = document.createElement('div');
-                inputEl.className = 'color-input';
-                
-                const colorInput = document.createElement('input');
-                colorInput.type = 'text';
-                colorInput.value = value;
-                inputEl.appendChild(colorInput);
-                
-                const colorPreview = document.createElement('div');
-                colorPreview.className = 'color-preview';
-                colorPreview.style.backgroundColor = value;
-                inputEl.appendChild(colorPreview);
-                colorInput.dataset.key = key;
-            } else {
-                // Default text input
-                inputEl = document.createElement('input');
-                inputEl.type = 'text';
-                inputEl.value = value;
-                inputEl.dataset.key = key;
-            }
-            inputEl.addEventListener('change', (e)=> {
-                if(e.target.dataset.axis) {                   
-                    component.parameters[e.target.dataset.key][e.target.dataset.axis] = Number(e.target.value);
-                    this.state.selectedEntityObject[e.target.dataset.key][e.target.dataset.axis] = Number(e.target.value);
-                } else {
-                    component.parameters[e.target.dataset.key] = e.target.value;
-                }
-                this.handleSave(false);
-            });
-            propEl.appendChild(inputEl);
-            componentEl.appendChild(propEl);
-        });
-        
+
+        // Render component fields
+        this.renderComponentFields(componentEl, componentType, componentData, entity);
+
         this.elements.components.appendChild(componentEl);
     }
-    
-    formatComponentName(name) {
-        // Convert camelCase or snake_case to Title Case with spaces
-        return name
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/_/g, ' ')
-        .replace(/^./, str => str.toUpperCase());
-    }
-    
-    formatPropertyName(name) {
-        // Convert camelCase or snake_case to Title Case with spaces
-        return name
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/_/g, ' ')
-        .replace(/^./, str => str.toUpperCase());
-    }
-    
-    getMergedGroup(groupName){
-        let model = this.state.renderData.model;
-        const modelGroup = model[groupName];
-        if(this.state.editingModel){
-            return modelGroup;
+
+    /**
+     * Render component fields recursively
+     */
+    renderComponentFields(container, componentType, data, entity, path = '') {
+        if (typeof data !== 'object' || data === null) {
+            // Primitive value
+            this.renderPropertyField(container, path || componentType, data, (newValue) => {
+                this.updateEntityComponent(entity, componentType, path, newValue);
+            });
+            return;
         }
-        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );
+
+        for (const [key, value] of Object.entries(data)) {
+            const fieldPath = path ? `${path}.${key}` : key;
+
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                // Nested object (like position, rotation, scale)
+                if ('x' in value || 'y' in value || 'z' in value) {
+                    // Vector3 field
+                    this.renderVector3Field(container, key, value, (newValue) => {
+                        this.updateEntityComponent(entity, componentType, fieldPath, newValue);
+                    });
+                } else {
+                    // Other nested objects
+                    const nestedContainer = document.createElement('div');
+                    nestedContainer.className = 'nested-component';
+
+                    const nestedLabel = document.createElement('label');
+                    nestedLabel.textContent = this.formatName(key);
+                    nestedLabel.className = 'nested-label';
+                    nestedContainer.appendChild(nestedLabel);
+
+                    this.renderComponentFields(nestedContainer, componentType, value, entity, fieldPath);
+                    container.appendChild(nestedContainer);
+                }
+            } else {
+                // Primitive or array
+                this.renderPropertyField(container, key, value, (newValue) => {
+                    this.updateEntityComponent(entity, componentType, fieldPath, newValue);
+                });
+            }
+        }
     }
 
-    updateGizmoToolbarUI(activeButtonId) {
-        // Remove active class from all gizmo tool buttons
-        ['scene-translate-tool', 'scene-rotate-tool', 'scene-scale-tool'].forEach(id => {
-            const btn = document.getElementById(id);
-            if (btn) btn.classList.remove('active');
-        });
+    /**
+     * Render a property field
+     */
+    renderPropertyField(container, key, value, onChange) {
+        const propEl = document.createElement('div');
+        propEl.className = 'property';
 
-        // Add active class to the clicked button
-        const activeBtn = document.getElementById(activeButtonId);
-        if (activeBtn) activeBtn.classList.add('active');
+        const labelEl = document.createElement('label');
+        labelEl.textContent = this.formatName(key);
+        propEl.appendChild(labelEl);
+
+        let inputEl;
+
+        if (typeof value === 'boolean') {
+            inputEl = document.createElement('input');
+            inputEl.type = 'checkbox';
+            inputEl.checked = value;
+            inputEl.addEventListener('change', () => onChange(inputEl.checked));
+        } else if (typeof value === 'number') {
+            inputEl = document.createElement('input');
+            inputEl.type = 'number';
+            inputEl.value = value;
+            inputEl.step = '0.1';
+            inputEl.addEventListener('change', () => onChange(parseFloat(inputEl.value)));
+        } else if (typeof value === 'string') {
+            inputEl = document.createElement('input');
+            inputEl.type = 'text';
+            inputEl.value = value;
+            inputEl.addEventListener('change', () => onChange(inputEl.value));
+        } else {
+            inputEl = document.createElement('span');
+            inputEl.textContent = JSON.stringify(value);
+        }
+
+        propEl.appendChild(inputEl);
+        container.appendChild(propEl);
     }
-    
+
+    /**
+     * Render a Vector3 field (position, rotation, scale)
+     */
+    renderVector3Field(container, key, value, onChange) {
+        const propEl = document.createElement('div');
+        propEl.className = 'property vector3-property';
+
+        const labelEl = document.createElement('label');
+        labelEl.textContent = this.formatName(key);
+        propEl.appendChild(labelEl);
+
+        const inputsEl = document.createElement('div');
+        inputsEl.className = 'vector3-input';
+
+        const axes = ['x', 'y', 'z'];
+        const inputs = {};
+
+        for (const axis of axes) {
+            if (axis in value) {
+                const axisInput = document.createElement('input');
+                axisInput.type = 'number';
+                axisInput.value = value[axis];
+                axisInput.step = '0.1';
+                axisInput.placeholder = axis.toUpperCase();
+                axisInput.title = axis.toUpperCase();
+
+                inputs[axis] = axisInput;
+
+                axisInput.addEventListener('change', () => {
+                    const newValue = { ...value };
+                    for (const a of axes) {
+                        if (inputs[a]) {
+                            newValue[a] = parseFloat(inputs[a].value) || 0;
+                        }
+                    }
+                    onChange(newValue);
+                });
+
+                inputsEl.appendChild(axisInput);
+            }
+        }
+
+        propEl.appendChild(inputsEl);
+        container.appendChild(propEl);
+    }
+
+    /**
+     * Update an entity's component data
+     */
+    updateEntityComponent(entity, componentType, path, newValue) {
+        // Ensure entity has component overrides
+        if (!entity.components) entity.components = {};
+        if (!entity.components[componentType]) {
+            // Copy from prefab
+            const prefab = this.collections.prefabs?.[entity.prefab];
+            entity.components[componentType] = JSON.parse(JSON.stringify(prefab?.components?.[componentType] || {}));
+        }
+
+        // Update the value at the path
+        if (path) {
+            const parts = path.split('.');
+            let target = entity.components[componentType];
+
+            for (let i = 0; i < parts.length - 1; i++) {
+                if (!target[parts[i]]) target[parts[i]] = {};
+                target = target[parts[i]];
+            }
+
+            target[parts[parts.length - 1]] = newValue;
+        } else {
+            entity.components[componentType] = newValue;
+        }
+
+        // Update 3D representation
+        this.updateEntity3D(entity);
+
+        // Mark dirty and save
+        this.state.isDirty = true;
+        this.handleSave(false);
+    }
+
+    /**
+     * Update an entity's 3D representation
+     */
+    updateEntity3D(entity) {
+        if (!this.entityRenderer) return;
+
+        const entityObject = this.entityRenderer.getEntityObject(entity.id);
+        if (!entityObject) return;
+
+        // Get merged transform
+        const prefab = this.collections.prefabs?.[entity.prefab];
+        const transform = {
+            ...(prefab?.components?.transform || {}),
+            ...(entity.components?.transform || {})
+        };
+
+        // Update position
+        if (transform.position) {
+            entityObject.position.set(
+                transform.position.x || 0,
+                transform.position.y || 0,
+                transform.position.z || 0
+            );
+        }
+
+        // Update rotation
+        if (transform.rotation) {
+            entityObject.rotation.set(
+                transform.rotation.x || 0,
+                transform.rotation.y || 0,
+                transform.rotation.z || 0
+            );
+        }
+
+        // Update scale
+        if (transform.scale) {
+            entityObject.scale.set(
+                transform.scale.x || 1,
+                transform.scale.y || 1,
+                transform.scale.z || 1
+            );
+        }
+
+        // Update gizmo
+        if (this.state.selectedEntityId === entity.id) {
+            this.gizmoManager.updateGizmoTransform();
+        }
+    }
+
+    /**
+     * Start the render loop
+     */
+    startRenderLoop() {
+        const render = () => {
+            this.animationFrameId = requestAnimationFrame(render);
+
+            const delta = this.clock.getDelta();
+
+            // Update controls
+            if (this.controls) {
+                this.controls.update();
+            }
+
+            // Update WorldRenderer if available
+            if (this.worldRenderer) {
+                this.worldRenderer.update(delta);
+            }
+
+            // Update gizmo
+            if (this.gizmoManager?.targetObject) {
+                this.gizmoManager.updateGizmoTransform();
+            }
+
+            // Render
+            this.renderer.render(this.scene, this.camera);
+        };
+
+        render();
+    }
+
+    /**
+     * Handle window/canvas resize
+     */
+    handleResize() {
+        if (!this.canvas || !this.camera || !this.renderer) return;
+
+        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+    }
+
+    /**
+     * Save scene data
+     */
+    handleSave(fireSave = false) {
+        if (fireSave) {
+            const saveEvent = new CustomEvent('saveSceneObject', {
+                detail: {
+                    data: this.state.sceneData,
+                    propertyName: 'sceneData'
+                },
+                bubbles: true,
+                cancelable: true
+            });
+            document.body.dispatchEvent(saveEvent);
+        } else {
+            // Update the JSON value in the editor
+            const valueElement = this.gameEditor.elements?.editor?.querySelector('#sceneData-value');
+            if (valueElement) {
+                valueElement.value = JSON.stringify(this.state.sceneData, null, 2);
+            }
+        }
+    }
+
+    /**
+     * Refresh scene rendering
+     */
+    async refreshScene(fireEvent = false) {
+        await this.renderScene(this.state.sceneData);
+        this.renderHierarchy();
+    }
+
+    /**
+     * Set gizmo mode
+     */
     setGizmoMode(mode) {
         if (this.gizmoManager) {
             this.gizmoManager.setMode(mode);
         }
     }
-    findEntityObject(entity) {
-        // Look for the object in the scene with the same name as the entity type
-        // This needs to be adjusted based on how your entities are mapped to 3D objects
-        const entityName = entity.type;
-        
-        let foundObject = null;
-        this.rootGroup.traverse((object) => {
-            if (object.name === entityName) {
-                foundObject = object;
-            }
+
+    /**
+     * Update gizmo toolbar UI
+     */
+    updateGizmoToolbarUI(activeButtonId) {
+        ['scene-translate-tool', 'scene-rotate-tool', 'scene-scale-tool'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.remove('active');
         });
-        
-        return foundObject;
+
+        const activeBtn = document.getElementById(activeButtonId);
+        if (activeBtn) activeBtn.classList.add('active');
     }
+
+    /**
+     * Format a name for display
+     */
+    formatName(name) {
+        return name
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/_/g, ' ')
+            .replace(/^./, str => str.toUpperCase())
+            .trim();
+    }
+
+    /**
+     * Cleanup
+     */
+    destroy() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+
+        this.clearWorldRendering();
+
+        if (this.gizmoManager) {
+            this.gizmoManager.dispose();
+        }
+
+        if (this.renderer) {
+            this.renderer.dispose();
+        }
+    }
+}
+
+// Export
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = SceneEditor;
+}
+
+if (typeof GUTS !== 'undefined') {
+    GUTS.SceneEditor = SceneEditor;
 }

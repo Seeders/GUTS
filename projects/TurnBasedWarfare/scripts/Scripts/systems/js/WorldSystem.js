@@ -4,16 +4,10 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.worldSystem = this;
 
         this.initialized = false;
+        this.terrainEntityId = null;
 
-        // Use global WorldRenderer for all 3D rendering
-        this.worldRenderer = new GUTS.WorldRenderer({
-            enableShadows: true,
-            enableFog: true,
-            enablePostProcessing: true,
-            enableGrass: false,
-            enableLiquidSurfaces: true,
-            enableCliffs: true
-        });
+        // WorldRenderer will be created when terrain is loaded
+        this.worldRenderer = null;
 
         // Cached references for convenience
         this.scene = null;
@@ -30,52 +24,150 @@ class WorldSystem extends GUTS.BaseSystem {
         if (this.initialized) return;
 
         // Register gameManager methods - delegate to WorldRenderer and TerrainDataManager
-        this.game.gameManager.register('getWorldScene', () => this.worldRenderer.getScene());
-        this.game.gameManager.register('getWorldExtendedSize', () => this.game.terrainSystem.terrainDataManager.extendedSize);
-        this.game.gameManager.register('getGroundTexture', () => this.worldRenderer.getGroundTexture());
-        this.game.gameManager.register('getGroundMesh', () => this.worldRenderer.getGroundMesh());
-        this.game.gameManager.register('getHeightStep', () => this.game.terrainSystem.terrainDataManager.heightStep);
+        this.game.gameManager.register('getWorldScene', () => this.worldRenderer?.getScene());
+        this.game.gameManager.register('getWorldExtendedSize', () => this.game.terrainSystem?.terrainDataManager?.extendedSize);
+        this.game.gameManager.register('getGroundTexture', () => this.worldRenderer?.getGroundTexture());
+        this.game.gameManager.register('getGroundMesh', () => this.worldRenderer?.getGroundMesh());
+        this.game.gameManager.register('getHeightStep', () => this.game.terrainSystem?.terrainDataManager?.heightStep);
         this.game.gameManager.register('getBaseTerrainHeight', () => {
-            const tdm = this.game.terrainSystem.terrainDataManager;
-            return tdm.heightStep * (tdm.tileMap.extensionHeight || 0);
+            const tdm = this.game.terrainSystem?.terrainDataManager;
+            if (!tdm) return 0;
+            return tdm.heightStep * (tdm.tileMap?.extensionHeight || 0);
         });
+        this.game.gameManager.register('initWorldFromTerrain', this.initWorldFromTerrain.bind(this));
 
         // Add BVH extension functions for Three.js
         // Note: MeshBVH exports are flattened onto THREE namespace
-        if (!THREE.MeshBVH || !THREE.acceleratedRaycast) {
-            console.error('THREE.MeshBVH or acceleratedRaycast not found!');
-            console.error('Available THREE properties:', Object.keys(THREE).filter(k => k.includes('Mesh') || k.includes('BVH') || k.includes('accelerated')));
-        } else {
-            console.log('✓ THREE.MeshBVH found, patching prototypes');
-            THREE.BufferGeometry.prototype.computeBoundsTree = THREE.computeBoundsTree;
-            THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.disposeBoundsTree;
-            THREE.Mesh.prototype.raycast = THREE.acceleratedRaycast;
+        if (typeof THREE !== 'undefined') {
+            if (THREE.MeshBVH && THREE.acceleratedRaycast) {
+                THREE.BufferGeometry.prototype.computeBoundsTree = THREE.computeBoundsTree;
+                THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.disposeBoundsTree;
+                THREE.Mesh.prototype.raycast = THREE.acceleratedRaycast;
 
-            THREE.BatchedMesh.prototype.computeBoundsTree = THREE.computeBatchedBoundsTree;
-            THREE.BatchedMesh.prototype.disposeBoundsTree = THREE.disposeBatchedBoundsTree;
-            THREE.BatchedMesh.prototype.raycast = THREE.acceleratedRaycast;
+                THREE.BatchedMesh.prototype.computeBoundsTree = THREE.computeBatchedBoundsTree;
+                THREE.BatchedMesh.prototype.disposeBoundsTree = THREE.disposeBatchedBoundsTree;
+                THREE.BatchedMesh.prototype.raycast = THREE.acceleratedRaycast;
+            }
         }
 
-        this.initializeThreeJS();
+        // WorldSystem waits for scene to load via onSceneLoad()
+        // Terrain entity in scene triggers world initialization
+
+        this.initialized = true;
+    }
+
+    /**
+     * Called when a scene is loaded - looks for terrain entity to initialize world
+     * @param {Object} sceneData - The scene configuration data
+     */
+    onSceneLoad(sceneData) {
+        // Look for terrain entity in scene
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+
+        if (terrainEntities.length > 0) {
+            const terrainEntityId = terrainEntities[0];
+            const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
+            this.initWorldFromTerrain(terrainComponent, terrainEntityId);
+        }
+        // If no terrain entity, world system won't initialize (no terrain = no world rendering)
+    }
+
+    /**
+     * Called when a scene is unloaded
+     */
+    onSceneUnload() {
+        this.cleanupWorld();
+    }
+
+    /**
+     * Initialize world rendering from terrain component
+     * @param {Object} terrainComponent - The terrain component data
+     * @param {string} entityId - The entity ID that has the terrain component
+     */
+    initWorldFromTerrain(terrainComponent, entityId) {
+        this.terrainEntityId = entityId;
+
+        // Create WorldRenderer with settings from terrain component
+        this.createWorldRenderer({
+            enableShadows: terrainComponent.enableShadows !== false,
+            enableFog: terrainComponent.enableFog !== false,
+            enablePostProcessing: true,
+            enableGrass: terrainComponent.enableGrass || false,
+            enableLiquidSurfaces: terrainComponent.enableLiquids !== false,
+            enableCliffs: terrainComponent.enableCliffs !== false
+        });
+
+        this.initializeThreeJS(terrainComponent.level, terrainComponent.world);
+    }
+
+    /**
+     * Create WorldRenderer with specified options
+     * @param {Object} options - WorldRenderer options
+     */
+    createWorldRenderer(options = {}) {
+        // Clean up existing renderer
+        if (this.worldRenderer) {
+            this.worldRenderer.destroy();
+        }
+
+        this.worldRenderer = new GUTS.WorldRenderer({
+            enableShadows: options.enableShadows !== false,
+            enableFog: options.enableFog !== false,
+            enablePostProcessing: options.enablePostProcessing !== false,
+            enableGrass: options.enableGrass || false,
+            enableLiquidSurfaces: options.enableLiquidSurfaces !== false,
+            enableCliffs: options.enableCliffs !== false
+        });
+    }
+
+    /**
+     * Clean up world resources
+     */
+    cleanupWorld() {
+        if (this.worldRenderer) {
+            this.worldRenderer.destroy();
+            this.worldRenderer = null;
+        }
+
+        window.removeEventListener('resize', this.onWindowResizeHandler);
+
+        if (this.uiScene) {
+            this.uiScene = null;
+        }
+
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.composer = null;
+        this.terrainEntityId = null;
     }
 
     getScene() {
-        return this.worldRenderer.getScene();
+        return this.worldRenderer?.getScene();
     }
 
-    initializeThreeJS() {
+    /**
+     * Initialize Three.js rendering for a specific level and world
+     * @param {string} levelName - The level to load
+     * @param {string} worldName - The world configuration to use (optional, derived from level if not provided)
+     */
+    initializeThreeJS(levelName, worldName = null) {
+        if (!this.worldRenderer) {
+            console.error('WorldSystem: WorldRenderer not created. Call createWorldRenderer first.');
+            return;
+        }
+
         const gameCanvas = document.getElementById('gameCanvas');
         if (!gameCanvas) {
             console.error('WorldSystem: gameCanvas not found!');
             return;
         }
 
-        // Get level and world data
         const collections = this.game.getCollections();
-        const currentLevel = this.game.state?.level || 'level1';
-        const level = collections.levels?.[currentLevel];
-        const world = collections.worlds?.[level.world];
-        const cameraSettings = collections.cameras?.[world.camera];
+        const level = collections.levels?.[levelName];
+        const effectiveWorldName = worldName || level?.world;
+        const world = collections.worlds?.[effectiveWorldName];
+        const cameraSettings = collections.cameras?.[world?.camera];
 
         // Initialize Three.js through WorldRenderer
         this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, false);
@@ -96,34 +188,39 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.scene = this.scene;
         this.game.uiScene = this.uiScene;
         this.game.renderer = this.renderer;
+
+        // Setup world rendering
+        this.setupWorldRendering(levelName, effectiveWorldName);
     }
 
-    async onGameStarted() {
-        // Get world data
+    /**
+     * Setup world rendering after Three.js is initialized
+     * @param {string} levelName - The level name
+     * @param {string} worldName - The world name
+     */
+    async setupWorldRendering(levelName, worldName) {
         const collections = this.game.getCollections();
-        const currentLevel = this.game.state?.level || 'level1';
-        const level = collections.levels?.[currentLevel];
-        const world = collections.worlds?.[level.world];
+        const world = collections.worlds?.[worldName];
 
         // Set background color
         this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
 
-        // Setup lighting
-        const lightingSettings = collections.lightings?.[world.lighting];
-        const shadowSettings = collections.shadows?.[world.shadow];
-        this.worldRenderer.setupLighting(lightingSettings, shadowSettings,
-            this.game.terrainSystem.terrainDataManager.extendedSize);
+        // Wait for terrain to be ready
+        const terrainDataManager = this.game.terrainSystem?.terrainDataManager;
+        if (!terrainDataManager) {
+            console.warn('[WorldSystem] TerrainDataManager not available');
+            return;
+        }
 
-        // Setup camera position
-        // const cameraSettings = collections.cameras?.[world.camera];
-        // this.worldRenderer.setupCamera(cameraSettings);
+        // Setup lighting
+        const lightingSettings = collections.lightings?.[world?.lighting];
+        const shadowSettings = collections.shadows?.[world?.shadow];
+        this.worldRenderer.setupLighting(lightingSettings, shadowSettings, terrainDataManager.extendedSize);
 
         // Setup ground with terrain data
-        const terrainDataManager = this.game.terrainSystem.terrainDataManager;
-        this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper,
-            terrainDataManager.heightMapSettings);
+        this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
 
-        // Pass GameManager to WorldRenderer for accessing GridSystem coordinate transforms
+        // Pass GameManager to WorldRenderer
         this.worldRenderer.gameManager = this.game.gameManager;
 
         // Update extension configuration in GridSystem's CoordinateTranslator if available
@@ -141,11 +238,8 @@ class WorldSystem extends GUTS.BaseSystem {
         this.worldRenderer.createExtensionPlanes();
 
         // Update instance capacities now that terrain data is loaded
-        // This must happen before spawning environment entities
         if (this.game.renderSystem) {
             this.game.renderSystem.updateInstanceCapacities();
-        } else {
-            console.warn('[WorldSystem] RenderSystem not available to update capacities');
         }
 
         // Add environment entity visuals
@@ -262,7 +356,7 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (!this.initialized) return;
+        if (!this.worldRenderer) return;
 
         this.timer += this.game.state.deltaTime;
 
@@ -274,10 +368,7 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     render() {
-        if (!this.worldRenderer) {
-            console.warn('WorldSystem: WorldRenderer not initialized');
-            return;
-        }
+        if (!this.worldRenderer) return;
 
         const composer = this.game.gameManager.call('getPostProcessingComposer');
         if (composer) {
@@ -294,14 +385,21 @@ class WorldSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Reset camera to default position based on terrain entity's world config
+     */
     resetCamera() {
-        if (this.worldRenderer) {
-            const collections = this.game.getCollections();
-            const currentLevel = this.game.state?.level || 'level1';
-            const level = collections.levels?.[currentLevel];
-            const world = collections.worlds?.[level.world];
-            const cameraSettings = collections.cameras?.[world.camera];
+        if (!this.worldRenderer || !this.terrainEntityId) return;
 
+        const terrainComponent = this.game.getComponent(this.terrainEntityId, 'terrain');
+        if (!terrainComponent) return;
+
+        const collections = this.game.getCollections();
+        const level = collections.levels?.[terrainComponent.level];
+        const world = collections.worlds?.[terrainComponent.world || level?.world];
+        const cameraSettings = collections.cameras?.[world?.camera];
+
+        if (cameraSettings) {
             this.worldRenderer.resetCamera(cameraSettings);
         }
     }
@@ -314,26 +412,7 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     destroy() {
-        // Clean up WorldRenderer
-        if (this.worldRenderer) {
-            this.worldRenderer.destroy();
-            this.worldRenderer = null;
-        }
-
-        // Remove event listeners
-        window.removeEventListener('resize', this.onWindowResizeHandler);
-
-        // Clean up UI scene
-        if (this.uiScene) {
-            this.uiScene = null;
-        }
-
-        // Clear references
-        this.scene = null;
-        this.camera = null;
-        this.renderer = null;
-        this.composer = null;
-
+        this.cleanupWorld();
         this.initialized = false;
     }
 }
