@@ -67,10 +67,6 @@ class EditorModel {
      * @returns {Object} The loaded project data
      */
     async loadProject(name) {
-  
-       // const config = localStorage.getItem(name);
-        
-       
         this.state.currentProject = name;
 
         try {
@@ -78,19 +74,18 @@ class EditorModel {
             localStorage.setItem("currentProject", this.state.currentProject);
         } catch (e) {
             console.warn('Error saving to localStorage:', e);
-        }    
-    
-        this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
-        
-        if(!this.state.project){
-            const response = await fetch(`projects/${this.state.currentProject}/config/${this.state.currentProject.toUpperCase().replace(/ /g, '_')}.json`);
+        }
 
-            if (!response.ok) {                    
-                throw new Error(`HTTP error! status: ${response.status}`);
-            } else {
-                const data = await response.json();  
-                this.state.project = data;
-            }
+        // Try to load from localStorage cache first
+        const cached = localStorage.getItem(this.state.currentProject);
+        if (cached) {
+            this.state.project = JSON.parse(cached);
+        } else {
+            // Initialize empty project structure - FileSystemSyncService will populate it
+            this.state.project = {
+                objectTypes: {},
+                objectTypeDefinitions: []
+            };
         }
     }
 
