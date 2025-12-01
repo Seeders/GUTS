@@ -157,10 +157,10 @@ class SummonWolfAbility extends GUTS.BaseAbility {
             };
 
             // Add all standard unit components
-            this.game.addComponent(creatureId, "position", {
-                x: pos.x,
-                y: pos.y,
-                z: pos.z
+            this.game.addComponent(creatureId, "transform", {
+                position: { x: pos.x, y: pos.y, z: pos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
             });
 
             this.game.addComponent(creatureId, "velocity", {
@@ -225,10 +225,6 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 scale: 1,
                 rotation: 0,
                 flash: 0
-            });
-
-            this.game.addComponent(creatureId, "facing", {
-                angle: 0
             });
 
             // DESYNC SAFE: Use game time for summoned component

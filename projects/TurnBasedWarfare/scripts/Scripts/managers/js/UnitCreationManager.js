@@ -291,11 +291,11 @@ class UnitCreationManager {
     addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
         const unitType = placement.unitType;
 
-        // Position component
-        this.game.addComponent(entity, "position", {
-            x: worldX,
-            y: worldY,
-            z: worldZ
+        // Transform component (combines position, rotation, scale)
+        this.game.addComponent(entity, "transform", {
+            position: { x: worldX, y: worldY, z: worldZ },
+            rotation: { x: 0, y: teamConfig.initialFacing, z: 0 },
+            scale: { x: 1, y: 1, z: 1 }
         });
 
         // Velocity component with movement capabilities
@@ -320,11 +320,6 @@ class UnitCreationManager {
         // Unit type information
         this.game.addComponent(entity, "unitType",
             unitType);
-
-        // Facing direction
-        this.game.addComponent(entity, "facing", {
-            angle: teamConfig.initialFacing
-        });
     }
     
     /**
