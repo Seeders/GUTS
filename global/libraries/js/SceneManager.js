@@ -262,10 +262,17 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = SceneManager;
 }
 
-// Also make available on GUTS global if it exists
-if (typeof GUTS !== 'undefined') {
-    GUTS.SceneManager = SceneManager;
+// Make available on window.GUTS for browser
+if (typeof window !== 'undefined') {
+    if (!window.GUTS) window.GUTS = {};
+    window.GUTS.SceneManager = SceneManager;
 }
 
+// Make available on global.GUTS for Node.js/server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.SceneManager = SceneManager;
+}
+
+// ES6 exports for webpack bundling
 export default SceneManager;
 export { SceneManager };
