@@ -130,12 +130,37 @@ class ConfigParser {
     }
 
     /**
+     * Scan a folder for JSON data files and return file info
+     */
+    scanDataFolder(folderPath) {
+        const files = [];
+        if (!fs.existsSync(folderPath)) {
+            return files;
+        }
+
+        const entries = fs.readdirSync(folderPath).filter(f => f.endsWith('.json'));
+        for (const entry of entries) {
+            const fullPath = path.join(folderPath, entry);
+            const fileName = path.basename(entry, '.json');
+            files.push({
+                name: fileName,
+                fileName: fileName,
+                path: fullPath
+            });
+        }
+
+        return files;
+    }
+
+    /**
      * Discover all collections by scanning the folder structure
      */
     discoverCollections() {
         console.log('\n  Discovering collections from folder structure...');
 
         // Define the parent folders and their structures
+        // hasJsSubfolder: true means JS is in /js subfolder and data is in /data subfolder
+        // hasJsSubfolder: false means JSON files are directly in the folder (no JS)
         const folderMappings = [
             { parent: 'Scripts', hasJsSubfolder: true },
             { parent: 'Behaviors', hasJsSubfolder: true },
@@ -159,29 +184,35 @@ class ConfigParser {
             for (const subfolder of subfolders) {
                 const collectionId = subfolder;
 
-                // Determine the path to scan for JS files
-                let jsPath;
+                // Determine paths for JS and data files
+                let jsPath, dataPath;
                 if (mapping.hasJsSubfolder) {
                     jsPath = path.join(parentPath, subfolder, 'js');
+                    dataPath = path.join(parentPath, subfolder, 'data');
                 } else {
                     jsPath = path.join(parentPath, subfolder);
+                    dataPath = path.join(parentPath, subfolder); // JSON files directly in folder
                 }
 
-                // Check if this collection has JS files
+                // Scan for JS files and data files
                 const jsFiles = this.scanJsFolder(jsPath);
+                const dataFiles = this.scanDataFolder(dataPath);
 
-                if (jsFiles.length > 0) {
+                // Include collection if it has JS files OR data files
+                if (jsFiles.length > 0 || dataFiles.length > 0) {
                     this.collections[collectionId] = {
                         id: collectionId,
                         parent: mapping.parent,
                         jsPath: jsPath,
-                        files: jsFiles
+                        dataPath: dataPath,
+                        files: jsFiles,
+                        dataFiles: dataFiles
                     };
                 }
             }
         }
 
-        console.log(`    Found ${Object.keys(this.collections).length} collections with JS files`);
+        console.log(`    Found ${Object.keys(this.collections).length} collections`);
     }
 
     /**
@@ -394,6 +425,23 @@ class ConfigParser {
     }
 
     /**
+     * Get all data collections (JSON files) for bundling
+     * Returns object mapping collectionName -> array of data file info
+     */
+    getDataCollections() {
+        const dataCollections = {};
+
+        for (const [collectionId, collection] of Object.entries(this.collections)) {
+            if (collection.dataFiles && collection.dataFiles.length > 0) {
+                dataCollections[collectionId] = collection.dataFiles;
+            }
+        }
+
+        console.log(`    Data collections: ${Object.keys(dataCollections).length}`);
+        return dataCollections;
+    }
+
+    /**
      * Generate client entry point data
      * Uses libraries/managers/systems from game.json config
      * Auto-discovers all classes from specified collections
@@ -411,6 +459,7 @@ class ConfigParser {
         const managers = this.getScriptPaths('managers', gameConfig.managers || []);
         const systems = this.getScriptPaths('systems', gameConfig.systems || []);
         const { classCollections, classMetadata } = this.getClassCollections(gameConfig.classes || []);
+        const dataCollections = this.getDataCollections();
 
         console.log(`    Libraries: ${libraries.length}`);
         console.log(`    Managers: ${managers.length}`);
@@ -423,6 +472,7 @@ class ConfigParser {
             systems,
             classCollections,
             classMetadata,
+            dataCollections,
             config: gameConfig
         };
     }
@@ -445,6 +495,7 @@ class ConfigParser {
         const managers = this.getScriptPaths('managers', serverConfig.managers || []);
         const systems = this.getScriptPaths('systems', serverConfig.systems || []);
         const { classCollections, classMetadata } = this.getClassCollections(serverConfig.classes || []);
+        const dataCollections = this.getDataCollections();
 
         console.log(`    Libraries: ${libraries.length}`);
         console.log(`    Managers: ${managers.length}`);
@@ -457,6 +508,7 @@ class ConfigParser {
             systems,
             classCollections,
             classMetadata,
+            dataCollections,
             config: serverConfig
         };
     }
