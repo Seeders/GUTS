@@ -1,0 +1,12 @@
+{
+  "title": "terrain",
+  "schema": {
+    "level": "",
+    "world": "",
+    "enableCliffs": true,
+    "enableLiquids": true,
+    "enableGrass": false,
+    "enableFog": true,
+    "enableShadows": true
+  }
+}

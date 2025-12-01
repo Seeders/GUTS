@@ -236,7 +236,10 @@ class BaseECSGame {
             throw new Error(`Entity ${entityId} does not exist`);
         }
         const componentMethods = this.gameManager.call('getComponents');
-        // Use factory function if available, otherwise use data directly
+        if (!componentMethods[componentId]) {
+            console.warn(`[BaseECSGame] No component factory for '${componentId}'. Add it to the components collection.`);
+        }
+        // Use factory function if available, otherwise use data directly as fallback
         const componentData = componentMethods[componentId]
             ? componentMethods[componentId](data)
             : { ...data };
