@@ -52,7 +52,14 @@ export default class ServerEngine extends BaseEngine {
         }
     }
     async loadCollections(projectName) {
-        // Server: Load configs from Settings/configs folder and scan data folders
+        // Use webpack-compiled collections from COMPILED_GAME
+        if (global.COMPILED_GAME?.collections) {
+            console.log('Using webpack-compiled collections');
+            return global.COMPILED_GAME.collections;
+        }
+
+        // Fallback: Load from file system (for development without webpack build)
+        console.log('Fallback: Loading collections from file system');
         const fs = await import('fs');
         const path = await import('path');
 
@@ -60,15 +67,16 @@ export default class ServerEngine extends BaseEngine {
             const scriptsPath = path.join(process.cwd(), 'projects', projectName, 'scripts');
             const configsPath = path.join(scriptsPath, 'Settings', 'configs');
 
-            // Load configs from Settings/configs
             const collections = {
                 configs: {}
             };
 
-            const configFiles = ['game', 'server', 'editor'];
-            for (const configName of configFiles) {
-                const configPath = path.join(configsPath, `${configName}.json`);
-                if (fs.existsSync(configPath)) {
+            // Load ALL config files from Settings/configs
+            if (fs.existsSync(configsPath)) {
+                const configFiles = fs.readdirSync(configsPath).filter(f => f.endsWith('.json'));
+                for (const file of configFiles) {
+                    const configName = path.basename(file, '.json');
+                    const configPath = path.join(configsPath, file);
                     collections.configs[configName] = JSON.parse(fs.readFileSync(configPath, 'utf8'));
                 }
             }

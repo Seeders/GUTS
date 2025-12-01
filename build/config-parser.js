@@ -30,18 +30,23 @@ class ConfigParser {
     }
 
     /**
-     * Load game/server/editor configs from Settings/configs folder
+     * Load all configs from Settings/configs folder
      */
     loadConfigs() {
         const configsPath = path.join(this.scriptsRoot, 'Settings', 'configs');
 
-        const configFiles = ['game', 'server', 'editor'];
-        for (const configName of configFiles) {
-            const configPath = path.join(configsPath, `${configName}.json`);
-            if (fs.existsSync(configPath)) {
-                this.configs[configName] = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-                console.log(`  Loaded ${configName}.json`);
-            }
+        if (!fs.existsSync(configsPath)) {
+            console.warn('  Settings/configs folder not found');
+            return;
+        }
+
+        // Load ALL JSON files in the configs folder
+        const configFiles = fs.readdirSync(configsPath).filter(f => f.endsWith('.json'));
+        for (const file of configFiles) {
+            const configName = path.basename(file, '.json');
+            const configPath = path.join(configsPath, file);
+            this.configs[configName] = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            console.log(`  Loaded ${configName}.json`);
         }
     }
 
