@@ -70,6 +70,22 @@ class ScriptEditor {
 
     waitForVisibleAndRefresh() {
         const doRefresh = () => {
+            // Force fix the gutter width issue via direct style manipulation
+            const wrapper = this.scriptEditor.getWrapperElement();
+            const gutters = wrapper.querySelector('.CodeMirror-gutters');
+            const sizer = wrapper.querySelector('.CodeMirror-sizer');
+            const gutterWrappers = wrapper.querySelectorAll('.CodeMirror-gutter-wrapper');
+
+            if (gutters) {
+                gutters.style.setProperty('width', '60px', 'important');
+            }
+            if (sizer) {
+                sizer.style.setProperty('margin-left', '60px', 'important');
+            }
+            gutterWrappers.forEach(gw => {
+                gw.style.setProperty('left', '-60px', 'important');
+            });
+
             // Set explicit size and refresh
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
             this.scriptEditor.refresh();
