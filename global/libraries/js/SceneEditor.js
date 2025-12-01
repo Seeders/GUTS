@@ -47,21 +47,16 @@ class SceneEditor {
 
     /**
      * Initialize the editor context with game systems
+     * @param {Array<string>} systems - Systems to initialize (from scene data)
      */
-    async initializeContext() {
+    async initializeContext(systems) {
         if (this.state.initialized) return;
 
         // Create editor context
         this.editorContext = new GUTS.SceneEditorContext(this.gameEditor, this.canvas);
 
-        // Initialize with systems needed for scene rendering
-        await this.editorContext.initialize([
-            'GridSystem',
-            'TerrainSystem',
-            'WorldSystem',
-            'PostProcessingSystem',
-            'RenderSystem'
-        ]);
+        // Initialize with systems from scene data
+        await this.editorContext.initialize(systems);
 
         // Initialize gizmo manager with the editor context's scene/camera
         if (this.gizmoManager && this.editorContext.worldSystem?.worldRenderer) {
@@ -77,7 +72,7 @@ class SceneEditor {
         this.editorContext.startRenderLoop();
 
         this.state.initialized = true;
-        console.log('[SceneEditor] Context initialized');
+        console.log('[SceneEditor] Context initialized with systems:', systems);
     }
 
     /**
@@ -154,8 +149,11 @@ class SceneEditor {
         this.state.entities = entities;
         this.state.sceneData = fullSceneData;
 
-        // Initialize context if needed
-        await this.initializeContext();
+        // Get systems from scene data
+        const systems = fullSceneData.systems || [];
+
+        // Initialize context with systems from scene
+        await this.initializeContext(systems);
 
         // Load full scene into context - systems will detect entities and render
         await this.editorContext.loadScene(fullSceneData);
