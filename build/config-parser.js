@@ -153,6 +153,29 @@ class ConfigParser {
     }
 
     /**
+     * Scan a folder for files with a specific extension
+     */
+    scanFolderByExtension(folderPath, extension) {
+        const files = [];
+        if (!fs.existsSync(folderPath)) {
+            return files;
+        }
+
+        const entries = fs.readdirSync(folderPath).filter(f => f.endsWith(extension));
+        for (const entry of entries) {
+            const fullPath = path.join(folderPath, entry);
+            const fileName = path.basename(entry, extension);
+            files.push({
+                name: fileName,
+                fileName: fileName,
+                path: fullPath
+            });
+        }
+
+        return files;
+    }
+
+    /**
      * Discover all collections by scanning the folder structure
      */
     discoverCollections() {
@@ -184,19 +207,27 @@ class ConfigParser {
             for (const subfolder of subfolders) {
                 const collectionId = subfolder;
 
-                // Determine paths for JS and data files
-                let jsPath, dataPath;
+                // Determine paths for JS, data, HTML, and CSS files
+                let jsPath, dataPath, htmlPath, cssPath;
                 if (mapping.hasJsSubfolder) {
                     jsPath = path.join(parentPath, subfolder, 'js');
                     dataPath = path.join(parentPath, subfolder, 'data');
+                    htmlPath = path.join(parentPath, subfolder, 'html');
+                    cssPath = path.join(parentPath, subfolder, 'css');
                 } else {
                     jsPath = path.join(parentPath, subfolder);
                     dataPath = path.join(parentPath, subfolder); // JSON files directly in folder
+                    htmlPath = null;
+                    cssPath = null;
                 }
 
                 // Scan for JS files and data files
                 const jsFiles = this.scanJsFolder(jsPath);
                 const dataFiles = this.scanDataFolder(dataPath);
+
+                // Scan for HTML and CSS files if applicable
+                const htmlFiles = htmlPath ? this.scanFolderByExtension(htmlPath, '.html') : [];
+                const cssFiles = cssPath ? this.scanFolderByExtension(cssPath, '.css') : [];
 
                 // Include collection if it has JS files OR data files
                 if (jsFiles.length > 0 || dataFiles.length > 0) {
@@ -205,8 +236,12 @@ class ConfigParser {
                         parent: mapping.parent,
                         jsPath: jsPath,
                         dataPath: dataPath,
+                        htmlPath: htmlPath,
+                        cssPath: cssPath,
                         files: jsFiles,
-                        dataFiles: dataFiles
+                        dataFiles: dataFiles,
+                        htmlFiles: htmlFiles,
+                        cssFiles: cssFiles
                     };
                 }
             }
@@ -425,15 +460,23 @@ class ConfigParser {
     }
 
     /**
-     * Get all data collections (JSON files) for bundling
-     * Returns object mapping collectionName -> array of data file info
+     * Get all data collections (JSON, HTML, CSS files) for bundling
+     * Returns object mapping collectionName -> { dataFiles, htmlFiles, cssFiles }
      */
     getDataCollections() {
         const dataCollections = {};
 
         for (const [collectionId, collection] of Object.entries(this.collections)) {
-            if (collection.dataFiles && collection.dataFiles.length > 0) {
-                dataCollections[collectionId] = collection.dataFiles;
+            const hasData = collection.dataFiles && collection.dataFiles.length > 0;
+            const hasHtml = collection.htmlFiles && collection.htmlFiles.length > 0;
+            const hasCss = collection.cssFiles && collection.cssFiles.length > 0;
+
+            if (hasData || hasHtml || hasCss) {
+                dataCollections[collectionId] = {
+                    dataFiles: collection.dataFiles || [],
+                    htmlFiles: collection.htmlFiles || [],
+                    cssFiles: collection.cssFiles || []
+                };
             }
         }
 
