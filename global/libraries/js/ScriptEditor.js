@@ -48,16 +48,16 @@ class ScriptEditor {
     }
    
     setupEventListeners() {
-     
+
         document.body.addEventListener('editScript', (event) => {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue);
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
-            this.scriptEditor.refresh();
-            setTimeout(() => {
-                this.scriptEditor.refresh();
-            }, 100);
+
+            // Wait for container to be fully visible before refreshing
+            // CodeMirror needs proper dimensions to render correctly
+            this.waitForVisibleAndRefresh();
         });
         
         const saveBtn = this.container.querySelector('#save-script-btn');
@@ -66,6 +66,25 @@ class ScriptEditor {
         } else {
             console.warn("Save button not found");
         }
+    }
+
+    waitForVisibleAndRefresh() {
+        const checkAndRefresh = () => {
+            // Check if container has actual dimensions (meaning it's rendered)
+            if (this.container.offsetWidth > 0 && this.container.offsetHeight > 0) {
+                this.scriptEditor.refresh();
+                // Double-refresh after a frame to ensure CodeMirror updates completely
+                requestAnimationFrame(() => {
+                    this.scriptEditor.refresh();
+                });
+            } else {
+                // Container not visible yet, try again next frame
+                requestAnimationFrame(checkAndRefresh);
+            }
+        };
+
+        // Start checking on next frame
+        requestAnimationFrame(checkAndRefresh);
     }
 
     saveScript() {
