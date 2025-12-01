@@ -263,13 +263,24 @@ class FileSystemSyncService {
     }
 
     setCollectionDefs(){
-        let collectionDefs = this.gameEditor.model.getCollectionDefs();
-        for(let i = collectionDefs.length - 1; i >= 0; i--) {
-            const def = collectionDefs[i];
-            if(!this.currentCollections[def.id]){
-                collectionDefs.splice(i, 1);
-            }
+        // Load objectTypeDefinitions from the objectTypeDefinitions collection
+        // (which is loaded from Settings/objectTypeDefinitions/*.json)
+        let collectionDefs = [];
+
+        if (this.currentCollections.objectTypeDefinitions) {
+            // Convert the collection objects to an array
+            collectionDefs = Object.values(this.currentCollections.objectTypeDefinitions);
+        } else {
+            // Fallback to model's existing definitions
+            collectionDefs = this.gameEditor.model.getCollectionDefs() || [];
         }
+
+        // Filter to only include definitions for collections that actually exist
+        collectionDefs = collectionDefs.filter(def => {
+            // Keep the definition if the collection exists OR if it's the objectTypeDefinitions collection itself
+            return this.currentCollections[def.id] || def.id === 'objectTypeDefinitions';
+        });
+
         this.gameEditor.model.state.project = {
             objectTypes: this.currentCollections,
             objectTypeDefinitions: collectionDefs
