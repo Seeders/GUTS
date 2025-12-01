@@ -2,6 +2,11 @@
    SCRIPT EDITOR - MODULE-SPECIFIC STYLES
    ============================================================================= */
 
+/* Override overflow on canvas area */
+#script-editor-container .editor-module__canvas-area {
+    overflow: visible !important;
+}
+
 /* Code container */
 .script-editor__code-container {
     position: relative;
@@ -9,6 +14,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    overflow: visible !important;
 }
 
 .script-editor__code {
