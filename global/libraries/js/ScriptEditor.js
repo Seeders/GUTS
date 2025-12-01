@@ -70,16 +70,6 @@ class ScriptEditor {
 
     waitForVisibleAndRefresh() {
         const doRefresh = () => {
-            // Clear any existing inline width styles on gutters that CodeMirror miscalculated
-            const gutters = this.container.querySelector('.CodeMirror-gutters');
-            const sizer = this.container.querySelector('.CodeMirror-sizer');
-            if (gutters) {
-                gutters.style.width = '';
-            }
-            if (sizer) {
-                sizer.style.marginLeft = '';
-            }
-
             // Set explicit size and refresh
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
             this.scriptEditor.refresh();
