@@ -24,6 +24,11 @@
     "EntityRenderer",
     "GameServices",
     "SceneManager",
+    "BaseSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "RenderSystem",
     "SceneEditorContext",
     "SceneEditor"
   ],
