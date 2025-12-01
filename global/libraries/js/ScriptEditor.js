@@ -46,7 +46,7 @@ class ScriptEditor {
 
         this.scriptEditor = CodeMirror.fromTextArea(textArea, {
             mode: 'javascript',
-            lineNumbers: true,
+            lineNumbers: false,
             tabSize: 2,
             indentWithTabs: false,
             extraKeys: { 'Ctrl-Space': 'autocomplete' },
