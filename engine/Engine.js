@@ -72,26 +72,22 @@ class Engine extends BaseEngine {
         return "resources/";
     }
 
-    async loadCollections() {        
-        
-        let project = {};
+    async loadCollections() {
+        // First check localStorage (for editor/development)
+        let project = JSON.parse(localStorage.getItem(this.currentProjectName));
 
-        project = JSON.parse(localStorage.getItem(this.currentProjectName));
-        
-        if (!project) {
-
-            if(window.COMPILED_GAME?.collections){
-                return window.COMPILED_GAME.collections;
-            }
-            const response = await window.fetch(`config/${this.currentProjectName.toUpperCase().replace(/ /g, '_')}.json`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            } else {
-                const data = await response.json();
-                project = data;
-            }
+        if (project) {
+            return project.objectTypes;
         }
-        return project.objectTypes;
+
+        // Use compiled collections from webpack build
+        if (window.COMPILED_GAME?.collections) {
+            return window.COMPILED_GAME.collections;
+        }
+
+        // No collections available
+        console.warn('No collections found in localStorage or COMPILED_GAME');
+        return {};
     }
 
     hideLoadingScreen() {
