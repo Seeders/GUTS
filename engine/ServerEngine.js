@@ -52,15 +52,37 @@ export default class ServerEngine extends BaseEngine {
         }
     }
     async loadCollections(projectName) {
-        // Server: Load from file system using dynamic imports
+        // Server: Load configs from Settings/configs folder and scan data folders
         const fs = await import('fs');
         const path = await import('path');
-        
+
         try {
-            const configPath = path.join(process.cwd(), 'projects', projectName, 'config', `${projectName.toUpperCase().replace(/ /g, '_')}.json`);
-            const configData = fs.readFileSync(configPath, 'utf8');
-            const project = JSON.parse(configData);
-            return project.objectTypes;
+            const scriptsPath = path.join(process.cwd(), 'projects', projectName, 'scripts');
+            const configsPath = path.join(scriptsPath, 'Settings', 'configs');
+
+            // Load configs from Settings/configs
+            const collections = {
+                configs: {}
+            };
+
+            const configFiles = ['game', 'server', 'editor'];
+            for (const configName of configFiles) {
+                const configPath = path.join(configsPath, `${configName}.json`);
+                if (fs.existsSync(configPath)) {
+                    collections.configs[configName] = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+                }
+            }
+
+            // Load objectTypeDefinitions from Settings/objectTypeDefinitions
+            const defsPath = path.join(scriptsPath, 'Settings', 'objectTypeDefinitions');
+            if (fs.existsSync(defsPath)) {
+                const defFiles = fs.readdirSync(defsPath).filter(f => f.endsWith('.json'));
+                collections.objectTypeDefinitions = defFiles.map(file =>
+                    JSON.parse(fs.readFileSync(path.join(defsPath, file), 'utf8'))
+                );
+            }
+
+            return collections;
         } catch (error) {
             console.error('Failed to load server config:', error);
             throw error;
