@@ -633,14 +633,24 @@ class EditorModel {
 
         // Create empty collection for the type
         this.getCollections()[typeId] = {};
-        
-        // Add type definition with display names
-        this.getCollectionDefs().push({
+
+        // Create the type definition
+        const typeDef = {
             id: typeId,
             name: typeName || typeId.charAt(0).toUpperCase() + typeId.slice(1),
             singular: typeSingular || typeId.slice(0, -1).charAt(0).toUpperCase() + typeId.slice(0, -1).slice(1),
-            category: typeCategory || 'Uncategorized'
-        });
+            category: typeCategory || 'Uncategorized',
+            fileName: typeId
+        };
+
+        // Add type definition to the definitions array (for in-memory use)
+        this.getCollectionDefs().push(typeDef);
+
+        // Also add to objectTypeDefinitions collection (triggers file save via FileSystemSyncService)
+        if (!this.getCollections().objectTypeDefinitions) {
+            this.getCollections().objectTypeDefinitions = {};
+        }
+        this.getCollections().objectTypeDefinitions[typeId] = typeDef;
 
         return { success: true };
     }
@@ -663,7 +673,12 @@ class EditorModel {
         // Remove collection and definition
         delete this.getCollections()[typeId];
         this.state.project.objectTypeDefinitions = this.getCollectionDefs().filter(type => type.id !== typeId);
-        
+
+        // Also remove from objectTypeDefinitions collection (triggers file delete via FileSystemSyncService)
+        if (this.getCollections().objectTypeDefinitions) {
+            delete this.getCollections().objectTypeDefinitions[typeId];
+        }
+
         // Reset selection if deleting currently selected type
         if (this.state.selectedType === typeId) {
             this.setSelectedType(this.getCollectionDefs()[0].id);
