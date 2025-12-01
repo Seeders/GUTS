@@ -412,7 +412,13 @@ class SceneEditor {
 
         let inputEl;
 
-        if (typeof value === 'boolean') {
+        // Check if this property should be a collection dropdown
+        const { matchingTypePlural, matchingTypeSingular } = this.findMatchingCollectionTypes(key);
+
+        if (matchingTypeSingular || matchingTypePlural) {
+            // Render as collection dropdown
+            inputEl = this.createCollectionDropdown(value, matchingTypeSingular, matchingTypePlural, onChange);
+        } else if (typeof value === 'boolean') {
             inputEl = document.createElement('input');
             inputEl.type = 'checkbox';
             inputEl.checked = value;
@@ -435,6 +441,78 @@ class SceneEditor {
 
         propEl.appendChild(inputEl);
         container.appendChild(propEl);
+    }
+
+    /**
+     * Find matching collection types for a property key
+     * Similar to EditorModel.findMatchingTypes
+     * @param {string} key - Property key to check
+     * @returns {Object} matchingTypePlural and matchingTypeSingular
+     */
+    findMatchingCollectionTypes(key) {
+        const keyLower = key.toLowerCase();
+        const collectionDefs = this.gameEditor.getCollectionDefs?.() || [];
+
+        // Check for exact matches first, fall back to endsWith if no exact match
+        const matchingTypePlural = collectionDefs.find(t =>
+            keyLower === t.id.toLowerCase()) ||
+            collectionDefs.find(t =>
+                keyLower.endsWith(t.id.toLowerCase()));
+
+        const matchingTypeSingular = collectionDefs.find(t =>
+            keyLower === t.singular.replace(/ /g,'').toLowerCase()) ||
+            collectionDefs.find(t =>
+                keyLower.endsWith(t.singular.replace(/ /g,'').toLowerCase()));
+
+        return { matchingTypePlural, matchingTypeSingular };
+    }
+
+    /**
+     * Create a dropdown for collection selection
+     * @param {string} value - Current value
+     * @param {Object} matchingTypeSingular - Singular type match (e.g., "level" -> levels collection)
+     * @param {Object} matchingTypePlural - Plural type match (e.g., "levels" -> levels collection)
+     * @param {Function} onChange - Callback when value changes
+     * @returns {HTMLSelectElement} The dropdown element
+     */
+    createCollectionDropdown(value, matchingTypeSingular, matchingTypePlural, onChange) {
+        const selectEl = document.createElement('select');
+        selectEl.className = 'property-value ref-select';
+
+        // Determine which type we're referencing
+        const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
+        const typeSingular = matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular;
+
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = `-- Select ${typeSingular} --`;
+        selectEl.appendChild(defaultOption);
+
+        // Populate with collection items
+        const collection = this.collections[typeId] || {};
+
+        // Sort objects alphabetically by title
+        const sortedObjectIds = Object.keys(collection).sort((a, b) => {
+            const titleA = (collection[a].title || a).toLowerCase();
+            const titleB = (collection[b].title || b).toLowerCase();
+            return titleA.localeCompare(titleB);
+        });
+
+        for (const objId of sortedObjectIds) {
+            const option = document.createElement('option');
+            option.value = objId;
+            option.textContent = collection[objId].title || objId;
+            selectEl.appendChild(option);
+        }
+
+        // Set current value
+        selectEl.value = value || '';
+
+        // Handle change
+        selectEl.addEventListener('change', () => onChange(selectEl.value));
+
+        return selectEl;
     }
 
     /**
