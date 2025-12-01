@@ -25,7 +25,8 @@
     "CoordinateTranslator",
     "ComponentGenerator",
     "BehaviorTreeProcessor",
-    "BaseBehaviorNode"
+    "BaseBehaviorNode",
+    "SceneManager"
   ],
   "managers": [
     "GameManager",
