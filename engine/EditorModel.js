@@ -91,87 +91,35 @@ class EditorModel {
 
     /**
      * Persists the current project state to localStorage
-     * Optionally saves to server file if configured
+     * Individual files are saved to filesystem via FileSystemSyncService
      * @returns {boolean} Success status
      */
     saveProject() {
         if (!this.state.currentProject) return;
-        let projectLibraries = {};
-        let editorLibraries = {};
-        let editorModules = {};
-        const projectLibraryNames = this.state.project.objectTypes.configs.game.libraries;
-        if(projectLibraryNames && projectLibraryNames.length > 0) {
-            projectLibraryNames.forEach((libraryName) => {
-                projectLibraries[libraryName] = this.state.project.objectTypes.libraries[libraryName];
-            });
-        };
-        const editorModuleNames = this.state.project.objectTypes.configs.editor.editorModules;
-        if(editorModuleNames && editorModuleNames.length > 0) {
-            editorModuleNames.forEach((moduleName) => {
-                editorModules[moduleName] = this.state.project.objectTypes.editorModules[moduleName];
-            });
-        };
-        Object.entries(editorModules).forEach(([moduleId, moduleConfig]) => {
-            const libraries = (moduleConfig?.library ? [moduleConfig?.library] : moduleConfig?.libraries) || [moduleId];
-            libraries.forEach((library) => {
-                let libraryDef = this.state.project.objectTypes.libraries[library];
-                editorLibraries[library] = libraryDef;
-            });
-        });
 
-        // Strip scripts from collections before saving
-        let projectToSave = this.stripScriptsFromProject(this.state.project);
-
-        // Sort objectTypes for deterministic output
-        projectToSave = this.sortObjectTypes(projectToSave);
-
-        const projectText = JSON.stringify(projectToSave);
-        for(const key in this.state.project.objectTypes){
-            if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
+        // Ensure all collection types have definitions
+        for (const key in this.state.project.objectTypes) {
+            if (!this.state.project.objectTypeDefinitions.find((e) => e.id == key)) {
                 console.log(`did not find ${key}`);
-                this.state.project.objectTypeDefinitions.push({                                    
+                this.state.project.objectTypeDefinitions.push({
                     "id": key,
                     "name": key.charAt(0).toUpperCase() + key.slice(1, key.length),
                     "singular": key.slice(0, key.length - 1),
                     "category": "Uncategorized"
-                })
-            }
-        }
-        try {
-            
-            if(window.location.hostname != "localhost") {
-                // Save to localStorage
-                localStorage.setItem(this.state.currentProject, projectText);
-            } else {
-            // If server saving is enabled, send config to server
-
-                fetch('/save-project', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        project: projectText,
-                        projectName: this.state.currentProject
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to save config');
-                    return response.text();
-                })
-                .then(message => {
-                    // After saving project config, compile and save the game
-                    return true;//this.compileAndSaveGame();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
                 });
             }
+        }
+
+        try {
+            // Save to localStorage for caching during editing session
+            const projectToSave = this.stripScriptsFromProject(this.state.project);
+            const projectText = JSON.stringify(this.sortObjectTypes(projectToSave));
+            localStorage.setItem(this.state.currentProject, projectText);
         } catch (e) {
-            console.error('Failed to save project:', e);
+            console.error('Failed to save project to localStorage:', e);
             return false;
         }
-        
+
         return true;
     }
 
