@@ -40,7 +40,8 @@ class ScriptEditor {
             hintOptions: { completeSingle: false }
         });
 
-        this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+        // Let CSS flexbox handle the sizing instead of explicit pixel height
+        this.scriptEditor.setSize('100%', '100%');
 
         this.setupEventListeners();
         
@@ -53,7 +54,6 @@ class ScriptEditor {
             this.scriptValue = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
             this.scriptEditor.setValue(this.scriptValue);
-            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
 
             // Wait for container to be fully visible before refreshing
             // CodeMirror needs proper dimensions to render correctly
