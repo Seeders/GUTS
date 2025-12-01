@@ -5,10 +5,41 @@ class VisionSystem extends GUTS.BaseSystem {
 
         // Default unit height for line of sight calculations
         this.DEFAULT_UNIT_HEIGHT = 25;
+
+        // Cached values - populated on first use
+        this._gridSize = null;
+        this._terrainSize = null;
+
+        // Pre-allocated bresenham line array to avoid per-call allocation
+        this._bresenhamTiles = [];
+        this._maxBresenhamLength = 100;
+        for (let i = 0; i < this._maxBresenhamLength; i++) {
+            this._bresenhamTiles.push({ x: 0, z: 0 });
+        }
     }
 
     init() {
         this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
+    }
+
+    /**
+     * Get cached grid size (only fetches once)
+     */
+    _getGridSize() {
+        if (this._gridSize === null) {
+            this._gridSize = this.game.gameManager.call('getGridSize');
+        }
+        return this._gridSize;
+    }
+
+    /**
+     * Get cached terrain size (only fetches once)
+     */
+    _getTerrainSize() {
+        if (this._terrainSize === null) {
+            this._terrainSize = this.game.gameManager.call('getTerrainSize');
+        }
+        return this._terrainSize;
     }
 
 
@@ -17,11 +48,11 @@ class VisionSystem extends GUTS.BaseSystem {
         const dz = to.z - from.z;
         const distanceSq = dx * dx + dz * dz;
         const distance = Math.sqrt(distanceSq);
-        const gridSize = this.game.gameManager.call('getGridSize');
+        const gridSize = this._getGridSize();
 
         if (distance < gridSize*2) return true;
 
-        const terrainSize = this.game.gameManager.call("getTerrainSize");
+        const terrainSize = this._getTerrainSize();
         // Get discrete heightmap levels for from and to positions
         const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
         const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
@@ -87,19 +118,19 @@ class VisionSystem extends GUTS.BaseSystem {
     }
 
     checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
-        const terrainSize = this.game.gameManager.call("getTerrainSize");
-        const gridSize = this.game.gameManager.call('getGridSize');
+        const terrainSize = this._getTerrainSize();
+        const gridSize = this._getGridSize();
 
         const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
         const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
         const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
         const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
-        const tiles = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
+        const tileCount = this.bresenhamLine(fromGridX, fromGridZ, toGridX, toGridZ);
 
         // Check intermediate tiles along the path
-        for (let i = 1; i < tiles.length - 1; i++) {
-            const tile = tiles[i];
+        for (let i = 1; i < tileCount - 1; i++) {
+            const tile = this._bresenhamTiles[i];
 
             // Check if this intermediate tile has a higher heightmap level than the viewer
             const tileHeightLevel = this.game.gameManager.call('getHeightLevelAtGridPosition', tile.x, tile.z);
@@ -109,7 +140,7 @@ class VisionSystem extends GUTS.BaseSystem {
             }
 
             // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
-            const t = i / (tiles.length - 1);
+            const t = i / (tileCount - 1);
             const worldX = tile.x * gridSize - terrainSize / 2;
             const worldZ = tile.z * gridSize - terrainSize / 2;
             const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
@@ -123,23 +154,27 @@ class VisionSystem extends GUTS.BaseSystem {
         return true;
     }
 
+    /**
+     * Bresenham line using pre-allocated array - returns count of tiles
+     */
     bresenhamLine(x0, z0, x1, z1) {
-        const tiles = [];
-        
         const dx = Math.abs(x1 - x0);
         const dz = Math.abs(z1 - z0);
         const sx = x0 < x1 ? 1 : -1;
         const sz = z0 < z1 ? 1 : -1;
         let err = dx - dz;
-        
+
         let x = x0;
         let z = z0;
-        
-        while (true) {
-            tiles.push({ x, z });
-            
+        let count = 0;
+
+        while (count < this._maxBresenhamLength) {
+            this._bresenhamTiles[count].x = x;
+            this._bresenhamTiles[count].z = z;
+            count++;
+
             if (x === x1 && z === z1) break;
-            
+
             const e2 = 2 * err;
             if (e2 > -dz) {
                 err -= dz;
@@ -150,7 +185,7 @@ class VisionSystem extends GUTS.BaseSystem {
                 z += sz;
             }
         }
-        
-        return tiles;
+
+        return count;
     }
 }

@@ -9,6 +9,13 @@ class RenderSystem extends GUTS.BaseSystem {
         // Track which entities have been spawned
         this.spawnedEntities = new Set();
 
+        // Reusable set for cleanup to avoid per-frame allocation
+        this._currentEntitiesSet = new Set();
+
+        // Position cache to skip unchanged entity transforms
+        this._entityPositionCache = new Map();  // entityId -> {x, y, z, angle}
+        this._positionThreshold = 0.01;  // Minimum movement to trigger transform update
+
         // Debug stats
         this._frame = 0;
         this._stats = {
@@ -215,7 +222,35 @@ class RenderSystem extends GUTS.BaseSystem {
                     facing: facing,
                     velocity: velocity
                 });
+                // Cache initial position
+                this._entityPositionCache.set(entityId, {
+                    x: pos.x, y: pos.y, z: pos.z,
+                    angle: facing?.angle || 0
+                });
             } else {
+                // Check if position/rotation has actually changed
+                const cached = this._entityPositionCache.get(entityId);
+                const angle = facing?.angle || 0;
+
+                if (cached) {
+                    const dx = pos.x - cached.x;
+                    const dy = pos.y - cached.y;
+                    const dz = pos.z - cached.z;
+                    const distSq = dx*dx + dy*dy + dz*dz;
+                    const angleDiff = Math.abs(angle - cached.angle);
+
+                    // Skip update if position hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01) {
+                        continue;
+                    }
+
+                    // Update cache
+                    cached.x = pos.x;
+                    cached.y = pos.y;
+                    cached.z = pos.z;
+                    cached.angle = angle;
+                }
+
                 // Update existing entity
                 this.updateEntity(entityId, {
                     position: { x: pos.x, y: pos.y, z: pos.z },
@@ -226,8 +261,12 @@ class RenderSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Cleanup removed entities
-        this.cleanupRemovedEntities(new Set(entities));
+        // Cleanup removed entities - reuse set to avoid per-frame allocation
+        this._currentEntitiesSet.clear();
+        for (const entityId of entities) {
+            this._currentEntitiesSet.add(entityId);
+        }
+        this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
     async spawnEntity(entityId, data) {
@@ -276,6 +315,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const removed = this.entityRenderer.removeEntity(entityId);
         if (removed) {
             this.spawnedEntities.delete(entityId);
+            this._entityPositionCache.delete(entityId);
         }
         return removed;
     }

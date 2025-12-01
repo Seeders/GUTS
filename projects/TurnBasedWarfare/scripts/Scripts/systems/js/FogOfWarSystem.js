@@ -36,6 +36,25 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.cachedExplorationBuffer = new Uint8Array(this.FOG_TEXTURE_SIZE * this.FOG_TEXTURE_SIZE);
         this.visibilityCacheValid = false;
         this.explorationCacheValid = false;
+
+        // Frame-based cache invalidation to prevent redundant GPU reads
+        this.lastVisibilityCacheFrame = -1;
+        this.lastExplorationCacheFrame = -1;
+        this.currentFrame = 0;
+
+        // Position-based dirty tracking - only recalculate LOS when units move
+        this._unitPositions = new Map();  // entityId -> {x, z}
+        this._fowDirty = true;            // Force initial calculation
+        this._positionThreshold = 5;      // Minimum movement to trigger recalc (in world units)
+
+        // Cached values that don't change per-frame
+        this._cachedGridSize = null;
+        this._cachedTerrainSize = null;
+
+        // Tile-based LOS cache - key: "tileX_tileZ_visionRadius" -> cached visibility points array
+        // LOS only depends on tile position and terrain (which is static)
+        this._losCache = new Map();
+        this._losCacheMaxSize = 500;  // Limit cache size to prevent memory bloat
         
         // Pre-allocate reusable arrays
         this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
@@ -52,6 +71,9 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Register getter methods
         this.game.gameManager.register('getExplorationTexture', this.getExplorationTexture.bind(this));
         this.game.gameManager.register('getFogTexture', this.getFogTexture.bind(this));
+
+        // Register cache invalidation for when worldObjects are destroyed
+        this.game.gameManager.register('invalidateLOSCache', this.invalidateLOSCache.bind(this));
     }
 
     getExplorationTexture() {
@@ -158,19 +180,82 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
 
+    /**
+     * Get cached grid size for tile calculations
+     */
+    _getGridSize() {
+        if (this._cachedGridSize === null) {
+            this._cachedGridSize = this.game.gameManager.call('getGridSize');
+        }
+        return this._cachedGridSize;
+    }
+
+    /**
+     * Get cached terrain size for tile calculations
+     */
+    _getTerrainSize() {
+        if (this._cachedTerrainSize === null) {
+            this._cachedTerrainSize = this.game.gameManager.call('getTerrainSize');
+        }
+        return this._cachedTerrainSize;
+    }
+
+    /**
+     * Convert world position to tile position
+     */
+    _worldToTile(x, z) {
+        const gridSize = this._getGridSize();
+        const terrainSize = this._getTerrainSize();
+        return {
+            tileX: Math.floor((x + terrainSize / 2) / gridSize),
+            tileZ: Math.floor((z + terrainSize / 2) / gridSize)
+        };
+    }
+
+    /**
+     * Get tile center in world coordinates
+     */
+    _tileToWorld(tileX, tileZ) {
+        const gridSize = this._getGridSize();
+        const terrainSize = this._getTerrainSize();
+        return {
+            x: (tileX + 0.5) * gridSize - terrainSize / 2,
+            z: (tileZ + 0.5) * gridSize - terrainSize / 2
+        };
+    }
+
     generateLOSVisibilityShape(unitPos, visionRadius, unitType, entityId) {
+        // Convert to tile position for cache lookup
+        const { tileX, tileZ } = this._worldToTile(unitPos.x, unitPos.z);
+        const cacheKey = `${tileX}_${tileZ}_${visionRadius}`;
+
+        // Check cache first
+        const cached = this._losCache.get(cacheKey);
+        if (cached) {
+            // Apply cached distances to current unit position
+            const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
+            for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
+                const angle = i * angleStep;
+                this.tempVisiblePoints[i].x = unitPos.x + Math.cos(angle) * cached[i];
+                this.tempVisiblePoints[i].z = unitPos.z + Math.sin(angle) * cached[i];
+            }
+            return this.tempVisiblePoints;
+        }
+
+        // Calculate LOS shape (cache miss)
         const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
-        
+        const distances = new Float32Array(this.LOS_RAYS_PER_UNIT);
+
         for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
             const angle = i * angleStep;
             const dirX = Math.cos(angle);
             const dirZ = Math.sin(angle);
-            
+
             // Binary search with reduced iterations (4 instead of 6)
             let minDist = 0;
             let maxDist = visionRadius;
             let visibleDist = visionRadius;
-            
+
             // First check max distance
             const maxX = unitPos.x + dirX * visionRadius;
             const maxZ = unitPos.z + dirZ * visionRadius;
@@ -198,12 +283,20 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 }
                 visibleDist = minDist;
             }
-            
-            // Reuse pre-allocated point objects
+
+            distances[i] = visibleDist;
             this.tempVisiblePoints[i].x = unitPos.x + dirX * visibleDist;
             this.tempVisiblePoints[i].z = unitPos.z + dirZ * visibleDist;
         }
-        
+
+        // Cache the distances (limit cache size with simple eviction)
+        if (this._losCache.size >= this._losCacheMaxSize) {
+            // Remove oldest entry (first key)
+            const firstKey = this._losCache.keys().next().value;
+            this._losCache.delete(firstKey);
+        }
+        this._losCache.set(cacheKey, distances);
+
         return this.tempVisiblePoints;
     }
 
@@ -445,6 +538,78 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         };
     }
 
+    /**
+     * Check if any unit has moved enough to require FOW recalculation
+     */
+    _checkUnitMovement(myUnits) {
+        let hasMoved = false;
+        const currentPositions = new Map();
+
+        for (const entityId of myUnits) {
+            const pos = this.game.getComponent(entityId, "position");
+            if (!pos) continue;
+
+            currentPositions.set(entityId, { x: pos.x, z: pos.z });
+
+            const lastPos = this._unitPositions.get(entityId);
+            if (!lastPos) {
+                // New unit - needs recalc
+                hasMoved = true;
+            } else {
+                const dx = pos.x - lastPos.x;
+                const dz = pos.z - lastPos.z;
+                const distSq = dx * dx + dz * dz;
+                if (distSq > this._positionThreshold * this._positionThreshold) {
+                    hasMoved = true;
+                }
+            }
+        }
+
+        // Check for removed units
+        if (this._unitPositions.size !== currentPositions.size) {
+            hasMoved = true;
+        }
+
+        // Update stored positions
+        this._unitPositions = currentPositions;
+
+        return hasMoved;
+    }
+
+    /**
+     * Force FOW recalculation (call when worldObjects change, etc.)
+     */
+    invalidateFOW() {
+        this._fowDirty = true;
+    }
+
+    /**
+     * Invalidate LOS cache - call when terrain/worldObjects change
+     * Can invalidate specific tiles or entire cache
+     */
+    invalidateLOSCache(worldX = null, worldZ = null, radius = null) {
+        if (worldX === null) {
+            // Clear entire cache
+            this._losCache.clear();
+        } else if (radius !== null) {
+            // Clear tiles within radius of world position
+            const gridSize = this._getGridSize();
+            const { tileX: centerTileX, tileZ: centerTileZ } = this._worldToTile(worldX, worldZ);
+            const tileRadius = Math.ceil(radius / gridSize) + 1;
+
+            // Remove affected cache entries
+            for (const key of this._losCache.keys()) {
+                const [tileX, tileZ] = key.split('_').map(Number);
+                const dx = tileX - centerTileX;
+                const dz = tileZ - centerTileZ;
+                if (dx * dx + dz * dz <= tileRadius * tileRadius) {
+                    this._losCache.delete(key);
+                }
+            }
+        }
+        this._fowDirty = true;
+    }
+
     renderFogTexture() {
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
@@ -458,15 +623,26 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return team?.team === myTeam;
         });
 
+        // Check if any unit has moved - if not, skip expensive LOS recalculation
+        const needsRecalc = this._fowDirty || this._checkUnitMovement(myUnits);
+
+        if (!needsRecalc) {
+            // Still need to increment frame for visibility cache
+            this.currentFrame++;
+            return;
+        }
+
+        this._fowDirty = false;
+
         // Hide all meshes
         this.losMeshPool.forEach(mesh => mesh.visible = false);
 
         let meshIndex = 0;
 
-        myUnits.forEach((entityId) => {
+        for (const entityId of myUnits) {
             const pos = this.game.getComponent(entityId, "position");
             const unitType = this.game.getComponent(entityId, "unitType");
-            if (!pos) return;
+            if (!pos) continue;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
 
@@ -476,12 +652,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 unitType,
                 entityId
             );
-            
+
             this.updateVisibilityMesh(visiblePoints, meshIndex);
-    
+
             meshIndex++;
-            
-        });
+        }
 
         // Render visibility
         this.game.renderer.setRenderTarget(this.fogRenderTarget);
@@ -501,14 +676,15 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
         
         this.game.renderer.setRenderTarget(null);
-        
-        this.visibilityCacheValid = false;
-        this.explorationCacheValid = false;
+
+        // Increment frame counter - caches will be updated once per frame on first visibility check
+        this.currentFrame++;
     }
 
     updateVisibilityCache() {
-        if (this.visibilityCacheValid) return;
-        
+        // Only read pixels once per frame using frame counter
+        if (this.lastVisibilityCacheFrame === this.currentFrame) return;
+
         this.game.renderer.readRenderTargetPixels(
             this.fogRenderTarget,
             0, 0,
@@ -516,13 +692,14 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             this.FOG_TEXTURE_SIZE,
             this.cachedVisibilityBuffer
         );
-        
-        this.visibilityCacheValid = true;
+
+        this.lastVisibilityCacheFrame = this.currentFrame;
     }
 
     updateExplorationCache() {
-        if (this.explorationCacheValid) return;
-        
+        // Only read pixels once per frame using frame counter
+        if (this.lastExplorationCacheFrame === this.currentFrame) return;
+
         this.game.renderer.readRenderTargetPixels(
             this.explorationRenderTarget,
             0, 0,
@@ -530,8 +707,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             this.FOG_TEXTURE_SIZE,
             this.cachedExplorationBuffer
         );
-        
-        this.explorationCacheValid = true;
+
+        this.lastExplorationCacheFrame = this.currentFrame;
     }
 
     //only available on CLIENT

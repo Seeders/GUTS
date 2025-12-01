@@ -11,6 +11,10 @@ class BaseECSGame {
         this.systems = [];
         this.managers = [];
 
+        // Query cache for getEntitiesWith - invalidated on entity/component changes
+        this._queryCache = new Map();  // queryKey -> { result: [], version: number }
+        this._queryCacheVersion = 0;   // Incremented when entities/components change
+
         this.nextEntityId = 1;
         this.lastTime = 0;
         this.currentTime = 0;
@@ -162,15 +166,16 @@ class BaseECSGame {
     createEntity(setId) {
         const id = setId || this.getEntityId();
         this.entities.set(id, new Set());
+        this._invalidateQueryCache();
         return id;
     }
-    
+
     destroyEntity(entityId) {
         if (this.entities.has(entityId)) {
 
             this.systems.forEach(system => {
                 if (system.entityDestroyed) {
-                    system.entityDestroyed(entityId);                    
+                    system.entityDestroyed(entityId);
                 }
             });
 
@@ -179,23 +184,25 @@ class BaseECSGame {
                 this.removeComponent(entityId, type);
             });
             this.entities.delete(entityId);
+            this._invalidateQueryCache();
         }
     }
-    
+
     addComponent(entityId, componentId, data) {
         if (!this.entities.has(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
-        }  
+        }
         const componentMethods = this.gameManager.call('getComponents');
         const componentData = componentMethods[componentId](data);
         if (!this.components.has(componentId)) {
             this.components.set(componentId, new Map());
         }
-        
+
         this.components.get(componentId).set(entityId, componentData);
         this.entities.get(entityId).add(componentId);
+        this._invalidateQueryCache();
     }
-    
+
     removeComponent(entityId, componentType) {
         let component = this.getComponent(entityId, componentType);
         if (this.components.has(componentType)) {
@@ -204,7 +211,15 @@ class BaseECSGame {
         if (this.entities.has(entityId)) {
             this.entities.get(entityId).delete(componentType);
         }
+        this._invalidateQueryCache();
         return component;
+    }
+
+    /**
+     * Invalidate all query caches - called when entities/components change
+     */
+    _invalidateQueryCache() {
+        this._queryCacheVersion++;
     }
     
     getComponent(entityId, componentType) {
@@ -220,13 +235,38 @@ class BaseECSGame {
     }
     
     getEntitiesWith(...componentTypes) {
+        // Create cache key from component types
+        const queryKey = componentTypes.join(',');
+
+        // Check if we have a valid cached result
+        const cached = this._queryCache.get(queryKey);
+        if (cached && cached.version === this._queryCacheVersion) {
+            return cached.result;
+        }
+
+        // Compute new result
         const result = [];
         for (const [entityId, entityComponents] of this.entities) {
             if (componentTypes.every(type => entityComponents.has(type))) {
                 result.push(entityId);
             }
         }
-        return result.sort((a, b) => String(a).localeCompare(String(b)));
+
+        // Sort for deterministic order across clients/server
+        // Use efficient numeric/string comparison based on ID type
+        if (result.length > 0 && typeof result[0] === 'number') {
+            result.sort((a, b) => a - b);  // Fast numeric sort
+        } else {
+            result.sort();  // Default string sort (faster than localeCompare)
+        }
+
+        // Cache the result
+        this._queryCache.set(queryKey, {
+            result,
+            version: this._queryCacheVersion
+        });
+
+        return result;
     }
     
     triggerEvent(eventName, data) {
