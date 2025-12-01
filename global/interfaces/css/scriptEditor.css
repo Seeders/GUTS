@@ -2,28 +2,28 @@
    SCRIPT EDITOR - MODULE-SPECIFIC STYLES
    ============================================================================= */
 
-/* Code container - fills available space */
+/* Code container */
 .script-editor__code-container {
     position: relative;
     height: 100%;
     width: 100%;
     display: flex;
     flex-direction: column;
-    min-height: 0;
 }
 
 .script-editor__code {
     flex: 1;
     height: 100%;
-    min-height: 0;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* Critical: Fix scroll container positioning */
-#script-editor-container .CodeMirror-scroll {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    overflow: auto !important;
+/* Override global scrollbar suppression for CodeMirror */
+#script-editor-container .CodeMirror {
+    overflow-y: auto !important;
+    -ms-overflow-style: auto !important;
+    scrollbar-width: auto !important;
+    height: 100%;
+    font-size: 14px;
 }
