@@ -20,9 +20,24 @@
 /* Override global scrollbar suppression and fix CodeMirror sizing */
 #script-editor-container .CodeMirror {
     overflow-y: auto !important;
+    overflow-x: auto !important;
     -ms-overflow-style: auto !important;
     scrollbar-width: auto !important;
     font-size: 14px;
+}
+
+/* Force code to be visible */
+#script-editor-container .CodeMirror-scroll {
+    overflow: auto !important;
+}
+
+#script-editor-container .CodeMirror-code,
+#script-editor-container .CodeMirror-code pre,
+#script-editor-container .CodeMirror-line,
+#script-editor-container .CodeMirror-line span {
+    color: #d4d4d4 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Fix gutter width - force reasonable width and let CodeMirror handle positioning */
