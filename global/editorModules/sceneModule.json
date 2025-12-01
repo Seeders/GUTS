@@ -22,11 +22,11 @@
     "TerrainDataManager",
     "WorldRenderer",
     "EntityRenderer",
+    "GameServices",
     "SceneManager",
     "SceneEditorContext",
     "SceneEditor"
   ],
-  "propertyName": null,
   "interface": "sceneEditor",
   "inputElement": "textarea",
   "inputDataType": "object",
