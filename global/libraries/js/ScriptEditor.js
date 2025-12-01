@@ -74,6 +74,15 @@ class ScriptEditor {
             this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
             this.scriptEditor.refresh();
 
+            // Force text visibility via inline styles
+            const wrapper = this.scriptEditor.getWrapperElement();
+            const codeLines = wrapper.querySelectorAll('.CodeMirror-line');
+            codeLines.forEach(line => {
+                line.style.setProperty('color', '#00ff00', 'important');
+                line.style.setProperty('visibility', 'visible', 'important');
+                line.style.setProperty('opacity', '1', 'important');
+            });
+
             // Double-refresh after a short delay to ensure CodeMirror recalculates properly
             setTimeout(() => {
                 this.scriptEditor.refresh();
