@@ -268,6 +268,23 @@ app.post('/delete-file', async (req, res) => {
     }
 });
 
+app.post('/delete-folder', async (req, res) => {
+    let { path: folderPath } = req.body;
+    folderPath = path.join(PROJS_DIR, folderPath);
+    console.log('Deleting folder:', folderPath);
+    try {
+        if (!fsSync.existsSync(folderPath)) {
+            return res.status(404).send({ success: false, error: 'Folder not found' });
+        }
+        await fs.rm(folderPath, { recursive: true, force: true });
+        console.log('Folder successfully deleted:', folderPath);
+        res.send({ success: true, message: 'Folder deleted' });
+    } catch (error) {
+        console.error('Error deleting folder:', error);
+        res.status(500).send({ success: false, error: error.message });
+    }
+});
+
 app.post('/read-file', async (req, res) => {
     let { path: filePath, isModule: isModule } = req.body;
     if(!isModule){

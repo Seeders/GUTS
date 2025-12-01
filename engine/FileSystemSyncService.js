@@ -47,7 +47,7 @@ class FileSystemSyncService {
             await this.saveObjectTypeDefinition(event.detail);
         });
         document.body.addEventListener('deleteType', async (event) => {
-            await this.deleteObjectTypeDefinition(event.detail.typeId);
+            await this.deleteObjectTypeDefinition(event.detail.typeId, event.detail.category);
         });
     }
 
@@ -86,26 +86,48 @@ class FileSystemSyncService {
         }
     }
 
-    async deleteObjectTypeDefinition(typeId) {
+    async deleteObjectTypeDefinition(typeId, category) {
         const projectId = this.gameEditor.model.getCurrentProject();
         if (!projectId) return;
 
-        const filePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${typeId}.json`;
+        // Delete the objectTypeDefinition JSON file
+        const defFilePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${typeId}.json`;
 
         try {
             const response = await fetch('/delete-file', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: filePath })
+                body: JSON.stringify({ path: defFilePath })
             });
 
             if (!response.ok) {
                 console.warn(`Failed to delete objectTypeDefinition file: ${response.status}`);
             } else {
-                console.log(`Deleted objectTypeDefinition: ${filePath}`);
+                console.log(`Deleted objectTypeDefinition: ${defFilePath}`);
             }
         } catch (error) {
             console.error('Error deleting objectTypeDefinition:', error);
+        }
+
+        // Delete the collection folder if category is provided
+        if (category) {
+            const folderPath = `${projectId}/${this.projectScriptDirectoryName}/${category}/${typeId}`;
+
+            try {
+                const response = await fetch('/delete-folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: folderPath })
+                });
+
+                if (!response.ok) {
+                    console.warn(`Failed to delete collection folder: ${response.status}`);
+                } else {
+                    console.log(`Deleted collection folder: ${folderPath}`);
+                }
+            } catch (error) {
+                console.error('Error deleting collection folder:', error);
+            }
         }
     }
 
