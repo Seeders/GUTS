@@ -198,15 +198,15 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         });
         // Register pixel pass
-        this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
-            enabled: pixelSize !== 1,
-            create: () => {
-                const pixelPass = new THREE.RenderPixelatedPass(pixelSize, this.scene, this.camera);
-                pixelPass.enabled = pixelSize !== 1;
-                pixelPass.normalEdgeStrength = 0;
-                return pixelPass;
-            }
-        });
+        // this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
+        //     enabled: pixelSize !== 1,
+        //     create: () => {
+        //         const pixelPass = new THREE.RenderPixelatedPass(pixelSize, this.scene, this.camera);
+        //         pixelPass.enabled = pixelSize !== 1;
+        //         pixelPass.normalEdgeStrength = 0;
+        //         return pixelPass;
+        //     }
+        // });
 
         // Register output pass (always last)
         this.game.gameManager.call('registerPostProcessingPass', 'output', {
