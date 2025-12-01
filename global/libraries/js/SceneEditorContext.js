@@ -118,12 +118,7 @@ class SceneEditorContext {
             }
         }
 
-        // Call postAllInit on systems
-        for (const system of this.systems) {
-            if (system.postAllInit) {
-                system.postAllInit();
-            }
-        }
+        // Note: postAllInit is called after loadScene() since systems need scene/camera/renderer
 
         console.log('[SceneEditorContext] Initialized with systems:', systemNames);
     }
@@ -192,6 +187,13 @@ class SceneEditorContext {
         for (const system of this.systems) {
             if (system.enabled && system.postSceneLoad) {
                 await system.postSceneLoad(sceneData);
+            }
+        }
+
+        // Call postAllInit after scene is loaded (systems now have scene/camera/renderer)
+        for (const system of this.systems) {
+            if (system.postAllInit) {
+                system.postAllInit();
             }
         }
 
