@@ -59,6 +59,7 @@ class SceneEditor {
             'GridSystem',
             'TerrainSystem',
             'WorldSystem',
+            'PostProcessingSystem',
             'RenderSystem'
         ]);
 

@@ -31,6 +31,7 @@
     "GridSystem",
     "TerrainSystem",
     "WorldSystem",
+    "PostProcessingSystem",
     "RenderSystem"
   ],
   "propertyName": "entities",
