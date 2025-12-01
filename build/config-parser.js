@@ -644,7 +644,6 @@ class ConfigParser {
     getEnginePaths() {
         const engineDir = path.join(__dirname, '..', 'engine');
         return {
-            moduleManager: path.join(engineDir, 'ModuleManager.js'),
             baseEngine: path.join(engineDir, 'BaseEngine.js'),
             engine: path.join(engineDir, 'Engine.js')
         };

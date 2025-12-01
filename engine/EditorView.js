@@ -1,7 +1,6 @@
 class EditorView {
     constructor(controller) {
       this.controller = controller;
-      this.moduleManager = controller.moduleManager;
       this.elements = controller.elements;
       this.dragState = {};
       

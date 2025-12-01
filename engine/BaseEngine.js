@@ -9,7 +9,6 @@ class BaseEngine {
         this.libraries = {};
         this.running = false;
         this.collections = null;
-        this.moduleManager = null;
         this.gameInstance = null;
     }
 

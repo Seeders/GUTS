@@ -153,7 +153,6 @@ The EditorController class coordinates between the model and view, handling init
 - **model:** Instance of EditorModel.
 - **view:** Instance of EditorView.
 - **elements:** Cached DOM references (e.g., `#object-list`, `#editor`).
-- **moduleManager:** Manages dynamic module loading.
 
 ### Key Methods
 - **init():** Initializes the application and loads the initial project.
@@ -208,7 +207,6 @@ The EditorView class renders the UI and handles user interactions, updating the 
 ---
 
 ## Notes
-- **Dynamic Modules:** The ModuleManager allows for extensible property editors.
 - **Theming:** Themes are applied via inline CSS in `#theme_style`.
 - **Local Development:** On localhost, data is synced to a server via FileSystemSyncService.
 - **UI Flexibility:** Drag-resize and modal dialogs enhance usability.
