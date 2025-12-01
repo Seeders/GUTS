@@ -139,10 +139,10 @@ class MultiShotAbility extends GUTS.BaseAbility {
     }
     
     fireSingleArrow(casterEntity, targetId, shotIndex) {
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        const transform = this.game.getComponent(targetId, "transform");
-        const targetPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = casterTransform?.position;
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
         
         // Validate target still exists
         if (!casterPos || !targetPos) return;

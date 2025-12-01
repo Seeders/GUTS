@@ -110,7 +110,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         }
 
         if (this.terrainDataManager) {
-            this.terrainDataManager.destroy();
+            this.terrainDataManager.dispose();
             this.terrainDataManager = null;
         }
 

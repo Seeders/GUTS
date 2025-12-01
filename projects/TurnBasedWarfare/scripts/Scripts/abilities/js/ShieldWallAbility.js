@@ -154,8 +154,8 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         let tauntedCount = 0;
         
         sortedEnemies.forEach((enemyId, index) => {
-            const transform = this.game.getComponent(enemyId, "transform");
-            const enemyPos = transform?.position;
+            const enemyTransform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = enemyTransform?.position;
             const enemyAI = this.game.getComponent(enemyId, "aiState");
             
             if (!enemyPos || !enemyAI) return;
@@ -174,15 +174,14 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             // Force AI to target the shield wall user
 
             enemyAI.target = casterEntity;
-            const transform = this.game.getComponent(casterEntity, "transform");
-            enemyAI.targetPosition = transform?.position;
+            const casterTransform = this.game.getComponent(casterEntity, "transform");
+            enemyAI.targetPosition = casterTransform?.position;
             enemyAI.path = [];
             enemyAI.meta = {};
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
-                const transform = this.game.getComponent(enemyId, "transform");
-                const pos = transform?.position;
+                const pos = enemyTransform?.position;
                 if (pos) {
                     this.createVisualEffect(pos, 'taunt_aura');
                 }

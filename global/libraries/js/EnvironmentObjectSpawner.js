@@ -189,9 +189,8 @@ class EnvironmentObjectSpawner {
         if (this.mode === 'runtime' && this.game) {
             // Runtime mode: Destroy ECS entities
             for (const entityId of this.spawnedEntities) {
-                if (this.game.entityExists(entityId)) {
-                    this.game.destroyEntity(entityId);
-                }
+                this.game.destroyEntity(entityId);
+            
             }
         } else if (this.mode === 'editor' && this.entityRenderer) {
             // Editor mode: Remove from EntityRenderer

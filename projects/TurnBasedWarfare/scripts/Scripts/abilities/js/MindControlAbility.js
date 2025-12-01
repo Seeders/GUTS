@@ -358,10 +358,10 @@ class MindControlAbility extends GUTS.BaseAbility {
         // Only create visual beams on client
         if (this.game.isServer) return;
 
-        const transform = this.game.getComponent(casterId, "transform");
-        const casterPos = transform?.position;
-        const transform = this.game.getComponent(targetId, "transform");
-        const targetPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterId, "transform");
+        const casterPos = casterTransform?.position;
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
 
         if (!casterPos || !targetPos || !this.game.effectsSystem) return;
 

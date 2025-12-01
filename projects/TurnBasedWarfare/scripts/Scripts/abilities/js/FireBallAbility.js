@@ -117,8 +117,8 @@ class FireBallAbility extends GUTS.BaseAbility {
     execute(casterEntity, targetData = null) {
         if (!this.game.projectileSystem) return;
 
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = casterTransform?.position;
         if (!casterPos) return;
        
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
@@ -128,8 +128,8 @@ class FireBallAbility extends GUTS.BaseAbility {
         if (!closestEnemy) return;
 
         // IMPORTANT: Capture target position at cast time for ballistic trajectory
-        const transform = this.game.getComponent(closestEnemy, "transform");
-        const targetPos = transform?.position;
+        const targetTransform = this.game.getComponent(closestEnemy, "transform");
+        const targetPos = targetTransform?.position;
         if (!targetPos) return;
 
         this.targetPosition = {

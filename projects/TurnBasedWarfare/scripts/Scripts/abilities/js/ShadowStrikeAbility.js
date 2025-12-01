@@ -67,8 +67,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         const target = this.findClosestEnemy(casterEntity, enemies);
         if (!target) return;
         
-        const transform = this.game.getComponent(target, "transform");
-        const targetPos = transform?.position;
+        const targetTransform = this.game.getComponent(target, "transform");
+        const targetPos = targetTransform?.position;
         if (!targetPos) return;
         
         // Immediate cast effect
@@ -113,10 +113,10 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
     }
     
     performShadowStrike(casterEntity, targetId) {
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        const transform = this.game.getComponent(targetId, "transform");
-        const targetPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = casterTransform?.position;
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
 
         if (!casterPos || !targetPos) return;
 

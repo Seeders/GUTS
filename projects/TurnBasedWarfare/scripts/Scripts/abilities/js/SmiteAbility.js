@@ -80,8 +80,8 @@ class SmiteAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemyDeterministic(enemies);
         if (!target) return null;
         
-        const transform = this.game.getComponent(target, "transform");
-        const targetPos = transform?.position;
+        const targetTransform = this.game.getComponent(target, "transform");
+        const targetPos = targetTransform?.position;
         if (!targetPos) return null;
         
         // Show immediate cast effect

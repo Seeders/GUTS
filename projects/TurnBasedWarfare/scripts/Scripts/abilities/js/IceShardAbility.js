@@ -115,10 +115,10 @@ class IceShardAbility extends GUTS.BaseAbility {
     }
     
     fireIceShard(casterEntity, targetId) {
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        const transform = this.game.getComponent(targetId, "transform");
-        const targetPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = casterTransform?.position;
+        const targetTransform = this.game.getComponent(targetId, "transform");
+        const targetPos = targetTransform?.position;
 
         if (!casterPos || !targetPos) return;
 

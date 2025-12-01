@@ -50,8 +50,8 @@ class LightningBoltAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
+        const casterTransform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = casterTransform?.position;
         if (!casterPos) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -62,8 +62,8 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
         
-        const transform = this.game.getComponent(target, "transform");
-        const targetPos = transform?.position;
+        const targetTransform = this.game.getComponent(target, "transform");
+        const targetPos = targetTransform?.position;
         if (!targetPos) return;
         
         // Immediate cast effect
