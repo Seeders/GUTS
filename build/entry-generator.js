@@ -238,31 +238,69 @@ class EntryGenerator {
             }
         }
 
-        // Import data collections (JSON files)
+        // Import data collections (JSON, HTML, CSS files)
         const dataCollectionObjects = {};
         if (client.dataCollections && Object.keys(client.dataCollections).length > 0) {
             sections.push('// ========== DATA COLLECTIONS ==========');
 
-            for (const [collectionName, dataFiles] of Object.entries(client.dataCollections)) {
-                if (dataFiles.length === 0) continue;
+            for (const [collectionName, collectionFiles] of Object.entries(client.dataCollections)) {
+                const { dataFiles, htmlFiles, cssFiles } = collectionFiles;
+                if (dataFiles.length === 0 && htmlFiles.length === 0 && cssFiles.length === 0) continue;
 
                 const dataVarName = `${collectionName}Data`;
                 sections.push(`// ${collectionName} data`);
 
                 // Import each JSON file
-                dataFiles.forEach((file, index) => {
-                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                dataFiles.forEach((file) => {
+                    const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
                     let importPath = file.path.replace(/\\/g, '/');
                     sections.push(`import ${varName} from '${importPath}';`);
                 });
 
-                // Build the data collection object
-                sections.push(`const ${dataVarName} = {`);
-                dataFiles.forEach((file, index) => {
-                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
-                    const comma = index < dataFiles.length - 1 ? ',' : '';
-                    sections.push(`  "${file.fileName}": ${varName}${comma}`);
+                // Import each HTML file as raw text
+                htmlFiles.forEach((file) => {
+                    const varName = `${collectionName}_html_${this.sanitizeVarName(file.fileName)}`;
+                    let importPath = file.path.replace(/\\/g, '/');
+                    sections.push(`import ${varName} from '${importPath}';`);
                 });
+
+                // Import each CSS file as raw text
+                cssFiles.forEach((file) => {
+                    const varName = `${collectionName}_css_${this.sanitizeVarName(file.fileName)}`;
+                    let importPath = file.path.replace(/\\/g, '/');
+                    sections.push(`import ${varName} from '${importPath}';`);
+                });
+
+                // Build the data collection object, merging JSON with HTML/CSS by fileName
+                sections.push(`const ${dataVarName} = {`);
+
+                // Use dataFiles as the primary list, merging in html/css
+                dataFiles.forEach((file, index) => {
+                    const jsonVar = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
+                    const htmlVar = `${collectionName}_html_${this.sanitizeVarName(file.fileName)}`;
+                    const cssVar = `${collectionName}_css_${this.sanitizeVarName(file.fileName)}`;
+
+                    // Check if matching HTML/CSS files exist
+                    const hasHtml = htmlFiles.some(h => h.fileName === file.fileName);
+                    const hasCss = cssFiles.some(c => c.fileName === file.fileName);
+
+                    const comma = index < dataFiles.length - 1 ? ',' : '';
+
+                    if (hasHtml || hasCss) {
+                        sections.push(`  "${file.fileName}": {`);
+                        sections.push(`    ...${jsonVar},`);
+                        if (hasHtml) {
+                            sections.push(`    html: ${htmlVar},`);
+                        }
+                        if (hasCss) {
+                            sections.push(`    css: ${cssVar}`);
+                        }
+                        sections.push(`  }${comma}`);
+                    } else {
+                        sections.push(`  "${file.fileName}": ${jsonVar}${comma}`);
+                    }
+                });
+
                 sections.push('};');
                 sections.push('');
 
@@ -590,20 +628,21 @@ class EntryGenerator {
             }
         }
 
-        // Require data collections (JSON files)
+        // Require data collections (JSON files only for server - no HTML/CSS needed)
         const dataCollectionVars = {};
         if (server.dataCollections && Object.keys(server.dataCollections).length > 0) {
             sections.push('// ========== DATA COLLECTIONS ==========');
 
-            for (const [collectionName, dataFiles] of Object.entries(server.dataCollections)) {
-                if (dataFiles.length === 0) continue;
+            for (const [collectionName, collectionFiles] of Object.entries(server.dataCollections)) {
+                const { dataFiles } = collectionFiles;
+                if (!dataFiles || dataFiles.length === 0) continue;
 
                 const dataVarName = `${collectionName}Data`;
                 sections.push(`// ${collectionName} data`);
 
                 // Require each JSON file
                 dataFiles.forEach((file) => {
-                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
                     let requirePath = file.path.replace(/\\/g, '/');
                     sections.push(`const ${varName} = require('${requirePath}');`);
                 });
@@ -611,7 +650,7 @@ class EntryGenerator {
                 // Build the data collection object
                 sections.push(`const ${dataVarName} = {`);
                 dataFiles.forEach((file, index) => {
-                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
                     const comma = index < dataFiles.length - 1 ? ',' : '';
                     sections.push(`  "${file.fileName}": ${varName}${comma}`);
                 });

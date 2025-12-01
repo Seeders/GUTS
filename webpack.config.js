@@ -70,6 +70,16 @@ const baseConfig = {
                         loader: path.resolve(__dirname, 'build/class-export-loader.js')
                     }
                 ]
+            },
+            {
+                // Import HTML files as raw text
+                test: /\.html$/,
+                type: 'asset/source'
+            },
+            {
+                // Import CSS files as raw text (not processed)
+                test: /\.css$/,
+                type: 'asset/source'
             }
         ]
     },
