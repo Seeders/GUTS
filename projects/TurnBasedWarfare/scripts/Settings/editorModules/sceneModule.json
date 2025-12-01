@@ -1,0 +1,25 @@
+{
+  "title": "Scene Editor",
+  "container": "scene-editor-container",
+  "interface": "sceneEditor",
+  "inputElement": "textarea",
+  "inputDataType": "array",
+  "propertyName": "entities",
+  "loadHook": "renderSceneObject",
+  "saveHook": "saveSceneObject",
+  "libraries": [
+    "BaseECSGame",
+    "BaseSystem",
+    "ComponentGenerator",
+    "GameServices",
+    "SceneManager",
+    "SceneEditorContext",
+    "SceneEditor"
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "RenderSystem"
+  ]
+}
