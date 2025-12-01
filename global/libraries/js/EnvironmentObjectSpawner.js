@@ -128,8 +128,12 @@ class EnvironmentObjectSpawner {
         // Create entity with unique ID
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
 
-        // Add Position component
-        this.game.addComponent(entityId, "position", { x: worldX, y: height, z: worldZ });
+        // Add Transform component
+        this.game.addComponent(entityId, "transform", {
+            position: { x: worldX, y: height, z: worldZ },
+            rotation: { x: 0, y: rotation, z: 0 },
+            scale: { x: scale, y: scale, z: scale }
+        });
 
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
@@ -144,10 +148,7 @@ class EnvironmentObjectSpawner {
             this.game.addComponent(entityId, "collision", { radius: unitType.size, height: unitType.height || 100 });
         }
 
-        // Add Facing component for rotation
-        this.game.addComponent(entityId, "facing", { angle: rotation });
-
-        // Store scale in Animation component
+        // Store animation data
         if (!this.game.hasComponent(entityId, "animation")) {
             this.game.addComponent(entityId, "animation", { scale, rotation, flash: 0 });
         }

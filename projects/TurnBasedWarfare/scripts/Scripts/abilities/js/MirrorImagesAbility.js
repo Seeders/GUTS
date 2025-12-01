@@ -190,10 +190,6 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 }
             });
 
-            this.game.addComponent(imageId, "facing", {
-                angle: 0
-            });
-
             this.game.addComponent(imageId, "health", {
                 max: Math.floor(health.max * this.imageHealthRatio),
                 current: Math.floor(health.max * this.imageHealthRatio)
@@ -205,10 +201,10 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 createdTime: this.game.state.now || 0
             });
 
-            this.game.addComponent(imageId, "position", {
-                x: imagePos.x,
-                y: imagePos.y,
-                z: imagePos.z
+            this.game.addComponent(imageId, "transform", {
+                position: { x: imagePos.x, y: imagePos.y, z: imagePos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
             });
 
             this.game.addComponent(imageId, "renderable", {
