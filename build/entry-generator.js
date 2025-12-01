@@ -238,6 +238,48 @@ class EntryGenerator {
             }
         }
 
+        // Import data collections (JSON files)
+        const dataCollectionObjects = {};
+        if (client.dataCollections && Object.keys(client.dataCollections).length > 0) {
+            sections.push('// ========== DATA COLLECTIONS ==========');
+
+            for (const [collectionName, dataFiles] of Object.entries(client.dataCollections)) {
+                if (dataFiles.length === 0) continue;
+
+                const dataVarName = `${collectionName}Data`;
+                sections.push(`// ${collectionName} data`);
+
+                // Import each JSON file
+                dataFiles.forEach((file, index) => {
+                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    let importPath = file.path.replace(/\\/g, '/');
+                    sections.push(`import ${varName} from '${importPath}';`);
+                });
+
+                // Build the data collection object
+                sections.push(`const ${dataVarName} = {`);
+                dataFiles.forEach((file, index) => {
+                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    const comma = index < dataFiles.length - 1 ? ',' : '';
+                    sections.push(`  "${file.fileName}": ${varName}${comma}`);
+                });
+                sections.push('};');
+                sections.push('');
+
+                dataCollectionObjects[collectionName] = dataVarName;
+            }
+        }
+
+        // Build the combined collections object for COMPILED_GAME.collections
+        sections.push('// ========== COMBINED COLLECTIONS ==========');
+        sections.push('const DataCollections = {');
+        Object.entries(dataCollectionObjects).forEach(([collectionName, varName], index, arr) => {
+            const comma = index < arr.length - 1 ? ',' : '';
+            sections.push(`  ${collectionName}: ${varName}${comma}`);
+        });
+        sections.push('};');
+        sections.push('');
+
         // Create class registry (dynamic collections)
         sections.push('// ========== CLASS REGISTRY ==========');
         sections.push('const ClassRegistry = {');
@@ -338,8 +380,9 @@ class EntryGenerator {
         sections.push('  libraryClasses: Libraries,');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
+        sections.push('  collections: DataCollections,');
 
-        // Add dynamic collections
+        // Add dynamic class collections
         Object.entries(classCollectionObjects).forEach(([collectionName, varName]) => {
             sections.push(`  ${collectionName}: ${varName},`);
         });
@@ -547,6 +590,48 @@ class EntryGenerator {
             }
         }
 
+        // Require data collections (JSON files)
+        const dataCollectionVars = {};
+        if (server.dataCollections && Object.keys(server.dataCollections).length > 0) {
+            sections.push('// ========== DATA COLLECTIONS ==========');
+
+            for (const [collectionName, dataFiles] of Object.entries(server.dataCollections)) {
+                if (dataFiles.length === 0) continue;
+
+                const dataVarName = `${collectionName}Data`;
+                sections.push(`// ${collectionName} data`);
+
+                // Require each JSON file
+                dataFiles.forEach((file) => {
+                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    let requirePath = file.path.replace(/\\/g, '/');
+                    sections.push(`const ${varName} = require('${requirePath}');`);
+                });
+
+                // Build the data collection object
+                sections.push(`const ${dataVarName} = {`);
+                dataFiles.forEach((file, index) => {
+                    const varName = `${collectionName}_data_${this.sanitizeVarName(file.fileName)}`;
+                    const comma = index < dataFiles.length - 1 ? ',' : '';
+                    sections.push(`  "${file.fileName}": ${varName}${comma}`);
+                });
+                sections.push('};');
+                sections.push('');
+
+                dataCollectionVars[collectionName] = dataVarName;
+            }
+        }
+
+        // Build the combined data collections object
+        sections.push('// ========== COMBINED DATA COLLECTIONS ==========');
+        sections.push('const DataCollections = {');
+        Object.entries(dataCollectionVars).forEach(([collectionName, varName], index, arr) => {
+            const comma = index < arr.length - 1 ? ',' : '';
+            sections.push(`  ${collectionName}: ${varName}${comma}`);
+        });
+        sections.push('};');
+        sections.push('');
+
         // Create class registry (dynamic collections)
         sections.push('// ========== CLASS REGISTRY ==========');
         sections.push('const ClassRegistry = {');
@@ -575,8 +660,9 @@ class EntryGenerator {
         sections.push('  libraryClasses: Libraries,');
         sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
+        sections.push('  collections: DataCollections,');
 
-        // Add dynamic collections
+        // Add dynamic class collections
         for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
             sections.push(`  ${collectionName}: ${varName},`);
         }
