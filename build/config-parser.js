@@ -1,6 +1,9 @@
 /**
  * Configuration Parser for GUTS Webpack Build
- * Parses project config JSON and generates entry points for webpack
+ * Scans project source files directly and generates entry points for webpack
+ *
+ * This version builds directly from source files in project/scripts folder
+ * instead of reading from a centralized config JSON file.
  */
 
 const fs = require('fs');
@@ -10,52 +13,159 @@ class ConfigParser {
     constructor(projectName) {
         this.projectName = projectName;
         this.projectRoot = path.join(__dirname, '..', 'projects', projectName);
-        this.configPath = path.join(this.projectRoot, 'config', `${projectName.toUpperCase()}.json`);
-        this.config = null;
+        this.globalRoot = path.join(__dirname, '..', 'global');
+        this.scriptsRoot = path.join(this.projectRoot, 'scripts');
+
+        // Cache for library metadata loaded from data JSON files
+        this.libraryMetadata = {};
     }
 
-    loadConfig() {
-        if (!fs.existsSync(this.configPath)) {
-            throw new Error(`Config not found: ${this.configPath}`);
+    /**
+     * Load game/server/editor configs from Settings/configs folder
+     */
+    loadConfigs() {
+        const configsPath = path.join(this.scriptsRoot, 'Settings', 'configs');
+        const configs = {};
+
+        const configFiles = ['game', 'server', 'editor'];
+        for (const configName of configFiles) {
+            const configPath = path.join(configsPath, `${configName}.json`);
+            if (fs.existsSync(configPath)) {
+                configs[configName] = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+                console.log(`  Loaded ${configName}.json`);
+            }
         }
 
-        const configContent = fs.readFileSync(this.configPath, 'utf8');
-        this.config = JSON.parse(configContent);
-        console.log(`✅ Loaded config for ${this.projectName}`);
-        return this.config;
+        return configs;
+    }
+
+    /**
+     * Load library metadata from data JSON files in global/libraries/data
+     * and project scripts/Scripts/libraries/data
+     */
+    loadLibraryMetadata() {
+        // Load global library metadata
+        const globalDataPath = path.join(this.globalRoot, 'libraries', 'data');
+        if (fs.existsSync(globalDataPath)) {
+            const files = fs.readdirSync(globalDataPath).filter(f => f.endsWith('.json'));
+            for (const file of files) {
+                const data = JSON.parse(fs.readFileSync(path.join(globalDataPath, file), 'utf8'));
+                const name = data.fileName || path.basename(file, '.json');
+                this.libraryMetadata[name] = { ...data, source: 'global' };
+
+                // Also register with name variants (e.g., three.EffectComposer -> three_EffectComposer)
+                const underscoreName = name.replace(/\./g, '_');
+                if (underscoreName !== name) {
+                    this.libraryMetadata[underscoreName] = { ...data, source: 'global' };
+                }
+            }
+        }
+
+        // Load project library metadata (overrides global)
+        const projectDataPath = path.join(this.scriptsRoot, 'Scripts', 'libraries', 'data');
+        if (fs.existsSync(projectDataPath)) {
+            const files = fs.readdirSync(projectDataPath).filter(f => f.endsWith('.json'));
+            for (const file of files) {
+                const data = JSON.parse(fs.readFileSync(path.join(projectDataPath, file), 'utf8'));
+                const name = data.fileName || path.basename(file, '.json');
+                this.libraryMetadata[name] = { ...data, source: 'project' };
+
+                // Also register with name variants
+                const underscoreName = name.replace(/\./g, '_');
+                if (underscoreName !== name) {
+                    this.libraryMetadata[underscoreName] = { ...data, source: 'project' };
+                }
+            }
+        }
+
+        console.log(`  Loaded ${Object.keys(this.libraryMetadata).length} library metadata entries`);
+    }
+
+    /**
+     * Scan a folder for JS files and return file info
+     */
+    scanFolder(folderPath) {
+        const files = [];
+        if (!fs.existsSync(folderPath)) {
+            return files;
+        }
+
+        const entries = fs.readdirSync(folderPath).filter(f => f.endsWith('.js'));
+        for (const entry of entries) {
+            const fullPath = path.join(folderPath, entry);
+            const fileName = path.basename(entry, '.js');
+            files.push({
+                name: fileName,
+                fileName: fileName,
+                path: fullPath
+            });
+        }
+
+        return files;
     }
 
     /**
      * Get library file paths from library names
+     * Uses library metadata from data JSON files to resolve paths
      */
     getLibraryPaths(libraryNames) {
         const paths = [];
-        const libraries = this.config.objectTypes.libraries || {};
 
         for (const libName of libraryNames) {
-            const lib = libraries[libName];
-            if (!lib) {
-                console.warn(`⚠️ Library not found: ${libName}`);
-                continue;
+            const metadata = this.libraryMetadata[libName];
+
+            // Handle threejs special case - npm package (check early)
+            if (libName === 'threejs' || libName === 'THREE') {
+                const threePath = path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.module.min.js');
+                if (fs.existsSync(threePath)) {
+                    console.log(`    Library THREE: npm three`);
+                    paths.push({
+                        name: 'threejs',
+                        path: threePath,
+                        isModule: true,
+                        requireName: 'THREE',
+                        fileName: 'threejs',
+                        windowContext: 'THREE'
+                    });
+                    continue;
+                }
+            }
+
+            // Handle Rapier special case (check before CDN skip)
+            if (libName === 'Rapier' || (metadata && metadata.href && (metadata.href.includes('rapier3d') || metadata.href.includes('rapier')))) {
+                // Try rapier3d first, then rapier3d-compat
+                let rapierPath = path.join(__dirname, '..', 'node_modules', '@dimforge', 'rapier3d', 'rapier.es.js');
+                if (!fs.existsSync(rapierPath)) {
+                    rapierPath = path.join(__dirname, '..', 'node_modules', '@dimforge', 'rapier3d-compat', 'rapier.es.js');
+                }
+                if (fs.existsSync(rapierPath)) {
+                    console.log(`    Library Rapier: npm @dimforge/rapier3d`);
+                    paths.push({
+                        name: 'Rapier',
+                        path: rapierPath,
+                        isModule: true,
+                        requireName: 'RAPIER',
+                        fileName: 'Rapier'
+                    });
+                    continue;
+                }
             }
 
             // Handle Three.js examples/addons from CDN - convert to npm imports
-            if (lib.href && lib.href.includes('three@') && lib.href.includes('/examples/jsm/')) {
-                // Extract the path from CDN URL
-                // Example: https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js
-                const match = lib.href.match(/\/examples\/jsm\/(.+)\.js$/);
+            if (metadata && metadata.href && metadata.href.includes('three@') && metadata.href.includes('/examples/jsm/')) {
+                const match = metadata.href.match(/\/examples\/jsm\/(.+)\.js$/);
                 if (match) {
-                    const examplePath = match[1]; // e.g., "controls/OrbitControls"
+                    const examplePath = match[1];
                     const absolutePath = path.join(__dirname, '..', 'node_modules', 'three', 'examples', 'jsm', `${examplePath}.js`);
 
                     if (fs.existsSync(absolutePath)) {
-                        console.log(`✓ Using npm package for Three.js addon: ${libName}`);
+                        console.log(`    Library ${libName}: npm three.js addon`);
                         paths.push({
                             name: libName,
                             path: absolutePath,
                             isModule: true,
-                            requireName: lib.requireName || lib.fileName || libName,
-                            windowContext: lib.windowContext
+                            requireName: metadata.requireName || metadata.fileName || libName,
+                            windowContext: metadata.windowContext
                         });
                         continue;
                     }
@@ -63,56 +173,67 @@ class ConfigParser {
             }
 
             // Handle socket.io from CDN - use socket.io-client npm package
-            if (lib.href && lib.href.includes('socket.io')) {
+            if (metadata && metadata.href && metadata.href.includes('socket.io')) {
                 const socketPath = path.join(__dirname, '..', 'node_modules', 'socket.io-client', 'build', 'esm', 'index.js');
-                console.log(`✓ Using npm package for socket.io-client`);
+                console.log(`    Library io: npm socket.io-client`);
                 paths.push({
-                    name: 'io',  // socket.io-client default export
-                    path: socketPath,  // Use ESM build
-                    isModule: true,  // ES module
+                    name: 'io',
+                    path: socketPath,
+                    isModule: true,
                     requireName: 'io',
-                    fileName: 'socket_io_client',  // Use underscores to avoid invalid var names
+                    fileName: 'socket_io_client',
                     windowContext: 'io'
                 });
                 continue;
             }
 
-            // Skip other external CDN libraries (href)
-            if (lib.href) {
-                console.log(`⚠️ Skipping external library: ${libName} (${lib.href})`);
+            // Skip other external CDN libraries (href without special handling)
+            if (metadata && metadata.href) {
+                console.log(`    Skipping external library: ${libName} (${metadata.href})`);
                 continue;
             }
 
-            if (lib.filePath) {
-                // Extract just the filename from the configured path
-                const fileName = path.basename(lib.filePath);
+            // Try to find the library file by scanning folders
+            let foundPath = null;
+            let source = null;
 
-                // Try project folder first, then fall back to configured (global) path
-                const projectLibPath = path.join(this.projectRoot, 'scripts', 'Scripts', 'libraries', 'js', fileName);
-                const globalLibPath = path.join(__dirname, '..', lib.filePath);
+            // Check project libraries first
+            const projectLibPath = path.join(this.scriptsRoot, 'Scripts', 'libraries', 'js', `${libName}.js`);
+            if (fs.existsSync(projectLibPath)) {
+                foundPath = projectLibPath;
+                source = 'project';
+            }
 
-                let finalPath;
-                let source;
-
-                if (fs.existsSync(projectLibPath)) {
-                    finalPath = projectLibPath;
-                    source = 'project';
-                } else if (fs.existsSync(globalLibPath)) {
-                    finalPath = globalLibPath;
+            // Check global libraries
+            if (!foundPath) {
+                const globalLibPath = path.join(this.globalRoot, 'libraries', 'js', `${libName}.js`);
+                if (fs.existsSync(globalLibPath)) {
+                    foundPath = globalLibPath;
                     source = 'global';
-                } else {
-                    console.warn(`⚠️ Library file not found in project or global: ${libName}`);
-                    continue;
                 }
+            }
 
-                console.log(`  ✓ Library ${libName}: ${fileName} (from ${source})`);
+            // If metadata has a filePath, use that as fallback
+            if (!foundPath && metadata && metadata.filePath) {
+                const configuredPath = path.join(__dirname, '..', metadata.filePath);
+                if (fs.existsSync(configuredPath)) {
+                    foundPath = configuredPath;
+                    source = 'configured';
+                }
+            }
+
+            if (foundPath) {
+                console.log(`    Library ${libName}: ${source}`);
                 paths.push({
                     name: libName,
-                    path: finalPath,
-                    isModule: lib.isModule || false,
-                    requireName: lib.requireName || lib.fileName || libName,
-                    windowContext: lib.windowContext
+                    path: foundPath,
+                    isModule: metadata?.isModule || false,
+                    requireName: metadata?.requireName || libName,
+                    fileName: metadata?.fileName || libName,
+                    windowContext: metadata?.windowContext
                 });
+            } else {
+                console.warn(`    Library not found: ${libName}`);
             }
         }
 
@@ -121,29 +242,44 @@ class ConfigParser {
 
     /**
      * Get script file paths for a collection (managers, systems, etc.)
+     * by scanning the appropriate folder
      */
     getScriptPaths(collectionName, scriptNames) {
         const paths = [];
-        const collection = this.config.objectTypes[collectionName] || {};
+
+        // Determine the folder to scan based on collection name
+        let folderPath;
+        if (collectionName === 'managers') {
+            folderPath = path.join(this.scriptsRoot, 'Scripts', 'managers', 'js');
+        } else if (collectionName === 'systems') {
+            folderPath = path.join(this.scriptsRoot, 'Scripts', 'systems', 'js');
+        } else {
+            // For other collections, check both Scripts and Behaviors folders
+            const scriptsPath = path.join(this.scriptsRoot, 'Scripts', collectionName, 'js');
+            const behaviorsPath = path.join(this.scriptsRoot, 'Behaviors', collectionName, 'js');
+
+            if (fs.existsSync(scriptsPath)) {
+                folderPath = scriptsPath;
+            } else if (fs.existsSync(behaviorsPath)) {
+                folderPath = behaviorsPath;
+            }
+        }
+
+        if (!folderPath || !fs.existsSync(folderPath)) {
+            console.warn(`    Folder not found for collection: ${collectionName}`);
+            return paths;
+        }
 
         for (const scriptName of scriptNames) {
-            const script = collection[scriptName];
-            if (!script) {
-                console.warn(`⚠️ ${collectionName} not found: ${scriptName}`);
-                continue;
-            }
-
-            if (script.filePath) {
-                const absolutePath = path.join(__dirname, '..', script.filePath);
-                if (fs.existsSync(absolutePath)) {
-                    paths.push({
-                        name: scriptName,
-                        path: absolutePath,
-                        fileName: script.fileName || scriptName
-                    });
-                } else {
-                    console.warn(`⚠️ Script file not found: ${absolutePath}`);
-                }
+            const scriptPath = path.join(folderPath, `${scriptName}.js`);
+            if (fs.existsSync(scriptPath)) {
+                paths.push({
+                    name: scriptName,
+                    path: scriptPath,
+                    fileName: scriptName
+                });
+            } else {
+                console.warn(`    Script not found: ${scriptName} in ${collectionName}`);
             }
         }
 
@@ -151,12 +287,11 @@ class ConfigParser {
     }
 
     /**
-     * Get all scripts for a scene based on its managers and systems
+     * Get all scripts for a config based on its managers and systems
      */
     getScripts(config) {
-        console.log("getScripts", config.managers, config.systems);
-        const managerNames = config.managers;
-        const systemNames = config.systems;
+        const managerNames = config.managers || [];
+        const systemNames = config.systems || [];
         const classCollections = config.classes || [];
 
         return {
@@ -167,48 +302,63 @@ class ConfigParser {
     }
 
     /**
-     * Get all class files from a collection (e.g., all abilities)
+     * Get all class files from a collection by scanning the folder
      */
     getAllClassesFromCollection(collectionName) {
-        const collection = this.config.objectTypes[collectionName] || {};
-        const classNames = Object.keys(collection);
-        return this.getScriptPaths(collectionName, classNames);
+        // Determine the folder path for this collection
+        let folderPath;
+
+        // Check Scripts folder first
+        const scriptsPath = path.join(this.scriptsRoot, 'Scripts', collectionName, 'js');
+        if (fs.existsSync(scriptsPath)) {
+            folderPath = scriptsPath;
+        } else {
+            // Check Behaviors folder
+            const behaviorsPath = path.join(this.scriptsRoot, 'Behaviors', collectionName, 'js');
+            if (fs.existsSync(behaviorsPath)) {
+                folderPath = behaviorsPath;
+            }
+        }
+
+        if (!folderPath) {
+            console.warn(`    Collection folder not found: ${collectionName}`);
+            return [];
+        }
+
+        return this.scanFolder(folderPath);
     }
 
     /**
      * Generate client entry point data
      */
-    getClientEntry() {
-        const gameConfig = this.config.objectTypes.configs?.game;
+    getClientEntry(configs) {
+        const gameConfig = configs.game;
         if (!gameConfig) {
             throw new Error('Game config not found');
         }
 
+        console.log('\n  Building client entry...');
         const clientLibraries = this.getLibraryPaths(gameConfig.libraries || []);
         const clientScripts = this.getScripts(gameConfig);
 
         // Get all classes from each collection, track base classes
-        const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
-        const classMetadata = []; // Track base classes for each collection
+        const classCollections = {};
+        const classMetadata = [];
 
-        // Process each collection dynamically (NO hardcoding of collection names!)
         for (const classRef of clientScripts.classes) {
             const collectionName = classRef.collection;
             if (!collectionName) {
-                console.warn('⚠️ Class reference missing collection name');
+                console.warn('    Class reference missing collection name');
                 continue;
             }
 
-            // Get all classes from this collection
             const allClasses = this.getAllClassesFromCollection(collectionName);
 
-            // Store in dynamic collection
             if (!classCollections[collectionName]) {
                 classCollections[collectionName] = [];
             }
             classCollections[collectionName].push(...allClasses);
 
-            // Track base class if specified
             if (classRef.baseClass) {
                 classMetadata.push({
                     collection: collectionName,
@@ -216,14 +366,16 @@ class ConfigParser {
                     files: allClasses
                 });
             }
+
+            console.log(`    Collection ${collectionName}: ${allClasses.length} classes`);
         }
 
         return {
             libraries: clientLibraries,
             managers: clientScripts.managers,
             systems: clientScripts.systems,
-            classCollections: classCollections, // Dynamic collections
-            classMetadata: classMetadata, // Base class metadata
+            classCollections: classCollections,
+            classMetadata: classMetadata,
             config: gameConfig
         };
     }
@@ -231,45 +383,40 @@ class ConfigParser {
     /**
      * Generate server entry point data
      */
-    getServerEntry() {
-        const serverConfig = this.config.objectTypes.configs?.server;
+    getServerEntry(configs) {
+        const serverConfig = configs.server;
         if (!serverConfig) {
-            console.warn('⚠️ No server config found');
+            console.warn('  No server config found');
             return null;
         }
 
-        // Get the initial scene from server config (don't hardcode "server")
         const initialScene = serverConfig.initialScene;
         if (!initialScene) {
-            console.warn('⚠️ Server config missing initialScene');
+            console.warn('  Server config missing initialScene');
             return null;
         }
 
+        console.log('\n  Building server entry...');
         const serverLibraries = this.getLibraryPaths(serverConfig.libraries || []);
         const serverScripts = this.getScripts(serverConfig);
 
-        // Get all classes from each collection, track base classes
-        const classCollections = {}; // Dynamic collections: { abilities: [...], items: [...], etc }
-        const classMetadata = []; // Track base classes for each collection
+        const classCollections = {};
+        const classMetadata = [];
 
-        // Process each collection dynamically (NO hardcoding of collection names!)
         for (const classRef of serverScripts.classes) {
             const collectionName = classRef.collection;
             if (!collectionName) {
-                console.warn('⚠️ Class reference missing collection name');
+                console.warn('    Class reference missing collection name');
                 continue;
             }
 
-            // Get all classes from this collection
             const allClasses = this.getAllClassesFromCollection(collectionName);
 
-            // Store in dynamic collection
             if (!classCollections[collectionName]) {
                 classCollections[collectionName] = [];
             }
             classCollections[collectionName].push(...allClasses);
 
-            // Track base class if specified
             if (classRef.baseClass) {
                 classMetadata.push({
                     collection: collectionName,
@@ -277,32 +424,33 @@ class ConfigParser {
                     files: allClasses
                 });
             }
+
+            console.log(`    Collection ${collectionName}: ${allClasses.length} classes`);
         }
 
         return {
             libraries: serverLibraries,
             managers: serverScripts.managers,
             systems: serverScripts.systems,
-            classCollections: classCollections, // Dynamic collections
-            classMetadata: classMetadata, // Base class metadata
+            classCollections: classCollections,
+            classMetadata: classMetadata,
             config: serverConfig
         };
     }
 
     /**
      * Generate editor entry point data
-     * Loads libraries and classes from editor modules specified in editor config
      */
-    getEditorEntry() {
-        const editorConfig = this.config.objectTypes.configs?.editor;
+    getEditorEntry(configs) {
+        const editorConfig = configs.editor;
         if (!editorConfig) {
-            console.warn('⚠️ Editor config not found');
+            console.warn('  Editor config not found');
             return null;
         }
 
         const editorModules = editorConfig.editorModules || [];
-        const globalModulesPath = path.join(__dirname, '..', 'global', 'editorModules');
-        const projectModulesPath = path.join(this.projectRoot, 'scripts', 'Settings', 'editorModules');
+        const globalModulesPath = path.join(this.globalRoot, 'editorModules');
+        const projectModulesPath = path.join(this.scriptsRoot, 'Settings', 'editorModules');
 
         const allLibraries = [];
         const allSystems = [];
@@ -310,11 +458,9 @@ class ConfigParser {
         const classMetadata = [];
         const moduleConfigs = {};
 
-        console.log(`✓ Processing ${editorModules.length} editor modules`);
+        console.log(`\n  Building editor entry with ${editorModules.length} modules...`);
 
-        // Process each editor module in order
         for (const moduleName of editorModules) {
-            // Try project folder first, then fall back to global folder
             const projectConfigPath = path.join(projectModulesPath, `${moduleName}.json`);
             const globalConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
 
@@ -328,62 +474,48 @@ class ConfigParser {
                 moduleConfigPath = globalConfigPath;
                 configSource = 'global';
             } else {
-                console.warn(`⚠️ Editor module config not found: ${moduleName}`);
+                console.warn(`    Editor module config not found: ${moduleName}`);
                 continue;
             }
 
             const moduleConfig = JSON.parse(fs.readFileSync(moduleConfigPath, 'utf8'));
             moduleConfigs[moduleName] = moduleConfig;
-            console.log(`  ✓ Loaded module: ${moduleName} (from ${configSource})`);
+            console.log(`    Module: ${moduleName} (${configSource})`);
 
-            // Add libraries from this module (in order)
             if (moduleConfig.libraries && Array.isArray(moduleConfig.libraries)) {
                 const libraryPaths = this.getLibraryPaths(moduleConfig.libraries);
                 allLibraries.push(...libraryPaths);
-                console.log(`    ↳ Added ${libraryPaths.length} libraries`);
             }
 
-            // Add systems from this module (in order)
             if (moduleConfig.systems && Array.isArray(moduleConfig.systems)) {
                 const systemPaths = this.getScriptPaths('systems', moduleConfig.systems);
                 allSystems.push(...systemPaths);
-                console.log(`    ↳ Added ${systemPaths.length} systems`);
             }
 
-            // Process classes if present
             if (moduleConfig.classes && Array.isArray(moduleConfig.classes)) {
                 for (const classRef of moduleConfig.classes) {
                     const collectionName = classRef.collection;
-                    if (!collectionName) {
-                        console.warn('⚠️ Class reference missing collection name');
-                        continue;
-                    }
+                    if (!collectionName) continue;
 
-                    // Get all classes from this collection
                     const allClasses = this.getAllClassesFromCollection(collectionName);
 
-                    // Store in dynamic collection
                     if (!classCollections[collectionName]) {
                         classCollections[collectionName] = [];
                     }
                     classCollections[collectionName].push(...allClasses);
 
-                    // Track base class if specified
                     if (classRef.baseClass) {
                         classMetadata.push({
                             collection: collectionName,
                             baseClass: classRef.baseClass,
                             files: allClasses
                         });
-                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName} (base: ${classRef.baseClass})`);
-                    } else {
-                        console.log(`    ↳ Loaded ${allClasses.length} classes from ${collectionName}`);
                     }
                 }
             }
         }
 
-        console.log(`✓ Editor entry complete: ${allLibraries.length} libraries, ${allSystems.length} systems, ${Object.keys(classCollections).length} class collections`);
+        console.log(`    Editor: ${allLibraries.length} libraries, ${allSystems.length} systems`);
 
         return {
             libraries: allLibraries,
@@ -412,15 +544,21 @@ class ConfigParser {
      * Generate complete build configuration
      */
     generateBuildConfig() {
-        this.loadConfig();
+        console.log(`\nScanning source files for ${this.projectName}...`);
+
+        // Load library metadata first
+        this.loadLibraryMetadata();
+
+        // Load configs from Settings/configs
+        const configs = this.loadConfigs();
 
         return {
             projectName: this.projectName,
-            client: this.getClientEntry(),
-            server: this.getServerEntry(),
-            editor: this.getEditorEntry(),
+            client: this.getClientEntry(configs),
+            server: this.getServerEntry(configs),
+            editor: this.getEditorEntry(configs),
             engine: this.getEnginePaths(),
-            projectConfig: this.config.objectTypes.configs
+            projectConfig: configs
         };
     }
 }
