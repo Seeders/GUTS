@@ -4,7 +4,7 @@
  * Entities with components drive everything - no hardcoded rendering
  */
 class SceneEditor {
-    constructor(gameEditor, config, { ShapeFactory, SE_GizmoManager, ModelManager, GameState, ImageManager }) {
+    constructor(gameEditor, config, libs = {}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.collections = this.gameEditor.getCollections();
@@ -36,8 +36,9 @@ class SceneEditor {
         // Editor context - handles all rendering via game systems
         this.editorContext = null;
 
-        // Gizmo manager
-        this.gizmoManager = new SE_GizmoManager();
+        // Gizmo manager - use GUTS global or passed lib
+        const GizmoManager = libs.SE_GizmoManager || GUTS.SE_GizmoManager;
+        this.gizmoManager = GizmoManager ? new GizmoManager() : null;
 
         // Initialize
         this.initEventListeners();
@@ -62,7 +63,7 @@ class SceneEditor {
         ]);
 
         // Initialize gizmo manager with the editor context's scene/camera
-        if (this.editorContext.worldSystem?.worldRenderer) {
+        if (this.gizmoManager && this.editorContext.worldSystem?.worldRenderer) {
             this.gizmoManager.init({
                 scene: this.editorContext.scene,
                 camera: this.editorContext.camera,
@@ -236,7 +237,7 @@ class SceneEditor {
 
         // Clear selection
         this.state.selectedEntityId = null;
-        this.gizmoManager.detach();
+        this.gizmoManager?.detach();
 
         // Update UI
         this.renderHierarchy();
