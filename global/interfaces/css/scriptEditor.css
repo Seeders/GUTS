@@ -21,8 +21,7 @@
 /* Override theme font to prevent async loading issues */
 #script-editor-container .CodeMirror,
 #script-editor-container .CodeMirror pre.CodeMirror-line,
-#script-editor-container .CodeMirror pre.CodeMirror-line-like,
-#script-editor-container .CodeMirror-linenumber {
+#script-editor-container .CodeMirror pre.CodeMirror-line-like {
     font-family: monospace !important;
     font-size: 14px !important;
 }
@@ -34,13 +33,4 @@
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-}
-
-/* Hide gutters to avoid measurement issues */
-#script-editor-container .CodeMirror-gutters {
-    display: none !important;
-}
-
-#script-editor-container .CodeMirror-sizer {
-    margin-left: 0 !important;
 }
