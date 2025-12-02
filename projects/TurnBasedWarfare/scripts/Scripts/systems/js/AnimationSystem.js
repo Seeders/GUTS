@@ -179,6 +179,8 @@ class AnimationSystem extends GUTS.BaseSystem {
     /**
      * Handle animation logic for billboard/sprite entities
      * Camera is isometric looking toward +x, -z (northeast)
+     * Supports 8 directions: down, downleft, left, upleft, up, upright, right, downright
+     * Right-side animations use left-side flipped
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
         // Only animate during battle phase - show idle (base renderTexture) during placement
@@ -198,33 +200,50 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         if (isMoving) {
             // Transform world velocity to screen-space for isometric camera looking toward +x, -z
-            // Screen LEFT = world -x, -z (both negative)
-            // Screen RIGHT = world +x, +z (both positive)
-            // Screen UP = world +x, -z (toward camera look direction)
-            // Screen DOWN = world -x, +z (away from camera look direction)
             const screenHorizontal = vx + vz; // positive = screen right, negative = screen left
             const screenVertical = vx - vz;   // positive = screen up, negative = screen down
 
-            const absH = Math.abs(screenHorizontal);
-            const absV = Math.abs(screenVertical);
+            // Calculate angle in degrees (0 = right, 90 = up, 180/-180 = left, -90 = down)
+            let angle = Math.atan2(screenVertical, screenHorizontal) * (180 / Math.PI);
 
+            // Determine direction and flip based on 8 sectors (45° each)
+            // Sectors centered on: 0(right), 45(upright), 90(up), 135(upleft),
+            //                      180(left), -135(downleft), -90(down), -45(downright)
             let newDirection = animState.spriteDirection;
             let shouldFlip = false;
 
-            // Pick the screen direction with the highest magnitude
-            if (absV >= absH) {
-                // Vertical screen movement is dominant
-                if (screenVertical > 0) {
-                    newDirection = 'up';   // moving toward +x, -z (away from camera)
-                } else {
-                    newDirection = 'down'; // moving toward -x, +z (toward camera)
-                }
-                shouldFlip = false;
-            } else {
-                // Horizontal screen movement is dominant
-                // Use left animation, flip for right
+            if (angle >= -22.5 && angle < 22.5) {
+                // Right (0°) - use left flipped
                 newDirection = 'left';
-                shouldFlip = screenHorizontal > 0; // flip when moving screen-right (+x, +z)
+                shouldFlip = true;
+            } else if (angle >= 22.5 && angle < 67.5) {
+                // Up-right (45°) - use upleft flipped
+                newDirection = 'upleft';
+                shouldFlip = true;
+            } else if (angle >= 67.5 && angle < 112.5) {
+                // Up (90°)
+                newDirection = 'up';
+                shouldFlip = false;
+            } else if (angle >= 112.5 && angle < 157.5) {
+                // Up-left (135°)
+                newDirection = 'upleft';
+                shouldFlip = false;
+            } else if (angle >= 157.5 || angle < -157.5) {
+                // Left (180°)
+                newDirection = 'left';
+                shouldFlip = false;
+            } else if (angle >= -157.5 && angle < -112.5) {
+                // Down-left (-135° / 225°)
+                newDirection = 'downleft';
+                shouldFlip = false;
+            } else if (angle >= -112.5 && angle < -67.5) {
+                // Down (-90° / 270°)
+                newDirection = 'down';
+                shouldFlip = false;
+            } else if (angle >= -67.5 && angle < -22.5) {
+                // Down-right (-45° / 315°) - use downleft flipped
+                newDirection = 'downleft';
+                shouldFlip = true;
             }
 
             // Check if direction changed
