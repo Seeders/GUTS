@@ -26,8 +26,10 @@
   "visionRange": 400,
   "supplyCost": 1,
   "spriteAnimations": [
+    "maleWalkDown",
+    "maleWalkDownLeft",
     "maleWalkLeft",
-    "maleWalkUp",
-    "maleWalkDown"
+    "maleWalkUpLeft",
+    "maleWalkUp"
   ]
 }
