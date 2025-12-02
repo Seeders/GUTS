@@ -329,14 +329,12 @@ class EntityRenderer {
     async spawnBillboardEntity(entityId, data, entityDef) {
         const textureId = entityDef.renderTexture;
 
-        // Get texture from collections
         const textureDef = this.collections?.textures?.[textureId];
         if (!textureDef) {
             console.warn(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
             return false;
         }
 
-        // Load the texture if needed
         let texture = this.loadedTextures.get(textureId);
         if (!texture && textureDef.imagePath) {
             try {
@@ -352,16 +350,18 @@ class EntityRenderer {
             return false;
         }
 
-        // Set correct color space for the texture
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.NearestFilter;
-        texture.magFilter = THREE.NearestFilter;
-        // Create sprite material
+        // Clone texture so each sprite can flip independently
+        const clonedTexture = texture.clone();
+        clonedTexture.colorSpace = THREE.SRGBColorSpace;
+        clonedTexture.minFilter = THREE.NearestFilter;
+        clonedTexture.magFilter = THREE.NearestFilter;
+        clonedTexture.needsUpdate = true;
+
         const material = new THREE.SpriteMaterial({
-            map: texture,
+            map: clonedTexture,
             transparent: true,
             alphaTest: 0.5,
-            sizeAttenuation: false  // Keep consistent size regardless of distance (for orthographic)
+            sizeAttenuation: false
         });
 
         // Create sprite
@@ -622,13 +622,26 @@ class EntityRenderer {
     updateBillboardTransform(entity, data) {
         if (!entity.sprite) return false;
 
-        // Update sprite position (add height offset to center sprite above ground)
         const heightOffset = entity.heightOffset || 0;
         entity.sprite.position.set(
             data.position.x,
             data.position.y + heightOffset,
             data.position.z
         );
+
+        const vx = data.velocity?.vx ?? 0;
+        if (Math.abs(vx) > this.minMovementThreshold) {
+            const facingRight = vx > 0;
+            const texture = entity.sprite.material.map;
+            
+            if (facingRight) {
+                texture.repeat.x = -1;
+                texture.offset.x = 1;
+            } else {
+                texture.repeat.x = 1;
+                texture.offset.x = 0;
+            }
+        }
 
         return true;
     }
