@@ -435,17 +435,15 @@ class EntityRenderer {
                     float scaleX = length(instanceMatrix[0].xyz);
                     float scaleY = length(instanceMatrix[1].xyz);
 
-                    // Full billboard: use camera's right and up vectors directly
-                    // This makes the billboard always face the camera perfectly
-                    vec3 camRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-                    vec3 camUp = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+                    // Transform instance center to view space
+                    vec4 viewPos = viewMatrix * vec4(instancePos, 1.0);
 
-                    // Build vertex position in world space
-                    vec3 worldPos = instancePos +
-                                   position.x * scaleX * camRight +
-                                   position.y * scaleY * camUp;
+                    // Offset in view space - X is screen right, Y is screen up
+                    // This creates a screen-aligned billboard
+                    viewPos.x += position.x * scaleX;
+                    viewPos.y += position.y * scaleY;
 
-                    gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
+                    gl_Position = projectionMatrix * viewPos;
                 }
             `,
             fragmentShader: `
