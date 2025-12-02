@@ -1,0 +1,11 @@
+{
+  "title": "Male Attack Left",
+  "sprites": [
+    "maleAttackLeft_0",
+    "maleAttackLeft_1",
+    "maleAttackLeft_2",
+    "maleAttackLeft_3",
+    "maleAttackLeft_4",
+    "maleAttackLeft_5"
+  ]
+}

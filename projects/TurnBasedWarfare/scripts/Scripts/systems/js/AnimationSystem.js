@@ -189,6 +189,12 @@ class AnimationSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Don't update walk state while attack animation is playing
+        const isAttacking = this.game.gameManager.call('isBillboardAttacking', entityId);
+        if (isAttacking) {
+            return;
+        }
+
         const vx = velocity?.vx ?? 0;
         const vz = velocity?.vz ?? 0;
 
@@ -394,7 +400,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     // Public API methods
-    
+
     triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState) {
@@ -402,8 +408,23 @@ class AnimationSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        
-        // Queue the animation
+        // Handle billboard entities with sprite animations
+        if (animState.isBillboard) {
+            if (clipName === 'attack') {
+                // Use current sprite direction and flip state for attack animation
+                this.game.gameManager.call(
+                    'setBillboardAttacking',
+                    entityId,
+                    animState.spriteDirection,
+                    animState.spriteFlipped
+                );
+                return true;
+            }
+            // Other animation types not yet supported for billboards
+            return false;
+        }
+
+        // Queue the animation for VAT entities
         animState.pendingClip = clipName;
         animState.pendingSpeed = speed;
         animState.pendingMinTime = minTime;

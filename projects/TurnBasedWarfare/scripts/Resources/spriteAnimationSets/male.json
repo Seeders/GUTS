@@ -6,5 +6,12 @@
     "maleWalkLeft",
     "maleWalkUpLeft",
     "maleWalkUp"
+  ],
+  "attackSpriteAnimations": [
+    "maleAttackDown",
+    "maleAttackDownLeft",
+    "maleAttackLeft",
+    "maleAttackUpLeft",
+    "maleAttackUp"
   ]
 }

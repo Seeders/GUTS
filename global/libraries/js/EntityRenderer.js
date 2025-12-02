@@ -335,21 +335,29 @@ class EntityRenderer {
         const textureId = entityDef.renderTexture;
 
         // Check if entity has sprite animations via spriteAnimationSet reference
-        let spriteAnimationNames = null;
+        let walkAnimationNames = null;
+        let attackAnimationNames = null;
         if (entityDef.spriteAnimationSet) {
             // Look up the sprite animation set from the collection
             const animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
             if (animSet?.walkSpriteAnimations) {
-                spriteAnimationNames = animSet.walkSpriteAnimations;
+                walkAnimationNames = animSet.walkSpriteAnimations;
+            }
+            if (animSet?.attackSpriteAnimations) {
+                attackAnimationNames = animSet.attackSpriteAnimations;
             }
         }
 
-        const hasSpriteAnimations = spriteAnimationNames && spriteAnimationNames.length > 0;
-        let animationData = null;
+        const hasSpriteAnimations = (walkAnimationNames && walkAnimationNames.length > 0) ||
+                                    (attackAnimationNames && attackAnimationNames.length > 0);
+        let walkAnimationData = null;
+        let attackAnimationData = null;
 
-        if (hasSpriteAnimations) {
-            // Load all sprite animation frames and set up direction mappings
-            animationData = await this.loadSpriteAnimations(spriteAnimationNames);
+        if (walkAnimationNames && walkAnimationNames.length > 0) {
+            walkAnimationData = await this.loadSpriteAnimations(walkAnimationNames);
+        }
+        if (attackAnimationNames && attackAnimationNames.length > 0) {
+            attackAnimationData = await this.loadSpriteAnimations(attackAnimationNames);
         }
 
         const textureDef = this.collections?.textures?.[textureId];
@@ -423,13 +431,16 @@ class EntityRenderer {
         this.entities.set(entityId, entityData);
 
         // Set up sprite animation tracking if animations are available
-        if (hasSpriteAnimations && animationData) {
+        if (hasSpriteAnimations && (walkAnimationData || attackAnimationData)) {
             this.billboardAnimations.set(entityId, {
-                animations: animationData, // { left: [...textures], up: [...], down: [...] }
-                currentDirection: 'down',  // Default facing direction
+                walkAnimations: walkAnimationData,   // { left: [...textures], up: [...], down: [...] }
+                attackAnimations: attackAnimationData, // { left: [...textures], up: [...], down: [...] }
+                currentAnimationType: 'walk',        // 'walk' or 'attack'
+                currentDirection: 'down',            // Default facing direction
                 frameIndex: 0,
                 frameTime: 0,
                 isMoving: false,
+                isAttacking: false,
                 flipped: false
             });
         }
@@ -785,7 +796,14 @@ class EntityRenderer {
      * Apply the current animation frame texture to a billboard sprite
      */
     applyBillboardAnimationFrame(entity, animData) {
-        const frames = animData.animations[animData.currentDirection];
+        // Select animation set based on current animation type
+        const animations = animData.currentAnimationType === 'attack'
+            ? animData.attackAnimations
+            : animData.walkAnimations;
+
+        if (!animations) return;
+
+        const frames = animations[animData.currentDirection];
         if (!frames || frames.length === 0) return;
 
         const frameIndex = animData.frameIndex % frames.length;
@@ -908,10 +926,51 @@ class EntityRenderer {
      */
     updateBillboardAnimations(deltaTime) {
         for (const [entityId, animData] of this.billboardAnimations) {
-            // Only animate if moving
+            // Handle attack animations (single-play)
+            if (animData.isAttacking) {
+                const attackAnims = animData.attackAnimations;
+                if (!attackAnims) continue;
+
+                const frames = attackAnims[animData.currentDirection];
+                if (!frames || frames.length === 0) continue;
+
+                // Update frame time
+                animData.frameTime += deltaTime;
+
+                // Check if it's time to advance frame
+                if (animData.frameTime >= this.spriteFrameDuration) {
+                    animData.frameTime = 0;
+                    animData.frameIndex++;
+
+                    // Check if attack animation finished
+                    if (animData.frameIndex >= frames.length) {
+                        // Attack animation complete - return to idle/walk
+                        animData.isAttacking = false;
+                        animData.currentAnimationType = 'walk';
+                        animData.frameIndex = 0;
+
+                        // Trigger callback if set
+                        if (animData.onAttackComplete) {
+                            animData.onAttackComplete(entityId);
+                        }
+                    }
+
+                    // Apply new frame texture
+                    const entity = this.entities.get(entityId);
+                    if (entity && entity.sprite) {
+                        this.applyBillboardAnimationFrame(entity, animData);
+                    }
+                }
+                continue;
+            }
+
+            // Handle walk animations (looping)
             if (!animData.isMoving) continue;
 
-            const frames = animData.animations[animData.currentDirection];
+            const walkAnims = animData.walkAnimations;
+            if (!walkAnims) continue;
+
+            const frames = walkAnims[animData.currentDirection];
             if (!frames || frames.length === 0) continue;
 
             // Update frame time
@@ -999,6 +1058,48 @@ class EntityRenderer {
         }
 
         return true;
+    }
+
+    /**
+     * Trigger attack animation for a billboard entity
+     * Plays through the attack animation once in the specified direction, then returns to idle
+     * @param {string} entityId - The entity to animate
+     * @param {string} direction - The direction to face (down, downleft, left, upleft, up)
+     * @param {boolean} flipped - Whether to flip the sprite horizontally
+     * @param {function} onComplete - Optional callback when attack animation finishes
+     */
+    setBillboardAttacking(entityId, direction, flipped = false, onComplete = null) {
+        const animData = this.billboardAnimations.get(entityId);
+        if (!animData) return false;
+
+        // Check if attack animations are available
+        if (!animData.attackAnimations) return false;
+
+        // Set up attack animation
+        animData.isAttacking = true;
+        animData.isMoving = false; // Stop walk animation
+        animData.currentAnimationType = 'attack';
+        animData.currentDirection = direction;
+        animData.flipped = flipped;
+        animData.frameIndex = 0;
+        animData.frameTime = 0;
+        animData.onAttackComplete = onComplete;
+
+        // Apply the first frame immediately
+        const entity = this.entities.get(entityId);
+        if (entity) {
+            this.applyBillboardAnimationFrame(entity, animData);
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a billboard entity is currently playing an attack animation
+     */
+    isBillboardAttacking(entityId) {
+        const animData = this.billboardAnimations.get(entityId);
+        return animData?.isAttacking || false;
     }
 
     /**
