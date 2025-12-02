@@ -334,13 +334,22 @@ class EntityRenderer {
     async spawnBillboardEntity(entityId, data, entityDef) {
         const textureId = entityDef.renderTexture;
 
-        // Check if entity has sprite animations for directional movement
-        const hasSpriteAnimations = entityDef.spriteAnimations && entityDef.spriteAnimations.length > 0;
+        // Check if entity has sprite animations via spriteAnimationSet reference
+        let spriteAnimationNames = null;
+        if (entityDef.spriteAnimationSet) {
+            // Look up the sprite animation set from the collection
+            const animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
+            if (animSet?.walkSpriteAnimations) {
+                spriteAnimationNames = animSet.walkSpriteAnimations;
+            }
+        }
+
+        const hasSpriteAnimations = spriteAnimationNames && spriteAnimationNames.length > 0;
         let animationData = null;
 
         if (hasSpriteAnimations) {
             // Load all sprite animation frames and set up direction mappings
-            animationData = await this.loadSpriteAnimations(entityDef.spriteAnimations);
+            animationData = await this.loadSpriteAnimations(spriteAnimationNames);
         }
 
         const textureDef = this.collections?.textures?.[textureId];
