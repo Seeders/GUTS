@@ -3,9 +3,9 @@
   "systems": [
     "GridSystem",
     "TerrainSystem",
+    "RenderSystem",
     "WorldSystem",
     "PostProcessingSystem",
-    "RenderSystem",
     "RoundSystem",
     "BehaviorSystem",
     "MovementSystem",
