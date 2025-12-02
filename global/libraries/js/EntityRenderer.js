@@ -384,13 +384,14 @@ class EntityRenderer {
 
         this.scene.add(sprite);
 
-        // Store entity data
+        // Store entity data (include height for position updates)
         this.entities.set(entityId, {
             type: 'billboard',
             collection: data.collection,
             entityType: data.type,
             sprite: sprite,
-            textureId
+            textureId,
+            heightOffset: height / 2
         });
 
         this.stats.entitiesRendered++;
@@ -534,6 +535,8 @@ class EntityRenderer {
 
         if (entity.type === 'vat') {
             return this.updateVATTransform(entity, data);
+        } else if (entity.type === 'billboard') {
+            return this.updateBillboardTransform(entity, data);
         } else {
             return this.updateStaticTransform(entity, data);
         }
@@ -609,6 +612,23 @@ class EntityRenderer {
         // Use transform.rotation.y for facing direction
         const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
         entity.mesh.rotation.y = rotationY;
+
+        return true;
+    }
+
+    /**
+     * Update billboard (sprite) entity transform
+     */
+    updateBillboardTransform(entity, data) {
+        if (!entity.sprite) return false;
+
+        // Update sprite position (add height offset to center sprite above ground)
+        const heightOffset = entity.heightOffset || 0;
+        entity.sprite.position.set(
+            data.position.x,
+            data.position.y + heightOffset,
+            data.position.z
+        );
 
         return true;
     }
