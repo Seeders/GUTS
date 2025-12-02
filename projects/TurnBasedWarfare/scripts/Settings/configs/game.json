@@ -85,7 +85,6 @@
     "ShopSystem",
     "TeamHealthSystem",
     "HealthBarSystem",
-    "UnitRadiusSystem",
     "EquipmentSystem",
     "DeathSystem",
     "DamageSystem",

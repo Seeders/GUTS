@@ -441,21 +441,31 @@ class EntityRenderer {
         );
 
         const quaternion = new THREE.Quaternion();
-        const facingAngle = this.calculateFacingAngle(data.velocity, data.facing);
 
-        if (facingAngle !== null) {
-            const isProjectile = !data.facing || data.facing.angle === undefined;
-            if (isProjectile && data.velocity) {
+        // Check if this is a projectile - projectiles use 3D velocity-based rotation
+        const isProjectile = entity.collection === 'projectiles';
+
+        if (isProjectile && data.velocity) {
+            // Projectiles: orient along 3D velocity direction
+            const speed = Math.sqrt(
+                data.velocity.vx * data.velocity.vx +
+                data.velocity.vy * data.velocity.vy +
+                data.velocity.vz * data.velocity.vz
+            );
+            if (speed > 0.01) {
                 const direction = new THREE.Vector3(
-                    data.velocity.vx,
-                    data.velocity.vy,
-                    data.velocity.vz
-                ).normalize();
+                    data.velocity.vx / speed,
+                    data.velocity.vy / speed,
+                    data.velocity.vz / speed
+                );
                 const defaultForward = new THREE.Vector3(0, 1, 0);
                 quaternion.setFromUnitVectors(defaultForward, direction);
-            } else {
-                quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -facingAngle + Math.PI / 2);
             }
+        } else {
+            // Units/buildings: use transform.rotation.y for facing direction
+            // This is set by MovementSystem based on velocity or preserved facing
+            const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
+            quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -rotationY + Math.PI / 2);
         }
 
         const scale = new THREE.Vector3(
@@ -480,11 +490,9 @@ class EntityRenderer {
 
         entity.mesh.position.set(data.position.x, data.position.y, data.position.z);
 
-        if (typeof data.rotation === 'number') {
-            entity.mesh.rotation.y = data.rotation;
-        } else if (data.facing?.angle !== undefined) {
-            entity.mesh.rotation.y = data.facing.angle;
-        }
+        // Use transform.rotation.y for facing direction
+        const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
+        entity.mesh.rotation.y = rotationY;
 
         return true;
     }
