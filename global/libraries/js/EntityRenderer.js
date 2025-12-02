@@ -435,23 +435,15 @@ class EntityRenderer {
                     float scaleX = length(instanceMatrix[0].xyz);
                     float scaleY = length(instanceMatrix[1].xyz);
 
-                    // Cylindrical billboard: keep Y up, only rotate around Y axis
-                    vec3 billboardUp = vec3(0.0, 1.0, 0.0);
-
-                    // For orthographic camera: use camera's look direction (same for all billboards)
-                    // viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2] is the camera's Z axis in world space
-                    // This points toward the camera (opposite of look direction)
-                    vec3 toCamera = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
-                    toCamera.y = 0.0; // Project to XZ plane for cylindrical billboard
-                    toCamera = normalize(toCamera);
-
-                    // Billboard right is perpendicular to up and toCamera direction
-                    vec3 billboardRight = normalize(cross(billboardUp, toCamera));
+                    // Full billboard: use camera's right and up vectors directly
+                    // This makes the billboard always face the camera perfectly
+                    vec3 camRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+                    vec3 camUp = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
 
                     // Build vertex position in world space
                     vec3 worldPos = instancePos +
-                                   position.x * scaleX * billboardRight +
-                                   position.y * scaleY * billboardUp;
+                                   position.x * scaleX * camRight +
+                                   position.y * scaleY * camUp;
 
                     gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
                 }
