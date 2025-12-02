@@ -433,13 +433,15 @@ class EntityRenderer {
 
     /**
      * Load sprite animations and organize by direction
-     * Returns: { left: [textures], up: [textures], down: [textures] }
+     * Returns: { down: [...], downleft: [...], left: [...], upleft: [...], up: [...] }
      */
     async loadSpriteAnimations(spriteAnimationNames) {
         const animations = {
+            down: [],
+            downleft: [],
             left: [],
-            up: [],
-            down: []
+            upleft: [],
+            up: []
         };
 
         for (const animName of spriteAnimationNames) {
@@ -498,10 +500,16 @@ class EntityRenderer {
 
     /**
      * Parse direction from animation name
-     * Examples: "maleWalkLeft" -> "left", "maleWalkUp" -> "up", "maleWalkDown" -> "down"
+     * Examples: "maleWalkLeft" -> "left", "maleWalkUpLeft" -> "upleft", "maleWalkDown" -> "down"
      */
     parseDirectionFromAnimName(animName) {
         const lowerName = animName.toLowerCase();
+        // Check compound directions first (order matters)
+        if (lowerName.includes('downleft')) return 'downleft';
+        if (lowerName.includes('downright')) return 'downright';
+        if (lowerName.includes('upleft')) return 'upleft';
+        if (lowerName.includes('upright')) return 'upright';
+        // Then check single directions
         if (lowerName.includes('left')) return 'left';
         if (lowerName.includes('right')) return 'right';
         if (lowerName.includes('up')) return 'up';
