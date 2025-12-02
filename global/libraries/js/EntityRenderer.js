@@ -384,14 +384,14 @@ class EntityRenderer {
 
         // Anchor at bottom center instead of middle
         sprite.center.set(0.5, 0);
-        // Calculate dimensions - use texture aspect ratio
-        const size = entityDef.size || 64;
+        // Calculate dimensions - use texture aspect ratio and spriteScale
+        const spriteScale = entityDef.spriteScale || 64;
         const textureAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
-        const width = size * textureAspect;
+        const width = spriteScale * textureAspect;
 
-        const heightOffset = size / 4;
+        const heightOffset = spriteScale / 4;
         // Scale the sprite
-        sprite.scale.set(width, size, 1);
+        sprite.scale.set(width, spriteScale, 1);
         // Now position directly at ground level, no offset needed
         sprite.position.set(
             data.position.x - heightOffset,
