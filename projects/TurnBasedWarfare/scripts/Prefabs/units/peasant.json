@@ -23,5 +23,10 @@
   "icon": "unit_peasant",
   "actionSet": "peasant_actions",
   "visionRange": 400,
-  "supplyCost": 1
+  "supplyCost": 1,
+  "spriteAnimations": [
+    "maleWalkLeft",
+    "maleWalkUp",
+    "maleWalkDown"
+  ]
 }
