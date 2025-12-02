@@ -317,9 +317,12 @@ class UnitCreationManager {
         this.game.addComponent(entity, "placement",
             placement);
 
-        // Unit type information
-        this.game.addComponent(entity, "unitType",
-            unitType);
+        // Unit type information - include collection and id for rendering
+        this.game.addComponent(entity, "unitType", {
+            ...unitType,
+            collection: unitType.collection,
+            id: unitType.id
+        });
     }
     
     /**
