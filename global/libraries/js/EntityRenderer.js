@@ -352,6 +352,9 @@ class EntityRenderer {
             return false;
         }
 
+        // Set correct color space for the texture
+        texture.colorSpace = THREE.SRGBColorSpace;
+
         // Create sprite material
         const material = new THREE.SpriteMaterial({
             map: texture,
