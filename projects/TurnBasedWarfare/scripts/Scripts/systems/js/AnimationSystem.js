@@ -184,15 +184,19 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.gameManager.call('setBillboardMoving', entityId, isMoving);
 
         if (isMoving) {
-            // Determine direction based on velocity
+            // Determine direction based on which velocity component has the highest magnitude
             // vz negative = moving up (away from camera)
             // vz positive = moving down (toward camera)
             // vx negative = left, vx positive = right (use left animation flipped)
             let newDirection = animState.spriteDirection;
             let shouldFlip = false;
 
-            if (Math.abs(vz) > Math.abs(vx)) {
-                // Vertical movement dominates
+            const absVx = Math.abs(vx);
+            const absVz = Math.abs(vz);
+
+            // Pick the direction with the highest velocity magnitude
+            if (absVz >= absVx) {
+                // Vertical movement is dominant (or equal - prefer vertical)
                 if (vz < 0) {
                     newDirection = 'up';
                 } else {
@@ -200,7 +204,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                 }
                 shouldFlip = false;
             } else {
-                // Horizontal movement dominates
+                // Horizontal movement is dominant (absVx > absVz)
                 // Use left animation, flip for right
                 newDirection = 'left';
                 shouldFlip = vx > 0;
