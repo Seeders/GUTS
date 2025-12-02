@@ -14,7 +14,8 @@
     "LifetimeSystem",
     "SchedulingSystem",
     "GoldMineSystem",
-    "PathfindingSystem"
+    "PathfindingSystem",
+    "ServerBattlePhaseSystem"
   ],
   "entities": [
     {
