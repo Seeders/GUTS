@@ -89,12 +89,12 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Create WorldRenderer with settings from terrain component
         this.createWorldRenderer({
-            enableShadows: terrainComponent.enableShadows !== false,
-            enableFog: terrainComponent.enableFog !== false,
+            shadowsEnabled: terrainComponent.shadowsEnabled !== false,
+            fogEnabled: terrainComponent.fogEnabled !== false,
             enablePostProcessing: true,
-            enableGrass: terrainComponent.enableGrass || false,
-            enableLiquidSurfaces: terrainComponent.enableLiquids !== false,
-            enableCliffs: terrainComponent.enableCliffs !== false
+            grassEnabled: terrainComponent.grassEnabled || false,
+            liquidsEnabledurfaces: terrainComponent.liquidsEnabled !== false,
+            cliffsEnabled: terrainComponent.cliffsEnabled !== false
         });
 
         this.initializeThreeJS(terrainComponent.level, terrainComponent.world);
@@ -111,12 +111,12 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         this.worldRenderer = new GUTS.WorldRenderer({
-            enableShadows: options.enableShadows !== false,
-            enableFog: options.enableFog !== false,
+            shadowsEnabled: options.shadowsEnabled !== false,
+            fogEnabled: options.fogEnabled !== false,
             enablePostProcessing: options.enablePostProcessing !== false,
-            enableGrass: options.enableGrass || false,
-            enableLiquidSurfaces: options.enableLiquidSurfaces !== false,
-            enableCliffs: options.enableCliffs !== false
+            grassEnabled: options.grassEnabled || false,
+            liquidsEnabledurfaces: options.liquidsEnabledurfaces !== false,
+            cliffsEnabled: options.cliffsEnabled !== false
         });
     }
 
