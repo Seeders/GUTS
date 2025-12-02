@@ -218,5 +218,6 @@
       }
     }
   },
-  "size": 75
+  "size": 75,
+  "renderTexture": ""
 }

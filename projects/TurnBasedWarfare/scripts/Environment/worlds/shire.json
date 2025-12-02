@@ -9,7 +9,16 @@
   "worldObjects": [
     "tree",
     "rock",
-    "goldVein"
+    "goldVein",
+    "tree_sprite",
+    "bush_fern_sprite",
+    "bush_sprite",
+    "grass_tuft_small_sprite",
+    "grass_tuft_sprite",
+    "mushroom_sprite",
+    "rock",
+    "stone_2_sprite",
+    "stone_sprite"
   ],
   "backgroundColor": "#b3e5fc"
 }

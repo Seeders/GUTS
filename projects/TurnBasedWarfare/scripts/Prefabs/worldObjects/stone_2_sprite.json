@@ -1,0 +1,9 @@
+{
+  "title": "Stone 2 Sprite",
+  "height": 16,
+  "size": 24,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "renderTexture": "stone_2"
+}

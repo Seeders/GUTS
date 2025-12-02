@@ -1,0 +1,9 @@
+{
+  "title": "Bush Fern Sprite",
+  "height": 240,
+  "size": 24,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "renderTexture": "bush_fern"
+}

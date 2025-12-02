@@ -354,7 +354,8 @@ class EntityRenderer {
 
         // Set correct color space for the texture
         texture.colorSpace = THREE.SRGBColorSpace;
-
+        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = THREE.NearestFilter;
         // Create sprite material
         const material = new THREE.SpriteMaterial({
             map: texture,
@@ -367,17 +368,17 @@ class EntityRenderer {
         const sprite = new THREE.Sprite(material);
 
         // Calculate dimensions - use texture aspect ratio
-        const height = entityDef.height || 64;
+        const size = entityDef.size || 64;
         const textureAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
-        const width = height * textureAspect;
+        const width = size * textureAspect;
 
         // Scale the sprite
-        sprite.scale.set(width, height, 1);
+        sprite.scale.set(width, size, 1);
 
         // Position the sprite (center at ground + half height)
         sprite.position.set(
             data.position.x,
-            data.position.y + height / 2,
+            data.position.y + size / 2,
             data.position.z
         );
 

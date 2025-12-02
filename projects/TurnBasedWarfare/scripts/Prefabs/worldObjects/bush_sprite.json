@@ -1,0 +1,9 @@
+{
+  "title": "Bush Sprite",
+  "height": 24,
+  "size": 24,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "renderTexture": "bush"
+}

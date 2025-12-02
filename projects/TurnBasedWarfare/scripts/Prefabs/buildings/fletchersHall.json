@@ -3,61 +3,7 @@
   "info": "Dexterity based training.",
   "value": 50,
   "category": "attribute",
-  "render": {
-    "animations": {
-      "idle": [
-        {}
-      ],
-      "underConstruction": [
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
-                "url": "models/underConstruction/underConstruction.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "model": {
-      "shapes": {
-        "shapes": [
-          {
-            "type": "gltf",
-            "color": {
-              "paletteColor": "blueDColor"
-            },
-            "metalness": 0,
-            "roughness": 1,
-            "x": 0,
-            "z": 0,
-            "scaleX": 1,
-            "name": "foundation",
-            "url": "models/fletchers_hall/fletchers_hall.glb"
-          }
-        ],
-        "position": {
-          "x": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "scale": {
-          "x": 2,
-          "y": 2,
-          "z": 2
-        }
-      }
-    }
-  },
+  "renderTexture": "fletchers_hall",
   "units": [
     "1_di_scout",
     "1_d_archer"
@@ -65,7 +11,7 @@
   "footprintWidth": 2,
   "footprintHeight": 2,
   "height": 100,
-  "size": 50,
+  "size": 64,
   "icon": "building_fletchersHall",
   "hp": 1500
 }
