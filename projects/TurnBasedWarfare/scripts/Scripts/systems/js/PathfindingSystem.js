@@ -32,33 +32,37 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        if (this.initialized) return;
-
+        // Only register gameManager methods in init - actual initialization happens in onSceneLoad
         this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
         this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
         this.game.gameManager.register('requestPath', this.requestPath.bind(this));
         this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));
         this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
         this.game.gameManager.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
+    }
 
+    onSceneLoad(sceneData) {
+        if (this.initialized) return;
 
         const collections = this.game.getCollections();
         if (!collections) {
             console.warn('PathfindingSystem: Collections not available');
             return;
         }
-        
-        const level = collections.levels?.[this.game.state.level];
+
+        // Get level from terrain entity instead of game.state.level
+        const levelId = this.game.gameManager.call('getLevel');
+        const level = collections.levels?.[levelId];
         if (!level || !level.tileMap) {
             console.warn('PathfindingSystem: Level or tileMap not available');
             return;
         }
-        
+
         if (!this.game.terrainSystem || !this.game.terrainSystem.initialized) {
             console.warn('PathfindingSystem: Waiting for terrain system...');
             return;
         }
-        
+
         // Load terrain types from collections
         this.terrainTypesCollection = collections.terrainTypes;
         if (!this.terrainTypesCollection) {
@@ -692,8 +696,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     update() {
+        // Wait for onSceneLoad to initialize
         if (!this.initialized) {
-            this.init();
             return;
         }
         
