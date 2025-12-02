@@ -45,7 +45,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Position-based dirty tracking - only recalculate LOS when units move
         this._unitPositions = new Map();  // entityId -> {x, z}
         this._fowDirty = true;            // Force initial calculation
-        this._positionThreshold = 5;      // Minimum movement to trigger recalc (in world units)
+        this._positionThreshold = 2;      // Minimum movement to trigger recalc (in world units)
 
         // Cached values that don't change per-frame
         this._cachedGridSize = null;
