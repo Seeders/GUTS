@@ -46,12 +46,13 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when scene is loaded - initialize EntityRenderer with scene
+     * Called after all systems have completed onSceneLoad - initialize EntityRenderer with scene
+     * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
      */
-    onSceneLoad(sceneData) {
-        // Wait for scene to be available from WorldSystem
+    postSceneLoad(sceneData) {
+        // Scene should be available now from WorldSystem
         if (!this.game.scene) {
-            console.warn('[RenderSystem] Scene not available yet in onSceneLoad');
+            console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
             return;
         }
 
