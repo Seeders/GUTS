@@ -18,15 +18,20 @@ class PostProcessingSystem extends GUTS.BaseSystem {
     }
 
     postAllInit() {
-        
+        // Composer setup deferred to onSceneLoad when renderer/scene/camera are available
+    }
+
+    onSceneLoad(sceneData) {
+        // Initialize composer once WorldSystem has created renderer/scene/camera
+        if (this.composer) return; // Already initialized
+
         if (!this.game.renderer || !this.game.scene || !this.game.camera) {
-            console.error('[PostProcessingSystem] Missing renderer, scene, or camera in postAllInit');
+            console.warn('[PostProcessingSystem] Waiting for renderer, scene, or camera');
             return;
         }
-        
-        
+
         this.composer = new GUTS.EffectComposer(this.game.renderer);
-        
+
         // Create depth textures for both render targets
         const depthTexture1 = new THREE.DepthTexture();
         depthTexture1.format = THREE.DepthFormat;
@@ -44,11 +49,12 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         // Make sure sizes are synced after attaching:
         const size = this.game.renderer.getSize(new THREE.Vector2());
         this.composer.setSize(size.x, size.y);
-        
+
         if (this.passes.size > 0) {
             this.rebuildComposer();
         }
-        
+
+        console.log('[PostProcessingSystem] Composer initialized');
     }
 
     getPostProcessingComposer() {

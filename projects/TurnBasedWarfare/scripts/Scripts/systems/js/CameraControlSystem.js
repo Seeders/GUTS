@@ -29,22 +29,34 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
     this.onLeave = ()=>this.onMouseLeave();
     this.onBlur  = ()=>{ this.inside = false; this.holdDirX = 0; this.holdDirZ = 0; };
+    this.onWheel = (e) => this.handleWheel(e);
 
     window.addEventListener('mousemove', this.onMove, { passive: true });
     window.addEventListener('mouseenter', this.onEnter);
     window.addEventListener('mouseleave', this.onLeave);
     window.addEventListener('blur',      this.onBlur);
-    window.addEventListener('wheel', (e) => {
-      let dy = e.deltaY;
-      if(dy > 0){
-        //scrolling down
-        this.game.camera.zoom = this.game.camera.zoom * 0.9;
-      } else {
-        this.game.camera.zoom = this.game.camera.zoom * 1.1;
-      }
-      this.game.camera.zoom = Math.min(2, this.game.camera.zoom);
-      this.game.camera.updateProjectionMatrix();
-    });
+    window.addEventListener('wheel', this.onWheel);
+  }
+
+  onSceneLoad(sceneData) {
+    // Camera is now available from WorldSystem
+    if (!this.game.camera) {
+      console.warn('[CameraControlSystem] Camera not available in onSceneLoad');
+    }
+  }
+
+  handleWheel(e) {
+    if (!this.game.camera) return;
+
+    let dy = e.deltaY;
+    if(dy > 0){
+      //scrolling down
+      this.game.camera.zoom = this.game.camera.zoom * 0.9;
+    } else {
+      this.game.camera.zoom = this.game.camera.zoom * 1.1;
+    }
+    this.game.camera.zoom = Math.min(2, this.game.camera.zoom);
+    this.game.camera.updateProjectionMatrix();
   }
 
   dispose() {
