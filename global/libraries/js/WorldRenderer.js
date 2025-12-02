@@ -50,12 +50,12 @@ class WorldRenderer {
 
         // Configuration
         this.config = {
-            enableShadows: true,
-            enableFog: true,
+            shadowsEnabled: true,
+            fogEnabled: true,
             enablePostProcessing: true,
-            enableGrass: false,
-            enableLiquidSurfaces: true,
-            enableCliffs: true,
+            grassEnabled: false,
+            liquidsEnabledurfaces: true,
+            cliffsEnabled: true,
             pixelSize: 1,
             ...config
         };
@@ -362,7 +362,7 @@ class WorldRenderer {
         }
 
         // Setup shadows
-        if (shadowSettings?.enabled && this.config.enableShadows) {
+        if (shadowSettings?.enabled && this.config.shadowsEnabled) {
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -467,8 +467,8 @@ class WorldRenderer {
         this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
         this.ground.rotation.x = -Math.PI / 2;
         this.ground.position.set(0, 0, 0);
-        this.ground.receiveShadow = this.config.enableShadows;
-        this.ground.castShadow = this.config.enableShadows;
+        this.ground.receiveShadow = this.config.shadowsEnabled;
+        this.ground.castShadow = this.config.shadowsEnabled;
 
         this.scene.add(this.ground);
 
@@ -533,7 +533,7 @@ class WorldRenderer {
      * @param {number} terrainType - The terrain type ID to generate liquid surfaces for
      */
     generateLiquidSurfaceMesh(terrainType) {
-        if (!this.config.enableLiquidSurfaces) {
+        if (!this.config.liquidsEnabledurfaces) {
             return;
         }
 
@@ -741,7 +741,7 @@ class WorldRenderer {
      * Generate all liquid surface meshes for all liquid terrain types
      */
     generateAllLiquidSurfaces() {
-        if (!this.config.enableLiquidSurfaces) {
+        if (!this.config.liquidsEnabledurfaces) {
             return;
         }
 
@@ -1313,7 +1313,7 @@ class WorldRenderer {
         const northPlane = new THREE.Mesh(northGeometry, extensionMaterial.clone());
         northPlane.rotation.x = -Math.PI / 2;
         northPlane.position.set(0, extensionHeight, halfDetailedSize + extensionDistance / 2);
-        northPlane.receiveShadow = this.config.enableShadows;
+        northPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(northPlane);
         this.extensionPlanes.push(northPlane);
 
@@ -1322,7 +1322,7 @@ class WorldRenderer {
         const southPlane = new THREE.Mesh(southGeometry, extensionMaterial.clone());
         southPlane.rotation.x = -Math.PI / 2;
         southPlane.position.set(0, extensionHeight, -halfDetailedSize - extensionDistance / 2);
-        southPlane.receiveShadow = this.config.enableShadows;
+        southPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(southPlane);
         this.extensionPlanes.push(southPlane);
 
@@ -1331,7 +1331,7 @@ class WorldRenderer {
         const eastPlane = new THREE.Mesh(eastGeometry, extensionMaterial.clone());
         eastPlane.rotation.x = -Math.PI / 2;
         eastPlane.position.set(halfDetailedSize + extensionDistance / 2, extensionHeight, 0);
-        eastPlane.receiveShadow = this.config.enableShadows;
+        eastPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(eastPlane);
         this.extensionPlanes.push(eastPlane);
 
@@ -1340,7 +1340,7 @@ class WorldRenderer {
         const westPlane = new THREE.Mesh(westGeometry, extensionMaterial.clone());
         westPlane.rotation.x = -Math.PI / 2;
         westPlane.position.set(-halfDetailedSize - extensionDistance / 2, extensionHeight, 0);
-        westPlane.receiveShadow = this.config.enableShadows;
+        westPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(westPlane);
         this.extensionPlanes.push(westPlane);
     }
