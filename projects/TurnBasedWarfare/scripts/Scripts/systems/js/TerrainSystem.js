@@ -6,6 +6,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.initialized = false;
         this.terrainEntityId = null;
         this.terrainDataManager = null;
+        this.currentLevel = null;
 
         // Use global TerrainDataManager for all terrain data operations
         // Environment object spawner for consistent spawning
@@ -28,6 +29,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager?.extendedSize);
         this.game.gameManager.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
         this.game.gameManager.register('hasTerrain', () => this.terrainDataManager !== null);
+        this.game.gameManager.register('getLevel', () => this.currentLevel);
 
         // TerrainSystem waits for scene to load via onSceneLoad()
         // Terrain entity in scene triggers terrain initialization
@@ -81,6 +83,9 @@ class TerrainSystem extends GUTS.BaseSystem {
     initTerrainFromLevel(levelName, terrainConfig = {}) {
         // Clean up existing terrain first
         this.cleanupTerrain();
+
+        // Store current level for getLevel() query
+        this.currentLevel = levelName;
 
         const collections = this.game.getCollections();
         const gameConfig = collections.configs.game;

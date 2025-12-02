@@ -25,7 +25,6 @@ class GridSystem extends GUTS.BaseSystem {
         // Grid configuration
         this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
         this.game.gameManager.register('getPlacementGridSize', () => this.cellSize);
-        this.game.gameManager.register('getLevel', () => this.currentLevel);
 
         // Placement Grid ↔ World coordinate transformations (legacy names for backward compatibility)
         this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
@@ -94,8 +93,8 @@ class GridSystem extends GUTS.BaseSystem {
 
         const terrainGridSize = collections.configs.game.gridSize;
         const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
-        this.currentLevel = collections.configs.state.level;
-        const tileMapSize = collections.levels[this.currentLevel]?.tileMap?.size || 32;
+        const currentLevel = collections.configs.state.level;
+        const tileMapSize = collections.levels[currentLevel]?.tileMap?.size || 32;
         const terrainSize = tileMapSize * terrainGridSize;
 
         this.cellSize = placementGridSize;
