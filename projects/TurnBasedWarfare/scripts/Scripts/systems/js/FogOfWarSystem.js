@@ -4,7 +4,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.game.fogOfWarSystem = this;
 
         this.VISION_RADIUS = 500;
-        this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
+        this.WORLD_SIZE = null; // Set in onSceneLoad when terrain is available
         this.FOG_TEXTURE_SIZE = 64;
 
         // Line of sight settings (optimized)
@@ -66,7 +66,6 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
     init(params = {}) {
         this.params = params;
-        this.initRendering();
 
         // Register getter methods
         this.game.gameManager.register('getExplorationTexture', this.getExplorationTexture.bind(this));
@@ -74,6 +73,33 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
         // Register cache invalidation for when worldObjects are destroyed
         this.game.gameManager.register('invalidateLOSCache', this.invalidateLOSCache.bind(this));
+
+        // Rendering initialized in onSceneLoad when world size is available
+    }
+
+    onSceneLoad(sceneData) {
+        // Get world size now that terrain is loaded
+        this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
+
+        if (!this.WORLD_SIZE) {
+            console.warn('[FogOfWarSystem] World size not available');
+            return;
+        }
+
+        // Initialize rendering now that we have world size
+        this.initRendering();
+
+        // Create fog pass now that render targets exist
+        if (this.game.postProcessingSystem && !this.fogPass) {
+            this.createFogPass();
+            this.game.gameManager.call('registerPostProcessingPass', 'fog', {
+                enabled: true,
+                pass: this.fogPass
+            });
+        }
+
+        // Force initial fog calculation
+        this._fowDirty = true;
     }
 
     getExplorationTexture() {
@@ -170,13 +196,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     postAllInit() {
-        if (this.game.postProcessingSystem) {
-            this.createFogPass();
-            this.game.gameManager.call('registerPostProcessingPass', 'fog', {
-                enabled: true,
-                pass: this.fogPass
-            });
-        }
+        // Fog pass is now created in onSceneLoad after render targets are initialized
     }
 
 
