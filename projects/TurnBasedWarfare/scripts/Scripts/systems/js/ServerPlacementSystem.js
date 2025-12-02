@@ -91,11 +91,10 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             
         } catch (error) {
             console.error('Error getting starting state:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', { 
-                error: 'Server error while submitting placements',
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', {
+                error: 'Server error while getting starting state',
                 playerId: eventData.playerId,
                 ready: false,
-                received: data,
                 success: false
             });
         }
@@ -894,12 +893,26 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
 
     getStartingPositionFromLevel(side) {
-        // Try to get level data from game collections
-        const level = this.game.getCollections().levels[this.game.state.level];
-        if (!level || !level.tileMap || !level.tileMap.startingLocations) {
+        // Get level name from terrain entity (scene-based architecture)
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (terrainEntities.length === 0) {
+            console.warn('[ServerPlacementSystem] No terrain entity found');
             return null;
         }
-        
+
+        const terrainComponent = this.game.getComponent(terrainEntities[0], 'terrain');
+        if (!terrainComponent?.level) {
+            console.warn('[ServerPlacementSystem] Terrain entity has no level');
+            return null;
+        }
+
+        // Try to get level data from game collections
+        const level = this.game.getCollections().levels[terrainComponent.level];
+        if (!level || !level.tileMap || !level.tileMap.startingLocations) {
+            console.warn(`[ServerPlacementSystem] Level '${terrainComponent.level}' has no startingLocations`);
+            return null;
+        }
+
         // Find starting location for this side
         const startingLoc = level.tileMap.startingLocations.find(loc => loc.side === side);
         if (startingLoc && startingLoc.gridPosition) {
@@ -913,13 +926,23 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         // Get starting position from level data if available
         let startPosition = this.getStartingPositionFromLevel(player.stats.side);
         console.log('startPosition', startPosition);
+
+        // If no starting position found, return error state
+        if (!startPosition) {
+            console.error('[ServerPlacementSystem] No starting position found for side:', player.stats.side);
+            return {
+                error: 'No starting position configured for this level',
+                success: false
+            };
+        }
+
         // Find nearest gold vein
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
-        const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations');
+        const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations') || [];
         console.log("goldVeinLocations", goldVeinLocations);
-        if (goldVeinLocations) {
+        if (goldVeinLocations.length > 0) {
             goldVeinLocations.forEach(vein => {
                 // Calculate distance from start position to vein
                 const dx = vein.gridPos.x - startPosition.x;
@@ -932,6 +955,12 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
+        }
+
+        // If no gold vein found, use a default offset
+        if (!nearestGoldVeinLocation) {
+            console.warn('[ServerPlacementSystem] No gold veins found, using default peasant placement');
+            nearestGoldVeinLocation = { x: startPosition.x + 10, z: startPosition.z };
         }
 
         // Calculate peasant positions on the same side as gold mine
