@@ -8,6 +8,6 @@
   "loadHook": "editTexture",
   "saveHook": "saveTexture",
   "libraries": [
-    "TextureEditor"    
+    "TextureEditor"
   ]
 }
