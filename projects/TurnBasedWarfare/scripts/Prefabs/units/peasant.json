@@ -1,6 +1,6 @@
 {
   "title": "Peasant",
-  "size": 32,
+  "size": 24,
   "height": 50,
   "value": 35,
   "hp": 60,
@@ -9,6 +9,7 @@
   "attackSpeed": 1,
   "element": "physical",
   "armor": 8,
+  "spriteScale": 64,
   "renderTexture": "male",
   "buyable": true,
   "specUnits": [],

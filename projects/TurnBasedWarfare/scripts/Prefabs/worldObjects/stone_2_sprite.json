@@ -5,5 +5,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "impassable": false,
+  "spriteScale": 32,
   "renderTexture": "stone_2"
 }

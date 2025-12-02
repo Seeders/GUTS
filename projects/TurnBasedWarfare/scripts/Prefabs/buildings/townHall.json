@@ -11,10 +11,11 @@
     "peasant"
   ],
   "height": 100,
-  "size": 91,
+  "size": 48,
   "icon": "building_townHall",
   "hp": 2500,
   "visionRange": 200,
   "supplyProvided": 10,
+  "spriteScale": 91,
   "renderTexture": "townhall"
 }
