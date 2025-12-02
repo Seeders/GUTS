@@ -27,6 +27,13 @@
     "SceneEditorContext",
     "SceneEditor"
   ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "PostProcessingSystem",
+    "RenderSystem"
+  ],
   "propertyName": "entities",
   "interface": "sceneEditor",
   "inputElement": "textarea",

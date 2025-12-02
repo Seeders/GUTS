@@ -75,11 +75,27 @@ class TerrainMapEditor {
         this.imageManager = new GUTS.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
         this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         this.modalId = 'modal-addTerrainType';
+
+        this.modelManager = gameEditor.modelManager;
+        this.collections = this.gameEditor.getCollections();
         // Bind methods to maintain correct context
         this.init();
     }
 
-    init() {
+    async init() {
+        if (!this.modelManager) {
+            const palette = this.gameEditor.getPalette();
+            this.modelManager = new GUTS.ModelManager(
+                this.gameEditor,
+                {},
+                { ShapeFactory: GUTS.ShapeFactory, palette, textures: this.collections.textures }
+            );
+
+            // Load all models
+            for (const objectType in this.collections) {
+                await this.modelManager.loadModels(objectType, this.collections[objectType]);
+            }
+        }
         this.setupTerrainTypesUI();
         this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();

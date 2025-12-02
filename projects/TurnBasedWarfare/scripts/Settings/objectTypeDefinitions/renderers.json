@@ -2,6 +2,6 @@
   "id": "renderers",
   "name": "Renderers",
   "singular": "Renderer",
-  "category": "Scripts",
+  "category": "global",
   "isCore": true
 }

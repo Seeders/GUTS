@@ -4,6 +4,7 @@
   "libraries": [
     "threejs",
     "ShapeFactory",
+    "ModelManager",
     "CoordinateTranslator",
     "ImageManager",
     "CanvasUtility",
