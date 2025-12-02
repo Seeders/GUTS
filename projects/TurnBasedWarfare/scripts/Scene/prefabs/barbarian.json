@@ -25,7 +25,7 @@
       "range": 5
     },
     "team": {
-      "team": 1
+      "team": "left"
     }
   }
 }
