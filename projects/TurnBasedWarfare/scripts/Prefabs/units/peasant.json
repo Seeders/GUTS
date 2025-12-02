@@ -25,5 +25,5 @@
   "actionSet": "peasant_actions",
   "visionRange": 400,
   "supplyCost": 1,
-  "walkSpriteAnimationSet": "maleWalk"
+  "spriteAnimationSet": "male"
 }
