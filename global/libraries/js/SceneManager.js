@@ -117,14 +117,22 @@ class SceneManager {
         const collections = this.game.getCollections();
         const prefabs = collections.prefabs || {};
 
+        console.log('[SceneManager] Available prefabs:', Object.keys(prefabs));
+
         for (const entityDef of entities) {
             const entityId = entityDef.id || this.game.getEntityId();
 
             // Get prefab data if specified
             let components = {};
-            if (entityDef.prefab && prefabs[entityDef.prefab]) {
-                const prefabData = prefabs[entityDef.prefab];
-                components = this.deepClone(prefabData.components || {});
+            if (entityDef.prefab) {
+                console.log(`[SceneManager] Looking for prefab '${entityDef.prefab}'`);
+                if (prefabs[entityDef.prefab]) {
+                    const prefabData = prefabs[entityDef.prefab];
+                    components = this.deepClone(prefabData.components || {});
+                    console.log(`[SceneManager] Found prefab '${entityDef.prefab}' with components:`, Object.keys(components));
+                } else {
+                    console.warn(`[SceneManager] Prefab '${entityDef.prefab}' NOT FOUND in collections.prefabs`);
+                }
             }
 
             // Merge with entity-specific component overrides
