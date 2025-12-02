@@ -438,15 +438,12 @@ class EntityRenderer {
                     // Cylindrical billboard: keep Y up, only rotate around Y axis
                     vec3 billboardUp = vec3(0.0, 1.0, 0.0);
 
-                    // Calculate direction from billboard to camera (use cameraPosition built-in)
-                    vec3 toCamera = cameraPosition - instancePos;
+                    // For orthographic camera: use camera's look direction (same for all billboards)
+                    // viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2] is the camera's Z axis in world space
+                    // This points toward the camera (opposite of look direction)
+                    vec3 toCamera = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
                     toCamera.y = 0.0; // Project to XZ plane for cylindrical billboard
-                    float len = length(toCamera);
-                    if (len > 0.001) {
-                        toCamera = toCamera / len;
-                    } else {
-                        toCamera = vec3(0.0, 0.0, 1.0);
-                    }
+                    toCamera = normalize(toCamera);
 
                     // Billboard right is perpendicular to up and toCamera direction
                     vec3 billboardRight = normalize(cross(billboardUp, toCamera));
