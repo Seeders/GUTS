@@ -113,6 +113,12 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Billboard entities use sprite animations
             // Don't apply animation direction on init - keep base renderTexture for idle/placement
             this.game.gameManager.call('setBillboardMoving', entityId, false);
+
+            // Flip idle texture for 'left' team so they face toward opponents (right)
+            const team = this.game.getComponent(entityId, "team");
+            if (team?.team === 'left') {
+                this.game.gameManager.call('setBillboardIdleFlip', entityId, true);
+            }
         } else {
             // VAT entities use clip-based animations
             this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);

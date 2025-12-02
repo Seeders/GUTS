@@ -41,6 +41,7 @@ class RenderSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('isBillboardWithAnimations', this.isBillboardWithAnimations.bind(this));
         this.game.gameManager.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
         this.game.gameManager.register('setBillboardMoving', this.setBillboardMoving.bind(this));
+        this.game.gameManager.register('setBillboardIdleFlip', this.setBillboardIdleFlip.bind(this));
 
         // EntityRenderer will be created in onSceneLoad when scene is available
         // Register getter that returns current entityRenderer (may be null initially)
@@ -385,6 +386,11 @@ class RenderSystem extends GUTS.BaseSystem {
     setBillboardMoving(entityId, isMoving) {
         if (!this.entityRenderer) return false;
         return this.entityRenderer.setBillboardMoving(entityId, isMoving);
+    }
+
+    setBillboardIdleFlip(entityId, flipped) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.setBillboardIdleFlip(entityId, flipped);
     }
 
     getEntityAnimationState(entityId) {
