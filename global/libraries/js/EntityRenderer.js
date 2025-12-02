@@ -391,7 +391,7 @@ class EntityRenderer {
             entityType: data.type,
             sprite: sprite,
             textureId,
-            heightOffset: height / 2
+            heightOffset: size / 2
         });
 
         this.stats.entitiesRendered++;
