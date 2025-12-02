@@ -181,50 +181,68 @@ class ConfigParser {
     }
 
     /**
-     * Discover all collections by scanning the folder structure
+     * Discover all collections by scanning the folder structure based on objectTypeDefinitions
      */
     discoverCollections() {
-        console.log('\n  Discovering collections from folder structure...');
+        console.log('\n  Discovering collections from objectTypeDefinitions...');
 
-        // Define the parent folders and their structures
-        // hasJsSubfolder: true means JS is in /js subfolder and data is in /data subfolder
-        // hasJsSubfolder: false means JSON files are directly in the folder (no JS)
-        const folderMappings = [
-            { parent: 'Scripts', hasJsSubfolder: true },
-            { parent: 'Behaviors', hasJsSubfolder: true },
-            { parent: 'Data', hasJsSubfolder: false },
-            { parent: 'Environment', hasJsSubfolder: false },
-            { parent: 'Prefabs', hasJsSubfolder: false },
-            { parent: 'Audio', hasJsSubfolder: false },
-            { parent: 'Settings', hasJsSubfolder: false },
-            { parent: 'Resources', hasJsSubfolder: false },
-            { parent: 'Terrain', hasJsSubfolder: false }
-        ];
+        // Build folder mappings dynamically from objectTypeDefinitions
+        // Categories that use JS subfolders (Scripts, Behaviors) vs data-only folders
+        const jsSubfolderCategories = new Set(['Scripts', 'Behaviors']);
 
-        for (const mapping of folderMappings) {
-            const parentPath = path.join(this.scriptsRoot, mapping.parent);
-            if (!fs.existsSync(parentPath)) continue;
+        // Group objectTypeDefinitions by category
+        const categoriesMap = new Map();
+        for (const objTypeDef of this.objectTypeDefinitions) {
+            const category = objTypeDef.category;
+            if (!category) continue;
 
-            const subfolders = fs.readdirSync(parentPath, { withFileTypes: true })
-                .filter(d => d.isDirectory())
-                .map(d => d.name);
+            if (!categoriesMap.has(category)) {
+                categoriesMap.set(category, []);
+            }
+            categoriesMap.get(category).push(objTypeDef);
+        }
 
-            for (const subfolder of subfolders) {
-                const collectionId = subfolder;
-                const folderPath = path.join(parentPath, subfolder);
+        console.log(`    Found ${categoriesMap.size} categories from objectTypeDefinitions`);
+
+        // Process each category
+        for (const [category, objectTypes] of categoriesMap) {
+            const parentPath = path.join(this.scriptsRoot, category);
+            if (!fs.existsSync(parentPath)) {
+                console.log(`    Skipping category ${category} - folder doesn't exist`);
+                continue;
+            }
+
+            const hasJsSubfolder = jsSubfolderCategories.has(category);
+
+            // Process each object type in this category
+            for (const objTypeDef of objectTypes) {
+                const collectionId = objTypeDef.id;
+                const folderPath = path.join(parentPath, collectionId);
+
+                if (!fs.existsSync(folderPath)) {
+                    // Try singular form as folder name
+                    const singularPath = path.join(parentPath, objTypeDef.singular || collectionId);
+                    if (!fs.existsSync(singularPath)) {
+                        continue;
+                    }
+                }
+
+                const actualFolderPath = fs.existsSync(folderPath)
+                    ? folderPath
+                    : path.join(parentPath, objTypeDef.singular || collectionId);
 
                 // Determine paths for JS, data, HTML, and CSS files
                 let jsPath, dataPath, htmlPath, cssPath;
-                if (mapping.hasJsSubfolder) {
-                    jsPath = path.join(folderPath, 'js');
-                    dataPath = path.join(folderPath, 'data');
-                    htmlPath = path.join(folderPath, 'html');
-                    cssPath = path.join(folderPath, 'css');
+                if (hasJsSubfolder) {
+                    jsPath = path.join(actualFolderPath, 'js');
+                    dataPath = path.join(actualFolderPath, 'data');
+                    htmlPath = path.join(actualFolderPath, 'html');
+                    cssPath = path.join(actualFolderPath, 'css');
                 } else {
-                    jsPath = folderPath;
+                    jsPath = actualFolderPath;
                     // Check if folder has a 'data' subfolder, otherwise use folder directly
-                    const nestedDataPath = path.join(folderPath, 'data');
-                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : folderPath;
+                    const nestedDataPath = path.join(actualFolderPath, 'data');
+                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : actualFolderPath;
                     htmlPath = null;
                     cssPath = null;
                 }
@@ -241,7 +259,7 @@ class ConfigParser {
                 if (jsFiles.length > 0 || dataFiles.length > 0) {
                     this.collections[collectionId] = {
                         id: collectionId,
-                        parent: mapping.parent,
+                        parent: category,
                         jsPath: jsPath,
                         dataPath: dataPath,
                         htmlPath: htmlPath,
