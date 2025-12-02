@@ -416,80 +416,64 @@ class EntityRenderer {
         // Create plane geometry (1x1 unit, scaled per-instance)
         const geometry = new THREE.PlaneGeometry(1, 1);
 
-        // Create billboard material with cylindrical billboarding shader
-        const material = new THREE.MeshStandardMaterial({
-            map: texture,
+        // Use ShaderMaterial for full control over billboarding
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                map: { value: texture },
+                alphaTest: { value: 0.5 }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+
+                void main() {
+                    vUv = uv;
+
+                    // Extract instance position from the instance matrix (4th column)
+                    vec3 instancePos = vec3(instanceMatrix[3].xyz);
+
+                    // Extract scale from instance matrix columns
+                    float scaleX = length(instanceMatrix[0].xyz);
+                    float scaleY = length(instanceMatrix[1].xyz);
+
+                    // Cylindrical billboard: keep Y up, only rotate around Y axis
+                    vec3 billboardUp = vec3(0.0, 1.0, 0.0);
+
+                    // Get camera forward direction projected to XZ plane
+                    vec3 camForward = -vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+                    camForward.y = 0.0;
+                    float len = length(camForward);
+                    if (len > 0.001) {
+                        camForward = camForward / len;
+                    } else {
+                        camForward = vec3(0.0, 0.0, 1.0);
+                    }
+
+                    // Billboard right is perpendicular to up and forward
+                    vec3 billboardRight = normalize(cross(billboardUp, camForward));
+
+                    // Build vertex position in world space
+                    vec3 worldPos = instancePos +
+                                   position.x * scaleX * billboardRight +
+                                   position.y * scaleY * billboardUp;
+
+                    gl_Position = projectionMatrix * viewMatrix * vec4(worldPos, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D map;
+                uniform float alphaTest;
+                varying vec2 vUv;
+
+                void main() {
+                    vec4 texColor = texture2D(map, vUv);
+                    if (texColor.a < alphaTest) discard;
+                    gl_FragColor = texColor;
+                }
+            `,
             transparent: true,
-            alphaTest: 0.5,
             side: THREE.DoubleSide,
             depthWrite: true
         });
-
-        // Add billboarding shader modification
-        // For instanced meshes, we handle billboarding by modifying the world position calculation
-        material.onBeforeCompile = (shader) => {
-            // Also fix the normal to face the camera for proper lighting
-            shader.vertexShader = shader.vertexShader.replace(
-                '#include <beginnormal_vertex>',
-                `
-                // Billboard normal: always faces camera
-                vec3 toCamera_n = -vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
-                toCamera_n.y = 0.0;
-                toCamera_n = normalize(toCamera_n);
-                vec3 objectNormal = toCamera_n;
-
-                #ifdef USE_TANGENT
-                    vec3 objectTangent = vec3( tangent.xyz );
-                #endif
-                `
-            );
-
-            shader.vertexShader = shader.vertexShader.replace(
-                '#include <project_vertex>',
-                `
-                // Billboard implementation for instanced mesh
-                // Extract instance position from the instance matrix (4th column)
-                vec3 instancePos = vec3(instanceMatrix[3].xyz);
-
-                // Extract scale from instance matrix columns
-                float scaleX = length(instanceMatrix[0].xyz);
-                float scaleY = length(instanceMatrix[1].xyz);
-
-                // Cylindrical billboard: keep Y up, only rotate around Y axis
-                vec3 billboardUp = vec3(0.0, 1.0, 0.0);
-
-                // Calculate billboard right (perpendicular to up and camera forward)
-                vec3 toCamera = -vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
-                toCamera.y = 0.0; // Project to XZ plane for cylindrical billboard
-                if (length(toCamera) > 0.001) {
-                    toCamera = normalize(toCamera);
-                } else {
-                    toCamera = vec3(0.0, 0.0, 1.0);
-                }
-                vec3 billboardRight = normalize(cross(billboardUp, toCamera));
-
-                // Build the billboard vertex in world space
-                // transformed contains the local vertex position (from the plane geometry)
-                vec3 worldPos = instancePos +
-                               transformed.x * scaleX * billboardRight +
-                               transformed.y * scaleY * billboardUp;
-
-                vec4 mvPosition = viewMatrix * vec4(worldPos, 1.0);
-                gl_Position = projectionMatrix * mvPosition;
-
-                #ifdef USE_LOGDEPTHBUF
-                    vFragDepth = 1.0 + gl_Position.w;
-                    vIsPerspective = float( isPerspectiveMatrix( projectionMatrix ) );
-                #endif
-
-                #if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP ) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0
-                    vec4 worldPosition = vec4( worldPos, 1.0 );
-                #endif
-
-                vViewPosition = -mvPosition.xyz;
-                `
-            );
-        };
 
         // Set texture properties
         if (texture) {
