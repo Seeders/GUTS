@@ -31,6 +31,11 @@ class EntityRenderer {
         this.textureLoader = new THREE.TextureLoader();
         this.loadedTextures = new Map(); // textureId -> THREE.Texture
 
+        // Sprite animation tracking for billboards
+        this.billboardAnimations = new Map(); // entityId -> { animations, currentDirection, frameTime, frameIndex }
+        this.spriteAnimationFrameRate = 10; // frames per second
+        this.spriteFrameDuration = 1 / this.spriteAnimationFrameRate;
+
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
         this.loadingPromises = new Map();
@@ -329,6 +334,15 @@ class EntityRenderer {
     async spawnBillboardEntity(entityId, data, entityDef) {
         const textureId = entityDef.renderTexture;
 
+        // Check if entity has sprite animations for directional movement
+        const hasSpriteAnimations = entityDef.spriteAnimations && entityDef.spriteAnimations.length > 0;
+        let animationData = null;
+
+        if (hasSpriteAnimations) {
+            // Load all sprite animation frames and set up direction mappings
+            animationData = await this.loadSpriteAnimations(entityDef.spriteAnimations);
+        }
+
         const textureDef = this.collections?.textures?.[textureId];
         if (!textureDef) {
             console.warn(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
@@ -387,19 +401,112 @@ class EntityRenderer {
 
         this.scene.add(sprite);
 
-        this.entities.set(entityId, {
+        const entityData = {
             type: 'billboard',
             collection: data.collection,
             entityType: data.type,
             sprite: sprite,
             textureId,
-            heightOffset: heightOffset
-        });
+            heightOffset: heightOffset,
+            hasSpriteAnimations: hasSpriteAnimations
+        };
+
+        this.entities.set(entityId, entityData);
+
+        // Set up sprite animation tracking if animations are available
+        if (hasSpriteAnimations && animationData) {
+            this.billboardAnimations.set(entityId, {
+                animations: animationData, // { left: [...textures], up: [...], down: [...] }
+                currentDirection: 'down',  // Default facing direction
+                frameIndex: 0,
+                frameTime: 0,
+                isMoving: false,
+                flipped: false
+            });
+        }
 
         this.stats.entitiesRendered++;
         this.stats.billboardEntities++;
 
         return true;
+    }
+
+    /**
+     * Load sprite animations and organize by direction
+     * Returns: { left: [textures], up: [textures], down: [textures] }
+     */
+    async loadSpriteAnimations(spriteAnimationNames) {
+        const animations = {
+            left: [],
+            up: [],
+            down: []
+        };
+
+        for (const animName of spriteAnimationNames) {
+            // Get the sprite animation definition
+            const animDef = this.collections?.spriteAnimations?.[animName];
+            if (!animDef || !animDef.sprites) {
+                console.warn(`[EntityRenderer] Sprite animation '${animName}' not found`);
+                continue;
+            }
+
+            // Determine direction from animation name (e.g., "maleWalkLeft" -> "left")
+            const direction = this.parseDirectionFromAnimName(animName);
+            if (!direction) {
+                console.warn(`[EntityRenderer] Could not determine direction from animation name: ${animName}`);
+                continue;
+            }
+
+            // Load all sprite textures for this animation
+            const textures = [];
+            for (const spriteName of animDef.sprites) {
+                const spriteDef = this.collections?.sprites?.[spriteName];
+                if (!spriteDef || !spriteDef.imagePath) {
+                    console.warn(`[EntityRenderer] Sprite '${spriteName}' not found`);
+                    continue;
+                }
+
+                // Load or get cached texture
+                let texture = this.loadedTextures.get(spriteName);
+                if (!texture) {
+                    try {
+                        texture = await this.loadTexture(spriteName, spriteDef.imagePath);
+                    } catch (error) {
+                        console.error(`[EntityRenderer] Failed to load sprite texture ${spriteName}:`, error);
+                        continue;
+                    }
+                }
+
+                if (texture) {
+                    // Clone and configure texture for sprite use
+                    const clonedTexture = texture.clone();
+                    clonedTexture.colorSpace = THREE.SRGBColorSpace;
+                    clonedTexture.minFilter = THREE.NearestFilter;
+                    clonedTexture.magFilter = THREE.NearestFilter;
+                    clonedTexture.needsUpdate = true;
+                    textures.push(clonedTexture);
+                }
+            }
+
+            if (textures.length > 0) {
+                animations[direction] = textures;
+            }
+        }
+
+        return animations;
+    }
+
+    /**
+     * Parse direction from animation name
+     * Examples: "maleWalkLeft" -> "left", "maleWalkUp" -> "up", "maleWalkDown" -> "down"
+     */
+    parseDirectionFromAnimName(animName) {
+        const lowerName = animName.toLowerCase();
+        if (lowerName.includes('left')) return 'left';
+        if (lowerName.includes('right')) return 'right';
+        if (lowerName.includes('up')) return 'up';
+        if (lowerName.includes('down')) return 'down';
+        return null;
     }
 
     /**
@@ -538,7 +645,7 @@ class EntityRenderer {
         if (entity.type === 'vat') {
             return this.updateVATTransform(entity, data);
         } else if (entity.type === 'billboard') {
-            return this.updateBillboardTransform(entity, data);
+            return this.updateBillboardTransform(entity, data, entityId);
         } else {
             return this.updateStaticTransform(entity, data);
         }
@@ -620,8 +727,9 @@ class EntityRenderer {
 
     /**
      * Update billboard (sprite) entity transform
+     * Note: Animation direction is controlled by AnimationSystem via setBillboardAnimationDirection
      */
-    updateBillboardTransform(entity, data) {
+    updateBillboardTransform(entity, data, entityId) {
         if (!entity.sprite) return false;
 
         const heightOffset = entity.heightOffset || 0;
@@ -632,20 +740,44 @@ class EntityRenderer {
         );
 
         const vx = data.velocity?.vx ?? 0;
-        if (Math.abs(vx) > this.minMovementThreshold) {
-            const facingRight = vx > 0;
-            const texture = entity.sprite.material.map;
-            
-            if (facingRight) {
-                texture.repeat.x = -1;
-                texture.offset.x = 1;
-            } else {
-                texture.repeat.x = 1;
-                texture.offset.x = 0;
+
+        // Check if entity has sprite animations (controlled by AnimationSystem)
+        const animData = this.billboardAnimations.get(entityId);
+
+        if (!animData) {
+            // Fallback to original flip behavior for entities without sprite animations
+            if (Math.abs(vx) > this.minMovementThreshold) {
+                const facingRight = vx > 0;
+                const texture = entity.sprite.material.map;
+
+                if (facingRight) {
+                    texture.repeat.x = -1;
+                    texture.offset.x = 1;
+                } else {
+                    texture.repeat.x = 1;
+                    texture.offset.x = 0;
+                }
             }
         }
+        // For entities with sprite animations, AnimationSystem controls direction via setBillboardAnimationDirection
 
         return true;
+    }
+
+    /**
+     * Apply the current animation frame texture to a billboard sprite
+     */
+    applyBillboardAnimationFrame(entity, animData) {
+        const frames = animData.animations[animData.currentDirection];
+        if (!frames || frames.length === 0) return;
+
+        const frameIndex = animData.frameIndex % frames.length;
+        const newTexture = frames[frameIndex];
+
+        if (newTexture && entity.sprite && entity.sprite.material) {
+            entity.sprite.material.map = newTexture;
+            entity.sprite.material.needsUpdate = true;
+        }
     }
 
     /**
@@ -713,6 +845,7 @@ class EntityRenderer {
      * Update animations (called every frame)
      */
     updateAnimations(deltaTime) {
+        // Update VAT animations
         for (const [batchKey, batch] of this.vatBatches) {
             // Skip buildings (no animation)
             if (batchKey.startsWith('buildings_')) continue;
@@ -739,6 +872,92 @@ class EntityRenderer {
                 batch.dirty.animation = true;
             }
         }
+
+        // Update billboard sprite animations
+        this.updateBillboardAnimations(deltaTime);
+    }
+
+    /**
+     * Update billboard sprite animation frames
+     */
+    updateBillboardAnimations(deltaTime) {
+        for (const [entityId, animData] of this.billboardAnimations) {
+            // Only animate if moving
+            if (!animData.isMoving) continue;
+
+            const frames = animData.animations[animData.currentDirection];
+            if (!frames || frames.length === 0) continue;
+
+            // Update frame time
+            animData.frameTime += deltaTime;
+
+            // Check if it's time to advance frame
+            if (animData.frameTime >= this.spriteFrameDuration) {
+                animData.frameTime = 0;
+                animData.frameIndex = (animData.frameIndex + 1) % frames.length;
+
+                // Apply new frame texture
+                const entity = this.entities.get(entityId);
+                if (entity && entity.sprite) {
+                    this.applyBillboardAnimationFrame(entity, animData);
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if entity is a billboard with sprite animations
+     */
+    isBillboardWithAnimations(entityId) {
+        return this.billboardAnimations.has(entityId);
+    }
+
+    /**
+     * Set sprite animation direction for a billboard entity
+     * Called by AnimationSystem to control sprite animation
+     */
+    setBillboardAnimationDirection(entityId, direction, flipped = false) {
+        const animData = this.billboardAnimations.get(entityId);
+        if (!animData) return false;
+
+        if (direction !== animData.currentDirection || flipped !== animData.flipped) {
+            animData.currentDirection = direction;
+            animData.flipped = flipped;
+            animData.frameIndex = 0;
+            animData.frameTime = 0;
+
+            // Apply the new texture immediately
+            const entity = this.entities.get(entityId);
+            if (entity) {
+                this.applyBillboardAnimationFrame(entity, animData);
+
+                // Apply flip state to texture
+                const texture = entity.sprite?.material?.map;
+                if (texture) {
+                    if (flipped) {
+                        texture.repeat.x = -1;
+                        texture.offset.x = 1;
+                    } else {
+                        texture.repeat.x = 1;
+                        texture.offset.x = 0;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Set whether billboard entity is currently moving (for animation playback)
+     */
+    setBillboardMoving(entityId, isMoving) {
+        const animData = this.billboardAnimations.get(entityId);
+        if (animData) {
+            animData.isMoving = isMoving;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -815,6 +1034,9 @@ class EntityRenderer {
                 this.scene.remove(entity.sprite);
                 entity.sprite.material.dispose();
             }
+
+            // Clean up billboard animation data
+            this.billboardAnimations.delete(entityId);
 
             this.stats.billboardEntities--;
         } else {

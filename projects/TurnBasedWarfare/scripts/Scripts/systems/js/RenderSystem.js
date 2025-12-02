@@ -37,6 +37,11 @@ class RenderSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getBatchInfo', this.getBatchInfo.bind(this));
         this.game.gameManager.register('removeInstance', this.removeInstance.bind(this));
 
+        // Billboard/sprite animation methods
+        this.game.gameManager.register('isBillboardWithAnimations', this.isBillboardWithAnimations.bind(this));
+        this.game.gameManager.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
+        this.game.gameManager.register('setBillboardMoving', this.setBillboardMoving.bind(this));
+
         // EntityRenderer will be created in onSceneLoad when scene is available
         // Register getter that returns current entityRenderer (may be null initially)
         this.game.gameManager.register('getEntityRenderer', () => this.entityRenderer);
@@ -363,6 +368,23 @@ class RenderSystem extends GUTS.BaseSystem {
     isInstanced(entityId) {
         if (!this.entityRenderer) return false;
         return this.entityRenderer.hasEntity(entityId);
+    }
+
+    // ============ BILLBOARD/SPRITE ANIMATION METHODS ============
+
+    isBillboardWithAnimations(entityId) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.isBillboardWithAnimations(entityId);
+    }
+
+    setBillboardAnimationDirection(entityId, direction, flipped = false) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.setBillboardAnimationDirection(entityId, direction, flipped);
+    }
+
+    setBillboardMoving(entityId, isMoving) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.setBillboardMoving(entityId, isMoving);
     }
 
     getEntityAnimationState(entityId) {

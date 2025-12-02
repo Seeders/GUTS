@@ -81,6 +81,9 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     initializeEntityAnimationState(entityId) {
+        // Check if this is a billboard entity with sprite animations
+        const isBillboard = this.game.gameManager.call('isBillboardWithAnimations', entityId);
+
         const state = {
             currentClip: 'idle',
             lastStateChange: this.game.state?.now || 0,
@@ -93,22 +96,32 @@ class AnimationSystem extends GUTS.BaseSystem {
             isDying: false,
             isCorpse: false,
             isCelebrating: false,
-            // NEW: Track fallback usage to prevent thrashing
-            lastRequestedClip: null,    // What was originally requested
-            lastResolvedClip: null,     // What actually got set
-            fallbackCooldown: 0         // Time remaining before allowing re-request of failed clip
+            // Billboard/sprite animation state
+            isBillboard: isBillboard,
+            spriteDirection: 'down',
+            spriteFlipped: false,
+            // Track fallback usage to prevent thrashing
+            lastRequestedClip: null,
+            lastResolvedClip: null,
+            fallbackCooldown: 0
         };
 
         this.entityAnimationStates.set(entityId, state);
 
-        // Set initial animation
-        this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);
-        this.game.renderSystem?.setInstanceSpeed(entityId, 1);
-
+        // Set initial animation based on entity type
+        if (isBillboard) {
+            // Billboard entities use sprite animations
+            this.game.gameManager.call('setBillboardAnimationDirection', entityId, 'down', false);
+            this.game.gameManager.call('setBillboardMoving', entityId, false);
+        } else {
+            // VAT entities use clip-based animations
+            this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);
+            this.game.renderSystem?.setInstanceSpeed(entityId, 1);
+        }
     }
 
     updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
-    
+
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState) return;
 
@@ -116,18 +129,24 @@ class AnimationSystem extends GUTS.BaseSystem {
         const deltaTime = this.game.state?.deltaTime || 1/60;
         animState.animationTime += deltaTime;
 
-        // NEW: Handle animation completion for locked states
+        // Handle billboard/sprite entities separately
+        if (animState.isBillboard) {
+            this.updateBillboardAnimationLogic(entityId, animState, velocity);
+            return;
+        }
+
+        // Handle animation completion for locked states
         if (animState.isDying || animState.isCorpse || animState.isCelebrating) {
             // Handle celebration completion ONLY
             if (animState.isCelebrating && this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
                 const isFinished = this.isAnimationFinished(entityId, animState.currentClip);
-                
+
                 if (isFinished) {
                     this.stopCelebration(entityId);
                     return;
                 }
             }
-            
+
             return; // Still locked, don't process normal animation logic
         }
         // Handle pending triggered animations (from external calls)
@@ -138,16 +157,63 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Determine desired animation based on game state
         const desired = this.determineDesiredAnimation(entityId, velocity, health, combat, aiState);
-    
+
         // Check if we should change animation
         const shouldChange = this.shouldChangeAnimation(entityId, animState, desired, currentTime);
-        
+
 
         if (shouldChange) {
             this.changeAnimation(entityId, desired.clip, desired.speed, desired.minTime);
         } else {
             // Update animation speed if needed (for continuous animations)
             this.updateAnimationSpeed(entityId, desired.speed);
+        }
+    }
+
+    /**
+     * Handle animation logic for billboard/sprite entities
+     */
+    updateBillboardAnimationLogic(entityId, animState, velocity) {
+        const vx = velocity?.vx ?? 0;
+        const vz = velocity?.vz ?? 0;
+
+        // Determine if moving
+        const isMoving = Math.abs(vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(vz) > this.MIN_MOVEMENT_THRESHOLD;
+
+        // Update moving state
+        this.game.gameManager.call('setBillboardMoving', entityId, isMoving);
+
+        if (isMoving) {
+            // Determine direction based on velocity
+            // vz negative = moving up (away from camera)
+            // vz positive = moving down (toward camera)
+            // vx negative = left, vx positive = right (use left animation flipped)
+            let newDirection = animState.spriteDirection;
+            let shouldFlip = false;
+
+            if (Math.abs(vz) > Math.abs(vx)) {
+                // Vertical movement dominates
+                if (vz < 0) {
+                    newDirection = 'up';
+                } else {
+                    newDirection = 'down';
+                }
+                shouldFlip = false;
+            } else {
+                // Horizontal movement dominates
+                // Use left animation, flip for right
+                newDirection = 'left';
+                shouldFlip = vx > 0;
+            }
+
+            // Check if direction changed
+            if (newDirection !== animState.spriteDirection || shouldFlip !== animState.spriteFlipped) {
+                animState.spriteDirection = newDirection;
+                animState.spriteFlipped = shouldFlip;
+
+                // Apply the new direction
+                this.game.gameManager.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
+            }
         }
     }
 
