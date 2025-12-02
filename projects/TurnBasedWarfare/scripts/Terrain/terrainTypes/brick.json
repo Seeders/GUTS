@@ -1,0 +1,8 @@
+{
+  "type": "brick",
+  "texture": "brick",
+  "color": "#8b5e3c",
+  "buildable": true,
+  "walkable": true,
+  "title": "Brick"
+}
