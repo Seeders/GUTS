@@ -1,0 +1,10 @@
+{
+  "title": "Male Walk",
+  "spriteAnimations": [
+    "maleWalkDown",
+    "maleWalkDownLeft",
+    "maleWalkLeft",
+    "maleWalkUpLeft",
+    "maleWalkUp"
+  ]
+}
