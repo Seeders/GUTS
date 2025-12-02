@@ -111,7 +111,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Set initial animation based on entity type
         if (isBillboard) {
             // Billboard entities use sprite animations
-            this.game.gameManager.call('setBillboardAnimationDirection', entityId, 'down', false);
+            // Don't apply animation direction on init - keep base renderTexture for idle/placement
             this.game.gameManager.call('setBillboardMoving', entityId, false);
         } else {
             // VAT entities use clip-based animations
@@ -175,6 +175,12 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Camera is isometric looking toward +x, -z (northeast)
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
+        // Only animate during battle phase - show idle (base renderTexture) during placement
+        if (this.game.state?.phase !== 'battle') {
+            this.game.gameManager.call('setBillboardMoving', entityId, false);
+            return;
+        }
+
         const vx = velocity?.vx ?? 0;
         const vz = velocity?.vz ?? 0;
 
