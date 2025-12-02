@@ -426,24 +426,67 @@ class EntityRenderer {
         });
 
         // Add billboarding shader modification
+        // For instanced meshes, we handle billboarding by modifying the world position calculation
         material.onBeforeCompile = (shader) => {
+            // Also fix the normal to face the camera for proper lighting
             shader.vertexShader = shader.vertexShader.replace(
-                '#include <begin_vertex>',
+                '#include <beginnormal_vertex>',
                 `
-                #include <begin_vertex>
+                // Billboard normal: always faces camera
+                vec3 toCamera_n = -vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+                toCamera_n.y = 0.0;
+                toCamera_n = normalize(toCamera_n);
+                vec3 objectNormal = toCamera_n;
 
-                // Cylindrical billboarding: rotate quad to face camera around Y axis
-                // Extract camera position from view matrix
-                vec3 cameraRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-                vec3 cameraUp = vec3(0.0, 1.0, 0.0); // Keep upright
+                #ifdef USE_TANGENT
+                    vec3 objectTangent = vec3( tangent.xyz );
+                #endif
+                `
+            );
 
-                // Recalculate forward from cross product
-                vec3 cameraForward = normalize(cross(cameraUp, cameraRight));
-                cameraRight = normalize(cross(cameraUp, cameraForward));
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <project_vertex>',
+                `
+                // Billboard implementation for instanced mesh
+                // Extract instance position from the instance matrix (4th column)
+                vec3 instancePos = vec3(instanceMatrix[3].xyz);
 
-                // Apply billboarding rotation to position in local space
-                vec3 billboardPos = transformed;
-                transformed = billboardPos.x * cameraRight + billboardPos.y * cameraUp + billboardPos.z * cameraForward;
+                // Extract scale from instance matrix columns
+                float scaleX = length(instanceMatrix[0].xyz);
+                float scaleY = length(instanceMatrix[1].xyz);
+
+                // Cylindrical billboard: keep Y up, only rotate around Y axis
+                vec3 billboardUp = vec3(0.0, 1.0, 0.0);
+
+                // Calculate billboard right (perpendicular to up and camera forward)
+                vec3 toCamera = -vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+                toCamera.y = 0.0; // Project to XZ plane for cylindrical billboard
+                if (length(toCamera) > 0.001) {
+                    toCamera = normalize(toCamera);
+                } else {
+                    toCamera = vec3(0.0, 0.0, 1.0);
+                }
+                vec3 billboardRight = normalize(cross(billboardUp, toCamera));
+
+                // Build the billboard vertex in world space
+                // transformed contains the local vertex position (from the plane geometry)
+                vec3 worldPos = instancePos +
+                               transformed.x * scaleX * billboardRight +
+                               transformed.y * scaleY * billboardUp;
+
+                vec4 mvPosition = viewMatrix * vec4(worldPos, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+
+                #ifdef USE_LOGDEPTHBUF
+                    vFragDepth = 1.0 + gl_Position.w;
+                    vIsPerspective = float( isPerspectiveMatrix( projectionMatrix ) );
+                #endif
+
+                #if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP ) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0
+                    vec4 worldPosition = vec4( worldPos, 1.0 );
+                #endif
+
+                vViewPosition = -mvPosition.xyz;
                 `
             );
         };
