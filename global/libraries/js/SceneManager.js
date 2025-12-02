@@ -40,8 +40,11 @@ class SceneManager {
         // Spawn entities from scene definition
         await this.spawnSceneEntities(sceneData);
 
-        // Notify all systems that scene has loaded
+        // Notify all systems that scene has loaded (initial setup)
         this.notifySceneLoaded(sceneData);
+
+        // Notify all systems for post-load processing (after all systems have done initial setup)
+        this.notifyPostSceneLoad(sceneData);
 
         console.log(`[SceneManager] Scene '${sceneName}' loaded successfully`);
     }
@@ -150,6 +153,19 @@ class SceneManager {
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneLoad) {
                 system.onSceneLoad(sceneData);
+            }
+        }
+    }
+
+    /**
+     * Notify all systems after scene load is complete
+     * This runs after all systems have done their initial onSceneLoad setup
+     * @param {Object} sceneData - The scene configuration
+     */
+    notifyPostSceneLoad(sceneData) {
+        for (const system of this.game.systems) {
+            if (system.enabled && system.postSceneLoad) {
+                system.postSceneLoad(sceneData);
             }
         }
     }
