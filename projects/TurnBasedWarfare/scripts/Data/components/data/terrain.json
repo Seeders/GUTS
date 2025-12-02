@@ -3,10 +3,10 @@
   "schema": {
     "level": "",
     "world": "",
-    "enableCliffs": true,
-    "enableLiquids": true,
-    "enableGrass": false,
-    "enableFog": true,
-    "enableShadows": true
+    "cliffsEnabled": true,
+    "liquidsEnabled": true,
+    "grassEnabled": false,
+    "fogEnabled": true,
+    "shadowsEnabled": true
   }
 }

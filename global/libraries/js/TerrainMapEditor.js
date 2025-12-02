@@ -1619,12 +1619,12 @@ class TerrainMapEditor {
         // Initialize WorldRenderer
         if (!this.worldRenderer) {
             this.worldRenderer = new GUTS.WorldRenderer({
-                enableShadows: true,
-                enableFog: false,
+                shadowsEnabled: true,
+                fogEnabled: false,
                 enablePostProcessing: false,
-                enableGrass: false,
-                enableLiquidSurfaces: true,
-                enableCliffs: true
+                grassEnabled: false,
+                liquidsEnabledurfaces: true,
+                cliffsEnabled: true
             });
         }
 
