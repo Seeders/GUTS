@@ -17,6 +17,11 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
         this.game.gameManager.register('addMinerToQueue', this.addMinerToQueue.bind(this));
 
+        // Gold vein locations found in onSceneLoad after terrain is loaded
+    }
+
+    onSceneLoad(sceneData) {
+        // Find gold vein locations now that terrain/world objects are available
         this.findGoldVeinLocations();
     }
 
