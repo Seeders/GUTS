@@ -26,6 +26,30 @@
           "level": "level1"
         }
       }
+    },
+    {
+      "id": "entity_1764627731792",
+      "prefab": "barbarian",
+      "name": "Barbarian",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 30,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      }
     }
   ]
 }
