@@ -26,6 +26,11 @@ class EntityRenderer {
         // Static instanced rendering system for cliffs/worldObjects
         this.staticBatches = new Map(); // batchKey -> { instancedMesh, entityMap, count, capacity }
 
+        // Billboard instanced rendering system for renderTexture objects
+        this.billboardBatches = new Map(); // batchKey -> { instancedMesh, entityMap, count, capacity }
+        this.textureLoader = new THREE.TextureLoader();
+        this.loadedTextures = new Map(); // textureId -> THREE.Texture
+
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
         this.loadingPromises = new Map();
@@ -41,6 +46,7 @@ class EntityRenderer {
             entitiesRendered: 0,
             staticEntities: 0,
             vatEntities: 0,
+            billboardEntities: 0,
             batches: 0
         };
 
@@ -63,6 +69,11 @@ class EntityRenderer {
         if (!entityDef) {
             console.warn(`[EntityRenderer] No definition found for ${data.collection}.${data.type}`);
             return false;
+        }
+
+        // Check for billboard rendering (renderTexture property)
+        if (entityDef.renderTexture) {
+            return await this.spawnBillboardEntity(entityId, data, entityDef);
         }
 
         // Determine rendering technique
@@ -310,6 +321,193 @@ class EntityRenderer {
         this.stats.batches++;
 
         return batch;
+    }
+
+    /**
+     * Spawn entity using billboard (instanced quad with texture)
+     */
+    async spawnBillboardEntity(entityId, data, entityDef) {
+        const textureId = entityDef.renderTexture;
+        const batchKey = `billboard_${textureId}`;
+
+        // Get or create billboard batch
+        let batch = this.billboardBatches.get(batchKey);
+        if (!batch) {
+            batch = await this.createBillboardBatch(batchKey, textureId, entityDef);
+            if (!batch) {
+                console.error(`[EntityRenderer] Failed to create billboard batch for ${batchKey}`);
+                return false;
+            }
+        }
+
+        // Get free instance slot from free list (O(1) instead of O(capacity))
+        let instanceIndex = -1;
+        if (batch.freeList.length > 0) {
+            instanceIndex = batch.freeList.pop();
+        } else if (batch.nextFreeIndex < batch.capacity) {
+            instanceIndex = batch.nextFreeIndex++;
+        }
+
+        if (instanceIndex === -1) {
+            return false;
+        }
+
+        // Map entity to instance
+        batch.entityMap.set(instanceIndex, entityId);
+        // Track max index for efficient count management
+        if (instanceIndex >= batch.maxUsedIndex) {
+            batch.maxUsedIndex = instanceIndex;
+        }
+        batch.count = batch.maxUsedIndex + 1;
+
+        // Store entity data
+        this.entities.set(entityId, {
+            type: 'billboard',
+            collection: data.collection,
+            entityType: data.type,
+            batchKey,
+            instanceIndex,
+            batch
+        });
+
+        // Calculate billboard dimensions based on entity definition
+        const height = entityDef.height || 64;
+        const width = entityDef.size || height;
+
+        // Update instance transform
+        const matrix = new THREE.Matrix4();
+        matrix.compose(
+            new THREE.Vector3(data.position.x, data.position.y + height / 2, data.position.z),
+            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
+            new THREE.Vector3(width, height, 1)
+        );
+        batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
+        batch.instancedMesh.instanceMatrix.needsUpdate = true;
+        batch.instancedMesh.count = batch.count;
+
+        this.stats.entitiesRendered++;
+        this.stats.billboardEntities++;
+
+        return true;
+    }
+
+    /**
+     * Create a billboard batch for a texture type
+     */
+    async createBillboardBatch(batchKey, textureId, entityDef) {
+        // Get texture from collections
+        const textureDef = this.collections?.textures?.[textureId];
+        if (!textureDef) {
+            console.warn(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
+            return null;
+        }
+
+        // Load the texture
+        let texture = this.loadedTextures.get(textureId);
+        if (!texture && textureDef.imagePath) {
+            try {
+                texture = await this.loadTexture(textureId, textureDef.imagePath);
+            } catch (error) {
+                console.error(`[EntityRenderer] Failed to load texture ${textureId}:`, error);
+                return null;
+            }
+        }
+
+        // Create plane geometry (1x1 unit, scaled per-instance)
+        const geometry = new THREE.PlaneGeometry(1, 1);
+
+        // Create billboard material with cylindrical billboarding shader
+        const material = new THREE.MeshStandardMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.5,
+            side: THREE.DoubleSide,
+            depthWrite: true
+        });
+
+        // Add billboarding shader modification
+        material.onBeforeCompile = (shader) => {
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                `
+                #include <begin_vertex>
+
+                // Cylindrical billboarding: rotate quad to face camera around Y axis
+                // Extract camera position from view matrix
+                vec3 cameraRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+                vec3 cameraUp = vec3(0.0, 1.0, 0.0); // Keep upright
+
+                // Recalculate forward from cross product
+                vec3 cameraForward = normalize(cross(cameraUp, cameraRight));
+                cameraRight = normalize(cross(cameraUp, cameraForward));
+
+                // Apply billboarding rotation to position in local space
+                vec3 billboardPos = transformed;
+                transformed = billboardPos.x * cameraRight + billboardPos.y * cameraUp + billboardPos.z * cameraForward;
+                `
+            );
+        };
+
+        // Set texture properties
+        if (texture) {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.magFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearMipmapLinearFilter;
+        }
+
+        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
+
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = false;
+        instancedMesh.count = 0;
+
+        this.scene.add(instancedMesh);
+
+        const batch = {
+            instancedMesh,
+            entityMap: new Map(),
+            count: 0,
+            capacity,
+            freeList: [],
+            nextFreeIndex: 0,
+            maxUsedIndex: -1,
+            textureId
+        };
+
+        this.billboardBatches.set(batchKey, batch);
+        this.stats.batches++;
+
+        return batch;
+    }
+
+    /**
+     * Load a texture from the resources path
+     */
+    async loadTexture(textureId, imagePath) {
+        return new Promise((resolve, reject) => {
+            // Construct full URL - check if modelManager has app reference
+            let resourcesPath = '';
+            if (this.modelManager?.app?.getResourcesPath) {
+                resourcesPath = this.modelManager.app.getResourcesPath();
+            } else if (this.projectName) {
+                resourcesPath = `/projects/${this.projectName}/resources/`;
+            }
+
+            const url = resourcesPath + imagePath;
+
+            this.textureLoader.load(
+                url,
+                (texture) => {
+                    this.loadedTextures.set(textureId, texture);
+                    resolve(texture);
+                },
+                undefined,
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
     }
 
     /**
@@ -658,6 +856,27 @@ class EntityRenderer {
             batch.instancedMesh.count = batch.count;
 
             this.stats.staticEntities--;
+        } else if (entity.type === 'billboard') {
+            // Free billboard instanced slot
+            const batch = entity.batch;
+            const removedIndex = entity.instanceIndex;
+            batch.entityMap.delete(removedIndex);
+
+            // Add to free list for O(1) reuse
+            batch.freeList.push(removedIndex);
+
+            // Only recalculate maxUsedIndex if we removed the max
+            if (removedIndex === batch.maxUsedIndex) {
+                let newMax = -1;
+                for (const index of batch.entityMap.keys()) {
+                    if (index > newMax) newMax = index;
+                }
+                batch.maxUsedIndex = newMax;
+            }
+            batch.count = batch.maxUsedIndex + 1;
+            batch.instancedMesh.count = batch.count;
+
+            this.stats.billboardEntities--;
         } else {
             // Remove static mesh
             this.scene.remove(entity.mesh);
@@ -983,6 +1202,28 @@ class EntityRenderer {
             batch.material.dispose();
         }
         this.vatBatches.clear();
+
+        // Dispose static batches
+        for (const batch of this.staticBatches.values()) {
+            this.scene.remove(batch.instancedMesh);
+            batch.instancedMesh.geometry.dispose();
+            batch.instancedMesh.material.dispose();
+        }
+        this.staticBatches.clear();
+
+        // Dispose billboard batches
+        for (const batch of this.billboardBatches.values()) {
+            this.scene.remove(batch.instancedMesh);
+            batch.instancedMesh.geometry.dispose();
+            batch.instancedMesh.material.dispose();
+        }
+        this.billboardBatches.clear();
+
+        // Dispose loaded textures
+        for (const texture of this.loadedTextures.values()) {
+            texture.dispose();
+        }
+        this.loadedTextures.clear();
 
         this.modelCache.clear();
         this.loadingPromises.clear();
