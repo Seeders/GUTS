@@ -324,175 +324,75 @@ class EntityRenderer {
     }
 
     /**
-     * Spawn entity using billboard (instanced quad with texture)
+     * Spawn entity using billboard (THREE.Sprite for perfect screen-aligned display)
      */
     async spawnBillboardEntity(entityId, data, entityDef) {
         const textureId = entityDef.renderTexture;
-        const batchKey = `billboard_${textureId}`;
 
-        // Get or create billboard batch
-        let batch = this.billboardBatches.get(batchKey);
-        if (!batch) {
-            batch = await this.createBillboardBatch(batchKey, textureId, entityDef);
-            if (!batch) {
-                console.error(`[EntityRenderer] Failed to create billboard batch for ${batchKey}`);
-                return false;
-            }
-        }
-
-        // Get free instance slot from free list (O(1) instead of O(capacity))
-        let instanceIndex = -1;
-        if (batch.freeList.length > 0) {
-            instanceIndex = batch.freeList.pop();
-        } else if (batch.nextFreeIndex < batch.capacity) {
-            instanceIndex = batch.nextFreeIndex++;
-        }
-
-        if (instanceIndex === -1) {
-            return false;
-        }
-
-        // Map entity to instance
-        batch.entityMap.set(instanceIndex, entityId);
-        // Track max index for efficient count management
-        if (instanceIndex >= batch.maxUsedIndex) {
-            batch.maxUsedIndex = instanceIndex;
-        }
-        batch.count = batch.maxUsedIndex + 1;
-
-        // Store entity data
-        this.entities.set(entityId, {
-            type: 'billboard',
-            collection: data.collection,
-            entityType: data.type,
-            batchKey,
-            instanceIndex,
-            batch
-        });
-
-        // Calculate billboard dimensions based on entity definition
-        const height = entityDef.height || 64;
-        const width = entityDef.size || height;
-
-        // Update instance transform
-        const matrix = new THREE.Matrix4();
-        matrix.compose(
-            new THREE.Vector3(data.position.x, data.position.y + height / 2, data.position.z),
-            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
-            new THREE.Vector3(width, height, 1)
-        );
-        batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
-        batch.instancedMesh.instanceMatrix.needsUpdate = true;
-        batch.instancedMesh.count = batch.count;
-
-        this.stats.entitiesRendered++;
-        this.stats.billboardEntities++;
-
-        return true;
-    }
-
-    /**
-     * Create a billboard batch for a texture type
-     */
-    async createBillboardBatch(batchKey, textureId, entityDef) {
         // Get texture from collections
         const textureDef = this.collections?.textures?.[textureId];
         if (!textureDef) {
             console.warn(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
-            return null;
+            return false;
         }
 
-        // Load the texture
+        // Load the texture if needed
         let texture = this.loadedTextures.get(textureId);
         if (!texture && textureDef.imagePath) {
             try {
                 texture = await this.loadTexture(textureId, textureDef.imagePath);
             } catch (error) {
                 console.error(`[EntityRenderer] Failed to load texture ${textureId}:`, error);
-                return null;
+                return false;
             }
         }
 
-        // Create plane geometry (1x1 unit, scaled per-instance)
-        const geometry = new THREE.PlaneGeometry(1, 1);
-
-        // Use ShaderMaterial for full control over billboarding
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: texture },
-                alphaTest: { value: 0.5 }
-            },
-            vertexShader: `
-                varying vec2 vUv;
-
-                void main() {
-                    vUv = uv;
-
-                    // Extract instance position from the instance matrix (4th column)
-                    vec3 instancePos = vec3(instanceMatrix[3].xyz);
-
-                    // Extract scale from instance matrix columns
-                    float scaleX = length(instanceMatrix[0].xyz);
-                    float scaleY = length(instanceMatrix[1].xyz);
-
-                    // Transform instance center to view space
-                    vec4 viewPos = viewMatrix * vec4(instancePos, 1.0);
-
-                    // Offset in view space - X is screen right, Y is screen up
-                    // This creates a screen-aligned billboard
-                    viewPos.x += position.x * scaleX;
-                    viewPos.y += position.y * scaleY;
-
-                    gl_Position = projectionMatrix * viewPos;
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D map;
-                uniform float alphaTest;
-                varying vec2 vUv;
-
-                void main() {
-                    vec4 texColor = texture2D(map, vUv);
-                    if (texColor.a < alphaTest) discard;
-                    gl_FragColor = texColor;
-                }
-            `,
-            transparent: true,
-            side: THREE.DoubleSide,
-            depthWrite: true
-        });
-
-        // Set texture properties
-        if (texture) {
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.magFilter = THREE.LinearFilter;
-            texture.minFilter = THREE.LinearMipmapLinearFilter;
+        if (!texture) {
+            console.error(`[EntityRenderer] No texture available for ${textureId}`);
+            return false;
         }
 
-        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
-        const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
+        // Create sprite material
+        const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            alphaTest: 0.5,
+            sizeAttenuation: false  // Keep consistent size regardless of distance (for orthographic)
+        });
 
-        instancedMesh.castShadow = true;
-        instancedMesh.receiveShadow = false;
-        instancedMesh.count = 0;
+        // Create sprite
+        const sprite = new THREE.Sprite(material);
 
-        this.scene.add(instancedMesh);
+        // Calculate dimensions - use texture aspect ratio
+        const height = entityDef.height || 64;
+        const textureAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
+        const width = height * textureAspect;
 
-        const batch = {
-            instancedMesh,
-            entityMap: new Map(),
-            count: 0,
-            capacity,
-            freeList: [],
-            nextFreeIndex: 0,
-            maxUsedIndex: -1,
+        // Scale the sprite
+        sprite.scale.set(width, height, 1);
+
+        // Position the sprite (center at ground + half height)
+        sprite.position.set(
+            data.position.x,
+            data.position.y + height / 2,
+            data.position.z
+        );
+
+        this.scene.add(sprite);
+
+        // Store entity data
+        this.entities.set(entityId, {
+            type: 'billboard',
+            collection: data.collection,
+            entityType: data.type,
+            sprite: sprite,
             textureId
-        };
+        });
 
-        this.billboardBatches.set(batchKey, batch);
-        this.stats.batches++;
+        this.stats.entitiesRendered++;
+        this.stats.billboardEntities++;
 
-        return batch;
+        return true;
     }
 
     /**
@@ -871,24 +771,11 @@ class EntityRenderer {
 
             this.stats.staticEntities--;
         } else if (entity.type === 'billboard') {
-            // Free billboard instanced slot
-            const batch = entity.batch;
-            const removedIndex = entity.instanceIndex;
-            batch.entityMap.delete(removedIndex);
-
-            // Add to free list for O(1) reuse
-            batch.freeList.push(removedIndex);
-
-            // Only recalculate maxUsedIndex if we removed the max
-            if (removedIndex === batch.maxUsedIndex) {
-                let newMax = -1;
-                for (const index of batch.entityMap.keys()) {
-                    if (index > newMax) newMax = index;
-                }
-                batch.maxUsedIndex = newMax;
+            // Remove sprite from scene
+            if (entity.sprite) {
+                this.scene.remove(entity.sprite);
+                entity.sprite.material.dispose();
             }
-            batch.count = batch.maxUsedIndex + 1;
-            batch.instancedMesh.count = batch.count;
 
             this.stats.billboardEntities--;
         } else {
