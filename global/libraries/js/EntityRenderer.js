@@ -365,33 +365,35 @@ class EntityRenderer {
         });
 
         // Create sprite
+        // In spawnBillboardEntity, after creating the sprite:
         const sprite = new THREE.Sprite(material);
 
+        // Anchor at bottom center instead of middle
+        sprite.center.set(0.5, 0);
         // Calculate dimensions - use texture aspect ratio
         const size = entityDef.size || 64;
         const textureAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
         const width = size * textureAspect;
 
+        const heightOffset = size / 4;
         // Scale the sprite
         sprite.scale.set(width, size, 1);
-
-        // Position the sprite (center at ground + half height)
+        // Now position directly at ground level, no offset needed
         sprite.position.set(
-            data.position.x,
-            data.position.y + size / 2,
-            data.position.z
+            data.position.x - heightOffset,
+            data.position.y,
+            data.position.z + heightOffset
         );
 
         this.scene.add(sprite);
 
-        // Store entity data (include height for position updates)
         this.entities.set(entityId, {
             type: 'billboard',
             collection: data.collection,
             entityType: data.type,
             sprite: sprite,
             textureId,
-            heightOffset: size / 2
+            heightOffset: heightOffset
         });
 
         this.stats.entitiesRendered++;
@@ -624,9 +626,9 @@ class EntityRenderer {
 
         const heightOffset = entity.heightOffset || 0;
         entity.sprite.position.set(
-            data.position.x,
-            data.position.y + heightOffset,
-            data.position.z
+            data.position.x - heightOffset,
+            data.position.y,
+            data.position.z + heightOffset
         );
 
         const vx = data.velocity?.vx ?? 0;
