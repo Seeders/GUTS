@@ -19,6 +19,7 @@ class FileSystemSyncService {
         this.typeHasSpecialProperties = {}; // New: Tracks if a type has any special properties
 
         this.currentCollections = {};
+        this.collectionCategories = {}; // Track actual category for each collection from folder structure
 
         if (window.location.hostname === 'localhost') {
             this.setupHooks();
@@ -338,6 +339,11 @@ class FileSystemSyncService {
             const key = `${category}/${collectionId}/${objectId}`;
             if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
             fileGroups[key].files.push(file);
+
+            // Track the actual category for this collection from folder structure
+            if (category && collectionId) {
+                this.collectionCategories[collectionId] = category;
+            }
         });
 
         const loadPromises = Object.values(fileGroups).map(group =>
@@ -367,9 +373,60 @@ class FileSystemSyncService {
             return this.currentCollections[def.id] || def.id === 'objectTypeDefinitions';
         });
 
+        // Update objectTypeDefinitions to match actual folder locations
+        this.syncObjectTypeDefinitionsWithFolders(collectionDefs);
+
         this.gameEditor.model.state.project = {
             objectTypes: this.currentCollections,
             objectTypeDefinitions: collectionDefs
+        }
+    }
+
+    /**
+     * Sync objectTypeDefinitions with actual folder locations.
+     * If a collection is in a different folder than its definition says,
+     * update the definition and save it to the filesystem.
+     */
+    async syncObjectTypeDefinitionsWithFolders(collectionDefs) {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) return;
+
+        for (const def of collectionDefs) {
+            const actualCategory = this.collectionCategories[def.id];
+
+            // Skip if we don't know the actual category or it already matches
+            if (!actualCategory || def.category === actualCategory) continue;
+
+            console.log(`Updating objectTypeDefinition '${def.id}': category '${def.category}' -> '${actualCategory}'`);
+
+            // Update the definition in memory
+            def.category = actualCategory;
+
+            // Also update in currentCollections if it exists there
+            if (this.currentCollections.objectTypeDefinitions &&
+                this.currentCollections.objectTypeDefinitions[def.id]) {
+                this.currentCollections.objectTypeDefinitions[def.id].category = actualCategory;
+            }
+
+            // Save the updated definition to the filesystem
+            const filePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${def.id}.json`;
+            const jsonContent = JSON.stringify(def, null, 2);
+
+            try {
+                const response = await fetch('/save-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: filePath, content: jsonContent })
+                });
+
+                if (!response.ok) {
+                    console.warn(`Failed to update objectTypeDefinition: ${filePath}`);
+                } else {
+                    console.log(`Updated objectTypeDefinition: ${filePath}`);
+                }
+            } catch (error) {
+                console.error('Error updating objectTypeDefinition:', error);
+            }
         }
     }
 
