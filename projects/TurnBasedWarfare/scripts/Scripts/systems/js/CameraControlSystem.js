@@ -76,7 +76,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   update() {
-    this.moveCamera();
+    // Edge scrolling disabled - camera movement is handled via minimap clicks only
   }
 
   handleWheel(e) {
