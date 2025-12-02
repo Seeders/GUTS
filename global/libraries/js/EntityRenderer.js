@@ -970,6 +970,34 @@ class EntityRenderer {
     }
 
     /**
+     * Set the idle flip state for a billboard entity (used for team-based facing)
+     * This flips the base renderTexture when not animating
+     */
+    setBillboardIdleFlip(entityId, flipped) {
+        const entity = this.entities.get(entityId);
+        if (!entity || entity.type !== 'billboard' || !entity.sprite) return false;
+
+        const texture = entity.sprite.material.map;
+        if (texture) {
+            if (flipped) {
+                texture.repeat.x = -1;
+                texture.offset.x = 1;
+            } else {
+                texture.repeat.x = 1;
+                texture.offset.x = 0;
+            }
+        }
+
+        // Also store the idle flip state in animation data if it exists
+        const animData = this.billboardAnimations.get(entityId);
+        if (animData) {
+            animData.idleFlipped = flipped;
+        }
+
+        return true;
+    }
+
+    /**
      * Finalize updates (called after all updates)
      */
     finalizeUpdates() {
