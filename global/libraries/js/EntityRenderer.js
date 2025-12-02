@@ -967,14 +967,29 @@ class EntityRenderer {
 
     /**
      * Set whether billboard entity is currently moving (for animation playback)
+     * When stopping, shows the first frame of the last movement direction
      */
     setBillboardMoving(entityId, isMoving) {
         const animData = this.billboardAnimations.get(entityId);
-        if (animData) {
-            animData.isMoving = isMoving;
-            return true;
+        if (!animData) return false;
+
+        // Check if transitioning from moving to stopped
+        const wasPreviouslyMoving = animData.isMoving;
+        animData.isMoving = isMoving;
+
+        // When stopping, show the first frame of the last direction
+        if (wasPreviouslyMoving && !isMoving) {
+            animData.frameIndex = 0;
+            animData.frameTime = 0;
+
+            // Apply the first frame of the last direction
+            const entity = this.entities.get(entityId);
+            if (entity) {
+                this.applyBillboardAnimationFrame(entity, animData);
+            }
         }
-        return false;
+
+        return true;
     }
 
     /**
