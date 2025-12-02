@@ -9,7 +9,7 @@
   "attackSpeed": 1,
   "element": "physical",
   "armor": 8,
-  "spriteScale": 64,
+  "spriteScale": 32,
   "renderTexture": "male",
   "buyable": true,
   "specUnits": [],
