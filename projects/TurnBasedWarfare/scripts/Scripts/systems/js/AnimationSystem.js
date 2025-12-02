@@ -172,6 +172,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     /**
      * Handle animation logic for billboard/sprite entities
+     * Camera is isometric looking toward +x, -z (northeast)
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
         const vx = velocity?.vx ?? 0;
@@ -184,30 +185,34 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.gameManager.call('setBillboardMoving', entityId, isMoving);
 
         if (isMoving) {
-            // Determine direction based on which velocity component has the highest magnitude
-            // vz negative = moving up (away from camera)
-            // vz positive = moving down (toward camera)
-            // vx negative = left, vx positive = right (use left animation flipped)
+            // Transform world velocity to screen-space for isometric camera looking toward +x, -z
+            // Screen LEFT = world -x, -z (both negative)
+            // Screen RIGHT = world +x, +z (both positive)
+            // Screen UP = world +x, -z (toward camera look direction)
+            // Screen DOWN = world -x, +z (away from camera look direction)
+            const screenHorizontal = vx + vz; // positive = screen right, negative = screen left
+            const screenVertical = vx - vz;   // positive = screen up, negative = screen down
+
+            const absH = Math.abs(screenHorizontal);
+            const absV = Math.abs(screenVertical);
+
             let newDirection = animState.spriteDirection;
             let shouldFlip = false;
 
-            const absVx = Math.abs(vx);
-            const absVz = Math.abs(vz);
-
-            // Pick the direction with the highest velocity magnitude
-            if (absVz >= absVx) {
-                // Vertical movement is dominant (or equal - prefer vertical)
-                if (vz < 0) {
-                    newDirection = 'up';
+            // Pick the screen direction with the highest magnitude
+            if (absV >= absH) {
+                // Vertical screen movement is dominant
+                if (screenVertical > 0) {
+                    newDirection = 'up';   // moving toward +x, -z (away from camera)
                 } else {
-                    newDirection = 'down';
+                    newDirection = 'down'; // moving toward -x, +z (toward camera)
                 }
                 shouldFlip = false;
             } else {
-                // Horizontal movement is dominant (absVx > absVz)
+                // Horizontal screen movement is dominant
                 // Use left animation, flip for right
                 newDirection = 'left';
-                shouldFlip = vx > 0;
+                shouldFlip = screenHorizontal > 0; // flip when moving screen-right (+x, +z)
             }
 
             // Check if direction changed
