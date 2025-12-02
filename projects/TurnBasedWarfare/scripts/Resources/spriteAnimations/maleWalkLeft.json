@@ -1,0 +1,11 @@
+{
+  "title": "Male Walk Left",
+  "sprites": [
+    "maleWalkLeft_0",
+    "maleWalkLeft_1",
+    "maleWalkLeft_2",
+    "maleWalkLeft_3",
+    "maleWalkLeft_4",
+    "maleWalkLeft_5"
+  ]
+}
