@@ -777,6 +777,15 @@ class EntityRenderer {
         if (newTexture && entity.sprite && entity.sprite.material) {
             entity.sprite.material.map = newTexture;
             entity.sprite.material.needsUpdate = true;
+
+            // Apply flip state to the new texture
+            if (animData.flipped) {
+                newTexture.repeat.x = -1;
+                newTexture.offset.x = 1;
+            } else {
+                newTexture.repeat.x = 1;
+                newTexture.offset.x = 0;
+            }
         }
     }
 
