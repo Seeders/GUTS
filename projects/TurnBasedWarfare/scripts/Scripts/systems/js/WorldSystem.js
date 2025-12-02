@@ -171,9 +171,8 @@ class WorldSystem extends GUTS.BaseSystem {
         const cameraSettings = collections.cameras?.[world?.camera];
 
         // Initialize Three.js through WorldRenderer
-        // Enable controls in editor context, disable in game (game uses CameraControlSystem)
-        const isEditor = this.game.canvas !== undefined; // Editor sets canvas on game context
-        this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, isEditor);
+        // Never enable OrbitControls - game uses CameraControlSystem for camera movement
+        this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, false);
 
         // Add window resize listener
         window.addEventListener('resize', this.onWindowResizeHandler);

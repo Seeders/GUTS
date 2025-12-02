@@ -42,7 +42,41 @@ class CameraControlSystem extends GUTS.BaseSystem {
     // Camera is now available from WorldSystem
     if (!this.game.camera) {
       console.warn('[CameraControlSystem] Camera not available in onSceneLoad');
+      return;
     }
+
+    // Position camera to look at player's starting position (town hall or first building)
+    this.positionCameraAtStart();
+  }
+
+  positionCameraAtStart() {
+    // Find player's town hall or first building
+    const buildings = this.game.getEntitiesWith('transform', 'team', 'unitType');
+    let targetPos = null;
+
+    for (const entityId of buildings) {
+      const team = this.game.getComponent(entityId, 'team');
+      const unitType = this.game.getComponent(entityId, 'unitType');
+
+      if (team?.team === this.game.state.mySide && unitType?.collection === 'buildings') {
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (transform?.position) {
+          targetPos = transform.position;
+          break;
+        }
+      }
+    }
+
+    // Default to center if no building found
+    if (!targetPos) {
+      targetPos = { x: 0, z: 0 };
+    }
+
+    this.lookAt(targetPos.x, targetPos.z);
+  }
+
+  update() {
+    this.moveCamera();
   }
 
   handleWheel(e) {
