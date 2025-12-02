@@ -181,68 +181,59 @@ class ConfigParser {
     }
 
     /**
-     * Discover all collections by scanning the folder structure based on objectTypeDefinitions
+     * Discover all collections by scanning the actual folder structure.
+     * The folder structure is the source of truth - objectTypeDefinitions are only used for metadata.
      */
     discoverCollections() {
-        console.log('\n  Discovering collections from objectTypeDefinitions...');
+        console.log('\n  Discovering collections from folder structure...');
 
-        // Build folder mappings dynamically from objectTypeDefinitions
-        // Categories that use JS subfolders (Scripts, Behaviors) vs data-only folders
+        // Categories that use JS subfolders (have /js, /data, /html, /css subfolders)
         const jsSubfolderCategories = new Set(['Scripts', 'Behaviors']);
 
-        // Group objectTypeDefinitions by category
-        const categoriesMap = new Map();
-        for (const objTypeDef of this.objectTypeDefinitions) {
-            const category = objTypeDef.category;
-            if (!category) continue;
-
-            if (!categoriesMap.has(category)) {
-                categoriesMap.set(category, []);
-            }
-            categoriesMap.get(category).push(objTypeDef);
+        // Build a map of objectTypeDefinition id -> definition for metadata lookup
+        const objTypeDefMap = new Map();
+        for (const def of this.objectTypeDefinitions) {
+            objTypeDefMap.set(def.id, def);
         }
 
-        console.log(`    Found ${categoriesMap.size} categories from objectTypeDefinitions`);
+        // Scan all top-level directories under scripts/ as potential categories
+        if (!fs.existsSync(this.scriptsRoot)) {
+            console.warn(`    Scripts root not found: ${this.scriptsRoot}`);
+            return;
+        }
 
-        // Process each category
-        for (const [category, objectTypes] of categoriesMap) {
-            const parentPath = path.join(this.scriptsRoot, category);
-            if (!fs.existsSync(parentPath)) {
-                console.log(`    Skipping category ${category} - folder doesn't exist`);
-                continue;
-            }
+        const categoryFolders = fs.readdirSync(this.scriptsRoot, { withFileTypes: true })
+            .filter(d => d.isDirectory())
+            .map(d => d.name);
 
+        console.log(`    Found ${categoryFolders.length} category folders`);
+
+        // Process each category folder
+        for (const category of categoryFolders) {
+            const categoryPath = path.join(this.scriptsRoot, category);
             const hasJsSubfolder = jsSubfolderCategories.has(category);
 
-            // Process each object type in this category
-            for (const objTypeDef of objectTypes) {
-                const collectionId = objTypeDef.id;
-                const folderPath = path.join(parentPath, collectionId);
+            // Get all subfolders in this category
+            const subfolders = fs.readdirSync(categoryPath, { withFileTypes: true })
+                .filter(d => d.isDirectory())
+                .map(d => d.name);
 
-                if (!fs.existsSync(folderPath)) {
-                    // Try singular form as folder name
-                    const singularPath = path.join(parentPath, objTypeDef.singular || collectionId);
-                    if (!fs.existsSync(singularPath)) {
-                        continue;
-                    }
-                }
-
-                const actualFolderPath = fs.existsSync(folderPath)
-                    ? folderPath
-                    : path.join(parentPath, objTypeDef.singular || collectionId);
+            for (const subfolder of subfolders) {
+                const collectionId = subfolder;
+                const folderPath = path.join(categoryPath, subfolder);
 
                 // Determine paths for JS, data, HTML, and CSS files
                 let jsPath, dataPath, htmlPath, cssPath;
                 if (hasJsSubfolder) {
-                    jsPath = path.join(actualFolderPath, 'js');
-                    dataPath = path.join(actualFolderPath, 'data');
-                    htmlPath = path.join(actualFolderPath, 'html');
-                    cssPath = path.join(actualFolderPath, 'css');
+                    jsPath = path.join(folderPath, 'js');
+                    dataPath = path.join(folderPath, 'data');
+                    htmlPath = path.join(folderPath, 'html');
+                    cssPath = path.join(folderPath, 'css');
                 } else {
-                    jsPath = actualFolderPath;
+                    jsPath = folderPath;
                     // Check if folder has a 'data' subfolder, otherwise use folder directly
-                    const nestedDataPath = path.join(actualFolderPath, 'data');
-                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : actualFolderPath;
+                    const nestedDataPath = path.join(folderPath, 'data');
+                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : folderPath;
                     htmlPath = null;
                     cssPath = null;
                 }
