@@ -804,24 +804,24 @@ class TerrainMapEditor {
                         const item = document.createElement('div');
                         item.className = 'terrain-editor__environment-item';
                         item.dataset.name = `${type} ${imageIndex + 1}`;
-                        
+
                         const preview = document.createElement('canvas');
                         preview.width = this.config.imageSize;
                         preview.height = this.config.imageSize;
                         const ctx = preview.getContext('2d');
-                        
+
                         // Draw scaled down version of the image for preview with proper centering
                         const scale = Math.min(this.config.imageSize / image.width, this.config.imageSize / image.height);
                         ctx.drawImage(
-                            image, 
-                            (this.config.imageSize - image.width * scale) / 2, 
-                            (this.config.imageSize - image.height * scale) / 2, 
-                            image.width * scale, 
+                            image,
+                            (this.config.imageSize - image.width * scale) / 2,
+                            (this.config.imageSize - image.height * scale) / 2,
+                            image.width * scale,
                             image.height * scale
                         );
-                        
+
                         item.appendChild(preview);
-                        
+
                         item.addEventListener('click', () => {
                             // Deselect any previously selected items
                             document.querySelectorAll('.terrain-editor__environment-item').forEach(i => i.classList.remove('active'));
@@ -835,29 +835,63 @@ class TerrainMapEditor {
                             // Update placement indicator
                             this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;
                             this.placementModeIndicator.style.opacity = '1';
-                            
+
                             // Auto-disable delete mode when selecting an object
                             if (this.deleteMode) {
                                 deleteButton.classList.remove('delete-mode');
                                 document.body.classList.remove('delete-mode-active');
                                 this.deleteMode = false;
                             }
-                            
+
                             // Hide indicator after a delay
                             clearTimeout(this.indicatorTimeout);
                             this.indicatorTimeout = setTimeout(() => {
                                 this.placementModeIndicator.style.opacity = '0';
                             }, 2000);
                         });
-                        
+
                         itemsContainer.appendChild(item);
                     });
                 } else {
-                    // Empty state
-                    itemsContainer.classList.add('empty');
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.textContent = 'No objects available for this type';
-                    itemsContainer.appendChild(emptyMsg);
+                    // No images available - create a simple text button for this world object type
+                    const item = document.createElement('div');
+                    item.className = 'terrain-editor__environment-item terrain-editor__environment-item--text';
+                    item.dataset.name = type;
+
+                    const label = document.createElement('span');
+                    label.className = 'terrain-editor__environment-item-label';
+                    label.textContent = this.worldObjects[type]?.title || type;
+                    item.appendChild(label);
+
+                    item.addEventListener('click', () => {
+                        // Deselect any previously selected items
+                        document.querySelectorAll('.terrain-editor__environment-item').forEach(i => i.classList.remove('active'));
+
+                        // Select this item
+                        item.classList.add('active');
+                        this.selectedObjectType = type;
+                        this.selectedEnvironmentItem = 0;
+                        this.placementMode = 'environment';
+
+                        // Update placement indicator
+                        this.placementModeIndicator.textContent = `Placing: ${type}`;
+                        this.placementModeIndicator.style.opacity = '1';
+
+                        // Auto-disable delete mode when selecting an object
+                        if (this.deleteMode) {
+                            deleteButton.classList.remove('delete-mode');
+                            document.body.classList.remove('delete-mode-active');
+                            this.deleteMode = false;
+                        }
+
+                        // Hide indicator after a delay
+                        clearTimeout(this.indicatorTimeout);
+                        this.indicatorTimeout = setTimeout(() => {
+                            this.placementModeIndicator.style.opacity = '0';
+                        }, 2000);
+                    });
+
+                    itemsContainer.appendChild(item);
                 }
                 
                 typeContainer.appendChild(itemsContainer);
