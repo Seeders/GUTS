@@ -32,8 +32,8 @@ class EditorModel {
         };
         let projects = localStorage.getItem("projects");
         if(!projects){
-            localStorage.setItem("currentProject", "Hello World");
-            localStorage.setItem("projects", JSON.stringify(["Hello World", "TowerDefense", "Infiniworld", "SpaceRacer", "TurnBasedWarfare"]));
+            localStorage.setItem("currentProject", "TurnBasedWarfare");
+            localStorage.setItem("projects", JSON.stringify(["TurnBasedWarfare"]));
         }
     }
 
@@ -57,7 +57,7 @@ class EditorModel {
         const savedProject = localStorage.getItem("currentProject");
         return savedProject && this.listProjects().includes(savedProject) 
             ? savedProject 
-            : "Hello World";
+            : "TurnBasedWarfare";
     }
 
     /**
