@@ -41,10 +41,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
-        // Initialize RaycastHelper with scene and camera
-        if (this.game.scene && this.game.camera) {
-            this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
-        }
+        // RaycastHelper initialized in onSceneLoad when scene/camera are available
 
         this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
@@ -53,7 +50,14 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getOpponentPlacements', () => this.opponentPlacements);
         this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
         this.mouseWorldOffset = { x: this.game.gameManager.call('getPlacementGridSize') / 2, z: this.game.gameManager.call('getPlacementGridSize') / 2 };
+    }
 
+    onSceneLoad(sceneData) {
+        // Initialize RaycastHelper now that scene and camera are available
+        if (this.game.scene && this.game.camera && !this.raycastHelper) {
+            this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
+            console.log('[MultiplayerPlacementSystem] RaycastHelper initialized');
+        }
     }
 
     setupEventListeners() {
