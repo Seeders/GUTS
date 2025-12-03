@@ -1,5 +1,6 @@
 {
   "title": "Male Death Down",
+  "collection": "maleSprites",
   "sprites": [
     "maleDeathDown_0",
     "maleDeathDown_1",

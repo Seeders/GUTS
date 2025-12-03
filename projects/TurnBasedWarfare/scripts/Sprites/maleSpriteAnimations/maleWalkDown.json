@@ -1,5 +1,6 @@
 {
   "title": "Male Walk Down",
+  "collection": "maleSprites",
   "sprites": [
     "maleWalkDown_0",
     "maleWalkDown_1",

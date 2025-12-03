@@ -338,9 +338,10 @@ class EntityRenderer {
         let walkAnimationNames = null;
         let attackAnimationNames = null;
         let deathAnimationNames = null;
+        let animSet = null;
         if (entityDef.spriteAnimationSet) {
             // Look up the sprite animation set from the collection
-            const animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
+            animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
             if (animSet?.walkSpriteAnimations) {
                 walkAnimationNames = animSet.walkSpriteAnimations;
             }
@@ -359,14 +360,17 @@ class EntityRenderer {
         let attackAnimationData = null;
         let deathAnimationData = null;
 
+        // Get the collection name from the animation set (defaults to 'spriteAnimations')
+        const spriteAnimationCollection = animSet?.collection || 'spriteAnimations';
+
         if (walkAnimationNames && walkAnimationNames.length > 0) {
-            walkAnimationData = await this.loadSpriteAnimations(walkAnimationNames);
+            walkAnimationData = await this.loadSpriteAnimations(walkAnimationNames, spriteAnimationCollection);
         }
         if (attackAnimationNames && attackAnimationNames.length > 0) {
-            attackAnimationData = await this.loadSpriteAnimations(attackAnimationNames);
+            attackAnimationData = await this.loadSpriteAnimations(attackAnimationNames, spriteAnimationCollection);
         }
         if (deathAnimationNames && deathAnimationNames.length > 0) {
-            deathAnimationData = await this.loadSpriteAnimations(deathAnimationNames);
+            deathAnimationData = await this.loadSpriteAnimations(deathAnimationNames, spriteAnimationCollection);
         }
 
         const textureDef = this.collections?.textures?.[textureId];
@@ -466,7 +470,7 @@ class EntityRenderer {
      * Load sprite animations and organize by direction
      * Returns: { down: [...], downleft: [...], left: [...], upleft: [...], up: [...] }
      */
-    async loadSpriteAnimations(spriteAnimationNames) {
+    async loadSpriteAnimations(spriteAnimationNames, collectionName = 'spriteAnimations') {
         const animations = {
             down: [],
             downleft: [],
@@ -476,10 +480,10 @@ class EntityRenderer {
         };
 
         for (const animName of spriteAnimationNames) {
-            // Get the sprite animation definition
-            const animDef = this.collections?.spriteAnimations?.[animName];
+            // Get the sprite animation definition from the specified collection
+            const animDef = this.collections?.[collectionName]?.[animName];
             if (!animDef || !animDef.sprites) {
-                console.warn(`[EntityRenderer] Sprite animation '${animName}' not found`);
+                console.warn(`[EntityRenderer] Sprite animation '${animName}' not found in collection '${collectionName}'`);
                 continue;
             }
 
@@ -492,10 +496,12 @@ class EntityRenderer {
 
             // Load all sprite textures for this animation
             const textures = [];
+            // Determine which collection to use for sprites
+            const spriteCollection = animDef.collection || 'sprites';
             for (const spriteName of animDef.sprites) {
-                const spriteDef = this.collections?.sprites?.[spriteName];
+                const spriteDef = this.collections?.[spriteCollection]?.[spriteName];
                 if (!spriteDef || !spriteDef.imagePath) {
-                    console.warn(`[EntityRenderer] Sprite '${spriteName}' not found`);
+                    console.warn(`[EntityRenderer] Sprite '${spriteName}' not found in collection '${spriteCollection}'`);
                     continue;
                 }
 
