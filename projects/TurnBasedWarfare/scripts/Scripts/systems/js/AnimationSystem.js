@@ -181,6 +181,10 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Camera is isometric looking toward +x, -z (northeast)
      * Supports 8 directions: down, downleft, left, upleft, up, upright, right, downright
      * Right-side animations use left-side flipped
+     *
+     * Direction is derived from transform.rotation.y:
+     * - When moving, rotation is updated from velocity
+     * - When attacking, rotation is set by attack behavior to face target
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
         // Only animate during battle phase - show idle (base renderTexture) during placement
@@ -192,6 +196,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Don't update walk state while attack animation is playing
         const isAttacking = this.game.gameManager.call('isBillboardAttacking', entityId);
         if (isAttacking) {
+            // Still update sprite direction from rotation (which was set by attack behavior)
+            this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
         }
 
@@ -204,62 +210,76 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Update moving state
         this.game.gameManager.call('setBillboardMoving', entityId, isMoving);
 
-        if (isMoving) {
-            // Transform world velocity to screen-space for isometric camera looking toward +x, -z
-            const screenHorizontal = vx + vz; // positive = screen right, negative = screen left
-            const screenVertical = vx - vz;   // positive = screen up, negative = screen down
+        // Update sprite direction from rotation (set by MovementSystem when moving, or by attack behavior when attacking)
+        this.updateSpriteDirectionFromRotation(entityId, animState);
+    }
 
-            // Calculate angle in degrees (0 = right, 90 = up, 180/-180 = left, -90 = down)
-            let angle = Math.atan2(screenVertical, screenHorizontal) * (180 / Math.PI);
+    /**
+     * Update sprite direction based on entity's rotation.y
+     * Converts world rotation to isometric screen direction
+     */
+    updateSpriteDirectionFromRotation(entityId, animState) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (!transform?.rotation) return;
 
-            // Determine direction and flip based on 8 sectors (45° each)
-            // Sectors centered on: 0(right), 45(upright), 90(up), 135(upleft),
-            //                      180(left), -135(downleft), -90(down), -45(downright)
-            let newDirection = animState.spriteDirection;
-            let shouldFlip = false;
+        const rotationY = transform.rotation.y;
 
-            if (angle >= -22.5 && angle < 22.5) {
-                // Right (0°) - use left flipped
-                newDirection = 'left';
-                shouldFlip = true;
-            } else if (angle >= 22.5 && angle < 67.5) {
-                // Up-right (45°) - use upleft flipped
-                newDirection = 'upleft';
-                shouldFlip = true;
-            } else if (angle >= 67.5 && angle < 112.5) {
-                // Up (90°)
-                newDirection = 'up';
-                shouldFlip = false;
-            } else if (angle >= 112.5 && angle < 157.5) {
-                // Up-left (135°)
-                newDirection = 'upleft';
-                shouldFlip = false;
-            } else if (angle >= 157.5 || angle < -157.5) {
-                // Left (180°)
-                newDirection = 'left';
-                shouldFlip = false;
-            } else if (angle >= -157.5 && angle < -112.5) {
-                // Down-left (-135° / 225°)
-                newDirection = 'downleft';
-                shouldFlip = false;
-            } else if (angle >= -112.5 && angle < -67.5) {
-                // Down (-90° / 270°)
-                newDirection = 'down';
-                shouldFlip = false;
-            } else if (angle >= -67.5 && angle < -22.5) {
-                // Down-right (-45° / 315°) - use downleft flipped
-                newDirection = 'downleft';
-                shouldFlip = true;
-            }
+        // Convert rotation to world direction vector
+        const dx = Math.cos(rotationY);
+        const dz = Math.sin(rotationY);
 
-            // Check if direction changed
-            if (newDirection !== animState.spriteDirection || shouldFlip !== animState.spriteFlipped) {
-                animState.spriteDirection = newDirection;
-                animState.spriteFlipped = shouldFlip;
+        // Transform to screen-space for isometric camera looking toward +x, -z
+        const screenHorizontal = dx + dz; // positive = screen right, negative = screen left
+        const screenVertical = dx - dz;   // positive = screen up, negative = screen down
 
-                // Apply the new direction
-                this.game.gameManager.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
-            }
+        // Calculate angle in degrees (0 = right, 90 = up, 180/-180 = left, -90 = down)
+        let angle = Math.atan2(screenVertical, screenHorizontal) * (180 / Math.PI);
+
+        // Determine direction and flip based on 8 sectors (45° each)
+        let newDirection = animState.spriteDirection;
+        let shouldFlip = false;
+
+        if (angle >= -22.5 && angle < 22.5) {
+            // Right (0°) - use left flipped
+            newDirection = 'left';
+            shouldFlip = true;
+        } else if (angle >= 22.5 && angle < 67.5) {
+            // Up-right (45°) - use upleft flipped
+            newDirection = 'upleft';
+            shouldFlip = true;
+        } else if (angle >= 67.5 && angle < 112.5) {
+            // Up (90°)
+            newDirection = 'up';
+            shouldFlip = false;
+        } else if (angle >= 112.5 && angle < 157.5) {
+            // Up-left (135°)
+            newDirection = 'upleft';
+            shouldFlip = false;
+        } else if (angle >= 157.5 || angle < -157.5) {
+            // Left (180°)
+            newDirection = 'left';
+            shouldFlip = false;
+        } else if (angle >= -157.5 && angle < -112.5) {
+            // Down-left (-135° / 225°)
+            newDirection = 'downleft';
+            shouldFlip = false;
+        } else if (angle >= -112.5 && angle < -67.5) {
+            // Down (-90° / 270°)
+            newDirection = 'down';
+            shouldFlip = false;
+        } else if (angle >= -67.5 && angle < -22.5) {
+            // Down-right (-45° / 315°) - use downleft flipped
+            newDirection = 'downleft';
+            shouldFlip = true;
+        }
+
+        // Check if direction changed
+        if (newDirection !== animState.spriteDirection || shouldFlip !== animState.spriteFlipped) {
+            animState.spriteDirection = newDirection;
+            animState.spriteFlipped = shouldFlip;
+
+            // Apply the new direction
+            this.game.gameManager.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
         }
     }
 

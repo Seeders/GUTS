@@ -77,7 +77,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
-        // Trigger attack animation
+        // Trigger attack animation (sprite direction is derived from rotation.y set above)
         if (game.gameManager && game.gameManager.has('triggerSinglePlayAnimation')) {
             const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
