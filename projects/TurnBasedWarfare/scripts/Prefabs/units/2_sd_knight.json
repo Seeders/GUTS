@@ -111,7 +111,7 @@
             "rotationY": 0,
             "rotationZ": 0,
             "color": "#FFFFFF",
-            "url": "models/knight/knight.glb",
+            "url": "models/knight.glb",
             "metalness": "0",
             "roughness": "1"
           }

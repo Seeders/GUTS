@@ -113,7 +113,7 @@
             "metalness": "0",
             "roughness": "1",
             "color": "#FFFFFF",
-            "url": "models/berserker/berserker.glb"
+            "url": "models/berserker.glb"
           }
         ],
         "scale": {

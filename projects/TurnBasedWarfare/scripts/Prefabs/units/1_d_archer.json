@@ -135,7 +135,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/scout/scout.glb",
+            "url": "models/scout.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

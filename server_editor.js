@@ -208,8 +208,8 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
         const gltfPath = req.file.path;
         const gltfContent = await fs.readFile(gltfPath, 'utf8');
 
-        const modelName = req.file.originalname.endsWith('.gltf') ? path.basename(req.file.originalname, '.gltf') : path.basename(req.file.originalname, '.glb');
-        const modelFolder = path.join(PROJS_DIR, projectName, "resources/models", modelName);
+        // Save to flat models/ folder instead of models/modelName/ subfolder
+        const modelFolder = path.join(PROJS_DIR, projectName, "resources/models");
         const finalGltfPath = path.join(modelFolder, req.file.originalname);
 
         if (!fsSync.existsSync(modelFolder)) {
@@ -468,15 +468,30 @@ app.post('/api/cache', async (req, res) => {
 
 // Save texture image as PNG file
 app.post('/api/save-texture', async (req, res) => {
-    const { projectName, textureName, imageData } = req.body;
+    const { projectName, textureName, categoryName, collectionName, imageData } = req.body;
 
     if (!projectName || !textureName || !imageData) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     try {
-        // Create textures directory if it doesn't exist
-        const texturesFolder = path.join(PROJS_DIR, projectName, 'resources', 'textures');
+        // Determine the folder path based on category and collection
+        let texturesFolder;
+        let relativePath;
+
+        const fileName = `${textureName}.png`;
+
+        if (categoryName && collectionName) {
+            // New organized structure: resources/[category]/[collection]/
+            texturesFolder = path.join(PROJS_DIR, projectName, 'resources', categoryName, collectionName);
+            relativePath = `${categoryName}/${collectionName}/${fileName}`;
+        } else {
+            // Fallback to old structure: resources/textures/
+            texturesFolder = path.join(PROJS_DIR, projectName, 'resources', 'textures');
+            relativePath = `textures/${fileName}`;
+        }
+
+        // Create directory if it doesn't exist
         if (!fsSync.existsSync(texturesFolder)) {
             await fs.mkdir(texturesFolder, { recursive: true });
         }
@@ -486,12 +501,10 @@ app.post('/api/save-texture', async (req, res) => {
         const buffer = Buffer.from(base64Data, 'base64');
 
         // Save as PNG file
-        const fileName = `${textureName}.png`;
         const filePath = path.join(texturesFolder, fileName);
         await fs.writeFile(filePath, buffer);
 
-        // Return relative path from resources folder (not project root)
-        const relativePath = `textures/${fileName}`;
+        // Return relative path from resources folder
         res.json({ success: true, filePath: relativePath });
     } catch (error) {
         console.error('Error saving texture:', error);

@@ -104,7 +104,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/treant/treant.glb",
+            "url": "models/treant.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

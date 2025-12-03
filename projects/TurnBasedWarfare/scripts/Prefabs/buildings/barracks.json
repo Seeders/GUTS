@@ -23,7 +23,7 @@
                 "z": 0,
                 "scaleX": 1,
                 "name": "foundation",
-                "url": "models/underConstruction/underConstruction.glb",
+                "url": "models/underConstruction.glb",
                 "id": 0
               }
             ]
@@ -45,7 +45,7 @@
             "z": 0,
             "scaleX": 1,
             "name": "foundation",
-            "url": "models/barracks/barracks.glb"
+            "url": "models/barracks.glb"
           }
         ],
         "position": {

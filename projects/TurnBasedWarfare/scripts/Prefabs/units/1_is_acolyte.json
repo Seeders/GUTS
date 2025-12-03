@@ -102,7 +102,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/acolyte/acolyte.glb",
+            "url": "models/acolyte.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

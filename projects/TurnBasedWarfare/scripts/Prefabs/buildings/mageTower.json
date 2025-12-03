@@ -16,7 +16,7 @@
                 "color": {
                   "paletteColor": "blueDColor"
                 },
-                "url": "models/underConstruction/underConstruction.glb",
+                "url": "models/underConstruction.glb",
                 "id": 0
               }
             ]
@@ -38,7 +38,7 @@
             "z": 0,
             "scaleX": 1,
             "name": "foundation",
-            "url": "models/mage_tower/mage_tower.glb"
+            "url": "models/mage_tower.glb"
           }
         ],
         "position": {

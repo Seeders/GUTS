@@ -117,7 +117,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/golem_fire/golem_fire.glb",
+            "url": "models/golem_fire.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

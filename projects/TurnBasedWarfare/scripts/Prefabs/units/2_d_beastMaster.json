@@ -21,7 +21,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/idle/idle.glb",
+                "url": "models/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -106,7 +106,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/2h_spell_summon/2h_spell_summon.glb",
+                "url": "models/2h_spell_summon.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -139,7 +139,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/beastmaster/beastmaster.glb",
+            "url": "models/beastmaster.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

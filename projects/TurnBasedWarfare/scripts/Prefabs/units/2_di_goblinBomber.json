@@ -103,7 +103,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/goblin/goblin.glb",
+            "url": "models/goblin.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

@@ -105,7 +105,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/oathbreaker/oathbreaker.glb",
+            "url": "models/oathbreaker.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

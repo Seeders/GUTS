@@ -51,7 +51,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/1h_spell_throw/1h_spell_throw.glb",
+                "url": "models/1h_spell_throw.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -118,7 +118,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/apprentice/apprentice.glb",
+            "url": "models/apprentice.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

@@ -120,7 +120,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/warrior/warrior.glb",
+            "url": "models/warrior.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

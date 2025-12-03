@@ -120,7 +120,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/gladiator/gladiator.glb",
+            "url": "models/gladiator.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

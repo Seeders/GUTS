@@ -144,7 +144,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/trickster/trickster.glb",
+            "url": "models/trickster.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

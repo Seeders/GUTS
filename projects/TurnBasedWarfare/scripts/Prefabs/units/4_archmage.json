@@ -107,7 +107,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/archmage/archmage.glb",
+            "url": "models/archmage.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

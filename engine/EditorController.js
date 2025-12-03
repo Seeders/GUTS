@@ -367,6 +367,18 @@ class EditorController {
         return this.model.state.selectedObject;
     }
 
+    getSelectedCollection() {
+        return this.model.getSelectedType();
+    }
+
+    getSelectedCategory() {
+        const collectionName = this.model.getSelectedType();
+        if (!collectionName) return null;
+
+        const collectionDef = this.model.getCollectionDefs().find(def => def.id === collectionName);
+        return collectionDef?.category || null;
+    }
+
     getExpandedCategories() {
         return this.model.state.expandedCategories;
     }

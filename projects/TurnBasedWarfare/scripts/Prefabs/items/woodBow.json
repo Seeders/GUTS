@@ -20,7 +20,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/item_bow_peasant/item_bow_peasant.glb",
+            "url": "models/item_bow_peasant.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
