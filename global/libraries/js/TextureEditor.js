@@ -889,6 +889,10 @@ class TextureEditor {
             // Get the current texture name (selected object ID)
             const textureName = this.gameEditor.getSelectedObject();
 
+            // Get the category and collection for organized folder structure
+            const categoryName = this.gameEditor.getSelectedCategory();
+            const collectionName = this.gameEditor.getSelectedCollection();
+
             if (!projectName || !textureName) {
                 console.error('Cannot save texture: missing project name or texture name');
                 return;
@@ -903,6 +907,8 @@ class TextureEditor {
                 body: JSON.stringify({
                     projectName: projectName,
                     textureName: textureName,
+                    categoryName: categoryName,
+                    collectionName: collectionName,
                     imageData: data
                 })
             });
