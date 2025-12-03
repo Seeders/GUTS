@@ -50,3 +50,4 @@ package-lock.json
 *.sublime-project
 *.sublime-workspace
 *.backup
+.claude/
